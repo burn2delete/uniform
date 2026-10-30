@@ -2116,3 +2116,39 @@ acceptance. Provisional3/182 tasks receive no credit. The refreshed561-binding
 snapshot preserves all1262 current UTF8 file/raw span hashes. SH12/522,census4/13,
 boundary6/11,generated SH check and pinned changed-file lint pass. Whole-facet,
 granularity,legacy ACC,independent final counting and integration remain open.
+
+## Complete original-source inventory with explicit unresolved entailment
+
+At source `1278921e1603a68d05c3fdc291b16e515650941c`,
+`all240-current-source-facet-inventory.edn` retains all 240 original documents,
+9,945 source occurrences and 28,785 original facet identities. Every original
+document and exact facet byte span authenticates against the current source;
+occurrence membership and raw ranges are conserved. All 1,188 source-owner
+identities remain visible with original obligations and current references.
+
+This is a read-only trace, not another task ledger or proof of entailment.
+It distinguishes 653 pending owner-proposed facets, 5,576 formatting/hierarchy
+contexts, 21,492 pending exact predicate conjunctions, 704 pending concrete
+dependency joins and 360 pending source-specific owner/metadata adjudications.
+Hierarchy and formatting retain their source context rather than discharging
+child predicates. Candidate witnesses are not treated as whole-paragraph proof.
+
+The owner-resolution index exposes 930 identities with current criterion
+candidates, 254 with only task references, one missing concrete current
+criterion resolution and three retained retirements needing exact successor
+lineage. Those are audit states, not extra decision/task units or implementation
+credit. In particular, original task-reference presence does not establish a
+predicate join. Existing 833 decisions and 561 bindings retain their own scopes.
+
+`explicit-extension-source-trace.edn` separately preserves 151 extension
+occurrences and 392 facets. Release extension/task and accounting-removal source
+descriptors match their historical hashes; Platform Product and AGENTS policy
+descriptors differ and explicitly require rebinding. No current extension-span
+or full-predicate acceptance is inferred from those historical coordinates.
+
+Source checks pass 2 tests / 16 assertions. Serialized readback independently
+confirms the complete populations and original/extension ID disjointness.
+Original/candidate IDs, source documents, task bodies and task states are
+unchanged. The current provisional count remains 3 Accepted of 195, with 192
+remaining. Full entailment, independent facet/final-count acceptance and
+coordinator integration remain required.

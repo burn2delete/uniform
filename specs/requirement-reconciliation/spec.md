@@ -34,6 +34,13 @@ document, phase, proposal and facet counts are separate inventories.
 
 [source-task-inputs.edn](source-task-inputs.edn) freezes the input document and
 task identities. It is a snapshot, not another editable task authority.
+The [current original-source facet inventory](all240-current-source-facet-inventory.edn)
+retains all 240 documents, 9,945 occurrences and 28,785 facets with exact source
+coordinates, hashes and current criterion candidates. Its unresolved joins and
+owner proposals remain explicit; inventory conservation is not entailment or
+implementation acceptance. The [extension trace](explicit-extension-source-trace.edn)
+keeps 151 extension occurrences and 392 facets separate, including changed
+source-descriptor hashes that still require explicit rebinding.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new
