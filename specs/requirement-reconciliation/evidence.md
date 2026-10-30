@@ -2651,3 +2651,25 @@ effect/authority checker, runtime/provider, replay,
 broker/controller or probe execution occurred. Independent current-composition
 and final-count acceptance, full source entailment and coordinator integration
 remain pending.
+
+Metadata/census source `071250169f889a876a6215e95bb23de978dabe33`
+passes SH 12 tests / 541 assertions, census 5 / 18, boundary 6 / 11,
+changed-SH lint with zero findings, both document validators and generated
+Effects/SH/census checks. The scoped census remains 195 total, 3 Accepted,
+190 Open, 1 Partial, 1 unassessed and 192 remaining, with provisional ratio
+3/195. A premature SH invocation observed incomplete metadata serialization;
+the completed-source write/check and tests above supersede that failed local
+preparation attempt and do not confer independent review.
+
+Complete inventory source `084159cc922d7a6abe558da934b0e41dbcd433fa`
+retains all 240 original documents, 9,945 occurrences and 28,785 facets. It
+records 951 original owners with criterion candidates, 234 task-reference-only
+joins and three retained retired owners with pending successor acceptance.
+Facet states are 1,212 pending owner proposals, 5,515 formatting/hierarchy
+contexts, 20,994 pending exact predicate conjunctions, 704 pending dependency
+joins and 360 pending owner/metadata adjudications. Population checks pass
+2 / 16. Serialized readback verifies those counts, all five current refinement
+references, the unchanged retirement proposal reference, the active C8 binding
+path and all five extension descriptor states (three unchanged-source and two
+explicitly rebound-source descriptors). Earlier source and acceptance scopes
+remain intact; this is not implementation or final-count acceptance.
