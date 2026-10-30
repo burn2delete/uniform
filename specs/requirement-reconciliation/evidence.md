@@ -1792,6 +1792,21 @@ eleven ACC rows remain Open or Partial, and no closure is added to the three
 Accepted Reader tasks. Original pending labels remain derivation history under
 the new enumerated adoption authority.
 
+A later bounded ACC-12 dependency disposition is retained as a source-only
+status citation at `/tmp/acc12-parameter-dependency-7b6a0f6c/disposition.edn`,
+SHA256 `f7b06bac7017e357f57c0186486fe34e8e52a18fafeb54edceb219ccfc89b39b`.
+It reports the prior list dependency SOURCE-ADDRESSED ONLY in frozen
+`7b6a0f6c`, tree `2bb820be`, with three compatibility producers, closed
+`#{:status :premise}` results and 138 inert checks. ACC-12 remains unfinished;
+ACC-07 effective-work-policy, ACC-08 typed-compile-node, independent PMK,
+raw-carrier/indexing and genuine integration residuals retain their recorded
+scopes and actual restrictions. No accounting allowance is restored. The
+actual denied 7b publication remains denied: this citation imports no 7b
+payload, resumes no goal and confers no current-main, implementation, genuine
+integration or publication authority. It is excluded from the finite Compiler
+API source package and changes no ACC closure, registry count or qualified
+original-facet disposition.
+
 Only the ACC scope/adoption fields change in source dispositions; all 833
 records and the entire current 561-binding pointer remain identical. The census
 authenticates the adoption hash and exact subject/status before displaying its
@@ -3855,3 +3870,49 @@ database or denominator. The canonical checkout is retained without reset.
 The separate source-only C18 paragraph remains scratch preparation; no C18
 canonical task change or execution has occurred while the incoming C12 review
 was authenticated.
+
+## Frozen finite main-source composition handoff
+
+The isolated branch `codex/compiler-domain-contracts` is published at candidate
+`7459bc9405467c56ef07b5dfc37f04ee26014289`, tree
+`7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0`, over exact main base
+`787637b9ae780a7cfef7ca5763611882a8f2b629`, tree
+`10296896f7c605b16b25cdf2981c23d0519b996c`. The
+[frozen review candidate](finite-compiler-domain-review-candidate.edn) records
+all 16 changed paths with Git modes/blobs and byte hashes, source input pins,
+archived C17/C12 receipt identities, actual dependency closure and claim ceilings.
+Composition SHA256 is
+`ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e`.
+
+The six reviewed predicate bodies are exact. Four prior main outcomes and their
+Open statuses remain, with the existing domain outcome added as the fifth local
+record. The package archives both sealed source receipts and their reviewed
+task-file bytes. The retained Pass Evidence criterion's one literal source
+context reference resolves to a 21 KB excerpt containing only its original
+record and all ten authentic DOM17 source-facet witnesses, SHA256
+`d24b93ff6ea8ff3a8c422a19a0544eec60eff52a6dde6a848be17baf86edfec6`.
+The other 69 family records and global reconciliation database are not imported.
+Before/after fields remain captured history, without whole DOM17/C18 or new
+current-owner acceptance. All source/frozen-subject and external-clause
+exclusions remain intact. The main update was reconciled through the private
+branch while preserving source-pin ancestry; its disjoint Resolver artifacts
+were not executed or newly admitted by this source package.
+
+Current-base source checks pass 7 tests/126 assertions, SH 12/157, projection
+5/77, boundary 6/11, both document validators and zero-blocking changed-file CI
+lint (three unchanged baseline warnings). The earlier local source-only CI
+projection observation has 53 passed child commands at its captured preparation
+subject; it is not fresh exact-head GitHub CI. Read-only inspect preflight passes
+for the exact clean branch/base/head/tree. It confers no independent acceptance
+or integration eligibility. All changed paths have mode 100644. The full local
+packet is `/tmp/finite-domain-freeze-7459bc94/`.
+
+One coordinator-routed independent affected-composition review is pending,
+followed by actual hold mapping, governed admission, fresh exact-head CI and
+integration checks. No new PR, workflow dispatch, outbound cross-chat message,
+compiler/plugin/domain/checker/provider/runtime/target execution, held-action
+retry, shared checkout reset or main integration was performed. This owner has
+not accepted its own composition. C18 remains scratch-only under the current
+source-closure priority. The ALL-240 baseline remains in progress with 1,585
+qualified source dispositions, 632 pending finite proposals and the unchanged
+provisional 3/195 census; this finite handoff adopts no global denominator.

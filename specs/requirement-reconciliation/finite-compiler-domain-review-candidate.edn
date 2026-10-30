@@ -1,0 +1,158 @@
+{:canonical-handoff-status
+ :frozen-pending-one-independent-affected-review,
+ :preflight-scope :inspect-only-no-integration-eligibility,
+ :candidate
+ {:commit "7459bc9405467c56ef07b5dfc37f04ee26014289",
+  :tree "7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0",
+  :branch "codex/compiler-domain-contracts"},
+ :C18-source-work :scratch-only-no-canonical-amendment,
+ :whole-ALL240-baseline :still-in-progress,
+ :global-count-adoption :none,
+ :review-routing :coordinator-only,
+ :clean-worktree true,
+ :new-exact-head-CI-after-review :required,
+ :implementation-credit :none,
+ :mode-blob-manifest
+ {:sha256
+  "5c5f62b57af58e5e20b7ea3408e6dd41ced4ab29d4f3143ff1baf82c70894fb7",
+  :source-path
+  "/tmp/finite-domain-freeze-7459bc94/mode-blob-and-byte-manifest.edn"},
+ :checks
+ {:source-conservation {:tests 7, :assertions 126},
+  :SH {:tests 12, :assertions 157},
+  :projection {:tests 5, :assertions 77},
+  :boundary {:tests 6, :assertions 11},
+  :documents :pass,
+  :roadmap :pass,
+  :changed-CI-lint :three-baseline-zero-blocking,
+  :captured-local-projection-CI
+  {:commands 53,
+   :passed 53,
+   :subject :prior-preparation-not-fresh-exact-head-GitHub-CI}},
+ :additional-producer-context
+ {:path "specs/requirement-reconciliation/domain-gap-completion.edn",
+  :sha256
+  "d24b93ff6ea8ff3a8c422a19a0544eec60eff52a6dde6a848be17baf86edfec6",
+  :records 1,
+  :source-facets 10,
+  :authority :source-context-not-external-semantic-acceptance},
+ :main-integration :not-performed,
+ :source-reference-closure
+ :local-archived-receipts-reviewed-task-bytes-and-one-selected-producer-context,
+ :outbound-message :none,
+ :one-affected-independent-review :pending,
+ :kind :frozen-finite-compiler-domain-source-review-candidate,
+ :C12
+ {:receipt-sha256
+  "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6",
+  :captured-source-facets 115},
+ :changed-paths
+ [{:path "docs/component-roadmaps/compiler-api.md",
+   :mode-and-blob
+   "100644 blob fe1eaf59fd86a965fbe94e765aca10b1297bb1b4\tdocs/component-roadmaps/compiler-api.md",
+   :sha256
+   "ae1de98a3b98f88fd36816c965f89688ed99a8c76dad1d6c24d99226d529ceb8"}
+  {:path
+   "specs/compiler-api-workflow/domain-contract-source-composition.edn",
+   :mode-and-blob
+   "100644 blob e50eefa3df6aae52c37a54b6f4c50fd8a87d858e\tspecs/compiler-api-workflow/domain-contract-source-composition.edn",
+   :sha256
+   "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e"}
+  {:path "specs/compiler-api-workflow/evidence.md",
+   :mode-and-blob
+   "100644 blob 0808cc33d00f9ccafab78afe9d39695dd62c6900\tspecs/compiler-api-workflow/evidence.md",
+   :sha256
+   "c3501efdb8ccb6ecf8c36eeaa8151d387b592014ac1eb528035d285142c63ce8"}
+  {:path "specs/compiler-api-workflow/plan.md",
+   :mode-and-blob
+   "100644 blob f2d76cb3341124814724a9f351ddb1cab8c3857d\tspecs/compiler-api-workflow/plan.md",
+   :sha256
+   "bf704cb765f85781c605d901225f7eb4e5db30a8f59790d9d1f3957abf00b58b"}
+  {:path
+   "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt",
+   :mode-and-blob
+   "100644 blob f320b803ae659206ed727ae0706da6cd67b5c3a5\tspecs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt",
+   :sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"}
+  {:path
+   "specs/compiler-api-workflow/review-inputs/domain-source-review.edn",
+   :mode-and-blob
+   "100644 blob 100a792a348a2b3ce61554120dedc83d0950c144\tspecs/compiler-api-workflow/review-inputs/domain-source-review.edn",
+   :sha256
+   "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6"}
+  {:path
+   "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt",
+   :mode-and-blob
+   "100644 blob aa096939ed77e51223502f92e5feff42db7d9bb6\tspecs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt",
+   :sha256
+   "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae"}
+  {:path
+   "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn",
+   :mode-and-blob
+   "100644 blob a4b157169323a22f4052d05f050893410e1a1c7d\tspecs/compiler-api-workflow/review-inputs/plugin-source-review.edn",
+   :sha256
+   "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7"}
+  {:path "specs/compiler-api-workflow/spec.md",
+   :mode-and-blob
+   "100644 blob 8fc3928b61c45b86fda191ff65d1001e05520a59\tspecs/compiler-api-workflow/spec.md",
+   :sha256
+   "bd8a9793138379d8bc70fdb387074e89ca906fc4648d74716467a2c2b15c3413"}
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :mode-and-blob
+   "100644 blob f320b803ae659206ed727ae0706da6cd67b5c3a5\tspecs/compiler-api-workflow/tasks.md",
+   :sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"}
+  {:path "specs/requirement-reconciliation/domain-gap-completion.edn",
+   :mode-and-blob
+   "100644 blob 00526d6bbafa3a91dfe15e5acbf0ded30bd1e401\tspecs/requirement-reconciliation/domain-gap-completion.edn",
+   :sha256
+   "d24b93ff6ea8ff3a8c422a19a0544eec60eff52a6dde6a848be17baf86edfec6"}
+  {:path "specs/sh-family-crosswalk/crosswalk.edn",
+   :mode-and-blob
+   "100644 blob 4224f07079b75325b0e8260e44189afe4d6c8f42\tspecs/sh-family-crosswalk/crosswalk.edn",
+   :sha256
+   "146db452ca873744c7defd558a8130628ba220709283999df47e6167005de619"}
+  {:path "tools/compiler_api_task_projection.clj",
+   :mode-and-blob
+   "100644 blob 57863b7a2789c449f14e3abd38483304ca6e348c\ttools/compiler_api_task_projection.clj",
+   :sha256
+   "0da3c3680947e4db64d418787df465ea244beda795ea94edf4be8e5bbf293039"}
+  {:path "tools/compiler_api_task_projection_test.clj",
+   :mode-and-blob
+   "100644 blob 1e18848463c67af74e55c2dd97d657d2a94e7769\ttools/compiler_api_task_projection_test.clj",
+   :sha256
+   "303a117e1b3cc55cfcfefee16362c872935202ac5d0ba2d18f361427b4f20622"}
+  {:path "tools/compiler_domain_source_test.clj",
+   :mode-and-blob
+   "100644 blob 2f639714d3b712eb6a281db85af8ed2d8308a270\ttools/compiler_domain_source_test.clj",
+   :sha256
+   "e788a0ecb1896aad8feea0916fc2013abe22722664c6a0a781ca74ab0897d47e"}
+  {:path "tools/sh_crosswalk.clj",
+   :mode-and-blob
+   "100644 blob d09832915ba0b9b3fd939945807bc816418d5b1f\ttools/sh_crosswalk.clj",
+   :sha256
+   "955f2cd4e10892e7414dc8baf1bfb4212f9cd708dc786785c3e403c794b195ad"}],
+ :composition
+ {:path
+  "specs/compiler-api-workflow/domain-contract-source-composition.edn",
+  :sha256
+  "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e"},
+ :base
+ {:commit "787637b9ae780a7cfef7ca5763611882a8f2b629",
+  :tree "10296896f7c605b16b25cdf2981c23d0519b996c"},
+ :inspect-preflight
+ {:mode :inspect,
+  :sha256
+  "e2d481ccb8c85e77da2255ef20099ac0a43cbb7e4d76affa7552d9f95822d3b6",
+  :source-path
+  "/tmp/finite-domain-freeze-7459bc94/inspect-preflight.json",
+  :all-preconditions-pass true,
+  :integration-eligibility :not-conferred},
+ :new-PR-or-workflow :none,
+ :worktree
+ "/Users/matt/.codex/worktrees/compiler-domain-contracts/uniform",
+ :source-extraction "f25e6f571e610587da8142f5b0fc33e7806d440e",
+ :C17
+ {:receipt-sha256
+  "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7",
+  :captured-source-facets 108}}
