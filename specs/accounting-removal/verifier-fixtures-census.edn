@@ -18,7 +18,7 @@
     produced
     [:function-type-table 0 :return]
     :gravity.type/string)
-   (assoc-in produced [:module :namespace] 'forged.module)
+   (assoc-in produced [:module :namespace] (quote forged.module))
    (assoc-in produced [:identity-input :constraint-ledger] [])
    (assoc produced :unknown-verifier-field true)]},
  :dependent-base "d58d61c4a83f09ebd3c742a3cc13b9d000244759",
