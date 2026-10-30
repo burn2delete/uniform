@@ -19954,7 +19954,7 @@
     (let [nest (fn [depth value] (loop [remaining depth result value] (if (zero? remaining) result (recur (dec remaining) {:kind :gravity.type/list :shape :literal :element-types [result]}))))
                      wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 carrier))}
                      late (assoc wide :element-types (assoc (:element-types wide) 1024 :gravity.type/unknown))]
-                 (doseq [value [(nest 127 carrier) (nest 129 carrier) wide]]
+                 (doseq [value [(nest 127 carrier) (nest 129 carrier) (nest 192 carrier) wide]]
                    (is (= {:status :accepted} (work [value]))))
                  (is (= :unsupported-type (:reason (work [late]))))))
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol} s :gravity.type/symbol
@@ -23117,3 +23117,26 @@
         (is (= :rejected (:status result)))
         (is (= :match-branch-definition-required (:reason result)))
         (is (= last-name (:actual result)))))))
+
+(deftest sh08-list-construction-unmetered-types-development-kernel
+  (let [check #(invoke-c7 'sh08-lc-validate-types [%])
+        s :gravity.type/string
+        members (vec (repeat 4097 s))
+        wide {:kind :gravity.type/list :element-types members :shape :literal}
+        deep (nth (iterate (fn [type] {:kind :gravity.type/vector :element-types [type] :shape :literal}) s) 192)
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "type hash")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "type rendering"))))
+        backing (object-array [:kind :gravity.type/list :shape :literal :element-types nil])
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 5 [cyclic])
+    (doseq [types [[] [s] [wide] [deep] [:gravity.type/never wide]]]
+      (is (= {:status :accepted} (check types))))
+    (doseq [type [(assoc wide :element-types (assoc members 4096 :gravity.type/unknown))
+                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/never]}
+                  {:kind :gravity.type/map :shape :literal :member-types [s]}
+                  (assoc wide :extra true) cyclic opaque
+                  {:kind :gravity.type/list :shape :literal :element-types [opaque]}]]
+      (is (= :rejected (:status (check [type])))))
+    (is (empty? @callbacks))))
