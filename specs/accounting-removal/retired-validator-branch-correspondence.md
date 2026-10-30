@@ -1,7 +1,7 @@
 # Retired validator branch correspondence
 
-Owner: ACC-01. This is a source disposition proposal for four original changed
-C7 definitions, not an implementation or accepted semantic equivalence claim.
+Owner: ACC-01. This records the narrowly accepted source disposition for four
+original changed C7 definitions, not an implementation or semantic equivalence claim.
 The original 29-path inventory and its counts remain unchanged.
 
 ## Exact inputs and differences
