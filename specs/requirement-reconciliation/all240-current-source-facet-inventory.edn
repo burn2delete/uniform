@@ -447,6 +447,23 @@
     "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0"},
    :current-historical-binding-id nil,
    :current-decision-ids [],
+   :C18-proposed-source-trace
+   {:path
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :authority :owner-proposal-pending-independent-facet-review,
+    :original-owner-ids
+    ["backend/conformance-execution-pack"
+     "compiler/c18/counterexample-regression"
+     "compiler/c18/pass-risk-evidence"
+     "compiler/c18/release-evidence-gate"
+     "compiler/c18/transformation-validation"
+     "compiler/c18/trust-report"
+     "compiler/c18/verification-provenance"],
+    :original-owner-id "backend/conformance-execution-pack"},
    :original-obligation
    "Execute or semantically compare real backend outputs, validate expected diagnostics and metadata, replay nondeterminism and emit exact-source conformance packs.",
    :current-referenced-task
@@ -470,8 +487,30 @@
    :supporting-original-owner-trace nil,
    :id "backend/conformance-execution-pack",
    :additional-current-criterion-witness nil,
+   :C18-proposed-current-criterion-conjunction
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+     :marker "compiler-api-implementation-tasks"}
+    {:path "specs/backends-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "backend-conformance",
+     :file-sha256
+     "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+     :start-byte 39998,
+     :end-byte 40994,
+     :raw-sha256
+     "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf",
+     :marker "backends-implementation-tasks"}],
    :qualification
    "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   :C18-proposed-join-status :pending-independent-source-review,
    :resolution-state
    :task-reference-only-exact-criterion-join-pending},
   "backend/conformance-suite-composition"
@@ -9344,21 +9383,21 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 41767,
-     :end-byte 47262,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 47584,
+     :end-byte 53079,
      :raw-sha256
      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 47264,
-     :end-byte 51509,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 53081,
+     :end-byte 57326,
      :raw-sha256
      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
    :historical-task-reference nil,
@@ -9399,11 +9438,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :marker "compiler-api-implementation-tasks",
     :task-id "domain-ir-boundaries",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-    :start-byte 41767,
-    :end-byte 47262,
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 47584,
+    :end-byte 53079,
     :raw-sha256
     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
    :qualification
@@ -9415,21 +9454,21 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 41767,
-     :end-byte 47262,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 47584,
+     :end-byte 53079,
      :raw-sha256
      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 47264,
-     :end-byte 51509,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 53081,
+     :end-byte 57326,
      :raw-sha256
      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
    :historical-task-reference nil,
@@ -9470,11 +9509,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :marker "compiler-api-implementation-tasks",
     :task-id "domain-ir-boundaries",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-    :start-byte 41767,
-    :end-byte 47262,
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 47584,
+    :end-byte 53079,
     :raw-sha256
     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
    :qualification
@@ -9486,29 +9525,29 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 41767,
-     :end-byte 47262,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 47584,
+     :end-byte 53079,
      :raw-sha256
      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 47264,
-     :end-byte 51509,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 53081,
+     :end-byte 57326,
      :raw-sha256
      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "pass-evidence",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :start-byte 29748,
      :end-byte 41650,
      :raw-sha256
@@ -9552,11 +9591,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :marker "compiler-api-implementation-tasks",
     :task-id "domain-ir-boundaries",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-    :start-byte 41767,
-    :end-byte 47262,
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 47584,
+    :end-byte 53079,
     :raw-sha256
     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
    :qualification
@@ -9568,21 +9607,21 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 41767,
-     :end-byte 47262,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 47584,
+     :end-byte 53079,
      :raw-sha256
      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 47264,
-     :end-byte 51509,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 53081,
+     :end-byte 57326,
      :raw-sha256
      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
    :historical-task-reference nil,
@@ -9624,11 +9663,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :marker "compiler-api-implementation-tasks",
     :task-id "domain-ir-boundaries",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-    :start-byte 41767,
-    :end-byte 47262,
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 47584,
+    :end-byte 53079,
     :raw-sha256
     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
    :qualification
@@ -9640,21 +9679,21 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 41767,
-     :end-byte 47262,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 47584,
+     :end-byte 53079,
      :raw-sha256
      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 47264,
-     :end-byte 51509,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 53081,
+     :end-byte 57326,
      :raw-sha256
      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
    :historical-task-reference nil,
@@ -9696,11 +9735,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :marker "compiler-api-implementation-tasks",
     :task-id "domain-ir-boundaries",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-    :start-byte 41767,
-    :end-byte 47262,
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 47584,
+    :end-byte 53079,
     :raw-sha256
     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
    :qualification
@@ -9712,29 +9751,29 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 41767,
-     :end-byte 47262,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 47584,
+     :end-byte 53079,
      :raw-sha256
      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "domain-ir-boundaries",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-     :start-byte 47264,
-     :end-byte 51509,
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 53081,
+     :end-byte 57326,
      :raw-sha256
      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}
     {:path "specs/compiler-api-workflow/tasks.md",
      :marker "compiler-api-implementation-tasks",
      :task-id "pass-evidence",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :start-byte 29748,
      :end-byte 41650,
      :raw-sha256
@@ -9779,11 +9818,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :marker "compiler-api-implementation-tasks",
     :task-id "domain-ir-boundaries",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
-    :start-byte 41767,
-    :end-byte 47262,
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 47584,
+    :end-byte 53079,
     :raw-sha256
     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
    :qualification
@@ -11486,11 +11525,11 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 25488,
@@ -11498,11 +11537,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 29649,
@@ -11572,11 +11611,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :task-id "plugins",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
     :raw-sha256
     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
     :marker "compiler-api-implementation-tasks",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :domain-owner-pin-refresh
     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
     :end-byte 25488,
@@ -11590,11 +11629,11 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 25488,
@@ -11602,11 +11641,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 29649,
@@ -11676,11 +11715,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :task-id "plugins",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
     :raw-sha256
     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
     :marker "compiler-api-implementation-tasks",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :domain-owner-pin-refresh
     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
     :end-byte 25488,
@@ -11694,11 +11733,11 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 25488,
@@ -11706,11 +11745,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 29649,
@@ -11718,11 +11757,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "pipeline",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 16612,
@@ -11792,11 +11831,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :task-id "plugins",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
     :raw-sha256
     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
     :marker "compiler-api-implementation-tasks",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :domain-owner-pin-refresh
     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
     :end-byte 25488,
@@ -11810,11 +11849,11 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 25488,
@@ -11822,11 +11861,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 29649,
@@ -11895,11 +11934,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :task-id "plugins",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
     :raw-sha256
     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
     :marker "compiler-api-implementation-tasks",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :domain-owner-pin-refresh
     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
     :end-byte 25488,
@@ -11913,11 +11952,11 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 25488,
@@ -11925,11 +11964,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 29649,
@@ -11999,11 +12038,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :task-id "plugins",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
     :raw-sha256
     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
     :marker "compiler-api-implementation-tasks",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :domain-owner-pin-refresh
     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
     :end-byte 25488,
@@ -12026,6 +12065,23 @@
    :current-historical-binding-id nil,
    :current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
+   :C18-proposed-source-trace
+   {:path
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :authority :owner-proposal-pending-independent-facet-review,
+    :original-owner-ids
+    ["backend/conformance-execution-pack"
+     "compiler/c18/counterexample-regression"
+     "compiler/c18/pass-risk-evidence"
+     "compiler/c18/release-evidence-gate"
+     "compiler/c18/transformation-validation"
+     "compiler/c18/trust-report"
+     "compiler/c18/verification-provenance"],
+    :original-owner-id "compiler/c18/counterexample-regression"},
    :original-obligation
    "Capture available failure input/output/property/diagnostic/minimized reproducer/pass/version artifacts and promote them to regression fixtures.",
    :current-referenced-task
@@ -12049,8 +12105,30 @@
    :supporting-original-owner-trace nil,
    :id "compiler/c18/counterexample-regression",
    :additional-current-criterion-witness nil,
+   :C18-proposed-current-criterion-conjunction
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+     :marker "compiler-api-implementation-tasks"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+     :marker "compiler-api-implementation-tasks"}],
    :qualification
    "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   :C18-proposed-join-status :pending-independent-source-review,
    :resolution-state
    :criterion-candidates-present-exact-full-predicate-entailment-pending},
   "compiler/c18/pass-risk-evidence"
@@ -12066,6 +12144,23 @@
     "d2cda0dbdb508909ef1799016b56e6595eb6492bbacaf768644acf0d731543d4"},
    :current-historical-binding-id nil,
    :current-decision-ids ["interface/compiler/c18/pass-risk-evidence"],
+   :C18-proposed-source-trace
+   {:path
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :authority :owner-proposal-pending-independent-facet-review,
+    :original-owner-ids
+    ["backend/conformance-execution-pack"
+     "compiler/c18/counterexample-regression"
+     "compiler/c18/pass-risk-evidence"
+     "compiler/c18/release-evidence-gate"
+     "compiler/c18/transformation-validation"
+     "compiler/c18/trust-report"
+     "compiler/c18/verification-provenance"],
+    :original-owner-id "compiler/c18/pass-risk-evidence"},
    :original-obligation
    "Classify every pass by actual risk/profile impact and require governing minimum evidence, keeping matrix minimums distinct from stronger optional proof.",
    :current-referenced-task
@@ -12089,8 +12184,30 @@
    :supporting-original-owner-trace nil,
    :id "compiler/c18/pass-risk-evidence",
    :additional-current-criterion-witness nil,
+   :C18-proposed-current-criterion-conjunction
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+     :marker "compiler-api-implementation-tasks"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+     :marker "compiler-api-implementation-tasks"}],
    :qualification
    "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   :C18-proposed-join-status :pending-independent-source-review,
    :resolution-state
    :criterion-candidates-present-exact-full-predicate-entailment-pending},
   "compiler/c18/release-evidence-gate"
@@ -12107,6 +12224,23 @@
    :current-historical-binding-id nil,
    :current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
+   :C18-proposed-source-trace
+   {:path
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :authority :owner-proposal-pending-independent-facet-review,
+    :original-owner-ids
+    ["backend/conformance-execution-pack"
+     "compiler/c18/counterexample-regression"
+     "compiler/c18/pass-risk-evidence"
+     "compiler/c18/release-evidence-gate"
+     "compiler/c18/transformation-validation"
+     "compiler/c18/trust-report"
+     "compiler/c18/verification-provenance"],
+    :original-owner-id "compiler/c18/release-evidence-gate"},
    :original-obligation
    "Block affected release artifacts on verification failure or missing/stale/critical/high-risk evidence; ship experimental passes only behind explicit recorded feature/profile gates.",
    :current-referenced-task
@@ -12130,8 +12264,30 @@
    :supporting-original-owner-trace nil,
    :id "compiler/c18/release-evidence-gate",
    :additional-current-criterion-witness nil,
+   :C18-proposed-current-criterion-conjunction
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+     :marker "compiler-api-implementation-tasks"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+     :marker "compiler-api-implementation-tasks"}],
    :qualification
    "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   :C18-proposed-join-status :pending-independent-source-review,
    :resolution-state
    :criterion-candidates-present-exact-full-predicate-entailment-pending},
   "compiler/c18/transformation-validation"
@@ -12148,6 +12304,23 @@
    :current-historical-binding-id nil,
    :current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
+   :C18-proposed-source-trace
+   {:path
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :authority :owner-proposal-pending-independent-facet-review,
+    :original-owner-ids
+    ["backend/conformance-execution-pack"
+     "compiler/c18/counterexample-regression"
+     "compiler/c18/pass-risk-evidence"
+     "compiler/c18/release-evidence-gate"
+     "compiler/c18/transformation-validation"
+     "compiler/c18/trust-report"
+     "compiler/c18/verification-provenance"],
+    :original-owner-id "compiler/c18/transformation-validation"},
    :original-obligation
    "Bind behavior-changing MIR transformations to equivalence evidence/validation queries for changed functions; reject failed transformations and retain prior artifacts.",
    :current-referenced-task
@@ -12171,8 +12344,30 @@
    :supporting-original-owner-trace nil,
    :id "compiler/c18/transformation-validation",
    :additional-current-criterion-witness nil,
+   :C18-proposed-current-criterion-conjunction
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+     :marker "compiler-api-implementation-tasks"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+     :marker "compiler-api-implementation-tasks"}],
    :qualification
    "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   :C18-proposed-join-status :pending-independent-source-review,
    :resolution-state
    :criterion-candidates-present-exact-full-predicate-entailment-pending},
   "compiler/c18/trust-report"
@@ -12188,6 +12383,23 @@
     "d2cda0dbdb508909ef1799016b56e6595eb6492bbacaf768644acf0d731543d4"},
    :current-historical-binding-id nil,
    :current-decision-ids ["interface/compiler/c18/trust-report"],
+   :C18-proposed-source-trace
+   {:path
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :authority :owner-proposal-pending-independent-facet-review,
+    :original-owner-ids
+    ["backend/conformance-execution-pack"
+     "compiler/c18/counterexample-regression"
+     "compiler/c18/pass-risk-evidence"
+     "compiler/c18/release-evidence-gate"
+     "compiler/c18/transformation-validation"
+     "compiler/c18/trust-report"
+     "compiler/c18/verification-provenance"],
+    :original-owner-id "compiler/c18/trust-report"},
    :original-obligation
    "Emit release/bootstrap trust reports mapping profiles/targets/passes/artifact kinds to evidence, known gaps and explicit experimental gates, including plugins.",
    :current-referenced-task
@@ -12211,8 +12423,30 @@
    :supporting-original-owner-trace nil,
    :id "compiler/c18/trust-report",
    :additional-current-criterion-witness nil,
+   :C18-proposed-current-criterion-conjunction
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+     :marker "compiler-api-implementation-tasks"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+     :marker "compiler-api-implementation-tasks"}],
    :qualification
    "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   :C18-proposed-join-status :pending-independent-source-review,
    :resolution-state
    :criterion-candidates-present-exact-full-predicate-entailment-pending},
   "compiler/c18/verification-provenance"
@@ -12229,6 +12463,23 @@
    :current-historical-binding-id nil,
    :current-decision-ids
    ["interface/compiler/c18/verification-provenance"],
+   :C18-proposed-source-trace
+   {:path
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :authority :owner-proposal-pending-independent-facet-review,
+    :original-owner-ids
+    ["backend/conformance-execution-pack"
+     "compiler/c18/counterexample-regression"
+     "compiler/c18/pass-risk-evidence"
+     "compiler/c18/release-evidence-gate"
+     "compiler/c18/transformation-validation"
+     "compiler/c18/trust-report"
+     "compiler/c18/verification-provenance"],
+    :original-owner-id "compiler/c18/verification-provenance"},
    :original-obligation
    "Preserve source/generated diagnostic origins through compiler verification, including failure/counterexample provenance.",
    :current-referenced-task
@@ -12252,8 +12503,30 @@
    :supporting-original-owner-trace nil,
    :id "compiler/c18/verification-provenance",
    :additional-current-criterion-witness nil,
+   :C18-proposed-current-criterion-conjunction
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+     :marker "compiler-api-implementation-tasks"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+     :marker "compiler-api-implementation-tasks"}],
    :qualification
    "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   :C18-proposed-join-status :pending-independent-source-review,
    :resolution-state
    :criterion-candidates-present-exact-full-predicate-entailment-pending},
   "compiler/c2/canonical-digest-stream"
@@ -25858,11 +26131,11 @@
    [{:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 25488,
@@ -25870,11 +26143,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "plugins",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 29649,
@@ -25882,11 +26155,11 @@
     {:path "specs/compiler-api-workflow/tasks.md",
      :task-id "pipeline",
      :file-sha256
-     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
      :raw-sha256
      "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
      :marker "compiler-api-implementation-tasks",
-     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
      :domain-owner-pin-refresh
      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
      :end-byte 16612,
@@ -25955,11 +26228,11 @@
    {:path "specs/compiler-api-workflow/tasks.md",
     :task-id "plugins",
     :file-sha256
-    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
     :raw-sha256
     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
     :marker "compiler-api-implementation-tasks",
-    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
     :domain-owner-pin-refresh
     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
     :end-byte 25488,
@@ -38239,9 +38512,9 @@
    :task-reference-only-exact-criterion-join-pending 201,
    :retained-retirement-current-successor-proposed-independent-and-residual-joins-pending
    3},
-  :pending-owner-proposed-facets 632,
+  :pending-owner-proposed-facets 732,
   :qualified-current-reviewed-source-facets 1585,
-  :current-owner-proposal-facets 2208,
+  :current-owner-proposal-facets 2308,
   :qualified-current-context-facets 220,
   :source-facets 28785,
   :documents 240,
@@ -38251,26 +38524,27 @@
   :qualified-current-superseded-history-facets 2,
   :facet-dispositions
   {:format-or-hierarchical-context-preserved-not-standalone-implementation
-   5375,
+   5358,
    :owner-proposed-exact-disposition-pending-independent-facet-acceptance
-   632,
-   :exact-complete-predicate-conjunction-entailment-pending 20136,
+   732,
+   :exact-complete-predicate-conjunction-entailment-pending 20053,
    :source-specific-owner-or-metadata-adjudication-pending 357,
    :concrete-dependency-artifact-entailment-pending 700,
    :qualified-independent-source-criterion-conjunction-accepted 1363,
    :qualified-independent-source-context-retained 220,
    :qualified-independent-superseded-source-history-retained 2}},
  :predecessor-inventory
- {:source-commit "cb12d36ec567b0f6b070c4fa2693406554fa74b0",
+ {:source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
   :sha256
-  "9557195ec5037bbc0fdd999775e27cdec626bde1037c9827a911c253cf4d43d3"},
+  "188e8a9c0df45df77c4c12d6ccd53b220688aaf370dc9282404e777e7ecc85ee",
+  :captured-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903"},
  :captured-review-current-byte-continuity
  {:path
-  "specs/requirement-reconciliation/c12-reviewed-captured-review-byte-continuity.edn",
+  "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn",
   :sha256
-  "6841ddfd99c0559dcfc225bc8c35027ada816e4f8dab4e1eae82503fe3e19a51",
-  :scope :frozen-review-predicate-bytes-only,
-  :new-C12-or-C17-clause-acceptance :none},
+  "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+  :scope :whole-captured-predicate-bytes-only,
+  :new-C18-clause-acceptance :none},
  :authority
  :source-conservation-with-qualified-independent-conjunction-overlays,
  :qualified-current-source-criterion-reviews
@@ -197047,7 +197321,7 @@
    :not-inferred-from-candidate-or-partial-facet-witness}],
  :checks {:test 16, :pass 86, :fail 0, :error 0, :type :summary},
  :final-task-or-requirement-denominator :not-conferred,
- :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+ :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
  :documents
  [{:id "D0",
    :sequence 1N,
@@ -198602,6 +198876,27 @@
    :subject-source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
    :artifact-source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
    :authority :owner-proposal-pending-independent-facet-review},
+  :C18-owner
+  {:path
+   "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+   :sha256
+   "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+   :authority :owner-proposal-pending-independent-facet-review,
+   :original-owner-ids
+   ["backend/conformance-execution-pack"
+    "compiler/c18/counterexample-regression"
+    "compiler/c18/pass-risk-evidence"
+    "compiler/c18/release-evidence-gate"
+    "compiler/c18/transformation-validation"
+    "compiler/c18/trust-report"
+    "compiler/c18/verification-provenance"],
+   :bookkeeping
+   {:path
+    "specs/requirement-reconciliation/c18-owner-current-witness-applicability.edn",
+    :sha256
+    "cae59716657d1d3cdc58e3db8318b8479865167c1db141c1df2c62b967dd834e"}},
   :Core-owner
   {:path
    "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",
@@ -627035,10 +627330,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/c4f74640af7ef5f7e5bba2d8365cc878d3cdcd33754fb8760e8fb0485e25db0a",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "a7aa22e5e2f9b23bd6b83696dac74a79153e6bbd5d99ada5455bc80906fb39a9",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/0-60/a7aa22e5e2f9b23b",
    :kind :context,
@@ -627067,6 +627369,13 @@
      "cd8e2618e3fa6922d0562f4a91ea47db1b7bf31db61c769ffba49ab598201de6",
      :raw-sha256
      "0f787736e8ee018d4d8b5097bf41ef94e4bb86d0858f934381566eae360e555c",
+     :authority :owner-proposal-pending-independent-facet-acceptance}
+    {:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "0f787736e8ee018d4d8b5097bf41ef94e4bb86d0858f934381566eae360e555c",
      :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/61-337/0f787736e8ee018d",
@@ -627086,10 +627395,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/c535fc9152d12803e6cb204f38b33b6e19aa4c29f0e08806c4b99138751a490e",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/338-349/994413297a3e95a9",
    :kind :context,
@@ -627115,10 +627431,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/0624c47855d09677f4565f0eec4d127a5512c69b70069e9cac72e50578a7038f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "87dd70073f6462dba7a86056876cac62369c5714245b285b14a997ab7719384c",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627151,10 +627474,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/0cd6cd896e76f48d5d578460713933f5f148bce7a2b32bb6c420b7cd6b0a6781",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "1bc9543bc7b4f47b0bda39a9f212bee7ad5ae26c3112c8c1ba4a13f6ed13c8a7",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627180,10 +627510,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/c13ba9c8e389d057bec4f3f3e7705c8c4182ece6027913ab5afaddc945471879",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/821-837/d8416f1863ce5290",
    :kind :context,
@@ -627204,10 +627541,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "0767dbbbe25ba0afa363514733c24c5532af2250dfa130984b8aac27299a23a2",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/838-913",
    :kind :requirement,
@@ -627227,10 +627571,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "e86dd77a7ee765ea10ff34e3886eac5b21673b5809c242e96b376ed76c28e48c",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/normalized-facet/913-915/e86dd77a7ee765ea",
    :kind :requirement,
@@ -627251,10 +627602,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "663b4124138e481a81698144995e62cfbcb86f90e11f5d11b64fcf57c4f16c63",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/normalized-facet/915-1071/663b4124138e481a",
    :kind :requirement,
@@ -627273,10 +627631,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/1071-1072/01ba4719c80b6fe9",
    :kind :layout,
@@ -627297,10 +627662,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "ff9e9c8d329219ff73c836f799962f247107ebc1c5033e21bc1c580a0ac9eedf",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/1072-1218",
    :kind :requirement,
@@ -627320,10 +627692,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "824d45e03e91e7dd363d27c2cab8f626a8a4be71356501061c55926f4d2fb06a",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["backend/conformance-execution-pack"],
    :id "C18/facet/1218-1332",
    :kind :requirement,
@@ -627344,10 +627723,17 @@
    ["interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "90b4228af55cd0a68da9138c0dac7f78d5d4558f9185a39cdcee2dff3cdc15ce",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/verification-provenance"],
    :id "C18/facet/1332-1411",
    :kind :requirement,
@@ -627368,10 +627754,17 @@
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "4daa734aa1ddc1e97bfa7535fd72df6a40aa7fd43a242bf0ee8a5260348d1337",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/trust-report"],
    :id "C18/facet/1411-1521",
    :kind :requirement,
@@ -627392,10 +627785,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "4fdffb3b1da7cc7dcd5769abb4148660affab155d7192b53451e6b4c92bd6651",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/1521-1591",
    :kind :requirement,
@@ -627414,10 +627814,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/fa113c63460efea137728931e5fa68e693524f270b8be9d0861953d056c2d111",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/1592-1608/21d1931a332d9b7f",
    :kind :context,
@@ -627443,10 +627850,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "b900d4bfb944f09537d7c71bec3e80965ad6c85b485b2f0904411d72e94c9da6",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627479,10 +627893,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "f49e5310370bc09e0ee802d211830172e462fddbb8c75c321a5ee1b56ff8a5d7",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627515,10 +627936,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "9b8b17523ebdc91abc475d21b075bc006d4ab00f61be816b9216621240fe2331",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627551,10 +627979,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "6fcc2801717b73048461ccc60f9f20aca47a7c6d18ea25f5933f45aec9bd7c5f",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627587,10 +628022,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "f147d48dbe59a2fb55f6a3e6fb5a4207eba235b08ee6a9b97454cb0dfe1cd116",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627623,10 +628065,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "27c10b7d0ee0bdbf900c2bb526691b2377fe93f5bbd89cf7e125018a47df3ad2",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627652,10 +628101,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a991cf734fc4e0ef4fcc4c06286a050625c3b4f0f602dda7ede380c9f28f8c93",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/2069-2094/f4280a4d61a89adc",
    :kind :context,
@@ -627681,10 +628137,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "b45d404f4e6fe7e647a1cb5e3ff86f3b3ad347afedce04cd359fb0b2c5bbf007",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627717,10 +628180,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "25a0ca4a3457c66cd76c7d348397356bd6fbfa820b2d1095ec3ee418ea57eec0",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627753,10 +628223,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "e9b9ff9ff5ce2617a0643f4c6f5115294ffe75e371c0f440a3519000b92a2642",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627789,10 +628266,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "8ca373d0fde8200954706d1ee6e351d84ad97fe3ba8602e567f4ef405e340047",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627825,10 +628309,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "c6141f25065502d8476e279b980a32285efeecb053795f23854c183d7316a4cb",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627861,10 +628352,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "8ce35ec7c4cd6c35fe6a70862b0e49bee29f10e495e6f1997eeded85fecdf017",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627897,10 +628395,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "86ea7937d80096aeb98af543c89f48066aa3cb3d124302d5097bbca5f9317d95",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627933,10 +628438,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "09fd65bcde73e43124bc5c186c58655ecb0110422ec0aadefc80f932b5cafd27",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627969,10 +628481,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "71920501cb4e686f02b5ac7e2f4bf459e0bb2cc2220a6fc59d1dc762003824e7",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -627998,10 +628517,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/cb992bf7d96ab2862db1ec81462c11bf1628aafa0665c1e68b1b4e8ae6bae758",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "851471ef9a7b97591a8479f1c58351268dd0fa70d8b5a6dc0f92e0fd1ec17859",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/2366-2394/851471ef9a7b9759",
    :kind :context,
@@ -628022,10 +628548,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d0a149222d094d03666999c9270e139feaed8bd2386060f1d96ce78aa3c513a2",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "a69960e9ae3e8fb81d9a2dbc4ee22596e6d5425b2fda98ac7dda0b959686c9dc",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/2395-2683",
    :kind :schema,
@@ -628046,10 +628579,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/40fdc2ee008a635a3f648872ad1783824c11657d5c458269be541544661d3fb9",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "a5ed2b11d73aa53504e9145b894d931ed5b03e420468ccf16994e58b1a790268",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/2684-2697",
    :kind :semantic,
@@ -628070,10 +628610,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "7e9e53e751feb159cf5e7ebf5dd694746c2803ab2581b1edccbccee30b762ec3",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/2698-2770",
    :kind :semantic,
@@ -628094,10 +628641,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "6d7123fac7016e09dcb531dbc528b1af69fd9e2e5afb8824eaca84c20a88f149",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/2770-2845",
    :kind :semantic,
@@ -628118,10 +628672,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "9e6d62f7d0af1fc6fcc6c7c384e506047c84ad261f1a9fec016367807e39d64d",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/2845-2945",
    :kind :semantic,
@@ -628142,10 +628703,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "2b190daf33ad0abf0bf33fe8963bbb4f7e8ba29ee94abad5b88078d6845cddfd",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/2945-3070",
    :kind :semantic,
@@ -628164,10 +628732,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/9b2f9c80523d5aa5a8f3c3169fa5915c7f53ec856c3892a010ee51f9110620a3",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "49b5f22dab3a4397669e7a868cc2966ab55a39491fb3a0ff6a1e9cca56b757e4",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/3071-3094/49b5f22dab3a4397",
    :kind :context,
@@ -628188,10 +628763,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "773b4b10e83ded0c7e20374bc4238ed122286f4e0c1ea7016598c6bae2bd1099",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/normalized-facet/3095-3799/773b4b10e83ded0c",
    :kind :semantic,
@@ -628212,10 +628794,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "5f57cfafd2ecd1abef122c66d42eda747b4dd1ce6da8eff4712fcbe083511b75",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/normalized-facet/3799-3889/5f57cfafd2ecd1ab",
    :kind :semantic,
@@ -628234,10 +628823,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/3889-3890/01ba4719c80b6fe9",
    :kind :layout,
@@ -628258,10 +628854,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "f308e6824560cdf8518f345c2978f4bef0cb1ec0f38c9fad54922aaa70171d08",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/normalized-facet/3890-3994/f308e6824560cdf8",
    :kind :semantic,
@@ -628282,10 +628885,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "334868eccc4eee20acc2cb5034ef486870e3f18e0cf49fa4b0a66c4ee9d83a21",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/normalized-facet/3994-4183/334868eccc4eee20",
    :kind :semantic,
@@ -628304,10 +628914,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/c57039433bcbe29e672ca070b016a950a9630217e8b9fbb1ec65ec30fb995ad9",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "840052cc622639be06e1181e69bf151be126d988492f3c4d06c00b448f6bf9fc",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/4184-4210/840052cc622639be",
    :kind :context,
@@ -628328,10 +628945,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/f5350e69a4f368aa6ddfe214799413d2708731e7f328ca38cce84487994977bf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "0b1012dca57f89a94e9bdb0d8bfe2510a9f586df8b9d2dc9f4cc768b70d0fc08",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/4211-4255",
    :kind :semantic,
@@ -628352,10 +628976,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/37a00980cb54c6a4836a28d00f64053aced90ade65177aa7934d4c8399fc225c",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "ae4c3f0f6c96f6cb7dbf8a46a62ba8a3710bab0e1ceb2d3c2b30498fafb2fde4",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/4256-4595",
    :kind :schema,
@@ -628376,10 +629007,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/09fe15de873b3341dc5c1883c3c46126818ac380637b570c3db07b2c7b31dcef",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "ff83cb066601b09aca63c25c62fabb9ce68688cf91845dc45640ad0a9c5d6510",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/4596-4673",
    :kind :semantic,
@@ -628398,10 +629036,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/b5f511c02dc303ec547d7b55e4dd79260a3d89edeb168d55c7411917a60b0ccc",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "374e079fd179d58914f538c2669a37ea88f23d80e96f75d1399ef3f6fff9e3d1",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/4674-4690/374e079fd179d589",
    :kind :context,
@@ -628422,10 +629067,17 @@
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/baac6b955956237cadca50e974a669b46afedef9ea64478782e86e4bc3e7e0fc",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "bc73262ebc78f5c64775943575e4d0c004509f40a6937c6be2a65cb2bd5aa778",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/trust-report"],
    :id "C18/facet/4691-5122",
    :kind :schema,
@@ -628446,10 +629098,17 @@
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/6c7837dddd83a8a4517d890753f9c5e47eb30dfd739539c833888c9df3755118",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "76bfd6f7ea378a835cbc4bb7e5bb85c76f353105908527c97d1329e13a9e4e4d",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/trust-report"],
    :id "C18/facet/5123-5193",
    :kind :semantic,
@@ -628468,10 +629127,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/78a7f8fae1a16fee569f4c13568539a8674237ed7fc7e374ba51f27f9c172fce",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "125eac385d6703f304386a34e9c06e53f5d173cf27a8ff33a062ad7559276a23",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/5194-5211/125eac385d6703f3",
    :kind :context,
@@ -628492,10 +629158,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/2a7ffefea46fe9a78dbd1302b6972d3bbe9d0f69d3c82471afb445746eab0df8",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "b5b0a31ad3e6601e4fdfba84d9a412c151d9176db4fe10f7af52a7e5a50e802f",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5212-5235",
    :kind :semantic,
@@ -628516,10 +629189,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "267cecf8e9fea65d8061418d2a771775b890b31c22b9ecc37371fa978de59c4d",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5236-5280",
    :kind :semantic,
@@ -628540,10 +629220,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "98f842981a2604661fdfe97d9a4444fbbbc2e02d4d12b201fbf46c8fc8b08323",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5280-5324",
    :kind :semantic,
@@ -628564,10 +629251,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "4df1950c48bf79adfa49f4c93f03459e85092de7c11d676b632f95e5f5c6ff6e",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5324-5359",
    :kind :semantic,
@@ -628588,10 +629282,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "938031b21d6825cbe6d73a24cf1c7c4437c52e63b55e0eee41c0559e7cfbb08e",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5359-5412",
    :kind :semantic,
@@ -628612,10 +629313,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "7eca2dcf0d8c0c1eb41a3bf119be71a620d6e4b600402a676f9c6c57e83dd244",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5412-5459",
    :kind :semantic,
@@ -628636,10 +629344,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "0d18f2dfd64e0bd0d7f7498fcd0c957efc6bcf83c2ed217645023815e2e2a5c1",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5459-5511",
    :kind :semantic,
@@ -628660,10 +629375,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "f890abb5d2622d5d4fdfd4d433637f7b893552ec9cc872163ff889a27a69890b",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5511-5579",
    :kind :semantic,
@@ -628684,10 +629406,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/55a5b2de039fa1d130a5fa1e9351072a7c33610778fdc643f15c4cf40dc6342a",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "13c1f1f82b2d7019b6c50fbc62ceb3eb1e2b5b03441a3f6526e43116ec969b8d",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/5580-5694",
    :kind :semantic,
@@ -628706,10 +629435,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/7b248ff8c9b8b9662b33332a2435a7ddbe3ad216e82f2faa7f6f2a08047fb51f",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "5db068f08d3513c08e6650135b226c0f94e2da9b9e0808764dba074ce14cd266",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/5695-5714/5db068f08d3513c0",
    :kind :context,
@@ -628730,10 +629466,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/793d6cd0fade3d258be662bd1635306b25d3528717538b4045155cf8c6cde6e7",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "ec8ffbe80f87f72b06ef98e4bc3d4a066cd5f8d71f7c153a3f53da92af7836bb",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5715-5792",
    :kind :semantic,
@@ -628754,10 +629497,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "a516e697f92de9b76a9c79b775cbacd603b83c18b22723565ba6416a9e5f5736",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5793-5811",
    :kind :semantic,
@@ -628778,10 +629528,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "c2e0915854f6c0fe3363b3d3f82a9892f3871174414f2403900172e57fb35cd6",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5811-5829",
    :kind :semantic,
@@ -628802,10 +629559,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "4f285c78a3093e2fa839d3da319aea64e1d9b085814357b867fff9272cb71e3b",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5829-5848",
    :kind :semantic,
@@ -628826,10 +629590,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "ce78fe81ef7d2506e808aa27b9611ec05b4465d45e1842947377a8b77b04d277",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5848-5869",
    :kind :semantic,
@@ -628850,10 +629621,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "7f36836b6dcbae0462e1f9112b6874e092e58f0bad2eb14aec3b62a54ba45f2e",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5869-5890",
    :kind :semantic,
@@ -628874,10 +629652,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "4a85370292f88fddace897369df51e137732acff94bc306ec094fe22b20d519f",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5890-5914",
    :kind :semantic,
@@ -628898,10 +629683,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "28b28d530085904a83a3470a1d3ef9d338f0f192c30c5a0fb1b86f4b048ca913",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5914-5943",
    :kind :semantic,
@@ -628922,10 +629714,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/6af0e6224ee1daff88c291d7dcdc8e3feed7317a0f4b92762f4c5c195a3eb5d2",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "6032e5563174c982bdac9e62ae4afc0aa5feaf16ff4b8c79f3ce6bf3f618f260",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/5944-5988",
    :kind :semantic,
@@ -628944,10 +629743,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/98acb10a02c06dcdbd02561f2e96b9071b6279a1cdc1eda0dc2a96312478cd52",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/5989-6004/84b964dab09b580d",
    :kind :context,
@@ -628973,10 +629779,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/2bfa10f41f45fe993f7fc922d4aae1c08d0f41d6c3ee22384b54295c524e4dbf",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "d518b6610072bfb8f035985ed766fa22f70797ac1124429c89616d1e09fa0bac",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629009,10 +629822,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "7c6bd0e950514cb1ac1811f8c1550336642e4921286ff0277782af822e9c21a1",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629045,10 +629865,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "75f7a3f0442e6e0e5981de000fafb8843024c6b39aab7bb22c79ee5445062ff7",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629081,10 +629908,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "49add654a6a9c0201201c7cd1d61300ae9d31b0430772c7119dd45b5426cf138",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629117,10 +629951,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "d0b480ced69cb5378861124bd1692deefa6fc66107b5fecf0363a5128150ffee",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629153,10 +629994,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "678dbae521390de7ed80f8dde88fb93c942de055eba7eda2b081e53e86f88ead",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629189,10 +630037,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "0e932273fab2fd772ec3581c1e598917c2b6a101f7fba2d2fcd79d7b9bd6f4fe",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629225,10 +630080,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "53e2c7cf424b32656e03a33313cdb7588da2bed6f1ca804e6abb50dd607d1a58",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629261,10 +630123,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "1b8d26e5ffffa9875508639ac9d453bdd0bd6382eb33fce322da6883f996a5eb",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629297,10 +630166,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "372c81780b2d5bb249614ab76d0c739af9d7ed0b3ef167130f8125bdff435f23",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629333,10 +630209,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/f0068243873de36197928c414d13235d8b77e0020dd42931512d201ec050b682",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "e7704d88b976b9d842ffb5ca5076ca4d1552d1c44e9870b62cb09bc525e54f56",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629362,10 +630245,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/570bf9d400a3ee9ad4918d7f9e49f82047c35e73ee56b59fc1fc77a7f4b61fd0",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/6738-6758/81a99744c82b0f20",
    :kind :context,
@@ -629386,10 +630276,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/ec0eaccf863e34525eccfebf0d7ed7147a2fcd54f405a5ba0d5c9ba9237e23c7",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "fe0094375958de85c47a5f74a133c527176b13a183a63ea176387b73201b5369",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/6759-6829",
    :kind :negative-case,
@@ -629410,10 +630307,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/3db2f5190ee8126fe3b55501aa2ccb5cd685689c958befba1b70daa49fbddb1c",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "37e59719127706821696802b3f68e8f087bf0b3e626774667aea42d2693075eb",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/6830-6908",
    :kind :negative-case,
@@ -629433,10 +630337,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/ed2cf9936861ad8d84ae05b03ef88af31aa67ed6ac2dd612d3a6b325d5003396",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "d8b8babb9ef898b737626d531e3d6014e4ed5ea1020ce097cb7b939c9354718a",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["backend/conformance-execution-pack"],
    :id "C18/facet/6909-6988",
    :kind :negative-case,
@@ -629457,10 +630368,17 @@
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/77d6c098b7b414942689c0541744d71838423e6a45459bef04456bcedc714c1b",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "c9ebc5a1837e7281903a65854ede8f50123898b46487a373ddcaed4e981cce0d",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/trust-report"],
    :id "C18/facet/6989-7045",
    :kind :negative-case,
@@ -629481,10 +630399,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/0958863ba9a85bf28ebe0df5e9e84bb5004a5b5cba0b2b7c2af3c5633fe2095d",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "f869f64e9b52dbf6c22eb19ba204d162a46b73f27fe8cac753790869f03f179c",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/7046-7122",
    :kind :negative-case,
@@ -629503,10 +630428,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :format-or-hierarchical-context-preserved-not-standalone-implementation,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/2be5e81a03c3631175028de3de8d57c9ac5b45226b75539fc4a527162332e3a1",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids [],
    :id "C18/normalized-facet/7123-7147/4cea7efb2bd3a140",
    :kind :context,
@@ -629532,10 +630464,17 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/8ee8c6890bb8bc7974defa23827e445f4a6d56f175d0e9711d4070d2292fb347",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "9c7e6fcc8fe45d1f5b8025ec12a2ab52fe9bfd4d8725934965ba237f7d3f10e9",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["backend/conformance-execution-pack"
     "compiler/c18/counterexample-regression"
@@ -629563,10 +630502,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "8432a7cf344762549332529310d37b8ca45638726e406cc39b6bb9d17bcb31a1",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/7211-7263",
    :kind :acceptance-case,
@@ -629587,10 +630533,17 @@
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "c33063ec0ac9f49b833086251b8af45d70b198848debf2baca624bd4e959bdea",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/pass-risk-evidence"],
    :id "C18/facet/7263-7308",
    :kind :acceptance-case,
@@ -629611,10 +630564,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "b098e17e652687d7ad395cb98e1b90a53fe3db5bb1c81f67a3d403e7a8a2a274",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/7308-7364",
    :kind :acceptance-case,
@@ -629635,10 +630595,17 @@
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "04cfb4ab7909f110dd0b80bf062ecee8cfae5c1826876b7de3dbafa322b26477",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/transformation-validation"],
    :id "C18/facet/7364-7420",
    :kind :acceptance-case,
@@ -629658,10 +630625,17 @@
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "8a5c8bcb2b00edc751abebfb768e3621b114ecb7e126cdeb3ece273d2a17cefe",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["backend/conformance-execution-pack"],
    :id "C18/facet/7420-7504",
    :kind :acceptance-case,
@@ -629682,10 +630656,17 @@
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "adf652878fc2a3474f42243e2266713da9d68f5b7dbb33db4179ace9c5fe315f",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/trust-report"],
    :id "C18/facet/7504-7529",
    :kind :acceptance-case,
@@ -629706,10 +630687,17 @@
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "47cca37bf25af981502b63a3049ac823bb5bf18cef0ae8c51fcb4eed1effd05e",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/release-evidence-gate"],
    :id "C18/facet/7529-7575",
    :kind :acceptance-case,
@@ -629730,10 +630718,17 @@
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "23484ae6cc08511c736cdda480593f6451c159998e161aa431b5030497bc2e8e",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids ["compiler/c18/counterexample-regression"],
    :id "C18/facet/7575-7633",
    :kind :acceptance-case,
@@ -629755,10 +630750,17 @@
     "interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :exact-complete-predicate-conjunction-entailment-pending,
+   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
-   :current-owner-proposals [],
+   :current-owner-proposals
+   [{:path
+     "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+     :sha256
+     "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+     :raw-sha256
+     "b696adf7c3fb25981fdfc53fadad4db3b71f4f132c5ee5c69a871bdd2faebffb",
+     :authority :owner-proposal-pending-independent-facet-acceptance}],
    :owner-requirement-ids
    ["compiler/c18/release-evidence-gate" "compiler/c18/trust-report"],
    :id "C18/facet/7633-7689",
@@ -923966,7 +924968,7 @@
    :end-byte 7850,
    :start-byte 7726}],
  :qualification
- "Every original document, occurrence and facet is retained with authenticated source coordinates and hashes. Current decision/historical/explicit-original-owner witnesses and original task references locate candidates only. Each exact predicate, its conjunction, enclosing occurrence and dependency artifact still requires the declared scope review; no broad owner membership or witness for one clause discharges a paragraph. Formatting and hierarchy are retained as context, not erased or counted as implementation. Fourteen scoped original-source review cohorts have qualified dispositions for1363 semantic facets,220 contexts and2 superseded accounting-history fragments without live criteria;632 finite proposal facets remain pending. C12's separate source-only adoption does not renew C17 or other prior subjects and does not accept full domain payload/dependency implementations or main composition. C16's one overlapping provenance context remains one identity with no held-scope acceptance. Existing source records retain their captured subjects/scopes; no broader dependency, owner, whole-current-head or implementation acceptance follows. Extension392 review is byte provenance only, excluded from original-source semantic counts. Retired62 residuals and frozen D2 gap remain review history, with later D2six separately accepted. No whole-owner or unselected enclosing predicate acceptance follows. Explicit extension bytes, drift and historical span coordinates are recorded separately and confer no current extension-span or full-predicate acceptance.",
+ "All240/9945/28785 source identities and all1188 owner memberships/roles/statuses are preserved. C18 adds only pending source proposals and seven proposed owner conjunctions; no semantic or implementation acceptance is inherited. All1585 qualified source dispositions retain their captured scopes. Whole833/561 semantic re-review and final denominator completion are not prerequisites to this exact pin/index transaction. Source applicability and mechanical controls do not confer independent acceptance.",
  :input
  {:matrix
   {:path "/tmp/acc11-final-facet-review/facet-matrix.edn",
@@ -923979,14 +924981,14 @@
  :current-criteria
  {:decisions
   {:path
-   "specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn",
+   "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn",
    :sha256
-   "31638a67d5e7d6acad9b1b9fc1285b76f933f016fc9ab18cc2ceba4d24cf4ee5",
+   "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f",
    :IDs 833,
    :witnesses 931},
   :historical
   {:path
-   "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn",
    :sha256
-   "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122",
+   "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d",
    :IDs 561}}}

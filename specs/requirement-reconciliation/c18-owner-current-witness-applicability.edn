@@ -1,0 +1,90 @@
+{:prior-whole-predicate-continuity
+ {:path
+  "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn",
+  :sha256
+  "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+  :joins 71,
+  :affected-joins 8,
+  :authority :bytes-only-not-review-renewal},
+ :source-refinement
+ {:path
+  "specs/requirement-reconciliation/c18-owner-source-refinement.edn",
+  :sha256
+  "f684ad4ecd3e9879dbae9cb267902b7b7cfa7f51296f5743f5aab59ac939bd35"},
+ :decisions
+ {:before
+  {:path
+   "specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn",
+   :sha256
+   "31638a67d5e7d6acad9b1b9fc1285b76f933f016fc9ab18cc2ceba4d24cf4ee5"},
+  :after
+  {:path
+   "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn",
+   :sha256
+   "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f"},
+  :ids 833,
+  :witnesses 931,
+  :decision-records-sha256
+  "240f72987f896fbbf0183fc89ea63ee9d320f54d2766ff70048268f21fd1c1d0",
+  :memberships-roles-statuses :unchanged},
+ :index
+ {:reviewed-source-dispositions 1585,
+  :new-trace-facets 101,
+  :overlap-ids ["C18/normalized-facet/61-337/0f787736e8ee018d"],
+  :distinct-added 100,
+  :before-distinct 2208,
+  :overlap-review-inheritance :none,
+  :after-pending 732,
+  :after-distinct 2308,
+  :before-pending 632},
+ :owner-resolution-states :unchanged,
+ :task-count-delta 0,
+ :backend-prerequisite
+ {:witness
+  {:path "specs/backends-workflow/tasks.md",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :task-id "backend-conformance",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :start-byte 39998,
+   :end-byte 40994,
+   :raw-sha256
+   "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf",
+   :marker "backends-implementation-tasks"},
+  :raw :unchanged,
+  :execution :none,
+  :whole-backend-acceptance :none},
+ :implementation-credit :none,
+ :source-trace
+ {:path
+  "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+  :sha256
+  "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+  :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+  :artifact-source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+  :facets 101,
+  :authority :owner-proposal-pending-independent-facet-review},
+ :final-denominator :not-accepted,
+ :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+ :kind :C18-scoped-owning-witness-and-proposal-index-transaction,
+ :independent-review :pending,
+ :qualification
+ "One affected metadata transaction, not whole833/561 semantic re-review. Existing canonical qualified source scopes and raw history remain unchanged; C18 new clauses and seven proposed owner conjunctions remain unaccepted. Missing or partial staged outputs must fail before canonical mutation.",
+ :new-decision-ids 0,
+ :historical
+ {:before
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+   :sha256
+   "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122"},
+  :after
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn",
+   :sha256
+   "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d"},
+  :ids 561,
+  :spans 4819,
+  :affected-span-maps 40,
+  :supplemental-affected-span-maps 6,
+  :memberships-roles-statuses :unchanged},
+ :task-source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3"}

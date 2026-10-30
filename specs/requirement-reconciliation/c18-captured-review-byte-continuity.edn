@@ -1,0 +1,2972 @@
+{:kind :captured-review-exact-current-byte-continuity,
+ :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/c12-reviewed-captured-review-byte-continuity.edn",
+  :sha256
+  "6841ddfd99c0559dcfc225bc8c35027ada816e4f8dab4e1eae82503fe3e19a51",
+  :scope :frozen-review-predicate-bytes-only,
+  :new-C12-or-C17-clause-acceptance :none},
+ :joins
+ [{:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 18826,
+    :end-byte 20312,
+    :raw-sha256
+    "fe0dfc7d3ca1d9a652395fa139404bfa1c1507139f73af1b27cb4f23ad2d21fb"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 18826,
+    :end-byte 20312,
+    :raw-sha256
+    "fe0dfc7d3ca1d9a652395fa139404bfa1c1507139f73af1b27cb4f23ad2d21fb"},
+   :prior-exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 18826,
+    :end-byte 20312,
+    :raw-sha256
+    "fe0dfc7d3ca1d9a652395fa139404bfa1c1507139f73af1b27cb4f23ad2d21fb"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pipeline",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :start-byte 14919,
+    :end-byte 16076,
+    :raw-sha256
+    "a021668c73fb3ac7da82e62727171cb748a65c7e8f1c19c8756b73bca730cf7b"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed true,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pipeline",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 14919,
+    :end-byte 16076,
+    :raw-sha256
+    "a021668c73fb3ac7da82e62727171cb748a65c7e8f1c19c8756b73bca730cf7b"},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pipeline",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 14919,
+    :end-byte 16076,
+    :raw-sha256
+    "a021668c73fb3ac7da82e62727171cb748a65c7e8f1c19c8756b73bca730cf7b"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pipeline",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "364a47d8122474645f4782324c147d775504f23ccf57e48f078384625e009615",
+    :start-byte 11110,
+    :end-byte 12133,
+    :raw-sha256
+    "66ce19f099f435d9ac7247bcde2e7e1706f509c357036b93cd17ea8a52a9f08a"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed true,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pipeline",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 11110,
+    :end-byte 12133,
+    :raw-sha256
+    "66ce19f099f435d9ac7247bcde2e7e1706f509c357036b93cd17ea8a52a9f08a"},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pipeline",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 11110,
+    :end-byte 12133,
+    :raw-sha256
+    "66ce19f099f435d9ac7247bcde2e7e1706f509c357036b93cd17ea8a52a9f08a"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 2075,
+    :end-byte 3339,
+    :raw-sha256
+    "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 2075,
+    :end-byte 3339,
+    :raw-sha256
+    "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 2075,
+    :end-byte 3339,
+    :raw-sha256
+    "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/evolution-workflow/tasks.md",
+    :marker "evolution-implementation-tasks",
+    :task-id "evolution/change-review",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+    :start-byte 13898,
+    :end-byte 15198,
+    :raw-sha256
+    "c2c783de8ef7a77d338620dd53008a811b2052b538b3a8ab9516b659bbdba5f1"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/evolution-workflow/tasks.md",
+    :marker "evolution-implementation-tasks",
+    :task-id "evolution/change-review",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+    :start-byte 13898,
+    :end-byte 15198,
+    :raw-sha256
+    "c2c783de8ef7a77d338620dd53008a811b2052b538b3a8ab9516b659bbdba5f1"},
+   :prior-exact-current
+   {:path "specs/evolution-workflow/tasks.md",
+    :marker "evolution-implementation-tasks",
+    :task-id "evolution/change-review",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31",
+    :start-byte 13898,
+    :end-byte 15198,
+    :raw-sha256
+    "c2c783de8ef7a77d338620dd53008a811b2052b538b3a8ab9516b659bbdba5f1"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 88982,
+    :end-byte 90277,
+    :raw-sha256
+    "3d0d348ac8f489e2f79a541cadd75855c39461a39de8fa362ac1d34581abb3ae"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 88982,
+    :end-byte 90277,
+    :raw-sha256
+    "3d0d348ac8f489e2f79a541cadd75855c39461a39de8fa362ac1d34581abb3ae"},
+   :prior-exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/implement-declared-seed-compiler-and-native-observations",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 88982,
+    :end-byte 90277,
+    :raw-sha256
+    "3d0d348ac8f489e2f79a541cadd75855c39461a39de8fa362ac1d34581abb3ae"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+    :source-commit "b9e72428c873e0b5badaca6852b5348b479f20ee",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 80144,
+    :end-byte 80662,
+    :raw-sha256
+    "3eaa21208f71a5172296d6a69b5f075662654120def59a49051e882de258c63a"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 80144,
+    :end-byte 80662,
+    :raw-sha256
+    "3eaa21208f71a5172296d6a69b5f075662654120def59a49051e882de258c63a"},
+   :prior-exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-staged-compiler-validation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 80144,
+    :end-byte 80662,
+    :raw-sha256
+    "3eaa21208f71a5172296d6a69b5f075662654120def59a49051e882de258c63a"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 4680,
+    :end-byte 6096,
+    :raw-sha256
+    "b259773560cd18c6609b46dece52f99316c9c41e5de03535ed45e8b150442301"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 4680,
+    :end-byte 6096,
+    :raw-sha256
+    "b259773560cd18c6609b46dece52f99316c9c41e5de03535ed45e8b150442301"},
+   :prior-exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 4680,
+    :end-byte 6096,
+    :raw-sha256
+    "b259773560cd18c6609b46dece52f99316c9c41e5de03535ed45e8b150442301"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 6459,
+    :end-byte 8289,
+    :raw-sha256
+    "5c72f95ccc799adad9b2d0add3890750577404b41f9fd10ff1f31c9bf7546f7b"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 6459,
+    :end-byte 8289,
+    :raw-sha256
+    "5c72f95ccc799adad9b2d0add3890750577404b41f9fd10ff1f31c9bf7546f7b"},
+   :prior-exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower2-derive-abi-and-layout",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 6459,
+    :end-byte 8289,
+    :raw-sha256
+    "5c72f95ccc799adad9b2d0add3890750577404b41f9fd10ff1f31c9bf7546f7b"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 8641,
+    :end-byte 9654,
+    :raw-sha256
+    "75a263088a5e3a60e50fe3d24fd0177884c5bad001bab5783b7d8e7638f846ee"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 8641,
+    :end-byte 9654,
+    :raw-sha256
+    "75a263088a5e3a60e50fe3d24fd0177884c5bad001bab5783b7d8e7638f846ee"},
+   :prior-exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower3-select-explicit-providers",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 8641,
+    :end-byte 9654,
+    :raw-sha256
+    "75a263088a5e3a60e50fe3d24fd0177884c5bad001bab5783b7d8e7638f846ee"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 11525,
+    :end-byte 12643,
+    :raw-sha256
+    "724bdea7ae0eafaffef301e57ce3ce0dbeb52d719edea38916bae30fd62c91b1"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 11525,
+    :end-byte 12643,
+    :raw-sha256
+    "724bdea7ae0eafaffef301e57ce3ce0dbeb52d719edea38916bae30fd62c91b1"},
+   :prior-exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower4-preserve-proofs-and-origins",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 11525,
+    :end-byte 12643,
+    :raw-sha256
+    "724bdea7ae0eafaffef301e57ce3ce0dbeb52d719edea38916bae30fd62c91b1"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 14428,
+    :end-byte 15781,
+    :raw-sha256
+    "6c58a1ce5c2f0ab43cb162da76dcb6d8dc67666b9f3956f339b979c1cb24c4b8"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 14428,
+    :end-byte 15781,
+    :raw-sha256
+    "6c58a1ce5c2f0ab43cb162da76dcb6d8dc67666b9f3956f339b979c1cb24c4b8"},
+   :prior-exact-current
+   {:path "specs/lower-workflow/tasks.md",
+    :marker "lower-implementation-tasks",
+    :task-id
+    "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "22b9cb0badc5e56a428e849ee2351f7c8170a3a8f4af3f83e5de13d7fd75f7de",
+    :start-byte 14428,
+    :end-byte 15781,
+    :raw-sha256
+    "6c58a1ce5c2f0ab43cb162da76dcb6d8dc67666b9f3956f339b979c1cb24c4b8"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 942,
+    :end-byte 2074,
+    :raw-sha256
+    "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 7073,
+    :end-byte 8112,
+    :raw-sha256
+    "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 7073,
+    :end-byte 8112,
+    :raw-sha256
+    "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 7073,
+    :end-byte 8112,
+    :raw-sha256
+    "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 34202,
+    :end-byte 34704,
+    :raw-sha256
+    "806e5a9f3c43be17d0d46355795271e0cf7e901dffdb9823b1d1da9a1ec15ee8"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 34202,
+    :end-byte 34704,
+    :raw-sha256
+    "806e5a9f3c43be17d0d46355795271e0cf7e901dffdb9823b1d1da9a1ec15ee8"},
+   :prior-exact-current
+   {:path "specs/release-workflow/tasks.md",
+    :marker "release-implementation-tasks",
+    :task-id
+    "release/remaining-tasks-and-evidence/execute-compiler-preservation-fixtures",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "df2d7d824e43ab33c7aecd6e35462313f0342ef05d054ccfaea9435f1611ed04",
+    :start-byte 34202,
+    :end-byte 34704,
+    :raw-sha256
+    "806e5a9f3c43be17d0d46355795271e0cf7e901dffdb9823b1d1da9a1ec15ee8"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 3340,
+    :end-byte 5321,
+    :raw-sha256
+    "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 3340,
+    :end-byte 5321,
+    :raw-sha256
+    "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 3340,
+    :end-byte 5321,
+    :raw-sha256
+    "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 5322,
+    :end-byte 6700,
+    :raw-sha256
+    "9101fecd849c1ca30b4b915c5155360e9524d1756c90b5e4c0837c2579fe0ad6"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 5322,
+    :end-byte 6700,
+    :raw-sha256
+    "9101fecd849c1ca30b4b915c5155360e9524d1756c90b5e4c0837c2579fe0ad6"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 5322,
+    :end-byte 6700,
+    :raw-sha256
+    "9101fecd849c1ca30b4b915c5155360e9524d1756c90b5e4c0837c2579fe0ad6"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 8463,
+    :end-byte 9504,
+    :raw-sha256
+    "61b2bc811b3d92a6263188df88f1892f0187c535c47f5b9ad122017493063d95"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 8463,
+    :end-byte 9504,
+    :raw-sha256
+    "61b2bc811b3d92a6263188df88f1892f0187c535c47f5b9ad122017493063d95"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 8463,
+    :end-byte 9504,
+    :raw-sha256
+    "61b2bc811b3d92a6263188df88f1892f0187c535c47f5b9ad122017493063d95"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 9505,
+    :end-byte 10813,
+    :raw-sha256
+    "40d6d54a868584fd123f7c1263f27d8191a4218a11f5841dcac46c47c8669a65"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 9505,
+    :end-byte 10813,
+    :raw-sha256
+    "40d6d54a868584fd123f7c1263f27d8191a4218a11f5841dcac46c47c8669a65"},
+   :prior-exact-current
+   {:path "specs/diag-workflow/tasks.md",
+    :marker "diag-implementation-tasks",
+    :task-id
+    "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :start-byte 9505,
+    :end-byte 10813,
+    :raw-sha256
+    "40d6d54a868584fd123f7c1263f27d8191a4218a11f5841dcac46c47c8669a65"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 1395,
+    :end-byte 2864,
+    :raw-sha256
+    "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 1395,
+    :end-byte 2864,
+    :raw-sha256
+    "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"},
+   :prior-exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 1395,
+    :end-byte 2864,
+    :raw-sha256
+    "e2ee7085c0973bb98594db689cdafe33905e03fb32f316fc8eaf031c4556efb0"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 3226,
+    :end-byte 4445,
+    :raw-sha256
+    "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 3226,
+    :end-byte 4445,
+    :raw-sha256
+    "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"},
+   :prior-exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 3226,
+    :end-byte 4445,
+    :raw-sha256
+    "2c51974bcfae8003f13f5962aeb5ffbb65b28f9a9edce37a86e1b05a2b0487f7"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 4827,
+    :end-byte 6319,
+    :raw-sha256
+    "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 4827,
+    :end-byte 6319,
+    :raw-sha256
+    "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"},
+   :prior-exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 4827,
+    :end-byte 6319,
+    :raw-sha256
+    "bd9ed62d5dbef6e25d8bb781d6b2999fc763ddb8585742c3be6d0819387e193a"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 7368,
+    :end-byte 8501,
+    :raw-sha256
+    "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 7368,
+    :end-byte 8501,
+    :raw-sha256
+    "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"},
+   :prior-exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 7368,
+    :end-byte 8501,
+    :raw-sha256
+    "e987cf94e466510ba2a875b93eb2d75be366da66d6e12f04d380888adfd63837"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 9543,
+    :end-byte 10929,
+    :raw-sha256
+    "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 9543,
+    :end-byte 10929,
+    :raw-sha256
+    "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"},
+   :prior-exact-current
+   {:path "specs/effects-workflow/tasks.md",
+    :marker "effects-implementation-tasks",
+    :task-id
+    "effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+    :start-byte 9543,
+    :end-byte 10929,
+    :raw-sha256
+    "69e806f18a9e342b8b6a5f560a3ebe71f448b16c8b9e51816a8454c091e8f0e0"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"},
+   :prior-exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 313532,
+    :end-byte 315511,
+    :raw-sha256
+    "ce9c329dc8fd6237ec5e7bfe4359389abfcf5821e3706a8ee33a2bc2b3a628df"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 294518,
+    :end-byte 295544,
+    :raw-sha256
+    "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 294518,
+    :end-byte 295544,
+    :raw-sha256
+    "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"},
+   :prior-exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 294518,
+    :end-byte 295544,
+    :raw-sha256
+    "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+    :start-byte 41280,
+    :end-byte 42647,
+    :raw-sha256
+    "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+    :start-byte 41280,
+    :end-byte 42647,
+    :raw-sha256
+    "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"},
+   :prior-exact-current
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+    :start-byte 41280,
+    :end-byte 42647,
+    :raw-sha256
+    "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 295575,
+    :end-byte 296792,
+    :raw-sha256
+    "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 295575,
+    :end-byte 296792,
+    :raw-sha256
+    "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"},
+   :prior-exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 295575,
+    :end-byte 296792,
+    :raw-sha256
+    "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 294518,
+    :end-byte 295544,
+    :raw-sha256
+    "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 294518,
+    :end-byte 295544,
+    :raw-sha256
+    "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"},
+   :prior-exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 294518,
+    :end-byte 295544,
+    :raw-sha256
+    "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/legality-workflow/tasks.md",
+    :marker "legality-implementation-tasks",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+    :start-byte 72209,
+    :end-byte 73327,
+    :raw-sha256
+    "ca6533fcb23488dc70274a3cf8bd9edd73306c892beb07e7c61f992c03175abc"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/legality-workflow/tasks.md",
+    :marker "legality-implementation-tasks",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+    :start-byte 72209,
+    :end-byte 73327,
+    :raw-sha256
+    "ca6533fcb23488dc70274a3cf8bd9edd73306c892beb07e7c61f992c03175abc"},
+   :prior-exact-current
+   {:path "specs/legality-workflow/tasks.md",
+    :marker "legality-implementation-tasks",
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+    :start-byte 72209,
+    :end-byte 73327,
+    :raw-sha256
+    "ca6533fcb23488dc70274a3cf8bd9edd73306c892beb07e7c61f992c03175abc"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/expand-workflow/tasks.md",
+    :marker "expand-implementation-tasks",
+    :task-id
+    "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+    :start-byte 12202,
+    :end-byte 12727,
+    :raw-sha256
+    "499f72e217255af213adee162f3c6610beb36d01e4ac5853f400b9620cfcad47"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/expand-workflow/tasks.md",
+    :marker "expand-implementation-tasks",
+    :task-id
+    "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+    :start-byte 12202,
+    :end-byte 12727,
+    :raw-sha256
+    "499f72e217255af213adee162f3c6610beb36d01e4ac5853f400b9620cfcad47"},
+   :prior-exact-current
+   {:path "specs/expand-workflow/tasks.md",
+    :marker "expand-implementation-tasks",
+    :task-id
+    "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+    :start-byte 12202,
+    :end-byte 12727,
+    :raw-sha256
+    "499f72e217255af213adee162f3c6610beb36d01e4ac5853f400b9620cfcad47"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+    :start-byte 41280,
+    :end-byte 42647,
+    :raw-sha256
+    "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+    :start-byte 41280,
+    :end-byte 42647,
+    :raw-sha256
+    "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"},
+   :prior-exact-current
+   {:path "specs/runtime-workflow/tasks.md",
+    :marker "runtime-implementation-tasks",
+    :task-id
+    "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+    :start-byte 41280,
+    :end-byte 42647,
+    :raw-sha256
+    "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 295575,
+    :end-byte 296792,
+    :raw-sha256
+    "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 295575,
+    :end-byte 296792,
+    :raw-sha256
+    "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"},
+   :prior-exact-current
+   {:path "specs/domains-workflow/tasks.md",
+    :marker "domains-implementation-tasks",
+    :task-id "ai",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "7672eac6c31bc51de54b8bf188bf860d82871fbea69af774569f737543fd5548",
+    :start-byte 295575,
+    :end-byte 296792,
+    :raw-sha256
+    "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/stdlib-workflow/tasks.md",
+    :marker "stdlib-implementation-tasks",
+    :task-id
+    "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+    :start-byte 5805,
+    :end-byte 6316,
+    :raw-sha256
+    "08152b372225f28d153c9fcb14a24209095b62d8d53deeb887fa0cf03d7f89c6"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/stdlib-workflow/tasks.md",
+    :marker "stdlib-implementation-tasks",
+    :task-id
+    "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+    :start-byte 5805,
+    :end-byte 6316,
+    :raw-sha256
+    "08152b372225f28d153c9fcb14a24209095b62d8d53deeb887fa0cf03d7f89c6"},
+   :prior-exact-current
+   {:path "specs/stdlib-workflow/tasks.md",
+    :marker "stdlib-implementation-tasks",
+    :task-id
+    "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+    :start-byte 5805,
+    :end-byte 6316,
+    :raw-sha256
+    "08152b372225f28d153c9fcb14a24209095b62d8d53deeb887fa0cf03d7f89c6"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/stdlib-workflow/tasks.md",
+    :marker "stdlib-implementation-tasks",
+    :task-id
+    "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+    :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+    :file-sha256
+    "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+    :start-byte 2759,
+    :end-byte 3312,
+    :raw-sha256
+    "0df8d8dbb244d886e67ec2458c437da7268047e02c31256ca6de14477ad24262"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/stdlib-workflow/tasks.md",
+    :marker "stdlib-implementation-tasks",
+    :task-id
+    "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+    :start-byte 2759,
+    :end-byte 3312,
+    :raw-sha256
+    "0df8d8dbb244d886e67ec2458c437da7268047e02c31256ca6de14477ad24262"},
+   :prior-exact-current
+   {:path "specs/stdlib-workflow/tasks.md",
+    :marker "stdlib-implementation-tasks",
+    :task-id
+    "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+    :start-byte 2759,
+    :end-byte 3312,
+    :raw-sha256
+    "0df8d8dbb244d886e67ec2458c437da7268047e02c31256ca6de14477ad24262"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 879,
+    :end-byte 2853,
+    :raw-sha256
+    "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 879,
+    :end-byte 2853,
+    :raw-sha256
+    "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"},
+   :prior-exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 879,
+    :end-byte 2853,
+    :raw-sha256
+    "f8bed0f042eefc0de10d866c0de2668f8f0efb53023eb22c6d719535fd3456c0"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 3174,
+    :end-byte 4585,
+    :raw-sha256
+    "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 3174,
+    :end-byte 4585,
+    :raw-sha256
+    "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"},
+   :prior-exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 3174,
+    :end-byte 4585,
+    :raw-sha256
+    "3c0cf981ba8e4cf9f6fed115d29f46325ae1e9d492e536a9bfdd3f7a8da555cf"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 4586,
+    :end-byte 5319,
+    :raw-sha256
+    "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 4586,
+    :end-byte 5319,
+    :raw-sha256
+    "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"},
+   :prior-exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir2-attach-fact-tables",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 4586,
+    :end-byte 5319,
+    :raw-sha256
+    "f4167b24b48defd645e06803f2e90276b87cd279f1231cee1ae65774abdd836b"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 5693,
+    :end-byte 6801,
+    :raw-sha256
+    "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 5693,
+    :end-byte 6801,
+    :raw-sha256
+    "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"},
+   :prior-exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 5693,
+    :end-byte 6801,
+    :raw-sha256
+    "19de5f0096a780ac6c3239e9fff65d36f109447ab6a62e62f48329cdfe430e67"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 7121,
+    :end-byte 8121,
+    :raw-sha256
+    "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 7121,
+    :end-byte 8121,
+    :raw-sha256
+    "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"},
+   :prior-exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 7121,
+    :end-byte 8121,
+    :raw-sha256
+    "3c47e33c735742e20267ff81361cad862f9d5640e3406802ebb36dddd9f650e8"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+    :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 8526,
+    :end-byte 9964,
+    :raw-sha256
+    "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 8526,
+    :end-byte 9964,
+    :raw-sha256
+    "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"},
+   :prior-exact-current
+   {:path "specs/mir-workflow/tasks.md",
+    :marker "mir-implementation-tasks",
+    :task-id
+    "mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "a0d03918b6e6d1d2bb2109afc482249e6b0775c8fe053be7cf8b6c45098dd796",
+    :start-byte 8526,
+    :end-byte 9964,
+    :raw-sha256
+    "b03508ecc68f92a55fb117c8f5043003a598a573446d86a75fdec8080ac2a982"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 2681,
+    :end-byte 3812,
+    :raw-sha256
+    "cb099c0e5ad18a58f0959541eba189e0e611a38ca7e4406d672586e4358344e4"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 2681,
+    :end-byte 3812,
+    :raw-sha256
+    "cb099c0e5ad18a58f0959541eba189e0e611a38ca7e4406d672586e4358344e4"},
+   :prior-exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 2681,
+    :end-byte 3812,
+    :raw-sha256
+    "cb099c0e5ad18a58f0959541eba189e0e611a38ca7e4406d672586e4358344e4"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 5959,
+    :end-byte 7367,
+    :raw-sha256
+    "99050d217e355dec0297ba8e904531ea94d0454a6d3d716040e0d706418a5940"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 5959,
+    :end-byte 7367,
+    :raw-sha256
+    "99050d217e355dec0297ba8e904531ea94d0454a6d3d716040e0d706418a5940"},
+   :prior-exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 5959,
+    :end-byte 7367,
+    :raw-sha256
+    "99050d217e355dec0297ba8e904531ea94d0454a6d3d716040e0d706418a5940"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 7748,
+    :end-byte 8836,
+    :raw-sha256
+    "08ea8303c25ab4f15bf0638c4c6ad76593e5cc1fec46696c80b0bbe528982190"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 7748,
+    :end-byte 8836,
+    :raw-sha256
+    "08ea8303c25ab4f15bf0638c4c6ad76593e5cc1fec46696c80b0bbe528982190"},
+   :prior-exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 7748,
+    :end-byte 8836,
+    :raw-sha256
+    "08ea8303c25ab4f15bf0638c4c6ad76593e5cc1fec46696c80b0bbe528982190"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 9183,
+    :end-byte 10482,
+    :raw-sha256
+    "306dfebb89c973f091e0667fa73dd780bac859d8e4f7ac000fb4cadb65f94071"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 9183,
+    :end-byte 10482,
+    :raw-sha256
+    "306dfebb89c973f091e0667fa73dd780bac859d8e4f7ac000fb4cadb65f94071"},
+   :prior-exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 9183,
+    :end-byte 10482,
+    :raw-sha256
+    "306dfebb89c973f091e0667fa73dd780bac859d8e4f7ac000fb4cadb65f94071"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 13467,
+    :end-byte 15155,
+    :raw-sha256
+    "3d12761b3ab7b471b434457dfd9b7eb3bea288b828d285f31cac34883b536c87"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 13467,
+    :end-byte 15155,
+    :raw-sha256
+    "3d12761b3ab7b471b434457dfd9b7eb3bea288b828d285f31cac34883b536c87"},
+   :prior-exact-current
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+    :start-byte 13467,
+    :end-byte 15155,
+    :raw-sha256
+    "3d12761b3ab7b471b434457dfd9b7eb3bea288b828d285f31cac34883b536c87"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 1341,
+    :end-byte 2856,
+    :raw-sha256
+    "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 1341,
+    :end-byte 2856,
+    :raw-sha256
+    "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+   :prior-exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 1341,
+    :end-byte 2856,
+    :raw-sha256
+    "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 3222,
+    :end-byte 4507,
+    :raw-sha256
+    "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 3222,
+    :end-byte 4507,
+    :raw-sha256
+    "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"},
+   :prior-exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 3222,
+    :end-byte 4507,
+    :raw-sha256
+    "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 4856,
+    :end-byte 6296,
+    :raw-sha256
+    "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 4856,
+    :end-byte 6296,
+    :raw-sha256
+    "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+   :prior-exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 4856,
+    :end-byte 6296,
+    :raw-sha256
+    "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 6631,
+    :end-byte 7995,
+    :raw-sha256
+    "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 6631,
+    :end-byte 7995,
+    :raw-sha256
+    "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+   :prior-exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 6631,
+    :end-byte 7995,
+    :raw-sha256
+    "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 8910,
+    :end-byte 10523,
+    :raw-sha256
+    "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 8910,
+    :end-byte 10523,
+    :raw-sha256
+    "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"},
+   :prior-exact-current
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+    :start-byte 8910,
+    :end-byte 10523,
+    :raw-sha256
+    "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 1660,
+    :end-byte 3094,
+    :raw-sha256
+    "f6ef53176e81c4ea0b6f2a8a8181bdaabbe9285a1e4ace9cd58cc51393158edb"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 1660,
+    :end-byte 3094,
+    :raw-sha256
+    "f6ef53176e81c4ea0b6f2a8a8181bdaabbe9285a1e4ace9cd58cc51393158edb"},
+   :prior-exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 1660,
+    :end-byte 3094,
+    :raw-sha256
+    "f6ef53176e81c4ea0b6f2a8a8181bdaabbe9285a1e4ace9cd58cc51393158edb"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 3974,
+    :end-byte 5263,
+    :raw-sha256
+    "b98438a4d97dfdd9f7e72559c2f8eb5423bbff002bf8cc1c96f43ed9ea01b170"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 3974,
+    :end-byte 5263,
+    :raw-sha256
+    "b98438a4d97dfdd9f7e72559c2f8eb5423bbff002bf8cc1c96f43ed9ea01b170"},
+   :prior-exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 3974,
+    :end-byte 5263,
+    :raw-sha256
+    "b98438a4d97dfdd9f7e72559c2f8eb5423bbff002bf8cc1c96f43ed9ea01b170"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 6197,
+    :end-byte 8040,
+    :raw-sha256
+    "9540d80e61e99839d90a6a054ea9326597faef3a66cbbde68f967858a85704e4"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 6197,
+    :end-byte 8040,
+    :raw-sha256
+    "9540d80e61e99839d90a6a054ea9326597faef3a66cbbde68f967858a85704e4"},
+   :prior-exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 6197,
+    :end-byte 8040,
+    :raw-sha256
+    "9540d80e61e99839d90a6a054ea9326597faef3a66cbbde68f967858a85704e4"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 8385,
+    :end-byte 10166,
+    :raw-sha256
+    "06a659768d2ad38c16741410a4957e9c31d9aa65f709d8b4a5269b372e81780c"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 8385,
+    :end-byte 10166,
+    :raw-sha256
+    "06a659768d2ad38c16741410a4957e9c31d9aa65f709d8b4a5269b372e81780c"},
+   :prior-exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 8385,
+    :end-byte 10166,
+    :raw-sha256
+    "06a659768d2ad38c16741410a4957e9c31d9aa65f709d8b4a5269b372e81780c"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 10553,
+    :end-byte 12167,
+    :raw-sha256
+    "a958557b3ac9982ad48f88cc19e917170b8883da51273a337d578b84c2947839"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 10553,
+    :end-byte 12167,
+    :raw-sha256
+    "a958557b3ac9982ad48f88cc19e917170b8883da51273a337d578b84c2947839"},
+   :prior-exact-current
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "2fb8fc6fa86a840e81411c31c8bc362f787851e09fad3b6892c2184b6772f810",
+    :start-byte 10553,
+    :end-byte 12167,
+    :raw-sha256
+    "a958557b3ac9982ad48f88cc19e917170b8883da51273a337d578b84c2947839"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :prior-exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 10811,
+    :end-byte 12861,
+    :raw-sha256
+    "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 10811,
+    :end-byte 12861,
+    :raw-sha256
+    "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+   :prior-exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 10811,
+    :end-byte 12861,
+    :raw-sha256
+    "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 13863,
+    :end-byte 16132,
+    :raw-sha256
+    "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 13863,
+    :end-byte 16132,
+    :raw-sha256
+    "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+   :prior-exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 13863,
+    :end-byte 16132,
+    :raw-sha256
+    "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 16508,
+    :end-byte 18455,
+    :raw-sha256
+    "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 16508,
+    :end-byte 18455,
+    :raw-sha256
+    "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"},
+   :prior-exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 16508,
+    :end-byte 18455,
+    :raw-sha256
+    "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 18821,
+    :end-byte 21061,
+    :raw-sha256
+    "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 18821,
+    :end-byte 21061,
+    :raw-sha256
+    "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"},
+   :prior-exact-current
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 18821,
+    :end-byte 21061,
+    :raw-sha256
+    "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 22471,
+    :end-byte 27237,
+    :raw-sha256
+    "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 22471,
+    :end-byte 27237,
+    :raw-sha256
+    "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"},
+   :prior-exact-current
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 22471,
+    :end-byte 27237,
+    :raw-sha256
+    "72b77a11a1ab790211d0c85693527fafde9d253a22f26b687371dd9cfbdb8ab2"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 27238,
+    :end-byte 30497,
+    :raw-sha256
+    "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 27238,
+    :end-byte 30497,
+    :raw-sha256
+    "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"},
+   :prior-exact-current
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 27238,
+    :end-byte 30497,
+    :raw-sha256
+    "c972fd4e67b15c5aa720467d95f911a2995e0f2de35c09f0dcb8b9ac14b7e7aa"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 52302,
+    :end-byte 60337,
+    :raw-sha256
+    "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed false,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 52302,
+    :end-byte 60337,
+    :raw-sha256
+    "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"},
+   :prior-exact-current
+   {:path "specs/build-workflow/tasks.md",
+    :marker "build-implementation-tasks",
+    :task-id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "06f6b16617d0936ae24c52e9d942109499332775d6dfa07b2e4d77d267c8528e",
+    :start-byte 52302,
+    :end-byte 60337,
+    :raw-sha256
+    "17fa76a91d1ea5fb748a9d9258750b8e5da578f8275258d68c966d861e5fa9f4"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :raw-sha256
+    "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 25488,
+    :start-byte 16703},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :raw-sha256
+    "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 25488,
+    :start-byte 16703},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :raw-sha256
+    "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 25488,
+    :start-byte 16703}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :raw-sha256
+    "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 29649,
+    :start-byte 25490},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :raw-sha256
+    "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 29649,
+    :start-byte 25490},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "plugins",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :raw-sha256
+    "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 29649,
+    :start-byte 25490}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pipeline",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :raw-sha256
+    "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 16612,
+    :start-byte 832},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pipeline",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :raw-sha256
+    "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 16612,
+    :start-byte 832},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :task-id "pipeline",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :raw-sha256
+    "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
+    :marker "compiler-api-implementation-tasks",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :domain-owner-pin-refresh
+    :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+    :end-byte 16612,
+    :start-byte 832}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 41767,
+    :end-byte 47262,
+    :raw-sha256
+    "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 47584,
+    :end-byte 53079,
+    :raw-sha256
+    "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 41767,
+    :end-byte 47262,
+    :raw-sha256
+    "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 47264,
+    :end-byte 51509,
+    :raw-sha256
+    "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 53081,
+    :end-byte 57326,
+    :raw-sha256
+    "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 47264,
+    :end-byte 51509,
+    :raw-sha256
+    "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}}
+  {:new-C18-clause-acceptance :none,
+   :captured
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pass-evidence",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 29748,
+    :end-byte 41650,
+    :raw-sha256
+    "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+   :review-scope :captured-subject-only,
+   :C18-pin-changed true,
+   :raw-predicate :identical,
+   :file-pin-changed false,
+   :new-C12-or-C17-clause-acceptance :none,
+   :exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pass-evidence",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 29748,
+    :end-byte 41650,
+    :raw-sha256
+    "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+   :prior-exact-current
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pass-evidence",
+    :source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 29748,
+    :end-byte 41650,
+    :raw-sha256
+    "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}}],
+ :scope :whole-captured-predicate-bytes-only,
+ :new-C18-clause-acceptance :none,
+ :whole-current-head :not-accepted,
+ :implementation-credit :none}
