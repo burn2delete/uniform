@@ -82,7 +82,7 @@
  :consumer-verification
  :receipt-artifacts-complete-tree-file-equations-definitions-callers-and-policy-pins,
  :consumer-source-sha256
- "af084a51f1a3e31bd40497baabcfd215d4361285b3a3605bf2100fee0829293a",
+ "3810db2ca6458025e6c5f971b2226dcdb537e5e18a6d957726103779cb734f5d",
  :genuine-execution :UNRUN,
  :parent "c7a4d959d319e0e1bbaef059e41fc5c059497af8",
  :candidate "5d2984976ed6070471fa9ddec3b03bc2479945b6",
@@ -146,6 +146,10 @@
    "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b",
    :unchanged-from-parent true}],
  :CI :separate-exact-head-record-seven-successes-two-skips,
+ :consumer-history
+ [:two-unmatched-delimiters-corrected
+  :first-written-record-preceded-terminal-reader-error
+  :corrected-complete-consumer-run-passed],
  :intake
  {:author "01a183dd-7208-7d33-a336-7483fd90e358",
   :coordinator "01a183cc-8cd1-735d-bf59-055c4b5f0039",
