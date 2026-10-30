@@ -14,6 +14,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
+            [gravity.self-hosting.sh01-host-resource-broker :as broker]
             [gravity.self-hosting.sh01-impact-test-planner :as planner]
             [gravity.self-hosting-test-runner :as child-runner]))
 
@@ -2040,29 +2041,32 @@
    (when-not (and (identical? process (:process owned)) (nil? @(:terminal owned)))
      (throw (ex-info "Process wait requires its unused retained ownership token"
                      {:id "SH01-PROCESS-OWNERSHIP"})))
-   (try
-     (retained-process-result process options owned)
-     (catch Throwable original
-       (let [wait-error @(:wait-throwable owned)
-             primary (if (and (not (fatal-cause original))
-                               (interrupted-throwable? original)
-                               (instance? InterruptedException wait-error))
-                       wait-error original)]
-         (when-not (identical? primary original) (.addSuppressed primary original))
-         (try
-           (finalize-owned-process! owned)
-           (catch Throwable cleanup-error
-             (when-not (identical? primary cleanup-error)
-               (.addSuppressed primary cleanup-error))))
-         (doseq [stream-fn [#(.getInputStream ^Process process)
-                            #(.getErrorStream ^Process process)]]
+   (let [custody (broker/retain-process-custody! owned)]
+     (try
+       (broker/record-process-result!
+        custody (retained-process-result process options owned))
+       (catch Throwable original
+         (let [wait-error @(:wait-throwable owned)
+               primary (if (and (not (fatal-cause original))
+                                (interrupted-throwable? original)
+                                (instance? InterruptedException wait-error))
+                         wait-error original)]
+           (when-not (identical? primary original) (.addSuppressed primary original))
            (try
-             (close-stream! (stream-fn))
-             (catch Throwable close-error
-               (when-not (identical? primary close-error)
-                 (.addSuppressed primary close-error)))))
-         (restore-interrupt! primary)
-         (throw primary))))))
+             (finalize-owned-process! owned)
+             (catch Throwable cleanup-error
+               (when-not (identical? primary cleanup-error)
+                 (.addSuppressed primary cleanup-error))))
+           (doseq [stream-fn [#(.getInputStream ^Process process)
+                            #(.getErrorStream ^Process process)]]
+             (try
+               (close-stream! (stream-fn))
+               (catch Throwable close-error
+                 (when-not (identical? primary close-error)
+                   (.addSuppressed primary close-error)))))
+           (restore-interrupt! primary)
+           (broker/record-process-result! custody {:error primary})
+           (throw primary)))))))
 
 (defn- clip-result-text
   [value {:keys [byte-limit char-limit]}]

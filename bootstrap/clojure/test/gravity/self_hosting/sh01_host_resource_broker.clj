@@ -1002,11 +1002,56 @@
       (reset! (:released? lease) false)
       (throw throwable))))
 
+(def ^:private ^:dynamic *process-custody* nil)
+(def ^:private quarantined-leases (atom {}))
+
+(defn retain-process-custody!
+  "Retains the normal runner's ownership token within an active with-lease.
+  Outside that scope the normal process API is unchanged."
+  [owned]
+  (when *process-custody*
+    (let [custody (atom {:owned owned :result nil})]
+      (swap! *process-custody* conj custody)
+      custody)))
+
+(defn record-process-result!
+  "Records actual terminal observations without inferring descendant coverage."
+  [custody result]
+  (when custody (swap! custody assoc :result result))
+  result)
+
+(defn- terminal-process-custody?
+  [custody]
+  (let [result (:result @custody)]
+    (and (true? (:root-exited? result))
+         (false? (:cleanup-root-alive? result))
+         (true? (:tracked-owned-processes-terminal? result))
+         (false? (:capture-failed? result))
+         (every? (fn [stream]
+                   (and (#{:complete :truncated}
+                         (get result (keyword (str stream "-capture-status"))))
+                        (nil? (get result (keyword (str stream "-capture-error"))))
+                        (false? (get result (keyword (str stream "-capture-forced-close?"))))))
+                 ["stdout" "stderr"]))))
+
 (defn with-lease
   "Runs `thunk` while holding exactly one reviewed host-wide resource lease."
   [options resource-class thunk]
-  (let [lease (acquire! options resource-class)]
-    (try
-      (thunk)
-      (finally
-        (release! lease)))))
+  (let [lease (acquire! options resource-class)
+        processes (atom [])]
+    (binding [*process-custody* processes]
+      (try
+        (thunk)
+        (finally
+          (if (every? terminal-process-custody? @processes)
+            (release! lease)
+            (do
+              ;; Keep strong references to the lease, actual process tokens and
+              ;; observations. Do not release capacity on an unresolved result
+              ;; or throw. This is in-JVM custody, not OS containment on death.
+              (swap! quarantined-leases assoc (:released? lease)
+                     {:lease lease :processes processes})
+              (emit! options
+                     (event resource-class :quarantined
+                            {:coordination-root (:coordination-root lease)
+                             :diagnostic-id "SH01-BROKER-PROCESS-CUSTODY"})))))))))
