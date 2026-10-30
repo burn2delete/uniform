@@ -1,0 +1,16 @@
+{:kind :reader-assembly-ownership-source-version
+ :authority :source-conservation-only
+ :status :pending-independent-source-version-review
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn"
+  :before {:commit "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7"
+           :sha256 "7b08322372e708f4c27b19d82865e1e1af6b44e423e4af6dbb8a65a19d4bae97"}
+  :after {:commit "7b0800bf8a5113b323f693acbaecba11724a6104"
+          :sha256 "5fa64daeb378b1a0c7c269d0dd76a3e0285a7b9653feb782284ccbf3c72fbf0c"}}
+ :added-entries
+ {:production-helper-associations "bootstrap/clojure/src/gravity/reader.clj"
+  :module-owners "bootstrap/clojure/src/gravity/reader.clj"
+  :standalone-test-owners "bootstrap/clojure/test/gravity/reader/artifact_test.clj"}
+ :predecessor-input-fingerprint "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a"
+ :qualification
+ "Only reader artifact assembly source/consumer/test ownership is added. Prior ownership entries, task predicates/statuses, routing, historical receipts and pending mapping disposition remain. This updates a read-only reporting input, not a compiler migration fingerprint or accepted semantic evidence. All current whole-criterion acceptance stays unassessed."}

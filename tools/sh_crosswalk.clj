@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "7b0800bf8a5113b323f693acbaecba11724a6104", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -503,7 +503,7 @@
     :composition-receipt-sha256 "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904"
     :scope "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."}})
-(def mapping-review
+(def reader-dispatch-mapping-review
 {:status :pending-source-version-review,
  :input-fingerprint
  "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
@@ -559,7 +559,7 @@
    :input-fingerprint
    "660701592149e71eae4ec4408301c54d34fd4ca7dcf58eebef1888cacadb5abb"},
   :source-version-bridge
-  "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
+   "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
   :qualification
   "Reader metadata source 2e0292c6 reconciled with main43112981 in e446f326; both standalone ownership records retained. Incoming and Reader predecessor reviews remain historical; composed inputs await independent source-version review. No implementation acceptance or task credit."},
  :pkg5-source-review
@@ -637,6 +637,13 @@
  :prior-current-main-qualification
  "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."}
 )
+(def mapping-review
+  (assoc reader-dispatch-mapping-review
+         :input-fingerprint "72d98bc3492489de1de0f43982ac06f707578f57468b3df934e2eec3c8e85aed"
+         :reader-assembly-predecessor-review reader-dispatch-mapping-review
+         :reader-assembly-source-version
+         "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
+
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
         _ (when-not (= original-sh07-sha256 (sh-inventory/sha256 (slurp sh07-path)))
@@ -724,6 +731,9 @@
     {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :reader-assembly-source-version
+     {:path "specs/sh-family-crosswalk/reader-assembly-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))}
      :source-version-bridge {:path "specs/sh-family-crosswalk/source-version-bridge.edn"
                              :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/source-version-bridge.edn"))}
      :task-authority-lineage {:path "specs/sh-family-crosswalk/task-authority-lineage.edn"

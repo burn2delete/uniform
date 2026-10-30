@@ -60,6 +60,9 @@ Commands ran from the repository root. Focused runs used fresh JVMs.
 | `clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj` | Passed |
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-ownership-test` | 17 tests, 749 assertions; passed |
 | `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-stage0-leaf-test-runner-test` | 26 tests, 252 assertions; passed |
+| `clojure -J-Xmx512m -M tools/acceptance_dependencies_test.clj` | 14 tests, 402 assertions; passed |
+| `clojure -J-Xmx512m -M tools/sh_crosswalk_test.clj` | 12 tests, 143 assertions; passed |
+| `clojure -J-Xmx512m -M tools/sh_crosswalk.clj --check` | Passed |
 | `git diff --check` | Passed |
 
 The first harness run had two errors because local `clj-kondo` was absent.
@@ -73,6 +76,17 @@ because its registration was missing. The existing production-helper records
 now join the actual reader namespace, bootstrap consumer, reader owner and
 standalone test. Positive and tampered-registration checks pass without
 changing primary component counts or weakening the inventory comparison.
+
+GitHub projections then rejected that changed ownership file as a stale SH
+reporting input (`ACCEPTANCE-DEPENDENCY`, two test errors). The existing
+source-version mechanism now binds the committed ownership bytes at `7b0800bf`
+through [an explicit successor](../../specs/sh-family-crosswalk/reader-assembly-source-version.edn).
+Its predecessor pin and complete pending review are retained. Regeneration
+checks the actual Git source before writing the derived crosswalk. Tests
+conserve every prior ownership entry and reject an old or unavailable pin.
+The mapping disposition remains `:pending-source-version-review`; all 180
+current whole-criterion assessments stay unassessed. This updates reporting
+provenance, not a frozen compiler migration fingerprint or semantic authority.
 
 ## Review and integration boundary
 
