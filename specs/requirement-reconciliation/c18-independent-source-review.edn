@@ -1,0 +1,3395 @@
+{:findings [],
+ :facet-verdicts
+ [{:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "a7aa22e5e2f9b23bd6b83696dac74a79153e6bbd5d99ada5455bc80906fb39a9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 0,
+    :end-byte 60,
+    :raw-sha256
+    "a7aa22e5e2f9b23bd6b83696dac74a79153e6bbd5d99ada5455bc80906fb39a9"},
+   :source-occurrence-id
+   "C18/source/c4f74640af7ef5f7e5bba2d8365cc878d3cdcd33754fb8760e8fb0485e25db0a",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/0-60/a7aa22e5e2f9b23b",
+   :verdict :retained-context}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "0f787736e8ee018d4d8b5097bf41ef94e4bb86d0858f934381566eae360e555c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 61,
+    :end-byte 337,
+    :raw-sha256
+    "0f787736e8ee018d4d8b5097bf41ef94e4bb86d0858f934381566eae360e555c"},
+   :source-occurrence-id
+   "C18/source/e8689cffb4e864c902517166eb724d6852fd972cd4ebb587491da66cab1e6bd3",
+   :overlapping-prior-pending-proposal true,
+   :id "C18/normalized-facet/61-337/0f787736e8ee018d",
+   :verdict :retained-context}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 338,
+    :end-byte 349,
+    :raw-sha256
+    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+   :source-occurrence-id
+   "C18/source/c535fc9152d12803e6cb204f38b33b6e19aa4c29f0e08806c4b99138751a490e",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/338-349/994413297a3e95a9",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "87dd70073f6462dba7a86056876cac62369c5714245b285b14a997ab7719384c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 350,
+    :end-byte 633,
+    :raw-sha256
+    "87dd70073f6462dba7a86056876cac62369c5714245b285b14a997ab7719384c"},
+   :source-occurrence-id
+   "C18/source/0624c47855d09677f4565f0eec4d127a5512c69b70069e9cac72e50578a7038f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/350-633",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "1bc9543bc7b4f47b0bda39a9f212bee7ad5ae26c3112c8c1ba4a13f6ed13c8a7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 634,
+    :end-byte 820,
+    :raw-sha256
+    "1bc9543bc7b4f47b0bda39a9f212bee7ad5ae26c3112c8c1ba4a13f6ed13c8a7"},
+   :source-occurrence-id
+   "C18/source/0cd6cd896e76f48d5d578460713933f5f148bce7a2b32bb6c420b7cd6b0a6781",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/634-820",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 821,
+    :end-byte 837,
+    :raw-sha256
+    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+   :source-occurrence-id
+   "C18/source/c13ba9c8e389d057bec4f3f3e7705c8c4182ece6027913ab5afaddc945471879",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/821-837/d8416f1863ce5290",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "0767dbbbe25ba0afa363514733c24c5532af2250dfa130984b8aac27299a23a2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 838,
+    :end-byte 913,
+    :raw-sha256
+    "0767dbbbe25ba0afa363514733c24c5532af2250dfa130984b8aac27299a23a2"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/838-913",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "e86dd77a7ee765ea10ff34e3886eac5b21673b5809c242e96b376ed76c28e48c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 913,
+    :end-byte 915,
+    :raw-sha256
+    "e86dd77a7ee765ea10ff34e3886eac5b21673b5809c242e96b376ed76c28e48c"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/913-915/e86dd77a7ee765ea",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "663b4124138e481a81698144995e62cfbcb86f90e11f5d11b64fcf57c4f16c63",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 915,
+    :end-byte 1071,
+    :raw-sha256
+    "663b4124138e481a81698144995e62cfbcb86f90e11f5d11b64fcf57c4f16c63"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/915-1071/663b4124138e481a",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1071,
+    :end-byte 1072,
+    :raw-sha256
+    "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/1071-1072/01ba4719c80b6fe9",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "ff9e9c8d329219ff73c836f799962f247107ebc1c5033e21bc1c580a0ac9eedf",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1072,
+    :end-byte 1218,
+    :raw-sha256
+    "ff9e9c8d329219ff73c836f799962f247107ebc1c5033e21bc1c580a0ac9eedf"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1072-1218",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "824d45e03e91e7dd363d27c2cab8f626a8a4be71356501061c55926f4d2fb06a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1218,
+    :end-byte 1332,
+    :raw-sha256
+    "824d45e03e91e7dd363d27c2cab8f626a8a4be71356501061c55926f4d2fb06a"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1218-1332",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "90b4228af55cd0a68da9138c0dac7f78d5d4558f9185a39cdcee2dff3cdc15ce",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1332,
+    :end-byte 1411,
+    :raw-sha256
+    "90b4228af55cd0a68da9138c0dac7f78d5d4558f9185a39cdcee2dff3cdc15ce"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1332-1411",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "4daa734aa1ddc1e97bfa7535fd72df6a40aa7fd43a242bf0ee8a5260348d1337",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1411,
+    :end-byte 1521,
+    :raw-sha256
+    "4daa734aa1ddc1e97bfa7535fd72df6a40aa7fd43a242bf0ee8a5260348d1337"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1411-1521",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "4fdffb3b1da7cc7dcd5769abb4148660affab155d7192b53451e6b4c92bd6651",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1521,
+    :end-byte 1591,
+    :raw-sha256
+    "4fdffb3b1da7cc7dcd5769abb4148660affab155d7192b53451e6b4c92bd6651"},
+   :source-occurrence-id
+   "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1521-1591",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1592,
+    :end-byte 1608,
+    :raw-sha256
+    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+   :source-occurrence-id
+   "C18/source/fa113c63460efea137728931e5fa68e693524f270b8be9d0861953d056c2d111",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/1592-1608/21d1931a332d9b7f",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :raw-sha256
+   "b900d4bfb944f09537d7c71bec3e80965ad6c85b485b2f0904411d72e94c9da6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1609,
+    :end-byte 1655,
+    :raw-sha256
+    "b900d4bfb944f09537d7c71bec3e80965ad6c85b485b2f0904411d72e94c9da6"},
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1609-1655",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :raw-sha256
+   "f49e5310370bc09e0ee802d211830172e462fddbb8c75c321a5ee1b56ff8a5d7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1655,
+    :end-byte 1756,
+    :raw-sha256
+    "f49e5310370bc09e0ee802d211830172e462fddbb8c75c321a5ee1b56ff8a5d7"},
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1655-1756",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :raw-sha256
+   "9b8b17523ebdc91abc475d21b075bc006d4ab00f61be816b9216621240fe2331",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1756,
+    :end-byte 1811,
+    :raw-sha256
+    "9b8b17523ebdc91abc475d21b075bc006d4ab00f61be816b9216621240fe2331"},
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1756-1811",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :raw-sha256
+   "6fcc2801717b73048461ccc60f9f20aca47a7c6d18ea25f5933f45aec9bd7c5f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1811,
+    :end-byte 1868,
+    :raw-sha256
+    "6fcc2801717b73048461ccc60f9f20aca47a7c6d18ea25f5933f45aec9bd7c5f"},
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1811-1868",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :raw-sha256
+   "f147d48dbe59a2fb55f6a3e6fb5a4207eba235b08ee6a9b97454cb0dfe1cd116",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 1868,
+    :end-byte 2000,
+    :raw-sha256
+    "f147d48dbe59a2fb55f6a3e6fb5a4207eba235b08ee6a9b97454cb0dfe1cd116"},
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/1868-2000",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :raw-sha256
+   "27c10b7d0ee0bdbf900c2bb526691b2377fe93f5bbd89cf7e125018a47df3ad2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2000,
+    :end-byte 2068,
+    :raw-sha256
+    "27c10b7d0ee0bdbf900c2bb526691b2377fe93f5bbd89cf7e125018a47df3ad2"},
+   :source-occurrence-id
+   "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2000-2068",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2069,
+    :end-byte 2094,
+    :raw-sha256
+    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+   :source-occurrence-id
+   "C18/source/a991cf734fc4e0ef4fcc4c06286a050625c3b4f0f602dda7ede380c9f28f8c93",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/2069-2094/f4280a4d61a89adc",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "b45d404f4e6fe7e647a1cb5e3ff86f3b3ad347afedce04cd359fb0b2c5bbf007",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2095,
+    :end-byte 2125,
+    :raw-sha256
+    "b45d404f4e6fe7e647a1cb5e3ff86f3b3ad347afedce04cd359fb0b2c5bbf007"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2095-2125",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "25a0ca4a3457c66cd76c7d348397356bd6fbfa820b2d1095ec3ee418ea57eec0",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2125,
+    :end-byte 2153,
+    :raw-sha256
+    "25a0ca4a3457c66cd76c7d348397356bd6fbfa820b2d1095ec3ee418ea57eec0"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2125-2153",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "e9b9ff9ff5ce2617a0643f4c6f5115294ffe75e371c0f440a3519000b92a2642",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2153,
+    :end-byte 2178,
+    :raw-sha256
+    "e9b9ff9ff5ce2617a0643f4c6f5115294ffe75e371c0f440a3519000b92a2642"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2153-2178",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "8ca373d0fde8200954706d1ee6e351d84ad97fe3ba8602e567f4ef405e340047",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2178,
+    :end-byte 2209,
+    :raw-sha256
+    "8ca373d0fde8200954706d1ee6e351d84ad97fe3ba8602e567f4ef405e340047"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2178-2209",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "c6141f25065502d8476e279b980a32285efeecb053795f23854c183d7316a4cb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2209,
+    :end-byte 2244,
+    :raw-sha256
+    "c6141f25065502d8476e279b980a32285efeecb053795f23854c183d7316a4cb"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2209-2244",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "8ce35ec7c4cd6c35fe6a70862b0e49bee29f10e495e6f1997eeded85fecdf017",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2244,
+    :end-byte 2289,
+    :raw-sha256
+    "8ce35ec7c4cd6c35fe6a70862b0e49bee29f10e495e6f1997eeded85fecdf017"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2244-2289",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "86ea7937d80096aeb98af543c89f48066aa3cb3d124302d5097bbca5f9317d95",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2289,
+    :end-byte 2314,
+    :raw-sha256
+    "86ea7937d80096aeb98af543c89f48066aa3cb3d124302d5097bbca5f9317d95"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2289-2314",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "09fd65bcde73e43124bc5c186c58655ecb0110422ec0aadefc80f932b5cafd27",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2314,
+    :end-byte 2337,
+    :raw-sha256
+    "09fd65bcde73e43124bc5c186c58655ecb0110422ec0aadefc80f932b5cafd27"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2314-2337",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "71920501cb4e686f02b5ac7e2f4bf459e0bb2cc2220a6fc59d1dc762003824e7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2337,
+    :end-byte 2365,
+    :raw-sha256
+    "71920501cb4e686f02b5ac7e2f4bf459e0bb2cc2220a6fc59d1dc762003824e7"},
+   :source-occurrence-id
+   "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2337-2365",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "851471ef9a7b97591a8479f1c58351268dd0fa70d8b5a6dc0f92e0fd1ec17859",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2366,
+    :end-byte 2394,
+    :raw-sha256
+    "851471ef9a7b97591a8479f1c58351268dd0fa70d8b5a6dc0f92e0fd1ec17859"},
+   :source-occurrence-id
+   "C18/source/cb992bf7d96ab2862db1ec81462c11bf1628aafa0665c1e68b1b4e8ae6bae758",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/2366-2394/851471ef9a7b9759",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "a69960e9ae3e8fb81d9a2dbc4ee22596e6d5425b2fda98ac7dda0b959686c9dc",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2395,
+    :end-byte 2683,
+    :raw-sha256
+    "a69960e9ae3e8fb81d9a2dbc4ee22596e6d5425b2fda98ac7dda0b959686c9dc"},
+   :source-occurrence-id
+   "C18/source/d0a149222d094d03666999c9270e139feaed8bd2386060f1d96ce78aa3c513a2",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2395-2683",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "a5ed2b11d73aa53504e9145b894d931ed5b03e420468ccf16994e58b1a790268",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2684,
+    :end-byte 2697,
+    :raw-sha256
+    "a5ed2b11d73aa53504e9145b894d931ed5b03e420468ccf16994e58b1a790268"},
+   :source-occurrence-id
+   "C18/source/40fdc2ee008a635a3f648872ad1783824c11657d5c458269be541544661d3fb9",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2684-2697",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "7e9e53e751feb159cf5e7ebf5dd694746c2803ab2581b1edccbccee30b762ec3",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2698,
+    :end-byte 2770,
+    :raw-sha256
+    "7e9e53e751feb159cf5e7ebf5dd694746c2803ab2581b1edccbccee30b762ec3"},
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2698-2770",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "6d7123fac7016e09dcb531dbc528b1af69fd9e2e5afb8824eaca84c20a88f149",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2770,
+    :end-byte 2845,
+    :raw-sha256
+    "6d7123fac7016e09dcb531dbc528b1af69fd9e2e5afb8824eaca84c20a88f149"},
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2770-2845",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "9e6d62f7d0af1fc6fcc6c7c384e506047c84ad261f1a9fec016367807e39d64d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2845,
+    :end-byte 2945,
+    :raw-sha256
+    "9e6d62f7d0af1fc6fcc6c7c384e506047c84ad261f1a9fec016367807e39d64d"},
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2845-2945",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "2b190daf33ad0abf0bf33fe8963bbb4f7e8ba29ee94abad5b88078d6845cddfd",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 2945,
+    :end-byte 3070,
+    :raw-sha256
+    "2b190daf33ad0abf0bf33fe8963bbb4f7e8ba29ee94abad5b88078d6845cddfd"},
+   :source-occurrence-id
+   "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/2945-3070",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "49b5f22dab3a4397669e7a868cc2966ab55a39491fb3a0ff6a1e9cca56b757e4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3071,
+    :end-byte 3094,
+    :raw-sha256
+    "49b5f22dab3a4397669e7a868cc2966ab55a39491fb3a0ff6a1e9cca56b757e4"},
+   :source-occurrence-id
+   "C18/source/9b2f9c80523d5aa5a8f3c3169fa5915c7f53ec856c3892a010ee51f9110620a3",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/3071-3094/49b5f22dab3a4397",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "773b4b10e83ded0c7e20374bc4238ed122286f4e0c1ea7016598c6bae2bd1099",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3095,
+    :end-byte 3799,
+    :raw-sha256
+    "773b4b10e83ded0c7e20374bc4238ed122286f4e0c1ea7016598c6bae2bd1099"},
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/3095-3799/773b4b10e83ded0c",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "5f57cfafd2ecd1abef122c66d42eda747b4dd1ce6da8eff4712fcbe083511b75",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3799,
+    :end-byte 3889,
+    :raw-sha256
+    "5f57cfafd2ecd1abef122c66d42eda747b4dd1ce6da8eff4712fcbe083511b75"},
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/3799-3889/5f57cfafd2ecd1ab",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3889,
+    :end-byte 3890,
+    :raw-sha256
+    "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"},
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/3889-3890/01ba4719c80b6fe9",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "f308e6824560cdf8518f345c2978f4bef0cb1ec0f38c9fad54922aaa70171d08",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3890,
+    :end-byte 3994,
+    :raw-sha256
+    "f308e6824560cdf8518f345c2978f4bef0cb1ec0f38c9fad54922aaa70171d08"},
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/3890-3994/f308e6824560cdf8",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "334868eccc4eee20acc2cb5034ef486870e3f18e0cf49fa4b0a66c4ee9d83a21",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 3994,
+    :end-byte 4183,
+    :raw-sha256
+    "334868eccc4eee20acc2cb5034ef486870e3f18e0cf49fa4b0a66c4ee9d83a21"},
+   :source-occurrence-id
+   "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/3994-4183/334868eccc4eee20",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "840052cc622639be06e1181e69bf151be126d988492f3c4d06c00b448f6bf9fc",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4184,
+    :end-byte 4210,
+    :raw-sha256
+    "840052cc622639be06e1181e69bf151be126d988492f3c4d06c00b448f6bf9fc"},
+   :source-occurrence-id
+   "C18/source/c57039433bcbe29e672ca070b016a950a9630217e8b9fbb1ec65ec30fb995ad9",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/4184-4210/840052cc622639be",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "0b1012dca57f89a94e9bdb0d8bfe2510a9f586df8b9d2dc9f4cc768b70d0fc08",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4211,
+    :end-byte 4255,
+    :raw-sha256
+    "0b1012dca57f89a94e9bdb0d8bfe2510a9f586df8b9d2dc9f4cc768b70d0fc08"},
+   :source-occurrence-id
+   "C18/source/f5350e69a4f368aa6ddfe214799413d2708731e7f328ca38cce84487994977bf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/4211-4255",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "ae4c3f0f6c96f6cb7dbf8a46a62ba8a3710bab0e1ceb2d3c2b30498fafb2fde4",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4256,
+    :end-byte 4595,
+    :raw-sha256
+    "ae4c3f0f6c96f6cb7dbf8a46a62ba8a3710bab0e1ceb2d3c2b30498fafb2fde4"},
+   :source-occurrence-id
+   "C18/source/37a00980cb54c6a4836a28d00f64053aced90ade65177aa7934d4c8399fc225c",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/4256-4595",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ff83cb066601b09aca63c25c62fabb9ce68688cf91845dc45640ad0a9c5d6510",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4596,
+    :end-byte 4673,
+    :raw-sha256
+    "ff83cb066601b09aca63c25c62fabb9ce68688cf91845dc45640ad0a9c5d6510"},
+   :source-occurrence-id
+   "C18/source/09fe15de873b3341dc5c1883c3c46126818ac380637b570c3db07b2c7b31dcef",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/4596-4673",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "374e079fd179d58914f538c2669a37ea88f23d80e96f75d1399ef3f6fff9e3d1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4674,
+    :end-byte 4690,
+    :raw-sha256
+    "374e079fd179d58914f538c2669a37ea88f23d80e96f75d1399ef3f6fff9e3d1"},
+   :source-occurrence-id
+   "C18/source/b5f511c02dc303ec547d7b55e4dd79260a3d89edeb168d55c7411917a60b0ccc",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/4674-4690/374e079fd179d589",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "bc73262ebc78f5c64775943575e4d0c004509f40a6937c6be2a65cb2bd5aa778",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 4691,
+    :end-byte 5122,
+    :raw-sha256
+    "bc73262ebc78f5c64775943575e4d0c004509f40a6937c6be2a65cb2bd5aa778"},
+   :source-occurrence-id
+   "C18/source/baac6b955956237cadca50e974a669b46afedef9ea64478782e86e4bc3e7e0fc",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/4691-5122",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "76bfd6f7ea378a835cbc4bb7e5bb85c76f353105908527c97d1329e13a9e4e4d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5123,
+    :end-byte 5193,
+    :raw-sha256
+    "76bfd6f7ea378a835cbc4bb7e5bb85c76f353105908527c97d1329e13a9e4e4d"},
+   :source-occurrence-id
+   "C18/source/6c7837dddd83a8a4517d890753f9c5e47eb30dfd739539c833888c9df3755118",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5123-5193",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "125eac385d6703f304386a34e9c06e53f5d173cf27a8ff33a062ad7559276a23",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5194,
+    :end-byte 5211,
+    :raw-sha256
+    "125eac385d6703f304386a34e9c06e53f5d173cf27a8ff33a062ad7559276a23"},
+   :source-occurrence-id
+   "C18/source/78a7f8fae1a16fee569f4c13568539a8674237ed7fc7e374ba51f27f9c172fce",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/5194-5211/125eac385d6703f3",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "b5b0a31ad3e6601e4fdfba84d9a412c151d9176db4fe10f7af52a7e5a50e802f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5212,
+    :end-byte 5235,
+    :raw-sha256
+    "b5b0a31ad3e6601e4fdfba84d9a412c151d9176db4fe10f7af52a7e5a50e802f"},
+   :source-occurrence-id
+   "C18/source/2a7ffefea46fe9a78dbd1302b6972d3bbe9d0f69d3c82471afb445746eab0df8",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5212-5235",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "267cecf8e9fea65d8061418d2a771775b890b31c22b9ecc37371fa978de59c4d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5236,
+    :end-byte 5280,
+    :raw-sha256
+    "267cecf8e9fea65d8061418d2a771775b890b31c22b9ecc37371fa978de59c4d"},
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5236-5280",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "98f842981a2604661fdfe97d9a4444fbbbc2e02d4d12b201fbf46c8fc8b08323",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5280,
+    :end-byte 5324,
+    :raw-sha256
+    "98f842981a2604661fdfe97d9a4444fbbbc2e02d4d12b201fbf46c8fc8b08323"},
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5280-5324",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "4df1950c48bf79adfa49f4c93f03459e85092de7c11d676b632f95e5f5c6ff6e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5324,
+    :end-byte 5359,
+    :raw-sha256
+    "4df1950c48bf79adfa49f4c93f03459e85092de7c11d676b632f95e5f5c6ff6e"},
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5324-5359",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "938031b21d6825cbe6d73a24cf1c7c4437c52e63b55e0eee41c0559e7cfbb08e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5359,
+    :end-byte 5412,
+    :raw-sha256
+    "938031b21d6825cbe6d73a24cf1c7c4437c52e63b55e0eee41c0559e7cfbb08e"},
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5359-5412",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "7eca2dcf0d8c0c1eb41a3bf119be71a620d6e4b600402a676f9c6c57e83dd244",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5412,
+    :end-byte 5459,
+    :raw-sha256
+    "7eca2dcf0d8c0c1eb41a3bf119be71a620d6e4b600402a676f9c6c57e83dd244"},
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5412-5459",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "0d18f2dfd64e0bd0d7f7498fcd0c957efc6bcf83c2ed217645023815e2e2a5c1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5459,
+    :end-byte 5511,
+    :raw-sha256
+    "0d18f2dfd64e0bd0d7f7498fcd0c957efc6bcf83c2ed217645023815e2e2a5c1"},
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5459-5511",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "f890abb5d2622d5d4fdfd4d433637f7b893552ec9cc872163ff889a27a69890b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5511,
+    :end-byte 5579,
+    :raw-sha256
+    "f890abb5d2622d5d4fdfd4d433637f7b893552ec9cc872163ff889a27a69890b"},
+   :source-occurrence-id
+   "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5511-5579",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "13c1f1f82b2d7019b6c50fbc62ceb3eb1e2b5b03441a3f6526e43116ec969b8d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5580,
+    :end-byte 5694,
+    :raw-sha256
+    "13c1f1f82b2d7019b6c50fbc62ceb3eb1e2b5b03441a3f6526e43116ec969b8d"},
+   :source-occurrence-id
+   "C18/source/55a5b2de039fa1d130a5fa1e9351072a7c33610778fdc643f15c4cf40dc6342a",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5580-5694",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "5db068f08d3513c08e6650135b226c0f94e2da9b9e0808764dba074ce14cd266",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5695,
+    :end-byte 5714,
+    :raw-sha256
+    "5db068f08d3513c08e6650135b226c0f94e2da9b9e0808764dba074ce14cd266"},
+   :source-occurrence-id
+   "C18/source/7b248ff8c9b8b9662b33332a2435a7ddbe3ad216e82f2faa7f6f2a08047fb51f",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/5695-5714/5db068f08d3513c0",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "ec8ffbe80f87f72b06ef98e4bc3d4a066cd5f8d71f7c153a3f53da92af7836bb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5715,
+    :end-byte 5792,
+    :raw-sha256
+    "ec8ffbe80f87f72b06ef98e4bc3d4a066cd5f8d71f7c153a3f53da92af7836bb"},
+   :source-occurrence-id
+   "C18/source/793d6cd0fade3d258be662bd1635306b25d3528717538b4045155cf8c6cde6e7",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5715-5792",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "a516e697f92de9b76a9c79b775cbacd603b83c18b22723565ba6416a9e5f5736",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5793,
+    :end-byte 5811,
+    :raw-sha256
+    "a516e697f92de9b76a9c79b775cbacd603b83c18b22723565ba6416a9e5f5736"},
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5793-5811",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c2e0915854f6c0fe3363b3d3f82a9892f3871174414f2403900172e57fb35cd6",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5811,
+    :end-byte 5829,
+    :raw-sha256
+    "c2e0915854f6c0fe3363b3d3f82a9892f3871174414f2403900172e57fb35cd6"},
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5811-5829",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4f285c78a3093e2fa839d3da319aea64e1d9b085814357b867fff9272cb71e3b",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5829,
+    :end-byte 5848,
+    :raw-sha256
+    "4f285c78a3093e2fa839d3da319aea64e1d9b085814357b867fff9272cb71e3b"},
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5829-5848",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ce78fe81ef7d2506e808aa27b9611ec05b4465d45e1842947377a8b77b04d277",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5848,
+    :end-byte 5869,
+    :raw-sha256
+    "ce78fe81ef7d2506e808aa27b9611ec05b4465d45e1842947377a8b77b04d277"},
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5848-5869",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "7f36836b6dcbae0462e1f9112b6874e092e58f0bad2eb14aec3b62a54ba45f2e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5869,
+    :end-byte 5890,
+    :raw-sha256
+    "7f36836b6dcbae0462e1f9112b6874e092e58f0bad2eb14aec3b62a54ba45f2e"},
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5869-5890",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4a85370292f88fddace897369df51e137732acff94bc306ec094fe22b20d519f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5890,
+    :end-byte 5914,
+    :raw-sha256
+    "4a85370292f88fddace897369df51e137732acff94bc306ec094fe22b20d519f"},
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5890-5914",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "28b28d530085904a83a3470a1d3ef9d338f0f192c30c5a0fb1b86f4b048ca913",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5914,
+    :end-byte 5943,
+    :raw-sha256
+    "28b28d530085904a83a3470a1d3ef9d338f0f192c30c5a0fb1b86f4b048ca913"},
+   :source-occurrence-id
+   "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5914-5943",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "6032e5563174c982bdac9e62ae4afc0aa5feaf16ff4b8c79f3ce6bf3f618f260",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5944,
+    :end-byte 5988,
+    :raw-sha256
+    "6032e5563174c982bdac9e62ae4afc0aa5feaf16ff4b8c79f3ce6bf3f618f260"},
+   :source-occurrence-id
+   "C18/source/6af0e6224ee1daff88c291d7dcdc8e3feed7317a0f4b92762f4c5c195a3eb5d2",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/5944-5988",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 5989,
+    :end-byte 6004,
+    :raw-sha256
+    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+   :source-occurrence-id
+   "C18/source/98acb10a02c06dcdbd02561f2e96b9071b6279a1cdc1eda0dc2a96312478cd52",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/5989-6004/84b964dab09b580d",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "d518b6610072bfb8f035985ed766fa22f70797ac1124429c89616d1e09fa0bac",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6005,
+    :end-byte 6062,
+    :raw-sha256
+    "d518b6610072bfb8f035985ed766fa22f70797ac1124429c89616d1e09fa0bac"},
+   :source-occurrence-id
+   "C18/source/2bfa10f41f45fe993f7fc922d4aae1c08d0f41d6c3ee22384b54295c524e4dbf",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6005-6062",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "7c6bd0e950514cb1ac1811f8c1550336642e4921286ff0277782af822e9c21a1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6063,
+    :end-byte 6130,
+    :raw-sha256
+    "7c6bd0e950514cb1ac1811f8c1550336642e4921286ff0277782af822e9c21a1"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6063-6130",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "75f7a3f0442e6e0e5981de000fafb8843024c6b39aab7bb22c79ee5445062ff7",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6130,
+    :end-byte 6178,
+    :raw-sha256
+    "75f7a3f0442e6e0e5981de000fafb8843024c6b39aab7bb22c79ee5445062ff7"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6130-6178",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "49add654a6a9c0201201c7cd1d61300ae9d31b0430772c7119dd45b5426cf138",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6178,
+    :end-byte 6233,
+    :raw-sha256
+    "49add654a6a9c0201201c7cd1d61300ae9d31b0430772c7119dd45b5426cf138"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6178-6233",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "d0b480ced69cb5378861124bd1692deefa6fc66107b5fecf0363a5128150ffee",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6233,
+    :end-byte 6282,
+    :raw-sha256
+    "d0b480ced69cb5378861124bd1692deefa6fc66107b5fecf0363a5128150ffee"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6233-6282",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "678dbae521390de7ed80f8dde88fb93c942de055eba7eda2b081e53e86f88ead",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6282,
+    :end-byte 6342,
+    :raw-sha256
+    "678dbae521390de7ed80f8dde88fb93c942de055eba7eda2b081e53e86f88ead"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6282-6342",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "0e932273fab2fd772ec3581c1e598917c2b6a101f7fba2d2fcd79d7b9bd6f4fe",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6342,
+    :end-byte 6405,
+    :raw-sha256
+    "0e932273fab2fd772ec3581c1e598917c2b6a101f7fba2d2fcd79d7b9bd6f4fe"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6342-6405",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "53e2c7cf424b32656e03a33313cdb7588da2bed6f1ca804e6abb50dd607d1a58",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6405,
+    :end-byte 6468,
+    :raw-sha256
+    "53e2c7cf424b32656e03a33313cdb7588da2bed6f1ca804e6abb50dd607d1a58"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6405-6468",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "1b8d26e5ffffa9875508639ac9d453bdd0bd6382eb33fce322da6883f996a5eb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6468,
+    :end-byte 6517,
+    :raw-sha256
+    "1b8d26e5ffffa9875508639ac9d453bdd0bd6382eb33fce322da6883f996a5eb"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6468-6517",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "372c81780b2d5bb249614ab76d0c739af9d7ed0b3ef167130f8125bdff435f23",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6517,
+    :end-byte 6571,
+    :raw-sha256
+    "372c81780b2d5bb249614ab76d0c739af9d7ed0b3ef167130f8125bdff435f23"},
+   :source-occurrence-id
+   "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6517-6571",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "e7704d88b976b9d842ffb5ca5076ca4d1552d1c44e9870b62cb09bc525e54f56",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6572,
+    :end-byte 6737,
+    :raw-sha256
+    "e7704d88b976b9d842ffb5ca5076ca4d1552d1c44e9870b62cb09bc525e54f56"},
+   :source-occurrence-id
+   "C18/source/f0068243873de36197928c414d13235d8b77e0020dd42931512d201ec050b682",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6572-6737",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6738,
+    :end-byte 6758,
+    :raw-sha256
+    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+   :source-occurrence-id
+   "C18/source/570bf9d400a3ee9ad4918d7f9e49f82047c35e73ee56b59fc1fc77a7f4b61fd0",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/6738-6758/81a99744c82b0f20",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "fe0094375958de85c47a5f74a133c527176b13a183a63ea176387b73201b5369",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6759,
+    :end-byte 6829,
+    :raw-sha256
+    "fe0094375958de85c47a5f74a133c527176b13a183a63ea176387b73201b5369"},
+   :source-occurrence-id
+   "C18/source/ec0eaccf863e34525eccfebf0d7ed7147a2fcd54f405a5ba0d5c9ba9237e23c7",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6759-6829",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "37e59719127706821696802b3f68e8f087bf0b3e626774667aea42d2693075eb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6830,
+    :end-byte 6908,
+    :raw-sha256
+    "37e59719127706821696802b3f68e8f087bf0b3e626774667aea42d2693075eb"},
+   :source-occurrence-id
+   "C18/source/3db2f5190ee8126fe3b55501aa2ccb5cd685689c958befba1b70daa49fbddb1c",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6830-6908",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :raw-sha256
+   "d8b8babb9ef898b737626d531e3d6014e4ed5ea1020ce097cb7b939c9354718a",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6909,
+    :end-byte 6988,
+    :raw-sha256
+    "d8b8babb9ef898b737626d531e3d6014e4ed5ea1020ce097cb7b939c9354718a"},
+   :source-occurrence-id
+   "C18/source/ed2cf9936861ad8d84ae05b03ef88af31aa67ed6ac2dd612d3a6b325d5003396",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6909-6988",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "c9ebc5a1837e7281903a65854ede8f50123898b46487a373ddcaed4e981cce0d",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 6989,
+    :end-byte 7045,
+    :raw-sha256
+    "c9ebc5a1837e7281903a65854ede8f50123898b46487a373ddcaed4e981cce0d"},
+   :source-occurrence-id
+   "C18/source/77d6c098b7b414942689c0541744d71838423e6a45459bef04456bcedc714c1b",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/6989-7045",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "f869f64e9b52dbf6c22eb19ba204d162a46b73f27fe8cac753790869f03f179c",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7046,
+    :end-byte 7122,
+    :raw-sha256
+    "f869f64e9b52dbf6c22eb19ba204d162a46b73f27fe8cac753790869f03f179c"},
+   :source-occurrence-id
+   "C18/source/0958863ba9a85bf28ebe0df5e9e84bb5004a5b5cba0b2b7c2af3c5633fe2095d",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7046-7122",
+   :verdict :source-entailment-scoped-pass}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7123,
+    :end-byte 7147,
+    :raw-sha256
+    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+   :source-occurrence-id
+   "C18/source/2be5e81a03c3631175028de3de8d57c9ac5b45226b75539fc4a527162332e3a1",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/normalized-facet/7123-7147/4cea7efb2bd3a140",
+   :verdict :retained-context}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "9c7e6fcc8fe45d1f5b8025ec12a2ab52fe9bfd4d8725934965ba237f7d3f10e9",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7148,
+    :end-byte 7210,
+    :raw-sha256
+    "9c7e6fcc8fe45d1f5b8025ec12a2ab52fe9bfd4d8725934965ba237f7d3f10e9"},
+   :source-occurrence-id
+   "C18/source/8ee8c6890bb8bc7974defa23827e445f4a6d56f175d0e9711d4070d2292fb347",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7148-7210",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "8432a7cf344762549332529310d37b8ca45638726e406cc39b6bb9d17bcb31a1",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7211,
+    :end-byte 7263,
+    :raw-sha256
+    "8432a7cf344762549332529310d37b8ca45638726e406cc39b6bb9d17bcb31a1"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7211-7263",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "c33063ec0ac9f49b833086251b8af45d70b198848debf2baca624bd4e959bdea",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7263,
+    :end-byte 7308,
+    :raw-sha256
+    "c33063ec0ac9f49b833086251b8af45d70b198848debf2baca624bd4e959bdea"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7263-7308",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "b098e17e652687d7ad395cb98e1b90a53fe3db5bb1c81f67a3d403e7a8a2a274",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7308,
+    :end-byte 7364,
+    :raw-sha256
+    "b098e17e652687d7ad395cb98e1b90a53fe3db5bb1c81f67a3d403e7a8a2a274"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7308-7364",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "04cfb4ab7909f110dd0b80bf062ecee8cfae5c1826876b7de3dbafa322b26477",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7364,
+    :end-byte 7420,
+    :raw-sha256
+    "04cfb4ab7909f110dd0b80bf062ecee8cfae5c1826876b7de3dbafa322b26477"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7364-7420",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "8a5c8bcb2b00edc751abebfb768e3621b114ecb7e126cdeb3ece273d2a17cefe",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7420,
+    :end-byte 7504,
+    :raw-sha256
+    "8a5c8bcb2b00edc751abebfb768e3621b114ecb7e126cdeb3ece273d2a17cefe"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7420-7504",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "adf652878fc2a3474f42243e2266713da9d68f5b7dbb33db4179ace9c5fe315f",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7504,
+    :end-byte 7529,
+    :raw-sha256
+    "adf652878fc2a3474f42243e2266713da9d68f5b7dbb33db4179ace9c5fe315f"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7504-7529",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "47cca37bf25af981502b63a3049ac823bb5bf18cef0ae8c51fcb4eed1effd05e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7529,
+    :end-byte 7575,
+    :raw-sha256
+    "47cca37bf25af981502b63a3049ac823bb5bf18cef0ae8c51fcb4eed1effd05e"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7529-7575",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "23484ae6cc08511c736cdda480593f6451c159998e161aa431b5030497bc2e8e",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7575,
+    :end-byte 7633,
+    :raw-sha256
+    "23484ae6cc08511c736cdda480593f6451c159998e161aa431b5030497bc2e8e"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7575-7633",
+   :verdict :source-entailment-scoped-pass}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :raw-sha256
+   "b696adf7c3fb25981fdfc53fadad4db3b71f4f132c5ee5c69a871bdd2faebffb",
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :file-sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f",
+    :start-byte 7633,
+    :end-byte 7689,
+    :raw-sha256
+    "b696adf7c3fb25981fdfc53fadad4db3b71f4f132c5ee5c69a871bdd2faebffb"},
+   :source-occurrence-id
+   "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
+   :overlapping-prior-pending-proposal false,
+   :id "C18/facet/7633-7689",
+   :verdict :source-entailment-scoped-pass}],
+ :counts
+ {:historical-spans 4819,
+  :global-occurrences 9945,
+  :C18-facets 101,
+  :proposed-owner-joins 7,
+  :prior-pending 632,
+  :supplemental-pin-refreshes 6,
+  :atomic-outputs 6,
+  :negative-controls 66,
+  :original-owners 1188,
+  :decision-witnesses 931,
+  :semantic-conjunctions 30,
+  :current-pending 732,
+  :prior-overlap-IDs 25,
+  :historical-IDs 561,
+  :historical-pin-refreshes 40,
+  :source-documents 240,
+  :provisional-remaining 192,
+  :owned-paths 17,
+  :overlap-scope-IDs 1,
+  :current-index 2308,
+  :current-source-criteria 3,
+  :source-occurrences 45,
+  :provisional-accepted 3,
+  :decision-IDs 833,
+  :prior-index 2208,
+  :global-facets 28785,
+  :prior-qualified-source-dispositions 1585,
+  :contexts 15,
+  :prior-predicate-filepin-refreshes 8,
+  :current-overlap-IDs 26,
+  :provisional-task-records 195,
+  :new-distinct-proposals 100,
+  :prior-complete-predicate-joins 71},
+ :canonical-writes :none,
+ :independent-controls
+ {:mode-and-loss-method
+  :private-full-tree-overlay-mutations-no-files-or-Git-objects-published,
+  :source-method
+  :private-document-and-owner-witness-reconstruction-with-recomputed-filehash-bytebounds-rawhash-and-payload-digest-before-governing-contract-and-role-validation,
+  :reviewer-harness-repair
+  {:pre-guard-results
+   {:path
+    "/tmp/c18-independent-494afbf8/pre-guard-negative-readback.edn",
+    :sha256
+    "4c043d8b86d23f7aba93d1c2b245564e6135a1c708c2b05658610f2502ab32b0"},
+   :accepted-mutant :future-evidence-promoted,
+   :cause
+   :missing-explicit-future-conformance-wording-guard-in-reviewer-checker,
+   :candidate :correct-future-wording-already-present,
+   :repair
+   :one-required-clause-guard-added-without-source-candidate-change,
+   :final-full-run :all-positive-checks-and66-negatives-pass},
+  :checker
+  {:path "/tmp/c18-independent-494afbf8/check.clj",
+   :sha256
+   "acee67593d7a14f5010cbcb8a2ee91a5cd2157d7f888bcedf1e59e66ed1fa43b",
+   :command
+   "clojure -J-Xmx1600m -M /tmp/c18-independent-494afbf8/check.clj"},
+  :source-semantic-count 29,
+  :actual-canonical-readback
+  :immutable-Git-objects-only-no-shared-checkout-mutation,
+  :result :pass,
+  :bookkeeping-method
+  :private6document-serialization-all-output-and-internal-reference-hashes-recomputed-before-structural-membership-predicate-index-count-scope-and-envelope-validation,
+  :artifact
+  {:path "/tmp/c18-independent-494afbf8/controls.edn",
+   :sha256
+   "a3aac78a87d4b9b86673d862f02f933d2b48ba319a2c441e20c00583224a81da"},
+  :negative-count 66,
+  :results
+  {:D9-benchmark-substitution
+   {:digest
+    "669e7c3abe6535ab717f0a0d7dc49225e453cd2e22700a481eb5f05d9349c59f",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :existing Reject a benchmark used as correctness proof, an unchecked certificate called checked"}},
+   :wrong-backend-prerequisite
+   {:digest
+    "5243ecde57b1a0d28a6bb3eaf7878e2b9fa520d209e0423ff7fbc2c5e182cd77",
+    :result {:refused true, :reason "Backend prerequisite"}},
+   :unavailable-as-pass
+   {:digest
+    "e529e10f78e2f291aac50353fb404f633593c2c9b5800ea0060938dbc49ba2c5",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records unavailable target or comparator evidence remains an explicit gap"}},
+   :matrix-lowering-evidence
+   {:digest
+    "89ca89d76ec2652fe974c1d366817d048b5b1a9bc44cf23a551db8c838ea3691",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records target lowering requires differential execution and backend conformance, with a verified backend subset stronger"}},
+   :D9-claimbinding-loss
+   {:digest
+    "bac8f4384839dad55351b4919d3d3ecac373685c25b913811e08b800316e741c",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :existing exact claim, domain/assumptions, subject inputs, checker/version and accepted or rejected result"}},
+   :release-selfhost-condition-lost
+   {:digest
+    "63777a5a5519f7b975b69b25e7111425c332121e55208d77dea3b6a2dec08263",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records passing verifier for every emitted artifact, no active critical failure, required high-risk evidence, selected-backend conformance, stale proof/certificate rejection, diagnostic goldens for expected failures and self-hosting comparison when the compiler is part of release"}},
+   :matrix-plugin-sandbox
+   {:digest
+    "e72d141c956fea91764a838ee9e7b1efa47cf18ca2b669d84010e2bea91cd1ee",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records plugins require sandbox tests, contract verifier and fixture suite, with a signed proof-carrying plugin stronger"}},
+   :dependency-whole-implementation-credit
+   {:digest
+    "d1e1cb558b18d091cbf08fae3be50f88250c1c93efccd5405a0a890ddb4726d1",
+    :result
+    {:refused true,
+     :reason "Dependency authority promoted or replaced with labels"}},
+   :atomic-enclosing-conjunction-loss
+   {:digest
+    "6c9ea89fe8c4e5febc2c88d4dcd966ce6fa8aea1dafff7d6a529905daf0292c1",
+    :result
+    {:refused true, :reason "Partial atomic source conjunction"}},
+   :future-evidence-promoted
+   {:digest
+    "f1303df5bafee7332e905ac75d2bd31ffd3f4fafdb7437c0d7b19820f6469bef",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records Actual future positive/refused conformance"}},
+   :release-stale-proof-allowed
+   {:digest
+    "573d38552f6b4bb3b8692ce4ae29cbe156ef5334908ff26564eb5c80ace0b464",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records passing verifier for every emitted artifact, no active critical failure, required high-risk evidence, selected-backend conformance, stale proof/certificate rejection, diagnostic goldens for expected failures and self-hosting comparison when the compiler is part of release"}},
+   :valid-but-short-old-predicate
+   {:digest
+    "aafca20d1cc7a98f166ab2d6642fcc0d949d85714d26c965a00b3bbceb77f2a8",
+    :result
+    {:refused true,
+     :reason "Old complete predicate shortened/changed"}},
+   :unselected-owner-role-loss
+   {:digest
+    "a47ae6cefaec46752fd012b0c6a94630f0b1bbc3ce22b9f3d3093dd4c5600572",
+    :result
+    {:refused true,
+     :reason "Owner membership/role/status/predicate changed"}},
+   :historical-admission-state
+   {:digest
+    "ccc55296e503f7dfd4196a602b62de8b207ac07e0ace9e92b2103c0a6a387f2f",
+    :result
+    {:refused true, :reason "Historical roles/status/raw predicates"}},
+   :held-extension-loss
+   {:digest
+    "c1fef57e1d88e2e30cf998854cdbf0d504b7d842ea6b1cee494d3f4a8dccdbfb",
+    :result
+    {:refused true,
+     :reason "Unselected inventory/held/extension/retirement fields"}},
+   :stale-reference
+   {:digest
+    "c5647d55e9a9ad0e65d456f7deeda10a1f5c8d39686b0d154c6e6f73593caad2",
+    :result {:refused true, :reason "Historical dependency path"}},
+   :source-owned-mode
+   {:digest
+    "7638b53f6982955a638bde21c99637e2968dc2c9553ec6a79a83e0ec6425f127",
+    :result {:refused true, :reason "Owned mode substitution"}},
+   :diagnostic-evidence-context
+   {:digest
+    "f5fb716695e4f9ff5b955da59397306fe1a9a0598eda95aad261dfb071ad5cd0",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records pass/version/risk/required and available evidence/affected profiles and targets/source or artifact identity/remediation"}},
+   :matrix-expansion-effects
+   {:digest
+    "9343a798d9dfd6b41df4bdefbb73715162be5890d6b8805aac049bf69bfa442d",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records expansion requires hygiene/generated-origin/build-effect fixtures, with preservation proof stronger"}},
+   :hidden-experiment
+   {:digest
+    "bcd0b5231f948f9324ac01990a8a85bcbf7e815a89632846f97d9e8a341e546b",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records Experimental passes require explicit feature/profile gates and artifact markings"}},
+   :source-backend-member-loss
+   {:digest
+    "3e71fc97d942c518f6e917b151519c13eddd7280ae6ac5620aa188e76304f916",
+    :result {:refused true, :reason "Owner conjunction role lost"}},
+   :fabricated-counterexample
+   {:digest
+    "91766187cbe2a9f4eaf44cf137b920f73c887152264c4cea7742da778f89818b",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records record actual unavailability without fabrication"}},
+   :stronger-required-unconditionally
+   {:digest
+    "2ad600bb20f7c76ad8ba27c223ca8ef42aeb207cb1c801d9108cdfb2df805325",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records Applicable policy may require stronger evidence, but a stronger label never substitutes for actually checked minimum evidence"}},
+   :backend-skip-as-success
+   {:digest
+    "409ebd7ef11f44dec695cc579457f27b4a9e6eae89dba47d5b29bc7601cb6945",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :backend record unavailable targets explicitly without converting skips to passes"}},
+   :qualified-count-promotion
+   {:digest
+    "496cac064a3cc7464105b65079667c6c74798f42bd3658929fd7188aad4f5872",
+    :result {:refused true, :reason "Qualified count promoted"}},
+   :governing-D9-mode
+   {:digest
+    "e690ed5f20c945d4812f93718e025ff2c430f62aaca624610cea3ad17e3edd5c",
+    :result
+    {:refused true, :reason "Unowned source mode/blob change"}},
+   :valid-but-short-new-criterion
+   {:digest
+    "7632e2af9fb8231afbe28bdf2c7797988de4ab43d835e90216fd0d6e1247ed1e",
+    :result {:refused true, :reason "New criterion shortened"}},
+   :duplicate-trace
+   {:digest
+    "5d722ae0bcfa1d9afb7d0c50b0d0b4eeae0536c18b657157a9cf09ee90520347",
+    :result {:refused true, :reason "Prior proposal trace lost"}},
+   :example-as-grant
+   {:digest
+    "69af93d052117a7c9f472d3202cac6949f9355d39461a97c46c8ce9a43adec63",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records record illustrates shape, not a universal pass/risk/profile/default grant"}},
+   :implementation-adoption
+   {:digest
+    "c0b5493b96056db6601eec4aaa266bebb416a612efd0955175eb376b31b15256",
+    :result {:refused true, :reason "Implementation promotion"}},
+   :whole-output-data-loss
+   {:digest
+    "a3a288894e6067c54b9253f4002fe5477a73cb251c661a7f3b6853b4b9da7ff3",
+    :result
+    {:refused true, :reason "Owned changed-path set mismatch"}},
+   :risk-critical-demoted
+   {:digest
+    "380fd57750b0e84fc6885aaf35cf0017301aeec8a71d70b74d1cda8b03378087",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records critical trusted semantic base, safety gate, proof checker or safety-critical target lowering"}},
+   :D9-unchecked-certificate
+   {:digest
+    "c27640528c75f88616f062ecb8633dce9ec017f07f93e6f2c652e8296fce581e",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :existing Reject an unchecked supplied success flag, wrong checker, malformed proof and a certificate whose checker fails"}},
+   :source-owner-witness-loss
+   {:digest
+    "bf6d0a961094000da61f5e9ac1a44b35df2a603ef39d9ee5dbb7e740b545d947",
+    :result
+    {:refused true, :reason "Owner witness membership changed"}},
+   :context-as-semantics
+   {:digest
+    "edaeec97ed88621f156de85ef79279b99d3ccc2d37330d372f63915cec6ba3c0",
+    :result
+    {:refused true,
+     :reason "Source context promoted or semantic obligation hidden"}},
+   :plugin-report-omission
+   {:digest
+    "d85dbaf1b41e467a841fa68ed940c1261d5f297b7cf32a5650ed7f26ae3ab676",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records include plugin passes and artifact-kind dependencies, preserving source/generated diagnostic provenance"}},
+   :matrix-domain-proof
+   {:digest
+    "af9895cd1dbf554e5aa779ae0458e0751e7d4d5875e2f9727cc7fd85029a2947",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records domain optimization requires the domain verifier plus proof/certificate replay, with mechanized domain semantics stronger"}},
+   :backend-candidate-promotion
+   {:digest
+    "d4b337cc7668df10796d853868715766c341e707157a02cb84828996d1c926a1",
+    :result
+    {:refused true,
+     :reason "Owner membership/role/status/predicate changed"}},
+   :failed-validation-emits
+   {:digest
+    "968fed483a41e7fdc48d6fa00cf89180a225e21c446fc54a74a74d1e7b34ceff",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records Failed validation rejects the transformation and retains the prior valid artifact"}},
+   :missing-sixth-output
+   {:digest
+    "db2dbfc66a6fc0f5e6ccfcb0fa8c7d25948b722cc850dca2920f9ccb2c72d38f",
+    :result {:refused true, :reason "Atomic output membership"}},
+   :wrong-input-base
+   {:digest
+    "1e59982ef55ff5b419ff25901cbf292ea55a3c3af135893a8a148b9c35d7f0d9",
+    :result {:refused true, :reason "Immutable input base"}},
+   :historical-membership-loss
+   {:digest
+    "bc70817fd4b4cb38d8a3338a9d4a402daffd442cee973805688c56ff4e5b6f61",
+    :result
+    {:refused true, :reason "Historical membership population"}},
+   :owner-backend-member-loss
+   {:digest
+    "250122dc7c0f226cd61502f3168384e91ca13d6cde728d838d27efcb23071fc1",
+    :result
+    {:refused true, :reason "Owner atomic conjunction incomplete"}},
+   :embedded-conjunction-witness-loss
+   {:digest
+    "b94923e0abd7de81e7b1585f5ecf7f942578d43cf2ec49b926fd00b816adc207",
+    :result
+    {:refused true,
+     :reason
+     "Decision conjunction members/roles/statuses/raw predicates"}},
+   :stronger-as-label
+   {:digest
+    "9e36a2cb4f1ba66ae9145499d0c0d098e594f56c208c295e4d12899b9f1d43be",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records Applicable policy may require stronger evidence, but a stronger label never substitutes for actually checked minimum evidence"}},
+   :decision-membership-loss
+   {:digest
+    "d72392e21faf0696d0aacbdd73cd98f0e4462454eeef8b498e0421d180cf4db6",
+    :result
+    {:refused true,
+     :reason
+     "Decision conjunction members/roles/statuses/raw predicates"}},
+   :old-review-renewal
+   {:digest
+    "4a312ed8ac2dc3500a21420bf38042434c76cdce7842c80635a4c1e8a78360f5",
+    :result {:refused true, :reason "Whole-current acceptance"}},
+   :pending-count-loss
+   {:digest
+    "9daf525ff518499e7594656f352f1ef7bd357c533154c20521e49c65bc93275e",
+    :result {:refused true, :reason "Pending source index"}},
+   :matrix-MIR-per-function
+   {:digest
+    "734d25d9e2c20ceb1490dd599a2497fff10fd56e2f8c4f6f46ede13bedb50d0b",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records MIR optimization requires translation validation per changed function, with mechanized pass proof stronger"}},
+   :lowerer-metadata-conflated
+   {:digest
+    "5bf006f2f089b6b27b852004e296d08356306307f06a8d97e0269296510c9c3a",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records independent metadata/refusal checks and recorded/replayed nondeterminism"}},
+   :backend-link-as-acceptance
+   {:digest
+    "e2c5093aeff91a3ee0f5f1eddd064406aa72501eb2cd15a248a610de8f440e98",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :backend a starting integration surface, not acceptance"}},
+   :decision-producer-role
+   {:digest
+    "35fc9acf8e6b8bd8d8cf147af53f9e4c2c67c656eb06d3960d965390eb9dcf4b",
+    :result
+    {:refused true,
+     :reason
+     "Decision conjunction members/roles/statuses/raw predicates"}},
+   :counterexample-no-regression
+   {:digest
+    "9060c0e1e2518bed6afbf52fd955c1aff64561c4e5979eb9303192064a642096",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records promote reproducible failures to regression fixtures"}},
+   :stale-input-source
+   {:digest
+    "1e59982ef55ff5b419ff25901cbf292ea55a3c3af135893a8a148b9c35d7f0d9",
+    :result {:refused true, :reason "Immutable source inputs"}},
+   :overlap-omission
+   {:digest
+    "15d3357227b1a5536e9b6af4679386fe2ddaf26525487e6b5843b31ae24335e4",
+    :result {:refused true, :reason "Overlap set"}},
+   :matrix-resolver-negatives
+   {:digest
+    "05ebc117c6beed47e8379c54155b1970f64b52cdf8856355c285c92971b45a00",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records resolution requires golden binding graphs/shadowing negatives, with resolver-model proof stronger"}},
+   :unowned-compiler-payload
+   {:digest
+    "e690ed5f20c945d4812f93718e025ff2c430f62aaca624610cea3ad17e3edd5c",
+    :result
+    {:refused true, :reason "Unowned source mode/blob change"}},
+   :forged-pin
+   {:digest
+    "0baae12d757b34c28f3aa503c55c68a3cea30e9195cf0c62d7f063eccd2eed43",
+    :result {:refused true, :reason "Forged file pin"}},
+   :accepted-label-as-proof
+   {:digest
+    "c717a19c95905559c37542e81d4d180a45e6c3e359c2dffd762ba9c1b273145d",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records accepted labels establish no verification"}},
+   :lost-translation-properties
+   {:digest
+    "fef9b3e3ecbd02a62862a8f5929ed86faecbba8901657be7eef6e28250fd8862",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records actual pass/input/output hashes, changed functions, checked observable-result/effect/safety properties, method, proof/counterexample references and accepted/rejected result"}},
+   :source-dependency-loss
+   {:digest
+    "16da2c0244a0718724b127afe11994aedec8853457c90623e05bee59ddd554b1",
+    :result
+    {:refused true, :reason "Actual prerequisite role missing"}},
+   :matrix-reader-minimum
+   {:digest
+    "24be1103ce570b0a2f0b077003cfb77ef98b22df85d918cd7a96a94d0128ad3a",
+    :result
+    {:refused true,
+     :reason
+     "Lost governing C18/D9 contract: :records reader/syntax requires golden/round-trip/fuzz tests, with parser proof or independent-reader differential stronger"}},
+   :author-acceptance
+   {:digest
+    "0a76ed9f3f20da649959a4e7607f045520e4e974c944f3822c43c7ab92ce1beb",
+    :result
+    {:refused true, :reason "Independent acceptance not performed"}},
+   :source-owner-approval
+   {:digest
+    "c6ab240b4ecbc08a3b43e9f472f5bc5b4419a2b122aa466c88a14742a7185818",
+    :result {:refused true, :reason "Owner accepted by label"}},
+   :task-count-adoption
+   {:digest
+    "5ac86450b29ebe73ed31bf910204a2577bbb4762d6fe5d185bac5a97b73889c8",
+    :result
+    {:refused true, :reason "Task/decision population promotion"}},
+   :distinct-count-promotion
+   {:digest
+    "358d16b474d3caf2b6b03194c4f9c528b47bc602f833382209d6242f358a12ca",
+    :result {:refused true, :reason "Distinct proposal index"}}}},
+ :holds
+ {:645-integration :stopped,
+  :36-config-OWN-7b-643642-531-MetadataPolicy-fixedwidth-ACC08-genuineUNKNOWN
+  :unchanged-stopped,
+  :substitute-import-retry-reroute-alternate-actor :none},
+ :source-and-bookkeeping-composition
+ {:all833
+  :same-complete-decision-records-ID-order-Openstatuses-memberships-roles-and931-current-owning-witnesses-no-semantic-rerun,
+  :normative-corpus
+  :240-documents-9945-occurrences-28785-facets-and-original-lineage-preserved,
+  :owners
+  :all1188-memberships-roles-original-obligations-and-resolution-states-conserved-only7-proposed-source-conjunction-fields-added,
+  :prior-continuity
+  :all71-original-captured-and-prior-exact-current-maps-retained-full-rawbytes-current-8-filepin-updates-bytes-only-no-review-renewal,
+  :index
+  {:after-overlap-ID-count 26,
+   :overlap
+   :same-raw-source-pending-context-single-identity-no-review-inheritance-or-duplicate-proposal-credit,
+   :before-distinct 2208,
+   :trace-facets 101,
+   :before-overlap-ID-count 25,
+   :after-pending 732,
+   :after-distinct 2308,
+   :overlap-IDs ["C18/normalized-facet/61-337/0f787736e8ee018d"],
+   :new-distinct 100,
+   :before-pending 632},
+  :provisional-census
+  :same-artifact-and195-ID-status-population-3Accepted192remaining-no-final-granularity-or-denominator-adoption,
+  :unselected
+  :all-retirement-extensions-MetadataPolicy-fixedwidth-OWN-ACC08-legacy-ACC-and-other-fields-dispositions-conserved,
+  :all561
+  :same-bound-IDs-memberships-roles-statuses-and4819-whole-raw-predicates-40-affected-historical-spanmaps-and6-supplemental-pins-authenticated,
+  :source-trace
+  {:path
+   "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+   :sha256
+   "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+   :input-base-and-candidate-bytes :identical,
+   :task-source
+   :pins-actual-task-bytes-not-a-claim-trace-metadata-already-existed-at-that-commit},
+  :new-task-units 0,
+  :qualified-ID-set-sha256
+  "e1d0fcaa7d9b78d06ed49a504cfa7882df9492ee5f17e5a40c474b0bcc775f24",
+  :affected-paths
+  {:count 17,
+   :pins
+   {"specs/sh-family-crosswalk/crosswalk.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "b75240050efafaf5f375793abd4e08358715493d"},
+    "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "3355d1bef486b2c77a5490f9d733f3c090da6ae0"},
+    "specs/requirement-reconciliation/finite-compiler-domain-review-candidate.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "a56e2794af5301d1a2277351a0ee188320f10a3f"},
+    "docs/component-roadmaps/compiler-api.md"
+    {:mode "100644",
+     :type "blob",
+     :blob "222bbd9a60df9ef9c0462a1326a3b3a3033ff7de"},
+    "specs/requirement-reconciliation/c18-owner-current-witness-applicability.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "850dfe998ecbda135c4ae7ccbe989d745cfa512b"},
+    "specs/requirement-reconciliation/c18-bookkeeping-source-controls.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "264cc8a6fdfbcead5b92ee7b75bd560d3d2c142b"},
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "0c03dba09d4980bc387f16bd64574cea24ae1fa8"},
+    "tools/sh_crosswalk.clj"
+    {:mode "100644",
+     :type "blob",
+     :blob "f5006e28e4ded7011f1d3fa7c80bc0e07584ca6e"},
+    "specs/compiler-api-workflow/tasks.md"
+    {:mode "100644",
+     :type "blob",
+     :blob "a6659891e59fccc9ec90953401c5c1c1f0bd12a5"},
+    "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "9969866c9e584cf4501399aa13e8914513de908b"},
+    "specs/requirement-reconciliation/c18-bookkeeping-transaction.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "eca2d6753be5300f444d8c56f7e04dc36e44de36"},
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "c939de5e8e9cdd701f0e8f62364a8ef5d3a42597"},
+    "specs/requirement-reconciliation/evidence.md"
+    {:mode "100644",
+     :type "blob",
+     :blob "6b45f319a9f1884725575a9332aba00600a50856"},
+    "specs/requirement-reconciliation/source-dispositions.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "76930eaae0b1e074edd248f17cbfba312815a78d"},
+    "specs/requirement-reconciliation/c18-affected-review-inputs.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "46c3d937e67b732edf5e749d22e0340d005f1136"},
+    "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "62c174000eaa19530bb8575816bb081e01db226b"},
+    "specs/requirement-reconciliation/c18-owner-source-refinement.edn"
+    {:mode "100644",
+     :type "blob",
+     :blob "ef2ae0b6415f9cd3e28c4a7df7c60ed2859a50aa"}},
+   :entire-tree-overlay
+   :equals-source-predecessor-plus-only-declared17-entries-no-unowned-changes},
+  :source-task-and-roadmap
+  :exact-single-insertion-inverse-restores-whole-source-predecessor-files-all5literal-outcomes-existing-rows-bodies-and-Openstatuses-preserved,
+  :six-output-transaction
+  {:base "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+   :path
+   "specs/requirement-reconciliation/c18-bookkeeping-transaction.edn",
+   :sha256
+   "c17b4c9f5107e38d335aeb91a2629d2c6914fc71d2be54b5a980f53614e8a474",
+   :outputs
+   {"specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+    {:sha256
+     "e8f420884aef6090e4548bf5060207c66015e03dfa25a72d72dfb058cbcf8ea7",
+     :before-sha256
+     "188e8a9c0df45df77c4c12d6ccd53b220688aaf370dc9282404e777e7ecc85ee"},
+    "specs/requirement-reconciliation/all833-c18-owner-current-criterion-conservation.edn"
+    {:sha256
+     "55a32ec062662858c0cd5acbf6ce19ee40da072c2ed8bfde29ab2057308cfb3f",
+     :before-sha256 nil},
+    "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn"
+    {:sha256
+     "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+     :before-sha256 nil},
+    "specs/requirement-reconciliation/c18-owner-current-witness-applicability.edn"
+    {:sha256
+     "cae59716657d1d3cdc58e3db8318b8479865167c1db141c1df2c62b967dd834e",
+     :before-sha256 nil},
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn"
+    {:sha256
+     "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d",
+     :before-sha256 nil},
+    "specs/requirement-reconciliation/source-dispositions.edn"
+    {:sha256
+     "8eee897e42e400adebcfdb4ce7b0e28f3ca3c89c575705ed186c2c6671fb79bb",
+     :before-sha256
+     "e060045db14f3dd0bafd0a5e831f9c75643b13e3601445c67b0af63899d9e7de"}},
+   :input-pins :all-authenticated-against-immutable-input-base,
+   :readback
+   :all6-candidate-bytehashes-equal-staged-transaction-pins-and-committed472f7caf-checkpoint,
+   :complete-input-output-set
+   :required-before-any-acceptance-no-partial-bundle,
+   :internal-reference-paths-and-hashes :closed-and-authenticated},
+  :new-decision-IDs 0,
+  :qualified-source
+  :all1585-full-facet-records-subjects-receipts-and-dispositions-exactly-retained,
+  :implementation-adoption-counts :none,
+  :source-normative-and-backend
+  :modeblob-and-byte-identical-to-source-and-bookkeeping-input-bases},
+ :schema-version 1,
+ :governing-source
+ {:review
+  :full-C18-and-full-D9-read-with-complete-C18-atomic-conjunction-entailment,
+  :mode-blob-and-filehash-pins
+  [{:path
+    "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+    :mode "100644",
+    :blob "f4c41495080760fc3da0fa67a90271ca171709ac",
+    :sha256
+    "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f"}
+   {:path "docs/phase-06-compiler-architecture/README.md",
+    :mode "100644",
+    :blob "e28898ab9182aa958a565f24f2b207284062a2c8",
+    :sha256
+    "d0f312788a676a3b7a08190024bc0086a273b9736ad7eaec69e085f6458b7146"}
+   {:path
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    :mode "100644",
+    :blob "79c13b15697e6c985524115faad588c66962a528",
+    :sha256
+    "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}
+   {:path "specs/backends-workflow/tasks.md",
+    :mode "100644",
+    :blob "d565644fd773ab57dfdcae4ecc800066de37a506",
+    :sha256
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67"}],
+  :D9-qualification
+  :proof-certificate-claim-domain-assumption-checker-input-result-bindings-and-actual-checking-remain-required-benchmarks-tests-labels-or-EML-similarity-do-not-become-proofs-no-full-D9-dependency-adoption},
+ :source-entailment
+ {:domain-optimization :domain-verifier-plus-proofcertificate-replay,
+  :backend-scope
+  :C18-prerequisite-entailment-only-no-whole-backend-implementation-or-availability-acceptance,
+  :trust-report
+  :compiler-pass-risk-evidence-profile-requirement-blockedpass-known-profile-gap-experiment-and-artifact-kind-dependencies-including-plugins-with-source-generated-origins-release-and-bootstrap-emission,
+  :diagnostics
+  :all9-C18-meanings-and-pass-version-risk-required-available-evidence-profile-target-sourceartifact-remediation-context,
+  :producer-checker-consumer
+  :actual-stage-producers-own-products-PassEvidence-owns-subjectbound-verification-gates-backend-conformance-owns-backend-products-release-independently-owns-final-admission,
+  :experiments
+  :explicit-feature-profile-gates-and-artifact-markings-no-hidden-passes,
+  :type-effect :positive-negative-property,
+  :MIR-optimization :validation-per-changedfunction,
+  :risk
+  :complete-pass-population-actual-pass-risk-reasons-affected-profiles-minimum-evidence-and-release-gate-all4-risk-meanings-preserved,
+  :resolution :bindinggraph-shadowingnegatives,
+  :matrix
+  :all10-class-minimum-stronger-conjunctions-preserved-stronger-optional-unless-applicable-claim-policy-requires-never-an-unchecked-label-substitute,
+  :translation-failure
+  :reject-transformation-retain-prior-valid-artifact,
+  :MIR-construction :verifier-and-CoreMIRgoldens,
+  :release-gate
+  :all-emitted-artifact-verifiers-no-criticalfailures-highriskevidence-selectedbackendconformance-staleproofcertificate-refusal-diagnosticgoldens-and-compilerrelease-selfhostcomparison-conjoined,
+  :backend-producer
+  :unchanged-existing-conformance-task-demands-real-output-execution-or-semanticcomparison-independent-metadata-and-refusal-checks-provenance-replay-exactsource-packs-and-honestly-open-unavailable-targets,
+  :macro :hygiene-origin-buildeffects,
+  :reader-syntax :golden-roundtrip-fuzz,
+  :counterexamples
+  :when-possible-source-input-output-property-diagnostics-minimizedreproducer-passversion-no-fabrication-on-unavailability-reproducible-failures-become-regressions,
+  :ownership-safety
+  :vulnerabilityfixtures-and-checked-proofcertificate,
+  :translation-record
+  :actual-pass-input-output-changedfunctions-observableresult-effects-safety-method-proofs-counterexamples-verdict-sample-methods-or-accepted-labels-not-evidence,
+  :future-conformance
+  :actual-positive-and-refused-execution-evidence-remains-a-future-Open-task-obligation-source-metadata-is-not-completed-implementation,
+  :dependency-scope
+  :D9-C1throughC17-SAFE15-PERF10-testing-bootstrap-backend-interfaces-only-not-whole-component-acceptance,
+  :full-mechanization
+  :not-an-initial-global-prerequisite-without-weakening-governing-evidence-rules,
+  :plugin :sandbox-contract-verifier-fixtures,
+  :target-lowering :differential-execution-and-backend-conformance},
+ :eligibility
+ {:orchestrator-thread "01a18b65-91fa-740a-b712-8a22b3cd000c",
+  :reviewer-thread "01a18528-d38b-71b3-a24c-2d440396fb28",
+  :author-turn "01a18c7f-516c-7e82-92f9-146eb2b27a1f",
+  :intake
+  {:path "/tmp/c18-independent-494afbf8/intake.edn",
+   :sha256
+   "b9d185bddbf05fd15d064c0f5ce0b62f1904b5f1c2238928d8e1c36e3dcd11d8"},
+  :native-intake
+  {:path "/tmp/c18-independent-494afbf8/goal-intake.json",
+   :sha256
+   "52594f4c5c2ed6e27e8c27ace4f3e7d10d94034d5da2d7f0eb95f921fcbbfa50"},
+  :older-goals :remain-completed-no-renewal,
+  :selected-semantic-selfauthorship :none,
+  :duplicate-reservation :none-in-checked-readbacks,
+  :fresh-author-state :idle-frozen-candidate,
+  :canonical-author-thread "01a18424-d867-7c12-8a04-07484900100c"},
+ :author-mechanical-tools
+ {:inspection
+  :all5-preserved-copies-and-dependencies-read-inertly-with-exact-packet-hashes,
+  :pins
+  [{:path
+    "/tmp/C18-affected-review-494afbf8/prepare-C18-bookkeeping.clj",
+    :sha256
+    "b87b7a3636a775a31eb1774a5fe44b04ddaca57af59c609e6fa4589a62c929b5",
+    :scope :author-mechanical-tool-not-independent-acceptance}
+   {:path
+    "/tmp/C18-affected-review-494afbf8/normalize-C18-inventory-order.clj",
+    :sha256
+    "4b69865f93f68171f7457d3b2137e6616fafa69b585458edbb8da9efcab702ee",
+    :scope :author-mechanical-tool-not-independent-acceptance}
+   {:path
+    "/tmp/C18-affected-review-494afbf8/check-C18-bookkeeping.clj",
+    :sha256
+    "e187a4c0ea52753e03ce082e018bdf1e100cb33827e5d1f6aaa2fe507c3f84e7",
+    :scope :author-mechanical-tool-not-independent-acceptance}
+   {:path
+    "/tmp/C18-affected-review-494afbf8/apply-C18-bookkeeping.clj",
+    :sha256
+    "e00983ffe2913fffcee0fa69f74d5c064a3525e3957c56f9316f5c5a2cf7ae1f",
+    :scope :author-mechanical-tool-not-independent-acceptance}
+   {:path
+    "/tmp/C18-affected-review-494afbf8/readback-C18-bookkeeping.clj",
+    :sha256
+    "ee5be49634809965df644e19241e1e27998e55945dc31b67a7f3f4edc1e9b848",
+    :scope :author-mechanical-tool-not-independent-acceptance}],
+  :prepare-and-apply :canonical-mutators-never-executed-by-reviewer,
+  :readback-eval-wrapper :inspected-not-executed,
+  :checker :not-blindly-rerun-or-used-as-independent-acceptance},
+ :scope-limits
+ [:whole833561-semantic-re-review
+  :ALL240-current-composition-or-final-denominator
+  :legacyACCclosure
+  :whole-D9-Math-or-backend-implementation
+  :main-integration
+  :PR645-substitute-import
+  :C18-compiler-execution
+  :proofchecker-execution
+  :runtime-provider-target-model-activity
+  :release
+  :selfhosting
+  :seedretirement
+  :pipeline-order-adjudication
+  :old-review-renewal
+  :held-action-clearance
+  :publication-action
+  :APPROVE
+  :outbound-delivery],
+ :kind
+ :independent-C18-affected-source-entailment-and-bookkeeping-review,
+ :private-writes :review-artifacts-only,
+ :verdict :scoped-pass,
+ :owner-verdicts
+ {"backend/conformance-execution-pack"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Execute or semantically compare real backend outputs, validate expected diagnostics and metadata, replay nondeterminism and emit exact-source conformance packs.",
+   :criterion-keys [:records :backend],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}
+    {:path "specs/backends-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "backend-conformance",
+     :file-sha256
+     "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+     :start-byte 39998,
+     :end-byte 40994,
+     :raw-sha256
+     "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf"}],
+   :captured-resolution-state
+   :task-reference-only-exact-criterion-join-pending,
+   :candidate-state :unchanged,
+   :current-join-status :proposal-pending-canonical-qualification,
+   :implementation-credit :none},
+  "compiler/c18/counterexample-regression"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Capture available failure input/output/property/diagnostic/minimized reproducer/pass/version artifacts and promote them to regression fixtures.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :captured-resolution-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :candidate-state :unchanged,
+   :current-join-status :proposal-pending-canonical-qualification,
+   :implementation-credit :none},
+  "compiler/c18/pass-risk-evidence"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Classify every pass by actual risk/profile impact and require governing minimum evidence, keeping matrix minimums distinct from stronger optional proof.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :captured-resolution-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :candidate-state :unchanged,
+   :current-join-status :proposal-pending-canonical-qualification,
+   :implementation-credit :none},
+  "compiler/c18/release-evidence-gate"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Block affected release artifacts on verification failure or missing/stale/critical/high-risk evidence; ship experimental passes only behind explicit recorded feature/profile gates.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :captured-resolution-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :candidate-state :unchanged,
+   :current-join-status :proposal-pending-canonical-qualification,
+   :implementation-credit :none},
+  "compiler/c18/transformation-validation"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Bind behavior-changing MIR transformations to equivalence evidence/validation queries for changed functions; reject failed transformations and retain prior artifacts.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :captured-resolution-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :candidate-state :unchanged,
+   :current-join-status :proposal-pending-canonical-qualification,
+   :implementation-credit :none},
+  "compiler/c18/trust-report"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Emit release/bootstrap trust reports mapping profiles/targets/passes/artifact kinds to evidence, known gaps and explicit experimental gates, including plugins.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :captured-resolution-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :candidate-state :unchanged,
+   :current-join-status :proposal-pending-canonical-qualification,
+   :implementation-credit :none},
+  "compiler/c18/verification-provenance"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Preserve source/generated diagnostic origins through compiler verification, including failure/counterexample provenance.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :task-id "pass-evidence",
+     :file-sha256
+     "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+     :start-byte 41652,
+     :end-byte 47467,
+     :raw-sha256
+     "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"}],
+   :captured-resolution-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending,
+   :candidate-state :unchanged,
+   :current-join-status :proposal-pending-canonical-qualification,
+   :implementation-credit :none}},
+ :criterion-verdicts
+ {:existing
+  {:verdict :source-conjunction-scoped-pass,
+   :captured-source-witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :task-id "pass-evidence",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 29748,
+    :end-byte 41650,
+    :raw-sha256
+    "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+   :current-witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :task-id "pass-evidence",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 29748,
+    :end-byte 41650,
+    :raw-sha256
+    "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+    :marker "compiler-api-implementation-tasks"},
+   :qualification
+   :actual-owning-PassEvidence-span-authenticated-in-history-output},
+  :records
+  {:verdict :source-conjunction-scoped-pass,
+   :captured-source-witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :task-id "pass-evidence",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 41652,
+    :end-byte 47467,
+    :raw-sha256
+    "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303"},
+   :current-witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :task-id "pass-evidence",
+    :file-sha256
+    "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+    :start-byte 41652,
+    :end-byte 47467,
+    :raw-sha256
+    "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+    :marker "compiler-api-implementation-tasks"},
+   :qualification
+   :actual-owning-PassEvidence-span-authenticated-in-history-output},
+  :backend
+  {:verdict :source-conjunction-scoped-pass,
+   :captured-source-witness
+   {:path "specs/backends-workflow/tasks.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :task-id "backend-conformance",
+    :file-sha256
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+    :start-byte 39998,
+    :end-byte 40994,
+    :raw-sha256
+    "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf"},
+   :current-witness
+   {:path "specs/backends-workflow/tasks.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :task-id "backend-conformance",
+    :file-sha256
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+    :start-byte 39998,
+    :end-byte 40994,
+    :raw-sha256
+    "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf",
+    :marker "backends-implementation-tasks"},
+   :qualification :unchanged-prerequisite-only}},
+ :occurrence-verdicts
+ {"C18/source/0624c47855d09677f4565f0eec4d127a5512c69b70069e9cac72e50578a7038f"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Earn auditable trust across every named compiler stage through actual risk/profile-appropriate evidence.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/0958863ba9a85bf28ebe0df5e9e84bb5004a5b5cba0b2b7c2af3c5633fe2095d"
+  {:index 41,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Reject hidden experimental passes in release artifacts.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/09fe15de873b3341dc5c1883c3c46126818ac380637b570c3db07b2c7b31dcef"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Reject a failed transformation and retain its prior valid artifact.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/0cd6cd896e76f48d5d578460713933f5f148bce7a2b32bb6c420b7cd6b0a6781"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Full mechanization is not an initial prerequisite; explicit checked evidence, diagnostics and trust reports remain required.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff"
+  {:index 34,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain RISK classification, EVIDENCE absent minimum, VALIDATION failed translation, PROOF rejected certificate, TRUST-REPORT incomplete report, RELEASE-GATE gaps, COUNTEREXAMPLE failure artifact, PLUGIN insufficient evidence and BACKEND conformance-gap meanings.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/2a7ffefea46fe9a78dbd1302b6972d3bbe9d0f69d3c82471afb445746eab0df8"
+  {:index 25,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate "Preserve the full following release-gate conjunction.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/2be5e81a03c3631175028de3de8d57c9ac5b45226b75539fc4a527162332e3a1"
+  {:index 42,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/2bfa10f41f45fe993f7fc922d4aae1c08d0f41d6c3ee22384b54295c524e4dbf"
+  {:index 33,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain the C18 diagnostic family and following nine distinct meanings.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/37a00980cb54c6a4836a28d00f64053aced90ade65177aa7934d4c8399fc225c"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Bind pass/input/output/changed functions, observable result/effects/safety properties, method, proof/counterexample references and result; sample method/pass/accepted fields prove no checking.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/3db2f5190ee8126fe3b55501aa2ccb5cd685689c958befba1b70daa49fbddb1c"
+  {:index 38,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Reject check elision without translation validation or proof.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/40fdc2ee008a635a3f648872ad1783824c11657d5c458269be541544661d3fb9"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate "Preserve the following four distinct risk meanings.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :predicate
+   "Consume authentic D9, C1-C17, SAFE15, PERF10, testing and bootstrap comparison interfaces without accepting whole dependencies.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/55a5b2de039fa1d130a5fa1e9351072a7c33610778fdc643f15c4cf40dc6342a"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Ship experiments only behind explicit feature/profile gates with artifact markings.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/570bf9d400a3ee9ad4918d7f9e49f82047c35e73ee56b59fc1fc77a7f4b61fd0"
+  {:index 36,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Demonstrate all pass risks and stage verifiers, MIR validation, check-elision replay, representative frontend/backend differential/property cases, trust emission, missing-evidence release refusal, available counterexample regressions and explicit experiment gates.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/6af0e6224ee1daff88c291d7dcdc8e3feed7317a0f4b92762f4c5c195a3eb5d2"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Promote reproducible counterexamples into regression fixtures.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/6c7837dddd83a8a4517d890753f9c5e47eb30dfd739539c833888c9df3755118"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Emit trust reports with release builds and bootstrap stages.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/77d6c098b7b414942689c0541744d71838423e6a45459bef04456bcedc714c1b"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate "Reject plugin passes omitted from trust reports.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Retain every ten-row class/minimum/stronger-evidence conjunction; stronger evidence is optional unless applicable policy requires it and never substitutes an unchecked label for minimum evidence.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/78a7f8fae1a16fee569f4c13568539a8674237ed7fc7e374ba51f27f9c172fce"
+  {:index 24,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/793d6cd0fade3d258be662bd1635306b25d3528717538b4045155cf8c6cde6e7"
+  {:index 29,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Capture failure counterexamples when possible; record actual unavailability without fabrication.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/7b248ff8c9b8b9662b33332a2435a7ddbe3ad216e82f2faa7f6f2a08047fb51f"
+  {:index 28,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/8ee8c6890bb8bc7974defa23827e445f4a6d56f175d0e9711d4070d2292fb347"
+  {:index 43,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Require the following actual positive/refused conformance demonstrations, not merely declared artifact fields.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Conjoin risk-appropriate evidence for every pass, actual allowed high-risk evidence, changed-function MIR equivalence/queries, actual source/Core/MIR-to-emitted behavior comparison, diagnostic origins, evidence dependencies and affected-release refusal.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/98acb10a02c06dcdbd02561f2e96b9071b6279a1cdc1eda0dc2a96312478cd52"
+  {:index 32,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/9b2f9c80523d5aa5a8f3c3169fa5915c7f53ec856c3892a010ee51f9110620a3"
+  {:index 15,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95"
+  {:index 30,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Preserve source fixture/input/output/property/diagnostics/minimized reproducer/pass/version in available counterexamples.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain all nine plan/risk/evidence/translation/proof/differential-property/trust/release/diagnostic product families.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/a991cf734fc4e0ef4fcc4c06286a050625c3b4f0f602dda7ede380c9f28f8c93"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/b5f511c02dc303ec547d7b55e4dd79260a3d89edeb168d55c7411917a60b0ccc"
+  {:index 21,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/baac6b955956237cadca50e974a669b46afedef9ea64478782e86e4bc3e7e0fc"
+  {:index 22,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Trust reports bind compiler/pass/risk/evidence, per-profile requirements/blocked passes and affected-profile known experimental gaps, including plugins and artifact kinds.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/c13ba9c8e389d057bec4f3f3e7705c8c4182ece6027913ab5afaddc945471879"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/c4f74640af7ef5f7e5bba2d8365cc878d3cdcd33754fb8760e8fb0485e25db0a"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/c535fc9152d12803e6cb204f38b33b6e19aa4c29f0e08806c4b99138751a490e"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/c57039433bcbe29e672ca070b016a950a9630217e8b9fbb1ec65ec30fb995ad9"
+  {:index 17,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/cb992bf7d96ab2862db1ec81462c11bf1628aafa0665c1e68b1b4e8ae6bae758"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/d0a149222d094d03666999c9270e139feaed8bd2386060f1d96ce78aa3c513a2"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Bind actual pass/risk/reasons/profiles/minimum evidence/release gate; the bounds-check-elide example confers no universal pass/default/profile grant.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f"
+  {:index 26,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :backend],
+   :predicate
+   "Every emitted artifact has passing verifier; no active critical failure; high-risk evidence, selected-backend conformance, stale proof/certificate refusals, expected-diagnostic goldens and compiler-release self-hosting comparison are required.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/e8689cffb4e864c902517166eb724d6852fd972cd4ebb587491da66cab1e6bd3"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/ec0eaccf863e34525eccfebf0d7ed7147a2fcd54f405a5ba0d5c9ba9237e23c7"
+  {:index 37,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Reject unverifiable optimization as a release-quality claim.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/ed2cf9936861ad8d84ae05b03ef88af31aa67ed6ac2dd612d3a6b325d5003396"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records :backend],
+   :predicate
+   "Reject prose-only lowerer conformance; use actual independent semantic and metadata/refusal products with replay and explicit unavailable cases.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/f0068243873de36197928c414d13235d8b77e0020dd42931512d201ec050b682"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Diagnostics carry pass/version/risk/required and available evidence/profiles/targets/source or artifact/remediation.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/f5350e69a4f368aa6ddfe214799413d2708731e7f328ca38cce84487994977bf"
+  {:index 18,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain the complete following translation-validation artifact shape with actual checked subjects/results rather than sample labels.",
+   :verdict :complete-atomic-conjunction-scoped-pass},
+  "C18/source/fa113c63460efea137728931e5fa68e693524f270b8be9d0861953d056c2d111"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source attribution without semantic credit.",
+   :verdict :retained-context-no-semantic-implementation-credit},
+  "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689"
+  {:index 14,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Low formatting/reporting/metadata-only with verifiers; medium nonsemantic IR shape under verifiers; high optimization/check/effect/ownership/target-metadata/safety; critical trusted semantic base/safety gate/checker/safety-critical lowering.",
+   :verdict :complete-atomic-conjunction-scoped-pass}},
+ :subject
+ {:tree "2e106366aab696a975f0160067e9dff9b78538a0",
+  :repository "burn2delete/uniform",
+  :bookkeeping-input-base
+  {:commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+   :tree "01ff7068800331deb1b8674cdda9752cc31eee14"},
+  :scope
+  :frozen-canonical-source-checkpoint-not-new-main-integration-subject,
+  :bookkeeping-checkpoint
+  {:commit "472f7caf49e5048bfbd2df288660654bd21870c5",
+   :tree "058117ec7e016b3e8bb5c96ee84be0b8c7a92f12"},
+  :source-change-base
+  {:commit "f232769efd6cd38c9751c437bb0acbd82494657e",
+   :tree "44169eac088a6e9c1e0ae8b513e6429647d44945"},
+  :task-source
+  {:commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :tree "a5334fc5817e389bd7f85336a2fafdf55c9fec8c"},
+  :commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :immediate-parent "472f7caf49e5048bfbd2df288660654bd21870c5"},
+ :completion
+ :sealed-exact-subject-qualified-source-and-bookkeeping-disposition-native-goal-readback-separate}

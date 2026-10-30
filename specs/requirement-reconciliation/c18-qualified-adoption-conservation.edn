@@ -1,0 +1,66 @@
+{:unchanged-owner-resolutions 1188,
+ :counts
+ {:new-reviewed-facets 101,
+  :all-reviewed-source-facets 1686,
+  :semantic-conjunction-facets 1449,
+  :retained-context-facets 235,
+  :superseded-history-facets 2,
+  :finite-proposal-ids 2308,
+  :pending-finite-proposal-ids 631,
+  :reviewed-outside-finite-index 9},
+ :unchanged-decisions 833,
+ :coherent-clause-removal-refusals
+ [{:criterion :existing,
+   :coherent-witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :task-id "pass-evidence",
+    :file-sha256
+    "83837e53cacff3974af41e520a609f045c64498cf301a2709e63f182fb0e4945",
+    :start-byte 29748,
+    :end-byte 41604,
+    :raw-sha256
+    "5709886e26f2e5077fa15b6a67ca3ceca3e991e757b7a593134e856c76a5005c",
+    :marker "compiler-api-implementation-tasks"},
+   :reviewed-whole-predicate-refused true}
+  {:criterion :records,
+   :coherent-witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+    :task-id "pass-evidence",
+    :file-sha256
+    "2ae7dfab966de32ff497a27bf6c85070ec9b648b7dcb3860f684a68b2339b4f5",
+    :start-byte 41652,
+    :end-byte 47033,
+    :raw-sha256
+    "25716884d54de9ff6a389de93755f56db4cf3a2959bd8fa259e1789ddcef0718",
+    :marker "compiler-api-implementation-tasks"},
+   :reviewed-whole-predicate-refused true}
+  {:criterion :backend,
+   :coherent-witness
+   {:path "specs/backends-workflow/tasks.md",
+    :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+    :task-id "backend-conformance",
+    :file-sha256
+    "3f404a3c51e12b5162cec38d89f2fbae70a1eaa1ff30eaf070e741cec8bb3d70",
+    :start-byte 39998,
+    :end-byte 40642,
+    :raw-sha256
+    "828abab3c00630a3e667da99b1b02967088caaebb9aba5eca6b62fe34ea65638",
+    :marker "backends-implementation-tasks"},
+   :reviewed-whole-predicate-refused true}],
+ :unchanged-prior-facets 28684,
+ :implementation-credit :none,
+ :independent-acceptance :not-conferred-by-this-check,
+ :new-task-units 0,
+ :final-denominator :not-accepted,
+ :unchanged-criterion-bindings true,
+ :new-qualified-identities 101,
+ :kind :C18-qualified-adoption-author-conservation-check,
+ :whole-current-head :not-accepted,
+ :checker-sha256
+ "d08eaedcc22a798d94e125cc1d460a0f8161efa2b54c8b7a4f991e7f42135979",
+ :new-decision-ids 0,
+ :subject "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+ :held-actions :no-clearance-or-retry,
+ :overlap-counted-once "C18/normalized-facet/61-337/0f787736e8ee018d"}

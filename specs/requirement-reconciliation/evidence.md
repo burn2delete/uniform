@@ -4048,3 +4048,29 @@ coordinator routing. The complete clean candidate commit/tree is supplied by its
 external frozen intake envelope after checkpoint publication. No author-assigned
 reviewer, new worker, old-review reopening, new finite main-integration subject,
 implementation adoption or held-action clearance follows. ALL240 remains open.
+
+## Qualified C18 source adoption
+
+The completed independent C18 review at frozen commit
+`494afbf84a534e1dbe9136b74579aa85aec7d89a` returned scoped PASS with no findings.
+The [archived receipt](c18-independent-source-review.edn), native completion
+record and [authentication](c18-independent-review-authentication.edn) bind its
+101 facets, 45 occurrences, seven joins, 17 paths and six-file transaction.
+All three complete current criteria authenticate; all 66 recorded independent
+negative controls refused. The reviewer checker was hashed, never executed.
+
+The [qualified adoption](c18-qualified-source-review-adoption.edn) adds 86 semantic
+conjunction facets and 15 retained contexts. One prior pending metadata overlap
+is counted once. Qualified dispositions are now 1,686: 1,449 semantic, 235 context
+and two superseded history fragments. The finite index remains 2,308 identities,
+with 631 pending, 1,677 reviewed in the index and nine reviewed outside it.
+Every prior qualified facet record, all 833 decisions, 561 historical identities,
+71 captured predicates, owner memberships and owner resolution states retain
+their prior scope. Three coherently rehashed clause-removal controls preserve
+new hash consistency while refusing reviewed whole-predicate identity.
+
+This adoption confers C18 source authority only. Implementation, final denominator,
+release and whole-head acceptance remain open. B6 containing-file drift is
+excluded. A separate finite current-main composition will preserve actual
+prerequisites and receive its own affected review before eligible publication
+and integration. Existing held actions remain held.

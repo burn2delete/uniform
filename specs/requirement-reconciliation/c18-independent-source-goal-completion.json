@@ -1,0 +1,30 @@
+{
+  "receipt": "/tmp/c18-independent-494afbf8/receipt.edn",
+  "receiptSha256": "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+  "completion": {
+    "goal": {
+      "threadId": "01a18528-d38b-71b3-a24c-2d440396fb28",
+      "objective": "Finite independent affected C18 SOURCE-entailment/bookkeeping review exactcandidate494afbf84a534e1dbe9136b74579aa85aec7d89a/tree2e106366aab696a975f0160067e9dff9b78538a0, intakeSHA b9d185bddbf05fd15d064c0f5ce0b62f1904b5f1c2238928d8e1c36e3dcd11d8. Soleauthorcanonical01a18424 frozen, no competing review checked. Full governing C18+D9 source predicate/atomic conjunction entailment:101facets45occurrences30semanticcases15contexts/seven proposedowners; existingPassEvidenceamendment/tasksource984f1e74f98905f53b4b20c63b8f76d2a948dae3 vs sourcebasef232769efd6cd38c9751c437bb0acbd82494657e, unchangedbackendconformance prerequisite exactbytes/roles. Full17ownedpath modeblob overlay and sourcepins; sixfile bookkeeping overinpute043420b8db65f14e93558f72bbf80eaa7eb6903/checkpoint472f7caf49e5048bfbd2df288660654bd21870c5/readback. Preserve833OpenIDs931witnesses membershipsrolesstatuses,561historicalIDs4819spans40affectedhistorical6supplemental,71priorpredicate bytecontinuityjoins8filepinchanges bytesonly no reviewrenewal. Dedup101scope into100newdistinct/index2208to2308/pending632to732/overlap25to26;qualified1585/provisional195tasks3Accepted192remaining unchanged, no adoptionimplementationcounts. Inspect preservedauthor prepare/apply/tools as inertsource NEVERexecute; reviewerowned coreDATAcontrols independent coherent rehashed semanticclause-role-dependency-pin-membership-index-count-mode-oldpredicate negatives beyondauthor15. No whole833561semanticsrerun/ALL240finaldenominator/legacyACCclosure/fullbackendimplementation/mainintegration/C18executionacceptance. No projectnamespace/Bootstrap/compiler/checker/domainverifier/proof/provider/runtime/modelhelper/target/process/lease/probe/CI/publication/APPROVE/outboundsend/newworker/foreignmutatorrerun. All645integration/36config/OWN/7b/643642/531/MetadataPolicyfixedwidthACC08/genuineUNKNOWN holdsstopped, no substituteimport/retry/reroute. Completed goalsclosed; stopactualconflict/denial/semanticselfauthorship. Complete sealed exactsubject qualifieddisposition/checkerartifacthashes/findings/limits/nativegoalcompletion inthischat; canonicalauthorconsumption viaorchestratoronly.",
+      "status": "complete",
+      "tokensUsed": 533257,
+      "timeUsedSeconds": 1864,
+      "createdAt": 1793360864,
+      "updatedAt": 1793362728
+    },
+    "remainingTokens": null,
+    "completionBudgetReport": "Goal achieved. Report final usage from this tool result's structured goal fields. If `goal.tokenBudget` is present, include token usage from `goal.tokensUsed` and `goal.tokenBudget`. If `goal.timeUsedSeconds` is greater than 0, summarize elapsed time in a concise, human-friendly form appropriate to the response language."
+  },
+  "readback": {
+    "goal": {
+      "threadId": "01a18528-d38b-71b3-a24c-2d440396fb28",
+      "objective": "Finite independent affected C18 SOURCE-entailment/bookkeeping review exactcandidate494afbf84a534e1dbe9136b74579aa85aec7d89a/tree2e106366aab696a975f0160067e9dff9b78538a0, intakeSHA b9d185bddbf05fd15d064c0f5ce0b62f1904b5f1c2238928d8e1c36e3dcd11d8. Soleauthorcanonical01a18424 frozen, no competing review checked. Full governing C18+D9 source predicate/atomic conjunction entailment:101facets45occurrences30semanticcases15contexts/seven proposedowners; existingPassEvidenceamendment/tasksource984f1e74f98905f53b4b20c63b8f76d2a948dae3 vs sourcebasef232769efd6cd38c9751c437bb0acbd82494657e, unchangedbackendconformance prerequisite exactbytes/roles. Full17ownedpath modeblob overlay and sourcepins; sixfile bookkeeping overinpute043420b8db65f14e93558f72bbf80eaa7eb6903/checkpoint472f7caf49e5048bfbd2df288660654bd21870c5/readback. Preserve833OpenIDs931witnesses membershipsrolesstatuses,561historicalIDs4819spans40affectedhistorical6supplemental,71priorpredicate bytecontinuityjoins8filepinchanges bytesonly no reviewrenewal. Dedup101scope into100newdistinct/index2208to2308/pending632to732/overlap25to26;qualified1585/provisional195tasks3Accepted192remaining unchanged, no adoptionimplementationcounts. Inspect preservedauthor prepare/apply/tools as inertsource NEVERexecute; reviewerowned coreDATAcontrols independent coherent rehashed semanticclause-role-dependency-pin-membership-index-count-mode-oldpredicate negatives beyondauthor15. No whole833561semanticsrerun/ALL240finaldenominator/legacyACCclosure/fullbackendimplementation/mainintegration/C18executionacceptance. No projectnamespace/Bootstrap/compiler/checker/domainverifier/proof/provider/runtime/modelhelper/target/process/lease/probe/CI/publication/APPROVE/outboundsend/newworker/foreignmutatorrerun. All645integration/36config/OWN/7b/643642/531/MetadataPolicyfixedwidthACC08/genuineUNKNOWN holdsstopped, no substituteimport/retry/reroute. Completed goalsclosed; stopactualconflict/denial/semanticselfauthorship. Complete sealed exactsubject qualifieddisposition/checkerartifacthashes/findings/limits/nativegoalcompletion inthischat; canonicalauthorconsumption viaorchestratoronly.",
+      "status": "complete",
+      "tokensUsed": 533257,
+      "timeUsedSeconds": 1864,
+      "createdAt": 1793360864,
+      "updatedAt": 1793362728
+    },
+    "remainingTokens": null,
+    "completionBudgetReport": null
+  }
+}

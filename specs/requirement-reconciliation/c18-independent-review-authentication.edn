@@ -1,0 +1,90 @@
+{:six-output-hashes :exact,
+ :negative-results :all-refused,
+ :receipt
+ {:path "/tmp/c18-independent-494afbf8/receipt.edn",
+  :sha256
+  "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990"},
+ :context-facets 15,
+ :holds :unchanged,
+ :independence
+ :distinct-from-canonical-author-no-selected-semantic-selfauthorship,
+ :owner-joins 7,
+ :implementation-credit :none,
+ :facet-count 101,
+ :foreign-checker-execution :none,
+ :artifact-hashes
+ [{:path
+   "/tmp/c18-independent-494afbf8/pre-guard-negative-readback.edn",
+   :sha256
+   "4c043d8b86d23f7aba93d1c2b245564e6135a1c708c2b05658610f2502ab32b0"}
+  {:path "/tmp/c18-independent-494afbf8/check.clj",
+   :sha256
+   "acee67593d7a14f5010cbcb8a2ee91a5cd2157d7f888bcedf1e59e66ed1fa43b"}
+  {:path "/tmp/c18-independent-494afbf8/controls.edn",
+   :sha256
+   "a3aac78a87d4b9b86673d862f02f933d2b48ba319a2c441e20c00583224a81da"}
+  {:path
+   "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+   :sha256
+   "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d"}
+  {:path
+   "specs/requirement-reconciliation/c18-bookkeeping-transaction.edn",
+   :sha256
+   "c17b4c9f5107e38d335aeb91a2629d2c6914fc71d2be54b5a980f53614e8a474"}
+  {:path
+   "docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md",
+   :sha256
+   "bca807e8edef96136c85d2297d7741ed60be40c8a4b6f42a124cdc76dd24133f"}
+  {:path "docs/phase-06-compiler-architecture/README.md",
+   :sha256
+   "d0f312788a676a3b7a08190024bc0086a273b9736ad7eaec69e085f6458b7146"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}
+  {:path "specs/backends-workflow/tasks.md",
+   :sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67"}
+  {:path "/tmp/c18-independent-494afbf8/intake.edn",
+   :sha256
+   "b9d185bddbf05fd15d064c0f5ce0b62f1904b5f1c2238928d8e1c36e3dcd11d8"}
+  {:path "/tmp/c18-independent-494afbf8/goal-intake.json",
+   :sha256
+   "52594f4c5c2ed6e27e8c27ace4f3e7d10d94034d5da2d7f0eb95f921fcbbfa50"}
+  {:path
+   "/tmp/C18-affected-review-494afbf8/prepare-C18-bookkeeping.clj",
+   :sha256
+   "b87b7a3636a775a31eb1774a5fe44b04ddaca57af59c609e6fa4589a62c929b5"}
+  {:path
+   "/tmp/C18-affected-review-494afbf8/normalize-C18-inventory-order.clj",
+   :sha256
+   "4b69865f93f68171f7457d3b2137e6616fafa69b585458edbb8da9efcab702ee"}
+  {:path "/tmp/C18-affected-review-494afbf8/check-C18-bookkeeping.clj",
+   :sha256
+   "e187a4c0ea52753e03ce082e018bdf1e100cb33827e5d1f6aaa2fe507c3f84e7"}
+  {:path "/tmp/C18-affected-review-494afbf8/apply-C18-bookkeeping.clj",
+   :sha256
+   "e00983ffe2913fffcee0fa69f74d5c064a3525e3957c56f9316f5c5a2cf7ae1f"}
+  {:path
+   "/tmp/C18-affected-review-494afbf8/readback-C18-bookkeeping.clj",
+   :sha256
+   "ee5be49634809965df644e19241e1e27998e55945dc31b67a7f3f4edc1e9b848"}],
+ :owned-paths 17,
+ :final-denominator :not-accepted,
+ :whole-tree-overlay :exact,
+ :occurrence-count 45,
+ :independent-negative-controls 66,
+ :source-acceptance :C18-scoped-only,
+ :kind :C18-qualified-independent-source-review-authentication,
+ :whole-current-head :not-accepted,
+ :native-completion
+ {:path "/tmp/c18-independent-494afbf8/goal-completion.json",
+  :sha256
+  "10e6cbdc64c0b1e75ee2c748c291866867e522024c7f3f99590ae1424d34997b",
+  :status :complete},
+ :semantic-facets 86,
+ :reviewer "01a18528-d38b-71b3-a24c-2d440396fb28",
+ :subject
+ {:commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+ :whole-current-criteria :all3-authenticated}

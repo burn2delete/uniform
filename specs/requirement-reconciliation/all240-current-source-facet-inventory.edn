@@ -38512,26 +38512,26 @@
    :task-reference-only-exact-criterion-join-pending 201,
    :retained-retirement-current-successor-proposed-independent-and-residual-joins-pending
    3},
-  :pending-owner-proposed-facets 732,
-  :qualified-current-reviewed-source-facets 1585,
+  :pending-owner-proposed-facets 631,
+  :qualified-current-reviewed-source-facets 1686,
   :current-owner-proposal-facets 2308,
-  :qualified-current-context-facets 220,
+  :qualified-current-context-facets 235,
   :source-facets 28785,
   :documents 240,
   :source-owner-identities 1188,
   :source-occurrences 9945,
-  :qualified-current-semantic-conjunction-facets 1363,
+  :qualified-current-semantic-conjunction-facets 1449,
   :qualified-current-superseded-history-facets 2,
   :facet-dispositions
   {:format-or-hierarchical-context-preserved-not-standalone-implementation
    5358,
    :owner-proposed-exact-disposition-pending-independent-facet-acceptance
-   732,
+   631,
    :exact-complete-predicate-conjunction-entailment-pending 20053,
    :source-specific-owner-or-metadata-adjudication-pending 357,
    :concrete-dependency-artifact-entailment-pending 700,
-   :qualified-independent-source-criterion-conjunction-accepted 1363,
-   :qualified-independent-source-context-retained 220,
+   :qualified-independent-source-criterion-conjunction-accepted 1449,
+   :qualified-independent-source-context-retained 235,
    :qualified-independent-superseded-source-history-retained 2}},
  :predecessor-inventory
  {:source-commit "7b6ba5fe807ccb7f7b76082891f697dd5f13e6b8",
@@ -38715,7 +38715,23 @@
     :reviewed-tree "e08666f8a5c736ec70bb2eed8f286b52dabb4f26"},
    :scope :C12-source-only,
    :whole-owner-entailment :not-conferred,
-   :implementation-credit :none}},
+   :implementation-credit :none},
+  :C18
+  {:path
+   "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+   :sha256
+   "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+   :receipt
+   {:path
+    "specs/requirement-reconciliation/c18-independent-source-review.edn",
+    :sha256
+    "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+    :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+   :scope :C18-source-only,
+   :whole-owner-entailment :not-conferred,
+   :implementation-credit :none,
+   :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a"}},
  :implementation-credit :none,
  :occurrences
  [{:id
@@ -627324,13 +627340,30 @@
      :title
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/0-60/a7aa22e5e2f9b23b"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "a7aa22e5e2f9b23bd6b83696dac74a79153e6bbd5d99ada5455bc80906fb39a9",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/c4f74640af7ef5f7e5bba2d8365cc878d3cdcd33754fb8760e8fb0485e25db0a",
    :current-owner-proposals
@@ -627352,14 +627385,31 @@
      :title
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/61-337/0f787736e8ee018d"},
    :earlier-review-disposition
    :source-fragment-needs-predicate-owner-or-metadata-proof,
    :raw-sha256
    "0f787736e8ee018d4d8b5097bf41ef94e4bb86d0858f934381566eae360e555c",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/e8689cffb4e864c902517166eb724d6852fd972cd4ebb587491da66cab1e6bd3",
    :current-owner-proposals
@@ -627389,13 +627439,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Purpose", :line 8}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/338-349/994413297a3e95a9"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/c535fc9152d12803e6cb204f38b33b6e19aa4c29f0e08806c4b99138751a490e",
    :current-owner-proposals
@@ -627418,10 +627485,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Purpose", :line 8}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/350-633"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "87dd70073f6462dba7a86056876cac62369c5714245b285b14a997ab7719384c",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -627431,7 +627516,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/0624c47855d09677f4565f0eec4d127a5512c69b70069e9cac72e50578a7038f",
    :current-owner-proposals
@@ -627461,10 +627546,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Purpose", :line 8}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/634-820"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "1bc9543bc7b4f47b0bda39a9f212bee7ad5ae26c3112c8c1ba4a13f6ed13c8a7",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -627474,7 +627577,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/0cd6cd896e76f48d5d578460713933f5f148bce7a2b32bb6c420b7cd6b0a6781",
    :current-owner-proposals
@@ -627504,13 +627607,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/821-837/d8416f1863ce5290"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/c13ba9c8e389d057bec4f3f3e7705c8c4182ece6027913ab5afaddc945471879",
    :current-owner-proposals
@@ -627533,15 +627653,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/838-913"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "0767dbbbe25ba0afa363514733c24c5532af2250dfa130984b8aac27299a23a2",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627564,14 +627702,32 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/913-915/e86dd77a7ee765ea"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "e86dd77a7ee765ea10ff34e3886eac5b21673b5809c242e96b376ed76c28e48c",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627594,15 +627750,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/915-1071/663b4124138e481a"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "663b4124138e481a81698144995e62cfbcb86f90e11f5d11b64fcf57c4f16c63",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627625,13 +627799,31 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/1071-1072/01ba4719c80b6fe9"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627654,15 +627846,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1072-1218"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "ff9e9c8d329219ff73c836f799962f247107ebc1c5033e21bc1c580a0ac9eedf",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627685,14 +627895,32 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1218-1332"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "824d45e03e91e7dd363d27c2cab8f626a8a4be71356501061c55926f4d2fb06a",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627715,15 +627943,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1332-1411"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "90b4228af55cd0a68da9138c0dac7f78d5d4558f9185a39cdcee2dff3cdc15ce",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627746,15 +627992,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1411-1521"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "4daa734aa1ddc1e97bfa7535fd72df6a40aa7fd43a242bf0ee8a5260348d1337",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627777,15 +628041,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Requirements", :line 19}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1521-1591"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "4fdffb3b1da7cc7dcd5769abb4148660affab155d7192b53451e6b4c92bd6651",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/926d033d56c693aa0d70a0a4316cd609af47e7df19ae8b114dcf43dd708ff229",
    :current-owner-proposals
@@ -627808,13 +628090,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Dependencies", :line 33}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/1592-1608/21d1931a332d9b7f"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/fa113c63460efea137728931e5fa68e693524f270b8be9d0861953d056c2d111",
    :current-owner-proposals
@@ -627837,10 +628136,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Dependencies", :line 33}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1609-1655"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "b900d4bfb944f09537d7c71bec3e80965ad6c85b485b2f0904411d72e94c9da6",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -627850,7 +628167,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
    :current-owner-proposals
@@ -627880,10 +628197,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Dependencies", :line 33}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1655-1756"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "f49e5310370bc09e0ee802d211830172e462fddbb8c75c321a5ee1b56ff8a5d7",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -627893,7 +628228,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
    :current-owner-proposals
@@ -627923,10 +628258,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Dependencies", :line 33}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1756-1811"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "9b8b17523ebdc91abc475d21b075bc006d4ab00f61be816b9216621240fe2331",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -627936,7 +628289,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
    :current-owner-proposals
@@ -627966,10 +628319,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Dependencies", :line 33}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1811-1868"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "6fcc2801717b73048461ccc60f9f20aca47a7c6d18ea25f5933f45aec9bd7c5f",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -627979,7 +628350,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
    :current-owner-proposals
@@ -628009,10 +628380,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Dependencies", :line 33}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/1868-2000"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "f147d48dbe59a2fb55f6a3e6fb5a4207eba235b08ee6a9b97454cb0dfe1cd116",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628022,7 +628411,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
    :current-owner-proposals
@@ -628052,10 +628441,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Dependencies", :line 33}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2000-2068"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "27c10b7d0ee0bdbf900c2bb526691b2377fe93f5bbd89cf7e125018a47df3ad2",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628065,7 +628472,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/4bce28e57c459e1b1e78ff24d783890d67620367dda7eb25833493498f96cdbf",
    :current-owner-proposals
@@ -628095,13 +628502,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/2069-2094/f4280a4d61a89adc"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/a991cf734fc4e0ef4fcc4c06286a050625c3b4f0f602dda7ede380c9f28f8c93",
    :current-owner-proposals
@@ -628124,10 +628548,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2095-2125"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "b45d404f4e6fe7e647a1cb5e3ff86f3b3ad347afedce04cd359fb0b2c5bbf007",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628137,7 +628579,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628167,10 +628609,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2125-2153"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "25a0ca4a3457c66cd76c7d348397356bd6fbfa820b2d1095ec3ee418ea57eec0",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628180,7 +628640,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628210,10 +628670,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2153-2178"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "e9b9ff9ff5ce2617a0643f4c6f5115294ffe75e371c0f440a3519000b92a2642",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628223,7 +628701,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628253,10 +628731,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2178-2209"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "8ca373d0fde8200954706d1ee6e351d84ad97fe3ba8602e567f4ef405e340047",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628266,7 +628762,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628296,10 +628792,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2209-2244"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "c6141f25065502d8476e279b980a32285efeecb053795f23854c183d7316a4cb",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628309,7 +628823,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628339,10 +628853,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2244-2289"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "8ce35ec7c4cd6c35fe6a70862b0e49bee29f10e495e6f1997eeded85fecdf017",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628352,7 +628884,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628382,10 +628914,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2289-2314"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "86ea7937d80096aeb98af543c89f48066aa3cb3d124302d5097bbca5f9317d95",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628395,7 +628945,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628425,10 +628975,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2314-2337"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "09fd65bcde73e43124bc5c186c58655ecb0110422ec0aadefc80f932b5cafd27",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628438,7 +629006,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628468,10 +629036,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Outputs and Artifacts", :line 44}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2337-2365"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "71920501cb4e686f02b5ac7e2f4bf459e0bb2cc2220a6fc59d1dc762003824e7",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -628481,7 +629067,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a7cb124f015ed5ad2b79abc05a0310b181360f19d34ec78333fd47ecee85c786",
    :current-owner-proposals
@@ -628511,13 +629097,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Pass Risk Classification", :line 56}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/2366-2394/851471ef9a7b9759"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "851471ef9a7b97591a8479f1c58351268dd0fa70d8b5a6dc0f92e0fd1ec17859",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/cb992bf7d96ab2862db1ec81462c11bf1628aafa0665c1e68b1b4e8ae6bae758",
    :current-owner-proposals
@@ -628540,15 +629143,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Pass Risk Classification", :line 56}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2395-2683"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "a69960e9ae3e8fb81d9a2dbc4ee22596e6d5425b2fda98ac7dda0b959686c9dc",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d0a149222d094d03666999c9270e139feaed8bd2386060f1d96ce78aa3c513a2",
    :current-owner-proposals
@@ -628571,15 +629192,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Pass Risk Classification", :line 56}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2684-2697"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "a5ed2b11d73aa53504e9145b894d931ed5b03e420468ccf16994e58b1a790268",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/40fdc2ee008a635a3f648872ad1783824c11657d5c458269be541544661d3fb9",
    :current-owner-proposals
@@ -628602,15 +629241,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Pass Risk Classification", :line 56}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2698-2770"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "7e9e53e751feb159cf5e7ebf5dd694746c2803ab2581b1edccbccee30b762ec3",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
    :current-owner-proposals
@@ -628633,15 +629290,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Pass Risk Classification", :line 56}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2770-2845"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "6d7123fac7016e09dcb531dbc528b1af69fd9e2e5afb8824eaca84c20a88f149",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
    :current-owner-proposals
@@ -628664,15 +629339,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Pass Risk Classification", :line 56}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2845-2945"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "9e6d62f7d0af1fc6fcc6c7c384e506047c84ad261f1a9fec016367807e39d64d",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
    :current-owner-proposals
@@ -628695,15 +629388,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Pass Risk Classification", :line 56}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/2945-3070"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "2b190daf33ad0abf0bf33fe8963bbb4f7e8ba29ee94abad5b88078d6845cddfd",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/fedb4637aac46741408a7df5627acc3b79b8c1fa2efb86c24e990d5f25db3689",
    :current-owner-proposals
@@ -628726,13 +629437,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Verification Matrix", :line 77}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/3071-3094/49b5f22dab3a4397"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "49b5f22dab3a4397669e7a868cc2966ab55a39491fb3a0ff6a1e9cca56b757e4",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/9b2f9c80523d5aa5a8f3c3169fa5915c7f53ec856c3892a010ee51f9110620a3",
    :current-owner-proposals
@@ -628755,15 +629483,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Verification Matrix", :line 77}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/3095-3799/773b4b10e83ded0c"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "773b4b10e83ded0c7e20374bc4238ed122286f4e0c1ea7016598c6bae2bd1099",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
    :current-owner-proposals
@@ -628786,15 +629532,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Verification Matrix", :line 77}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/3799-3889/5f57cfafd2ecd1ab"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "5f57cfafd2ecd1abef122c66d42eda747b4dd1ce6da8eff4712fcbe083511b75",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
    :current-owner-proposals
@@ -628817,13 +629581,31 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Verification Matrix", :line 77}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/3889-3890/01ba4719c80b6fe9"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
    :current-owner-proposals
@@ -628846,15 +629628,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Verification Matrix", :line 77}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/3890-3994/f308e6824560cdf8"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "f308e6824560cdf8518f345c2978f4bef0cb1ec0f38c9fad54922aaa70171d08",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
    :current-owner-proposals
@@ -628877,15 +629677,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Verification Matrix", :line 77}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/3994-4183/334868eccc4eee20"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "334868eccc4eee20acc2cb5034ef486870e3f18e0cf49fa4b0a66c4ee9d83a21",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/7835f683c4720590618a5b1d668924bc0df121a6e84e44150482b3640c746cfc",
    :current-owner-proposals
@@ -628908,13 +629726,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Translation Validation", :line 92}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/4184-4210/840052cc622639be"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "840052cc622639be06e1181e69bf151be126d988492f3c4d06c00b448f6bf9fc",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/c57039433bcbe29e672ca070b016a950a9630217e8b9fbb1ec65ec30fb995ad9",
    :current-owner-proposals
@@ -628937,15 +629772,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Translation Validation", :line 92}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/4211-4255"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "0b1012dca57f89a94e9bdb0d8bfe2510a9f586df8b9d2dc9f4cc768b70d0fc08",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/f5350e69a4f368aa6ddfe214799413d2708731e7f328ca38cce84487994977bf",
    :current-owner-proposals
@@ -628968,15 +629821,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Translation Validation", :line 92}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/4256-4595"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "ae4c3f0f6c96f6cb7dbf8a46a62ba8a3710bab0e1ceb2d3c2b30498fafb2fde4",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/37a00980cb54c6a4836a28d00f64053aced90ade65177aa7934d4c8399fc225c",
    :current-owner-proposals
@@ -628999,15 +629870,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Translation Validation", :line 92}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/4596-4673"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "ff83cb066601b09aca63c25c62fabb9ce68688cf91845dc45640ad0a9c5d6510",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/09fe15de873b3341dc5c1883c3c46126818ac380637b570c3db07b2c7b31dcef",
    :current-owner-proposals
@@ -629030,13 +629919,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Trust Report", :line 111}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/4674-4690/374e079fd179d589"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "374e079fd179d58914f538c2669a37ea88f23d80e96f75d1399ef3f6fff9e3d1",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/b5f511c02dc303ec547d7b55e4dd79260a3d89edeb168d55c7411917a60b0ccc",
    :current-owner-proposals
@@ -629059,15 +629965,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Trust Report", :line 111}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/4691-5122"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "bc73262ebc78f5c64775943575e4d0c004509f40a6937c6be2a65cb2bd5aa778",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/baac6b955956237cadca50e974a669b46afedef9ea64478782e86e4bc3e7e0fc",
    :current-owner-proposals
@@ -629090,15 +630014,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Trust Report", :line 111}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5123-5193"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "76bfd6f7ea378a835cbc4bb7e5bb85c76f353105908527c97d1329e13a9e4e4d",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/6c7837dddd83a8a4517d890753f9c5e47eb30dfd739539c833888c9df3755118",
    :current-owner-proposals
@@ -629121,13 +630063,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/5194-5211/125eac385d6703f3"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "125eac385d6703f304386a34e9c06e53f5d173cf27a8ff33a062ad7559276a23",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/78a7f8fae1a16fee569f4c13568539a8674237ed7fc7e374ba51f27f9c172fce",
    :current-owner-proposals
@@ -629150,15 +630109,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5212-5235"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "b5b0a31ad3e6601e4fdfba84d9a412c151d9176db4fe10f7af52a7e5a50e802f",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/2a7ffefea46fe9a78dbd1302b6972d3bbe9d0f69d3c82471afb445746eab0df8",
    :current-owner-proposals
@@ -629181,15 +630158,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5236-5280"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "267cecf8e9fea65d8061418d2a771775b890b31c22b9ecc37371fa978de59c4d",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
    :current-owner-proposals
@@ -629212,15 +630207,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5280-5324"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "98f842981a2604661fdfe97d9a4444fbbbc2e02d4d12b201fbf46c8fc8b08323",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
    :current-owner-proposals
@@ -629243,15 +630256,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5324-5359"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "4df1950c48bf79adfa49f4c93f03459e85092de7c11d676b632f95e5f5c6ff6e",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
    :current-owner-proposals
@@ -629274,15 +630305,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5359-5412"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "938031b21d6825cbe6d73a24cf1c7c4437c52e63b55e0eee41c0559e7cfbb08e",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
    :current-owner-proposals
@@ -629305,15 +630354,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5412-5459"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "7eca2dcf0d8c0c1eb41a3bf119be71a620d6e4b600402a676f9c6c57e83dd244",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
    :current-owner-proposals
@@ -629336,15 +630403,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5459-5511"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "0d18f2dfd64e0bd0d7f7498fcd0c957efc6bcf83c2ed217645023815e2e2a5c1",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
    :current-owner-proposals
@@ -629367,15 +630452,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5511-5579"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "f890abb5d2622d5d4fdfd4d433637f7b893552ec9cc872163ff889a27a69890b",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/d1cf5837539d57b5012cc00d24b637e7a11ee78ca422ce9d1e6fd22804cc373f",
    :current-owner-proposals
@@ -629398,15 +630501,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Release Gates", :line 127}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5580-5694"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "13c1f1f82b2d7019b6c50fbc62ceb3eb1e2b5b03441a3f6526e43116ec969b8d",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/55a5b2de039fa1d130a5fa1e9351072a7c33610778fdc643f15c4cf40dc6342a",
    :current-owner-proposals
@@ -629429,13 +630550,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/5695-5714/5db068f08d3513c0"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "5db068f08d3513c08e6650135b226c0f94e2da9b9e0808764dba074ce14cd266",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/7b248ff8c9b8b9662b33332a2435a7ddbe3ad216e82f2faa7f6f2a08047fb51f",
    :current-owner-proposals
@@ -629458,15 +630596,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5715-5792"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "ec8ffbe80f87f72b06ef98e4bc3d4a066cd5f8d71f7c153a3f53da92af7836bb",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/793d6cd0fade3d258be662bd1635306b25d3528717538b4045155cf8c6cde6e7",
    :current-owner-proposals
@@ -629489,15 +630645,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5793-5811"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "a516e697f92de9b76a9c79b775cbacd603b83c18b22723565ba6416a9e5f5736",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
    :current-owner-proposals
@@ -629520,15 +630694,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5811-5829"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "c2e0915854f6c0fe3363b3d3f82a9892f3871174414f2403900172e57fb35cd6",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
    :current-owner-proposals
@@ -629551,15 +630743,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5829-5848"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "4f285c78a3093e2fa839d3da319aea64e1d9b085814357b867fff9272cb71e3b",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
    :current-owner-proposals
@@ -629582,15 +630792,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5848-5869"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "ce78fe81ef7d2506e808aa27b9611ec05b4465d45e1842947377a8b77b04d277",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
    :current-owner-proposals
@@ -629613,15 +630841,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5869-5890"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "7f36836b6dcbae0462e1f9112b6874e092e58f0bad2eb14aec3b62a54ba45f2e",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
    :current-owner-proposals
@@ -629644,15 +630890,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5890-5914"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "4a85370292f88fddace897369df51e137732acff94bc306ec094fe22b20d519f",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
    :current-owner-proposals
@@ -629675,15 +630939,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5914-5943"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "28b28d530085904a83a3470a1d3ef9d338f0f192c30c5a0fb1b86f4b048ca913",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/a564d60e9e403f838dbded1cd5437687bcd98f0d2d23bd666983f7f221361d95",
    :current-owner-proposals
@@ -629706,15 +630988,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Counterexamples", :line 142}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/5944-5988"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "6032e5563174c982bdac9e62ae4afc0aa5feaf16ff4b8c79f3ce6bf3f618f260",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/6af0e6224ee1daff88c291d7dcdc8e3feed7317a0f4b92762f4c5c195a3eb5d2",
    :current-owner-proposals
@@ -629737,13 +631037,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/5989-6004/84b964dab09b580d"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/98acb10a02c06dcdbd02561f2e96b9071b6279a1cdc1eda0dc2a96312478cd52",
    :current-owner-proposals
@@ -629766,10 +631083,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6005-6062"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "d518b6610072bfb8f035985ed766fa22f70797ac1124429c89616d1e09fa0bac",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -629779,7 +631114,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/2bfa10f41f45fe993f7fc922d4aae1c08d0f41d6c3ee22384b54295c524e4dbf",
    :current-owner-proposals
@@ -629809,10 +631144,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6063-6130"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "7c6bd0e950514cb1ac1811f8c1550336642e4921286ff0277782af822e9c21a1",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -629822,7 +631175,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -629852,10 +631205,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6130-6178"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "75f7a3f0442e6e0e5981de000fafb8843024c6b39aab7bb22c79ee5445062ff7",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -629865,7 +631236,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -629895,10 +631266,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6178-6233"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "49add654a6a9c0201201c7cd1d61300ae9d31b0430772c7119dd45b5426cf138",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -629908,7 +631297,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -629938,10 +631327,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6233-6282"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "d0b480ced69cb5378861124bd1692deefa6fc66107b5fecf0363a5128150ffee",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -629951,7 +631358,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -629981,10 +631388,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6282-6342"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "678dbae521390de7ed80f8dde88fb93c942de055eba7eda2b081e53e86f88ead",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -629994,7 +631419,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -630024,10 +631449,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6342-6405"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "0e932273fab2fd772ec3581c1e598917c2b6a101f7fba2d2fcd79d7b9bd6f4fe",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -630037,7 +631480,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -630067,10 +631510,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6405-6468"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "53e2c7cf424b32656e03a33313cdb7588da2bed6f1ca804e6abb50dd607d1a58",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -630080,7 +631541,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -630110,10 +631571,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6468-6517"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "1b8d26e5ffffa9875508639ac9d453bdd0bd6382eb33fce322da6883f996a5eb",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -630123,7 +631602,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -630153,10 +631632,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6517-6571"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "372c81780b2d5bb249614ab76d0c739af9d7ed0b3ef167130f8125bdff435f23",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -630166,7 +631663,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/28eeb1bc122a896965f4b326fc37da4d2032f8ed4603da61518384955843fdff",
    :current-owner-proposals
@@ -630196,10 +631693,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Diagnostics", :line 156}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6572-6737"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "e7704d88b976b9d842ffb5ca5076ca4d1552d1c44e9870b62cb09bc525e54f56",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -630209,7 +631724,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/f0068243873de36197928c414d13235d8b77e0020dd42931512d201ec050b682",
    :current-owner-proposals
@@ -630239,13 +631754,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Rejected Designs", :line 174}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/6738-6758/81a99744c82b0f20"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/570bf9d400a3ee9ad4918d7f9e49f82047c35e73ee56b59fc1fc77a7f4b61fd0",
    :current-owner-proposals
@@ -630268,15 +631800,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Rejected Designs", :line 174}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6759-6829"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "fe0094375958de85c47a5f74a133c527176b13a183a63ea176387b73201b5369",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/ec0eaccf863e34525eccfebf0d7ed7147a2fcd54f405a5ba0d5c9ba9237e23c7",
    :current-owner-proposals
@@ -630299,15 +631849,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Rejected Designs", :line 174}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6830-6908"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "37e59719127706821696802b3f68e8f087bf0b3e626774667aea42d2693075eb",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/3db2f5190ee8126fe3b55501aa2ccb5cd685689c958befba1b70daa49fbddb1c",
    :current-owner-proposals
@@ -630330,14 +631898,32 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Rejected Designs", :line 174}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6909-6988"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "d8b8babb9ef898b737626d531e3d6014e4ed5ea1020ce097cb7b939c9354718a",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/ed2cf9936861ad8d84ae05b03ef88af31aa67ed6ac2dd612d3a6b325d5003396",
    :current-owner-proposals
@@ -630360,15 +631946,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Rejected Designs", :line 174}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/6989-7045"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "c9ebc5a1837e7281903a65854ede8f50123898b46487a373ddcaed4e981cce0d",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/77d6c098b7b414942689c0541744d71838423e6a45459bef04456bcedc714c1b",
    :current-owner-proposals
@@ -630391,15 +631995,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Rejected Designs", :line 174}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7046-7122"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "f869f64e9b52dbf6c22eb19ba204d162a46b73f27fe8cac753790869f03f179c",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/0958863ba9a85bf28ebe0df5e9e84bb5004a5b5cba0b2b7c2af3c5633fe2095d",
    :current-owner-proposals
@@ -630422,13 +632044,30 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/normalized-facet/7123-7147/4cea7efb2bd3a140"},
    :earlier-review-disposition :structural-source-context-preserved,
    :raw-sha256
    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
-   :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :disposition :qualified-independent-source-context-retained,
    :source-occurrence-id
    "C18/source/2be5e81a03c3631175028de3de8d57c9ac5b45226b75539fc4a527162332e3a1",
    :current-owner-proposals
@@ -630451,10 +632090,28 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7148-7210"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "9c7e6fcc8fe45d1f5b8025ec12a2ab52fe9bfd4d8725934965ba237f7d3f10e9",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"
     "interface/compiler/c18/pass-risk-evidence"
@@ -630464,7 +632121,7 @@
     "interface/compiler/c18/verification-provenance"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/8ee8c6890bb8bc7974defa23827e445f4a6d56f175d0e9711d4070d2292fb347",
    :current-owner-proposals
@@ -630494,15 +632151,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7211-7263"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "8432a7cf344762549332529310d37b8ca45638726e406cc39b6bb9d17bcb31a1",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630525,15 +632200,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7263-7308"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "c33063ec0ac9f49b833086251b8af45d70b198848debf2baca624bd4e959bdea",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/pass-risk-evidence"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630556,15 +632249,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7308-7364"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "b098e17e652687d7ad395cb98e1b90a53fe3db5bb1c81f67a3d403e7a8a2a274",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630587,15 +632298,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7364-7420"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "04cfb4ab7909f110dd0b80bf062ecee8cfae5c1826876b7de3dbafa322b26477",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/transformation-validation"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630618,14 +632347,32 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7420-7504"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "8a5c8bcb2b00edc751abebfb768e3621b114ecb7e126cdeb3ece273d2a17cefe",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids [],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630648,15 +632395,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7504-7529"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "adf652878fc2a3474f42243e2266713da9d68f5b7dbb33db4179ace9c5fe315f",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630679,15 +632444,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7529-7575"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "47cca37bf25af981502b63a3049ac823bb5bf18cef0ae8c51fcb4eed1effd05e",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630710,15 +632493,33 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7575-7633"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "23484ae6cc08511c736cdda480593f6451c159998e161aa431b5030497bc2e8e",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/counterexample-regression"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals
@@ -630741,16 +632542,34 @@
      "C18 - Compiler Verification and Pass-Correctness Strategy",
      :line 1}
     {:level 2, :title "Conformance Criteria", :line 186}],
+   :qualified-current-source-review
+   {:path
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :receipt
+    {:path
+     "specs/requirement-reconciliation/c18-independent-source-review.edn",
+     :sha256
+     "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+     :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+    :scope :C18-source-only,
+    :whole-owner-entailment :not-conferred,
+    :implementation-credit :none,
+    :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+    :facet-id "C18/facet/7633-7689"},
    :earlier-review-disposition
    :owned-source-predicate-needs-whole-context-criterion-join,
    :raw-sha256
    "b696adf7c3fb25981fdfc53fadad4db3b71f4f132c5ee5c69a871bdd2faebffb",
+   :enclosing-unselected-predicate-entailment :not-conferred,
    :candidate-current-decision-ids
    ["interface/compiler/c18/release-evidence-gate"
     "interface/compiler/c18/trust-report"],
    :implementation-credit :none,
    :disposition
-   :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+   :qualified-independent-source-criterion-conjunction-accepted,
    :source-occurrence-id
    "C18/source/590b43b58227d34f363b135afb044e69da417799cb5b49627e4efe237a21e668",
    :current-owner-proposals

@@ -1,0 +1,88 @@
+{:receipt
+ {:path
+  "specs/requirement-reconciliation/c18-independent-source-review.edn",
+  :sha256
+  "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+  :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+ :counts
+ {:new-reviewed-facets 101,
+  :all-reviewed-source-facets 1686,
+  :semantic-conjunction-facets 1449,
+  :retained-context-facets 235,
+  :superseded-history-facets 2,
+  :finite-proposal-ids 2308,
+  :pending-finite-proposal-ids 631,
+  :reviewed-outside-finite-index 9},
+ :owner-resolution-states :unchanged,
+ :trace
+ {:path
+  "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+  :sha256
+  "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d"},
+ :criteria
+ {:existing
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+   :task-id "pass-evidence",
+   :file-sha256
+   "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+   :start-byte 29748,
+   :end-byte 41650,
+   :raw-sha256
+   "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+   :marker "compiler-api-implementation-tasks"},
+  :records
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+   :task-id "pass-evidence",
+   :file-sha256
+   "3a92c74a370ed7d5c913f0f44060b1f9d81a63f83fb89223f1a1b5c35dc911fe",
+   :start-byte 41652,
+   :end-byte 47467,
+   :raw-sha256
+   "5fafaac805f9bb5ee2df6ca64aa55d0887a1dff99e224c2b629d5c1d805c9303",
+   :marker "compiler-api-implementation-tasks"},
+  :backend
+  {:path "specs/backends-workflow/tasks.md",
+   :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+   :task-id "backend-conformance",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :start-byte 39998,
+   :end-byte 40994,
+   :raw-sha256
+   "580b6ee2894670b4760d0fdc13d034a7fe8732139b0e4fe25813bb01961764bf",
+   :marker "backends-implementation-tasks"}},
+ :B6-containing-file-drift :excluded,
+ :implementation-credit :none,
+ :prior-adoption
+ {:path
+  "specs/requirement-reconciliation/c12-qualified-source-review-adoption.edn",
+  :sha256
+  "b9f56a99c2495f94e0435d97078f45fde537982770bec924545602f44fcdb686"},
+ :foreign-checker-execution :none,
+ :new-task-units 0,
+ :final-denominator :not-accepted,
+ :authentication
+ {:path
+  "specs/requirement-reconciliation/c18-independent-review-authentication.edn",
+  :sha256
+  "99e2b99c98379f2ae174a5c9c5ab155ed6bea674f9278089ba5d32740f7cf11d"},
+ :prior-records :unchanged-not-renewed,
+ :kind :C18-qualified-source-current-applicability,
+ :whole-current-head :not-accepted,
+ :native-completion
+ {:path
+  "specs/requirement-reconciliation/c18-independent-source-goal-completion.json",
+  :sha256
+  "10e6cbdc64c0b1e75ee2c748c291866867e522024c7f3f99590ae1424d34997b",
+  :status :complete},
+ :qualification
+ "Only the exact C18 source conjunctions and retained contexts are qualified. One prior pending provenance overlap is one context identity. Earlier qualified records and 833/561/71 histories retain their exact scope. Seven source joins confer no whole-owner or backend acceptance. B6 containing-file drift is excluded. Implementation, migration, release, whole-head, final denominator and held-action clearance remain unaccepted. Finite current-main composition requires its own affected review.",
+ :independent-negatives 66,
+ :new-decision-ids 0,
+ :subject
+ {:commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+ :held-actions :no-clearance-or-retry}

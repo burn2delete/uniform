@@ -234,7 +234,7 @@
    "specs/requirement-reconciliation/c18-owner-source-refinement.edn",
    :sha256
    "f684ad4ecd3e9879dbae9cb267902b7b7cfa7f51296f5743f5aab59ac939bd35"},
-  :qualified-source-dispositions :unchanged,
+  :qualified-source-dispositions :C18-only-prior-scopes-unchanged,
   :task-count-delta 0,
   :source-facet-trace
   {:path
@@ -246,7 +246,7 @@
    :facets 101,
    :authority :owner-proposal-pending-independent-facet-review},
   :implementation-credit :none,
-  :proposal-index-status :composed-pending-review,
+  :proposal-index-status :C18-qualified-identity-deduplicated,
   :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
   :source-facets 101,
   :current-bindings
@@ -254,7 +254,7 @@
    "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn",
    :sha256
    "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d"},
-  :status :pending-independent-affected-source-bookkeeping-review,
+  :status :qualified-C18-source-review-adopted,
   :source-occurrences 45,
   :criterion-conservation
   {:path
@@ -784,6 +784,39 @@
     :raw-sha256
     "a958557b3ac9982ad48f88cc19e917170b8883da51273a337d578b84c2947839"}}},
  :schema-version 1,
+ :c18-qualified-source-review-adoption
+ {:path
+  "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+  :receipt
+  {:path
+   "specs/requirement-reconciliation/c18-independent-source-review.edn",
+   :sha256
+   "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+   :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+   :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+  :whole-owner-entailment :not-conferred,
+  :counts
+  {:new-reviewed-facets 101,
+   :all-reviewed-source-facets 1686,
+   :semantic-conjunction-facets 1449,
+   :retained-context-facets 235,
+   :superseded-history-facets 2,
+   :finite-proposal-ids 2308,
+   :pending-finite-proposal-ids 631,
+   :reviewed-outside-finite-index 9},
+  :implementation-credit :none,
+  :scope :C18-source-only,
+  :status :qualified-C18-source-review-adopted,
+  :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+  :sha256
+  "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+  :qualification
+  "Only the exact C18 source conjunctions and retained contexts are qualified. One prior pending provenance overlap is one context identity. Earlier qualified records and 833/561/71 histories retain their exact scope. Seven source joins confer no whole-owner or backend acceptance. B6 containing-file drift is excluded. Implementation, migration, release, whole-head, final denominator and held-action clearance remain unaccepted. Finite current-main composition requires its own affected review.",
+  :applicability
+  {:path
+   "specs/requirement-reconciliation/c18-qualified-current-applicability.edn",
+   :sha256
+   "97e6f90989dc3842837416c42ba9d57a6ab5869546fa4e8a49a8c454723b02e1"}},
  :reviewed-family-inputs
  [{:family "phase-01",
    :artifact
@@ -437955,13 +437988,13 @@
   "specs/requirement-reconciliation/c14-owner-current-witness-applicability.edn"},
  :current-facet-disposition-proposals
  {:qualified-current-source-review
-  {:reviewed-context-facets 220,
-   :reviewed-semantic-conjunction-facets 1363,
-   :distinct-reviewed-facet-ids 1585,
+  {:reviewed-context-facets 235,
+   :reviewed-semantic-conjunction-facets 1449,
+   :distinct-reviewed-facet-ids 1686,
    :whole-source-entailment :pending,
    :reviewed-superseded-history-facets 2,
    :implementation-credit :none,
-   :remaining-proposed-facet-ids 732,
+   :remaining-proposed-facet-ids 631,
    :reviewed-outside-finite-proposals 9,
    :adoptions
    [{:path
@@ -438006,7 +438039,23 @@
      :sha256
      "b9f56a99c2495f94e0435d97078f45fde537982770bec924545602f44fcdb686",
      :new-source-facets 114,
-     :scope :C12-only}]},
+     :scope :C12-only}
+    {:path
+     "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+     :sha256
+     "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+     :receipt
+     {:path
+      "specs/requirement-reconciliation/c18-independent-source-review.edn",
+      :sha256
+      "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+      :reviewed-source "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+      :reviewed-tree "2e106366aab696a975f0160067e9dff9b78538a0"},
+     :scope :C18-source-only,
+     :whole-owner-entailment :not-conferred,
+     :implementation-credit :none,
+     :subject-source-commit "494afbf84a534e1dbe9136b74579aa85aec7d89a",
+     :new-source-facets 101}]},
   :task-count-delta 0,
   :original-source-facets 28785,
   :traces
