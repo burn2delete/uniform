@@ -1,5 +1,24 @@
 # PR502 preserved path reconciliation
 
+## Query builders and existing constructor draft correspondence
+
+`collection-builder-guarded-correspondence.edn` and its companion Markdown
+cover three List-query source builders at main `70dcb222` and the C7
+constructor in existing PR623 `c5e9fccd`. All four complete historical bodies
+and argument lists occur unchanged inside pinned native-map/cell guards. The
+query guard explicitly retains both the exact accepted cell and the closed
+accepted `:head-proof` alternative; it does not establish payload validity.
+The C7 constructor's one extra current-main 1023-argument predicate is already
+removed in PR623. Removing exactly that predicate from the complete current
+function reconstructs the draft, so no duplicate implementation is introduced.
+
+Full source/ref/tree/body/guard/policy pins and thirty effective source
+corruption refusals pass. Independent conditional classification is pending.
+The other two construction builders remain in their separate proposal. No
+earlier predicate decision, PR623/636 acceptance, old/new input-contract
+equivalence, native/transitive/runtime proof, retained-accounting approval or
+wide support follows. No production or original-inventory change occurs.
+
 ## Guarded List-construction builder proposal
 
 `construction-guarded-incorporation.edn` and its companion Markdown bind the
