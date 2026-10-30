@@ -79,4 +79,8 @@ exact predicates, not acceptance of this new main tree, whole dependencies,
 all of C1/C18, or implementation support. The small SH update preserves prior
 source-version history and numeric routing associations, adds the literal domain
 key and current source pins, and keeps every whole-criterion assessment
-unassessed. No original global reconciliation metadata is imported.
+unassessed. The retained Pass Evidence criterion names one source-context file;
+its [scoped excerpt](../requirement-reconciliation/domain-gap-completion.edn)
+contains only that criterion's original record and ten source-facet witnesses,
+with captured before/after fields explicitly historical. The global database,
+other 69 records and their acceptance are not imported.

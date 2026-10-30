@@ -119,3 +119,42 @@ Its runnable source checks use those local bytes and exact current predicates;
 the larger reconciliation branch and its global snapshots are not live test
 dependencies. Earlier qualified adoption references remain immutable history,
 with no renewed acceptance of this new main composition.
+
+The archive-only successor `e47364b6` initially failed one source-control
+assertion: the C12 sealed receipt uses the literal exclusion
+`:final-count-denominator`, while C17 uses `:final-count-or-denominator`.
+The test now checks each cohort's exact recorded label without renaming the
+receipt or broadening its ceiling. All four tests/78 assertions then pass.
+The two task-file archives use `.txt` because they preserve captured bytes and
+relative links as evidence, rather than live Markdown navigation.
+
+The full-dependency check found the retained Pass Evidence criterion's literal
+reference to `specs/requirement-reconciliation/domain-gap-completion.edn`.
+The original is a 3.8 MB, 70-record historical family artifact. The finite
+package retains only the one `domain/mir-pass-integration` record and all ten
+of its authentic DOM17 source-facet witnesses at that required path. All
+before/after coverage fields remain captured history. The excerpt is source
+context only, not a new current owner disposition, whole DOM17/C18 acceptance
+or global database import. Existing criterion text and all six reviewed current
+predicate bodies remain byte-exact. Its two named task dependencies resolve to
+the existing Pipeline and Opt task authorities. No producer or checker executes.
+
+The completed source package passes six tests/122 assertions, including all
+six current predicate bodies, both frozen receipt hashes, local reviewed-source
+archives, exact four prior main outcomes, all ten DOM17 source-coordinate/raw
+hash checks, the one selected dependency record, missing-facet controls,
+mode/blob conservation and unchanged normative inputs. One scratch delimiter
+was corrected before its all-form evaluation; no source write occurred from
+that malformed preparation. Earlier archive-test and source-pin failures remain
+recorded above rather than relabelled as passing attempts.
+
+Affected checks pass: Compiler API projection 5/77; SH 12/157; language boundary
+6/11; document validator 240 documents/19 indexes; full-language roadmap;
+unchanged workstream governance (185 records); whitespace. The repository's
+source-only CI projection mode passes all 53 child commands. Changed-file CI
+lint reports three unchanged baseline warnings and zero blocking warnings or
+errors; the new test has no findings. These are local source checks, not a
+GitHub check result, bootstrap/catalog/leaf run, compiler proof or integration
+acceptance. The captured CI logs are preserved outside the clean checkout in
+`/tmp/finite-domain-ci-pass1`. Actual CI bootstrap/leaf/Darwin/probe modes and
+all held operations remain unrun by this preparation.

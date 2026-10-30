@@ -9,12 +9,18 @@
  :integration-eligibility :not-conferred,
  :source-extraction-from "8ba98ee7683d7f87a431b7b6d273b06fd5d1a144",
  :existing-main-outcome-predicates :preserved-as-exact-prefixes,
- :global-reconciliation-metadata :not-copied,
  :current-main-composition-review
  :pending-independent-affected-composition-review,
  :global-denominator :not-adopted,
  :implementation-credit :none,
  :source-documents :unchanged,
+ :selected-producer-source-context
+ {:path "specs/requirement-reconciliation/domain-gap-completion.edn",
+  :sha256
+  "d24b93ff6ea8ff3a8c422a19a0544eec60eff52a6dde6a848be17baf86edfec6",
+  :selected-criterion "domain/mir-pass-integration",
+  :source-facets 10,
+  :authority :captured-source-context-not-semantic-acceptance},
  :scope
  "Extract exact reviewed C17/C12 consumer and prerequisite producer criterion bodies and their generated views; preserve existing main outcomes, source/version histories and source-only review ceilings. The isolated main composition is a new candidate requiring its own independent review. No other source cohort, global task count, release, migration or self-hosting acceptance follows. No compiler/plugin/domain/checker/provider/runtime/target or held operation is executed.",
  :cohorts
@@ -276,14 +282,44 @@
   "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn"
   "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt"
   "specs/compiler-api-workflow/review-inputs/domain-source-review.edn"
-  "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt"],
+  "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt"
+  "specs/requirement-reconciliation/domain-gap-completion.edn"],
  :source-reference-closure
  :archived-exact-receipts-and-reviewed-task-bytes,
  :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
  :original-833-and-561-populations :not-recounted-or-adopted-here,
  :kind :finite-compiler-plugin-domain-source-composition,
  :all-implementation-statuses :Open,
+ :unchanged-normative-mode-and-blob-pins
+ {"docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+  "100644 blob 2be9027ab55776b326925a421ca7906d22786cf0\tdocs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+  "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+  "100644 blob 2656b64762e849e8fbb75ad2b42aeeaf58b42f0c\tdocs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+  "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"
+  "100644 blob 9f6bb4660bfec34af10fc99186d3d5034b5c79fd\tdocs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"},
  :base-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
  :base-commit "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+ :global-reconciliation-database :not-copied,
+ :source-file-pins
+ {"docs/component-roadmaps/compiler-api.md"
+  {:mode-and-blob
+   "100644 blob fe1eaf59fd86a965fbe94e765aca10b1297bb1b4\tdocs/component-roadmaps/compiler-api.md",
+   :sha256
+   "ae1de98a3b98f88fd36816c965f89688ed99a8c76dad1d6c24d99226d529ceb8"},
+  "specs/compiler-api-workflow/tasks.md"
+  {:mode-and-blob
+   "100644 blob f320b803ae659206ed727ae0706da6cd67b5c3a5\tspecs/compiler-api-workflow/tasks.md",
+   :sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"},
+  "tools/compiler_api_task_projection.clj"
+  {:mode-and-blob
+   "100644 blob 57863b7a2789c449f14e3abd38483304ca6e348c\ttools/compiler_api_task_projection.clj",
+   :sha256
+   "0da3c3680947e4db64d418787df465ea244beda795ea94edf4be8e5bbf293039"},
+  "tools/compiler_api_task_projection_test.clj"
+  {:mode-and-blob
+   "100644 blob 1e18848463c67af74e55c2dd97d657d2a94e7769\ttools/compiler_api_task_projection_test.clj",
+   :sha256
+   "303a117e1b3cc55cfcfefee16362c872935202ac5d0ba2d18f361427b4f20622"}},
  :prior-main-outcomes
  ["pipeline" "plugins" "pass-evidence" "development-boundaries"]}

@@ -3,6 +3,7 @@
             [clojure.java.shell :as shell] [clojure.test :refer [deftest is run-tests]]))
 (binding [*command-line-args* nil] (load-file "tools/compiler_api_task_projection.clj")
   (load-file "tools/sh_inventory.clj"))
+(require '[compiler-api-task-projection] '[task-projection] '[sh-inventory])
 (def composition (edn/read-string (slurp "specs/compiler-api-workflow/domain-contract-source-composition.edn")))
 (defn sha [text] (sh-inventory/sha256 text))
 (def git-source
@@ -19,6 +20,9 @@
   (let [raw (if (= :archived-exact-bytes (:reference-kind r)) (slurp (:path r))
               (git-source (:commit r) (:path r)))]
     (assert (= (:sha256 r) (sha raw))) (edn/read-string raw)))
+(defn mode-and-blob [path]
+  (let [r (shell/sh "git" "ls-tree" "HEAD" "--" path)]
+    (assert (zero? (:exit r))) (str/trim (:out r))))
 (defn pending-only? [r]
   (and (= :pending-independent-affected-composition-review (:current-main-composition-review r))
        (= :not-conferred (:integration-eligibility r))
@@ -32,7 +36,9 @@
                 reviewed-source (slurp (get-in cohort [:reviewed-task-source :path]))]]
     (is (= :scoped-pass (:verdict receipt)))
     (is (= (:source-facets cohort) (count (:facet-verdicts receipt))))
-    (is (every? (set (:exclusions receipt)) [:implementation :integration :final-count-or-denominator]))
+    (is (every? (set (:exclusions receipt))
+                [:implementation :integration
+                 (case (:id cohort) :C17 :final-count-or-denominator :C12 :final-count-denominator)]))
     (is (= (get-in cohort [:normative-source :file-sha256])
            (sha (slurp (get-in cohort [:normative-source :path])))))
     (doseq [[role {:keys [reviewed-witness current-witness]}] (:criteria cohort)
@@ -78,12 +84,46 @@
                (assoc composition :global-denominator :accepted)
                (assoc composition :current-main-composition-review :accepted)]]
     (is (not (pending-only? bad))))
-  (is (not (.exists (java.io.File. "specs/requirement-reconciliation"))))
+  (is (= ["domain-gap-completion.edn"]
+         (vec (sort (.list (java.io.File. "specs/requirement-reconciliation"))))))
   (let [result (shell/sh "git" "diff" "--name-only" (:base-commit composition))
         paths (remove str/blank? (str/split-lines (:out result)))]
     (is (zero? (:exit result)))
     (is (every? (set (:owned-paths composition)) paths))
     (is (not-any? #(or (str/starts-with? % "bootstrap/") (str/starts-with? % "contracts/")) paths))))
+
+(deftest named-producer-source-dependency-is-complete-and-scoped
+  (let [ref (:selected-producer-source-context composition) text (slurp (:path ref))
+        context (edn/read-string text) record (first (:records context))
+        source-facets (:source-evidence record)
+        tasks (slurp compiler-api-task-projection/task-path)
+        named (set (re-seq #"specs/requirement-reconciliation/[a-z-]+\.edn" tasks))]
+    (is (= (:sha256 ref) (sha text)))
+    (is (= :finite-producer-criterion-source-context-excerpt (:kind context)))
+    (is (= 1 (count (:records context))))
+    (is (= "domain/mir-pass-integration" (:historical-id record) (:selected-criterion context)))
+    (is (= (:selected-record-sha256 context) (sha (pr-str record))))
+    (is (= 10 (count source-facets)))
+    (is (= #{(:path ref)} named))
+    (is (str/includes? tasks (:criterion-text record)))
+    (is (= :none (:implementation-credit context)))
+    (is (= :not-conferred (:current-whole-owner-acceptance context)))
+    (doseq [f source-facets
+            :let [text (slurp (:path f)) bytes (.getBytes ^String text "UTF-8")
+                  raw (String. (java.util.Arrays/copyOfRange bytes (int (:start-byte f)) (int (:end-byte f))) "UTF-8")]]
+      (is (= (:original-source-sha256 f) (sha text)))
+      (is (= (:raw-sha256 f) (sha raw))))
+    (is (not= (set (map :id source-facets)) (set (map :id (pop source-facets)))))
+    (is (= ["pipeline" "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts"] (:dependencies record)))
+    (is (str/includes? (slurp "specs/opt-workflow/tasks.md")
+                      "`opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts`"))))
+
+(deftest git-modes-and-blobs-preserve-extracted-source-and-normative-inputs
+  (doseq [[path pin] (:source-file-pins composition)]
+    (is (= (:mode-and-blob pin) (mode-and-blob path)))
+    (is (= (:sha256 pin) (sha (slurp path)))))
+  (doseq [[path expected] (:unchanged-normative-mode-and-blob-pins composition)]
+    (is (= expected (mode-and-blob path)))))
 
 (let [result (run-tests 'compiler-domain-source-test)]
   (shutdown-agents)
