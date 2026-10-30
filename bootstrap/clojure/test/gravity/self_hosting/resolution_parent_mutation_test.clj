@@ -806,3 +806,146 @@
         ((:restore! alias))
         (is ((:restored? alias)))
         (is (every? (fn [[var value]] (identical? value @var)) before-roots))))))
+
+;; SOURCE PREPARATION ONLY. Profile is packaged from the real module, but is
+;; absent from the five-field ID preimage. A skipped second ID proves no reuse.
+(defn- unprojected-profile-parent [parent]
+  (let [trace (:macro-expansion-trace parent) step (first trace)
+        backing (object-array (mapcat identity step))
+        position (first (keep #(when (= :profile (aget backing %)) (inc %))
+                              (range 0 (alength backing) 2)))
+        before (when position (aget backing position))
+        after (if (= :hosted before) :native :hosted)
+        aliased (clojure.lang.PersistentArrayMap. backing)
+        result (assoc parent :macro-expansion-trace (assoc trace 0 aliased))
+        projected #(mapv (fn [value]
+                          (select-keys value [:input-syntax-id :output-syntax-id :macro
+                                              :macro-version :trace-replay-id]))
+                        (:macro-expansion-trace result))]
+    (when-not (and position (keyword? before) (not= before after) (= parent result))
+      (throw (ex-info "Profile alias must preserve the actual packaged parent" {})))
+    {:parent result :before before :after after :projected projected
+     :mutate! #(aset backing position after)
+     :restore! #(aset backing position before)
+     :restored? #(= step aliased)}))
+
+(defn- observe-unprojected-profile [source parent invocation mutate! operation]
+  (let [trace (:macro-expansion-trace parent) stream (:expanded-syntax-stream parent)
+        trace-var (implementation 'sh05-macro-trace-id)
+        stream-var (implementation 'sh05-expanded-syntax-stream-id)
+        verify-var (implementation 'sh06-resolution-verify-sh05)
+        trace-id @trace-var stream-id @stream-var verify @verify-var
+        changed? (atom false) details (atom [])
+        record! (fn [event data]
+                  (swap! details conj (merge {:event event :after-mutation? @changed?} data)))]
+    (with-redefs-fn
+      {trace-var
+       (fn [path operand]
+         (when (and (= source path) (identical? trace operand)) (record! :trace-id-enter {}))
+         (let [value (trace-id path operand)]
+           (when (and (= source path) (identical? trace operand))
+             (record! :trace-id-return {:value value}))
+           value))
+       stream-var
+       (fn [path operand]
+         (when (and (= source path) (identical? stream operand)) (record! :stream-id-enter {}))
+         (let [value (stream-id path operand)]
+           (when (and (= source path) (identical? stream operand))
+             (record! :stream-id-return {:value value}))
+           value))
+       verify-var
+       (fn [value]
+         (let [report (verify value)]
+           (when (identical? parent value) (record! :macro-report {:report report}))
+           report))}
+      (fn []
+        (assoc
+         (observe-construction
+          parent invocation
+          (when mutate!
+            #(do (mutate!) (reset! changed? true) (record! :profile-mutated {})))
+          operation)
+         :details @details)))))
+
+(deftest actual-macro-trace-unprojected-profile-refused-before-second-id
+  (reset! observations {:phase :constructing-fresh-unprojected-profile-parent})
+  (let [{:keys [source reader invocation parent]} (fresh-fragment-parent)
+        alias (unprojected-profile-parent parent) parent (:parent alias)
+        before-projected ((:projected alias))
+        stored-id (:macro-expansion-trace-id parent)
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        construct #(b/sh06-resolution-artifact-from-sh05-artifact source parent inputs reader invocation)
+        before-roots (into {} (for [name ['sh05-macro-trace-id 'sh05-expanded-syntax-stream-id
+                                          'sh06-resolution-verify-sh05 'sh06-resolution-run-request!]
+                                   :let [var (implementation name)]] [var @var]))]
+    (try
+      (let [positive (observe-unprojected-profile source parent invocation nil construct)]
+        (reset! observations {:phase :positive-unprojected-reachability :events (:events positive)
+                              :details (:details positive)})
+        (when-let [error (:error positive)] (throw error))
+        (when-not (and (= :complete (get-in positive [:value :capability-based-proof :status]))
+                       (= 2 (count (filter #(= :trace-id-return (:event %)) (:details positive)))))
+          (throw (ex-info "Authentic positive did not reach both trace-ID uses"
+                          {:id "RV1-TRACE-REACHABILITY"})))
+        (let [public (b/sh06-resolution-artifact-verification
+                       (:value positive) :gravity.bootstrap/legacy invocation)]
+          (when-not (= :passed (:status public))
+            (throw (ex-info "Fresh public unprojected-profile positive failed"
+                            {:phase :independent-positive :failed-checks (:failed-checks public)})))
+          (let [mutation (atom nil)
+                changed (try
+                          (observe-unprojected-profile
+                           source parent invocation
+                           #(do ((:mutate! alias))
+                                (reset! mutation {:profile (get-in parent [:macro-expansion-trace 0 :profile])
+                                                  :projected ((:projected alias))
+                                                  :stored-id (:macro-expansion-trace-id parent)}))
+                           construct)
+                          (finally ((:restore! alias))))
+                details (:details changed) events (:events changed)
+                later (filter :after-mutation? details)
+                report (:report (first (filter #(= :macro-report (:event %)) later)))
+                before (take-while #(not= :parent-mutated (:event %)) events)
+                after (rest (drop-while #(not= :parent-mutated (:event %)) events))
+                result {:phase :unprojected-profile-control-complete
+                        :positive-events (:events positive) :public-positive-report public
+                        :changed-events events :changed-details details :changed-error (:error changed)
+                        :mutation @mutation :before-profile (:before alias) :after-profile (:after alias)
+                        :original-failed-macro-report report
+                        :second-id-skipped? (not-any? #(= :trace-id-enter (:event %)) later)
+                        :earlier-full-trace-refusal? (false? (get-in report [:checks :trace-replay-current?]))
+                        :digest-reuse-evidence? false :alias-restored? ((:restored? alias))
+                        :no-verifier-report-substitution? true :whole-rv1-closed? false}]
+            (reset! observations result)
+            (is (:mutated? changed))
+            (is (= :resolve-return (:event (last before))))
+            (is (= 1 (count (filter #(= :parent-mutated (:event %)) events))))
+            (is (= (:after alias) (:profile @mutation)))
+            (is (= before-projected (:projected @mutation)))
+            (is (= stored-id (:stored-id @mutation) (:macro-expansion-trace-id parent)))
+            (is (= 1 (count (filter #(= :trace-id-return (:event %)) details))))
+            (is (= stored-id (:value (first (filter #(= :trace-id-return (:event %)) details)))))
+            (is (:second-id-skipped? result))
+            (is (:earlier-full-trace-refusal? result))
+            (is (= [:profile-mutated :stream-id-enter :stream-id-return :macro-report]
+                   (mapv :event later)))
+            (is (= (:expanded-syntax-stream-id parent)
+                   (:value (first (filter #(= :stream-id-return (:event %)) later)))))
+            (is (= :failed (:status report)))
+            (is (= :passed (get-in report [:gravity-verifiers :template :status])))
+            (is (= :passed (get-in report [:gravity-verifiers :resolved :status])))
+            (is (some #{:trace-replay-current} (:failed-checks report)))
+            (is (true? (get-in report [:checks :macro-output-current?])))
+            (is (true? (get-in report [:checks :generated-origins-current?])))
+            (is (true? (get-in report [:checks :input-lineage-current?])))
+            (is (not-any? #(= :resolve-enter (:event %)) after))
+            (is (= "C5-UNRESOLVED" (:id (ex-data (:error changed)))))
+            (is (nil? (:value changed)))
+            (is (every? #(and (:same-parent? %) (:invocation-current? %)
+                             (:proof-transaction-absent? %) (:observed-roots-stable? %))
+                        (filter #(= :macro-enter (:event %)) events)))
+            (is (:alias-restored? result)))))
+      (finally
+        ((:restore! alias))
+        (is ((:restored? alias)))
+        (is (every? (fn [[var value]] (identical? value @var)) before-roots))))))
