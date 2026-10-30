@@ -1,5 +1,5 @@
 {:canonical-handoff-status
- :frozen-pending-one-independent-affected-review,
+ :independent-source-composition-pass-draft-PR-CI-pending,
  :preflight-scope :inspect-only-no-integration-eligibility,
  :candidate
  {:commit "7459bc9405467c56ef07b5dfc37f04ee26014289",
@@ -11,6 +11,7 @@
  :review-routing :coordinator-only,
  :clean-worktree true,
  :new-exact-head-CI-after-review :required,
+ :source-review-integration-authority :not-conferred,
  :implementation-credit :none,
  :mode-blob-manifest
  {:sha256
@@ -40,7 +41,17 @@
  :source-reference-closure
  :local-archived-receipts-reviewed-task-bytes-and-one-selected-producer-context,
  :outbound-message :none,
- :one-affected-independent-review :pending,
+ :one-affected-independent-review
+ {:verdict :scoped-pass,
+  :findings [],
+  :negative-controls 35,
+  :receipt
+  "specs/requirement-reconciliation/finite-compiler-domain-composition-review.edn",
+  :sha256
+  "4678d949f5fd54b3ccbd8e128b41062c3dc3012d1e0829949110055719387abe",
+  :authentication
+  "specs/requirement-reconciliation/finite-compiler-domain-composition-authentication.edn",
+  :scope :finite-source-composition-only},
  :kind :frozen-finite-compiler-domain-source-review-candidate,
  :C12
  {:receipt-sha256
@@ -148,7 +159,14 @@
   "/tmp/finite-domain-freeze-7459bc94/inspect-preflight.json",
   :all-preconditions-pass true,
   :integration-eligibility :not-conferred},
- :new-PR-or-workflow :none,
+ :new-PR-or-workflow
+ {:PR "https://github.com/burn2delete/uniform/pull/646",
+  :draft true,
+  :head "7459bc9405467c56ef07b5dfc37f04ee26014289",
+  :configured-CI-run
+  "https://github.com/burn2delete/uniform/actions/runs/41043448936",
+  :status :in-progress,
+  :manual-dispatch :none},
  :worktree
  "/Users/matt/.codex/worktrees/compiler-domain-contracts/uniform",
  :source-extraction "f25e6f571e610587da8142f5b0fc33e7806d440e",

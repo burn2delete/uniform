@@ -1,0 +1,802 @@
+{:findings [],
+ :counts
+ {:archived-receipts 2,
+  :negative-controls 35,
+  :current-local-outcomes 5,
+  :selected-producer-records 1,
+  :conditional-source-cohorts {:C17 108, :C12 115},
+  :DOM17-witnesses 10,
+  :preserved-incoming-main-paths 4,
+  :owned-paths 17,
+  :concrete-external-task-references 12,
+  :exact-current-criterion-spans 6,
+  :unchanged-owned-paths 1,
+  :actual-changed-paths 16,
+  :archived-task-versions 2,
+  :prior-main-outcomes 4},
+ :main-authority-and-generated-views
+ {:SH
+  {:numeric-routing
+   :prior-four-selectors-retain-their-literal-IDs-domain-key-appended-fifth-even-though-record-display-order-differs,
+   :new-artifact-pointer
+   :authenticates-actual-ancestor-commit-containing-artifact,
+   :prior-Reader-Build-review-and-source-version-histories
+   :exact-retained-predecessor,
+   :unchanged-fields
+   :all-other-requirements-assessments-scopes-lineage-accepted-scoped-evidence-and-inventory-identities,
+   :compilerAPI-task-and-owner-evidence
+   :updated-only-for-exact-current-local-bodies-and-four-to-five-introduction,
+   :test-file :unchanged-main-modeblob,
+   :rollup :unchanged-main-modeblob,
+   :whole-criterion-implementation-assessment :not-promoted},
+  :new-local-outcome "domain-ir-boundaries",
+  :tables
+  :five-rows-each-Pipeline-PluginHost-PassEvidence-DomainIR-six-existing-development-boundary-rows-retained,
+  :projector-code
+  :only-existing-outcome-enumeration-heading-and-record-regex-extended-other-functions-exact,
+  :domain-record
+  :existing-canonical-reviewed-semantic-outcome-not-row-expansion-or-new-global-denominator,
+  :preservation
+  :all-four-main-record-IDs-headings-checkboxes-Openstatuses-and-full-predicate-bodies-retained-as-exact-prefixes,
+  :roadmap :all-five-generated-regions-equal-task-projections,
+  :spec-plan-evidence
+  :append-only-main-history-and-semantic-naming-retained,
+  :new-source-test
+  :local-archives-identity-scope-prefix-dependency-modeblob-and-SH-pointer-checks-no-new-production-API-or-parallel-registry,
+  :projector-tests
+  :affected-count-and-authority-introduction-successors-reviewed-as-source-not-executed,
+  :current-local-order
+  ["pipeline"
+   "plugins"
+   "pass-evidence"
+   "domain-ir-boundaries"
+   "development-boundaries"],
+  :prior-main-outcomes
+  ["pipeline" "plugins" "pass-evidence" "development-boundaries"]},
+ :canonical-writes :none,
+ :author-reported-checks
+ {:source-tests [7 126],
+  :SH-tests [12 157],
+  :boundary [6 11],
+  :documents-governance-lint :reported-source-only-successes,
+  :reviewer-verification
+  :independent-core-DATA-checker-and-inert-source-code-audit-only-no-repository-helper-or-CI-execution,
+  :historical-failed-preparations
+  :preartifact-sourcepin-and-archive-count-label-failures-retained-in-append-only-evidence-not-relabelled},
+ :schema-version 1,
+ :exclusions
+ [:implementation
+  :compiler
+  :Bootstrap
+  :plugin
+  :callback
+  :domain-verifier
+  :proofchecker
+  :runtimeprovider
+  :native-target
+  :model
+  :process-probe
+  :lease-timer
+  :CI-execution
+  :publication-action
+  :integration
+  :global-task-denominator
+  :833561-recount-or-adoption
+  :ALL240-review
+  :whole-C1-C18-DOM17-or-other-dependency-semantics
+  :pipeline-order-adjudication
+  :release
+  :selfhosting
+  :seed-retirement
+  :old-review-renewal
+  :held-retry
+  :outbound-delivery],
+ :full-mode-blob-overlay
+ {:all-owned-file-types :blob,
+  :pins
+  {"specs/compiler-api-workflow/review-inputs/domain-source-review.edn"
+   {:mode "100644",
+    :type "blob",
+    :blob "100a792a348a2b3ce61554120dedc83d0950c144"},
+   "specs/sh-family-crosswalk/crosswalk.edn"
+   {:mode "100644",
+    :type "blob",
+    :blob "4224f07079b75325b0e8260e44189afe4d6c8f42"},
+   "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt"
+   {:mode "100644",
+    :type "blob",
+    :blob "aa096939ed77e51223502f92e5feff42db7d9bb6"},
+   "specs/compiler-api-workflow/plan.md"
+   {:mode "100644",
+    :type "blob",
+    :blob "f2d76cb3341124814724a9f351ddb1cab8c3857d"},
+   "specs/sh-family-crosswalk/rollup.md"
+   {:mode "100644",
+    :type "blob",
+    :blob "e4de3a33798389efeae0f0d2598cbbf8ab16b272"},
+   "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt"
+   {:mode "100644",
+    :type "blob",
+    :blob "f320b803ae659206ed727ae0706da6cd67b5c3a5"},
+   "docs/component-roadmaps/compiler-api.md"
+   {:mode "100644",
+    :type "blob",
+    :blob "fe1eaf59fd86a965fbe94e765aca10b1297bb1b4"},
+   "specs/compiler-api-workflow/domain-contract-source-composition.edn"
+   {:mode "100644",
+    :type "blob",
+    :blob "e50eefa3df6aae52c37a54b6f4c50fd8a87d858e"},
+   "tools/sh_crosswalk.clj"
+   {:mode "100644",
+    :type "blob",
+    :blob "d09832915ba0b9b3fd939945807bc816418d5b1f"},
+   "specs/compiler-api-workflow/tasks.md"
+   {:mode "100644",
+    :type "blob",
+    :blob "f320b803ae659206ed727ae0706da6cd67b5c3a5"},
+   "tools/compiler_api_task_projection.clj"
+   {:mode "100644",
+    :type "blob",
+    :blob "57863b7a2789c449f14e3abd38483304ca6e348c"},
+   "tools/compiler_domain_source_test.clj"
+   {:mode "100644",
+    :type "blob",
+    :blob "2f639714d3b712eb6a281db85af8ed2d8308a270"},
+   "tools/compiler_api_task_projection_test.clj"
+   {:mode "100644",
+    :type "blob",
+    :blob "1e18848463c67af74e55c2dd97d657d2a94e7769"},
+   "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn"
+   {:mode "100644",
+    :type "blob",
+    :blob "a4b157169323a22f4052d05f050893410e1a1c7d"},
+   "specs/compiler-api-workflow/evidence.md"
+   {:mode "100644",
+    :type "blob",
+    :blob "0808cc33d00f9ccafab78afe9d39695dd62c6900"},
+   "specs/requirement-reconciliation/domain-gap-completion.edn"
+   {:mode "100644",
+    :type "blob",
+    :blob "00526d6bbafa3a91dfe15e5acbf0ded30bd1e401"},
+   "specs/compiler-api-workflow/spec.md"
+   {:mode "100644",
+    :type "blob",
+    :blob "8fc3928b61c45b86fda191ff65d1001e05520a59"}},
+  :reconstruction
+  :declared-main-tree-overlaid-only-with-17-owned-path-entries-equals-entire-candidate-mode-type-blob-map,
+  :no-unowned-change true,
+  :all-owned-files-mode "100644",
+  :unchanged-owned-path "specs/sh-family-crosswalk/rollup.md",
+  :owned-paths
+  ["specs/compiler-api-workflow/tasks.md"
+   "docs/component-roadmaps/compiler-api.md"
+   "tools/compiler_api_task_projection.clj"
+   "tools/compiler_api_task_projection_test.clj"
+   "tools/compiler_domain_source_test.clj"
+   "specs/compiler-api-workflow/spec.md"
+   "specs/compiler-api-workflow/plan.md"
+   "specs/compiler-api-workflow/evidence.md"
+   "specs/compiler-api-workflow/domain-contract-source-composition.edn"
+   "tools/sh_crosswalk.clj"
+   "specs/sh-family-crosswalk/crosswalk.edn"
+   "specs/sh-family-crosswalk/rollup.md"
+   "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn"
+   "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt"
+   "specs/compiler-api-workflow/review-inputs/domain-source-review.edn"
+   "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt"
+   "specs/requirement-reconciliation/domain-gap-completion.edn"],
+  :global-reconciliation-directory
+  :only-one-selected-source-context-excerpt-no-database-import,
+  :verdict :pass,
+  :actual-changed-paths
+  ["docs/component-roadmaps/compiler-api.md"
+   "specs/compiler-api-workflow/domain-contract-source-composition.edn"
+   "specs/compiler-api-workflow/evidence.md"
+   "specs/compiler-api-workflow/plan.md"
+   "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt"
+   "specs/compiler-api-workflow/review-inputs/domain-source-review.edn"
+   "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt"
+   "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn"
+   "specs/compiler-api-workflow/spec.md"
+   "specs/compiler-api-workflow/tasks.md"
+   "specs/requirement-reconciliation/domain-gap-completion.edn"
+   "specs/sh-family-crosswalk/crosswalk.edn"
+   "tools/compiler_api_task_projection.clj"
+   "tools/compiler_api_task_projection_test.clj"
+   "tools/compiler_domain_source_test.clj"
+   "tools/sh_crosswalk.clj"]},
+ :controls
+ {:coherent-method
+  :private-inmemory-mutants-recalculate-task-context-and-artifact-bytes-spans-filehashes-rawhashes-owner-witnesses-generated-roadmap-blobs-and-envelope-digest-before-contract-identity-role-scope-or-overlay-validation,
+  :dependency-discovery
+  {:path
+   "/tmp/compiler-domain-composition-7459bc94/dependency-check.clj",
+   :sha256
+   "408aacea90bc13891abfe9c03f633162576044a087c7efc294ac14aa8bd45c06",
+   :result-sha256
+   "f27990fc8d9e9ed18db856851262672ca4d962c919185ff6a540becc5f83a209"},
+  :checker
+  {:path "/tmp/compiler-domain-composition-7459bc94/check.clj",
+   :sha256
+   "dabdc502a8cf32ce2a9b8f9cf91f637a88b5139c92f58af080fd3b8eb5c86fd0",
+   :command
+   "clojure -J-Xmx1000m -M /tmp/compiler-domain-composition-7459bc94/check.clj"},
+  :details
+  {"C17/pipeline/sentence-deletion"
+   {:fixture-digest
+    "b5f68800338e00826d17f971dc92bb286aa79cdbd300d46ea6b3c072377f414a",
+    :task-file-sha256
+    "bbe5da786b605ee6526dfe14977248660b3a9190567f23a6c7621e59df889682",
+    :result
+    {:refused true, :reason "Main predicate lost or weakened"}},
+   :missing-refusal-evidence
+   {:fixture-digest
+    "b121be7a41ca67c54ed0eb1c2277f5e964e8505bc54a515732179f4c103f8ec4",
+    :context-file-sha256
+    "73279493572f11c622a7999b1db6dcacc90df3d205e2af036371e9158b8367f7",
+    :result
+    {:refused true,
+     :reason
+     "Producer positive/refused outputs or captured history changed"}},
+   :integration-claim
+   {:fixture-digest
+    "457b1a36128cf5aa8f3e74e515e5aa0b8492454a9949e8062910c761a6f40ece",
+    :result {:refused true, :reason "Invariant failed"}},
+   :SH-implementation-promotion
+   {:result {:refused true, :reason "Invariant failed"}},
+   :SH-lost-Reader-history
+   {:result
+    {:refused true, :reason "Reader/Build/prior histories lost"}},
+   :incoming-main-fixture-data-loss
+   {:fixture-digest
+    "dc5ef1e0f90328fc468c5ebe3957f99785253e5fb9f2b41ef258056b9f010d53",
+    :result
+    {:refused true, :reason "Unowned path or mode/blob change"}},
+   "C12/existing/sentence-deletion"
+   {:fixture-digest
+    "e12ff7646ec7406e5918bfb6536895bdda56e2e0e3f4c20fdb97c3e8159665ac",
+    :task-file-sha256
+    "24cc0fba406a82dba644fd6ba10c20f6019f12d0f65227fc08f5c1c994bf2545",
+    :result
+    {:refused true, :reason "Reviewed sentence or refusal changed"}},
+   :unowned-dummy-registry
+   {:fixture-digest
+    "169e50f3dbdc8653232a21be5bd1078eb4f52ec110db2792c5ec9a20120e7e6a",
+    :result
+    {:refused true, :reason "Unowned path or mode/blob change"}},
+   :implementation-claim
+   {:fixture-digest
+    "50c14cf21baf6fcb043547d46e190ffd6e9248f5c75610700551c2d7d1a6745a",
+    :result {:refused true, :reason "Invariant failed"}},
+   :lost-DOM17-witness
+   {:fixture-digest
+    "4431f1e98e4b03a8482b9bad361b2123d3ddd3eb68d17d59051effc5af3ea7b7",
+    :context-file-sha256
+    "cef756774586cadb02da5b560bbfe65be7d83f4bec52614e0f54e2fc0cfd76bd",
+    :result {:refused true, :reason "Invariant failed"}},
+   :consumer-role-reroute
+   {:fixture-digest
+    "ee4dda72cf431fef95f369321d7fa5391732b9195cb48e24643a6d54a7f34009",
+    :result
+    {:refused true, :reason "Producer or consumer role changed"}},
+   :forged-current-span-pin
+   {:fixture-digest
+    "3c3c69197010f242cf143f76417d4f4227e6da2e2040eaf472a25510e17d26b0",
+    :result {:refused true, :reason "Raw span mismatch"}},
+   "C17/existing/sentence-deletion"
+   {:fixture-digest
+    "a88650ec1f7a7ae8beac887c254526b4b8a970451075e7c71099aa6f90d216c6",
+    :task-file-sha256
+    "97d4469a68f7af2b686a7abacccce7b3648cb001dd4f990139c166db2bcdd6e3",
+    :result
+    {:refused true, :reason "Main predicate lost or weakened"}},
+   :renew-old-review
+   {:fixture-digest
+    "aec3a68c6b8d25ba72fbf49fe3531ca7932b1fec3e71815c62f9d055d6721f33",
+    :result {:refused true, :reason "Old review renewed"}},
+   "C17/records/sentence-deletion"
+   {:fixture-digest
+    "b3e29c7e1571eee6017b056338a89cb4a23f3fbd482bde1b1e35e2eebe041f3b",
+    :task-file-sha256
+    "a42fed5ab3dbd4dd731fbd696b659f35bd4a3db09eb4752d71040890455a9b0d",
+    :result
+    {:refused true, :reason "Reviewed sentence or refusal changed"}},
+   :whole-DOM17-promotion
+   {:fixture-digest
+    "a5bb4f6b82b4a6f759301aa19c321b4659f348eb9eeb40fb5ba29c0989961988",
+    :context-file-sha256
+    "a3e879ba7f500814a420915b4234f3a8cf91fe544c3695fc87764d6bc8b29248",
+    :result {:refused true, :reason "Invariant failed"}},
+   :missing-prerequisite-producer
+   {:fixture-digest
+    "f979ae2efd27910f6ec5c533f7475cee4582c52b8ff627013563613c6eab0edf",
+    :result {:refused true, :reason "Invariant failed"}},
+   :historical-Git-live-receipt
+   {:fixture-digest
+    "3493500d657087391e2475d266344df57ad7cf7b34d7bd739c4f0b013dc10066",
+    :result
+    {:refused true,
+     :reason "Live historical review dependency substituted"}},
+   "C12/records/sentence-deletion"
+   {:fixture-digest
+    "937e14a041335a57ecda6f79415b91a329d76473ec63216e30bd6be91dceb49d",
+    :task-file-sha256
+    "318a33ffda22b761df447be0cf4f33530d806534dc0469f587d94a47476e1640",
+    :result
+    {:refused true, :reason "Reviewed sentence or refusal changed"}},
+   :global-count-claim
+   {:fixture-digest
+    "2b694118f6e7e98541dbeeb3894c3325ac990a7f21bba06b6f85059fdcc1eec5",
+    :result {:refused true, :reason "Invariant failed"}},
+   "C12/proof/sentence-deletion"
+   {:fixture-digest
+    "e81c27071d54bfe507700128f734bf4733baf2e32e55fba84a1a9a8b35556266",
+    :task-file-sha256
+    "e9372d9bd0939053fc09d270e21e2ca87543521a4bf30861283c3758111936a1",
+    :result
+    {:refused true, :reason "Reviewed sentence or refusal changed"}},
+   :unresolved-source-context-path
+   {:fixture-digest
+    "d5487f2b58fe786f955d7e003456781046c7c71e41122ba3e72de5a93202b3b9",
+    :result {:refused true, :reason "Invariant failed"}},
+   :833561-population-adoption
+   {:fixture-digest
+    "3aeebd3b60851168de30a388ba7311ac75fd481c0db896ef571aded1adbf9a53",
+    :result {:refused true, :reason "Invariant failed"}},
+   :normative-source-mode-change
+   {:fixture-digest
+    "c957411fdc673f34e13deacccf1136dab21861190527e1a14c95bb7a43842cbd",
+    :result
+    {:refused true, :reason "Unowned path or mode/blob change"}},
+   :executable-projector-mode
+   {:fixture-digest
+    "03d208fa59aceb87a2dfaf8b964bf17c08b16571cfbb9b7ed4dafb8cedda2ba4",
+    :result {:refused true, :reason "Owned file mode changed"}},
+   :unarchived-receipt-path
+   {:fixture-digest
+    "e515724f81f0210f00fe36bcf8dfb995ca2c5904e546c794d197f05c4ef780b2",
+    :result {:refused true, :reason "Archived review path changed"}},
+   :full-composition-claim
+   {:fixture-digest
+    "ec077ee78644960f465df5d649489d1e1e11cc048c9a0cd5c86146c4b84ab30c",
+    :result
+    {:refused true, :reason "Current composition claim promoted"}},
+   :historical-coverage-promotion
+   {:fixture-digest
+    "23fefc5276de426d29f32fd8877c45e99e8d61050d90f1a7e9179883a4f401e9",
+    :context-file-sha256
+    "10f96a452211957427b2141236308d27fdea681896ff5e5c6134c038bce07c16",
+    :result
+    {:refused true,
+     :reason
+     "Producer positive/refused outputs or captured history changed"}},
+   :success-label-as-output
+   {:fixture-digest
+    "54984ef3bd752df849e5857f84b73c9b8a34f911f5e07ed882cc477be6eea615",
+    :context-file-sha256
+    "0dab87b81a2b56263c368d95a8a0e5af663895bca07593db6a80a1715a4b4dd7",
+    :result
+    {:refused true,
+     :reason
+     "Producer positive/refused outputs or captured history changed"}},
+   :wrong-producer-dependency
+   {:fixture-digest
+    "dc4c4b86f1cfd6ed9bc4ed635e5451e26200e0fa655121c34741951df7bfcc3d",
+    :context-file-sha256
+    "f2fe9780d1ad31ffed95a638415fd3b43d9a67bdd1b40ff098bf946d432670d7",
+    :result
+    {:refused true,
+     :reason "Actual producer dependency removed or rerouted"}},
+   :implementation-context-promotion
+   {:fixture-digest
+    "680444496cf4f5e1001f8fb6739c363a477634526480407dc0b8e79f7fd5c2b0",
+    :context-file-sha256
+    "3f2061829abff4a0848c780c1df25943bab1b57a6f5c3add2e56a29b4d035212",
+    :result {:refused true, :reason "Invariant failed"}},
+   :rehash-counterfeit-receipt
+   {:fixture-digest
+    "175dd8734f2ad118e4119f2687159565c4e595c561f7132e0d8dda4dc9ba20e2",
+    :result
+    {:refused true,
+     :reason "Archived receipt differs from exact sealed bytes"}},
+   :redirect-SH-numeric-selector
+   {:result
+    {:refused true, :reason "Numeric routing associations changed"}},
+   :unregistered-producer-task
+   {:fixture-digest
+    "d62d73685f4ca5691a2ca08c2d55d97e67a9d88e2b8fbc2a4ae16769031a5c23",
+    :context-file-sha256
+    "884055cc9eef68eeb77c26e8ddf5f9b0a2839e937d084d48c50caa51c8b504ea",
+    :result {:refused true, :reason "Invariant failed"}},
+   :missing-local-dependency-file
+   {:fixture-digest
+    "2dfbdd06b1ac5b5d95a1465b93eb76b6cad7cd3bfcfe5e0c4c7f620fb4f041e7",
+    :result {:refused true, :reason "Owned file mode changed"}}},
+  :verdict :pass,
+  :artifact
+  {:path "/tmp/compiler-domain-composition-7459bc94/controls.edn",
+   :sha256
+   "c166df3b7382aeb6a2f6b1dde2859bbe5ee4cdd3796034d0a834ce65a25ee183"},
+  :qualification
+  :source-DATA-fixtures-no-Git-candidate-publication-or-compiler-execution,
+  :negative-count 35,
+  :semantic-sentences
+  :six-normative-clause-deletions-keep-record-syntax-and-rehashed-byte-coherence,
+  :other-cases
+  :producer-outputs-refusals-dependencies-history-DOM17-evidence-paths-modes-data-loss-counterfeit-receipts-routing-and-claim-promotion},
+ :roles-and-source-closure
+ {:reference-ceilings
+  :archived-receipt-private-checker-paths-and-global-counts-are-captured-history-not-live-inputs-or-new-claims,
+  :Git-use
+  :immutable-declared-main-and-candidate-ancestor-sourcepins-only-historical-adoption-and-original-full-context-references-remain-provenance-only,
+  :actual-output-and-refusal-obligations
+  :retained-exactly-not-supplied-label-or-path-presence-substitutes,
+  :archival-portability
+  :checks-read-local-exact-receipts-and-task-versions-no-unmerged-reconciliation-data-lookup,
+  :six-reviewed-clauses
+  :all-current-rawbytes-exact-unique-in-correct-owning-outcomes-and-generated-roadmap-regions,
+  :external-producer-state
+  :existing-unchanged-main-task-authorities-resolve-named-interfaces-not-whole-component-completion,
+  :short-producers
+  {"pipeline" "specs/compiler-api-workflow/tasks.md",
+   "pass-evidence" "specs/compiler-api-workflow/tasks.md",
+   "schema" "specs/domains-workflow/tasks.md",
+   "math" "specs/domains-workflow/tasks.md",
+   "ai" "specs/domains-workflow/tasks.md",
+   "workflow" "specs/domains-workflow/tasks.md",
+   "backend-hdl" "specs/backends-workflow/tasks.md",
+   "domain-ir-boundaries" "specs/compiler-api-workflow/tasks.md"},
+  :C12
+  :DomainIR-host-owns-entry-registry-verifier-exit-and-fallback-interfaces-PassEvidence-owns-exact-checked-proof-certificate-validation-before-consumption,
+  :named-source-context
+  {:path "specs/requirement-reconciliation/domain-gap-completion.edn",
+   :DOM17-witnesses 10,
+   :criterion-record-sha256
+   "732d1bfd89077feee9b4a530428d9674e3e712e08a06941d9b27d43cbdc1afe8",
+   :output
+   :before-after-MIR-inspector-artifacts-and-differential-rejection-fixtures,
+   :refusal
+   :metadata-loss-missing-required-facts-or-ungranted-transform-effects,
+   :captured-before-after-coverage
+   :exact-history-only-not-new-current-admission,
+   :producer-outcome "pass-evidence",
+   :records 1,
+   :authentication
+   :complete-expected-ID-set-and-source-file-bytebounds-rawhashes-against-unchanged-DOM17,
+   :whole-owner-acceptance :not-conferred,
+   :sha256
+   "d24b93ff6ea8ff3a8c422a19a0544eec60eff52a6dde6a848be17baf86edfec6",
+   :other-records-excluded 69,
+   :criterion "domain/mir-pass-integration",
+   :new-DOM17-C18-source-semantics-acceptance :none,
+   :dependencies
+   ["pipeline"
+    "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts"]},
+  :external-concrete-task-references
+  {"lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs"
+   {:path "specs/lower-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "3aa93d2891a3dedc3daf1032e9a7ba232a0eb132"},
+    :file-sha256
+    "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c"},
+   "tools/finite-service-outcomes-and-remaining-work/lint-analysis-tool-maintainer"
+   {:path "specs/tools-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "3a9fc9e39d683546d3303ca94b84e6bbcb4f2163"},
+    :file-sha256
+    "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54"},
+   "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"
+   {:path "specs/auth-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "8a059674989f04cce2c147ec42adbc62937a1d09"},
+    :file-sha256
+    "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256"},
+   "syntax/current-evidence-and-remaining-work/syntax2-preserve-transformations"
+   {:path "specs/syntax-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "5689a62870034b9b56c1e584392fa681bc1819dd"},
+    :file-sha256
+    "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10"},
+   "syntax/current-evidence-and-remaining-work/syntax3-invalidate-facts"
+   {:path "specs/syntax-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "5689a62870034b9b56c1e584392fa681bc1819dd"},
+    :file-sha256
+    "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10"},
+   "mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+   {:path "specs/mir-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "32e7d536d88254808840edfc70382213690ab425"},
+    :file-sha256
+    "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6"},
+   "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation"
+   {:path "specs/build-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "b2563e339d37aa8a87a8a906e504fa664c6b4ec1"},
+    :file-sha256
+    "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"},
+   "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix"
+   {:path "specs/build-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "b2563e339d37aa8a87a8a906e504fa664c6b4ec1"},
+    :file-sha256
+    "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"},
+   "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate"
+   {:path "specs/opt-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "a62fa99712fab58b862c08d8d13cb99416b10863"},
+    :file-sha256
+    "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908"},
+   "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts"
+   {:path "specs/opt-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "a62fa99712fab58b862c08d8d13cb99416b10863"},
+    :file-sha256
+    "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908"},
+   "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+   {:path "specs/runtime-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "b20bebe4abf15f7c2833ccfe68fea4b397be728d"},
+    :file-sha256
+    "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"},
+   "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
+   {:path "specs/legality-workflow/tasks.md",
+    :mode-blob
+    {:mode "100644",
+     :type "blob",
+     :blob "a092599442512f8849e237cbe27869bce9c7e493"},
+    :file-sha256
+    "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"}},
+  :C17
+  :PluginHost-loads-manifest-before-code-and-enforces-scopes-sandbox-verifier-registration-trace-reuse-under-unchanged-Pipeline-pass-producer-contract},
+ :eligibility
+ {:earlier-C17-C12-receipts
+  :same-reviewer-completed-goals-remain-closed-exact-byte-conditional-reuse-expressly-requested,
+  :new-source-code-authorship :canonical-author-not-this-reviewer,
+  :orchestrator-thread "01a18b65-91fa-740a-b712-8a22b3cd000c",
+  :reviewer-thread "01a18528-d38b-71b3-a24c-2d440396fb28",
+  :author-turn "01a18bf8-e130-7350-b7ff-22e3169c30f7",
+  :competing-exact-composition-review :none-in-checked-readbacks,
+  :intake
+  {:path "/tmp/compiler-domain-composition-7459bc94/goal-intake.json",
+   :sha256
+   "1d41dd61dd72a1032a1d2a32754ae2365a7bddc93b9dc909923d347497af65e9"},
+  :conflict-or-actual-denial :none-for-this-source-DATA-review,
+  :author-activity
+  :frozen-clean-inspected-main-source-extraction-not-competing-review,
+  :canonical-author-thread "01a18424-d867-7c12-8a04-07484900100c"},
+ :scope-kind
+ :full-affected-finite-source-composition-not-ALL240-or-implementation,
+ :conditional-earlier-review-reuse
+ [{:normative-source
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :coverage
+    :full-document-all30-semantic-paragraph-conjunctions-and15-contexts},
+   :receipt
+   {:reference-kind :archived-exact-bytes,
+    :commit "e835a80f34138fd16277a510c0bca06287a3738e",
+    :path
+    "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn",
+    :sha256
+    "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7",
+    :original-path
+    "specs/requirement-reconciliation/c17-independent-source-review.edn"},
+   :frozen-subject
+   {:tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+    :repository "burn2delete/uniform",
+    :base-qualification
+    :task-refinement-predecessor-not-main-integration-base,
+    :subject-parent "c21cab926933da13962326ed592fff0946e9e870",
+    :task-source "726b04bbb4add5092074876522ced4792584ae30",
+    :commit "45fa1763f939bdad59a9ee78401223a957382454",
+    :predecessor-tree "18daf36fc83b668587edf2e48558955219beddc8",
+    :refinement-predecessor "41270eeab2b2dc9aa91a63df2884f26a5cdb295f",
+    :pr 554},
+   :criterion-roles [:existing :pipeline :records],
+   :current-witnesses
+   {:existing
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "plugins",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :raw-sha256
+     "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
+     :marker "compiler-api-implementation-tasks",
+     :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+     :domain-owner-pin-refresh
+     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+     :end-byte 25488,
+     :start-byte 16703},
+    :pipeline
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "pipeline",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :raw-sha256
+     "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
+     :marker "compiler-api-implementation-tasks",
+     :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+     :domain-owner-pin-refresh
+     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+     :end-byte 16612,
+     :start-byte 832},
+    :records
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :task-id "plugins",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :raw-sha256
+     "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
+     :marker "compiler-api-implementation-tasks",
+     :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+     :domain-owner-pin-refresh
+     :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+     :end-byte 29649,
+     :start-byte 25490}},
+   :semantic-inheritance :none,
+   :implementation-credit :none,
+   :local-source-facets 108,
+   :reviewed-task-source
+   {:path
+    "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt",
+    :sha256
+    "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+    :original-path "specs/compiler-api-workflow/tasks.md",
+    :original-commit "726b04bbb4add5092074876522ced4792584ae30"},
+   :verdict
+   :all-archived-receipt-and-task-file-hashes-source-bytes-subjects-contexts-witnesses-and-current-raw-predicates-exact,
+   :old-review-renewal :none,
+   :cohort :C17}
+  {:normative-source
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :coverage
+    :full-document-all34-semantic-paragraph-conjunctions-and16-contexts},
+   :receipt
+   {:reference-kind :archived-exact-bytes,
+    :commit "60ba445417ae22decbfbf57e35819d7493d9abd8",
+    :path
+    "specs/compiler-api-workflow/review-inputs/domain-source-review.edn",
+    :sha256
+    "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6",
+    :original-path
+    "specs/requirement-reconciliation/c12-independent-source-review.edn"},
+   :frozen-subject
+   {:tree "e08666f8a5c736ec70bb2eed8f286b52dabb4f26",
+    :repository "burn2delete/uniform",
+    :base-qualification
+    :task-refinement-predecessor-not-main-integration-base,
+    :subject-parent "09bc34ddf34c91facec6fe9c77b03c64746ed81d",
+    :task-source "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :tree-qualification
+    :actual-Git-object-corrects-owner-final-text-typo,
+    :commit "bec12ac1d543353325030f40db37490c5407d8d5",
+    :predecessor-tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+    :refinement-predecessor "45fa1763f939bdad59a9ee78401223a957382454",
+    :pr 554},
+   :criterion-roles [:existing :proof :records],
+   :current-witnesses
+   {:existing
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 41767,
+     :end-byte 47262,
+     :raw-sha256
+     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+    :proof
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+    :records
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 47264,
+     :end-byte 51509,
+     :raw-sha256
+     "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}},
+   :semantic-inheritance :none,
+   :implementation-credit :none,
+   :local-source-facets 115,
+   :reviewed-task-source
+   {:path
+    "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt",
+    :sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :original-path "specs/compiler-api-workflow/tasks.md",
+    :original-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd"},
+   :verdict
+   :all-archived-receipt-and-task-file-hashes-source-bytes-subjects-contexts-witnesses-and-current-raw-predicates-exact,
+   :old-review-renewal :none,
+   :cohort :C12}],
+ :composition-artifact
+ {:path
+  "specs/compiler-api-workflow/domain-contract-source-composition.edn",
+  :sha256
+  "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e",
+  :blob "e50eefa3df6aae52c37a54b6f4c50fd8a87d858e"},
+ :exact-holds
+ {:OWN30a8-publication :stopped,
+  :7b6-publication :stopped,
+  :643-merge642-close :stopped,
+  :531-merge :stopped,
+  :old-genuine-message-UNKNOWNs :stopped,
+  :all-other-exact-held-scopes :unchanged,
+  :blanket-publication-ban :not-inferred},
+ :kind :independent-compiler-api-main-source-composition-review,
+ :private-writes :review-artifacts-only,
+ :verdict :scoped-pass,
+ :qualification
+ :full-affected-main-source-composition-scoped-pass-at-exact-subject-only-canonical-author-normal-newhead-CI-preflight-and-governed-integration-remain-separate,
+ :subject
+ {:repository "burn2delete/uniform",
+  :commit "7459bc9405467c56ef07b5dfc37f04ee26014289",
+  :tree "7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0",
+  :base-commit "787637b9ae780a7cfef7ca5763611882a8f2b629",
+  :base-tree "10296896f7c605b16b25cdf2981c23d0519b996c",
+  :immediate-parent "ce96db1e2d4fd2846b8939ca9b01d6f8d5934474",
+  :history
+  {:main-merge "55b2f836c0ff45e8bf04309fe1b919b9460881ac",
+   :prior-candidate "feccc0e36169d72710ec4aaaa6525e7517e53ed6",
+   :source-file-pin-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+   :composition-artifact-pin-commit
+   "ce96db1e2d4fd2846b8939ca9b01d6f8d5934474",
+   :all-required-ancestors :retained},
+  :qualification
+  :ordinary-main-merge-and-source-pin-history-preserved-no-direct-single-parent-assumption},
+ :preserved-main-inputs
+ {:normative-documents
+  {"docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+   "100644 blob 2be9027ab55776b326925a421ca7906d22786cf0\tdocs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+   "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+   "100644 blob 2656b64762e849e8fbb75ad2b42aeeaf58b42f0c\tdocs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+   "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"
+   "100644 blob 9f6bb4660bfec34af10fc99186d3d5034b5c79fd\tdocs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"},
+  :incoming-Resolver-fixtures-and-test
+  :all4-disjoint-paths-have-identical-declared-main-modeblobs,
+  :compiler-runtime-contract-implementations :no-changes,
+  :source-version-history
+  :ordinary-ancestry-and-exact-sourcepins-preserved},
+ :completion
+ :sealed-exact-source-composition-review-native-goal-readback-separate}

@@ -3907,12 +3907,23 @@ for the exact clean branch/base/head/tree. It confers no independent acceptance
 or integration eligibility. All changed paths have mode 100644. The full local
 packet is `/tmp/finite-domain-freeze-7459bc94/`.
 
-One coordinator-routed independent affected-composition review is pending,
-followed by actual hold mapping, governed admission, fresh exact-head CI and
-integration checks. No new PR, workflow dispatch, outbound cross-chat message,
-compiler/plugin/domain/checker/provider/runtime/target execution, held-action
-retry, shared checkout reset or main integration was performed. This owner has
-not accepted its own composition. C18 remains scratch-only under the current
-source-closure priority. The ALL-240 baseline remains in progress with 1,585
-qualified source dispositions, 632 pending finite proposals and the unchanged
-provisional 3/195 census; this finite handoff adopts no global denominator.
+The coordinator-routed independent affected-composition review returned scoped
+PASS with no findings and 35 negative controls for this exact base/head/tree.
+The [sealed receipt](finite-compiler-domain-composition-review.edn), SHA256
+`4678d949f5fd54b3ccbd8e128b41062c3dc3012d1e0829949110055719387abe`,
+is consumed once. The [local authentication](finite-compiler-domain-composition-authentication.edn)
+checks the full mode/blob overlay, concrete dependencies, archived inputs and
+control commitments without executing the foreign checker. This review covers
+the finite source composition only and grants no implementation, global census
+or integration credit.
+
+[Draft PR 646](https://github.com/burn2delete/uniform/pull/646) publishes the
+unchanged frozen candidate. Its configured
+[CI run](https://github.com/burn2delete/uniform/actions/runs/41043448936) is in
+progress at the exact candidate head; no manual workflow was dispatched.
+Admission and integration remain separate gates. No outbound cross-chat message,
+held-action retry, shared checkout reset or main integration was performed.
+C18 remains scratch-only under the current source-closure priority. The ALL-240
+baseline remains in progress with 1,585 qualified source dispositions, 632 pending
+finite proposals and the unchanged provisional 3/195 census; this finite handoff
+adopts no global denominator.

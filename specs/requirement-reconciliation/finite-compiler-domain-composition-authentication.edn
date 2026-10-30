@@ -1,0 +1,15 @@
+{:CI-publication-integration-authority
+ :not-conferred-by-source-receipt,
+ :tree "7f6c2eb2bf1fce3a769b618b5f6c40a070a239f0",
+ :negative-controls 35,
+ :holds :unchanged,
+ :review-scope :finite-source-composition-only,
+ :tree-overlay :exact,
+ :foreign-checker-execution :none,
+ :owned-paths 17,
+ :head "7459bc9405467c56ef07b5dfc37f04ee26014289",
+ :inputs :authenticated,
+ :receipt-sha256
+ "4678d949f5fd54b3ccbd8e128b41062c3dc3012d1e0829949110055719387abe",
+ :changed-paths 16,
+ :base "787637b9ae780a7cfef7ca5763611882a8f2b629"}
