@@ -59,8 +59,18 @@ Effects/emitter/runtime production are conserved.
 and two configured skips, without rerunning jobs. PR593's source review is
 bounded parent evidence, not inherited acceptance of PR595. The old
 parameter-choice observation remains historical; its separate consumed
-classification is not reopened by this request. Independent branch-join source
-acceptance is pending. Genuine C7/Effects/lowering/runtime and current-main
+classification is not reopened by this request. Independent receipt
+`abc71f43b05081928f8fc39992deefcfc0a732166554c64d95c54f260bcdafde`
+passes the qualified exact source/adaptation/test-form scope: 31,418 checks
+and twenty coherently rehashed corruption refusals. The consumption record
+`branch-joins-review-consumption.edn` verifies checker/log/controls, frozen
+intake, both commit edges and the complete tree, all source inputs, seven
+historical forms, five tests, six migrations and governing contracts. No
+foreign checker rerun is claimed. Capacity sealing history is preserved;
+the reviewer did not rerun its completed checker after the capacity error.
+The corrected inspection distinguishes the author's intake-record writer
+and helper-prefix loads from the separate original census-writing programs.
+Parent/child review acceptance is not inherited. Genuine C7/Effects/lowering/runtime and current-main
 composition/integration remain UNRUN. PR637/638's later controls and width
 composition do not establish this parent's acceptance or cross-stage wide
 support. The original inventory and PR502 open status remain unchanged.

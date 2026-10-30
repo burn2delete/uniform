@@ -1,0 +1,364 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :governing-contract-pins
+ {:kind :immutable-candidate-commit-tree-and-path,
+  :commit "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+  :tree "67c0a515f30c26b61fc6f0bc06d37f2ed28bd107",
+  :paths
+  ["docs/phase-01-core-language/015-l5-type-system-specification.md"
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md"
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"],
+  :conservation :unchanged-outside-verified-six-path-overlay,
+  :requirements
+  [:independently-established-List-and-nil-bearing-branch-facts
+   :no-expected-return-invention
+   :exact-Never-unknown-rules
+   :source-binding-and-evaluation-provenance
+   :evidence-scoped-to-claim]},
+ :source-conservation
+ {:changed-production-definitions
+  #{sh08-ij-derive
+    sh08-ij-normal-type
+    sh08-ft-infer-pass-products-prepared
+    sh08-ij-type-join
+    sh08-ij-element
+    sh08-ni-type-join
+    sh08-ij-step},
+  :removed-APIs #{sh08-ni-type-work sh08-ij-type-work},
+  :complete-production-file-form-order-equation :pass,
+  :adaptation
+  {:caller sh08-ft-infer-pass-products-prepared,
+   :step-arity-removal 1,
+   :join-debit-removals 2,
+   :semantic-diagnostic-selection 1,
+   :complete-parent-form-equation :pass},
+  :unchanged-atomic-helper-included true,
+  :source-call-counts
+  {sh08-ij-type-join 2,
+   sh08-ij-step 1,
+   sh08-ni-type-join 1,
+   sh08-ij-element 2,
+   sh08-ij-derive 1},
+  :retired-API-and-join-work-limit-references :absent,
+  :count 7,
+  :direct-source-call-arities
+  {sh08-ni-type-join 2,
+   sh08-ij-element 1,
+   sh08-ij-type-join 2,
+   sh08-ij-derive 6,
+   sh08-ij-step 3},
+  :complete-historical-forms
+  [{:name sh08-ni-type-join,
+    :historical-and-candidate-form-sha256
+    "23fb9167ec2efe67cdef255ba7733a89e134b1b7f900cf36cda2ca44d4ddf5ed"}
+   {:name sh08-ij-atomic?,
+    :historical-and-candidate-form-sha256
+    "583544a1cffe9658b4870cee912e25d351d2530c363eaed811a31472cdc4a013"}
+   {:name sh08-ij-element,
+    :historical-and-candidate-form-sha256
+    "150abc8c9f29a08cfed41652aae88b0c9247b53e7527217ac1bca55a57a9eddf"}
+   {:name sh08-ij-type-join,
+    :historical-and-candidate-form-sha256
+    "eafe01643ed5c5a4dd240a286095002c2e9a22116610df693b2e5f969b157014"}
+   {:name sh08-ij-normal-type,
+    :historical-and-candidate-form-sha256
+    "98a9e69ceda8d6c29518389df1bf3be65ffe245f99feb359b38adc062a782b45"}
+   {:name sh08-ij-derive,
+    :historical-and-candidate-form-sha256
+    "64376f7175eb15cb2224a36d788214a554269f5faf69171b5eb9d092acee9d84"}
+   {:name sh08-ij-step,
+    :historical-and-candidate-form-sha256
+    "93a36ecae07022dd83ece01285ca8283945c0c40c4c6117a0934a230d1dd71e6"}],
+  :Effects-emitter-runtime-production :mode-blob-identical-to-parent,
+  :general-inference-accounting
+  :unchanged-outside-four-exact-caller-edits,
+  :count-changed 7},
+ :tree "67c0a515f30c26b61fc6f0bc06d37f2ed28bd107",
+ :nonclaims
+ [:no-numeric-proof
+  :no-general-inference-accounting-removal
+  :no-wide-cross-stage-support
+  :no-parent-stack-acceptance
+  :no-whole-ACC01-PR502-closure
+  :no-release-or-self-hosting],
+ :execution
+ {:outbound-delivery false,
+  :compiler-Effects-lowering-runtime-sourceauth-provider-target-public-verifier
+  :UNRUN,
+  :CI-or-Git-bookend-after-capacity-error :not-run,
+  :shared-checkout-write false,
+  :read-eval false,
+  :Bootstrap-loaded false,
+  :Gravity-or-C7-helper-executed false,
+  :APPROVE false,
+  :new-worker false,
+  :source-and-inert-DATA-only true},
+ :semantic-source-assessment
+ {:types
+  "Complete seven-form restoration retains actual branch types, member counts and every-member validation, empty List independence, nil alternatives, exact/Never/unknown behavior and expected-return-premise:none. It removes join work/width refusals rather than raising or renaming them.",
+  :source
+  "Derivation retains function/namespace/definition ownership, canonical source if operator and child identities, source references, evaluation order, control-flow exclusivity and binding membership. Real source mismatches retain C7-VERIFY.",
+  :tests
+  "Five full historical kernels retain positive and negative source/type/condition controls. Wide 4097-member and late invalid index4096 controls are present as source; they were not executed.",
+  :scope
+  "This is independent source/adaptation/test-form review, not observed C7 behavior, fresh source authentication or cross-stage acceptance."},
+ :consumer-verification
+ :receipt-checker-log-controls-intake-two-commit-tree-inputs-seven-forms-five-tests-six-migrations-policy,
+ :consumer-source-sha256
+ "2794c11ab2f5bd3d9e7b48c1da5bf2b967b68b9c71b66f295c83a73f5e2f43a4",
+ :complete-tree-review
+ {:changed-paths
+  ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+   "specs/accounting-removal/branch-joins-census.edn"
+   "specs/accounting-removal/branch-joins.md"],
+  :count 6,
+  :mode-blob-overlay :pass,
+  :all-other-parent-mode-blob-entries :unchanged,
+  :changed-file-modes :all-100644,
+  :four-input-hashes-at-source-commit-and-final-head :identical},
+ :candidate "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+ :blocking-findings [],
+ :remaining
+ [:genuine-C7-member-source-condition-kernels
+  :affected-SH09-and-typed-runtime-composition
+  :applicable-execution-assessment
+  :current-main-composition-and-integration],
+ :author-checker-inspection
+ {:path "/tmp/acc01-branch-joins-intake.clj",
+  :sha256
+  "96b3b2ed03aba9f06863706612d59790193830e6efe7180641b155322db7018f",
+  :executed false,
+  :direct-write
+  "specs/accounting-removal/branch-joins-frozen-review-intake.edn",
+  :transitive-loads
+  ["/tmp/acc01-new-control-reviews-consume.clj prefix before def dir635"
+   "/tmp/acc01-list-width-validation.clj prefix before def owners"],
+  :separate-census-writers
+  ["/tmp/acc01-branch-joins-validation.clj"
+   "/tmp/acc01-list-width-validation.clj full program"],
+  :earlier-commentary-attribution
+  :census-write-was-attributed-to-intake-and-is-corrected-here,
+  :safeguard
+  :none-of-the-author-intake-or-validation-programs-was-run},
+ :parameter-choice
+ {:status :previous-separate-classification-preserved,
+  :new-request false,
+  :source-correspondence
+  :complete-historical-expression-occurs-once-in-unchanged-caller,
+  :expression-sha256
+  "1da071b4bb36dd83b7db40219497e703450c29c1962ff193d0f222664c197dc0",
+  :caller-sha256
+  "0e3b7281b4b642070c0f693e80a4370d811e6a9fac2fc259d612e6f9146cd795",
+  :whole-caller-or-fresh-semantic-acceptance :not-conferred},
+ :reproduction
+ {:app-terminal :none-attached,
+  :checker-rerun-after-capacity-error false,
+  :private-harness-preparation
+  [:reader-delimiters-corrected-before-PASS
+   :exact-parent-vector-and-input-census-checks-added-before-final-PASS],
+  :all-known-checker-operations :terminal-exit-zero,
+  :log-sha256
+  "c348c9c4f64c29fc119f5f1933ce4c22db49bf0ab59a0ceb44082bb4a1c64364",
+  :command
+  "clojure -J-Xmx768m -M /tmp/pr595-independent-source-99893151/check.clj",
+  :read-eval false,
+  :checker "/tmp/pr595-independent-source-99893151/check.clj",
+  :runtime :core-Clojure-reader-and-immutable-Git-only,
+  :checker-sha256
+  "cd0f1abbbec50b446a55841639a4ace45f644d2da2c76339c363b34e4db2277a",
+  :log "/tmp/pr595-independent-source-99893151/check.log"},
+ :schema-version 1,
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-sha256
+   "09a629263ee6c654534b66c7d7031ea722adfa9bbfe329001a2ed42c69632303",
+   :candidate-sha256
+   "71841553644b80a43d4425081539637eacc1dd931adf1029974b1576f466f433"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-sha256
+   "dc18d3f7b7df2be3b9a635db16177bd581bec9f14dc8ea7fa9f081b3a5c41fa5",
+   :candidate-sha256
+   "4c08d13c0cd0f51f6ff5e60b2ade506d924ebf7da6d2f127b4f06c289c53a40f"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :base-sha256
+   "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+   :candidate-sha256
+   "b45a8bd0cd30be40e9fb5dae0775784fecf8682c5c8367670fcb8ce8be0ffda4"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :base-sha256
+   "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+   :candidate-sha256
+   "a9e56bf7143d12b7ca33eded85572d6b8aa3bd6ff36ac27316e17d47b3657002"}],
+ :delivery
+ :sealed-local-result-only-Accounting-consumes-through-Reconciliation,
+ :controls
+ {:checks 31418,
+  :positive :pass,
+  :negative-controls
+  [{:id :member-loop-bypass,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :checked-member-count-forgery,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :return-declaration-invents-fact,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :branch-source-binding-check-lost,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :condition-order-check-lost,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :nil-value-type-forged,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :never-rule-lost,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :unknown-condition-eager-join,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :atomic-helper-weakened,
+    :rehashed-source-and-census true,
+    :refused-by "immutable-historical-form"}
+   {:id :real-mismatch-diagnostic-weakened,
+    :rehashed-source-and-census true,
+    :refused-by "exact-inference-caller-adaptation"}
+   {:id :general-inference-accounting-drift,
+    :rehashed-source-and-census true,
+    :refused-by "exact-inference-caller-adaptation"}
+   {:id :late-invalid-member-test-weakened,
+    :rehashed-source-and-census true,
+    :refused-by "complete-historical-tests-and-parent-conservation"}
+   {:id :wide-positive-control-shrunk,
+    :rehashed-source-and-census true,
+    :refused-by "complete-historical-tests-and-parent-conservation"}
+   {:id :dependent-old-arity-retained,
+    :rehashed-source-and-census true,
+    :refused-by "exact-dependent-call-migration"}
+   {:id :dependent-unrelated-assertion-change,
+    :rehashed-source-and-census true,
+    :refused-by "exact-dependent-call-migration"}
+   {:id :extra-production-definition,
+    :rehashed-source-and-census true,
+    :refused-by "production-definition-change-set"}
+   {:id :duplicate-source-definition,
+    :rehashed-source-and-census true,
+    :refused-by "duplicate-definition"}
+   {:id :retired-api-restored,
+    :rehashed-source-and-census true,
+    :refused-by "retired-api-census"}
+   {:id :foreign-overlay-path,
+    :rehashed-source-and-census true,
+    :refused-by "unrelated-mode-or-blob-overlay"}
+   {:id :census-forged-historical-digest,
+    :rehashed-source-and-census true,
+    :refused-by "historical-form-digest"}],
+  :coherent-rehashing
+  :source-input-SHA256-census-EDN-and-Git-blob-identities-recomputed-before-semantic-checks,
+  :refusal-quality :non-envelope-structural-rules-recorded-per-case,
+  :path "/tmp/pr595-independent-source-99893151/controls.edn",
+  :sha256
+  "860f8bc98f719a3b9dae5019f44cb87b2d6291939d4fd63440f7549745fcd0d7"},
+ :author-prefix-use
+ :inspected-source-only-prefix-publication-writer-excluded,
+ :CI :separate-existing-exact-head-seven-successes-two-skips,
+ :genuine-C7-Effects-lowering-runtime :UNRUN,
+ :intake
+ {:commit "624b34f41cdf49ccaf3b3811df12453731f0854c",
+  :tree "0be0d977ea8bf488f1fa8ae45110c6a9caa932ab",
+  :path
+  "specs/accounting-removal/branch-joins-frozen-review-intake.edn",
+  :sha256
+  "ecb2ad03a35489e2221b5e2146e8a5cea4600544410f345d622d2d4c8fa88224",
+  :exact-raw-input :verified},
+ :kind :branch-joins-independent-source-review-consumption,
+ :receipt-sha256
+ "abc71f43b05081928f8fc39992deefcfc0a732166554c64d95c54f260bcdafde",
+ :changed-base-validation
+ "This receipt covers only the exact two-commit range and source/adaptation/test forms. Any changed dependency or current-main composition requires fresh exact source/caller/test mode-blob comparison and affected independent review. Do not replay identical/tree-equivalent parents or infer genuine cross-stage acceptance.",
+ :test-conservation
+ {:dependent-call-migrations
+  [{:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+    :only-change :remove-C7-derive-allowance-argument,
+    :call-count 2}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :only-change :remove-C7-derive-allowance-argument,
+    :call-count 4}],
+  :all-other-parent-test-file-forms-and-order :unchanged,
+  :complete-historical-test-bodies
+  [sh08-nil-if-join-type-development-kernel
+   sh08-nil-if-join-inference-development-kernel
+   sh08-list-if-join-source-development-kernel
+   sh08-list-if-join-inference-development-kernel
+   sh08-list-if-join-type-development-kernel],
+  :direct-source-and-three-test-file-arities :verified,
+  :test-body-count 5,
+  :genuine-test-execution :UNRUN,
+  :dependent-call-count 6,
+  :dependent-files
+  :exact-byte-equations-removing-only-retired-C7-derive-argument,
+  :normalization :reader-generated-anonymous-symbols-only},
+ :whole-PR569-ACC01-PR502-disposition :incomplete,
+ :commit-range
+ [{:commit "cffe5c4cb226767f0eabbe73bcfdd8af3b98e11e",
+   :parents ["c8f16877f822959b7a024aed6efefad511bfb868"],
+   :scope :four-source-and-test-paths}
+  {:commit "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+   :parents ["cffe5c4cb226767f0eabbe73bcfdd8af3b98e11e"],
+   :scope :census-and-documentation-only}],
+ :current-main-composition-and-integration :UNRUN,
+ :reviewer
+ {:thread "01a18528-de28-74d3-8222-fda7dddcdfb3",
+  :author-conflict :none,
+  :reservation-check
+  :fresh-Reconciliation-Accounting-and-ACC01-readbacks-only-this-PR595-review,
+  :original-CoreProfile74 :completed-receipt-preserved-not-reopened},
+ :base-tree "4dea01d8d3073b57a1dfd026068ffe71bd9080f2",
+ :base "c8f16877f822959b7a024aed6efefad511bfb868",
+ :dependencies
+ {:PR593
+  {:candidate "c8f16877f822959b7a024aed6efefad511bfb868",
+   :receipt-sha256
+   "443be064b52255cea0868d0eb127e321a35f2a27e1dc470212343578f6b518fa",
+   :recorded-source-checks 7905,
+   :recorded-refusals 97,
+   :inheritance :none,
+   :genuine-or-current-main-acceptance :not-conferred},
+  :later-PR637-638 :no-parent-PR595-acceptance-inherited},
+ :historical
+ {:commit "6a4f87f013d0076b81aba9e0667650e70d28e635",
+  :tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32"},
+ :existing-CI
+ {:head "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+  :run 40930675198,
+  :successes 7,
+  :configured-skips 2,
+  :observed-only true,
+  :rerun false,
+  :genuine-credit :none},
+ :owner :ACC-01,
+ :decision :PASS-qualified-source-adaptation-and-test-form-scope,
+ :holds-preserved
+ [:Metadata372
+  :Policy14
+  :fixed-width
+  :OWN
+  :ACC08
+  :DSE
+  :all-runtime-holds
+  :ACC09v4-delivery-denial
+  :PR531-merge-denial],
+ :census
+ {:path "specs/accounting-removal/branch-joins-census.edn",
+  :sha256
+  "1c8d385eb549792811333607664addd05a983103e56ef6fb1cb0c3af479ed5a6"}}
