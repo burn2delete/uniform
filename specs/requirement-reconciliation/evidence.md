@@ -2592,3 +2592,23 @@ exact metadata overlaps: 966 + 145 - one shared C14 preface. No compiler,
 lowerer, proof checker, domain/runtime/provider, broker/controller or target
 probe was executed. Full entailment, independent source/final-count acceptance
 and coordinator integration remain required.
+
+Metadata and census source
+`f33da63073ae6fb57b04e55c29653de23861068b` passes SH 12 tests / 541
+assertions, census 5 / 18, boundary 6 / 11, changed-SH lint with zero findings,
+both document validators and generated Lower/SH/census checks. The scoped
+census remains 195 total, 3 Accepted, 190 Open, 1 Partial, 1 unassessed and
+192 remaining, with provisional unweighted ratio 3/195.
+
+Complete inventory source
+`277351c4ce66b41612ee5dd2f060328692eb8f49` retains all 240 documents,
+9,945 occurrences and 28,785 facets. Its owner states are 946 criterion
+candidates, 239 task-reference-only joins and three retained retired owners
+with pending successor acceptance. Facet states are 1,110 pending owner
+proposals, 5,530 formatting/hierarchy contexts, 21,081 pending exact predicate
+conjunctions, 704 pending dependency joins and 360 pending owner/metadata
+adjudications. Population checks pass 2 / 16. Serialized readback verifies
+those populations, all four current refinement references, the retained
+retirement proposal reference, the active C14 binding path and all five
+extension descriptor states. Earlier C15/C11/D2/retirement scopes remain
+explicit; no implementation or final-count acceptance is added.
