@@ -1,0 +1,2199 @@
+{:findings [],
+ :preparation-history
+ "Reviewer-only scratch delimiters were corrected before a complete run. An original-proposal lookup initially used its input-source rather than its actual5d5966 publication source; corrected the immutable lookup. Inventory comparison was narrowed only for the251 selected pending-disposition changes and572 artifact-lookup-commit refreshes, whose unchanged subjects/scopes/hashes were then authenticated individually. No candidate/source changed.",
+ :remaining-required-review-work [],
+ :tree "310c265fd5e2d97c0a12285d91ef074995756763",
+ :candidate "b8108264f9770e1543942f7f524b58868e553fef",
+ :native-goal-thread "01a18529-5d00-7762-a4b9-b6b0f6e6cc53",
+ :later-applicability
+ "Later Core/C16, any later candidate or current main require separate exact conservation/applicability. This receipt accepts no later append by inheritance.",
+ :source-documents
+ {"C7"
+  {:id "C7",
+   :sequence 86N,
+   :path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"},
+  "L5"
+  {:id "L5",
+   :sequence 15N,
+   :path
+   "docs/phase-01-core-language/015-l5-type-system-specification.md",
+   :sha256
+   "0a7eacfe8745a47e07c3475276cc44337e27129945972370f20805ead2facd0c"}},
+ :scope
+ {:C7-facets 121,
+  :semantic-conjunctions 108,
+  :previous-task-only 18,
+  :owner-joins 20,
+  :occurrences 150,
+  :earlier-candidates 2,
+  :overlap-IDs
+  ["C7/normalized-facet/28-304/4bae4b5f61175493"
+   "facet/language/0e2ea928e2ccd865e6282abb"
+   "facet/language/1aa4cb1c68d0086bbf5a5907"
+   "facet/language/2f7785e71f8f37247d6d7bf0"
+   "facet/language/76884d682e962539286c6bf3"
+   "facet/language/ae2795f9b64faa2db1e9f6d9"
+   "facet/language/ff1ae2b695c635645bbc47a0"],
+  :context-occurrences 42,
+  :facets 258,
+  :superseded-accounting-fragments 2,
+  :actual-Types-tasks 5,
+  :L5-facets 137},
+ :per-occurrence-conjunctions
+ {"L5/source/1274cfbe36e870d5f6b90a7ae73e4173d25df3b42e42cc21e30e1b185aac0190"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "Canonical if List join uses independently matching homogeneous/positional carriers and at least one T witness; empty positional supplies none, homogeneous supplies T even at empty runtime value."},
+  "C7/source/503c552dded62de03da79135fce537409cf0585371a67670299d83805cf500ad"
+  {:index 21,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :boundaries],
+   :predicate
+   "Missing required inference facts produce annotation diagnostics, never invented dynamic behavior."},
+  "C7/source/779be1866dd69e2f2b09a8270204caf76c1b46d435de5f63857d6a3a586e4111"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:constraints :abstractions :boundaries :artifacts :verification],
+   :predicate
+   "All eight requirements hold together: complete nodes, full function contracts, deterministic evidence, required static facts, explicit dynamic/checked-or-unsafe boundaries, usable instantiations/dispatch and preserved schema identity."},
+  "L5/source/36d29d921cc0a7f037d6567ebd6280899d9afef9acae17b410dc821c41ade90f"
+  {:index 84,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/a98a9526d7890f242c4de6ae951a9fe9f2183babc4bb92fd2b2169cd67c011f8"
+  {:index 73,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Following examples apply the separation of type from effect/authority/safety."},
+  "L5/source/9fde5011f1b0c797e6e763594608586096ec6c76d463bf79d8cbfa52024ef41c"
+  {:index 22,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Only explicit/profile-defined coercions; no silent systems numeric/pointer/host/schema conversion."},
+  "L5/source/55ef051b9db21338030aa720c6c75099cc520b37b3e8cb108b950066e9eeb350"
+  {:index 86,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts :verification],
+   :predicate
+   "All named Effects/pattern/dispatch/error/memory/profile/MIR/backend/runtime/schema/AI/stdlib consumers use current type contracts; their full implementations are not proven here."},
+  "C7/source/a73da9d693f48bc83f7ab3177f980391157d93db2ae9a6532c90dcee96f42e61"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate
+   "Typed-core shape binds actual module/Core hash, nodes/locals/functions, parameter/return/latent/thrown effects, capability/ownership facts, constraints, boundaries, casts and layout. Example filesystem and FileError values confer no facts or authority."},
+  "L5/source/2aab42d43984ce625af2a43478f04c62bff57f95e005a2a946686cb93ba21502"
+  {:index 11,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions],
+   :predicate
+   "Composite syntax examples preserve declared contracts without defining every advanced syntax."},
+  "L5/source/c9b2ef7025a80163eb7640a5fa159ee3b371a7c4cdab72d43c02db8a4bb453a0"
+  {:index 72,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries :verification],
+   :predicate
+   "Types retains latent function effects/relevant value capabilities; actual Effects/Auth consumers determine legality."},
+  "C7/source/d70eadb4bec580327fa4408eb98a74bb8627c7dd6caea463a9e74af51238d8a0"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate "Preserve C7 identifiers and meanings."},
+  "C7/source/2e9a16af7e6d0e60e9fda0c3bac10cf5a74274b05321a2271d08ea3d42fecafe"
+  {:index 48,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/2b49674c57c389a9cbfdd9c063b7697617b5f9cb738e5d66ba7fc86b14f4a879"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions],
+   :predicate
+   "Keep all eleven equality/subtype/protocol/generic/numeric/region/ownership/linear/initialization/schema/thrown-error constraints."},
+  "C7/source/864e46a79968332ab76662d0d6eee1c2615047bd7fb2f5239b40e122abbbb189"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate
+   "Generic functions/types emit actual instantiations and protocol calls actual dispatch facts."},
+  "L5/source/efb0aaf15cafda790d153cc5ea76b627e18e4981de76070924c7e226f6dbd091"
+  {:index 74,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries :verification],
+   :predicate
+   "FileHandle type is not filesystem authority, Model type not AI-call authority, and pointer type not safe dereference permission."},
+  "C7/source/3fe7679d288f86a7899d8ab3040287b5cebb26f32855d777bc14ce4d1e7ba2d1"
+  {:index 43,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Constrained profiles reject implicit Dynamic fallback."},
+  "L5/source/5e7ce2558536639679714adbd154e68dee1a4cc2d599b4ec5c6d5a505cd7dcef"
+  {:index 30,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Private immutable member inference requires actual visibility/exports and complete resolved uses/entries/re-entries; spelling, member vectors, first/vacuous caller are insufficient."},
+  "L5/source/3d77e5236cc41f50472e1481ff1eedd1e8b857a309b7caa126004d12b673dd5c"
+  {:index 88,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:artifacts :verification],
+   :predicate
+   "All following L5 products remain required actual outputs."},
+  "L5/source/187f01bbbc15b3871fb8e1d2ee12db5eb9d5dc614775edd87ea9610081717f32"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/7d90a7a7ed2bd58c02e43a4f078fb020628af944472d0181e8c575e469f4dddd"
+  {:index 70,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/6eb1140c91b77ad13bd3ccc7505d151ec82788837ee0de761491377d11a27ca7"
+  {:index 29,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :verification],
+   :predicate
+   "Reinterpretation requires audited unsafe islands; Types emits records and Safety determines proof/check/rejection/unsafe audit."},
+  "C7/source/0cc427b5524377963421734d399cc66ed63a010825fc3538777447c16055af72"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/9bcf2727e71b0b3e35c9f49842e4b549dc1941ad6be7db3e31537b7d3d07210b"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/914d7e3f100a4ad362ef561d796e66fb23f7df91a95bb75f14afc9b99d77a775"
+  {:index 30,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/8915ec8340be69568bae0701a01b94686aa82fdcb6f1757af0daee1c6e1b1505"
+  {:index 9,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate "Common annotations use :-."},
+  "C7/source/3b2011b1250dd6d9e48938f3f3f5b0525dc3044ee0ac927e7754ce7bac979a15"
+  {:index 47,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :verification],
+   :predicate "Function type artifacts cannot omit latent effects."},
+  "C7/source/f2358ac2ac5a9bd40224e1dd229dffc56dcb25ddf577a3a439b362d7acf2aac9"
+  {:index 49,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Conformance requires actual results for the entire following product/refusal matrix."},
+  "C7/source/90c1e37aa55c676b0e46bd9abd9a0e02bc2b6a10793d2fb83c7ba71d26e185b6"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:artifacts :verification],
+   :predicate
+   "Emit all nine named product families and diagnostics, not a solved-status label."},
+  "L5/source/ba031d2fc8f922442886ecefe2559d12a399207d37c88dc297eb58a3593df751"
+  {:index 62,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions],
+   :predicate
+   "Owned/Borrow/BorrowMut/Region/Ptr/RawPtr/MMIO/Uninit/Init/Linear remain represented as distinct contracts."},
+  "C7/source/477161c5b060b0c48f28087be09f08c4b91ff35e8bd5a0b7c1f830e0a27668d3"
+  {:index 33,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :verification],
+   :predicate
+   "Dispatch is tentative until actual profile/effect checks accept runtime behavior."},
+  "C7/source/535aa5b213886b487bdb16e7f86af316806ce57c39c507d401235e3a02596eaa"
+  {:index 32,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions],
+   :predicate
+   "Retain direct/dictionary/vtable/hosted-dynamic/rejected dispatch alternatives."},
+  "L5/source/e3357b8fe7cdd42bf42748f3f06f4debbdab7e70c170b0035b5f1007b864fcbe"
+  {:index 78,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries],
+   :predicate
+   "Native unsafe/boundary points require actual layout/ownership/FFI/resource types."},
+  "L5/source/3decb7d55e004f440067c9076c76943d4a5de73e05ad117ae0716cdbd7e667ca"
+  {:index 50,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/7fa14127d6f120e3c800ccf1ffc2721dc97f51ca24a84025cc90e7b2c3eaae51"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :boundaries],
+   :predicate
+   "Gradual language identity leaves static evidence requirements to profiles."},
+  "C7/source/86b197329aa118ab282dccc384bb625c27ada0fbc642ee77337a4d1a85abee29"
+  {:index 26,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/a1304c3643c22b82e15998ab22d002110f2a8700830094bcd8fc0cf40eaaf0cf"
+  {:index 96,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:constraints :abstractions :boundaries :artifacts :verification],
+   :predicate
+   "Actual positive/negative conformance covers every family, bare/homogeneous boundary, private member/domain census, List/nil join, grounded loop, hosted/constrained Dynamic, latent effect/schema/unsafe and MIR preservation case, without running any here."},
+  "L5/source/2e9ed761c0691b2bf9adfd7f7180f908ed3ad2333496faa12975fc45da3cc4ae"
+  {:index 79,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries],
+   :predicate
+   "Firmware/kernel/hardware require size/layout/init/allocation/MMIO/interrupt/raw-memory facts."},
+  "C7/source/7c99018a63288ae769641a9829b0c9a1322035a144e34ebb2c9a00306366eeea"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/70b561ffc29f1b0b4bb4909d57d9ca5a169262187ccc8386ebd6e68f688de792"
+  {:index 93,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/2fb0181fe538bb90ee72130d67d24dedbf386903705d6864f90d436db778d12e"
+  {:index 81,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Formal partiality/dynamic behavior must be modeled with proof-friendly forms."},
+  "L5/source/52f15377de69411687e673f9d84c2fdcd659bb95f16e3a356d66db44905168cd"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "At least one normal independent key/selected-type witness and compatible same-key evidence at every other normal entry retain separate coordinates. Transfers, escapes/public/external and recursive re-entry need complete evidence; nested loops are distinct."},
+  "L5/source/61b9eb77b5c0d1fa63dc741200b77c2ae82e111c2b952783ee6676c1b88969aa"
+  {:index 92,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries :verification],
+   :predicate
+   "Reject unchecked casts/forbidden Dynamic/uninitialized and raw reads/linear misuse/schema weakening/host null/erased latent effects."},
+  "L5/source/e964abd80e631cab3eb1f95d54219015ec3ca0d5a841ddee74879733c79b14b2"
+  {:index 8,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/798b08c6db26bf3296e5f0591e82aea01a1847c66dafdb8c205097db58b5fd7a"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Typed-core verification enforces the complete following conjunction."},
+  "C7/source/334840bea3466e966abdd647a308bd7eadde3d8c35e32ef09f686a39a01cc154"
+  {:index 28,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Exact widening, checked narrowing, explicit rounding, saturating, wrapping, schema validation, nullable wrapper, FFI representation and unsafe reinterpretation remain distinct."},
+  "L5/source/ba464cae3b1a60a145cdc2474ec584990aa3ec2e09bbdefd829cb5cb16d4b35f"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions],
+   :predicate
+   "Result example retains generic success/error alternatives as declared types."},
+  "C7/source/ce1af34ade848dbaf2331b4c11d4cab75261098d6d98392a32e884217d58d521"
+  {:index 36,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:artifacts :verification],
+   :predicate
+   "Verify unique current types/diagnostics, solved-or-rejected constraints, latent effects, conversion records, profile-marked dynamics, schema/layout and source/generated origins."},
+  "L5/source/d67daf0901a6e4d8f022abf9fb46752256d43bbb1f67fbdfe4a5e77a0defd791"
+  {:index 91,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Every following rejected behavior has explicit refusal criteria."},
+  "L5/source/2017a5d59b08495b517c5d97d3f111b7c5f2f3e322fbfbe4c3f1f63632917804"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions],
+   :predicate
+   "Vec3 example illustrates separately typed fields; F32 layout must satisfy actual profile requirements."},
+  "C7/source/fa5ff6cd75edc7c74856820006f786c7bb2dfc074b18d9b915a668d330cb2add"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Conversions retain the complete following classification."},
+  "L5/source/f5cb41baf0eab7aff94d237e4d24c09039e299fd2d785da7b4019b28e884f7aa"
+  {:index 46,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/8a62c40c715e265bd81db6a559940518459fe7d6241ee7a7e9c8c25db34cad0f"
+  {:index 97,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/0095328278987c1146736434f18a42f610499cd3e503960e211bee9cbcbc6e64"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/87b1947b28a9e47b86f8149c25fc95b9b660b3540887ee224d3902cff432d412"
+  {:index 42,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions :boundaries],
+   :predicate
+   "No implicit Dynamic/arbitrary sequences/general generic framework; schema/ownership/linear/region/effect/profile obligations survive."},
+  "L5/source/95ca4b6ea2ba95a3bdc83a4946385d3ca2821c30d01e40b1a3029ea4917d0e9e"
+  {:index 68,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate
+   "Preserve all nullability/optionality/default/bound/refinement/taint/validation semantics; never weaken source schema."},
+  "L5/source/d47953a46cb103f1978fce4c6afa157c607942cef57afab29f62f9acb659d0a7"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate "Type schema represents the full following family set."},
+  "C7/source/1d97c575a7d59f7eb26190bf68386b750012564ed2d69b3b889aa15c09492fd2"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/175875ebb8e855c15dd844e916e6409cc3980217e69c3039ad76a2e01ddd2bac"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate "Safe typed core rejects unchecked casts."},
+  "C7/source/4107c4108bd942e8fbca5dc9a4fc96024df0c6a6bb0045cda71a7afa205b0f2a"
+  {:index 38,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/3146578276fe96b21661416729e6d83922496d2d9c3edb7782cfb98b7acc05c9"
+  {:index 64,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :verification],
+   :predicate
+   "Types records facts for actual ownership/lifetime/safety consumers without replacing deeper L10/SAFE2/SAFE3/C9 checks."},
+  "L5/source/bdac594bb1ddc1a5c2d12de79026972b16a9ceb5ff0cd0d3901bdbfec05ae72f"
+  {:index 38,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/9aa9c4f76c12e111dcda2d36426b0fca46c28dee7aee58b4a120b0c54266da7f"
+  {:index 7,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions :artifacts],
+   :predicate
+   "All named primitive/numeric/collection/function/protocol/generic/effect/memory/resource/init/taint/compile-time/const/schema/meta/artifact families survive their numeric/profile legality."},
+  "L5/source/e24e36deb6bdc188f37806a714b10d64dffc1383c92b5be00ae79ce6814badc2"
+  {:index 17,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :verification],
+   :predicate
+   "Every core expression has exactly one of the following typing outcomes."},
+  "L5/source/67ba6579d1d21442fe24e091dcd5f69991176a9566425c4b3f373d030c31cec2"
+  {:index 76,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate "Core portable types reject host object identity."},
+  "C7/source/d0f2e54c4437998474a8408df0d02b5fbd0436e7fff4bd32560947484cde8d38"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:constraints :abstractions :boundaries :artifacts :verification],
+   :predicate
+   "Resolved core produces every named actual typed artifact under L5."},
+  "L5/source/f053873d434244731135589de5a91041e41f74bd3b9e2c826f8b9b0b06c4e3b2"
+  {:index 53,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :verification],
+   :predicate
+   "Only member types established; no extent/presence/cardinality/termination/conversion/union/other Set/function/private-signature/branch rule. State supported derivations and preserve L2 target/arity/tail/evaluation and legality."},
+  "L5/source/9eaaf90ead514a30ef96fc2c650bf60e19d6be4e34657de809f960a7c49d1313"
+  {:index 60,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/e2a2d2c2a744963bee8f453bbcfb997b7a718320c1000d1f1cb399a7201c48fa"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions],
+   :predicate
+   "Function types retain parameters/return/latent effects/relevant authority/borrow-ownership/profile contracts."},
+  "L5/source/f6fd94a09aa1ead0f71642ce4dfc365e917a2bd51d0e27a99dad68bf3a05daf9"
+  {:index 65,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/900b3a30f087fbcd1a3fee8799b22621e262c8fe3f134c830ef51014b0a4dc37"
+  {:index 56,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Hosted/REPL acceptance is explicit and constrained rejection/downcast checks follow actual profile."},
+  "L5/source/4a2ac1872c0e6a30eb9d125a6165797a66df30cedf873f3fde0e5a69e5946842"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Account for actual private visibility/exports/definition/uses/calls/entries/re-entries, complete finite Keyword Maps and every stored value, retaining different entry shapes/types and bare-Map compatibility separately."},
+  "L5/source/5bea9ad4f8d6057fe627aed7be5e3ed19f2ede7894f642a6c697099e8d3b5cfc"
+  {:index 32,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Retain entry-specific facts rather than common deep shape, invalidate changed entry premises, and introduce no annotation/coercion/check elision/public record API or erased independent legality."},
+  "L5/source/31880272c9722235947181586af1f82f22f547316c8df13fa271dd710bb03db8"
+  {:index 61,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions],
+   :predicate
+   "Memory-sensitive types retain the complete following family set."},
+  "L5/source/507064652fa5c7f30d66ba7c0e670aeebdc9c49a3bc76b6c1e944a9950e94ed3"
+  {:index 77,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Hosted Dynamic/wrappers/reflection/nullable interop remain explicitly checked."},
+  "L5/source/d6a5b606b842deec3f1bd112bcd73a111c537c5bad490b67ec7adf30c17d70f7"
+  {:index 47,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "Canonical if nil joins require independent nil and one exact non-nil atomic T; nil/T/identical nil-or-T retain alternatives, exact/Never precede and unknown/conflicting T refuses."},
+  "L5/source/90c2d0dff0cbdbde7520d45a82d7a0f1908b137fa2f37306fca5ad7f278f6db2"
+  {:index 37,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Parameter stays bare Map and keys homogeneous Keyword List, including empty; no constructor/key identity/presence/extent/cardinality/nonempty/flow/specialization. Reconstruct evidence per consuming stage and invalidate every named premise; accounting-only subfacet is retained superseded history, not a current bound."},
+  "L5/source/b72c255b0f932d732c6266b5f3ebe75b9ddc1ec5cce510ad61685358936daa2d"
+  {:index 29,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/cfbe8b15c8b4c6b7a5c23671b0e7ccf1992b5c5a5253e255bdc6a817bb809b85"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :verification],
+   :predicate
+   "Gradual language typing preserves explicit accepted Dynamic and profile-required rejection of missing facts."},
+  "L5/source/54698232ebbc78462828988b972d183e065f9b3bebdc4793809335243e27a9b3"
+  {:index 24,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Bare persistent List forgets parameter element/length refinements only; preserve actual positional argument type/provenance and checked boundary compatibility."},
+  "L5/source/5ef81f75b40a13a8ccda31ffcf4b311860fb0a613a88d24fb87e9169c49940a8"
+  {:index 43,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/45c94b1158d6689ac206a7c7f1137833fcf0694c82894b523a69b7fa6d7d53b6"
+  {:index 26,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/97ee21e87807f724a04194c2b3fe4f036cb175571dee54286aa79fedeef8e4f8"
+  {:index 89,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:abstractions :boundaries :artifacts :verification],
+   :predicate
+   "Emit typed core/environment/signatures/instantiations/dynamic/schema/resource/diagnostic/conformance artifacts."},
+  "C7/source/0f9cb3592400353ce0dad336ab360e4d16ac4f97cd929a678130b571fb752a4d"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate
+   "Typed core feeds Effects/safety; profile and safety approval must precede target lowering."},
+  "L5/source/2b97fc80edb2f7bbbadb1dc5ee597b387990110152515af1211e5c339d6f6af2"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries],
+   :predicate
+   "Hosted exploration may be dynamic; native/systems/GPU/formal/library boundaries retain their type/ownership/layout/effect/authority requirements."},
+  "C7/source/adfef91f16be7b6787b79248b2eb966e098c024f143357b505b0014fb76d845e"
+  {:index 17,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Each constraint binds actual source, rule, dependencies, solution and invalidation."},
+  "C7/source/81f54728993bc48131ee49e7ac424aed56dce0d231f8c45b10d664e1402741cc"
+  {:index 22,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/50a48900d1c6fb85f9cc89f00ca27115d40c5bd790628764406966c00a17fa7f"
+  {:index 16,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/a2f890dea70cd1f807cb83a7f863d2ff03fbc76cba217a4e259ce7f5b55723d4"
+  {:index 83,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:constraints :abstractions :boundaries :artifacts :verification],
+   :predicate
+   "All seven requirements survive together: complete types, latent effects, profile Dynamic, unsafe metadata, schemas, stable artifacts and expansion/resolution-before-Types-before-final-Effects order."},
+  "C7/source/abf920077e9b77eff88598e3da8bc68c46808f2d4f06cbde85666c9e454181ed"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :artifacts],
+   :predicate "Dynamic behavior has explicit boundary records."},
+  "L5/source/fab7c2db2d98c04fc24919bca22763ae8de2933b265370cef24d0fd0334917f0"
+  {:index 80,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries],
+   :predicate
+   "AI prompt/output/tool/memory/policy schemas are typed."},
+  "L5/source/5673d2e109c14ace2e722371486403a39f49528c5da2232f396ffa399c0e0682"
+  {:index 45,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Retain both actual branch types and join compatibility, not false equality/expected-driven T; exact/Never rules precede, two empties stay exact, and no runtime conversion/general union/subtyping/other-join extension follows. Accounting-only subfacet remains superseded."},
+  "L5/source/c14fff39a8a232f8edf791921c0aba52e3a8e2e6ce2841f335fa56d43a4a22cf"
+  {:index 15,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Advanced surface syntax may evolve under owners, while represented type facts have stable artifact schemas."},
+  "L5/source/66ab92c95377e29b1804587c86940d9010d6ee41143dafee471d70655f90b33c"
+  {:index 36,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "Require a normal witness; empty Map is valid. Never anywhere makes a whole call non-invoking. Unknown/circular/unaccounted/vacuous/omitted escape/public/mutation/recursive evidence cannot establish the domain."},
+  "L5/source/cfaf8ab8d9bf3e94c75243f76e710ffe0f6072175960b2b34a28c3885b41ea1d"
+  {:index 41,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "rest preserves List T; first includes nil unless exact value/path nonemptiness justifies excluding it. Other binding/pre-tail facts, rebinding or mutation do not preserve an invalid head proof."},
+  "C7/source/d50cff8a74cab793b9ec9e8e78c14565b71366d8d0a7cb6a78007811f8777eb0"
+  {:index 24,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :artifacts],
+   :predicate
+   "Preserve boundary ID/kind/source/input/result/profile/check/effect/capability/diagnostic fields; example field lookup and empty authority are not general policy."},
+  "C7/source/01fd6d6ca4fec7e60d78448496cd7325ed140fc7aac3613a6ececa576e74f330"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :verification],
+   :predicate
+   "Hosted/REPL Dynamic is explicit; native FFI/memory boundaries, systems/GPU sizes/layout/allocation and formal proof-friendly types carry their actual requirements."},
+  "C7/source/1ee306dd0ff76994a50d0d8c45e617724cf6505a7fce8380e49220d8fb5f6b30"
+  {:index 42,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/a1465d41efc85973a8722b0cbb0a7ae6300ac1c153119f9a0fa42b503a69662f"
+  {:index 49,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :verification],
+   :predicate
+   "Values/equality remain actual nil or T, not Option/host null; nil-or-Bool cannot prove Bool guard, and no syntax/union/coercion/other join expansion follows. State supported atomic families separately and retain independent legality."},
+  "L5/source/2875ef4bfa730b0727bc4013ad1758ee622d48c933710c182b0ef4a2e04a908b"
+  {:index 34,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "Keyword-domain inference for keys needs complete private immutable whole-key evidence, independently of a selected member/expected result/family predicate."},
+  "C7/source/2f17d37986839a39359c62d83ac91dbd3ccea9a83a8ad59a2739b9708151645d"
+  {:index 18,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/a608f9d74b43b11b01502854ba3819f80b76c8e31a2ae036c53b4cf1c5acf58c"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions :verification],
+   :predicate
+   "Actual resolved bindings/Core order and L5/pattern/dispatch/error/memory/schema/interop/AI contracts feed Types; Effects/ownership/safety consume real resulting facts."},
+  "C7/source/bc827e9da97f94dfc144029315bf3776205e82958e047335e1f5cdfa86db7499"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/963d2ed64719aa27ff69bf6e97466532afd98b7c775e28863ec70bc0eb3d8bdb"
+  {:index 57,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :artifacts],
+   :predicate "Dynamic operations retain effects and diagnostics."},
+  "L5/source/0a1fd90d6241809f22680c2680b707452c4d53be9e7059f7af4d40f07edc5ea4"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate
+   "Fn example demonstrates separate latent network effects and required authority; no effect grants a capability."},
+  "L5/source/9feb7d366fb1e0c76e72d8a8a68df29cdcc58fe0db92ebbc32a0b32d70390a18"
+  {:index 82,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/8403dd8d767f04aa44674a3961b7569c58b47fad2f207226c78809abd5128cc0"
+  {:index 63,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :boundaries :verification],
+   :predicate
+   "Reject uninitialized reads, safe raw dereference, linear duplication, escaping borrow and unsupported MMIO authority/profile."},
+  "L5/source/c42044749fcf457b17f217e7da6b2a7d7cfdbe94d521d337fd99267f7c37d0e5"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Bare persistent Map forgets only parameter key/member/size refinements, preserving independent actual types/provenance and boundary evidence."},
+  "L5/source/cfc0bb620c669e09dc559cb6bce8c7a25fd5d97652d5845b9255794d464c92a8"
+  {:index 25,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions :boundaries],
+   :predicate
+   "Bare List grants no Dynamic/sequence/element/profile facts and preserves L2 recur/schema/ownership/linear/region obligations."},
+  "L5/source/a3cb7d758d3c7fd0808f9f0e627a768835cecdbe06e4ed4b0716778241224109"
+  {:index 59,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :verification],
+   :predicate
+   "Actual host/runtime service effects and authority remain profile/capability checked."},
+  "C7/source/a2797aeb6644fe0e18f9d8a80af6394562f4ad51d90ace36dd1021f3d9f30083"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/bdca30811543cf31763524b5f6f687f5d32fda00b41732f12af92b16c01a9dc4"
+  {:index 54,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/68d9baaccd09ef6ea01e6351efe6532a4fd4b73295b47317decba5e86aa16cd3"
+  {:index 33,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/7cf1e9d8b2f15693bbddb6cd6e0abd7a91f1cbac8b22dc3af59cd1390f56826e"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "F32 annotated distance illustrates declared parameter/return types, not proof of sqrt or a numeric mode implementation."},
+  "L5/source/9d153e0792c8a42a1ad2dbf1c5e70d67a934dd810e9a179c5ea87f91c147e511"
+  {:index 66,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate
+   "Schemas produce types/validators with actual source identity."},
+  "L5/source/d69fd5f7999bc42fbd6ea04ba15ce90cf0fa582df34b4a1bc9ac4b49d855c585"
+  {:index 52,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Retain initializer/every actual re-entry/original target coverage/source-bound compatibility, separate cold derivation from invariant reads and do not equate initializer with invariant. Empty/self-preserving loops stay exact."},
+  "L5/source/2cf9da187f9ec530026e4b06c882d2d587c283638d6bbb406e635d4d97d794a7"
+  {:index 48,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Closed nil-or-T artifact identifies both alternatives and source-bound actual branch premises independently of expected return, preserved through local inferred returns/calls without discarding nil to satisfy non-nil T. Closed representation is a semantic type condition, not a work allowance."},
+  "L5/source/94a5ed55949399c1812543d6a3d6028c6ad754fbe8387cfcd0d7f59ed565f5c1"
+  {:index 90,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/146deb6de06ab99c80da633d5919961c34cbdf2d57145fc2d8e6886ff097214e"
+  {:index 87,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/8a50b0cab7ba9a0a7feee1e1365b621325b711af6341ce54763349e6b8d18b18"
+  {:index 75,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/2394f85a4d282c9985b2ed02aa4e2d4e82e21ee67be2b78df56ada5baecb8ac9"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/92768be6961a1c6f54d234f7a1ba41ab1bdfda9b9da24467a8ec5921ef2207e0"
+  {:index 55,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate "Dynamic is explicit typed behavior, never a loophole."},
+  "L5/source/22fb8ceb5c9e96520b59ac9e421bb0412d16fddd17b9f64afaa6ea6897d8439f"
+  {:index 23,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/9b4f15ff4bdffce8739907c3ebf1d80d2c6e8c7b6176ea3136ab27b88c49d473"
+  {:index 21,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :boundaries],
+   :predicate
+   "Local evidence establishes required facts or requests annotation/refuses constrained behavior."},
+  "C7/source/9f326b2db881dad8c8802a159afd60035932f06fd1ea28528cfcd946fd8452f8"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/6dacebc1c2aa215f9251c06a893230dae703c406e6a52edcd971f4f1f7d86439"
+  {:index 58,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Dispatch, field lookup, cast, type inspection and host reflection have explicit boundary records."},
+  "L5/source/889b9ce661dc0daae27938a431a95d19b30274c01044786c29bdc0f241fa41c5"
+  {:index 85,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :verification],
+   :predicate
+   "Foundation/source/core/module/macro contracts remain actual semantic inputs, not implied completed components."},
+  "C7/source/edc90c6bbdaad8ee282151751748af2a71fdb0dffb209dcb54bdeb4023356321"
+  {:index 46,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate "Schema-derived types cannot lose validation identity."},
+  "C7/source/4d72767a0d1c7bc731b9f28a20feaf5366a682207a9143fe0d4575b49ac63575"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :boundaries],
+   :predicate
+   "Local inference uses actual literals/declarations/resolved bindings/parameters/patterns/constructors and expected-type contexts, subject to profile annotation requirements."},
+  "L5/source/fea619ed3f4906d96386a35297139dee6cc807c7541ee7e811cadadd63a81ed2"
+  {:index 69,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate
+   "Every generated GraphQL/OpenAPI/database/ABI/config/artifact/AI contract links to the actual source schema."},
+  "L5/source/d946d81645ab51e121fa6d628f668bf6d213550de37de3d193fa9d56779f9aa3"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "List T annotations resolve List/atomic T in type positions, include empty, and require independently matching positional/homogeneous member types with actual argument/body and checked compatibility artifacts."},
+  "L5/source/9c515335ddd5d98aaa987fed64165ae846f3b5dc0ce76c0261f12f28335c8087"
+  {:index 67,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions :artifacts],
+   :predicate
+   "User schema illustrates linked field constraints, not a schema identity default or completed generator."},
+  "L5/source/eccddcba46dbb11fa2e8dbddf191032da8df94d8f5b26ee11c084ad181204777"
+  {:index 98,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:artifacts :verification],
+   :predicate
+   "Type changes identify affected consumers; new forms need schema updates/fixtures before stable use, with no ordinary-edit approval gate."},
+  "C7/source/048ad0f68e04dbdf91e43cf40b175e70acd4d6e3183cf401a79f0950a8dfff59"
+  {:index 25,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :artifacts :verification],
+   :predicate
+   "Constrained profiles can refuse a boundary accepted hosted; accepted records survive Effects/MIR/runtime metadata/diagnostics."},
+  "L5/source/9b601cadef969b97f488d326b6e13b819f5df6f1a1293231f98a797e8e5c9648"
+  {:index 28,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :abstractions :boundaries],
+   :predicate
+   "Apply per parameter including mixed calls; no structural inference/Dynamic/unrelated family/return or recur changes, and uses independently establish key/member facts."},
+  "L5/source/36c4e7add53befa50e052a1983ac8924703e95e90dc2f6e434b6bb0600279ce7"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/23cb681efb544fb4b271cf414ddffc5ebff001770d0f9f948a83a10361879ccf"
+  {:index 50,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:constraints :abstractions :boundaries :artifacts :verification],
+   :predicate
+   "Real emission/solving/profile/dynamic/cast/schema/layout/verifier/origin fixtures cover every named C7 surface; source tracing executes none of them."},
+  "L5/source/41d9eb1622281cc23383d3404a2e6ebd2993fdd01ec13adb35bdd5fef32f97e9"
+  {:index 14,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:abstractions],
+   :predicate
+   "Resource example preserves linear parameter and Result return contracts; ellipsis is illustrative source, not executable conformance."},
+  "C7/source/c5582a81ae59ad6e09b4e124c98e9a0320cb6637988b1470ed9c4e7391fbbaa1"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:constraints :abstractions :boundaries :verification],
+   :predicate
+   "All ten C7 mismatch/annotation/dynamic/cast/nullability/generic/protocol/layout/schema/verifier diagnostic meanings retain refusals."},
+  "L5/source/ba4fb107e2fc06c103b81baf6017a076ae5c048df1df1e69722db5340467c4a3"
+  {:index 94,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:constraints :abstractions :boundaries :verification],
+   :predicate
+   "Preserve all eight L5 mismatch/annotation/dynamic/unsafe/uninit/linear/schema/latent-effect diagnostics."},
+  "C7/source/50afffd47cd6d1dd1dd4d3a03786d0a6f78850f60795ab688528c2ee3da7c9e4"
+  {:index 15,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "The entire following constraint conjunction is required."},
+  "C7/source/cf4d1ef5dea0aa0e5b92a7dc000c70e0972aa5d329e37ceeaf504969b08323dd"
+  {:index 14,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "C7/source/9008c7eba3b05ff626adbdba59258ca17d0afe89192c027b15c336cafd3d2ddb"
+  {:index 45,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries],
+   :predicate
+   "Host null cannot enter non-null Gravity without checks/wrappers."},
+  "L5/source/d93c36421e356ba2ca2422cbcfb1bbb9f06770e89e0192d1d0bc22a3084f94e7"
+  {:index 95,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."},
+  "L5/source/8e3cb8672134f8d4f22aa49848b3858ca97f6e651cced41775c14fed9f89e3ba"
+  {:index 18,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :boundaries :verification],
+   :predicate
+   "Infer, check declaration, accept explicit profile-legal Dynamic or emit rejected typing diagnostics; no implicit fallback."},
+  "L5/source/20c9bd03c23c470370a92f2de464a5d9937f39b0ba6acbb0da3c33aca0449025"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints :artifacts],
+   :predicate
+   "Derive body before declared return check; reject expected-driven T, mismatched branch widening or bare normally returning List without member proof; preserve bottom returns."},
+  "C7/source/979a8efe642864fb2445c4aa2c414a10e12dddd1f246d0cd9a451329f2e3f8d8"
+  {:index 37,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:verification],
+   :predicate "Verifier failures prevent Effects legality claims."},
+  "L5/source/73ee5209e52b07986e33354ec553734f4828f693c9fef847650e5f7363aed94f"
+  {:index 51,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:constraints],
+   :predicate
+   "Ground Symbol-Set only from independent empty Set initializer, complete normally invoking re-entries, one independently derived carrier and all others empty/same. Never anywhere prevents whole-transfer invocation; expected/unknown/circular/invariant-assuming evidence is not ground."},
+  "C7/source/b0373f13e3b8b45db04ea7273ee49c0497b480d8fc429c520c6b266507f6a853"
+  {:index 41,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:artifacts :verification],
+   :predicate
+   "Diagnostics retain node/syntax/span/expected/actual/profile/target/binding/generated-origin/remediation."},
+  "L5/source/39cc4e2797f333e70d661510bee4bed0f82deac2bf5e3b57c34f8c8c8056702d"
+  {:index 71,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:boundaries :verification],
+   :predicate
+   "A well-typed value can remain illegal: value/action/authority are separate."},
+  "C7/source/02f48247ff868d4112a7d49214b3f273c8d45e3946fd4ebcc16ae4439096c37c"
+  {:index 34,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/source scope with no implementation credit."}},
+ :immutable-original-proposal
+ {:path
+  "specs/requirement-reconciliation/types-owner-source-proposal.edn",
+  :actual-publication-source
+  "5d5966f1d119ca70c74580b8884768e383279221",
+  :input-source "00f34a448efb6cc26f028dbe709596d839448d27",
+  :sha256
+  "fb241efa3d7e4b1ced736c3f41aa09c70c2538ef90319e0414faf805d5dfa8b9"},
+ :checker
+ {:path "/tmp/types-c7-l5-review-b8108264/check.clj",
+  :sha256
+  "29f779f786b2c274b4934ed346b77f688aacf6cd45fdce7c5175820a82109b51"},
+ :manual-assessment
+ {:coverage
+  "Read full normative C7/L5 and all108 semantic occurrence conjunctions with their actual typed-owner clauses. Every source occurrence is matched to a complete producer/checker/consumer conjunction, while42 contexts preserve hierarchy/provenance and two accounting subfragments have no live criterion.",
+  :constraints
+  "Actual resolved Core inputs; exactly one typing outcome; local deterministic rule/dependency/solution/invalidation evidence; annotation and type-family schema. Bare/homogeneous List/Map boundaries preserve independent actual types and source compatibility, never expected-driven inference. Private member/domain evidence requires complete nonvacuous normal-entry census and all stored values; Never anywhere invalidates a call witness. Loop grounding remains cold/independent and complete.",
+  :nil-joins
+  "Closed nil-or-T is semantic alternatives, never a work allowance. Nil/T/identical nil-or-T closure retains exact/Never precedence; runtime values/equality remain nil or T, not Option/host null, and nil-or-Bool cannot prove a Bool guard. No match/try/loop/recur widening.",
+  :abstractions
+  "Function latent/thrown effects, capabilities, ownership/profile and dispatch choices remain recorded and independently gated. Schema validation identity/constraints and memory/resource obligations survive; type facts do not replace lifetime/safety checking.",
+  :boundaries
+  "Dynamic/host/nullable/FFI/raw/cast records remain explicit and profile/capability-aware. Types produces records; Safety assigns proof/check/reject/unsafe disposition. No fabricated grants, implicit systems coercions or unchecked reinterpretation.",
+  :artifacts-and-verifier
+  "Actual module/Core-input/node/local/function identity, every ledger/table, origin and invalidation premise survives. C7 verifier gates Effects legality on complete current type/constraint/cast/schema/layout/origin facts; typed core alone is not lowering authority. All ten C7 and eight L5 diagnostic meanings/context and actual positive/refused fixture obligations retained.",
+  :independence
+  "Reviewer authored AI17/phase11 source proposals, not these five Types criteria; any older authored contexts and extension-byte receipt conserved only, without semantic selfacceptance. Intake found no exact active/duplicate review, source-author conflict or action-specific denial for this C7/L5 data review."},
+ :inputs
+ {"specs/requirement-reconciliation/types-complete-current-facet-trace.edn"
+  "43248784058a7268d785dba722aad172675b96fe96c55cf7355cf88fb96264e8",
+  "specs/requirement-reconciliation/types-owner-source-proposal.edn"
+  "fb241efa3d7e4b1ced736c3f41aa09c70c2538ef90319e0414faf805d5dfa8b9",
+  "specs/requirement-reconciliation/types-owner-source-refinement.edn"
+  "84d6c9e2df014c3c0a6929e5609cb2afadef0c003c0e08ace5c75242a38de746",
+  "specs/requirement-reconciliation/types-owner-current-witness-applicability.edn"
+  "194d7c0e0cce908f0d4e7c4a8d9c8251b477aa695cd83fabadb909f3d1eb0ace",
+  "specs/requirement-reconciliation/all833-types-owner-current-criterion-conservation.edn"
+  "b0fd66f20a336d75b6919a94708c30a89212cd2c5994e1020c0e4c97d2c2ab2b",
+  "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn"
+  "5e4ddc4b22776f1a592f7644e30320559521d9bc02eb6457d58a2e3c0ee9e945"},
+ :task-source "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+ :explicit-correction
+ {:reason :complete-occurrence-read-found-explicit-details,
+  :additional-text
+  " Common annotations use :-; F32/F64 and fixed/machine-size integer representations retain numeric-mode/profile legality rather than host defaults. Joining an already established nil-or-T type with nil, T or the identical nil-or-T retains the same two alternatives under the existing exact/Never precedence. Historical L5 bounded-validation/work fragments are superseded project accounting predicates; they remain recorded source history and add no current allowance or quota.",
+  :prior-applied-source "2be988a65b3bbaf3ae71c2b9328eca652fd11987"},
+ :kind :independent-C7-L5-source-entailment-review,
+ :verdict :pass-exact-frozen-source-conjunctions,
+ :observed
+ {:overlap
+  :seven-identical-source-pending-proposals-no-review-inheritance,
+  :task-count-status-change 0,
+  :833-original-records :equal-open,
+  :240-corpus :exact-original-byte-pins,
+  :initial-to-corrected-inverse :exact,
+  :source-data-assertion-evaluations 90360,
+  :572-qualified-scopes
+  :same-predicates-reviewed-subjects-receipt-hashes-exclusions-only-artifact-lookup-commit-refreshed,
+  :whole-task-inverse :exact,
+  :coherently-rehashed-sentence-removals 68,
+  :other-controls
+  {:forged-full-file-pin true,
+   :stale-source-identity true,
+   :authentic-other-role-witness true,
+   :missing-facet true,
+   :duplicate-facet true,
+   :scope-promotion true,
+   :facet-selfacceptance true},
+  :unselected-residuals :all-substantive-fields-unchanged,
+  :561-history :original-records-scopes-and4819current-spans-authentic,
+  :whole-roadmap-reconstruction :exact},
+ :criterion-witnesses
+ {:constraints
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 1949,
+   :end-byte 8134,
+   :raw-sha256
+   "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+  :abstractions
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 10811,
+   :end-byte 12861,
+   :raw-sha256
+   "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+  :boundaries
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 13863,
+   :end-byte 16132,
+   :raw-sha256
+   "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+  :artifacts
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 16508,
+   :end-byte 18455,
+   :raw-sha256
+   "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"},
+  :verification
+  {:path "specs/types-workflow/tasks.md",
+   :marker "types-implementation-tasks",
+   :task-id
+   "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+   :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+   :file-sha256
+   "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+   :start-byte 18821,
+   :end-byte 21061,
+   :raw-sha256
+   "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}},
+ :actual-role-contexts
+ {:producer
+  {:path "specs/core-workflow/tasks.md",
+   :id
+   "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+   :marker "core-implementation-tasks",
+   :source "b8108264f9770e1543942f7f524b58868e553fef",
+   :file-sha256
+   "071ab088f3ad62ae20b82a9fbb2e6a054ae779b08600152cbcd5b92ad7aec01d",
+   :raw-sha256
+   "1039f707b4d8e9831a1dcde2c433a2612914a43ccebffbee9f8852385ac5825d",
+   :text
+   "- [ ] `core/current-evidence-and-remaining-work/core1-lower-core-forms` core/1: Lower core forms\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Implement quote, if, do, let, fn, loop/recur, def, var, set!, try/throw and match with specified evaluation order and shape validation."},
+  :consumer
+  {:path "specs/effects-workflow/tasks.md",
+   :id
+   "effects/current-evidence-and-remaining-work/effects1-infer-direct-effects",
+   :marker "effects-implementation-tasks",
+   :source "b8108264f9770e1543942f7f524b58868e553fef",
+   :file-sha256
+   "44e87c74c9ef87323fb188b17edc897db549b7fdd07ef65527a12e7a19213956",
+   :raw-sha256
+   "5b74358713c93fda6d9742dfb918afb8dcaa8dbb297446d2299ed334ba39839a",
+   :text
+   "- [ ] `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects` effects/1: Infer direct effects\n\nCurrent evidence/status: Open; partial source evidence above is not closure\n\nDone when (yes/no): Classify actual core operations including allocation, IO, FFI, errors, concurrency, model/tool/memory and compile-time behavior with source references. C8 computation/domain criterion compiler/c8/effect-computation compiler/c8/effect-domains (Open): Compute actual typed-core expression, function, namespace, module and macro-output direct/latent/transitive/build/replay/residual effects under L6; every operation beyond pure construction has effect facts or a diagnostic. Preserve concrete registered labels, thrown-error effects and source/generated identities rather than inferring behavior from declarations or backend/runtime behavior. Maintain distinct reader-extension/macro/compile-time/plugin/probe/generator build effects, emitted-program runtime effects and dependency-resolution/artifact-generation package/build effects. A build-effectful macro can emit pure code and a pure macro can emit runtime effects; neither domain substitutes for the other. Required outputs: source-bound effect graph with module/node identity, direct/latent/transitive/ordering/source facts, function declared/inferred/latent/throws table, namespace declared/inferred and module summaries, build log and residual report. Positive fixtures compute real operation and both macro-domain combinations; reject missing facts, unknown unregistered labels and hidden runtime/build effects with C8-UNKNOWN/BUILD/VERIFY. Preserve runtime checks, dynamic dispatch, fallback-provider calls, residual capability checks and replay logging remaining after proof/specialization, rather than treating a declaration or empty placeholder as inference."}},
+ :limits
+ [:source-conjunction-only
+  :no-type-helper-or-compiler-execution
+  :no-runtime-target-provider-model-broker-proxy-CI-launch
+  :no-canonical-write
+  :no-GitHub-APPROVE
+  :no-implementation-credit
+  :no-final-count-or-integration-credit
+  :no-held-Metadata-Policy14-fixedwidth-OWN-ACC08-clearance
+  :no-existing-review-reopened
+  :no-outbound-send],
+ :base "5d5966f1d119ca70c74580b8884768e383279221",
+ :controls-artifact
+ {:path "/tmp/types-c7-l5-review-b8108264/controls.edn",
+  :sha256
+  "74a5f2b8ab26738c51db36f59245d59a948cf9f53cc319676d6f2723b60d2255"},
+ :original-owner-joins
+ {"language/types/check-dynamic-boundary"
+  {:criterion-keys [:boundaries :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Gate Dynamic operations and checked host/nullable boundaries by active profile and required capability rather than treating Dynamic as an escape from legality.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/check-dynamic-boundary",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 13863,
+     :end-byte 16132,
+     :raw-sha256
+     "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 13863,
+    :end-byte 16132,
+    :raw-sha256
+    "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/version-type-form"
+  {:criterion-keys [:artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Update the type artifact schema and fixtures before a new type form is used by stable documents.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/version-type-form",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 16508,
+    :end-byte 18455,
+    :raw-sha256
+    "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"},
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending},
+  "language/types/infer-list-projection-type"
+  {:criterion-keys [:constraints :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Infer rest and first of a homogeneous List while preserving its element carrier and accounting for an empty first result unless exact value/path nonemptiness justifies T.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/infer-list-projection-type",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/join-independent-nil-branches"
+  {:criterion-keys [:constraints :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Infer and preserve a closed nil-or-T canonical-if type only from independently established nil and one exact non-nil atomic alternative.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/join-independent-nil-branches",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/derive-schema-type"
+  {:criterion-keys [:abstractions :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Generate a schema-derived type and validator preserving schema identity and the complete validation boundary, with generated contracts linked back to the source schema.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/derive-schema-type",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 10811,
+     :end-byte 12861,
+     :raw-sha256
+     "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 10811,
+    :end-byte 12861,
+    :raw-sha256
+    "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/check-core-typing"
+  {:criterion-keys [:constraints :boundaries :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Infer or check a type for every core expression using local evidence, admitting only explicit profile-legal Dynamic and otherwise requesting annotations or rejecting unsatisfied constraints.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/check-core-typing",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 13863,
+     :end-byte 16132,
+     :raw-sha256
+     "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "compiler/c7/function-types"
+  {:criterion-keys [:abstractions :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Record function parameter/return/latent and thrown effects, capabilities, ownership and profile constraints for downstream checking.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "compiler/c7/function-types",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 10811,
+     :end-byte 12861,
+     :raw-sha256
+     "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 10811,
+    :end-byte 12861,
+    :raw-sha256
+    "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/check-memory-sensitive-type-use"
+  {:criterion-keys [:abstractions :boundaries :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Reject a type use that would read uninitialized memory, safely dereference raw memory, illegally duplicate/drop a linear resource, escape a borrow or access unsupported MMIO.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/check-memory-sensitive-type-use",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 10811,
+     :end-byte 12861,
+     :raw-sha256
+     "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 13863,
+     :end-byte 16132,
+     :raw-sha256
+     "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 10811,
+    :end-byte 12861,
+    :raw-sha256
+    "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "compiler/c7/typed-core-gate"
+  {:criterion-keys [:verification :artifacts],
+   :implementation-credit :none,
+   :original-obligation
+   "Verify complete current types, constraints, conversions, profile-marked dynamics, schema/layout facts and origins before effect checking claims legality; typed core alone is not lowering authority.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "compiler/c7/typed-core-gate",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 18821,
+    :end-byte 21061,
+    :raw-sha256
+    "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/emit-typed-core-interface"
+  {:criterion-keys [:artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Emit stable typed-core/type-environment/signature/instantiation/boundary/schema/ownership records with diagnostics, checking after expansion/resolution and before final effect legality.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/emit-typed-core-interface",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 16508,
+    :end-byte 18455,
+    :raw-sha256
+    "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "compiler/c7/generic-dispatch"
+  {:criterion-keys [:abstractions :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Emit generic instantiations and protocol-dispatch facts usable downstream, keeping dispatch tentative until profile/effect acceptance.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "compiler/c7/generic-dispatch",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 10811,
+     :end-byte 12861,
+     :raw-sha256
+     "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 10811,
+    :end-byte 12861,
+    :raw-sha256
+    "d9421003bd9d7d03601a424ac45aa437729db85a67676dd45451c31205523f49"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/derive-private-map-member"
+  {:criterion-keys [:constraints :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Derive a literal Map member presence/type fact only from a complete closed private immutable parameter entry census with at least one independent normally invoking witness.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/derive-private-map-member",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/join-independent-list-branches"
+  {:criterion-keys [:constraints :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Infer a homogeneous List T result for canonical if only from compatible independently established branch carriers and at least one grounding element-type witness.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/join-independent-list-branches",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/derive-private-keyword-map-domain"
+  {:criterion-keys [:constraints :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Derive the whole Keyword key domain of an immutable bare Map parameter only from a complete finite private normal-entry census, yielding the existing homogeneous Keyword List for keys.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/derive-private-keyword-map-domain",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :criterion-candidates-present-exact-full-predicate-entailment-pending},
+  "language/types/derive-grounded-symbol-set-loop"
+  {:criterion-keys [:constraints :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Infer a Symbol-Set loop-slot carrier from an independently empty Set initializer and a complete original-target re-entry census with an independent normally invoking Symbol-Set grounding witness.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/derive-grounded-symbol-set-loop",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/check-bare-list-parameter"
+  {:criterion-keys [:constraints :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Accept a refined persistent List at an explicitly bare List parameter by forgetting parameter refinements while retaining the actual type and boundary compatibility evidence.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/check-bare-list-parameter",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "compiler/c7/casts-boundaries"
+  {:criterion-keys [:boundaries :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Classify conversions and foreign/null/raw-pointer crossings explicitly as checked or unsafe; permit reinterpretation only within audited unsafe islands with safety disposition downstream.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "compiler/c7/casts-boundaries",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 13863,
+     :end-byte 16132,
+     :raw-sha256
+     "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 13863,
+    :end-byte 16132,
+    :raw-sha256
+    "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/check-explicit-conversion"
+  {:criterion-keys [:boundaries :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Permit subtyping/coercion only when explicit or profile-defined, preserving unsafe/check boundaries instead of silently inserting systems-profile conversions.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/check-explicit-conversion",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 13863,
+     :end-byte 16132,
+     :raw-sha256
+     "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 13863,
+    :end-byte 16132,
+    :raw-sha256
+    "74ef31e8e43a35a277aa3f67fd2c8d638a23b81c7fffb015a94f763af12e33ed"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/check-homogeneous-list-boundary"
+  {:criterion-keys [:constraints :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Check a declared List T parameter or return against independently established persistent List member types, retaining actual types and boundary-specific compatibility.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/check-homogeneous-list-boundary",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending},
+  "language/types/check-bare-map-parameter"
+  {:criterion-keys [:constraints :artifacts :verification],
+   :implementation-credit :none,
+   :original-obligation
+   "Accept an independently typed persistent Map at an explicitly bare Map parameter with per-parameter compatibility evidence, retaining actual provenance and separately required key/member facts.",
+   :status
+   :owner-criterion-conjunction-proposed-independent-acceptance-pending,
+   :id "language/types/check-bare-map-parameter",
+   :criterion-witnesses
+   [{:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 1949,
+     :end-byte 8134,
+     :raw-sha256
+     "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 16508,
+     :end-byte 18455,
+     :raw-sha256
+     "08a48a8395a7fcf576292cb549cf96220b99118cf4679d83558c7de370c21fe8"}
+    {:path "specs/types-workflow/tasks.md",
+     :marker "types-implementation-tasks",
+     :task-id
+     "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :file-sha256
+     "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+     :start-byte 18821,
+     :end-byte 21061,
+     :raw-sha256
+     "fb3cb2ca94dfe65bf83086509d8bdbb4a6a29d56034900cbed5f3331b213df57"}],
+   :qualification
+   "Exact current Types conjunctions extend original owner candidates; the two earlier candidates retain prior scopes. Actual Core/Resolve, Effects/Auth/profile, ownership/safety, schema/interop/AI and MIR/Lower roles stay distinct. No whole-owner, implementation, migration or final-count acceptance follows.",
+   :primary-criterion-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "ca1bc8cd0f21d5ad7b0ade10a85fc00cb1d15259fdd24c59bfc512cb2d83566e",
+    :start-byte 1949,
+    :end-byte 8134,
+    :raw-sha256
+    "a63186e2f205f6dc4173a744e8a0747adb5fd2a7ac9ae8726f5caa6b1325de90"},
+   :captured-owner-state
+   :task-reference-only-exact-criterion-join-pending}}}

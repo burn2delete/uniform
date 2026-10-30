@@ -1,0 +1,374 @@
+{:implementation-credit :none,
+ :checks {:test 2, :pass 45, :fail 0, :error 0, :type :summary},
+ :scope :current-applicability-only,
+ :source-commit "e32ada7ee3e588454e2fd323f34c26144e1e70d5",
+ :kind :four-review-current-coherent-clause-refusals,
+ :compiler-or-reviewer-checker-execution :none,
+ :cases
+ [{:review :C13,
+   :role :contracts,
+   :altered-witness
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "8283b75398cb198c65e7f68319ce9a1b57e5df5ad2312f97c0d7bf4371a900a3",
+    :start-byte 2681,
+    :end-byte 3506,
+    :raw-sha256
+    "4648b77b6da9777333d2dfbd2228a39dc7215e5d00e99de8e9a92d9fc5b8c86a"},
+   :removed-sentence-sha256
+   "200aa951aecfe4a19692367f089b203d542a976962cb9977b4dc6c2b616b7bc2",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :C13,
+   :role :families,
+   :altered-witness
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "382e5d04ef464bdb7010159b20b8b54c9a64264938d7d0a070bff48b88cd45b7",
+    :start-byte 5959,
+    :end-byte 6807,
+    :raw-sha256
+    "e078c219c4031213792d4505f94d0499df1f1b404138a9e2b3235ac51e540718"},
+   :removed-sentence-sha256
+   "7698afb1f8ddfd8c88530956daeea212aa4c7c77ce5cc536ca38a20d4af629e4",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :C13,
+   :role :checks,
+   :altered-witness
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "d8fe83c1e4282e77a2a3949f3df1c320f589639e8c0b3ea0f6af3dbfcdab28db",
+    :start-byte 7748,
+    :end-byte 8589,
+    :raw-sha256
+    "5b720403ac32bc84ffbf0576993accca278ae28b6f9c273d37f6dac65547ac97"},
+   :removed-sentence-sha256
+   "14ffc8eedafd7512e3128b8160de9c50c1834edb951e0408388f77b10e7ba9be",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :C13,
+   :role :verification,
+   :altered-witness
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "f7db608f4f4dda9c20ca56263aa781a7c21c7b5e51ff89502ac9ddc9fb7e4993",
+    :start-byte 9183,
+    :end-byte 10208,
+    :raw-sha256
+    "a13b07c8b844f207936badc2c4b0f1f93117a6ec751c3cc33a0dcb82615a6f3c"},
+   :removed-sentence-sha256
+   "f12937be230937345e16294d502dd3cce693fdf18ff40d380ba9f06db65dcd1e",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :C13,
+   :role :pipeline,
+   :altered-witness
+   {:path "specs/opt-workflow/tasks.md",
+    :marker "opt-implementation-tasks",
+    :task-id
+    "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+    :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+    :file-sha256
+    "fefb5fd25b6945c5709fb061db4d85a7fac8876235b5a5c143016713ecef925d",
+    :start-byte 13467,
+    :end-byte 14743,
+    :raw-sha256
+    "2023a1000691e2dc3fe245a098d6e1278bca461e93b6091afca9edf76eac3512"},
+   :removed-sentence-sha256
+   "36c2109ca57b6b78a62cb80891fd4f5b3ed3462a5f5212be6c55946cd65e18e6",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Core,
+   :role :forms,
+   :altered-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "bac4894f4ac1e81ed0875d9f285037d512c15101318c92ffa40b4f171d09ef89",
+    :start-byte 1341,
+    :end-byte 2654,
+    :raw-sha256
+    "6e2baa92c1adfc9afeb99a5981550c9098ad35912959bda825fe0e2a8c096f82"},
+   :removed-sentence-sha256
+   "410e8f75e3ffc55d9d4eab82cf1409c3d4625feb05a1d21b7f4f4e9bbaf050a1",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Core,
+   :role :bindings,
+   :altered-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "98bfde2ba3244602106ff6c044910464d63d60ff08d98e17f3ac0bbe21263101",
+    :start-byte 3222,
+    :end-byte 4317,
+    :raw-sha256
+    "2b5add4839a00157c46a69a09fbd1fe5146bf49b3714f59482e2e34b4053a476"},
+   :removed-sentence-sha256
+   "1063a31ffacb3e560b0891fb409711d53afd7f2ea76c2294f9b448aae430b9d6",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Core,
+   :role :desugaring,
+   :altered-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "4e5ce2da817b34f61abf1cb029c708a33c3c0af5f62119cf3f27171d1b9651e5",
+    :start-byte 4856,
+    :end-byte 5934,
+    :raw-sha256
+    "516d0a6595fdab491e2f9d59956b5b673353a9273c7c781c0bea42269f9f3fda"},
+   :removed-sentence-sha256
+   "cc3ef2854502b629e89d94d1b3878d80584ad6ab11d821ab58a032cdbd9c72a0",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Core,
+   :role :verification,
+   :altered-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "baa3d113e2e2bb05c7fc92ccfa447dc2eeaa8ddfcc3bea9a5ad2ffd764b8fc3b",
+    :start-byte 6631,
+    :end-byte 7551,
+    :raw-sha256
+    "4791be5711035f9b4627001990930af4af1fd0de73abe11ca6fb143d3a18c2a7"},
+   :removed-sentence-sha256
+   "0d508af6b93065cbeb4358344aabf6e2200432db091c766a4634921d139515ad",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Core,
+   :role :domains,
+   :altered-witness
+   {:path "specs/core-workflow/tasks.md",
+    :marker "core-implementation-tasks",
+    :task-id
+    "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+    :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+    :file-sha256
+    "09f359bb1e2aa23c6126dc339b317c13022db46ee409790c819b8e7d310dd907",
+    :start-byte 8910,
+    :end-byte 10236,
+    :raw-sha256
+    "cdf3ba50e7aff22218b61e1c3e9b1e8805c2ea9e1337675a4723089f12a05cc2"},
+   :removed-sentence-sha256
+   "36d62699a8bdaa474ddaf8b106f8f0ec754e59a50de310c971694403cfef63a5",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Resolve,
+   :role :binding,
+   :altered-witness
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "76002f38b8ae4eaccbd654ff40dc375e5e738f28a9d6202fd3d0cc74458699fb",
+    :start-byte 1660,
+    :end-byte 2814,
+    :raw-sha256
+    "d753484bd3eefe28434dfba8e30e05d5f647ab502b8ba0c34690f20a6d428fa4"},
+   :removed-sentence-sha256
+   "e8adec5516318c45ff5596d7f3c48b28fbd1dd73f56825d4920e256a3f765de9",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Resolve,
+   :role :imports,
+   :altered-witness
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "be3b1f83162f9fc6182d96de5d069688a378112e2ddadd48e3ba64cff4c9ff64",
+    :start-byte 3974,
+    :end-byte 4927,
+    :raw-sha256
+    "a96568622f1586a9fbef73848277c56c5198545137aab55958535d8b28cc1218"},
+   :removed-sentence-sha256
+   "6df20be0c296ac709504920c93116e1e3405f353d2137e15a4747e2bcd231afb",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Resolve,
+   :role :graph,
+   :altered-witness
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "acc3142c8c368dfeb48e68fa841dfd50ed71cfb897cf1f13597edbc2f14c2a46",
+    :start-byte 6197,
+    :end-byte 7582,
+    :raw-sha256
+    "af8dbdacb8c23541b7ee1bdc1666f34ba85c3471ceac69d9dae1b98d217effc5"},
+   :removed-sentence-sha256
+   "4303ff56401d807b43425d6f14e1991acc0bd0cc88f740f709618e76215e2ba1",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Resolve,
+   :role :interface,
+   :altered-witness
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "6b6d5c4f0e4f8130a5a0189189ea76701bedeb3768b77798f2c2b11a85f5c14c",
+    :start-byte 8385,
+    :end-byte 9746,
+    :raw-sha256
+    "bda76d73124e2a5cfe8489fb9931dfd0c441f6c0da56e33a9085a29abcd0d171"},
+   :removed-sentence-sha256
+   "14496cd122e37f9f15793a3a4675ae8f1ebe04800788786a8a6e2e0e201f5ef7",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Resolve,
+   :role :consumers,
+   :altered-witness
+   {:path "specs/resolve-workflow/tasks.md",
+    :marker "resolve-implementation-tasks",
+    :task-id
+    "resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers",
+    :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+    :file-sha256
+    "334f522cb53264f4ced67c29734f440b921f85cf590b4dc9e1c5a366fa913e6d",
+    :start-byte 10553,
+    :end-byte 11881,
+    :raw-sha256
+    "a7ec8825cbda80a6ac75b6fe9110416a5746d8a2a23efd5b8959369187097837"},
+   :removed-sentence-sha256
+   "0135125135234f2397aae70ecaf3dcac45a23235e155f2778cd1937df2ca1c97",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Types,
+   :role :constraints,
+   :altered-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types1-solve-core-constraints",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "e41de7c9cee51349e2da3402723f83a1489ab6464836081a2dd714e000d12334",
+    :start-byte 1949,
+    :end-byte 7975,
+    :raw-sha256
+    "7d6c9e008bd7782295e40d6d53305e1d431f6456b22a16f0c27892b65d14cee7"},
+   :removed-sentence-sha256
+   "3bec7cdcb84933c843aaeefdf1a1b01d660294a72e5cc2eccd8da85199951c87",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Types,
+   :role :abstractions,
+   :altered-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types2-check-declared-abstractions",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "f011403cbc9fadc339c5e010676e52c8606d456d7526d712cf7250c99be9f667",
+    :start-byte 10811,
+    :end-byte 12615,
+    :raw-sha256
+    "15bb69471823dc6b1a5caa25d0eabd807e38eb2e3401f008af82f33d5b62e685"},
+   :removed-sentence-sha256
+   "73a3f561fd3d97cbef783490a380080045122e69f54cff53deab5237727cda3f",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Types,
+   :role :boundaries,
+   :altered-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "bfa2c0bf5ab7b47b7445ee29175f841d99622ed2e490a56c5a4e931ffe39b5e8",
+    :start-byte 13863,
+    :end-byte 15838,
+    :raw-sha256
+    "dc3d70feef666fbce46cf903770545c9718a2cd0884d3416c28029ec3e3a7dbc"},
+   :removed-sentence-sha256
+   "0662bb4e6e59b2ad90066c9c73858a1326df2a2aeded6451e94cb2067ffc1f04",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Types,
+   :role :artifacts,
+   :altered-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "3454c98523ad3caa17efb7064d3375c6daa806bb47aef5dc396955cfda3855ad",
+    :start-byte 16508,
+    :end-byte 18115,
+    :raw-sha256
+    "9413248ff2ac8452ea6c497548065754186bc341b1f4ffc7f3ce815a1fa3cf9c"},
+   :removed-sentence-sha256
+   "16730c32e3f1e21cc77ae2f803060214c76b7e1ed106258ea0da4339e160b3fb",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}
+  {:review :Types,
+   :role :verification,
+   :altered-witness
+   {:path "specs/types-workflow/tasks.md",
+    :marker "types-implementation-tasks",
+    :task-id
+    "types/current-evidence-and-remaining-work/types5-integrate-typed-core",
+    :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+    :file-sha256
+    "93ccaa41806fdbc3413e6d2de4310d5bb6a5247362328ee355594ad76bfe92fc",
+    :start-byte 18821,
+    :end-byte 20570,
+    :raw-sha256
+    "19d390095598bc107d928eacc09bb5f2735f535d770bf2d02c04ca1c01379aee"},
+   :removed-sentence-sha256
+   "ca605b6c50e9a59ce2410a1e7384c257e806ea545d456767419f0f809c17fc0a",
+   :rehash-envelope :valid,
+   :reviewed-predicate-refusal :missing-exact-reviewed-sentence}],
+ :checker-sha256
+ "a31018d0d9c309fb35aaf3b9275b9829e2b5680899f704111352c6a87d8afd13",
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/compiler-source-reviews-current-applicability.edn",
+  :sha256
+  "8ef7ce86d59b7f16d9a2e814bb7ea24c14edc19aab7a0812f9532b6850a860d3"}}

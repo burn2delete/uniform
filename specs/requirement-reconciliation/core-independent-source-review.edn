@@ -1,0 +1,517 @@
+{:findings [],
+ :reproduce
+ ["clojure"
+  "-J-Xmx1g"
+  "-M"
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/semantic.clj"],
+ :preparation-history
+ {:wrong-guessed-C6-artifact-and-upstream-basename-reads
+  :corrected-from-actual-Git-tree,
+  :local-reader-and-template-bookkeeping-corrections
+  :completed-before-seal,
+  :checker-assumptions
+  [:qualified-facet-artifact-commit-refresh
+   :qualified-owner-artifact-commit-refresh],
+  :transient-checker-failures :not-source-findings,
+  :final-sealed-run :pass},
+ :semantic-boundaries
+ {:diagnostics
+  :all-eight-C6-meanings-full-source-generated-rule-profile-target-remediation-context-and-real-positive-negative-golden-tamper-obligations,
+  :seed-facts
+  :preserve-all-declarations-empty-later-inferred-checked-type-effect-ownership-safety-unless-syntactically-declared,
+  :domains
+  :explicit-source-owner-checker-anchor-profile-target-effects-capabilities-fallback-plus-real-producer-consumer-roles,
+  :bindings
+  :real-C5-output-identities-no-pending-marker-or-fabricated-hash-as-resolved-evidence,
+  :rule-semantics
+  :defn-declarations-when-nil-cond-order-case-equivalence-cleanup-ownership-effects-Result-Option-and-facet-boundaries,
+  :verification
+  :all-eight-source-invariant-groups-actual-report-and-before-Types-failure-gate-no-shape-or-status-shortcut,
+  :ordering :D1-C1-C6-questions-remain-open,
+  :evaluation
+  :all-eight-order-contexts-left-to-right-where-required-pure-reordering-only-later-with-effect-check-and-proof,
+  :examples
+  :illustrative-not-native-profile-default-or-completed-legality,
+  :desugaring
+  :actual-versioned-causal-surface-kind-root-introduced-reason-from-preservation-order-and-diagnostic-records,
+  :node-schema
+  :real-node-module-child-syntax-origin-binding-profile-target-metadata-seed-and-generated-fields,
+  :invalidation
+  :changed-rule-invalidates-typed-core-MIR-diagnostics-conformance-with-real-downstream-rechecks,
+  :forms
+  :actual-expanded-resolved-syntax-to-all-thirteen-declared-core-forms-data-primitives-or-governed-domain-boundaries},
+ :tree "3ff8fea6661f140648712b0322d3ecc1f8122a15",
+ :nonclaims
+ [:full-L2
+  :full-L7
+  :full-L9
+  :full-C12
+  :full-domain-implementation
+  :broader-C1
+  :whole-task-completion
+  :whole-project
+  :final-denominator
+  :implementation
+  :compiler
+  :Bootstrap
+  :runtime
+  :producer
+  :native
+  :target
+  :proxy
+  :model
+  :broker
+  :GitHub-APPROVE
+  :canonical-adoption
+  :integration
+  :held-Metadata372-Policy14-fixed-width-OWN-ACC08-clearance],
+ :candidate "103fba824db72589e6afbfc7a5d3573ce3af2d27",
+ :source-facet-ids
+ ["C6/normalized-facet/0-36/3e4de2ffbaab0431"
+  "C6/normalized-facet/37-313/6574c3e2b716c767"
+  "C6/normalized-facet/314-325/994413297a3e95a9"
+  "C6/facet/326-579"
+  "C6/facet/580-771"
+  "C6/normalized-facet/772-788/d8416f1863ce5290"
+  "C6/facet/789-910"
+  "C6/facet/910-1092"
+  "C6/facet/1092-1166"
+  "C6/facet/1166-1271"
+  "C6/facet/1271-1425"
+  "C6/facet/1425-1543"
+  "C6/facet/1543-1603"
+  "C6/normalized-facet/1604-1620/21d1931a332d9b7f"
+  "C6/facet/1621-1673"
+  "C6/facet/1673-1737"
+  "C6/facet/1737-1794"
+  "C6/facet/1794-1845"
+  "C6/facet/1845-1878"
+  "C6/facet/1878-1937"
+  "C6/facet/1937-2036"
+  "C6/facet/2036-2074"
+  "C6/normalized-facet/2075-2100/f4280a4d61a89adc"
+  "C6/facet/2101-2120"
+  "C6/facet/2120-2143"
+  "C6/facet/2143-2163"
+  "C6/facet/2163-2190"
+  "C6/facet/2190-2217"
+  "C6/facet/2217-2241"
+  "C6/facet/2241-2270"
+  "C6/normalized-facet/2271-2290/b4d6099ec719d8dd"
+  "C6/facet/2291-2683"
+  "C6/facet/2684-2873"
+  "C6/normalized-facet/2874-2894/567211ff4e0fe3e5"
+  "C6/facet/2895-3270"
+  "C6/facet/3271-3461"
+  "C6/normalized-facet/3462-3480/00f3d687e82fc2dd"
+  "C6/facet/3481-3503"
+  "C6/facet/3504-3615"
+  "C6/facet/3615-3663"
+  "C6/facet/3663-3723"
+  "C6/facet/3723-3836"
+  "C6/facet/3836-3933"
+  "C6/facet/3933-4021"
+  "C6/facet/4021-4096"
+  "C6/facet/4097-4242"
+  "C6/normalized-facet/4243-4263/2a5b4b2d5c3d1318"
+  "C6/facet/4264-4318"
+  "C6/facet/4319-4341"
+  "C6/facet/4341-4365"
+  "C6/facet/4365-4380"
+  "C6/facet/4380-4396"
+  "C6/facet/4396-4437"
+  "C6/facet/4437-4457"
+  "C6/facet/4457-4475"
+  "C6/facet/4475-4510"
+  "C6/facet/4511-4640"
+  "C6/normalized-facet/4641-4665/f7a9025dba96762b"
+  "C6/facet/4666-4739"
+  "C6/facet/4740-4790"
+  "C6/facet/4790-4821"
+  "C6/facet/4821-4862"
+  "C6/facet/4862-4911"
+  "C6/facet/4911-4948"
+  "C6/facet/4949-5107"
+  "C6/normalized-facet/5108-5129/4de19205305da9b9"
+  "C6/facet/5130-5156"
+  "C6/facet/5157-5193"
+  "C6/facet/5193-5225"
+  "C6/facet/5225-5267"
+  "C6/facet/5267-5315"
+  "C6/facet/5315-5382"
+  "C6/facet/5382-5439"
+  "C6/facet/5439-5500"
+  "C6/facet/5500-5569"
+  "C6/facet/5570-5608"
+  "C6/normalized-facet/5609-5624/84b964dab09b580d"
+  "C6/facet/5625-5673"
+  "C6/facet/5674-5731"
+  "C6/facet/5731-5775"
+  "C6/facet/5775-5840"
+  "C6/facet/5840-5897"
+  "C6/facet/5897-5960"
+  "C6/facet/5960-6021"
+  "C6/facet/6021-6086"
+  "C6/facet/6086-6128"
+  "C6/facet/6129-6280"
+  "C6/normalized-facet/6281-6301/81a99744c82b0f20"
+  "C6/facet/6302-6347"
+  "C6/facet/6348-6429"
+  "C6/facet/6430-6495"
+  "C6/facet/6496-6591"
+  "C6/facet/6592-6674"
+  "C6/normalized-facet/6675-6699/4cea7efb2bd3a140"
+  "C6/facet/6700-6755"
+  "C6/facet/6756-6800"
+  "C6/facet/6800-6865"
+  "C6/facet/6865-6921"
+  "C6/facet/6921-6992"
+  "C6/facet/6992-7030"
+  "C6/facet/7030-7085"
+  "C6/facet/7085-7137"
+  "C6/facet/7137-7177"],
+ :older-reviews
+ {:new-append-inheritance :none,
+  :finite-Reader-to-Core :not-expanded,
+  :C13-C11-Build68-goals :remain-closed},
+ :source-artifacts
+ [{:path
+   "specs/requirement-reconciliation/core-complete-current-facet-trace.edn",
+   :sha256
+   "b530ead5955eb624290ca6f6768628677ba5bf2787bab9cad691d65d97803a58"}
+  {:path
+   "specs/requirement-reconciliation/core-owner-source-refinement.edn",
+   :sha256
+   "6ea02f928b33cb462e220add5d33aa18c13f409c8adb0e643aa10af3b8f99099"}
+  {:path
+   "specs/requirement-reconciliation/core-owner-current-witness-applicability.edn",
+   :sha256
+   "1836e455dda5364e3ec4560ec561ba433f73ff3779d9709ec2783ccf5f10d67c"}],
+ :dependency-interfaces
+ [{:path
+   "docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md",
+   :sha256
+   "058a066f8443800a3cf79681ecf4b46aa048924a433fb7441d27d9d152459d48",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md",
+   :sha256
+   "0a2428520a9c5fb23336e9bcd9bd73c4f074426f4cec82b97bf0df140e994cee",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/084-c5-name-resolution-and-namespace-analyzer-design.md",
+   :sha256
+   "f61931ada4a1759bcdac74ef5c114e34f674d1eee9199f0833b72a5c31c205b0",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md",
+   :sha256
+   "7c263f211703f6c6a8ec083b20aa1d65ec10ef326072d74cd1852dfd13b056d3",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/088-c9-ownership-lifetime-and-region-checker-design.md",
+   :sha256
+   "5cfe07027452c3e3d920c7f634c2ee00b7e8b7fd1f5ddd99a1490931ed7a0f79",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+   :sha256
+   "a31b94a1c53f9e1610e5c31ef30d53e0047c9d07c4be034cae8356d20780c657",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+   :sha256
+   "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}],
+ :checks
+ {:total-source-data 204591,
+  :structural-subset 97185,
+  :inert-corruption-refusals 244,
+  :rehash-controls
+  :mutated-criterion-and-full-synthetic-task-file-witness-hashes-UTF8-ranges-and-owner-containment-recomputed-before-obligation-check,
+  :controls-include
+  [:each-required-clause
+   :each-single-core-form
+   :each-domain-interface-field
+   :each-diagnostic-meaning
+   :verifier-failure-gate-reversal
+   :fabricated-downstream-facts
+   :role-direction
+   :missing-facet
+   :stale-forged-missing-pins
+   :scope-promotion],
+  :review-method
+  :full-actual-C6-normative-text-and-literal-owning-Core-criteria-plus-authenticated-producer-consumer-interfaces,
+  :compiler-verifier-producer-runtime-execution :none},
+ :scope
+ {:criterion-roles 5,
+  :semantic-conjunctions 31,
+  :accepted
+  :only-enumerated-C6-source-to-exact-forms-bindings-desugaring-verification-domain-criterion-conjunctions,
+  :unselected-foundation-retirement-metadata-other-residuals
+  :retained-not-accepted,
+  :source-facets 103,
+  :source-document :C6,
+  :context-occurrences-and-facets 15,
+  :source-occurrences 46,
+  :existing-Open-Core-records 5,
+  :semantic-facets 88,
+  :preface-title-and-headings
+  :retained-context-not-standalone-implementation-or-metadata-review,
+  :original-owner-joins 5},
+ :actions
+ {:canonical-checkout-writes :none,
+  :task-status-updates :none,
+  :outbound-sends :none,
+  :new-workers :none,
+  :held-retries :none,
+  :project-helper-evaluation :none,
+  :generator-code-reading :inert-DATA-with-read-eval-false},
+ :mode-blob-conservation
+ {:old-tree-entries 10308,
+  :new-tree-entries 10313,
+  :changed-paths
+  ["docs/component-roadmaps/core.md"
+   "specs/core-workflow/tasks.md"
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+   "specs/requirement-reconciliation/all833-core-owner-current-criterion-conservation.edn"
+   "specs/requirement-reconciliation/core-complete-current-facet-trace.edn"
+   "specs/requirement-reconciliation/core-owner-current-witness-applicability.edn"
+   "specs/requirement-reconciliation/core-owner-source-refinement.edn"
+   "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn"
+   "specs/requirement-reconciliation/evidence.md"
+   "specs/requirement-reconciliation/explicit-extension-source-trace.edn"
+   "specs/requirement-reconciliation/source-dispositions.edn"
+   "specs/requirement-reconciliation/spec.md"
+   "specs/requirement-reconciliation/task-baseline.edn"
+   "specs/sh-family-crosswalk/crosswalk.edn"
+   "tools/sh_crosswalk.clj"],
+  :all-other-modes-blobs :identical,
+  :all240-normative-modes-blobs :identical,
+  :changed-path-modes :conserved-or-new-100644},
+ :previous-published-base "b8108264f9770e1543942f7f524b58868e553fef",
+ :task-source "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+ :later-subjects
+ {:C16-and-currentmain :outside-this-review,
+  :applicability :requires-separate-exact-current-conservation},
+ :authorship
+ {:Core-append :canonical-a330051b,
+  :reviewer-older-Build-predicates :conservation-only,
+  :semantic-self-acceptance :none},
+ :kind :independent-frozen-Core-C6-source-entailment-review,
+ :predicate-and-inventory-conservation
+ {:all833-decision-records :identical,
+  :entire-task-file-inverse :exact-declared-five-insertions-only,
+  :decision-file-pin-refreshes 1,
+  :unselected-owner-obligations-status-review-qualification :identical,
+  :historical-and-decision-inverse
+  :exact-prior-record-reconstruction-after-authenticated-metadata-refresh,
+  :projection-code :unchanged,
+  :qualified-adoption-artifact-commit-refreshes 572,
+  :task-count-delta 0,
+  :historical-file-pin-refreshes 0,
+  :historical-nested-spans 4819,
+  :older-owner-task-reference-envelopes
+  :only-authenticated-C6-append-expansion-and-source-pin-refresh-no-inherited-acceptance,
+  :older-supporting-traces
+  :same-exact-hashes-with-authenticated-commit-refreshes,
+  :qualified-receipt-hashes-subjects-cohorts-exclusions-and-authority
+  :identical,
+  :original-documents 240,
+  :historical-mappings 561,
+  :snapshot-commit-refreshes
+  :authenticated-exact-raw-predicates-at-declared-commits-and-frozen-current-owners,
+  :all-scoped-task-identities-and-statuses :preserved,
+  :entire-roadmap
+  :independently-reconstructed-from-current-Open-records,
+  :original-occurrences 9945,
+  :unselected-facet-records
+  :exact-except-qualified-adoption-artifact-commit-pin,
+  :retired-successor-proposals :identical,
+  :all833-decision-states :Open,
+  :original-facets 28785,
+  :qualified-artifact-pins
+  :same-authenticated-bytes-at-old-and-new-declared-commits-and-both-frozen-subjects,
+  :other-task-ledgers :all-byte-identical,
+  :current-owning-witnesses 931},
+ :verdict
+ :PASS-exact-frozen-C6-source-to-owning-criterion-conjunctions,
+ :criterion-witnesses
+ {:forms
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core1-lower-core-forms",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 1341,
+   :end-byte 2856,
+   :raw-sha256
+   "1f3c66f69f7dfe4c1a61763d118c72e3e4294ade3fe11b4cf307e5e4759b230e"},
+  :bindings
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 3222,
+   :end-byte 4507,
+   :raw-sha256
+   "015308171264462f52c73cfe56da24c2f036e1e1ccf0a4d609653aa98a68b58f"},
+  :desugaring
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core3-desugar-without-semantic-loss",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 4856,
+   :end-byte 6296,
+   :raw-sha256
+   "8dacf76b92bd3923e79c00a5f49605d827239040f28b06ce3bb579f10666f93e"},
+  :verification
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core4-verify-and-serialize",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 6631,
+   :end-byte 7995,
+   :raw-sha256
+   "a43a308d385baa9cc80563871dfc325a15bf645681425ffe6c02dc418f4ff89a"},
+  :domains
+  {:path "specs/core-workflow/tasks.md",
+   :marker "core-implementation-tasks",
+   :task-id
+   "core/current-evidence-and-remaining-work/core5-integrate-semantic-analyses",
+   :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+   :file-sha256
+   "9dd51281d892227cb130a2758b8fd51b4140a87c554464c215e742482bf830be",
+   :start-byte 8910,
+   :end-byte 10523,
+   :raw-sha256
+   "572e4e95d89ebc37e6de7fb5a70d539fb513d1e592cf7752e709df530259be43"}},
+ :reviewer "01a18529-68f3-74f0-b915-a63983ba628a",
+ :implementation :unassessed,
+ :held-exclusion
+ [{:path
+   "specs/requirement-reconciliation/source-provenance-facet-dispositions.edn",
+   :held-identity-count 372,
+   :context-only-overlap
+   ["C6/normalized-facet/37-313/6574c3e2b716c767"],
+   :semantic-overlap [],
+   :authority :exclusion-only-not-held-acceptance}
+  {:path
+   "specs/requirement-reconciliation/policy-and-efir14-facet-dispositions.edn",
+   :held-identity-count 14,
+   :context-only-overlap [],
+   :semantic-overlap [],
+   :authority :exclusion-only-not-held-acceptance}
+  {:path
+   "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
+   :held-identity-count 1,
+   :context-only-overlap [],
+   :semantic-overlap [],
+   :authority :exclusion-only-not-held-acceptance}],
+ :support-artifacts
+ [{:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/check.clj",
+   :sha256
+   "1cba5f9e8c6801315e284da19bfa35052bdd17c8beff7dfbc446b6e16803b2f8"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/check.log",
+   :sha256
+   "734903d79f389516f20e3a0fb85c2773fbc7d0511cac5dba12e1e142c9303005"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/semantic.clj",
+   :sha256
+   "4fe929640f9450307432434543f760e1a4169d598dc936d7cf7e9fd7ec04871c"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/semantic.log",
+   :sha256
+   "dedf53471ac67116ed68c5b488b11209215fa1222104a0842ec2a5b4dd1d1f1c"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/seal.clj",
+   :sha256
+   "54434281f6e576470663a53d1dade43daf69905104ddd4cc0dc6cf4eb07ec4a8"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/obligations.edn",
+   :sha256
+   "8fc9ab363e1643c9c6cf9d5c9c18a297671895c1b3c565783f0f0ac062a92a84"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/reasons.edn",
+   :sha256
+   "5dc9c8c525a1397f910d2b57fb048f29b6e0ef4a93e7f578524b1006e2a2fa40"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/owner-reasons.edn",
+   :sha256
+   "02526a5884cd9cb7e63d3598446510658e278f9b1b30bc60d550b1016d44c6e7"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/intake.json",
+   :sha256
+   "c3a891ae89e35865fa35d503528f08fa09bbe42eff5aa247449537590b1686af"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/core-complete-current-facet-trace.edn",
+   :sha256
+   "b530ead5955eb624290ca6f6768628677ba5bf2787bab9cad691d65d97803a58"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/core-owner-source-refinement.edn",
+   :sha256
+   "6ea02f928b33cb462e220add5d33aa18c13f409c8adb0e643aa10af3b8f99099"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/core-owner-current-witness-applicability.edn",
+   :sha256
+   "1836e455dda5364e3ec4560ec561ba433f73ff3779d9709ec2783ccf5f10d67c"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/structural-result.edn",
+   :sha256
+   "941c7adee3e6cb2f84494d1d03a17dd4ad4cc3a4291d420fc6bfe34106d6c632"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/semantic-assessments.edn",
+   :sha256
+   "1d1ca42f9c51ef852a6450b77c9e39c3b3ff670c4e8a49632dc63a4f59605125"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/negative-controls.edn",
+   :sha256
+   "c3acff6d6ef70e65ad39bfedc98bf09645eac89a44203bc6cfac78c85e1d45a4"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/result.edn",
+   :sha256
+   "1a41fb8b63f00d99426b94b7671dfcd7aa27208c3a808f8dac559bd74cc54881"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/core-review-103fba82/mode-blob-conservation.edn",
+   :sha256
+   "fd5fb6b96f3c201e79a074d39a24d1278904d9808f896c04925515469e3554e2"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/original-facet-matrix.edn",
+   :sha256
+   "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/intake.json",
+   :sha256
+   "591b9c58e3dccf61fc2198a7a9d5ddfd0506a37813429db0a735111671c83626"}]}

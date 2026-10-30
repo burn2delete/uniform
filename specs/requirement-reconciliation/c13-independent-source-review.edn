@@ -1,0 +1,468 @@
+{:findings [],
+ :reproduce
+ ["clojure"
+  "-J-Xmx1g"
+  "-M"
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/semantic.clj"],
+ :preparation-history
+ {:local-reader-delimiter-errors :corrected,
+  :checker-assumptions
+  [:commit-only-snapshot-refresh
+   :decision-snapshots-have-no-invented-historical-refresh-marker
+   :whole-task-reference-envelope-expansion
+   :optional-artifact-source-commit],
+  :transient-checker-failures :not-source-findings,
+  :final-sealed-run :pass},
+ :semantic-boundaries
+ {:diagnostics
+  :all-ten-C13-meanings-and-source-subject-context-preserved,
+  :pipeline
+  :exact-semantic-inputs-versions-providers-seeds-replay-no-change-decisions-and-Lower-consumers,
+  :performance
+  :benchmarks-not-correctness-accounting-removal-not-zero-cost-PERF2-evidence-still-required,
+  :contracts
+  :actual-verified-MIR-pre-and-post-contract-checks-required,
+  :checks
+  :actual-checked-PERF10-SAFE15-MATH10-evidence-exact-subject-dominance-surviving-assumptions-or-preserve-reject,
+  :verification
+  :actual-current-MIR-report-after-every-listed-mutation-family-separate-high-risk-semantic-evidence,
+  :sample-values
+  :illustrative-no-new-project-quotas-or-fabricated-success,
+  :producer-ownership
+  :MIR-proof-domain-backend-and-runtime-providers-retain-their-own-implementations,
+  :invalidation
+  :conservative-ledger-regeneration-restored-checks-cache-and-diagnostic-effects,
+  :families
+  :actual-transformations-legal-before-measurement-slower-correct-variants-allowed},
+ :tree "181a972c990a589c84a6146b82a21993846d705e",
+ :nonclaims
+ [:whole-task-completion
+  :whole-project
+  :whole-dependency-document-acceptance
+  :final-denominator
+  :implementation
+  :optimizer-execution
+  :MIR-verifier-execution
+  :proof-checker-execution
+  :Bootstrap
+  :compiler
+  :producer
+  :runtime
+  :target
+  :proxy
+  :model
+  :broker
+  :GitHub-APPROVE
+  :canonical-adoption
+  :integration
+  :held-Metadata372-Policy14-fixed-width-OWN-ACC08-clearance],
+ :candidate "b9e72428c873e0b5badaca6852b5348b479f20ee",
+ :source-facet-ids
+ ["C13/normalized-facet/0-39/dedddeef5f1f3f69"
+  "C13/normalized-facet/40-316/f32b1559e9b71c1f"
+  "C13/normalized-facet/317-328/994413297a3e95a9"
+  "C13/facet/329-637"
+  "C13/facet/638-776"
+  "C13/normalized-facet/777-793/d8416f1863ce5290"
+  "C13/facet/794-1015"
+  "C13/facet/1015-1145"
+  "C13/facet/1145-1317"
+  "C13/facet/1317-1355"
+  "C13/facet/1355-1462"
+  "C13/facet/1462-1620"
+  "C13/facet/1620-1726"
+  "C13/normalized-facet/1727-1743/21d1931a332d9b7f"
+  "C13/facet/1744-1786"
+  "C13/facet/1786-1821"
+  "C13/facet/1821-1877"
+  "C13/facet/1877-1929"
+  "C13/facet/1929-1991"
+  "C13/facet/1991-2046"
+  "C13/facet/2046-2119"
+  "C13/normalized-facet/2120-2145/f4280a4d61a89adc"
+  "C13/facet/2146-2163"
+  "C13/facet/2163-2189"
+  "C13/facet/2189-2218"
+  "C13/facet/2218-2245"
+  "C13/facet/2245-2271"
+  "C13/facet/2271-2310"
+  "C13/facet/2310-2340"
+  "C13/facet/2340-2368"
+  "C13/normalized-facet/2369-2386/fd9a77c24b6b24b1"
+  "C13/facet/2387-2888"
+  "C13/facet/2889-2961"
+  "C13/normalized-facet/2962-2988/efbfc8f3c8ed4a1b"
+  "C13/facet/2989-3025"
+  "C13/facet/3026-3062"
+  "C13/facet/3062-3087"
+  "C13/facet/3087-3123"
+  "C13/facet/3123-3135"
+  "C13/facet/3135-3176"
+  "C13/facet/3176-3210"
+  "C13/facet/3210-3275"
+  "C13/facet/3275-3308"
+  "C13/facet/3308-3393"
+  "C13/facet/3393-3450"
+  "C13/facet/3450-3498"
+  "C13/facet/3498-3537"
+  "C13/facet/3537-3566"
+  "C13/facet/3566-3593"
+  "C13/facet/3593-3621"
+  "C13/facet/3621-3664"
+  "C13/facet/3664-3699"
+  "C13/facet/3699-3740"
+  "C13/facet/3741-3842"
+  "C13/normalized-facet/3843-3862/859526bf3a0e839d"
+  "C13/facet/3863-4257"
+  "C13/facet/4258-4324"
+  "C13/normalized-facet/4325-4348/03f02f277c5e3ba7"
+  "C13/facet/4349-4382"
+  "C13/facet/4383-4407"
+  "C13/facet/4407-4428"
+  "C13/facet/4428-4454"
+  "C13/facet/4454-4492"
+  "C13/facet/4492-4519"
+  "C13/facet/4519-4537"
+  "C13/facet/4537-4561"
+  "C13/facet/4562-4668"
+  "C13/normalized-facet/4669-4712/df71adca9e72286d"
+  "C13/facet/4713-4796"
+  "C13/facet/4797-4812"
+  "C13/facet/4812-4838"
+  "C13/facet/4838-4870"
+  "C13/facet/4870-4893"
+  "C13/facet/4893-4912"
+  "C13/facet/4912-4966"
+  "C13/facet/4967-5018"
+  "C13/facet/5019-5177"
+  "C13/normalized-facet/5178-5213/b6ec5bbf4580238f"
+  "C13/facet/5214-5245"
+  "C13/facet/5246-5260"
+  "C13/facet/5260-5277"
+  "C13/facet/5277-5299"
+  "C13/facet/5299-5316"
+  "C13/facet/5316-5338"
+  "C13/facet/5338-5360"
+  "C13/facet/5360-5376"
+  "C13/facet/5376-5399"
+  "C13/facet/5399-5433"
+  "C13/facet/5433-5452"
+  "C13/facet/5453-5538"
+  "C13/normalized-facet/5539-5554/84b964dab09b580d"
+  "C13/facet/5555-5603"
+  "C13/facet/5604-5649"
+  "C13/facet/5649-5718"
+  "C13/facet/5718-5771"
+  "C13/facet/5771-5829"
+  "C13/facet/5829-5887"
+  "C13/facet/5887-5933"
+  "C13/facet/5933-5994"
+  "C13/facet/5994-6052"
+  "C13/facet/6052-6113"
+  "C13/facet/6113-6160"
+  "C13/facet/6161-6340"
+  "C13/normalized-facet/6341-6361/81a99744c82b0f20"
+  "C13/facet/6362-6420"
+  "C13/facet/6421-6494"
+  "C13/facet/6495-6548"
+  "C13/facet/6549-6608"
+  "C13/facet/6609-6687"
+  "C13/normalized-facet/6688-6712/4cea7efb2bd3a140"
+  "C13/facet/6713-6758"
+  "C13/facet/6759-6800"
+  "C13/facet/6800-6841"
+  "C13/facet/6841-6894"
+  "C13/facet/6894-6938"
+  "C13/facet/6938-6994"
+  "C13/facet/6994-7033"
+  "C13/facet/7033-7081"
+  "C13/facet/7081-7137"
+  "C13/facet/7137-7196"],
+ :later-heads
+ {:Types-and-Resolve-changes :outside-this-review,
+  :acceptance :none,
+  :requirement :separate-exact-current-applicability},
+ :source-artifacts
+ [{:path
+   "specs/requirement-reconciliation/c13-complete-current-facet-trace.edn",
+   :sha256
+   "84d36992e56fd44bb12e471be51e38a9dd7b8c26ad5845ff0a6a763fecd26b99"}
+  {:path
+   "specs/requirement-reconciliation/c13-owner-source-refinement.edn",
+   :sha256
+   "31c11f012a5b96083dddd031fb99b04ec39b7b58df601b7fed01c08b1746d30c"}
+  {:path
+   "specs/requirement-reconciliation/c13-owner-current-witness-applicability.edn",
+   :sha256
+   "03b05e8142f2221d2eb0ef00d27bdbf944b93b77f99b504940ae80191d9263b1"}],
+ :conservation
+ {:unselected-owner-task-reference-envelopes
+  :only-authenticated-C13-appends-plus-source-pin-refresh-no-inherited-acceptance,
+  :older-Build68-C11-and-other-review-scopes
+  :unchanged-no-new-append-inheritance,
+  :all833-decision-records :identical,
+  :entire-task-file-inverse :exact-declared-insertions-only,
+  :decision-file-pin-refreshes 1,
+  :current-criterion-witnesses 931,
+  :unselected-owner-obligation-state-review-qualification :exact,
+  :older-supporting-trace-refresh
+  :same-exact-blob-hash-at-declared-artifact-commits-when-present-and-both-frozen-candidates,
+  :task-count-delta 0,
+  :pin-inverse
+  :recursive-exact-prior-record-reconstruction-with-unchanged-raw-predicates,
+  :original-source-facets 28785,
+  :historical-pin-refreshes 21,
+  :retired-owner-successor-proposals :identical,
+  :original-documents 240,
+  :original-source-occurrences 9945,
+  :historical-mappings 561,
+  :snapshot-commit-refreshes
+  :authenticated-against-declared-immutable-files,
+  :all-scoped-task-identities-and-statuses :preserved,
+  :entire-roadmap
+  :independently-reconstructed-from-current-Open-records,
+  :unselected-facet-records :exact,
+  :all833-decision-states :Open,
+  :nested-historical-spans 4819,
+  :other-task-ledgers :all-byte-identical},
+ :checks
+ {:total-source-data 154512,
+  :structural-subset 97746,
+  :inert-corruption-refusals 228,
+  :coherent-weakening
+  :mutated-criterion-full-synthetic-task-file-raw-witness-hashes-and-UTF8-ranges-recomputed-before-obligation-check,
+  :semantic-assessments
+  :manual-full-normative-C13-to-actual-literal-Opt-clauses-and-producer-consumer-contracts,
+  :compiler-producer-runtime-execution :none},
+ :scope
+ {:existing-Opt-tasks 5,
+  :criterion-roles 5,
+  :metadata-preface :context-identity-and-hierarchy-preservation-only,
+  :semantic-conjunctions 32,
+  :accepted
+  :only-enumerated-C13-source-to-exact-owning-criterion-conjunctions,
+  :unselected-foundation-retirement-metadata-other-residuals
+  :retained-not-accepted,
+  :C13-original-source-facets 120,
+  :context-only-facets 15,
+  :source-occurrences 47,
+  :semantic-facets 105,
+  :original-owner-joins 4},
+ :actions
+ {:canonical-checkout-writes :none,
+  :task-status-updates :none,
+  :outbound-sends :none,
+  :new-workers :none,
+  :held-retries :none,
+  :project-helper-evaluation :none,
+  :generator-read :inert-DATA-with-read-eval-false},
+ :task-source "ded6c1d2eede7985e078af57ed53fa367645436a",
+ :predecessor "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a",
+ :authorship
+ {:new-C13-append :canonical-ded6c1d2,
+  :reviewer-own-older-Build-criteria :conservation-only,
+  :semantic-self-acceptance :none},
+ :kind :independent-frozen-C13-source-entailment-review,
+ :verdict :PASS-exact-frozen-C13-source-criterion-conjunctions,
+ :prior-independent-reviews
+ {:state :preserved, :new-append-inheritance :none},
+ :criterion-witnesses
+ {:contracts
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 2681,
+   :end-byte 3812,
+   :raw-sha256
+   "cb099c0e5ad18a58f0959541eba189e0e611a38ca7e4406d672586e4358344e4"},
+  :families
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt2-implement-structural-families",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 5959,
+   :end-byte 7367,
+   :raw-sha256
+   "99050d217e355dec0297ba8e904531ea94d0454a6d3d716040e0d706418a5940"},
+  :checks
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt3-protect-checks-and-anchors",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 7748,
+   :end-byte 8836,
+   :raw-sha256
+   "08ea8303c25ab4f15bf0638c4c6ad76593e5cc1fec46696c80b0bbe528982190"},
+  :verification
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt4-verify-and-regenerate",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 9183,
+   :end-byte 10482,
+   :raw-sha256
+   "306dfebb89c973f091e0667fa73dd780bac859d8e4f7ac000fb4cadb65f94071"},
+  :pipeline
+  {:path "specs/opt-workflow/tasks.md",
+   :marker "opt-implementation-tasks",
+   :task-id
+   "opt/current-evidence-and-remaining-work/opt5-integrate-reproducible-pipeline",
+   :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+   :file-sha256
+   "b93e35113f9ebe4b07fc4b91557fc973b199e94b72c5683e5de54d478a24f205",
+   :start-byte 13467,
+   :end-byte 15155,
+   :raw-sha256
+   "3d12761b3ab7b471b434457dfd9b7eb3bea288b828d285f31cac34883b536c87"}},
+ :reviewer "01a18529-68f3-74f0-b915-a63983ba628a",
+ :dependencies
+ [{:path
+   "docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md",
+   :sha256
+   "208940e6497948a3c80c8184e19a46daa07e82494032d275526bad38f14cfd39",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+   :sha256
+   "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md",
+   :sha256
+   "fd4a1be6d951b54b17e2b694da6f61a5c4e38bea2dbcdb3a90f394f3d0b4c89d",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-04-performance-model/059-perf1-performance-model-specification.md",
+   :sha256
+   "997e030a2c08f86ea8136ad8988251e5392fcdb3800df5c6c77b37d56d24712c",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-04-performance-model/060-perf2-zero-cost-abstractions-specification.md",
+   :sha256
+   "6c41e7474b1b571aba72b4c872c1b38117e1a5b857de77e9de2c72181e29235c",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md",
+   :sha256
+   "52a34276599945c7cfc88fbc64f3af1d56d359ae8a48ddf22afa443af72f24e3",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md",
+   :sha256
+   "5e6a89a21baf9c7ace71e9065cc5e65483c769d0d8b1d0e213b9288a6f1d9759",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}
+  {:path
+   "docs/phase-05-mathematical-and-elementary-function-system/078-math10-elementary-function-optimization-strategy.md",
+   :sha256
+   "a62d165ee6e5a4118f9a17e1ce47ed438c84481d43a5b99219f97afa89f21cb9",
+   :authority
+   :normative-interface-only-not-implementation-or-whole-document-acceptance}],
+ :implementation :unassessed,
+ :held-exclusion
+ [{:path
+   "specs/requirement-reconciliation/source-provenance-facet-dispositions.edn",
+   :held-identity-count 372,
+   :context-only-overlap
+   ["C13/normalized-facet/40-316/f32b1559e9b71c1f"],
+   :semantic-overlap [],
+   :authority :exclusion-only-not-held-acceptance}
+  {:path
+   "specs/requirement-reconciliation/policy-and-efir14-facet-dispositions.edn",
+   :held-identity-count 14,
+   :context-only-overlap [],
+   :semantic-overlap [],
+   :authority :exclusion-only-not-held-acceptance}
+  {:path
+   "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
+   :held-identity-count 1,
+   :context-only-overlap [],
+   :semantic-overlap [],
+   :authority :exclusion-only-not-held-acceptance}],
+ :support-artifacts
+ [{:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/check.clj",
+   :sha256
+   "a130670b1fc938c6e8130bea97357b841b9752d31612c0a07dca9b9596cfbe0a"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/check.log",
+   :sha256
+   "12eab616ca6aaea76e5a87058ad5ac20cba370495bd75b0eeeef2cd72bba37b6"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/semantic.clj",
+   :sha256
+   "af978f54b71ce70676b0b187b3c97f9d410b13ccc8773a01e151e9e7a637b381"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/semantic.log",
+   :sha256
+   "c4a191b1ad6f7466d7f4d32bc2680cdfa0bdcba887967901d88d95366fc9e670"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/seal.clj",
+   :sha256
+   "815da2c760e67e70a54fecc5b096c48a7169cf0a861c4454712c3520eef39cf2"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/intake.json",
+   :sha256
+   "591b9c58e3dccf61fc2198a7a9d5ddfd0506a37813429db0a735111671c83626"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/c13-complete-current-facet-trace.edn",
+   :sha256
+   "84d36992e56fd44bb12e471be51e38a9dd7b8c26ad5845ff0a6a763fecd26b99"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/c13-owner-source-refinement.edn",
+   :sha256
+   "31c11f012a5b96083dddd031fb99b04ec39b7b58df601b7fed01c08b1746d30c"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/c13-owner-current-witness-applicability.edn",
+   :sha256
+   "03b05e8142f2221d2eb0ef00d27bdbf944b93b77f99b504940ae80191d9263b1"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/structural-result.edn",
+   :sha256
+   "8c658447ecbe55269b8f97d6bc2acfa4d62b0de2181466f8a13be927a6b18105"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/semantic-assessments.edn",
+   :sha256
+   "a55b035fce211d9dd127042a817e8b869cf29229c766ff29a8dc57685ce8770f"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/negative-controls.edn",
+   :sha256
+   "9a44f08d3954e9bcb9fe5826488c126ea3897c82380867f4fd532e847c5a77bd"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/result.edn",
+   :sha256
+   "e21b1af96fbe37128dd50e20dccc54a032fae973c6ed8b7d55252cc1ab07db6d"}
+  {:path
+   "/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c11-review-de0c5c94/original-facet-matrix.edn",
+   :sha256
+   "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7"}],
+ :goal-history
+ {:Build68 :remains-closed,
+  :C11 :remains-closed,
+  :C13
+  :new-finite-native-goal-created-and-read-back-active-before-review}}
