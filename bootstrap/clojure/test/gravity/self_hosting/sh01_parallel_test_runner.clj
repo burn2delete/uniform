@@ -2267,6 +2267,77 @@
         (restore-interrupt! error)
         (fail! :read nil error)))))
 
+(defn- publish-parent-report!
+  [job options request-id observation]
+  (let [{:keys [operation disposition resource-class]} observation
+        {:keys [state release-attempted? receipt error parent-exit-custody]} disposition
+        result (:value operation)
+        error-view #(when % (Throwable->map %))
+        _ (when-not (and (= (:resource-class job) resource-class)
+                         (boolean? (:returned? operation))
+                         (if (:returned? operation)
+                           (and (nil? (:error operation)) (map? result)
+                                (= :supplied-data-matched (:development-result-binding-status result))
+                                (contains? #{:passed :failed} (:status result))
+                                (= (if (= :passed (:status result)) 0 1) (:exit-code result))
+                                (= :gravity/development-test-result-v1
+                                   (get-in result [:development-result :schema]))
+                                (= (select-keys (:development-result options)
+                                                [:source-commit :source-tree :configuration-sha256])
+                                   (get-in result [:development-result-request :source]))
+                                (= (get-in result [:development-result-request :selection])
+                                   (get-in result [:development-result :selection]))
+                                (= (:status result) (get-in result [:development-result :outcome]))
+                                (= (:exit-code result) (get-in result [:development-result :exit-code])))
+                           (instance? Throwable (:error operation)))
+                         (case state
+                           :released (and (true? release-attempted?) (nil? error)
+                                          (= :released (:outcome receipt))
+                                          (= resource-class (:resource-class receipt))
+                                          (= :gravity/sh01-host-resource-non-authoritative-receipt-v1 (:schema receipt))
+                                          (= :not-required-for-this-released-lease parent-exit-custody))
+                           :quarantined (and (false? release-attempted?) (nil? receipt)
+                                             (or (nil? error) (instance? Throwable error))
+                                             (= :unsupported-in-JVM-only parent-exit-custody))
+                           :release-failed (and (true? release-attempted?) (nil? receipt)
+                                                (instance? Throwable error)
+                                                (= :unsupported-in-JVM-only parent-exit-custody))
+                           :acquire-failed (and (false? release-attempted?) (nil? receipt)
+                                                (instance? Throwable error)
+                                                (= :not-established parent-exit-custody))
+                           false))
+            (throw (ex-info "Final parent report contradicts its actual observation"
+                            {:id "SH01-PARENT-REPORT" :observation observation})))
+        report {:schema :gravity/development-parent-report-v1
+                :authority :non-authoritative :authoritative? false
+                :request {:id request-id :namespace (str (:namespace job))
+                          :source (select-keys (:development-result options)
+                                               [:source-commit :source-tree :configuration-sha256])}
+                :operation {:returned? (:returned? operation) :result result
+                            :error (error-view (:error operation))}
+                :resource {:state state :release-attempted? release-attempted?
+                           :receipt receipt :error (error-view error)
+                           :parent-exit-custody parent-exit-custody}
+                :outcome (cond (or (:error operation) error) :error
+                               (= :quarantined state) :unresolved
+                               (and (= :passed (:status result)) (zero? (:exit-code result))) :passed
+                               :else :failed)}
+        text (str (pr-str report) "\n")
+        _ (when-not (= report (edn/read-string text))
+            (throw (ex-info "Final parent report is not round-trip EDN"
+                            {:id "SH01-PARENT-REPORT-ENCODING"})))
+        bytes (.getBytes text StandardCharsets/UTF_8)
+        {:keys [file limit-bytes]} (:parent-report options)]
+    (when (> (alength bytes) limit-bytes)
+      (throw (ex-info "Final parent report exceeds declared capture limit"
+                      {:id "SH01-PARENT-REPORT-LIMIT" :bytes (alength bytes) :limit limit-bytes})))
+    (java.nio.file.Files/write
+     (.toPath (io/file file)) bytes
+     (into-array java.nio.file.OpenOption
+                 [java.nio.file.StandardOpenOption/CREATE_NEW java.nio.file.StandardOpenOption/WRITE
+                  java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+    {:file file :bytes (alength bytes) :report report}))
+
 (defn run-namespace-process
   "Runs one namespace in a fresh process.
 
@@ -2286,6 +2357,16 @@
              (contains? options :development-result-delivery))
      (throw (ex-info "Development result delivery is parent-owned"
                      {:id "SH01-DEVELOPMENT-RESULT-REQUEST"})))
+   (when (and (contains? options :parent-report)
+              (not (and (= #{:file :limit-bytes} (set (keys (:parent-report options))))
+                        (string? (get-in options [:parent-report :file]))
+                        (.isAbsolute (io/file (get-in options [:parent-report :file])))
+                        (integer? (get-in options [:parent-report :limit-bytes]))
+                        (pos? (get-in options [:parent-report :limit-bytes]))
+                        (map? (:development-result options))
+                        (map? (:resource-broker options)))))
+     (throw (ex-info "Final parent report requires owned output and normal resource/completion paths"
+                     {:id "SH01-PARENT-REPORT-REQUEST"})))
    (let [resource-owned? (contains? options :resource-broker)
          _ (when (and resource-owned?
                       (not (and (map? (:resource-broker options))
@@ -2327,7 +2408,14 @@
               (assoc result :command command :child-jvm-launched? true)
               (long (/ (- (System/nanoTime) started) 1000000.0)))))]
      (if resource-owned?
-       (broker/with-lease (:resource-broker options) (:resource-class job) operation)
+       (if (:parent-report options)
+         (let [publication (atom nil)
+               request-id (str (java.util.UUID/randomUUID))
+               result (broker/with-lease
+                        (:resource-broker options) (:resource-class job) operation
+                        #(reset! publication (publish-parent-report! job options request-id %)))]
+           (assoc result :parent-report @publication))
+         (broker/with-lease (:resource-broker options) (:resource-class job) operation))
        (operation)))))
 
 (defn- parse-positive-option
