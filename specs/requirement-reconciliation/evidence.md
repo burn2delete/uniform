@@ -3641,3 +3641,46 @@ and backend implementation, compiler ordering, independent C12 source review,
 complete-current-composition/final counting and coordinator integration remain
 separate. No domain entry/verifier/exit callback, optimizer, proof checker,
 compiler, target, runtime/provider, probe or held operation was executed.
+
+C12 publication uses metadata/census source
+`ecd75e06dca1170c48ef9ee4e45d781b0a0e266d` and complete inventory source
+`09bc34ddf34c91facec6fe9c77b03c64746ed81d`. Inventory SHA256 is
+`f9801c8fdb12a29dbfcdf8c851b84d395ad35bcdcf132cbccb00222225bb8d59`.
+Trace SHA256 is
+`cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff`;
+current witness snapshot SHA256 is
+`94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122`.
+The new captured-review byte-continuity artifact authenticates 65 frozen
+criterion witnesses with two changed Compiler API file pins and identical,
+unique current raw predicates. Its SHA256 is
+`07af96cc22d0b15fbc9481439d01a281f5439fa66fa37f7d2bac65e160ef52c1`.
+Earlier continuity artifacts and receipts remain exact historical records.
+Current C17 owner conjunctions use the three refreshed identical witnesses;
+its frozen trace and independent review subject remain unchanged.
+
+Complete inventory tests pass 14 tests/76 assertions and serialized readback.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 owner identities
+conserve. Readback confirms all 108 C17 and 115 C12 facets remain proposals,
+five qualified review-group references, twelve source refinements, unchanged
+qualified facet ID partitions, active witness pointers and unchanged extension
+byte-applicability descriptor states. Other facet states are 5,375 preserved
+format/hierarchy contexts, 20,136 pending complete predicates, 700 dependency
+joins and 357 owner/metadata adjudications. Owner states remain 984 candidates,
+201 task-reference-only joins and three retirement proposals. Projection tests
+pass 5/77; source trace 3/35; SH 12/541; census 5/18; boundary 6/11; both
+document validators, generated SH/census checks, zero-finding changed SH lint
+and whitespace pass. The provisional census remains three Accepted, 190 Open,
+one Partial, one unassessed and 192 remaining out of 195 (3/195).
+
+The next directly inspected residual is C18: 101 facets across 45 occurrences,
+six existing compiler owner candidates and one backend-conformance owner still
+task-reference-only. The existing pass-evidence block names the matrix and
+risk contract but does not enumerate C18's four risk meanings, ten minimum vs
+stronger matrix rows, full risk/translation-validation/trust record fields or
+nine diagnostic meanings/context. Those source predicates and the authentic
+backend conformance dependency need their own current criterion/facet joins;
+this observation grants no checker, backend, target or held execution authority.
+One scratch read-only inspection had an unmatched delimiter and was corrected
+before evaluation; no source mutation or denied action resulted. Independent
+C12 review, complete-current-composition/final counting and coordinator
+integration remain pending. This owner sends no cross-chat review assignment.
