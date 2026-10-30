@@ -3684,3 +3684,66 @@ One scratch read-only inspection had an unmatched delimiter and was corrected
 before evaluation; no source mutation or denied action resulted. Independent
 C12 review, complete-current-composition/final counting and coordinator
 integration remain pending. This owner sends no cross-chat review assignment.
+
+## C17 frozen source review adoption
+
+Receipt SHA256
+`2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7`
+binds frozen candidate `45fa1763f939bdad59a9ee78401223a957382454`, tree
+`b348ee3b323b06a9712dedadbe6fddea7500bcba`, task source `726b04bb` and
+trace SHA256 `084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57`.
+It reports a scoped C17 source pass for 108 facets across 45 occurrences,
+30 semantic conjunctions, 15 context occurrences, six owners and three actual
+Plugin Host/Pipeline criterion spans. Its 57 reported refusals, including 41
+semantic mutations, remain attributed to the sealed independent review. The
+65 captured review-predicate comparisons establish byte continuity only, with
+no semantic renewal, whole-current-head or held-scope acceptance.
+
+Local applicability at `bec12ac1d543353325030f40db37490c5407d8d5` authenticates
+all frozen inputs and mode/blob records, support hashes, complete facet and
+occurrence roles, owner joins, matrix membership, canonical source bytes and
+current criterion bodies. The separate C12 exact insertion inverse restores
+the frozen C17 task file; all other four projected bodies and literal outcome
+statuses remain exact. Three file pins refresh identical C17 predicates after
+C12; those new C12 clauses receive no inherited acceptance. All 833 decisions
+and 931 current witnesses, 561 historical IDs and 4,819 raw spans conserve.
+Local controls pass three tests/38 assertions, including coherent first-sentence
+removals with full synthetic file/raw hashes and byte ranges, forged pins,
+authentic wrong-role distinctions, missing membership and C12/held/count/whole
+scope promotion refusals. One scratch unmatched delimiter was corrected before
+all-form evaluation and canonical intake writes. No reviewer checker was rerun.
+An external private Python scaffold was observed as text; it is not copied,
+executed or relied on for repository tooling or evidence authority. Raw EDN,
+frozen sources and the local Clojure controls supply this adoption's inputs.
+
+Intake commit `e835a80f34138fd16277a510c0bca06287a3738e` preserves the receipt,
+current applicability and qualified adoption. The additional 108 dispositions
+are 93 semantic and 15 context facets, yielding 1,470 qualified source facets:
+1,264 semantic, 204 contexts and two superseded accounting-history fragments.
+Nine reviewed retirement facets remain outside the 2,208-ID finite index;
+747 proposals remain pending. One overlapping C17 provenance context remains
+one identity and confers no held-scope clearance. Thirteen scoped source-review
+cohorts retain their separate authority. All 115 C12 facets remain pending
+independent source acceptance. No implementation, task/status/decision changes,
+broader dependencies, later-main, release, final count or integration acceptance
+arise from the receipt or its local applicability.
+
+Finite integration assessment: main is
+`70dcb2220701529dbb02bd2317a822eb3ac72fed`, tree
+`0d8e95c8451cf2bcf74ad70c353b10cac5f665c1`. The separate
+[C17 main-adoption assessment](finite-c17-main-adoption-assessment.edn)
+records the exact dependency problem: main has four Compiler API outcomes,
+contains none of the three full reviewed current criterion bodies, and lacks
+all eight directly named adoption dependencies. The current application binds
+the five-outcome composition and a domain-owner snapshot containing pending
+C12. Copying complete current metadata would carry that unreviewed C12 payload;
+copying only the receipt would omit its closed provenance and current
+application. An isolated source-only C17 re-expression on main would therefore
+be a new candidate requiring fresh applicability and independent affected
+composition review. The accepted tuple cannot be transplanted unchanged as the
+closed main-adoption subset requested. This specific dependency does not make
+the final global denominator a prerequisite for every finite integration and
+does not rule out other finite subsets. No isolated accepted main candidate was
+created, so integration preflight and CI were not run; no CI denial or failure
+is inferred. No canonical reset, new checkout or main integration occurred.
+The concrete C18 source gap remains independently actionable.

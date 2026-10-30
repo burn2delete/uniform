@@ -437561,6 +437561,56 @@
    "specs/requirement-reconciliation/bootstrap-diagnostic15-qualified-current-applicability.edn",
    :sha256
    "26603737c7d5e2161f39cc0c3513836a781553d68471a734b4a87239fc31221c"}},
+ :c17-qualified-source-review-adoption
+ {:receipt
+  {:path
+   "specs/requirement-reconciliation/c17-independent-source-review.edn",
+   :sha256
+   "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7",
+   :reviewed-source "45fa1763f939bdad59a9ee78401223a957382454",
+   :reviewed-tree "b348ee3b323b06a9712dedadbe6fddea7500bcba"},
+  :prior-twelve-reviews
+  :retain-captured-subjects-scopes-and-exclusions,
+  :counts
+  {:new-reviewed-facets 108,
+   :all-reviewed-source-facets 1470,
+   :semantic-conjunction-facets 1264,
+   :retained-context-facets 204,
+   :superseded-history-facets 2,
+   :finite-proposal-ids 2208,
+   :pending-finite-proposal-ids 747,
+   :reviewed-outside-finite-index 9},
+  :held-overlap :one-source-context-identity-no-held-scope-clearance,
+  :new-C17-facets 108,
+  :new-C17-context-facets 15,
+  :trace
+  {:path
+   "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn",
+   :sha256
+   "084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57"},
+  :full-dependency-documents :not-accepted,
+  :C12-source :pending-independent-review,
+  :implementation-credit :none,
+  :adoption
+  {:path
+   "specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn",
+   :sha256
+   "2e43be337762b080852afffdea9019ed7d13854822a22f6426b20fecd9c0f010"},
+  :new-C17-semantic-facets 93,
+  :new-task-units 0,
+  :final-denominator :not-accepted,
+  :artifact-source-commit "e835a80f34138fd16277a510c0bca06287a3738e",
+  :status :qualified-C17-source-review-adopted,
+  :subject-source-commit "bec12ac1d543353325030f40db37490c5407d8d5",
+  :whole-current-head :not-accepted,
+  :qualification
+  "C17's108 exact source facets conjoin three authentic Plugin Host/Pipeline predicates whose raw bytes remain current after separate C12 addition. Three containing-file pins refresh; no C12 predicate is accepted. One provenance overlap remains one context identity with no held-scope acceptance. Twelve earlier reviews retain captured authority. Captured65 byte continuity accepts no semantic renewal. No plugin/callback/sandbox/domain/compiler/proof-checker/runtime/provider execution, full dependencies, later/main/whole composition, implementation/migration/release/final count or integration authority follows.",
+  :new-decision-ids 0,
+  :applicability
+  {:path
+   "specs/requirement-reconciliation/c17-qualified-current-applicability.edn",
+   :sha256
+   "b4947a560e975eb50037da6c36f93b8e7d576917900e513205f114fd7f1b8c0b"}},
  :c13-owner-current-source
  {:historical-Opt-file-pin-refreshes 21,
   :C13-occurrences 47,
@@ -437793,13 +437843,13 @@
   "specs/requirement-reconciliation/c14-owner-current-witness-applicability.edn"},
  :current-facet-disposition-proposals
  {:qualified-current-source-review
-  {:reviewed-context-facets 189,
-   :reviewed-semantic-conjunction-facets 1171,
-   :distinct-reviewed-facet-ids 1362,
+  {:reviewed-context-facets 204,
+   :reviewed-semantic-conjunction-facets 1264,
+   :distinct-reviewed-facet-ids 1470,
    :whole-source-entailment :pending,
    :reviewed-superseded-history-facets 2,
    :implementation-credit :none,
-   :remaining-proposed-facet-ids 855,
+   :remaining-proposed-facet-ids 747,
    :reviewed-outside-finite-proposals 9,
    :adoptions
    [{:path
@@ -437832,7 +437882,13 @@
      :sha256
      "098b0371fc757775b0ee6b410566bb4f9072ee8df17537557508b5c1752fdd55",
      :new-source-facets 114,
-     :scope :C16-only}]},
+     :scope :C16-only}
+    {:path
+     "specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn",
+     :sha256
+     "2e43be337762b080852afffdea9019ed7d13854822a22f6426b20fecd9c0f010",
+     :new-source-facets 114,
+     :scope :C17-only}]},
   :task-count-delta 0,
   :original-source-facets 28785,
   :traces

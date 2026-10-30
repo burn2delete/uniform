@@ -139,8 +139,10 @@ The C17 source amendment adds explicit manifest, scope, trust and diagnostic
 obligations to the existing Plugin Host criterion. The
 [complete C17 trace](plugin-complete-current-facet-trace.edn) joins all 108
 original facets and six existing owners to current Plugin Host and unchanged
-Pipeline criteria. All C17 dispositions remain proposals pending independent
-source review. This changes no task units, statuses or implementation credit.
+Pipeline criteria. The later [C17 qualified adoption](c17-qualified-source-review-adoption.edn)
+accepts only its 93 semantic and 15 context facets after exact current
+applicability. It accepts no C12 addition or full dependency implementation.
+This changes no task units, statuses or implementation credit.
 
 The subsequent C12 source amendment extends only the existing domain-IR block
 with explicit record, transition, verifier, family and diagnostic requirements.

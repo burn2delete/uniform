@@ -1,0 +1,76 @@
+{:canonical-worktree :not-reset,
+ :global-final-denominator
+ :not-a-prerequisite-to-independent-finite-integration,
+ :unreviewed-payload-in-full-current-metadata
+ {:C12-facets 115,
+  :acceptance :pending,
+  :copy-as-accepted-main-metadata :not-authorized},
+ :source-task-sha256
+ "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+ :other-finite-subsets :not-ruled-out-by-this-specific-assessment,
+ :new-branch-or-worktree :none,
+ :reviewed-frozen-C17
+ {:reviewed-source "45fa1763f939bdad59a9ee78401223a957382454",
+  :reviewed-tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+  :sha256
+  "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7"},
+ :main-literal-outcomes
+ ["pipeline" "plugins" "pass-evidence" "development-boundaries"],
+ :reviewed-composition-literal-outcomes
+ ["pipeline"
+  "plugins"
+  "pass-evidence"
+  "domain-ir-boundaries"
+  "development-boundaries"],
+ :current-reviewed-predicates
+ {:existing
+  {:task-id "plugins",
+   :reviewed-raw-sha256
+   "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
+   :complete-reviewed-body-in-main false},
+  :records
+  {:task-id "plugins",
+   :reviewed-raw-sha256
+   "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
+   :complete-reviewed-body-in-main false},
+  :pipeline
+  {:task-id "pipeline",
+   :reviewed-raw-sha256
+   "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
+   :complete-reviewed-body-in-main false}},
+ :implementation-credit :none,
+ :adoption
+ {:path
+  "specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn",
+  :sha256
+  "2e43be337762b080852afffdea9019ed7d13854822a22f6426b20fecd9c0f010"},
+ :concrete-dependency
+ "Main lacks all eight directly named adoption dependencies and the full reviewed Plugin Host/Pipeline bodies. Current application binds a five-outcome compiler composition and a domain-owner witness snapshot containing pending C12. Whole-file metadata copying would carry unreviewed C12; receipt-only copying would omit its closed provenance and current application. A source-only C17 re-expression on main would be a new candidate requiring fresh current applicability and independent affected-composition review. This assessment grants neither the new candidate's acceptance nor integration eligibility.",
+ :main-integration :not-attempted,
+ :source-commit "e835a80f34138fd16277a510c0bca06287a3738e",
+ :preflight :not-run-no-isolated-exact-accepted-candidate,
+ :CI :not-run-no-isolated-exact-accepted-candidate,
+ :kind :finite-C17-main-adoption-dependency-assessment,
+ :coordinator-decision :required-for-any-later-routing-or-integration,
+ :finding
+ :reviewed-C17-tuple-cannot-be-transplanted-unchanged-as-a-closed-main-adoption-subset,
+ :denied-or-held-action-retry :none,
+ :main
+ {:commit "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+  :tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1"},
+ :main-task-sha256
+ "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+ :missing-closed-adoption-dependencies
+ ["specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn"
+  "specs/requirement-reconciliation/c16-qualified-source-review-adoption.edn"
+  "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn"
+  "specs/requirement-reconciliation/c17-qualified-current-applicability.edn"
+  "specs/requirement-reconciliation/c17-independent-source-review.edn"
+  "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn"
+  "specs/requirement-reconciliation/domain-owner-source-refinement.edn"
+  "specs/requirement-reconciliation/source-dispositions.edn"],
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/c17-qualified-current-applicability.edn",
+  :sha256
+  "b4947a560e975eb50037da6c36f93b8e7d576917900e513205f114fd7f1b8c0b"}}

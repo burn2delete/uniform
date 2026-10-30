@@ -2832,6 +2832,55 @@
  :historical-Domain-file-pin-refreshes 40,
  :applicability
  "specs/requirement-reconciliation/domain-owner-current-witness-applicability.edn"}
+    :c17-qualified-source-review-adoption
+    {:receipt
+ {:path
+  "specs/requirement-reconciliation/c17-independent-source-review.edn",
+  :sha256
+  "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7",
+  :reviewed-source "45fa1763f939bdad59a9ee78401223a957382454",
+  :reviewed-tree "b348ee3b323b06a9712dedadbe6fddea7500bcba"},
+ :prior-twelve-reviews :retain-captured-subjects-scopes-and-exclusions,
+ :counts
+ {:new-reviewed-facets 108,
+  :all-reviewed-source-facets 1470,
+  :semantic-conjunction-facets 1264,
+  :retained-context-facets 204,
+  :superseded-history-facets 2,
+  :finite-proposal-ids 2208,
+  :pending-finite-proposal-ids 747,
+  :reviewed-outside-finite-index 9},
+ :held-overlap :one-source-context-identity-no-held-scope-clearance,
+ :new-C17-facets 108,
+ :new-C17-context-facets 15,
+ :trace
+ {:path
+  "specs/requirement-reconciliation/plugin-complete-current-facet-trace.edn",
+  :sha256
+  "084a0a1d7cccff88074193da58788a06063c5ab86838d04cd16c916dd1874e57"},
+ :full-dependency-documents :not-accepted,
+ :C12-source :pending-independent-review,
+ :implementation-credit :none,
+ :adoption
+ {:path
+  "specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn",
+  :sha256
+  "2e43be337762b080852afffdea9019ed7d13854822a22f6426b20fecd9c0f010"},
+ :new-C17-semantic-facets 93,
+ :new-task-units 0,
+ :final-denominator :not-accepted,
+ :artifact-source-commit "e835a80f34138fd16277a510c0bca06287a3738e",
+ :status :qualified-C17-source-review-adopted,
+ :subject-source-commit "bec12ac1d543353325030f40db37490c5407d8d5",
+ :whole-current-head :not-accepted,
+ :qualification
+ "C17's108 exact source facets conjoin three authentic Plugin Host/Pipeline predicates whose raw bytes remain current after separate C12 addition. Three containing-file pins refresh; no C12 predicate is accepted. One provenance overlap remains one context identity with no held-scope acceptance. Twelve earlier reviews retain captured authority. Captured65 byte continuity accepts no semantic renewal. No plugin/callback/sandbox/domain/compiler/proof-checker/runtime/provider execution, full dependencies, later/main/whole composition, implementation/migration/release/final count or integration authority follows.",
+ :new-decision-ids 0,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/c17-qualified-current-applicability.edn",
+  :sha256
+  "b4947a560e975eb50037da6c36f93b8e7d576917900e513205f114fd7f1b8c0b"}}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"
