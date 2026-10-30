@@ -13080,6 +13080,57 @@
    :decision-records-unchanged 833,
    :applicability
    "specs/requirement-reconciliation/granularity13-qualified-current-applicability.edn"},
+  :c11-extension-qualified-review-adoption
+  {:extension-receipt
+   {:path
+    "specs/requirement-reconciliation/extension392-independent-byte-review.edn",
+    :sha256
+    "cc70a1bede29f7146d639fd1d5b4e3d3f28620ec96c068b0672e5264c8272b98",
+    :reviewed-source "4486ad9e3eda0ec648696edc407a8b57f5c864d1",
+    :scope :historical-extension-byte-provenance-only},
+   :extension-operation-authority :not-conferred,
+   :whole-owner-entailment :not-conferred,
+   :counts
+   {:reviewed-original-source-facets 572,
+    :semantic-conjunction-facets 507,
+    :retained-context-facets 65,
+    :pending-finite-proposal-facets 768},
+   :extension-occurrences 151,
+   :C11-semantic-facets 131,
+   :extension-full-entailment :not-accepted,
+   :decision-source-review-adoptions-530 :unchanged,
+   :extension-current-additions :not-accepted,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :C11-context-facets 17,
+   :adoption
+   {:path
+    "specs/requirement-reconciliation/c11-extension-qualified-review-adoption.edn",
+    :sha256
+    "7eb13914d8e6176de07a07b854a0a968fb8083065f8644dd48f66046d58d9393"},
+   :final-denominator :not-accepted,
+   :source-commit "d6380abc0bf34d238c854673defc34eb7b9f2640",
+   :status :qualified-C11-source-and-extension-byte-review-adopted,
+   :C11-receipt
+   {:path
+    "specs/requirement-reconciliation/c11-independent-source-review.edn",
+    :sha256
+    "622d42263745b4dac6545ca26eb50f11e711da5d0af53d0cf468305cd8087d5a",
+    :reviewed-source "de0c5c94392b398c6e8ff128b0010d454dd739e2",
+    :scope :C11-enumerated-conjunctions-and-contexts-only},
+   :extension-byte-facets 392,
+   :qualification
+   "C11 accepts only its enumerated131 semantic facets and17 conservation contexts through six unchanged current criterion roles;70 foundation residuals and D1/C1/C6 ordering remain. Extension review accepts the historical392 byte bindings only, preserving added/untraced ranges and legacy check subjects. Neither grants whole-head, operational, implementation, migration, release or counting authority, or clearance of held scopes.",
+   :extension-descriptors 5,
+   :C11-source-facets 148,
+   :C13 :not-accepted,
+   :C11-foundation-residuals 70,
+   :new-decision-ids 0,
+   :applicability
+   {:path
+    "specs/requirement-reconciliation/c11-extension-qualified-current-applicability.edn",
+    :sha256
+    "38dbf78d2e2430c9915e00975d5eda8ff27be5318a62eeb8ead2757fd84406c8"}},
   :foundation7-qualified-current-review-adoption
   {:receipt
    "specs/requirement-reconciliation/foundation7-qualified-review-adoption.edn",

@@ -2888,3 +2888,46 @@ receipt SHA256
 `cc70a1bede29f7146d639fd1d5b4e3d3f28620ec96c068b0672e5264c8272b98`.
 Neither is adopted by this checkpoint. The extension receipt is byte-provenance
 only; it accepts no added clauses, operational authority or full entailment.
+
+## Qualified C11 source and extension392 byte review adoption
+
+The two independently sealed receipts are preserved byte-for-byte as
+`c11-independent-source-review.edn` and
+`extension392-independent-byte-review.edn`, with SHA256 values
+`622d42263745b4dac6545ca26eb50f11e711da5d0af53d0cf468305cd8087d5a`
+and `cc70a1bede29f7146d639fd1d5b4e3d3f28620ec96c068b0672e5264c8272b98`.
+C11's frozen subject is `de0c5c94392b398c6e8ff128b0010d454dd739e2`,
+tree `fa894cb274b869cd93e5ade1ad0c7a1a014cba44`. Its reviewer sealed
+117,248 source/data checks and 299 inert refusals. The extension byte review
+names `4486ad9e3eda0ec648696edc407a8b57f5c864d1`, tree
+`a86032467ad301aa49ae14485c5c7666ff9fd377`, with eighteen coherent
+refusal cases. These remain attributed independent results, not owner-executed
+compiler, MIR verifier or release checks.
+
+Current applicability at `d6380abc0bf34d238c854673defc34eb7b9f2640`
+passes 2 tests / 24 assertions. C11's unchanged trace, 148 original facets and
+six owning criterion roles authenticate, including 131 semantic facets and
+seventeen hierarchy/provenance contexts. All seventy other foundation facets
+remain residuals. Preface metadata is conservation context only and clears no
+held Metadata372 review. D1/C1/C6 ordering remains Open; actual verifier,
+producer/consumer, proof and domain execution are not inferred from source review.
+
+The extension binding artifact remains exactly
+`50ea065569fdf506ecbc415f730f4d611f38014919f98d2b770544efd5bcd623`.
+All 392 historical spans, 151 occurrence memberships, five descriptor hashes
+and 545 current witness/context spans authenticate against current bytes.
+The exact 277/108/2/4/1 binding classes and all untraced ranges survive. Current
+trace drift is limited to predecessor/current-source metadata and the explicit
+relocation of old link-check results to their retained subject, not renewed
+checks. The byte review accepts no added clause, full extension entailment,
+original-240 membership, task unit, policy operation or integration authority.
+
+Across adopted original-source scopes, there are now 507 qualified semantic
+facets and 65 retained reviewed contexts; 768 of the finite proposal IDs remain
+pending. The nine reviewed retirement facets outside that index remain separate.
+All 833 Open decisions/931 current witnesses, 561 historical identities and
+4,819 predicates remain conserved, with the C13 binding pointer unchanged.
+No task or implementation status changes; the provisional scoped ratio remains
+3/195. C13 and remaining unreviewed predicates, whole-owner/enclosing scope,
+current-extension additions, final counting and coordinator integration remain
+pending. Held scopes and all prior reviewer exclusions remain in force.

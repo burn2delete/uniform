@@ -43,7 +43,9 @@ keeps 151 extension occurrences and 392 facets separate, including changed
 source-descriptor hashes. The [current byte bindings](explicit-extension-current-byte-bindings.edn)
 preserve all historical extension facets through exact matches, named table
 contexts and explicit expanded/replaced blocks. Added current text and full
-predicate entailment still require separate review.
+predicate entailment still require separate review. Their historical byte
+rebinding has [qualified independent adoption](c11-extension-qualified-review-adoption.edn)
+after current applicability; it supplies no operational or semantic authority.
 The [bootstrap diagnostic facet join](bootstrap-diagnostic-current-facet-trace.edn)
 binds its original owner to the existing diagnostic producer, module/fact
 preservation, stage-comparison, TEST13 and compatibility-review criteria.
@@ -75,9 +77,11 @@ the twenty other foundation attachments, execution and implementation remain sep
 The [complete C11 source trace](c11-complete-current-facet-trace.edn) joins all
 134 C11 facets and fourteen foundation MIR predicates to the existing five MIR
 tasks. Six original MIR owners gain exact criterion candidates, with other
-foundation attachments kept as residuals. The C11 stage preserved its earlier
-binding snapshots; later file-pin updates remain explicit and new criteria
-require independent acceptance.
+foundation attachments kept as residuals. C11's 131 semantic facets and seventeen
+conservation contexts have qualified independent adoption, with seventy other
+foundation facets retained as residuals. The C11 stage preserved its earlier
+binding snapshots; later file-pin updates and unrelated ordering questions remain
+explicit. Source review does not establish MIR/verifier execution or whole-owner acceptance.
 The [complete C14 source trace](c14-complete-current-facet-trace.edn) joins all
 122 C14 facets and 23 PERF4 boundary-layout predicates to the existing Lower
 tasks. Their C14/PERF4 conjunctions and contexts have qualified independent
