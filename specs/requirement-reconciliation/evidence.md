@@ -1651,6 +1651,37 @@ disjoint from the 372 metadata fragments. Neither result proves whole enclosing
 occurrences or confers independent acceptance, execution, implementation credit,
 new decisions or new tasks. Complete remaining-facet entailment stays open.
 
+## Five original C backend obligation criteria
+
+Source `a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3` makes five already
+catalogued original obligations explicit inside the existing `backend-c` task:
+source emission, ABI/layout, memory/MMIO lowering, numeric lowering and helper
+selection. The phase README and B2 were read directly. Each clause names
+required artifacts, accepted behavior, positive evidence, refusals/diagnostics
+and actual producer/consumer dependency artifacts. B2 remains byte-unchanged;
+the refinement does not introduce C as Gravity semantics or select a new target.
+All fifteen task IDs and the other fourteen backend records are unchanged.
+
+The transaction retains the five original obligation IDs and their historical
+source-facet memberships. Those broad memberships are provenance, not proof
+that every attached fragment is entailed. New C criteria await independent
+source review; none receives prior predicate, whole-facet or implementation
+acceptance. This changes no stable decision ID or counted task unit.
+
+Current witness applicability reverses the exact task append and its single
+following boundary newline to the previous full-file hash. All 833 decision
+records remain identical. The separate criterion proof authenticates 931 exact
+current owning spans. All 561 historical IDs and 4,819 current spans survive;
+zero historical C whole-task contexts required expansion. Five fresh C criterion
+witnesses are recorded separately. Existing 530 predicate reviews retain their
+original scopes; pending new C clauses are not pending decision allocations.
+
+Backend projection checks pass 5 tests / 211 assertions, and its generated
+projection check, structural documentation validator and full-language roadmap
+validator pass. No C compiler, emitted program, backend or runtime was executed.
+The crosswalk, source metadata and provisional census are being refreshed for
+this source; independent repartition receipt adoption remains a separate step.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten
