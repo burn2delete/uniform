@@ -959,6 +959,28 @@ parent/composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
+### Current collection header composition
+
+PR635 is normally reconciled with accepted main
+`9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636` at
+`1ddceb19b5372d1e0c297c8fcb186eb57808e680`, tree
+`4c6e069bfd7f8bbd375231fc410f85008ccad850`. Parents are original reviewed
+`b745ccee` and that main. Its complete 10,084-entry tree is the 10,082-entry
+base with exactly the reviewed runtime-test replacement and two reviewed
+record additions. All three reviewed files and all production are unchanged
+from the source-reviewed candidate. Twelve header definitions/arguments and
+six upstream fixture helpers were freshly verified; all accepted PR626/634
+entries survive. Current-base runtime-test bytes still equal the original
+extraction base. The SH08 fixture whole-file hash differs because PR634 restored
+two quoted-data tests, while the six selected helper forms remain identical.
+Original census whole-file hashes retain their historical scope; see
+`collection-header-clean-composition.edn`. Clean named-branch exact inspect,
+boundary 6/11, docs, roadmap, whitespace and lint comparison pass (zero errors,
+identical complete 76-warning multisets, no new findings/configuration change).
+Original 293-check SOURCE PASS/CI7/2 are not extended automatically; current
+composition acceptance and CI remain pending. Genuine kernels, integration-mode
+preflight and merge remain UNRUN.
+
 ### Collection header reconstruction restoration
 
 Main-based [PR635](https://github.com/burn2delete/uniform/pull/635), head
