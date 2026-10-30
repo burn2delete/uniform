@@ -1646,7 +1646,12 @@
                                   :clean? clean?)
                    :consumed-input-identity consumed :inputs inputs :inventories inventories
                    :shadow-inputs shadows :classpath-identities classpath
-                   :child-runtime-identity runtime :runtime-tool-inputs (:runtime-tool-inputs context)}]
+                   :child-runtime-identity runtime
+                   :runtime-tool-inputs
+                   (cond-> (:runtime-tool-inputs context)
+                     (:producer-git-binding options)
+                     (conj {:id :selected-observer-git-binding
+                            :sha256 (sha256-id (pr-str (:producer-git-binding options)))}))}]
       (when-not (and clean? classpath)
         (fail! "SH01-PRODUCER-OBSERVATION"
                "Fresh producer source or classpath cannot be observed completely" {}))
