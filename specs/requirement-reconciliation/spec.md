@@ -135,6 +135,13 @@ extraction. Canonical task changes belong in their existing owning task files.
 
 ## Conformance and remaining work
 
+The C17 source amendment adds explicit manifest, scope, trust and diagnostic
+obligations to the existing Plugin Host criterion. The
+[complete C17 trace](plugin-complete-current-facet-trace.edn) joins all 108
+original facets and six existing owners to current Plugin Host and unchanged
+Pipeline criteria. All C17 dispositions remain proposals pending independent
+source review. This changes no task units, statuses or implementation credit.
+
 Reject stale predecessors, duplicate application, dropped source spans,
 unsupported aliases and acceptance inferred from document migration. The
 current provisional 3/195 observation counts the component and Product task

@@ -3536,3 +3536,33 @@ byte-applicability descriptor states. Earlier review records retain captured
 subjects and exclusions. The scoped task census remains three Accepted, 190
 Open, one Partial, one unassessed, 192 remaining out of 195 (3/195); complete
 current composition, final counting and coordinator integration remain open.
+
+## C17 Plugin Host source refinement
+
+Task-source commit `726b04bbb4add5092074876522ced4792584ae30` adds one
+explicit record/scope/trust/diagnostic criterion to the existing Plugin Host
+block and its derived roadmap projection. The source predecessor is
+`41270eeab2b2dc9aa91a63df2884f26a5cdb295f`. Exact removal of the declared
+insertion restores the previous full task file; all five literal outcome IDs,
+tables and Open statuses remain. The unchanged Pipeline criterion supplies the
+builtin pass-contract dependency. No canonical design document changes.
+
+The complete C17 trace has 108 original facets, 45 occurrences, 30 semantic
+conjunction cases, 15 context occurrences, three current criteria and six
+already-candidate original owners. Three source trace tests pass 37 assertions,
+including eleven coherently rehashed required-clause removals. Those controls
+check explicit source clause presence; they are not a plugin or language
+verifier. During scratch preparation, a broad template replacement changed
+the C16 dependency label to C17; it was corrected before metadata publication.
+
+The fresh plugin witness snapshot conserves all 561 historical IDs and 4,819
+raw spans, refreshing 40 Compiler API file pins without changing their prior
+predicates. All 833 decisions remain Open with 931 authentic current criterion
+witnesses. Twelve earlier qualified source review cohorts retain their captured
+subjects and exclusions. All 108 C17 facets remain pending source proposals;
+no C17 source, whole-dependency or implementation acceptance is inherited.
+Full L14/L15/L12/C1/C13/C16/C12/C15/package/governance implementations,
+unresolved pipeline ordering, current-composition review, final denominator
+acceptance and coordinator integration remain separate. No plugin, callback,
+sandbox, domain checker, compiler, runtime/provider, probe or held operation
+was executed by this refinement.

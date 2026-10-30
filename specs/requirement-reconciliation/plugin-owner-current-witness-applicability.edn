@@ -1,0 +1,73 @@
+{:source-review :pending,
+ :all833-decision-records :unchanged,
+ :current-spans 4819,
+ :refreshed-bootstrap-criterion-witness
+ {:path "specs/diag-workflow/tasks.md",
+  :task-id
+  "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+  :file-sha256
+  "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+  :raw-sha256
+  "015433df267b59b66f4c356a16cdbae3fe695885df5af98225b7c1e8ea6947a9",
+  :marker "diag-implementation-tasks",
+  :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :end-byte 3339,
+  :start-byte 2075,
+  :c15-owner-pin-refresh
+  :prior-predicate-raw-bytes-preserved-addition-not-inherited},
+ :historical-ids 561,
+ :implementation-credit :none,
+ :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn",
+  :sha256
+  "4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c"},
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
+  :sha256
+  "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21"},
+ :historical-file-pin-changes 40,
+ :active-bootstrap-witness-pin-changes 0,
+ :kind :plugin-owner-current-witness-applicability,
+ :new-criterion-witnesses
+ {:existing
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :marker "compiler-api-implementation-tasks",
+   :task-id "plugins",
+   :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+   :file-sha256
+   "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+   :start-byte 16703,
+   :end-byte 25488,
+   :raw-sha256
+   "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"},
+  :records
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :marker "compiler-api-implementation-tasks",
+   :task-id "plugins",
+   :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+   :file-sha256
+   "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+   :start-byte 25490,
+   :end-byte 29649,
+   :raw-sha256
+   "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"},
+  :pipeline
+  {:path "specs/compiler-api-workflow/tasks.md",
+   :marker "compiler-api-implementation-tasks",
+   :task-id "pipeline",
+   :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+   :file-sha256
+   "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+   :start-byte 832,
+   :end-byte 16612,
+   :raw-sha256
+   "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a"}},
+ :composition
+ {:path
+  "specs/requirement-reconciliation/plugin-owner-source-refinement.edn",
+  :sha256
+  "8065d8bf15adec7e26194d0e9c7027a4e2a2daba4eeaaa85bd378a8e985dbf6d"},
+ :full-file-inverse :exact-declared-insertion-removal}
