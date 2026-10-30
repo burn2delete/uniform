@@ -2,8 +2,8 @@
   (:require [clojure.edn :as edn] [clojure.string :as str]
             [clojure.java.shell :as shell] [clojure.test :refer [deftest is run-tests]]))
 (binding [*command-line-args* nil] (load-file "tools/compiler_api_task_projection.clj")
-  (load-file "tools/sh_inventory.clj"))
-(require '[compiler-api-task-projection] '[task-projection] '[sh-inventory])
+  (load-file "tools/sh_inventory.clj") (load-file "tools/sh_crosswalk.clj"))
+(require '[compiler-api-task-projection] '[task-projection] '[sh-inventory] '[sh-crosswalk])
 (def composition (edn/read-string (slurp "specs/compiler-api-workflow/domain-contract-source-composition.edn")))
 (defn sha [text] (sh-inventory/sha256 text))
 (def git-source
@@ -124,6 +124,14 @@
     (is (= (:sha256 pin) (sha (slurp path)))))
   (doseq [[path expected] (:unchanged-normative-mode-and-blob-pins composition)]
     (is (= expected (mode-and-blob path)))))
+
+(deftest current-SH-composition-reference-authenticates-the-live-artifact
+  (let [r (:compiler-domain-current-source sh-crosswalk/mapping-review)
+        raw (slurp (:path r))]
+    (is (= (:sha256 r) (sha raw)))
+    (is (= raw (git-source (:source-commit r) (:path r))))
+    (is (= :none (:implementation-credit r)))
+    (is (= :pending-independent-affected-composition-review (:status r)))))
 
 (let [result (run-tests 'compiler-domain-source-test)]
   (shutdown-agents)

@@ -158,3 +158,23 @@ GitHub check result, bootstrap/catalog/leaf run, compiler proof or integration
 acceptance. The captured CI logs are preserved outside the clean checkout in
 `/tmp/finite-domain-ci-pass1`. Actual CI bootstrap/leaf/Darwin/probe modes and
 all held operations remain unrun by this preparation.
+
+Final source controls pass seven tests/126 assertions. The added control binds
+the SH composition pointer to the live artifact bytes and the immutable commit
+that actually contains them; its scope remains pending independent review and
+grants no implementation credit. Pin preparation was adjusted for the one-line
+serialized definition before writing the final reference. SH regeneration and
+checks then pass, including 12 tests/157 assertions and unchanged Reader/source
+history. The fresh changed-file CI lint includes all changed Clojure files and
+the four relevant EDN files; it again reports three unchanged baseline warnings
+and zero blocking warnings/errors. That captured output is preserved at
+`/tmp/finite-domain-ci-pass3`; the preceding successful lint is retained at
+`/tmp/finite-domain-ci-pass2`. No captured attempt is overwritten.
+
+This finite candidate remains pending one independent affected-composition
+review, governed admission and fresh exact-head CI/integration checks afterward.
+The existing source pin commits must remain available to the projection checker;
+an integration strategy that changes ancestry requires rechecking those pins.
+Only the coordinator may route acceptance and integrate the exact reviewed
+composition. No final global denominator, whole C1/C18/DOM17, source runtime,
+release, self-hosting or seed-retirement acceptance is conferred.
