@@ -1,4 +1,4 @@
-(ns list-parameter-source-forms)
+(ns source-forms)
 (defn forms [text]
   (let [starts (vec (cons 0 (map inc (keep-indexed #(when (= %2 \newline) %1) text))))
         position (fn [r] (+ (get starts (dec (.getLineNumber r)) (count text)) (dec (.getColumnNumber r))))]

@@ -1,6 +1,6 @@
 ;; Read and compare source/data only; never load or evaluate Gravity or model forms.
 (load-file "specs/accounting-removal/parameter-source-composition/source_forms.clj")
-(require '[list-parameter-source-forms :as sf] '[clojure.edn :as edn]
+(require '[source-forms :as sf] '[clojure.edn :as edn]
          '[clojure.java.shell :as sh] '[clojure.string :as s] '[clojure.walk :as w]
          '[clojure.test :as t :refer [deftest is]])
 (def base "70dcb2220701529dbb02bd2317a822eb3ac72fed")
@@ -225,7 +225,7 @@
           suffix ["mp-compatibility" "pmk-physical" "pmk-acyclic" "pmk-metadata-work" "pmk-parameter" "pmk-source"]
           :let [name (symbol (str prefix "-" suffix)) f (get-in expected [p name])]]
     (negative! [name :restored-budget-parameter] (assoc (vec f) 2 (conj (nth f 2) 'budget)) #(form-contract! p name %) :declared-ABI))
-  (doseq [[p prefix] (map vector prod ["sh08" "body" "p15-s23"])
+  (doseq [[p _prefix] (map vector prod ["sh08" "body" "p15-s23"])
           suffix ["-mp-compatibility" "-pmk-physical" "-pmk-acyclic" "-pmk-metadata-work" "-pmk-parameter"]
           :let [es (:entries (current p)) owner (first (filter (fn [e] (some #(and (seq? %) (symbol? (first %)) (s/ends-with? (str (first %)) suffix)) (mapcat direct-calls (drop 3 (:form e))))) es))]
           :when owner
