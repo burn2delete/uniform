@@ -1,106 +1,34 @@
 
 
-(defn sh05-contain-coordinator-operation!
-  [source-path responsibility operation]
-  (try
-    (operation)
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch StackOverflowError error
-      (sh05-macro-boundary-fail!
-       "C4-DEPTH" source-path responsibility nil
-       {:contained-host-error (.getName (class error))}))
-    (catch clojure.lang.ExceptionInfo error
-      (if (contains? (set c4-macro-diagnostic-ids)
-                     (:id (ex-data error)))
-        (throw error)
-        (sh05-macro-boundary-fail!
-         "C4-TRACE" source-path responsibility nil
-         {:contained-diagnostic (:id (ex-data error))})))
-    (catch Throwable error
-      (sh05-macro-boundary-fail!
-       "C4-RETURN" source-path responsibility nil
-       {:contained-host-error (.getName (class error))
-        :cause-message (.getMessage error)}))))
+(defn
+ sh05-contain-coordinator-operation!
+ [source-path responsibility operation]
+ (gravity.macro/contain-operation!
+  source-path
+  responsibility
+  operation
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-(defn sh05-resolve-expansion-template!
-  [source-path expansion-template resolved-digests]
-  ;; Only these schema-declared positions carry coordinator digest controls.
-  ;; Macro input and generated semantic forms remain opaque data, including
-  ;; ordinary maps whose shape happens to resemble a digest reference.
-  (let [output-reference {:digest-ref 0}
-        provenance-reference {:digest-ref 1}
-        output-reference-slots
-        [[:artifact-id]
-         [:output-syntax-id]
-         [:macro-expansion-trace 0 :output-syntax-ids 0]
-         [:metadata-ledger 0 :output-syntax-id]
-         [:generated-origin-source-map 0 :output-syntax-id]]]
-    (when-not
-     (and (= 2 (count resolved-digests))
-          (every? #(= output-reference (get-in expansion-template %))
-                  output-reference-slots)
-          (= provenance-reference
-             (:provenance-binding-id expansion-template)))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE" source-path :declared-macro-output-reference-slots
-       {:output-references
-        (mapv #(get-in expansion-template %) output-reference-slots)
-        :provenance-reference
-        (:provenance-binding-id expansion-template)}
-       {:resolved-digest-count (count resolved-digests)}))
-    (-> (reduce (fn [template slot]
-                  (assoc-in template slot (first resolved-digests)))
-                expansion-template output-reference-slots)
-        (assoc :provenance-binding-id (second resolved-digests)))))
+(defn
+ sh05-resolve-expansion-template!
+ [source-path expansion-template resolved-digests]
+ (gravity.macro/resolve-expansion-template!
+  source-path
+  expansion-template
+  resolved-digests
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-(defn sh05-run-macro-request!
-  [source-path binding request]
-  (let [raw
-        (sh05-macro-execute!
-         source-path binding 'sh05-expand-macro-template [request])
-        digest-requests (:digest-requests raw)
-        resolved-digests
-        (sh05-contain-coordinator-operation!
-         source-path :bounded-ordered-macro-digest-resolution
-         #(sh05-macro-resolve-digests! source-path digest-requests))]
-    (if (= :rejected (:status raw))
-      (sh05-contain-coordinator-operation!
-       source-path :structured-macro-rejection-packaging
-       #(sh05-macro-raise-rejection! source-path raw resolved-digests))
-      (let [template-verification
-            (sh05-macro-execute!
-             source-path binding 'sh05-verify-macro-template
-             [(:expansion-template raw) digest-requests])
-            resolved-expansion
-            (sh05-contain-coordinator-operation!
-             source-path :bounded-macro-reference-resolution
-             #(sh05-resolve-expansion-template!
-               source-path (:expansion-template raw) resolved-digests))
-            resolved-verification
-            (sh05-macro-execute!
-             source-path binding 'sh05-verify-macro-resolved
-             [resolved-expansion digest-requests resolved-digests])]
-        (when-not (and (= :passed (:status template-verification))
-                       (= :passed (:status resolved-verification)))
-          (sh05-macro-boundary-fail!
-           "C4-TRACE" source-path :fresh-gravity-macro-verification
-           {:template template-verification
-            :resolved resolved-verification} {}))
-        {:raw-template-result
-         (select-keys raw
-                      [:artifact :schema-version :status
-                       :expansion-template])
-         :digest-requests digest-requests
-         :resolved-digests resolved-digests
-         :resolved-expansion resolved-expansion
-         :template-verification
-         (select-keys template-verification
-                      [:artifact :schema-version :status :rule])
-         :resolved-verification
-         (select-keys resolved-verification
-                      [:artifact :schema-version :status :rule])}))))
+(defn
+ sh05-run-macro-request!
+ [source-path binding request]
+ (gravity.macro/expand
+  source-path
+  binding
+  request
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
 (defn sh05-source-syntax-stream
   [c3-artifact]
