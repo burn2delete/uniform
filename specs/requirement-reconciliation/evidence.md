@@ -3252,3 +3252,48 @@ complete C16 occurrence tracing remains concrete work. Independent C13 and
 Resolve review routing was reported by the existing orchestrator; no receipt
 or acceptance for either was delivered here during Core publication. No duplicate
 review, outbound message, new agent/chat, main integration or held action occurred.
+
+## Complete C16 incremental source conjunctions
+
+Task source `0cbc3d4c00c47831d7e3ab6cdb63e289707167a7` appends explicit
+C16 graph/key/entry/diagnostic detail to the existing Build cache task. All five
+Build IDs/Open statuses and prior criteria remain exact; four task records are
+unchanged. The original cache task already supplies stage revalidation, complete
+change-class invalidation, proof reuse/mapping, recorded rebuild and speculative
+publication refusals. The new trace conjoins those existing predicates with
+explicit record details and the unchanged Build reproducibility task's actual
+recipe/recorded-input/repeated-output requirements. A cache success flag is not
+substituted for rebuild evidence or a completed producer component.
+
+All 114 original C16 facets across 44 occurrences authenticate. The trace records
+29 manual semantic conjunction cases and fifteen context occurrences, including
+all graph node families, producer-required key fields, cache entry identities,
+sixteen invalidation classes, eight revalidation conditions, full proof reuse
+premises and nine diagnostic meanings with their contextual fields. Coarse early
+dependency edges are permitted explicitly but cannot skip invalidation. Partial
+interactive artifacts retain `:reuse :speculative` and revalidation status and
+cannot satisfy release publication. Proof mappings remain required when node
+identity changes while the semantic operation survives.
+
+The six original C16 owners were already candidates. Their current conjunctions
+add no task-reference conversion, accepted task, new ID or implementation credit.
+Full C1/stage/L12/SAFE15/PERF3/package/bootstrap contracts remain distinct from
+this C16-only source trace. Source controls pass 2 tests/14 assertions; Build
+projection controls pass 5/86. All 833 decision records remain exact and Open,
+with 931 reconstructed current owning witnesses. The historical snapshot retains
+all 561 IDs and 4,819 raw spans; 169 Build-file span maps refresh around identical
+predicates and the active bootstrap witness is unchanged. Earlier MIR/Lower/
+Effects/Opt/Resolve/Types/Core supplemental bodies authenticate unchanged.
+Earlier global reports retain captured subjects rather than silently acquiring
+new whole-span authority. No compiler, cache build, proof checker, runtime/provider,
+broker/controller or target probe was executed, and no denied action was retried.
+
+The first SH run passed generated-view agreement but failed four assertions in
+its Build source-successor test (12 tests/541 assertions). That test's successor
+selection stopped at the earlier bootstrap composition and therefore compared
+current Build task/roadmap bytes against an obsolete source. The focused change
+adds the new incremental source metadata ahead of that old successor in the
+existing selection. All historical population, lineage and acceptance assertions
+remain intact; no production gate or source witness was weakened. The corrected
+SH test is rerun after generated writer completion, and boundary/lint are rerun
+for the Clojure test change. The initial failure remains recorded history.

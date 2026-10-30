@@ -116,6 +116,10 @@ The [complete C6 Core trace](core-complete-current-facet-trace.edn) binds all
 criteria. Three C6 and two L2 owner operations gain candidates; full L2/C1 and
 domain contracts, earlier finite evidence and independent acceptance stay
 separate.
+The [complete C16 incremental trace](incremental-complete-current-facet-trace.edn)
+conjoins existing cache and rebuild criteria with explicit graph/key/entry and
+diagnostic records for all 114 C16 facets. Its six owners were already candidates;
+the trace changes no task population, implementation or independent acceptance.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new
