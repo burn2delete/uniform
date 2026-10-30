@@ -1,5 +1,35 @@
 # PR502 preserved path reconciliation
 
+## Consumed serialization review and local main composition
+
+`verifier-serialization-review-consumption.edn` consumes PR642 receipt
+`71af1b68bdda5633299a07bcefafbf4a9be4766577827286a2ca6b1a878f6a46`:
+231 source/data checks and 68 coherently rehashed refusals, qualified
+EVIDENCE/SOURCE PASS with no blocking findings. Exact tuple, file pins, checker,
+three artifacts, complete reader equation and unchanged test mutation vector
+were verified without rerunning foreign code. The historical PR599 caveat and
+PR598 qualification remain preserved; no execution scope is extended.
+
+Local current-main candidate `404fc27bf8bc12aaa79a9c56a1a3e940ea402ad2`, tree
+`21d40ff1da04a23fcb0bb11932d0f45f6bef9609`, has exact parent
+`70dcb2220701529dbb02bd2317a822eb3ac72fed`. It adds only the three reviewed
+PR642 evidence blobs, byte/mode/blob-identical, to archive the historical
+correction. All other main entries, production, tests, fixtures and contracts
+remain exact. Historical source refs and hashes remain historical; no accepted
+current compiler or fixture products are implied. No direct tooling/bootstrap/
+contract/workflow/deps consumers of these evidence paths were found. Six source
+corruptions reject lost evidence, stale census, changed mode and parent-code
+import. EDN lint, canonical docs 240/19, roadmap and whitespace checks pass.
+Independent exact composition review is pending coordinator routing.
+
+Publication, CI and integration are stopped for this local candidate. Current
+main's standard CI bootstrap mode unconditionally executes `cold-bootstrap-load`
+with `(require 'gravity.bootstrap)` in `tools/ci/run.clj`; that operation is
+outside this source-only task's no-Bootstrap execution scope. No workflow,
+required check or execution route is altered or bypassed. The local consumption
+and this map supplement also remain unpublished pending that publication gate.
+Native root goal remains blocked and full ACC-01/PR502 disposition remains open.
+
 ## Separate verifier census serialization draft
 
 [PR642](https://github.com/burn2delete/uniform/pull/642) is frozen at
