@@ -104,6 +104,10 @@ owners gain exact candidates for binding order, explicit imports, visibility,
 initialization, definition entries and reproducible interfaces. The separate
 frozen Resolve verification package and all earlier source-review scopes remain
 unchanged; the new C5/L3 conjunctions await independent acceptance.
+The [Types source proposal](types-owner-source-proposal.edn) contains guarded,
+unapplied additions to the five existing Types tasks for the original C7/L5
+population. Its twenty owner roles and 258 facet IDs locate proposed work;
+active criteria, witnesses, facet dispositions and counts remain unchanged.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new

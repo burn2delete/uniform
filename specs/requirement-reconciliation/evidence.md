@@ -3028,3 +3028,57 @@ states with byte-only authority. The first scratch readback used an obsolete
 retirement-state label and failed that assertion; it was corrected to the
 existing three-proposal state without changing the inventory. No independent
 acceptance, implementation, release or final whole-project denominator follows.
+
+## C7/L5 Types owner criteria proposal
+
+The next source slice is the complete original C7/L5 population at published
+source `00f34a448efb6cc26f028dbe709596d839448d27`: 121 C7 facets and 137 L5
+facets across 150 original occurrences. Inspection of the current serialized
+inventory found twenty original owner identities: eighteen task-reference-only
+joins and two existing criterion candidates (private Keyword Map key domain
+and type-form versioning). Existing C7/L5 facet states are forty retained
+formatting/hierarchy contexts, seven pending proposals, 208 pending complete
+predicates, two pending dependency joins and one pending owner adjudication.
+These states are observed gaps, not a new disposition or final count.
+
+[Types owner source proposal](types-owner-source-proposal.edn), SHA256
+`fb241efa3d7e4b1ced736c3f41aa09c70c2538ef90319e0414faf805d5dfa8b9`,
+contains exact append text for the five existing Types task IDs, their guarded
+before/proposed-after hashes, the derived roadmap hashes, all 258 original
+facet IDs and 150 occurrence IDs, and each owner's exact captured obligation
+and proposed criterion roles. The proposal is unapplied: the active task ledger,
+roadmap, current witness snapshot, finite proposal index, 833 decision records,
+561 historical mappings, qualified reviews and provisional 3/195 census retain
+their published states. Eighteen task-reference joins remain unresolved; two
+existing candidates retain their prior scope. No source criterion is credited
+as current solely from this proposed edit.
+
+The proposed additions specify actual local constraints and annotations,
+function/dispatch/schema/resource contracts, Dynamic and cast boundaries,
+serialized facts and invalidation, and the typed-core verifier/consumer gate.
+They retain independently established actual types and compatibility evidence
+for bare List/Map and homogeneous List boundaries, separate private member and
+whole-key-domain censuses, exact canonical-if List/nil joins, exact-value/path
+nonemptiness and independently grounded Symbol-Set loop invariants. They preserve
+all ten C7 and eight L5 diagnostic meanings and actual producer/checker/consumer
+roles. Type records do not confer effect, capability, profile, ownership or
+safety legality; tentative dispatch and typed core do not authorize lowering.
+Full L8/L10/safety/schema/AI implementation and prior source reviews are not
+extended by their dependency references.
+
+The Clojure proposal constructor at `/tmp/prepare-types-owner-proposal.clj`
+authenticates the exact task, roadmap, inventory and normative document bytes
+against the captured Git source. In-memory application and removal, stable
+IDs/statuses, exact existing criterion prefixes, generated roadmap agreement,
+all original facet/owner memberships and changed-source/missing-task/substituted
+ID refusals pass 2 tests/17 assertions. Initial scratch unmatched delimiters
+were caught by read-all-before-eval; a scratch assertion incorrectly expected
+nil from the projection checker and was corrected to its actual true return.
+Neither failure wrote canonical artifacts. No compiler, type helper, runtime,
+provider, broker/controller or target probe ran.
+
+Application, affected witness-pin refresh, complete manual occurrence-conjunction
+tracing, all833/all561 conservation and refreshed inventory publication remain
+work to execute. Independent source/composition and final-count acceptance and
+coordinator integration also remain pending. This proposal adds no task unit,
+decision ID, qualified facet disposition or implementation credit.
