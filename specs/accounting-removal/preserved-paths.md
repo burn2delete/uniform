@@ -1000,6 +1000,38 @@ composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
+### Preserved List-join consumer control draft
+
+ACC-01 draft [PR637](https://github.com/burn2delete/uniform/pull/637), exact
+`c7a4d959d319e0e1bbaef059e41fc5c059497af8`, tree
+`49c42b821a44305b6dcd0bc7c54acb61cb5516d5`, is a test-only child of
+PR595 `99893151b3d0b7c3c435d5c2e6e90c03255b5951`. It restores the complete
+original Effects and lowering List-if-join kernels, including comments,
+without substitutions. Every other parent byte and all production are
+unchanged. The full 10,075-entry tree is the exact four-path delta from the
+10,073-entry parent: two existing test replacements and two new records.
+
+Effects has 16 original assertion forms versus the parent's 11. Lowering has
+27 versus 22: six original semantic forms return and one parent-only
+prepaid-plus-index work assertion retires. Its paired missing-local diagnostic
+and all original missing-local role checks remain. Both width-1025 branch
+cases, checked extent 1025, forged extent 1024, late-invalid index 1024,
+extra-field/nonvector type cases, actual C7/Effects/lowering dispatch,
+truthiness, lowered instruction, runtime value and identity are preserved as
+test definitions. Other historical outer-accounting assertions remain visible
+and unendorsed; this does not claim Effects/lowering accounting removal.
+
+The child census pins nine named owner definitions and six fixture/dispatch/
+projection definitions, with historical differences and transitive/runtime
+boundaries explicit. The complete-file equations, twelve inert corruption
+refusals, direct named-owner call arities, boundary 6/11, docs 240/19, roadmap
+and whitespace checks pass. Lint has zero errors and exactly the parent's
+152-warning/one-info multiset; new EDN has zero findings. Independent source
+review and CI remain pending; no duplicate reviewer is assigned. Genuine
+kernels/helpers/projection/native/runtime execution is UNRUN. The parent and
+current-main integration remain unaccepted; no held action is retried or
+whole-path/ACC01/PR502/release/self-hosting authority inferred.
+
 ### Verified finite recursive-type control integration
 
 PR622 is reconciled normally at
