@@ -65,13 +65,15 @@
 (deftest source-census-and-profile-widths-no-longer-reserve-work
   (let [f (fixture) wide (assoc-in f [:core :function-records]
                                 (conj @records (first (get-in f [:core :function-records]))))
-        profiles (assoc-in f [:bindings :keys-binding :profile-set] (vec (repeat 32768 :meta)))]
+        profiles (assoc-in f [:bindings :keys-binding :profile-set] (vec (repeat 32768 :meta)))
+        targets (assoc-in f [:bindings :keys-binding :target-set] (vec (repeat 32768 :all)))]
     (doseq [m @models :let [baseline (cell m f)]]
       (is (= :accepted (:status baseline)))
       (is (not (contains? baseline :work-count)))
       (is (not (contains? (:descriptor baseline) :profile-validation-work)))
       (is (= baseline (cell m wide)))
       (is (= :accepted (:status (cell m profiles))))
+      (is (= :accepted (:status (cell m targets))))
       (is (= 1 (get-in baseline [:descriptor :construction-work])))
       (is (= :none (get-in baseline [:descriptor :query-policy :flow-refinement])))
       (is (= :possible (get-in baseline [:descriptor :allocation-policy :empty-result]))))))

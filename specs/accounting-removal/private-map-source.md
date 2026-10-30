@@ -61,8 +61,8 @@ stale profile-work fact rejection and the actual header handoff/refusal path.
 
 These fixtures are normalized source cells, not authentic compiler requests.
 Their helper/native/proof boundaries are not promoted to executed PMK acceptance.
-The four new controls passed 134 assertions; combined with the existing cycle
-and fact controls, 10 tests / 4,850 assertions passed with Bootstrap unloaded.
+The four new controls passed 137 assertions; combined with the existing cycle
+and fact controls, 10 tests / 4,853 assertions passed with Bootstrap unloaded.
 Source conservation passed for all three owners and six production functions;
 boundary controls passed 6/11, changed model/checker lint had zero findings and
 whitespace checking passed. Initial helper/test reader errors were corrected
