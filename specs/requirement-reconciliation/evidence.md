@@ -3297,3 +3297,59 @@ existing selection. All historical population, lineage and acceptance assertions
 remain intact; no production gate or source witness was weakened. The corrected
 SH test is rerun after generated writer completion, and boundary/lint are rerun
 for the Clojure test change. The initial failure remains recorded history.
+
+Incremental publication uses metadata/census source
+`5f8ea896e7f31e5c8cdc4a15f6d2cefd26bbe304` and complete inventory source
+`f0343c1c02c2636a9725648aa152d970a6615527`. Complete inventory SHA256 is
+`9a4eb2f7140ce58fb570c713ab1b4469ea8d47ff5d89c8e7b77047325f2b71f4`;
+C16 trace SHA256 is
+`1e9f938d7485107fed63f0ab81eea5643a2599ad7457ca7cd8136f9ccaa7f9e1`.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 original owners
+remain conserved. Owner states stay 984 candidates, 201 task-only joins and
+three retained retirement proposals. The finite index is 1,987 IDs (1,874 + 114
+- one context overlap), with 23 overlaps and 1,424 pending proposals. Qualified
+original-source dispositions remain 507 semantic and 65 context facets with
+nine reviewed retirement facets outside the index. Residual inventory states
+are 5,404 formatting/hierarchy contexts, 20,328 pending complete predicates,
+700 pending dependency joins and 357 pending owner/metadata adjudications.
+The scoped census remains three Accepted, 190 Open, one Partial, one unassessed,
+192 remaining out of 195 (3/195), without final denominator acceptance.
+
+Final focused checks pass: C16 trace 2 tests/14 assertions; Build projection
+5/86; complete inventory 9/52 and serialized readback; corrected SH 12/541;
+census 5/18; boundary 6/11 after the test change; both document validators;
+generated SH/census comparisons; changed SH tool/test lint with zero findings;
+whitespace. Readback separately checks all C16 facets stay pending, exact old
+qualified IDs, ten source refinements, current incremental snapshot, unchanged
+owner states and extension byte-only authority/five descriptor states. Earlier
+Types accounting-history roles remain unchanged.
+
+The existing orchestrator delivered a finite frozen C13 review locator during
+this work: `/Users/matt/.codex/visualizations/2026/10/29/01a18529-68f3-74f0-b915-a63983ba628a/c13-review-b9e72428/receipt.edn`,
+reported SHA256
+`e3e67d592ccca8c66cb702900a77c5bec069ebc6c1b796c915b3d4e7a0bda39d`.
+Its reported subject is frozen `b9e72428c873e0b5badaca6852b5348b479f20ee`,
+Opt task source `ded6c1d2eede7985e078af57ed53fa367645436a` and trace
+`84d36992e56fd44bb12e471be51e38a9dd7b8c26ad5845ff0a6a763fecd26b99`,
+covering 120 facets (105 semantic/fifteen context), 47 occurrences, 32
+conjunctions and four owner joins. Reported sealed counts are 154,512 source/data
+checks and 228 refusals. The locator is delivered review data, not yet locally
+validated/adopted authority. Exact raw receipt/source/trace/task applicability and
+meaningful negative controls are the next action; no reviewer checker will be
+rerun, completed review goal reopened or later-head acceptance inferred.
+C13 remains pending in the current inventory until that adoption succeeds.
+
+A second delivered finite review locator is
+`/tmp/resolve-c5-l3-independent-00f34a44/receipt.edn`, reported SHA256
+`a1e921d1b62a2a51d231c5e10dc0d7b4d26e5a4463a0c0745d24db9ca63e6d5f`.
+The reported Resolve subject is `00f34a448efb6cc26f028dbe709596d839448d27`,
+task source `11350110bc0c0456699a31151b321a7ddfaa6d7e` and trace
+`b4e2491c179e0dd79c3118ee714b4bf36178026f72301843e5b4f6fb84861665`,
+covering 195 C5/L3 facets, 107 occurrences, 76 conjunctions, 31 context
+occurrences and six owner joins, with 27 reported refusals. Exact raw receipt
+and current applicability remain to validate after C13 intake; five overlapping
+contexts confer no extra credit. The finite frozen Resolve execution package,
+later Types/Core/incremental and whole-current-composition acceptance are excluded.
+Neither delivered receipt changes this checkpoint's qualified counts or pending
+C13/Resolve dispositions. Existing reviewer goals remain closed and no checker
+is rerun or review duplicated.
