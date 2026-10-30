@@ -436496,6 +436496,78 @@
    "gravity/foundation-diagnostic-context"],
   :applicability
   "specs/requirement-reconciliation/c15-owner-current-witness-applicability.edn"},
+ :completed-source-reviews-qualified-adoption
+ {:C8-full-L6 :not-accepted,
+  :whole-owner-entailment :not-conferred,
+  :counts
+  {:new-reviewed-facets 409,
+   :all-reviewed-facets 424,
+   :semantic-conjunction-facets 376,
+   :retained-context-facets 48,
+   :finite-proposal-ids 1331,
+   :pending-finite-proposal-ids 916,
+   :reviewed-outside-finite-proposals 9},
+  :retired-scope
+  {:primary-lineages-only 9,
+   :frozen-residual-facets 62,
+   :frozen-D2-fixture-gap :retained-history,
+   :later-D2-six :separate-review-no-backdating,
+   :retirements :unchanged},
+  :decision-source-review-adoptions-530 :unchanged,
+  :task-count-delta 0,
+  :implementation-credit :none,
+  :C14-complete-PERF4 :not-accepted,
+  :adoption
+  {:path
+   "specs/requirement-reconciliation/completed-source-reviews-qualified-adoption.edn",
+   :sha256
+   "06d53307ea9464591b30ec8777890c1b8c5f11e32b5040397f44d7a025b74bd5"},
+  :final-denominator :not-accepted,
+  :source-commit "4ca98c35871c75addbd44e95650c7830f657fa2c",
+  :status
+  :qualified-independent-source-conjunctions-and-contexts-adopted,
+  :receipts
+  {:C14-PERF4
+   {:path
+    "specs/requirement-reconciliation/c14-perf4-independent-source-review.edn",
+    :sha256
+    "509eb7cb7c0fbc3689ab3e56d9e2f4e6826b38dceed41f4d98730070281498f6",
+    :reviewed-source "9d1517399654bd115543d23b4f1d65af6d30f222"},
+   :C15
+   {:path
+    "specs/requirement-reconciliation/c15-independent-source-review.edn",
+    :sha256
+    "95e6cd809685131b6ffbea52b0c79e63c7779689cc38d4d4de3de760f812334e",
+    :reviewed-source "3f14a02ea78990b9e7090474d63cd1b87a250bf9"},
+   :C8
+   {:path
+    "specs/requirement-reconciliation/c8-independent-source-review.edn",
+    :sha256
+    "727d289a2cca5ca9f75e769ca7c2b71e5ab33b86327f70f5bc5fd44961151ffb",
+    :reviewed-source "1ecdfa5916da558272961eaab8b1eff5d0aa7b3a"},
+   :D2-triage6
+   {:path
+    "specs/requirement-reconciliation/d2-triage6-independent-source-review.edn",
+    :sha256
+    "7e99e184f23396724d5afd428e945fc42553d018868669bc0d19e19d2c5d8483",
+    :reviewed-source "ab9782c592b262aba422f29261e35fd361b52454"},
+   :retired-primary9
+   {:path
+    "specs/requirement-reconciliation/retired-primary9-independent-source-review.edn",
+    :sha256
+    "fee63f55fb5dfe16fa27ae71da799589db0459708bc30169047944fd5e0bb247",
+    :reviewed-source "44a15681612db144fe2b7b38a3f285b1ca6d76ba"}},
+  :qualification
+  "Five independent frozen reviews are adopted only for unchanged source predicates, owning criterion bodies and declared roles. Across this batch and BOOT15,376 semantic facets and48 context facets have qualified source dispositions;916 finite proposal facets remain pending. Retired62 residuals and its frozen D2 fixture gap stay history; later D2six is separately reviewed. No whole-owner, unselected enclosing predicate, later addition, runtime, migration, release or final-count acceptance follows.",
+  :C13 :not-accepted,
+  :C15-foundation-residuals 20,
+  :new-decision-ids 0,
+  :held-actions :no-clearance-or-retry,
+  :applicability
+  {:path
+   "specs/requirement-reconciliation/completed-source-reviews-current-applicability.edn",
+   :sha256
+   "1bb0a9f27ec37b95499ca75ed816c0ff49fab65b4d85129a01aadf4b490e134a"}},
  :current-original-owner-criterion-joins
  {:traces
   [{:path
@@ -436861,11 +436933,21 @@
      :sha256
      "eb076f3ba8e213a369021b76cad82c00bf91eada8e013bc2ea131611da866a7e",
      :source-facets 15,
-     :scope :fifteen-source-criterion-conjunctions-eight-roles-only}],
-   :distinct-reviewed-facet-ids 15,
-   :remaining-proposed-facet-ids 1316,
+     :scope :fifteen-source-criterion-conjunctions-eight-roles-only}
+    {:path
+     "specs/requirement-reconciliation/completed-source-reviews-qualified-adoption.edn",
+     :sha256
+     "06d53307ea9464591b30ec8777890c1b8c5f11e32b5040397f44d7a025b74bd5",
+     :new-source-facets 409,
+     :scope
+     :five-exact-frozen-reviews-with-current-byte-conservation}],
+   :distinct-reviewed-facet-ids 424,
+   :remaining-proposed-facet-ids 916,
    :whole-source-entailment :pending,
-   :implementation-credit :none},
+   :implementation-credit :none,
+   :reviewed-semantic-conjunction-facets 376,
+   :reviewed-context-facets 48,
+   :reviewed-outside-finite-proposals 9},
   :task-count-delta 0,
   :original-source-facets 28785,
   :traces

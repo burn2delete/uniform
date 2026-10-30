@@ -2815,3 +2815,49 @@ credit. Serialized readback checks the 15/1,316 split, sealed receipt identity,
 all earlier refinement/retirement references, active C13 binding path and all
 five extension descriptor states. The historical trace remains immutable; the
 new qualified overlay carries current review authority and every exclusion.
+
+## Five completed frozen reviews with current applicability
+
+The delivered independent D2triage6, Retired72, C14/PERF4, C8 and C15 receipts
+are preserved byte-for-byte in the corresponding `*-independent-source-review.edn`
+artifacts. Their SHA256 values are respectively
+`7e99e184f23396724d5afd428e945fc42553d018868669bc0d19e19d2c5d8483`,
+`fee63f55fb5dfe16fa27ae71da799589db0459708bc30169047944fd5e0bb247`,
+`509eb7cb7c0fbc3689ab3e56d9e2f4e6826b38dceed41f4d98730070281498f6`,
+`727d289a2cca5ca9f75e769ca7c2b71e5ab33b86327f70f5bc5fd44961151ffb`
+and `95e6cd809685131b6ffbea52b0c79e63c7779689cc38d4d4de3de760f812334e`.
+The complete sealed receipts retain exact subjects, independent findings,
+controls, authorship exclusions, residuals and execution nonclaims.
+
+Current applicability at `4ca98c35871c75addbd44e95650c7830f657fa2c`
+passes 2 tests / 49 assertions. The exact reviewed trace bytes, original source
+facets, owning task identities and raw criterion conjunctions survive all later
+source changes. Current file pins are refreshed only around identical predicate
+bytes. Entire 833 decision records remain Open and conserved; all 931 owning
+witnesses, 561 historical identities/authorities and 4,819 current predicates
+authenticate. The C13 snapshot and task states remain unchanged by adoption.
+
+The batch adds 409 reviewed facets. With BOOT15, qualified review dispositions
+cover 376 semantic-conjunction facets and 48 retained hierarchy/provenance
+contexts. Context retention is not semantic implementation or a new obligation.
+Of the 1,331 finite proposal IDs, 916 remain pending; nine reviewed primary
+retirement facets are outside that proposal index. The original 240-document,
+9,945-occurrence and 28,785-facet populations remain intact.
+
+Retired72 accepts only nine primary behavior lineages. Its 62 residual facets
+and frozen D2 fixture gap remain immutable review history; later D2six accepts
+the added positive fixture and five refusals through a separate current review,
+without backdating the old proposal or claiming execution. C14 accepts its
+122 C14 and 23 PERF4-boundary facets, excluding full PERF4. C8 accepts its 103
+facets, excluding full L6/foundation coverage. C15 accepts 133 C15 and thirteen
+foundation diagnostic facets, retaining twenty other foundation residuals and
+excluding BOOT15 semantic acceptance and self-authored Safety107 expansion.
+No review clears Policy14, Metadata372, fixed-width, OWN or other held actions.
+Whole-owner, unselected enclosing predicates, later additions, implementation,
+migration, final denominator and coordinator integration remain separate.
+
+The prepared Resolve C5/L3 task append was saved in scratch and its exact guarded
+inverse restored the three uncommitted paths when this completed-review intake
+arrived. It is not published, accepted or counted. Existing frozen Resolve
+verification artifacts remain untouched; source extraction resumes after review
+consumption. No review was requested, duplicated, delegated or self-conferred.

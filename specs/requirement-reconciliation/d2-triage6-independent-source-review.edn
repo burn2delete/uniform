@@ -1,0 +1,236 @@
+{:source-context-qualification
+ "The entire D2 was read. This review covers only its Milestone6 positive support-triage line and five exact refusal lines joined to one current AI criterion and three supporting roles. Other Milestone6 scope/artifacts, global release/milestone gates and other attached source contexts remain outside facet acceptance. The four one-member requirements describe this positive fixture; they are not input/work quotas or a cap on detailed internal records.",
+ :tree "c9a31a2acaaad9528cdd749a204e3b182cc7beee",
+ :execution
+ {:reader-eval false,
+  :Bootstrap false,
+  :actual-model-tool-fixture-runtime :UNRUN,
+  :canonical-or-shared-writes :none,
+  :APPROVE :none},
+ :denominator-credit :none,
+ :negative-controls
+ [[:lost-obligation
+   "Compile the Milestone6 positive fixture through ordinary Gravity source, macro/type/effect/capability/profile/safety and artifact checks"]
+  [:lost-obligation
+   "then execute its declared support-triage workflow"]
+  [:lost-obligation "one model-call step"]
+  [:lost-obligation "one schema-validated tool step"]
+  [:lost-obligation "one human-review step"]
+  [:lost-obligation
+   "one durable replay record binding those steps to the same source-bound fixture"]
+  [:lost-obligation
+   "Preserve the detailed typed event/log records required by Workflow and the selected replay contract"]
+  [:lost-obligation
+   "these fixture members are not a work allowance or a cap on required internal records"]
+  [:lost-obligation
+   "Actual source/compiler/profile/provider identities"]
+  [:lost-obligation "agent manifest"]
+  [:lost-obligation "prompt artifact"]
+  [:lost-obligation "tool schema"]
+  [:lost-obligation "workflow graph"]
+  [:lost-obligation "replay-log schema and durable record"]
+  [:lost-obligation
+   "model/tool schema-validation and review decisions"]
+  [:lost-obligation "evaluation and record-versus-replay results"]
+  [:lost-obligation
+   "Show the actual corresponding operation/event for every required member; fixture counts or supplied success flags alone are not evidence"]
+  [:lost-obligation
+   "The AI task owns this integrated support-triage result"]
+  [:lost-obligation
+   "Schema, Workflow, Auth and compiler owners retain their actual validation, durability, replay, grants and ordinary-pipeline products"]
+  [:lost-obligation
+   "A missing required model/tool/review/durable-replay member"]
+  [:lost-obligation "an SDK-only side path"]
+  [:lost-obligation "tool use without capability"]
+  [:lost-obligation "unvalidated model output"]
+  [:lost-obligation "prompt-injected authority escalation"]
+  [:lost-obligation
+   "replay-sensitive current-time access without an event record"]
+  [:lost-obligation
+   "an agent-memory write outside its granted namespace"]
+  [:lost-obligation
+   "stable source-mapped diagnostics, failed inputs and linked negative records for each refusal"]
+  [:lost-obligation
+   "Dependencies consume the actual Schema validation, Workflow typed graph/event/replay, Auth grant and ordinary compiler-legality artifacts"]
+  [:lost-obligation "no whole-component completion prerequisite"]
+  [:lost-obligation "required future fixture and product contract"]
+  [:lost-obligation
+   "implementation acceptance remains Open and no live operation or stage/milestone completion is claimed"]
+  :count-flags-instead-of-operations
+  :hidden-internal-record-cap
+  :fake-nonexecution-flag-authority
+  :invented-implementation-credit
+  :review-manufactures-grants
+  :replay-effect-repetition
+  :lost-runtime-record-read-direction
+  :forged-facet-span
+  :stale-current-criterion
+  :legacy-sourcecommit-free-witness
+  [:coherently-rehashed-lost-facet
+   "facet/foundation/f136c5e4884858e8fe73a5eb"]
+  [:coherently-rehashed-lost-facet
+   "facet/foundation/d942d0f1bb9b2d707dc46839"]
+  [:coherently-rehashed-lost-facet
+   "facet/foundation/fc1ba6249d7f1ddd5e8363fa"]
+  [:coherently-rehashed-lost-facet
+   "facet/foundation/2d169328cfb707afa1ea451a"]
+  [:coherently-rehashed-lost-facet
+   "facet/foundation/22e991514a0487e8af6bfe1c"]
+  [:coherently-rehashed-lost-facet
+   "facet/foundation/34327b533af3c1f0bc85723c"]
+  :source-facet-mislabel
+  :retired-envelope-blanket-acceptance
+  :source-trace-false-execution-credit],
+ :roles
+ {:supporting-IDs
+  ["interface/domain/support-agent-integration"
+   "interface/language/effects/interpret-workflow-replay"
+   "interface/language/facet/emit-agent-plan"],
+  :integrated-owner "ai",
+  :runtime :effect-resource-and-replay-consumer,
+  :facet-compiler :artifact-producer-not-live-authority,
+  :providers
+  :actual-Schema-Workflow-Auth-and-ordinary-compiler-artifacts},
+ :reproduction
+ {"check.clj"
+  "2898722218e2e7830a0cd5ba2d4a2fa5f6af932444227b7fde77d5db0d361bc6",
+  "check.log"
+  "4751c97ea63cc843d97cc56a944543bbb584657dbd57b2520ff851df10c78b0d",
+  "finalize.clj"
+  "248b4e06031dbfe124416300b41d43eb0264c5c7db33131e6eb16fb78c83e493",
+  "inspect.clj"
+  "4fbae2a9a9be8a2835174e3d0e81fe4eb3779b632464d96323c774949a2e92c8",
+  "roles.clj"
+  "6a78c7165dcfa0fb8b748a72f32c826e864766f854abb3089e81e252614c2210",
+  "roles.log"
+  "83de603588b098e7504f45b66996fe4443f6fba4a502b58e3836d7ee21bbb068"},
+ :implementation-credit :none,
+ :conservation
+ {:decisions 833,
+  :historical-IDs 561,
+  :other-records-exact 22,
+  :historical-current-spans 4819,
+  :original-documents 240,
+  :Domain-records 23,
+  :file-pin-refresh 4046,
+  :current-owning-criterion-spans 931,
+  :decision-records-unchanged true,
+  :old-predicate-bytes-and-entire-binding-inverse :exact,
+  :task-and-roadmap-inverse :exact,
+  :Open 833},
+ :checks 80250,
+ :scope
+ :D2-triage-six-frozen-SOURCE-facet-and-current-criterion-conjunction-only,
+ :criterion-evidence-qualification
+ "Future actual ordinary-source compilation, typed/effect/capability/profile/safety/artifact checks, actual operation/event identity for every member and record-versus-replay/provider/schema/review outcomes are required. SDK names, present artifacts, scalar counts, supplied success or nonexecution flags do not satisfy that future execution obligation. This review executed none of those operations.",
+ :adoption :canonical-only,
+ :one-ordinary-source-fixture
+ {:members
+  [:model-call
+   :schema-validated-tool
+   :human-review
+   :durable-replay-record],
+  :same-source-bound-fixture true,
+  :internal-record-cap false,
+  :actual-operation-event-and-record-versus-replay-required true,
+  :supplied-flags-counts-or-SDK-substitution false},
+ :head "ab9782c592b262aba422f29261e35fd361b52454",
+ :task-source-tree "036ae00dfc283f581fa606c08766357ac4fd2d4a",
+ :matrix-sha256
+ "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7",
+ :task-source "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+ :predecessor "44a15681612db144fe2b7b38a3f285b1ca6d76ba",
+ :authorship
+ {:Tooling65 :conservation-only-no-semantic-selfacceptance,
+  :D2-criterion-author :canonical},
+ :artifact-pins
+ {"specs/requirement-reconciliation/all833-d2-triage-current-criterion-conservation.edn"
+  "1928a0feb92818f6435a4500bb58fa8559d4b501cf014847409f13a87d30ced2",
+  "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn"
+  "341d17966de07584818eb6b6fe32a91607f789c16d4fc074f9a8d1c412f0df25",
+  "specs/requirement-reconciliation/d2-triage-current-facet-trace.edn"
+  "8c875e5cc3c04d2690f2b23d166a6ae1bda410773028970d8b01aaf6279194f1",
+  "specs/requirement-reconciliation/d2-triage-current-witness-applicability.edn"
+  "c5ddee31ef8f07d7f706c8e096ba096c61c9010ab73f171c62832c9d7dad7f80",
+  "specs/requirement-reconciliation/d2-triage-source-refinement.edn"
+  "bfd298ec9e91ad598fbd5e5e8ad60b7378327512e4f6459b84a9e660829320c5"},
+ :facets
+ [{:id "facet/foundation/f136c5e4884858e8fe73a5eb",
+   :role :positive-fixture,
+   :source-text
+   "- support triage workflow with one model call, one schema-validated tool, one human-review step, and one durable replay record.",
+   :source-occurrence-id
+   "D2/source/fee3d369848d6b484b0528ba8d2e83253c64e1694294a3a2124af81e52ae0368"}
+  {:id "facet/foundation/d942d0f1bb9b2d707dc46839",
+   :role :negative-fixture,
+   :source-text "- tool call without capability,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb"}
+  {:id "facet/foundation/fc1ba6249d7f1ddd5e8363fa",
+   :role :negative-fixture,
+   :source-text "- model output without schema validation,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb"}
+  {:id "facet/foundation/2d169328cfb707afa1ea451a",
+   :role :negative-fixture,
+   :source-text
+   "- prompt-injected instruction crossing authority boundary,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb"}
+  {:id "facet/foundation/22e991514a0487e8af6bfe1c",
+   :role :negative-fixture,
+   :source-text
+   "- replay-sensitive workflow reading current time without event record,",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb"}
+  {:id "facet/foundation/34327b533af3c1f0bc85723c",
+   :role :negative-fixture,
+   :source-text "- agent memory write outside granted namespace.",
+   :source-occurrence-id
+   "D2/source/39a05d8948b8604af45a005355f97facaceeaceba9ecd99f167e15a0c2a199bb"}],
+ :current-applicability
+ {:frozen-pass-only "ab9782c592b262aba422f29261e35fd361b52454",
+  :later9d151739 :separate-unreviewed-current-applicability,
+  :later-current-heads :not-accepted,
+  :canonical-action :guarded-source-join-required-before-adoption},
+ :scope-boundaries
+ {:held-policy14-mixedbudget-EFIR :excluded-disjoint,
+  :Metadata372 :excluded-disjoint,
+  :B2-fixedwidth :excluded-disjoint,
+  :bootstrap-diagnostic15 :separate-disjoint,
+  :OWN-or-held-operation-substitution :none,
+  :whole-Milestone6-or-other-attached-predicates :not-accepted},
+ :retired-triage
+ {:history-and-proposal-bytes :unchanged,
+  :independent-successor-acceptance :still-pending,
+  :only-explicit-new-gap-criterion-reviewed true,
+  :original-15-attached-context-envelope
+  :no-blanket-discharge-or-retroactive-acceptance},
+ :harness-sha256
+ "2898722218e2e7830a0cd5ba2d4a2fa5f6af932444227b7fde77d5db0d361bc6",
+ :decision :PASS,
+ :excluded-artifact-disjointness
+ {"specs/requirement-reconciliation/b2-complete-current-facet-trace.edn"
+  {:sha256
+   "413ded6594b56fdd7e36544951e3e9648c73c7a0d679451925e9acb91e2dbaba",
+   :identity-count 271,
+   :selected-D2-overlap [],
+   :reviewed-here false},
+  "specs/requirement-reconciliation/bootstrap-diagnostic-current-facet-trace.edn"
+  {:sha256
+   "32708a1a4c7a41a4901cda101df6e379ce4ea489ad7b62b2f3bdea8956b8ba12",
+   :identity-count 15,
+   :selected-D2-overlap [],
+   :reviewed-here false},
+  "specs/requirement-reconciliation/policy-and-efir14-facet-dispositions.edn"
+  {:sha256
+   "1a565f25e4596f1981ef8118cb3bc1668609d6f060cba5a6ae01ddae456fbf0e",
+   :identity-count 11,
+   :selected-D2-overlap [],
+   :reviewed-here false},
+  "specs/requirement-reconciliation/source-provenance-facet-dispositions.edn"
+  {:sha256
+   "cd8e2618e3fa6922d0562f4a91ea47db1b7bf31db61c769ffba49ab598201de6",
+   :identity-count 209,
+   :selected-D2-overlap [],
+   :reviewed-here false}}}

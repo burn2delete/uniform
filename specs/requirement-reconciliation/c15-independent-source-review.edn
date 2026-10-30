@@ -1,0 +1,2351 @@
+{:facet-verdicts
+ [{:id "C15/normalized-facet/0-43/a566725261eb9a34",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/d13928118fa4cff45780848a76bb451a5212e950ecf67af860287660efccd34a",
+   :raw-sha256
+   "a566725261eb9a34f75dc987eb5d1403b9a3dd607bbd3c3619c5ae4b72bfd155",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/44-320/b485539e48884ed3",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/aa546c3344ca6380e4dd85d1772f1046d181e46f06586cd8e4f82c937edd9f00",
+   :raw-sha256
+   "b485539e48884ed3019a81d7977711df9b04f317ee7e87cd46d276ad72dde2fb",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/321-332/994413297a3e95a9",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/81aedf8af51b929f19ad7babc417ce06914c643b2bb71dfa5b3d9e660b0ee37a",
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/333-669",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/779a0c7273bbafcdda181827dff06d1a500e79853bd789def143bc5ab1ffc136",
+   :raw-sha256
+   "0da2c7ef83b19f426d92b376d1d9751935547aaea3ddead2404caf20a4834db7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :record-stream :views],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/670-864",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/75569291c9356abab01c43588d889864f41ef360e89cacb1ff561a2de7fc68a3",
+   :raw-sha256
+   "b14721841f180d4d57ade90385c7fe395dbaed9ba865cee92352329a86fcee37",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :foundation],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/865-881/d8416f1863ce5290",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/73eedc73a3a539f8f8f77fe4c41e69f0c0a3a761c44537880b1a2d0c7e81c7c0",
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/882-1081",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :raw-sha256
+   "9b5be10447ca18d30a7abefcf98cc8054cb74a9a14f46544c9d23a9560079ce6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1081-1228",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :raw-sha256
+   "74485bf5aaf264126a8cb7277a632ddedb9077d80a0b1f3a13a07fe99ccb438d",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1228-1354",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :raw-sha256
+   "5c51f2e12c93de8b1c5ee2dd69c190ebc81b9e83bdeb8538f1384fbd649cca92",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1354-1410",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :raw-sha256
+   "e7b237dc87adc0375ce2b86f17f1a5c4c86fa5b9032c4807cbf843ba168fc308",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1410-1475",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :raw-sha256
+   "ca5ab736d00ab9491f2fa2366adc2ebe45f6e0ba6d8dbbe920f5b6100f37fa9c",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1475-1600",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :raw-sha256
+   "25b1dde42077dea705e9f7680c65ea9eae5108594da9c91f8ed04668f4ea170c",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1600-1655",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :raw-sha256
+   "d0c2c3ccbfaddd033ff9c70d8e2e68fff6501a3e0209fd6c94d90084e9425fc5",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/1656-1672/21d1931a332d9b7f",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/ee2b8982af2d057425dad689d1595735b1aaa70e28df46128cc27267e153a5a3",
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1673-1741",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+   :raw-sha256
+   "f416e71a02cf91cd185a20577346c9d0ce1009ade3743d27bf298469d6859c6c",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1741-1780",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+   :raw-sha256
+   "fed899a0409733c83536710e85644c2fb2b7c0de5b44964a41ca6698a8c7c40f",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1780-1831",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+   :raw-sha256
+   "7f0015f6d3c346315fb3d07b4731132ea23810ea8dfd9bbdee5000ecc07716f0",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1831-1879",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+   :raw-sha256
+   "dee3cc421336965fa814124b22a4322067992765d6a9bb5e8b867a8fefa16e52",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1879-1935",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+   :raw-sha256
+   "feacb079a6eae6169a9fdf67d0ce4c92a1902f5810bb3238b3c1d0290f38b671",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/1935-2024",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+   :raw-sha256
+   "63b9835efd55fa510749a7e4c39322947397fa8bfc3c849122f2332ccd763e4e",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/2025-2050/f4280a4d61a89adc",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8476d48ee133c0117b279e2e54d140a795148cbe06b78b494bbc3e83c4674da",
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2051-2072",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "387eeaf6ce6e76d06cbaa035bac12a50a34231798164ac03d41661e15df3a454",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2072-2093",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "c49b00a91487c6e824684755c7681d367193ea6db96f2cb75898346dc826df02",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2093-2115",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "21621cc6dbc9481ce7ecabe043b28b70bc5a4d0ac4a4da4adb22dfb42f6bcabd",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2115-2135",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "f2502e37f41ae1d5e81fda65f5a240156798c24890c5e8b7c2a52d4eaf7168d0",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2135-2172",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "0cb3c9deeb207b85375647148c34d612eb18a14d7d63a23e5328412de1f97219",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2172-2192",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "26ba7f2395723b326378272d4984234f36b41b0040676c1ccefc94ef6282f202",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2192-2221",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "7c4f49167547857677a93b24b04aca287fbe4c86add530fbe0f9275d163e12f0",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2221-2251",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :raw-sha256
+   "cb0e48d89921227e8b36d0af341e4ae03f7e387deeda45ca935fa4e8c46bea38",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/2252-2272/d2979a65781a4add",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f5df0c1044f8554c506bac875e31cdc32655f84a92377bb2af4e1caf24ade81f",
+   :raw-sha256
+   "d2979a65781a4addbed2cade81192e40483615efe8a424e11575773b128c1cbc",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/2273-3078",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/16613a2c915ce62c4535d995d2bcfc3f29d4628795948d9edc37eacba13873ca",
+   :raw-sha256
+   "b0a573b5628d9ffff3240257820d5c502c16581f1eaa17edaaa1af316c7ea0b8",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/3079-3202",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/bf614a12bf33cea5eab1be7b67dde2e4910285684685a29df91fa08e658ca90d",
+   :raw-sha256
+   "a35f8b053848cc4551a9de072753379fc01902fbc6075fd589895040867af426",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/3203-3834",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f4fcefd5ea4b52e4f0fcc7281df49b9385254007a482a0e81a47dd35f26d54d3",
+   :raw-sha256
+   "7f61429fa99b4baa2006be5032b235c1cda95badfc2fbdeae31f62bc22f96eb6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :identity :record-stream :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/3835-3861/d568f890c9cac8d8",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/670cea30e1cff15944706f7ec76bc96a4638ca92f4c94d7f4ed8ee3668144fec",
+   :raw-sha256
+   "d568f890c9cac8d800f5ad48a864ac1eb57650edf850763eee0e458dbcfa4e1e",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/3862-3879",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/b020192090277d73abe94df48ef0b00d52a34c1b77a961aa4d3fff87b3ca86d3",
+   :raw-sha256
+   "c900f332a81de412a7434072b01094d4d032a20bbe687cc466520cfd124115c6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/3880-3941",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+   :raw-sha256
+   "5a80841fe486da91c779294a157e96787d5bf665b43c8dc64f062e4d5f8d8159",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/3941-4038",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+   :raw-sha256
+   "08514ee82586bda64b4b0aa36231a206f1200b299a8d5e0e805b34edc6648867",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4038-4087",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+   :raw-sha256
+   "459ab13fd817a0f512f94c27a1f214456956906b516daa20fd05ad41107ce633",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4087-4145",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+   :raw-sha256
+   "079ce98f49a74b9d71de4aed77a5ed25648a769ff6e43ba1d55a39f18db77a15",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4145-4240",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+   :raw-sha256
+   "7aae0897464436cedaacbb98b15b8d00a9785bcff92fa61937be53c1339c084b",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4241-4275",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/11ae262c88b68a8ddabfda33db7e5061f32aebca4d146e5736b47803d6cc6a09",
+   :raw-sha256
+   "efeca2196f05179c7a33a832df83f02cf3e4a83bc93cd85507a6398d674bada1",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4276-4289",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+   :raw-sha256
+   "f1565483035502c8cd4619e5e17c93503de07b139e37ceb0d949d7a1bc5407f6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4289-4316",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+   :raw-sha256
+   "e29dee88bffcedab12db19042e52693a43fda1b206abb4165957d5303125a411",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4316-4331",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+   :raw-sha256
+   "f74881eeb757458d472fea869a4b1c35378080e0496566a46b3f5d3b26e400a7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4331-4353",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+   :raw-sha256
+   "99f8464c4d8d5bfcfa62ac30d0b44b6db55454d476cc1babcad98d0dbd5952e6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4353-4376",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+   :raw-sha256
+   "5f2eaa34d03f18a4094148b2b46953242bb6015d010cdf2d4ebdf781dab83f70",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4377-4449",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/0e2cc3f2d9fa6ad0fd7bcae1aab103c3ddea9d52efa229b4191d473162d7b0ec",
+   :raw-sha256
+   "9448a47269ae0ba85772fde23f514aabe3ecc7c7c8cd452a975d42bb175e61c5",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/4450-4475/1c70661a41a4727e",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/9e0c86a48ec7f995925a123a2e453da6e10d509d1b1351d0e1ea4c9cd6cb3d00",
+   :raw-sha256
+   "1c70661a41a4727ec7627d96198766965300f4a168e2b46925021c4079d3102e",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4476-4495",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/aea1325bae92053e4eab0e028727dd7c384dbbebfa91bb477a6eeb98db8bcd1d",
+   :raw-sha256
+   "faac2b5de26b53bf70e6ce706272b37a6b7e8580105b8eb42fc6c135fba57772",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4496-4511",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "17ad5d31aa5edf5249ac762539e4d470f2c60dfb03965594523df1fcb5138c59",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4511-4529",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "ed9f059dcfb25075218f6b82070a4b88b2a8ce6ffec46d12a4c7d0af7b00bb72",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4529-4554",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "c2be04b0c7f7c2dceba717a3b19103f58d427cc7509c0a3e38c7f9e5c7010069",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4554-4578",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "7b130a9fae91251af751b03982ca8e5c1373529d538670e40370bd5ff05a3d5f",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4578-4596",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "b945911d8d3a9ecf0e881098530043d44e5aa2300613185993e973920f6ea8ff",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4596-4623",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "48cb12273fc7568ea47edf98ec641934a88c629c23f9148ced8dbc8a9ceaf831",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4623-4640",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "e470323ee10ddbf8cc3a75445d67185d48470199b210fabdfda6bb90326221d7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4640-4658",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "d60ad8a60d13b8c5ddb83d40e2deacdaa309026546b5d08e62ea22473924f6be",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4658-4678",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "51c4ddf98eb048d240fdfd3ed133e4f69333dae72e2bb865f9c11439e56943a6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4678-4704",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :raw-sha256
+   "b7ebccf3733a3f6b71ed39b8f56677407c10542b76c366eabab6ca3174a31a77",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4705-4935",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/ea826dc1746daaf24f139165c7636982c3c1ad1d224e8ce5698d8455cf3fd809",
+   :raw-sha256
+   "09a4eb0c686108c37c47bf348333cb71e71d5d05f16fe636ee98ce265fa46708",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :identity :views],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/4936-4961/c3940eb57a6a540c",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/773ac0bb2b7f98ba5c766f3c970506d52cfc6b3edf5967937112c69bcdc1adff",
+   :raw-sha256
+   "c3940eb57a6a540c0629492af0ae56c9b44dac6d5e62f72bcaaf3667d4b694d2",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/4962-5033",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f9b67e32d1e7fd0108d1251e184812a87db24c3fe724fe8034b07037d9699b44",
+   :raw-sha256
+   "6ed69e53fd9801773a8cba7fe9d520ae4d47f1a56d3d93c74b609d2fb6a302db",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5034-5063",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "1c0ef14dcc07cad74ee5aad1007dd9c2ac3b134df497e873260ea45fb1c59200",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5063-5096",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "7195b68bc0b144649bdd05090f3fdc0f5418210329e4897e907074526bf53766",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5096-5118",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "6415c788a1a917892ca6d1c7f4c566f05d780469bfcbba18dc56e647de3c1b01",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5118-5160",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "f04899e0057316fa6e086237aa2a91572e078b2a6bbd174fb1b06957a1d9ee16",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5160-5200",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "2f9757f1366d1edce5cb395f8fc57df017a45292a95dc8dc7ae9ab3792c41d65",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5200-5218",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "6e70e6f86e59a930fdca6c324ff26d68199bbf91b5758da27e05822f4600a420",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5218-5245",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "babbe91c41889d7f5402908d902000644fe270d26ddce1af4af0afc53229d297",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5245-5263",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "b540f7b14a2abd5ce8971ecef8d21d6ed6ecdce0e27a6f9dfeb2b44dfa45605d",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5263-5285",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "0e2c3d54e9fccef0c2d5eeaefad79acad29dd1e1fd43d8a511054be06aafeeef",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5285-5300",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :raw-sha256
+   "63ef496660eac77e98aea24cb2c7b45d57515cd8c39bc23a3287c315170aa4b8",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5301-5425",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/9c45b1bd25e0af35852ca2944e0aec098cf8b607ad9377b90d89374ef83ff4a6",
+   :raw-sha256
+   "88f009a51bc14de9a6a178e57f25565e2edd0047ba0fbc24b5d5b92a67f311b1",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/5426-5439/00c53e42752fffad",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/8e0c8560caf592bf74402eea592876a42d6842f6d573fcac14bfcd28c3f3fcc3",
+   :raw-sha256
+   "00c53e42752fffad22191a5970fa8619c198fc3dce9c3f0b3034422fd06cc5d8",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5440-5596",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f6a0709a3879e6e107abd1507a58d4395f47dc436fd13fa6995b656203902795",
+   :raw-sha256
+   "a03f75e97560db68176e6772f8deef2b5d01fd3097d7efdce84f7cc29051b7f1",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5597-5621",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+   :raw-sha256
+   "58e0313e35ccda830c298427401b979c7e0f120897c46b8757bb174ab5a0a1cf",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5621-5667",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+   :raw-sha256
+   "085a009861e7dcdab0909c819b44edbc67efb0fb9c7e86c9c05b530930dbb7fd",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5667-5701",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+   :raw-sha256
+   "da1998b28de116624eec16ba09d1831aeac5fa46a41e7d0a85f138eebe47303c",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5701-5769",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+   :raw-sha256
+   "5b0090057edc24d9942cd1d8d69c7c28998f8a56001a09a6e5573fd58b7ebc1e",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5770-5871",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/bd80c28556146080b5ce767e3dfbe87e85d3b3446f657331f63ecdad453fcbd5",
+   :raw-sha256
+   "003550229baa6128b3e683bbfbccbec5c546be34c426dc5e5afe15b471160a6f",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction :structured],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/5872-5894/e6c4fdcbc8f2f90c",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/d7aa619a921177d357fe0a098e3c20d241ea1df285f7bcb696d7e842f1d85361",
+   :raw-sha256
+   "e6c4fdcbc8f2f90cdf6002a5268cb522810c3f666ec40db5889f83080bbbc114",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5895-5970",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/e7339d6512278bbaf1f6fba2adb88a94f59027d409aadbcb23d9cd8b721f753e",
+   :raw-sha256
+   "b1e9a23eb0c5d23521f57fc46774a1f635152849e19c6018256fc848a6d06cca",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5971-5980",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "c333c9f23b16c69d22d280e5dfbc209fc4796fd74414bf0817dfb38a2a2c32a7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5980-5998",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "c2e0915854f6c0fe3363b3d3f82a9892f3871174414f2403900172e57fb35cd6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/5998-6024",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "8a06ec3eca5976dd2e651e8df4e6c770a395bbcf08eef81eca4ba3d92af70d75",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6024-6039",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "30cd0dcb0471f6a92177d53c685e6118bd1ab5135247cfdcc2f4758e8a948946",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6039-6069",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "aa0e02dd1f3e391d03f95e0939740450f154c5b52e173e57b972b44e617fd2dd",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6069-6099",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "8b1c5f17e92ac38ec420c7213354e1f06ef92f1adf3f09d17a01071d6ba24d51",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6099-6119",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "5c7bfcffb259f2aed13ac40f09ed242be5602463f407701cadafe2edcc663301",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6119-6140",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :raw-sha256
+   "58b7a831cf711ef8ea172baf90ff21a572f06558099ff5110e85dfc62cb79bbb",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6141-6215",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/2265a8ac5fdebd34bafe3bae8e4d14cef5702a7f1710444c77869b4c7c065f48",
+   :raw-sha256
+   "fe23a50526b9d88dbe97c999c1367fc641fc867b4eb3b53d0023d9b20557d41a",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/6216-6235/084001f47503071a",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/e83ffa1b8aa16110160057dc498fe2b416eb87522d092eeec3b6a4d2cfe2bdb5",
+   :raw-sha256
+   "084001f47503071ab81918260a245b8c3d4acc05221ef01213a5db655dd49bc6",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6236-6268",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/334fa16a3b3712bbe5ff8199361d9f64ac873d40c11af727ab548b70da5df147",
+   :raw-sha256
+   "dceaa1674de1d02f0446d20efbf6ed2268adb9252decba4b1ab7cbf31a1f7722",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6269-6280",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "43f2ab2c5d0c8e3f4611aa4896160e2d92aea96077f63f5429adec550cf3fb90",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6280-6292",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "93b9a168ebfa15ff0455822b15fffcdecf5968fffff1f592192674969bf2f001",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6292-6308",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "c89610504a6591eac66062c43f7100a1c2e9905da7c76c9e013369b28ed9c721",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6308-6330",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "e5be0dcb2c0943266482ab438905c6e3de20f9ab7e6bca0be3677d5830b704e7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6330-6339",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "c333c9f23b16c69d22d280e5dfbc209fc4796fd74414bf0817dfb38a2a2c32a7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6339-6361",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "bcc94f61ca802c175ab4ca3f439725ebb2ca4779a849033f2a1dba4e14c059ab",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6361-6385",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "8bb53b20893e0106f64ca0e57ede2749f53d23f227a3e24dcf30b905ed8f5329",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6385-6411",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "154763b8bbff02d91f23d5ff3b6b1e3ec3539388cb33121991d13cbb7fa3c651",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6411-6432",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "db87c4034c680f7082e6ae756aa58ed0f6c9d1f30da47c6382d4509870626aa5",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6432-6451",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :raw-sha256
+   "cdb9ea479d7bc2265b2b379a4a4d5abd7ed8a4448ee4067dc9f64fae6bff97a6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6452-6520",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/b64a02dada68bf11fecfdf0a8b53d5cf7d86297454c1bc2a73d6f774fb8b21a3",
+   :raw-sha256
+   "ba3f9769a3d75e43f5b3963d51b656a3db79bf52ff5813803bf3c96adb96f3fc",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/6521-6536/84b964dab09b580d",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/9b476f605b487363e9c07a1523336552f6841b2587afb1b2b8f138f632116105",
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6537-6590",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/8a667f39fb017aaead29d07f310ee8ad1339d2f284b549edc5c08aefc610deda",
+   :raw-sha256
+   "00645dd08d7bdeb8dd3e1b3fe4d059d3d2967362a092bfc522f471a8260bc191",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6591-6640",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "56f93e3805192c53fabc1d376196784d983fd76ecef09dabfa96566572734a32",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6640-6693",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "e66f6f8ecda277f34d5098a7eefa5877cd9f1539891a86e45ca98cd9710a21c6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6693-6747",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "76c822782b616e4441fc13c461f655ec3bbb2764ed2491da1a59ba7ccf83b66d",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6747-6798",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "a8d3195f6746668084732ab65b44f2d34d8918ae25f12cdb29f3f4554ea0dff7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6798-6855",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "423e371eaa6c4b086f4e5bb9d1a561afd414bba20bfe01410317b045b50a4c8c",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6855-6926",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "b1659d4a095330d0636c1b4b4cc369d4617fb377691a798e121269cf699cf820",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6926-6994",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "14134076f2827cf62523543f18be845e4448ac970b4b828d61d06aaf0dd2ff9a",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/6994-7046",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "c1f45355a5aa78a856cbc210d828834f1a01374e0f7c93e99b1ff78b1290d8a3",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7046-7094",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :raw-sha256
+   "44af96af1be9dbc491baa3a69de4e4adb17d892449b0925b470d76ca9f19ded7",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7095-7214",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/1cdf46286b0950a1cffff74519026f2a89de080ac030e560af067758daa1d235",
+   :raw-sha256
+   "7ced86611274144ce7eda9c1b1b4009197e7a5a34a582b64eb65c0464d8dc74a",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/7215-7235/81a99744c82b0f20",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/d18d48f1ca4b8c28d313975892e129421ed750d8ce60225b570631c4d33d47b5",
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7236-7282",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/387bae761c962c98fd767a131461a4db696c71b6b4e5c373422d8582fe8f9fab",
+   :raw-sha256
+   "082b70f20687678b802968909b41ebaa743c0d5a6ad59d05c255e73d7be014c4",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :views],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7283-7357",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/54429bff0adca5774809543d59ea6d3f2ed33e17af69f9775cfb7dc5937590fe",
+   :raw-sha256
+   "386d01ac3cf896069bde57865f5ed1a2e4d094023543747bf80809d0c9e44fc1",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :record-stream :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7358-7406",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/9b8c0d26fa29193c5f978c669dfcd65a3bbe063fbe4562bd3e97f4cf1f8a30d0",
+   :raw-sha256
+   "1ec2d9ac0fc2b825ad100730c68173818aa4cb8ebaee58290f11041e26f7ba90",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:identity :views],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7407-7460",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/f5b9b259de41314ade508d9900d1313b88f837f8c0a4e7770605195e9cb23668",
+   :raw-sha256
+   "b8bf1851210017e163d1286685da40ee8247f5c8b6d743861d23ac3c2ffda434",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7461-7527",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/bd78885828ca06f6d5ead5b47ed17f646d45569acc11fe670de6df3423204fd4",
+   :raw-sha256
+   "b244d0bf3c839e68dfec4defc6a7e2b2611a4c72640e8e0ef532358a7e17b128",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/normalized-facet/7528-7552/4cea7efb2bd3a140",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/c115e4462ae821de38e12d6ab08eb6f7370e9d5c823bcc8ed7f810cc88b23ed5",
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7553-7602",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/b89abb8d99f694879fa96de9c6541b28ee2967e71a3b4ea7e66da1eb4c6f0d04",
+   :raw-sha256
+   "a81498d59cadd1b915cabc194e69f9458f2296de0bd9882faaed5cd0df346162",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7603-7665",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "8ea4c806caeff814b931625f00048cf4243409179c448702a86f836c4d67f9a9",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7665-7709",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "d91ff1424b2cc5166acc649f3d3e94144ba92a099095b9e72f2eea1372e7d74f",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7709-7746",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "d395b2ec86ffb5e03f2c138221b68c1a4b3de83b7361dd5586f6c1c32cd2e07e",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7746-7797",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "4735c5e5156ed09978919f52bb2f74d90485a30787394826fe240e55a2fe2374",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7797-7845",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "e95df519f2e63d8fdd12e6960c4ff5eae6430d2a5e2fbe48bdd57d5d7c0d9d05",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7845-7875",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "f37c69c0299118620908779aa92127ceecb544994c10994ae73aca396cea718d",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7875-7908",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "076c3273e76bf9da2ea8fa2fba7b0212138bd9bd0ac42b2bb2f355697988398e",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7908-7960",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "663deb1ef903c64924fac331dd962eae426d1ba56d59ea250a34be98b68cc153",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "C15/facet/7960-8022",
+   :document-id "C15",
+   :source-occurrence-id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :raw-sha256
+   "4b93cfd7a9a72dee07e25a42fd69b39a764ba9e491c00b091c5566eccc550458",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/5eae63f667c2e59e234e53a3",
+   :document-id "D0",
+   :source-occurrence-id
+   "D0/source/e9947a95a23758e887a4ff9cbf3fd29f8ab33a2d254c1d67dc2b4d42f133b85f",
+   :raw-sha256
+   "20f55e49776b33841ae70108d2a4f6a541483bba6ce514ae3d6e636aeb2504f2",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/3d22361e1e84f207fd15ddf6",
+   :document-id "D1",
+   :source-occurrence-id
+   "D1/source/7e19d9ea01bf17179060d74be82ef1c5a7d316380554323720fcd90c8242032e",
+   :raw-sha256
+   "590e47aadd938d33be751fe37656c07dd6e26d7406f208e65390361669c0dabd",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/6bfc3a6e135070e2cd47ef2b",
+   :document-id "D1",
+   :source-occurrence-id
+   "D1/source/af4142aa32715adf9596fe0032be09a26507b0fa29cef1b768e6fec7ff8bd264",
+   :raw-sha256
+   "55b5664bd52a037b558bacbc902c2aa60a38845305d65fb427f4a2c4dc218580",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/5b02d314722b779441c98e9f",
+   :document-id "D1",
+   :source-occurrence-id
+   "D1/source/817830e8ca6ebdb616a862f34bffbce83789d27440e75c0fda0be83edadb54b7",
+   :raw-sha256
+   "a5ac981f5bc2d4ddf99fb6bac1cf9a59921c563ce85fd1fadcac789f1dfe5f81",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/70c0606f97232aa4c3f8b51a",
+   :document-id "D2",
+   :source-occurrence-id
+   "D2/source/7b8b57d0a60213657cfcbe020cf0cc00c43d93a1ede014306331685fce79d6d8",
+   :raw-sha256
+   "bf583ad851c4ffa5a0b83c3cef16b65983a1d3b4fa2e9f05aa90152d8ff6f34d",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/1e15eb82634f1c4ca12518be",
+   :document-id "D2",
+   :source-occurrence-id
+   "D2/source/d1e5a89aeb64cf2d510592b9d9341a4f8f114fcb0797547d0a1390003e79b056",
+   :raw-sha256
+   "8d5b0b5feb0ce4b4a6814122968f11ba136211312b931833a2f7850f8c817c93",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/7e52b6d32418a1bd042a1ebe",
+   :document-id "D2",
+   :source-occurrence-id
+   "D2/source/635fd10ae46ac83166d332401c457b18477856dbfb20eecfc3675e43dff58d23",
+   :raw-sha256
+   "c02704f9c3d115c57c5ce88245b2a8ee663046bbf660d7bcc5400d69e32cd2c9",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/dfc06ac3052ae093eef3f8b4",
+   :document-id "D3",
+   :source-occurrence-id
+   "D3/source/936fbdd9a448b163ce8f2d5a8f70b8c2d40e79466eb3ebeae56e7c403bdd7108",
+   :raw-sha256
+   "89cf026dbc355e58fa14f8b39a5301635b60dcd26874e33ea81d41cdd5cebf34",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/974822244f4c08635ce96a33",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "44361fad9b7a16542eb1073ecffb8d94eb86292432fd0c6aab3c049131268aa0",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/66e0b397f4e5b304e4b01d2e",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/3827f9ba08b135ae35c60e79d9dbe60d18fa75c365123cdac70595d85d99aaad",
+   :raw-sha256
+   "23d4a1cf0949f511298fb7e53a1901aff3ad05c6a51a8363cd5675f834f4cb83",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/fa55ce50a8890744cac71820",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/43ce27140f48dfa83abdc30be95489bece87a2b27d1ab37f0a5163f8d218c9bc",
+   :raw-sha256
+   "d94db3637184bde7ca4145dc12dcfbebbd4f478e3b4a525ff05f909d0f966565",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/1cffa49e5483b3b285e29d01",
+   :document-id "D7",
+   :source-occurrence-id
+   "D7/source/4a0385c940cd22c944a961438ee3e98346687e227c1edc9fc388abc77631f186",
+   :raw-sha256
+   "d4dffbf8f5eceeabbd287d8c3a5c4537cd24660f4b5fb41b175368e075ea0bd5",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}
+  {:id "facet/foundation/42670325cd3d93cb7eb4bb7f",
+   :document-id "D7",
+   :source-occurrence-id
+   "D7/source/4a0385c940cd22c944a961438ee3e98346687e227c1edc9fc388abc77631f186",
+   :raw-sha256
+   "3d5d57eaf5c8770d51d4e1247f0788777e44b6ee524913184bd803c60ea3e902",
+   :role :foundation-diagnostic-predicate,
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-declared-source-role-and-conjunction,
+   :implementation-credit :none}],
+ :preparation-history
+ "A private harness delimiter/arity correction preceded the successful controls; an auxiliary inventory read printed its result then rejected an extra delimiter. Failed preparations produced no PASS and changed no candidate or source data.",
+ :retained-residuals
+ [{:id "facet/foundation/7c31fb504bea9e1199dd5451",
+   :document-id "D0",
+   :source-occurrence-id
+   "D0/source/90b6b9fe7cf655837c7ab07e8c2383f034592ecdf0738678bf19cb8211bb792d",
+   :raw-sha256
+   "94c2464c8e80464623204b0dfd13fc037ba12c7cf8aad58dddcad0e250c797e4",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/557f36f6329baa78ba7c6a72",
+   :document-id "D0",
+   :source-occurrence-id
+   "D0/source/a013960c5b074e71fc4732b95413a1c3a96e024dcc002edde65b8438c93271d8",
+   :raw-sha256
+   "16e73fa837a58b17d1e4b3ff825b9c8eec0852e7870608b07fedbfed74b2f169",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/0964b041922655167e1ed203",
+   :document-id "D0",
+   :source-occurrence-id
+   "D0/source/a013960c5b074e71fc4732b95413a1c3a96e024dcc002edde65b8438c93271d8",
+   :raw-sha256
+   "7b8e9ce55cc29640b46b7cfb26863b606764ac32fa7b23b546145fb4287e5336",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/4d101049b1e75abe93fb6884",
+   :document-id "D0",
+   :source-occurrence-id
+   "D0/source/94bdf62eb829bee13f649aec85f7210796fb565892ee62ad7f7e5ecc020b1daa",
+   :raw-sha256
+   "f46c3c24fbb182b17e238ea7de4f00f80ec36119295060e3c315ff5852adfe21",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/c86087cf94730ef9980a3832",
+   :document-id "D0",
+   :source-occurrence-id
+   "D0/source/6551dc98bffed951ca853a28af059da88c0a5feb96c44dcd677c7f042bea2d4b",
+   :raw-sha256
+   "45fc15557a3ab5b3a793fade0fbf33fa3e5f09341909a3055e3e05112a99eccc",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/c7d0495c7a6d26d2333ec528",
+   :document-id "D0",
+   :source-occurrence-id
+   "D0/source/b86ccf493f2438ec1ae3921d8600889535dff40c300c7440129ac0799e642d95",
+   :raw-sha256
+   "1a3fe43e01bbc96bae7d24b55f4423d080ebcd44fddf576ae28bd051d57b6339",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/a9ae985fd96dbf7321bbdb8a",
+   :document-id "D2",
+   :source-occurrence-id
+   "D2/source/32eca270f4984dc7108a96731a5845859fae255fe7efad86945b9340575b5171",
+   :raw-sha256
+   "2c75ee014b014527ef60e4208683917c386017333b2bf8f0ab7d95d828fc1278",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/47c3bb040ec283e06dc833e7",
+   :document-id "D2",
+   :source-occurrence-id
+   "D2/source/b64019dc68a964b5c83739c025d3552415114f4044f2b387b4b6d24db84c165d",
+   :raw-sha256
+   "3b5bdc0eedddaefdb4d215a36b949f635a8faecca3138a13d4193705a774ea07",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/32813e8e19ef630f492b45b9",
+   :document-id "D2",
+   :source-occurrence-id
+   "D2/source/7b8b57d0a60213657cfcbe020cf0cc00c43d93a1ede014306331685fce79d6d8",
+   :raw-sha256
+   "78e8859448975941c9fe9eb7e623e1fb23419c9e0da69e6dc8adf052559eff08",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/e5df20136c9aa25dbcd553da",
+   :document-id "D2",
+   :source-occurrence-id
+   "D2/source/f1bf1c105faf48588fa11cf2f15093382fce74d08e526a329313ecd16cf3d340",
+   :raw-sha256
+   "441395426eab72bd5ed057b97243fd5b443a7914fe3cabb2fc72b56c90240f96",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/f23ab3d53800d2a51f426581",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/8a2ddd5d4743d0d0ada8350a4ee7d018c0e5210728c25dc6ae54636e23827589",
+   :raw-sha256
+   "fe35966d7de35a5c4cc75cef78d424aa84045659f9bd80101e6e2eb4ad8a1bf1",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/0ea5b54fb855385ae31f3667",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "180642ddc1caf777bb8b96048c4f521d664806ff9449ac81120b078ca87cbacb",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/f4c40a58461f2ccbefea89f6",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "f29b08e666bea19db1bf2aa2817cebcdcd68d5737e4ef3ed3a2212e70015cbe4",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/fbb7d3d4f6be49a8e0399bb6",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "ddc5b5c6b9f71380c9bdadeb3a2ddaebd8704a5e5e15fdccd14896a025474bc7",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/e21a6cbdb6ea5146161c5d6d",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "c21e47b1d844995bce749d413e6f34d31b938756ef201262fd2c2877d6dd3bea",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/623deccd3561a367bd092e50",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "075eeb217d699bad65b32106b25dc519e1f322a2e0d84add13f100fed00b95a6",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/b5126aaacb8b8908a22fc91c",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "99a6e00c876c58a804b8dc9f90fda066b2b45f523d0333fa2ba4c60917206f60",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/554ca1d9e7f29e6d8391be75",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "fed7bc83f7980283d0b68e996f2ad455d7d289ddd4446fe12368d8f97cc46f6f",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/650d8c3637b02b004bf99bfa",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "657866e2ee70987b13dbec44d3e7e39f901496768b4b6297be9c300384570714",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}
+  {:id "facet/foundation/2c3f80f2ce6e914becf10160",
+   :document-id "D4",
+   :source-occurrence-id
+   "D4/source/f6d16a7b55a5fb64391ff8ba1563bc0d150445b1e9064eb76857aefd32416342",
+   :raw-sha256
+   "21c961aec2696ae499749744029bd3e7317720e8616c570e12026b2d608b98f2",
+   :disposition :other-foundation-producer-or-scope-join-required,
+   :qualification
+   "This attached scope/artifact/decision/terminology/legality predicate is retained. A diagnostic record does not implement it."}],
+ :nonclaims
+ [:no-implementation
+  :no-actual-Diagnostics-or-compiler-execution
+  :no-runtime
+  :no-source-checker-or-release-admission
+  :no-BOOT15-semantic-acceptance
+  :no-Safety107-self-acceptance
+  :no-twenty-foundation-residual-acceptance
+  :no-later-added-predicate-acceptance
+  :no-whole-project-denominator
+  :no-canonical-write
+  :no-GitHub-APPROVE
+  :no-held-retry
+  :no-new-worker],
+ :owner-join-verdicts
+ [{:id "compiler/c15/diagnostic-identity-order",
+   :original-obligation
+   "Derive stable diagnostic identity independently of wording and emit deterministically ordered contextual streams under identical semantic inputs.",
+   :criterion-keys [:identity :record-stream :views],
+   :verdict :pass-exact-declared-diagnostic-operation-conjunction,
+   :criterion-witnesses
+   [{:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 7073,
+     :end-byte 8112,
+     :raw-sha256
+     "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 3340,
+     :end-byte 5321,
+     :raw-sha256
+     "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 8463,
+     :end-byte 9504,
+     :raw-sha256
+     "61b2bc811b3d92a6263188df88f1892f0187c535c47f5b9ad122017493063d95"}],
+   :qualification
+   :unrelated-attached-foundation-facets-remain-residual,
+   :implementation-credit :none}
+  {:id "compiler/c15/diagnostic-redaction",
+   :original-obligation
+   "Prevent public secret/private-output disclosure, retaining useful structure and redaction markers; keep full records only in authorized private stores and suppression in internal audits.",
+   :criterion-keys [:redaction :structured :identity],
+   :verdict :pass-exact-declared-diagnostic-operation-conjunction,
+   :criterion-witnesses
+   [{:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 9505,
+     :end-byte 10813,
+     :raw-sha256
+     "40d6d54a868584fd123f7c1263f27d8191a4218a11f5841dcac46c47c8669a65"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 942,
+     :end-byte 2074,
+     :raw-sha256
+     "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 7073,
+     :end-byte 8112,
+     :raw-sha256
+     "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}],
+   :qualification
+   :unrelated-attached-foundation-facets-remain-residual,
+   :implementation-credit :none}
+  {:id "compiler/c15/diagnostic-views",
+   :original-obligation
+   "Render CLI/IDE/CI/localized/explain/quick-fix views from the same structured data; test semantic fields/remediation rather than localized prose.",
+   :criterion-keys [:views :structured :identity :record-stream],
+   :verdict :pass-exact-declared-diagnostic-operation-conjunction,
+   :criterion-witnesses
+   [{:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 8463,
+     :end-byte 9504,
+     :raw-sha256
+     "61b2bc811b3d92a6263188df88f1892f0187c535c47f5b9ad122017493063d95"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 942,
+     :end-byte 2074,
+     :raw-sha256
+     "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 7073,
+     :end-byte 8112,
+     :raw-sha256
+     "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 3340,
+     :end-byte 5321,
+     :raw-sha256
+     "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"}],
+   :qualification
+   :unrelated-attached-foundation-facets-remain-residual,
+   :implementation-credit :none}
+  {:id "compiler/c15/generated-diagnostic-origins",
+   :original-obligation
+   "Expose actionable primary and related generated/source/producer locations, allowing explicit package privacy redaction of producer internals without losing authorized origin evidence.",
+   :criterion-keys [:identity :structured :record-stream :redaction],
+   :verdict :pass-exact-declared-diagnostic-operation-conjunction,
+   :criterion-witnesses
+   [{:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 7073,
+     :end-byte 8112,
+     :raw-sha256
+     "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 942,
+     :end-byte 2074,
+     :raw-sha256
+     "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 3340,
+     :end-byte 5321,
+     :raw-sha256
+     "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 9505,
+     :end-byte 10813,
+     :raw-sha256
+     "40d6d54a868584fd123f7c1263f27d8191a4218a11f5841dcac46c47c8669a65"}],
+   :qualification
+   :unrelated-attached-foundation-facets-remain-residual,
+   :implementation-credit :none}
+  {:id "gravity/foundation-diagnostic-context",
+   :original-obligation
+   "Explain a rejected foundation contract with its stable owning rule and relevant source/manifest, profile/target, facts and remediation context.",
+   :criterion-keys [:foundation :structured :record-stream :identity],
+   :verdict :pass-exact-declared-diagnostic-operation-conjunction,
+   :criterion-witnesses
+   [{:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 5322,
+     :end-byte 6700,
+     :raw-sha256
+     "9101fecd849c1ca30b4b915c5155360e9524d1756c90b5e4c0837c2579fe0ad6"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 942,
+     :end-byte 2074,
+     :raw-sha256
+     "514c562232a8a9e94c27fd494a3965d44d4c0871aa3b4b29fee01106255a0400"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 3340,
+     :end-byte 5321,
+     :raw-sha256
+     "96571832c17c291cffa75337d78265aaff339b5ceb7cfe24150ca70134434ad0"}
+    {:path "specs/diag-workflow/tasks.md",
+     :marker "diag-implementation-tasks",
+     :task-id
+     "diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order",
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :file-sha256
+     "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+     :start-byte 7073,
+     :end-byte 8112,
+     :raw-sha256
+     "217334a59f83a8f1fcc4a8c5c14317cf7ac2fbd48aba3433cd954ef56f88159b"}],
+   :qualification
+   :unrelated-attached-foundation-facets-remain-residual,
+   :implementation-credit :none}],
+ :candidate
+ {:commit "3f14a02ea78990b9e7090474d63cd1b87a250bf9",
+  :tree "193d02d4d0688368daa8530bc3e32438a58cbf2a",
+  :task-source "916f020c064991fd308550e4e934c0b4443f6d6b",
+  :repository "burn2delete/uniform"},
+ :reviewer-thread "01a18528-d38b-71b3-a24c-2d440396fb28",
+ :reproduction
+ {:path "/tmp/c15-independent-3f14a02e/check.clj",
+  :sha256
+  "36bacf870d0af06908149d387b7557fe674e728690ce62472628a7ab28fa904b",
+  :runtime :core-Clojure-and-immutable-Git-data-only,
+  :lint :zero-errors-zero-warnings},
+ :schema-version 1,
+ :later-applicability
+ "This PASS covers only the declared frozen3f14 source/criteria/trace. The canonical helper must verify unchanged predicates, source bytes, roles and current witnesses before later adoption; no later C11, Lower, Effects or other added criteria inherit this PASS.",
+ :delivery
+ :immutable-private-receipt-for-helper-supported-readback-and-later-canonical-applicability,
+ :controls
+ {:path "/tmp/c15-independent-3f14a02e/controls.edn",
+  :sha256
+  "44f7f5f9be8e07b9a5ae81ab33292a494a5c1e185c1c31138af48c5c04bde077",
+  :positive :pass,
+  :coherent-negative-cases 17,
+  :all-refused true,
+  :fixture-semantics
+  :lost-role-negative-policy-dependency-golden-and-publication-mutations-are-tested-after-coherent-text-changes-not-only-broken-hashes,
+  :compiler-or-Diagnostics-loaded false},
+ :reservation-and-independence
+ {:dispatcher-intake
+  :new-distinct-C15-review-assigned-to-this-existing-owner,
+  :current-helper-readback :no-competing-C15-review-dispatch,
+  :current-canonical-readback :author-working-other-source-cohorts,
+  :existing-local-C15-review-names
+  :historical-task17-scopes-not-this-3f14-source-increment,
+  :authorship :reviewer-authored-Safety107-not-the-new-C15-criteria,
+  :self-authored-107
+  :identity-predicate-witness-conservation-only-no-semantic-self-acceptance,
+  :BOOT15
+  :distinct-BOOT-source-facets-and-bootstrap-producer-role-not-C15-predicate-acceptance},
+ :scope
+ {:new-criterion-blocks 4,
+  :refined-existing-tasks 2,
+  :semantic-conjunctions 38,
+  :C15-occurrences 54,
+  :acceptance
+  :actual-declared-source-output-refusal-dependency-and-current-criterion-conjunction-entailment,
+  :not-accepted
+  [:twenty-other-foundation-facets
+   :actual-diagnostic-execution
+   :bootstrap-criterion-predicate-acceptance
+   :later-C11-Lower-Effects-additions
+   :self-authored-Safety107-semantic-increment
+   :whole-project-denominator],
+  :foundation-diagnostic-facets 13,
+  :retained-heading-and-provenance-contexts 16,
+  :C15-facets 133,
+  :five-original-owner-joins 5},
+ :source-and-field-conservation
+ {:all-four-task-identities-and-open-states :unchanged,
+  :all166-claimed-plus-residual-source-witnesses :authenticated,
+  :task-count-delta 0,
+  :implementation-credit :none,
+  :task-and-roadmap-operations
+  [{:path "specs/diag-workflow/tasks.md",
+    :before-sha256
+    "1b4eaf64d5caedc6458d3c996496c913a609aede8d36d6c67455f26273d782d0",
+    :after-sha256
+    "c49fdd87fa6b2299bb56d919447b3a19d561061a9cbd4544a3744f6a5bab5711",
+    :inserted-texts
+    [" C15 record/stream refinement (Open; existing compiler/c15/structured-diagnostic): Validate actual produced records and streams against the canonical C15 schema, including artifact/diagnostic/rule/message-key, severity/lifecycle, primary and related location roles, origins, phase-available profile/target/syntax identity, typed facts, remediation and redactions. Support error, warning, info, hint and internal-error severity under their C15 emission rules; error prevents compilation/artifact emission and an internal-error retains compiler-invariant bug-report context. Preserve active, suppressed-by-policy, redacted, resolved-by-fix and stale-after-edit lifecycle states. Preserve the source/generated/macro/manifest/package/MIR/domain/backend/runtime location variants, selecting the most actionable source span as primary and downstream/generated context as related. Typed fact fields carry the applicable type/effect/capability/profile/ownership/safety/proof/target/provider/artifact facts, not prose substitutes. Stream records bind stage, input artifact, output artifact if any, diagnostics, actual summary counts by severity, deterministic ordering key, redaction policy and rendering version; attach them to pipeline and target manifests. Summary counts describe actual stream contents and impose no work allowance. Required outputs: schema/catalog/stream and manifest links, related-span/remediation/redaction records and positive/negative producer fixtures. Refuse malformed or missing required fields, invalid phase availability, lost location/origin/fact/remediation data, inconsistent severity summaries or ordering and missing stream-manifest links with the applicable C15-SCHEMA/SPAN/ORIGIN/FACTS/REMEDIATION/ORDER rules. Diagnostics about diagnostics retain producing stage, offending diagnostic identity, schema field, artifact and remediation. Consume actual stage/source/origin/fact products; a supplied schema or success flag cannot prove producer execution. Foundation diagnostic criterion gravity/foundation-diagnostic-context (Open): For an actual rejected D0-D4 or D7 contract, preserve the stable owning rule, failed thesis/layer/profile boundary and downstream document that owns the detailed rule. Include applicable source span or manifest entry, active profile/target, type/effect facts, missing effect/capability, unsafe audit identity when relevant, producing/consuming pass and remediation without inventing phase-unavailable values. Doc tooling, compiler manifest checks and governance consumers use the same diagnostic/artifact model; roadmap policy diagnostics block the unsupported release claim and type/effect errors retain stable IDs. Preserve D1-ARTIFACT-GAP for reported missing provenance edges, D4-INTEROP-UNTRACKED for a reported external-boundary record gap, and D7-MACRO-PROVENANCE and D7-PASS-CONTRACT for the reported origin/IR-fact failures. Required outputs: owning-checker rejection plus its structured contextual diagnostic and source/compiler/profile/target/manifest links. Exercise correctly attributed positive records and reject missing/stale rule, lost required context, raw host prose or substituted producer/pass identity. This record producer consumes the actual owning checker's failure and does not implement its legality rule, architecture decision, release admission or other foundation scope."
+     " Criterion compiler/c15/diagnostic-views (Open): Derive CLI/text, JSON, IDE ranges, CI annotations, localized messages, known-ID explain pages and remediation/quick-fix views from the same validated, resolved C15 records. Preserve diagnostic identity, rule, severity, primary and related span roles, stage/profile/target, typed fact keys/values, remediation category/target, redaction markers and ordering across consumers. Required outputs: actual consumer rendering/quick-fix/explain artifacts, shared-record parity results and golden JSON fixtures. Positive fixtures compare the views and preserve identity/semantic golden results when human wording or localization improves. Reject view-only rule changes, lost origins/remediation, a golden mismatch, plain strings substituted for structured input and goldens keyed only to localized prose; retain C15-GOLDEN and applicable schema/identity/span/origin diagnostics. Consume actual diagnostic producer and identity/order outputs; view presence alone does not establish their implementation. Criterion compiler/c15/diagnostic-redaction (Open): Apply declared publication policy to secret values, private package internals, proprietary macro expansions and sensitive target details. Public views exclude secret values and raw model/tool outputs classified private while retaining enough structure to fix the issue and explicit redaction markers. Full records are kept only in authorized private artifact stores; suppression preserves the internal audit artifact. Package privacy may redact generated producer internals but must retain authorized origin evidence. A private construction record or unresolved digest request is not a resolved diagnostic or safe public projection. Required outputs: redaction/publication decision and report, authorized private/audit record, public view and accepted/refused boundary fixtures. Positive fixtures show useful redacted public output, authorized private access and retained suppressed audit data. Reject secret/private leakage, missing markers or useful context, unauthorized full-record access, lost audit/origin records and premature publication with C15-REDACTION and applicable identity/origin/schema diagnostics. Consume actual source/record/origin and publication-policy facts; no renderer or supplied authorization flag grants private-store authority."]}
+   {:path "docs/component-roadmaps/diag.md",
+    :before-sha256
+    "8e255ce324ecb7c05544c705d161304f18b72fc1b9e477be6d00a331da28da9b",
+    :after-sha256
+    "620ef05cffef78bf878642410a5dd1e8d7dbd61522482d207d6f87f05218f0e5",
+    :kind :derived-projection}],
+  :inventory :146-proposals-and20-residuals-remain-pending,
+  :all833-open-and-records :unchanged,
+  :prior-task-criteria-and-history :byte-preserved,
+  :all240-original-document-bytes :identical,
+  :all931-owning-witnesses :authenticated,
+  :all4819-historical-raw-predicate-spans :conserved-and-authenticated,
+  :exact-inverse :reconstructs-both-declared-predecessor-files,
+  :new-decision-ids 0,
+  :all561-historical-identities :unchanged},
+ :kind :independent-C15-exact-source-criterion-facet-review,
+ :verdict :scoped-pass,
+ :occurrence-verdicts
+ [{:id
+   "C15/source/09d12ab8cca316b45a1ae3489332758e7f1c6abd051087a9b05951dc3e3084bb",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/0e2cc3f2d9fa6ad0fd7bcae1aab103c3ddea9d52efa229b4191d473162d7b0ec",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/11ae262c88b68a8ddabfda33db7e5061f32aebca4d146e5736b47803d6cc6a09",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/16613a2c915ce62c4535d995d2bcfc3f29d4628795948d9edc37eacba13873ca",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/1c70ac268b2ef223e9d88c7736175dfab888aec7d4cad2f78840fd8e2db0a667",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :identity :record-stream :views :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/1cdf46286b0950a1cffff74519026f2a89de080ac030e560af067758daa1d235",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/1e0de57d3960f7fed4eee81a13a57656e98a55d117c5e9d8aab2992589df89df",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :views :redaction :tests],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/2265a8ac5fdebd34bafe3bae8e4d14cef5702a7f1710444c77869b4c7c065f48",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/28358e50fa8e6aa41fff997caaec416066c93f7c7f1e5445c65c7ce8337b582b",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/29cfc5dfe589915b46a5ce546928c06d346f12b3e291b7305a7c8be0dbf44356",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/334fa16a3b3712bbe5ff8199361d9f64ac873d40c11af727ab548b70da5df147",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/387bae761c962c98fd767a131461a4db696c71b6b4e5c373422d8582fe8f9fab",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :views],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/3a53977262bda1accbd27552732ed885938c61d63f010bd70f5e1394c51da6b4",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction :tests],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/54429bff0adca5774809543d59ea6d3f2ed33e17af69f9775cfb7dc5937590fe",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :record-stream :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/670cea30e1cff15944706f7ec76bc96a4638ca92f4c94d7f4ed8ee3668144fec",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/6d27dfba4de7a5c4b16e6d55c309ff50447d85d79c671ccc7b1e4f71e7ae7a3a",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream :identity],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/73eedc73a3a539f8f8f77fe4c41e69f0c0a3a761c44537880b1a2d0c7e81c7c0",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/75569291c9356abab01c43588d889864f41ef360e89cacb1ff561a2de7fc68a3",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :foundation],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/773ac0bb2b7f98ba5c766f3c970506d52cfc6b3edf5967937112c69bcdc1adff",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/779a0c7273bbafcdda181827dff06d1a500e79853bd789def143bc5ab1ffc136",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :record-stream :views],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/78aabd2c57f6998ce6926904d29b679ebf0faef2c22241e421bda9565c5bf33a",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/81aedf8af51b929f19ad7babc417ce06914c643b2bb71dfa5b3d9e660b0ee37a",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/8a667f39fb017aaead29d07f310ee8ad1339d2f284b549edc5c08aefc610deda",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :identity :views :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/8e0c8560caf592bf74402eea592876a42d6842f6d573fcac14bfcd28c3f3fcc3",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/9b476f605b487363e9c07a1523336552f6841b2587afb1b2b8f138f632116105",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/9b8c0d26fa29193c5f978c669dfcd65a3bbe063fbe4562bd3e97f4cf1f8a30d0",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:identity :views],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/9c45b1bd25e0af35852ca2944e0aec098cf8b607ad9377b90d89374ef83ff4a6",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/9e0c86a48ec7f995925a123a2e453da6e10d509d1b1351d0e1ea4c9cd6cb3d00",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/a8253ed5bc441f8f1242d148bc626276b2b6292e6cac4a70bc93395fe4a797ab",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/a8476d48ee133c0117b279e2e54d140a795148cbe06b78b494bbc3e83c4674da",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/aa546c3344ca6380e4dd85d1772f1046d181e46f06586cd8e4f82c937edd9f00",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/abd72c790fdd4d38c072876b5364a68b35f464e7430a53a278cabf1f829e9e71",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/aea1325bae92053e4eab0e028727dd7c384dbbebfa91bb477a6eeb98db8bcd1d",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/b020192090277d73abe94df48ef0b00d52a34c1b77a961aa4d3fff87b3ca86d3",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/b64a02dada68bf11fecfdf0a8b53d5cf7d86297454c1bc2a73d6f774fb8b21a3",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :identity],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/b89abb8d99f694879fa96de9c6541b28ee2967e71a3b4ea7e66da1eb4c6f0d04",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/bd78885828ca06f6d5ead5b47ed17f646d45569acc11fe670de6df3423204fd4",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:views :identity],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/bd80c28556146080b5ce767e3dfbe87e85d3b3446f657331f63ecdad453fcbd5",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction :structured],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/bf614a12bf33cea5eab1be7b67dde2e4910285684685a29df91fa08e658ca90d",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:identity],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/c115e4462ae821de38e12d6ab08eb6f7370e9d5c823bcc8ed7f810cc88b23ed5",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/d13928118fa4cff45780848a76bb451a5212e950ecf67af860287660efccd34a",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/d18d48f1ca4b8c28d313975892e129421ed750d8ce60225b570631c4d33d47b5",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/d7aa619a921177d357fe0a098e3c20d241ea1df285f7bcb696d7e842f1d85361",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/e7339d6512278bbaf1f6fba2adb88a94f59027d409aadbcb23d9cd8b721f753e",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :identity],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/e83ffa1b8aa16110160057dc498fe2b416eb87522d092eeec3b6a4d2cfe2bdb5",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/ea826dc1746daaf24f139165c7636982c3c1ad1d224e8ce5698d8455cf3fd809",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :identity :views],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/ee2b8982af2d057425dad689d1595735b1aaa70e28df46128cc27267e153a5a3",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/f4fcefd5ea4b52e4f0fcc7281df49b9385254007a482a0e81a47dd35f26d54d3",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:structured :identity :record-stream :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/f5b9b259de41314ade508d9900d1313b88f837f8c0a4e7770605195e9cb23668",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/f5df0c1044f8554c506bac875e31cdc32655f84a92377bb2af4e1caf24ade81f",
+   :role :retained-heading-or-provenance-context,
+   :criterion-keys [],
+   :verdict :context-conserved}
+  {:id
+   "C15/source/f6a0709a3879e6e107abd1507a58d4395f47dc436fd13fa6995b656203902795",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/f6fc3c9ba30e9ea176fc3d48d9a9ffc944b60d95397890afd25865458be9c60a",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:record-stream :structured :identity :views :redaction],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/f9b67e32d1e7fd0108d1251e184812a87db24c3fe724fe8034b07037d9699b44",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:record-stream :structured],
+   :verdict :complete-declared-conjunction-pass}
+  {:id
+   "C15/source/fde34c336e6a7f188862b512d977836bb98f982173e39faa576d201ef726a53b",
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys
+   [:structured :record-stream :identity :views :redaction],
+   :verdict :complete-declared-conjunction-pass}],
+ :native-goal
+ {:tool "create_goal/get_goal",
+  :thread-id "01a18528-d38b-71b3-a24c-2d440396fb28",
+  :finite-objective :new-C15-review,
+  :intake-readback
+  {:path "/tmp/c15-independent-3f14a02e/goal-readback.json",
+   :sha256
+   "b0420b63c56e4a4295182114a22bee75e9c11270df8ec96524a4068e089721c7"}},
+ :immutable-inputs
+ [{:path
+   "specs/requirement-reconciliation/c15-complete-current-facet-trace.edn",
+   :blob "17adfd6b942e961c8c6fb64befb4c69c7a396975",
+   :sha256
+   "4cdf3ab199fe1f860f72c9a048290da27ac587515ecf0aa2ee52eb3b5118f034"}
+  {:path
+   "specs/requirement-reconciliation/c15-owner-source-refinement.edn",
+   :blob "82f6e291e4e87a39bd8599a01c15b13d98881b27",
+   :sha256
+   "9745afbaad308cdd66578adee7cc1d6910e0aac9d6a39fc0588cf807abfeb82d"}
+  {:path
+   "specs/requirement-reconciliation/c15-owner-current-witness-applicability.edn",
+   :blob "5be5ba6085f13772e4e2b446122e17f932ac6e70",
+   :sha256
+   "6257615dccb1d66be21e156849812ae686dde6ff726183dfd109ce6c7b911556"}
+  {:path
+   "specs/requirement-reconciliation/all833-c15-owner-current-criterion-conservation.edn",
+   :blob "000280093a37b685cf91a91c015fc1178ca46e4f",
+   :sha256
+   "588f40a4c58a0fd0a9876d63f7e603f317eeab7ac2244600e803230c13afae16"}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+   :blob "71d1bc38ded6cc6a7c108739ddf9fe250f07cd49",
+   :sha256
+   "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25"}],
+ :semantic-review
+ {:record-and-stream
+  "Actual stage products are validated against C15 field, phase-availability, severity, lifecycle, typed fact, remediation and location/origin requirements. Actual severity summaries/order/redaction/rendering metadata bind pipeline and target manifests; a schema, manifest or success flag is insufficient. Early nil metadata and unresolved/private construction restrictions remain explicit.",
+  :identity-and-origin
+  "Resolved identity uses rule, primary artifact, stage and semantic facts independently of wording. Fixed-input determinism, duplicate/unstable ID refusal, primary/related/generated origins and the qualified privacy exception remain preserved.",
+  :views-and-goldens
+  "CLI/text, JSON, IDE ranges, CI annotations, localized messages, explain and remediation/quick-fix consumers use the same validated resolved records. Goldens check all named semantic fields, roles, categories and ordering; localized prose cannot substitute for those checks.",
+  :publication
+  "Actual declared policy governs public versus authorized private/audit products. Secret and private model/tool outputs are excluded, useful structure and redaction markers remain, suppression preserves internal audits, and no renderer or authorization flag grants store authority.",
+  :foundation
+  "Each of13 named D0-D4/D7 diagnostic clauses retains actual owning-checker failure, stable attribution and required context. D1-ARTIFACT-GAP, D4-INTEROP-UNTRACKED, D7-MACRO-PROVENANCE and D7-PASS-CONTRACT remain literal. Diagnostic production does not implement source legality, architecture decisions or release admission.",
+  :dependencies
+  "C2/C3/C4 actual syntax/origin products, C5-C14 actual stage facts, Phase13/14 shared-record/golden consumers, and actual package/governance/security publication-policy inputs retain distinct producer and consumer roles; no all-component completion gate is inferred.",
+  :residual-foundation
+  "All20 attached non-diagnostic architecture/scope/decision/artifact/terminology predicates remain explicitly unjoined and pending. They are not discharged through the five owner links."}}

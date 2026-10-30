@@ -56,17 +56,22 @@ The [retired-owner successor proposals](retired-owner-current-successor-proposal
 preserve all three retired IDs, their current criterion candidates and all
 72 attached facets. Two older context-absorption records are authenticated;
 the support-triage successor is a new proposal with an explicit D2 fixture gap.
-The remaining attached predicates are not discharged by those owner names.
+The [qualified completed-review adoption](completed-source-reviews-qualified-adoption.edn)
+accepts nine primary lineage behaviors while retaining the sealed review's 62
+residual facets and frozen support-triage fixture gap. The later D2 refinement
+has separate six-facet acceptance; no original retirement row is reactivated or
+treated as a whole-task alias. Remaining predicates are not discharged by owner names.
 The [current D2 fixture refinement](d2-triage-current-facet-trace.edn) addresses
 that identified gap in the existing AI task, with exact positive and negative
-source witnesses. Its independent source acceptance and actual future fixture
-execution remain separate from the immutable earlier lineage proposal.
+source witnesses. Its six source conjunctions have qualified independent
+adoption; actual future fixture execution remains separate from source review
+and the immutable earlier lineage proposal.
 The [complete C15 source trace](c15-complete-current-facet-trace.edn) joins all
 133 C15 facets and thirteen foundation diagnostic predicates to current record,
 identity, view, redaction and test criteria. Five original diagnostic owners gain
 exact candidate joins; twenty unrelated foundation attachments remain residuals.
-These source proposals require independent acceptance and confer no execution
-or implementation credit.
+These C15 conjunctions and retained contexts have qualified independent adoption;
+the twenty other foundation attachments, execution and implementation remain separate.
 The [complete C11 source trace](c11-complete-current-facet-trace.edn) joins all
 134 C11 facets and fourteen foundation MIR predicates to the existing five MIR
 tasks. Six original MIR owners gain exact criterion candidates, with other
@@ -75,13 +80,15 @@ binding snapshots; later file-pin updates remain explicit and new criteria
 require independent acceptance.
 The [complete C14 source trace](c14-complete-current-facet-trace.edn) joins all
 122 C14 facets and 23 PERF4 boundary-layout predicates to the existing Lower
-tasks. Four original owners gain exact criterion candidates; source, provider,
-proof and artifact-consumer responsibilities remain distinct and unaccepted.
+tasks. Their C14/PERF4 conjunctions and contexts have qualified independent
+adoption, with source, provider, proof and artifact-consumer responsibilities
+distinct and actual execution unaccepted. Full PERF4 coverage is not conferred.
 The [complete C8 source trace](c8-complete-current-facet-trace.edn) joins all
 103 C8 facets and 50 occurrences to the five existing Effects tasks. Five
 original owners gain exact criterion candidates for computation, separate
-domains, capability evidence, ordering and replay. Full L6/foundation coverage
-and actual compiler or replay execution are not established by these proposals.
+domains, capability evidence, ordering and replay. C8 source conjunctions and
+contexts have qualified independent adoption. Full L6/foundation coverage and
+actual compiler or replay execution remain unestablished.
 The [complete C13 source trace](c13-complete-current-facet-trace.edn) joins all
 120 C13 facets and 47 occurrences to the five existing Opt tasks. Four original
 owners gain exact candidates for reproducibility, legal variant choice, actual

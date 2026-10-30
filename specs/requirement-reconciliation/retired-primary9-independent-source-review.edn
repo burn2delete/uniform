@@ -1,0 +1,2228 @@
+{:semantic-assessment
+ {:shared-reproducibility :single-source-facet-two-memberships,
+  :compiled-examples :separate-profile-import-diagnostic-matrix,
+  :safe-wrapper
+  :separate-proved-or-checked-preconditions-cleanup-audit-boundary-tests,
+  :old-context-absorptions :two-history-only-not-whole-row-aliases,
+  :agent-facet :artifact-generation-without-live-call-authority,
+  :agent-support :execution-evaluation-schema-taint-tool-review,
+  :library
+  :actual-export-profile-effect-capability-allocation-resource-stability-contract,
+  :hermetic-build
+  :declared-compile-time-authority-grant-deny-and-replay-records,
+  :workflow :record-write-replay-read-and-no-repeated-external-effects,
+  :triage-successor :new-explicit-proposal-not-retroaccepted},
+ :findings [],
+ :authenticated
+ {:full-original-context-docs-read ["D1" "D2" "D6" "D7" "D8"],
+  :criteria 7,
+  :matrix-sha256
+  "e3dbaebe54169ef1749c25bfb1fb725cf3e32cb97003f99c8b9c9ab29361e2d7",
+  :attached-facets 72,
+  :memberships 73,
+  :residual-facets 62,
+  :all-literal-source-owners-ranges-context-and-witnesses-verified
+  true,
+  :retirements 3,
+  :primary-behavior-joins 9,
+  :exact-D2-fixture-gaps 1},
+ :tree "3ba2291a78c28adeccf591bc723d84d7f6043c8d",
+ :execution
+ {:compiler-runtime-model-provider-helper-kernel-execution :none,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :new-workers false,
+  :APPROVE false,
+  :target-allocation :none,
+  :held-retry false,
+  :sealed-source-data-checks 37891,
+  :checker-sha256
+  "46523cc70677a82c4a825870960f52fcc6e1514a2d628e02dab75e64efe14c27",
+  :shared-or-canonical-writes false},
+ :candidate "44a15681612db144fe2b7b38a3f285b1ca6d76ba",
+ :conservation
+ {:authenticated-history-spans 4819,
+  :decisions 833,
+  :only-three-retired-owner-candidate-records-change true,
+  :evidence-append-only true,
+  :new-tasks 0,
+  :complete561-history-and-review-scopes :unchanged,
+  :implementation-credit :none,
+  :exact-task-roadmap-change :none-all-bytes-preserved,
+  :all-other-inventory-records-preserved true,
+  :all-other-tree-paths-modes-blobs-conserved true,
+  :normative-documents-and-statuses 240,
+  :decision-statuses {:open 833},
+  :new-decisions 0,
+  :spec-single-proposal-paragraph true,
+  :exact-derived-inventory-reconstructed true},
+ :scope
+ {:nine-primary-behaviors :source-conjunctions-only,
+  :D2-exact-fixture :actionable-gap-at-frozen-subject-not-accepted,
+  :sixty-two-residual-facets :remain-exact-join-required,
+  :new-D2-fixture-acceptance :excluded-separate-review,
+  :no-whole-row-or-milestone-alias true},
+ :qualified-primary-lineages
+ [{:primary-facet-ids
+   ["facet/foundation/81e82ba9ebe6c80f0da7458c"
+    "facet/foundation/033b858fcf81ea48527cb53c"
+    "facet/foundation/f906b9a1f284d1e6c9baff14"
+    "facet/foundation/b299622c70031e5c57f5b88b"
+    "facet/foundation/0612cd01b329cf5f0bf60847"
+    "facet/foundation/74d6b9456610aa7cb23bfdeb"
+    "facet/foundation/0cd03a1cc41c3ecabe52c7d0"
+    "facet/foundation/a773f6f34d03eaf3602e92aa"],
+   :residual
+   "Other attached project/resolve/signing/provenance, compiler artifact/diagnostic/origin, host/workflow/AI, profile/effect/memory specialization and domain-IR predicates retain separate exact-join obligations; the eight primary behavior joins do not entail all43 facets.",
+   :attached-facet-count 43,
+   :retirement-status
+   :retained-history-no-reactivation-or-new-retirement,
+   :original-obligation
+   "Reject external build access and execution in hermetic mode unless the project explicitly grants the corresponding build effects.",
+   :independent-successor-acceptance :pending,
+   :conjunction
+   "The same compile-time/build authority boundary authorizes declared effects against hermetic policy, rejects undeclared filesystem/environment/network/shell/model/tool authority and emits grant/deny and input/output/replay records. Runtime grants cannot substitute for meta authority. The absorbed foundation name does not add a second task or permission check.",
+   :current-successor-criteria
+   ["interface/language/effects/authorize-and-record-build-effect"],
+   :original-id "gravity/hermetic-build-grants",
+   :historical-context
+   {:artifact
+    {:path
+     "specs/requirement-reconciliation/phase-01-core-language.edn",
+     :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+     :sha256
+     "4a0ec1dc74f40e87e83aa9206953963993171a50d5efbede1d31b3f00c4f8200"},
+    :unit-id "language/effects/authorize-and-record-build-effect",
+    :original-context
+    {:original-id "gravity/hermetic-build-grants",
+     :obligation
+     "Reject external build access and execution in hermetic mode unless the project explicitly grants the corresponding build effects.",
+     :observable-boundary nil,
+     :source-facet-ids
+     ["facet/foundation/1449f191974ff754be4ed2e6"
+      "facet/foundation/81e82ba9ebe6c80f0da7458c"
+      "facet/foundation/8a088e39f71e161162011d65"
+      "facet/foundation/b0476099c29ee19fd9b8283b"
+      "facet/foundation/ea9af5667b0b095d5aadf517"
+      "facet/foundation/08fbeb71ac7a9a5ce80d81ec"
+      "facet/foundation/88e6c82eff0c6a6fb53002ab"
+      "facet/foundation/6417313d2f333de7082cf785"
+      "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"
+      "facet/foundation/8e92ffcc004134a32d87e553"
+      "facet/foundation/2c160e28d27085795f49c712"
+      "facet/foundation/10b263fc4b8c7b313581cec9"
+      "facet/foundation/033b858fcf81ea48527cb53c"
+      "facet/foundation/6bfc3a6e135070e2cd47ef2b"
+      "facet/foundation/523b8379cdd950c846157716"
+      "facet/foundation/10da89a275c908917e039346"
+      "facet/foundation/6bf793d5f7c5656aab741023"
+      "facet/foundation/75eec15133c55efd31cbebd3"
+      "facet/foundation/6a3fc5f3c758f30d5f92db8e"
+      "facet/foundation/e8693bed2e6ae49b9763cf26"
+      "facet/foundation/f906b9a1f284d1e6c9baff14"
+      "facet/foundation/d06435ec2f90a888ca20a4ae"
+      "facet/foundation/edf5c560d47b735d8aa5f368"
+      "facet/foundation/36ba293412c0247c08c1cc4d"
+      "facet/foundation/08c03d82bd660a18e3bca17a"
+      "facet/foundation/b299622c70031e5c57f5b88b"
+      "facet/foundation/0612cd01b329cf5f0bf60847"
+      "facet/foundation/7fa2a8cf6bc98341299bc44b"
+      "facet/foundation/74d6b9456610aa7cb23bfdeb"
+      "facet/foundation/7f07fa593703d99ad1924731"
+      "facet/foundation/72ccabc5472257dbd5fdace6"
+      "facet/foundation/802bdd57d445e55e165c0a61"
+      "facet/foundation/ad7c67f86945dad31730e8f7"
+      "facet/foundation/0cd03a1cc41c3ecabe52c7d0"
+      "facet/foundation/0631b3ea5395230e648ee07d"
+      "facet/foundation/b24b59bdbc17e477ea1d6a91"
+      "facet/foundation/20c682df6a71b5af98dda65a"
+      "facet/foundation/206ad8d9325efd0df045a894"
+      "facet/foundation/4e17133c95dbcee6d20b0b8f"
+      "facet/foundation/71e81efa62dbc52154009106"
+      "facet/foundation/89541537263fd84e68adb53b"
+      "facet/foundation/9886e0a21acf9c776dd8e894"
+      "facet/foundation/a773f6f34d03eaf3602e92aa"],
+     :qualification
+     "Complete source predicate retained as an owning-operation context. Role labels do not silently exclude scope; all source/task/history lineage survives and applied nonoverlap requires independent review."},
+    :authority
+    :historical-context-lineage-only-not-independent-current-entailment}}
+  {:additional-source-criterion
+   "interface/language/library/compile-contract-examples",
+   :primary-facet-ids ["facet/foundation/755678d937cbb1f223ce2401"],
+   :residual
+   "The full public contract and safe-wrapper obligation have current candidates. The milestone's actual core/collection/text/math/memory/IO/network/test/IR-inspector surfaces, per-profile compiled examples, support-matrix and reproducibility predicates are separate; contract publication alone does not implement or close those surfaces.",
+   :attached-facet-count 15,
+   :retirement-status
+   :retained-history-no-reactivation-or-new-retirement,
+   :original-obligation
+   "Publish library API profiles, effects, capabilities, allocation behavior and stability while keeping safe-wrapper guarantees.",
+   :independent-successor-acceptance :pending,
+   :conjunction
+   "The current library export producer publishes profile/effect/capability/allocation/resource/failure/stability contracts tied to actual callable exports. The existing unsafe-wrapper owner separately requires checked/proved preconditions, cleanup, audit and boundary tests before safe export. Publishing metadata is not a safe-wrapper proof.",
+   :current-successor-criteria
+   ["interface/language/library/publish-public-contract"
+    "interface/gravity/unsafe-island-safe-api-eligibility"],
+   :original-id "gravity/library-api-contract",
+   :historical-context
+   {:artifact
+    {:path
+     "specs/requirement-reconciliation/phase-01-core-language.edn",
+     :source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+     :sha256
+     "4a0ec1dc74f40e87e83aa9206953963993171a50d5efbede1d31b3f00c4f8200"},
+    :unit-id "language/library/publish-public-contract",
+    :original-context
+    {:original-id "gravity/library-api-contract",
+     :obligation
+     "Publish library API profiles, effects, capabilities, allocation behavior and stability while keeping safe-wrapper guarantees.",
+     :observable-boundary nil,
+     :source-facet-ids
+     ["facet/foundation/28753b4e765ed53eb5d99f78"
+      "facet/foundation/92540536ac2cad5942257171"
+      "facet/foundation/9caed46fb50632a0fb39322a"
+      "facet/foundation/dc5576667f453e627d85f271"
+      "facet/foundation/39e5e9305d1000e5334a0ea5"
+      "facet/foundation/bc7b865a898332f1373ec440"
+      "facet/foundation/6edb3037da6a3ab2f2023bae"
+      "facet/foundation/f607120231191638e5ac4cb7"
+      "facet/foundation/ce8c4ab985665a3c98d1319c"
+      "facet/foundation/3dfa5a468e08da1bed029f06"
+      "facet/foundation/f5c6c4107feed5d647405297"
+      "facet/foundation/5a25912d48373018ff6be6b0"
+      "facet/foundation/755678d937cbb1f223ce2401"
+      "facet/foundation/3028a744efd5956f2c044bd4"
+      "facet/foundation/ed94ec0c3e34fa14b9a6e513"],
+     :qualification
+     "Complete source predicate retained as an owning-operation context. Role labels do not silently exclude scope; all source/task/history lineage survives and applied nonoverlap requires independent review."},
+    :authority
+    :historical-context-lineage-only-not-independent-current-entailment}}
+  {:required-positive-fixture
+   {:source-facet "facet/foundation/f136c5e4884858e8fe73a5eb",
+    :model-calls 1,
+    :schema-validated-tools 1,
+    :human-review-steps 1,
+    :durable-replay-records 1,
+    :shape-authority
+    :D2-Milestone6-explicit-positive-fixture-not-project-work-accounting},
+   :primary-facet-ids ["facet/foundation/f136c5e4884858e8fe73a5eb"],
+   :residual
+   "Agent/workflow declarations, replay log schema and required release products need their actual artifact producers and gate consumers. The shared reproducibility record is one source facet, not duplicated completion credit.",
+   :attached-facet-count 15,
+   :retirement-status
+   :retained-history-no-reactivation-or-new-retirement,
+   :original-obligation
+   "Produce the support-triage workflow slice with a model call, schema-validated tool, human-review event and durable replay record through the ordinary language artifact path.",
+   :independent-successor-acceptance :pending,
+   :conjunction
+   "The AI task executes and evaluates support triage with schema/taint/tool/review/replay products, the Workflow task produces and checks actual typed event/step record-versus-replay behavior, and the facet compiler emits ordinary source-bound agent products without authorizing live calls. These are different producer/consumer roles, not whole-task aliases.",
+   :current-successor-criteria
+   ["interface/domain/support-agent-integration"
+    "interface/language/effects/interpret-workflow-replay"
+    "interface/language/facet/emit-agent-plan"],
+   :exact-current-criterion-gap
+   {:path "specs/domains-workflow/tasks.md",
+    :task-id "ai",
+    :existing-criterion "domain/support-agent-integration",
+    :predicate
+    "The task says declared support triage and requires review/replay artifacts, but does not explicitly bind the D2 one-model/one-schema-tool/one-review/one-durable-record positive fixture.",
+    :required-refinement
+    "Require that exact source-bound positive fixture and real ordinary-pipeline agent/workflow products, rejecting an omitted member or counts supplied without the corresponding operation/event. Keep tool-grant, schema, taint and replay-sensitive clock refusals with their actual owners.",
+    :status :actionable-current-task-refinement-required,
+    :implementation-credit :none},
+   :original-id "gravity/workflow-ai-vertical-slice",
+   :historical-context
+   {:authority
+    :no-historical-successor-alias-found-in-the-retained-core-context-source,
+    :qualification
+    "The recorded retirement remains history. The current successor below is a new explicit proposal based on the actual original D2 predicate and current criteria, not a retroactively accepted alias."}}],
+ :intake
+ {:goal-initial-state nil,
+  :latest-canonical-helper-other-reviewers-checked true,
+  :exact-receipt-search :no-duplicate-retired72-review,
+  :existing-D2-triage6-receipt :separate-review-not-inherited,
+  :true-authored-criterion-conflict false,
+  :reviewer-own-schema25-work :outside-seven-criteria,
+  :prior-goals :remain-complete},
+ :criterion-requirements
+ {"interface/language/effects/authorize-and-record-build-effect"
+  ["Authorize build/compile-time effects against hermetic package/provider/deployment policy"
+   "record each granted effect with input/output/replay identity"
+   "Reject undeclared filesystem/environment/network/shell/model/tool authority"
+   "runtime grants reused in meta context"
+   "missing required replay records"
+   "Build-effect grant/deny log"
+   "positive/negative phase-authority fixtures"],
+  "interface/language/library/publish-public-contract"
+  ["Publish machine-readable namespace/operation contracts"
+   "profile/type/effect/capability, allocation/resource, error/panic, blocking/nondeterminism and stability semantics"
+   "bind them to actual exports"
+   "Reject missing/false export metadata, hidden host behavior, untracked authority"
+   "public declarations inconsistent with callable implementations"
+   "contract-to-implementation conformance/denial evidence"],
+  "interface/gravity/unsafe-island-safe-api-eligibility"
+  ["safe API only when the wrapper proves or checks every required precondition and cleanup obligation"
+   "source-bound audit and actual boundary tests"
+   "internal-only status as a separate permitted boundary"
+   "Reject invalid state escaping into safe code"
+   "missing wrapper test/audit"
+   "unproved precondition"
+   "treating internal-only unsafe code as a safe exported API"
+   "Selected runtime/provider service contracts and actual link/load/service-use evidence"
+   "Expanded source profile/effect/grant facts"],
+  "interface/language/library/compile-contract-examples"
+  ["Compile positive and negative public documentation examples for every claimed major profile"
+   "actual declared imports and contracts"
+   "Reject missing imports, hidden state/authority, unsupported profile claims"
+   "diagnostic outcome disagrees with their public contract"
+   "Profile-qualified example build/diagnostic matrix"],
+  "interface/domain/support-agent-integration"
+  ["Execute and evaluate declared support triage"
+   "prompt provenance, structured-output/taint, durable graph/replay, tool policy"
+   "explicit refund human-review transition"
+   "Reject prompt policy escalation, unvalidated output, missing tool grant or write tool without required review"
+   "agent/tool/prompt/memory/review graph, eval and replay reports"
+   "Dependencies consume schema, workflow outputs"
+   "implementation acceptance unassessed"],
+  "interface/language/effects/interpret-workflow-replay"
+  ["Interpret workflow event/replay operations"
+   "time/random/activity/model/tool/review/retry/compensation records"
+   "Record mode writes and replay mode reads"
+   "concurrent branches replay deterministically with original handler labels/identity"
+   "no R7/R8 recorded-output obligation"
+   "Reject missing/mismatched/reordered replay records"
+   "live nondeterministic work in recorded-output segments"
+   "silent repetition of external effects"
+   "Typed handler/event/step graph, replay log, record-versus-replay traces"
+   "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"
+   "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
+  "interface/language/facet/emit-agent-plan"
+  ["Compile an explicitly activated agent facet"
+   "prompt artifacts, tool schemas, model-call declarations, evaluation hooks, trace requirements and guardrail checks"
+   "retain model/tool effects and capabilities without hidden runtime privilege"
+   "artifact-generation fixture, not authorization for live calls"
+   "Reject missing prompt/tool/model/evaluation/trace/guardrail products"
+   "inactive/unsupported facet use or authority inferred from prompt text"
+   "Versioned source-bound agent artifact bundle"
+   "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"]},
+ :proposal-sha256
+ "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be",
+ :subject-source "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+ :kind :independent-retired3-successor72-source-review,
+ :verdict :qualified-source-pass,
+ :criterion-witnesses
+ {"interface/domain/support-agent-integration"
+  {:id "interface/domain/support-agent-integration",
+   :semantic-source-id "domain/support-agent-integration",
+   :task-links
+   [{:task-id "ai",
+     :path "specs/domains-workflow/tasks.md",
+     :role nil,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+       :start-byte 294518,
+       :end-byte 295544,
+       :raw-sha256
+       "d9127534463aa33a8d32f7b19ee9fe28030b1f4426c958848ae6e940b3db50c0"}]}],
+   :current-raw-predicates
+   ["Criterion `domain/support-agent-integration`: Execute and evaluate declared support triage with prompt provenance, structured-output/taint, durable graph/replay, tool policy and required refund/review transitions. Accepted fixture: Run support triage with prompt provenance, structured validated outputs, retrieval trust, durable replay, tool policy and explicit refund human-review transition. Negative fixture: Reject prompt policy escalation, unvalidated output, missing tool grant or write tool without required review. Required evidence: agent/tool/prompt/memory/review graph, eval and replay reports; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume schema, workflow outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed."]},
+  "interface/gravity/unsafe-island-safe-api-eligibility"
+  {:id "interface/gravity/unsafe-island-safe-api-eligibility",
+   :semantic-source-id "gravity/unsafe-island-safe-api-eligibility",
+   :task-links
+   [{:task-id
+     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+     :path "specs/legality-workflow/tasks.md",
+     :role nil,
+     :criterion-witnesses
+     [{:path "specs/legality-workflow/tasks.md",
+       :marker "legality-implementation-tasks",
+       :task-id
+       "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "9ed7002ee386395e3a3e25a97c1c2c0cf5c0d73398cbcc3538370beec391e403",
+       :start-byte 72209,
+       :end-byte 73327,
+       :raw-sha256
+       "ca6533fcb23488dc70274a3cf8bd9edd73306c892beb07e7c61f992c03175abc"}]}],
+   :current-raw-predicates
+   ["Foundation requirement gravity/unsafe-island-safe-api-eligibility: Expose unsafe-backed functionality as a safe API only when the wrapper proves or checks every required precondition and cleanup obligation, with source-bound audit and actual boundary tests; preserve internal-only status as a separate permitted boundary. Refusals: Reject invalid state escaping into safe code, a missing wrapper test/audit, an unproved precondition or treating internal-only unsafe code as a safe exported API. Evidence: retain the exact source/compiler/profile/target and applicable provider/checker identities, actual positive products and negative diagnostics for this criterion. Consume these actual dependency artifacts (not whole-component completion): runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection - Selected runtime/provider service contracts and actual link/load/service-use evidence; legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks - Expanded source profile/effect/grant facts and checked/delegated/rejected legality products."]},
+  "interface/language/effects/authorize-and-record-build-effect"
+  {:id "interface/language/effects/authorize-and-record-build-effect",
+   :semantic-source-id
+   "language/effects/authorize-and-record-build-effect",
+   :task-links
+   [{:task-id
+     "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+     :path "specs/expand-workflow/tasks.md",
+     :role :build-authority-checker,
+     :criterion-witnesses
+     [{:path "specs/expand-workflow/tasks.md",
+       :marker "expand-implementation-tasks",
+       :task-id
+       "expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "0702f908cd39b8cb22b164e87cf029fd75ee5c0c6b7c6812a9bb9b4d775b73f1",
+       :start-byte 12202,
+       :end-byte 12727,
+       :raw-sha256
+       "499f72e217255af213adee162f3c6610beb36d01e4ac5853f400b9620cfcad47"}]}],
+   :current-raw-predicates
+   ["Decision criterion interface/language/effects/authorize-and-record-build-effect: Authorize build/compile-time effects against hermetic package/provider/deployment policy and record each granted effect with input/output/replay identity. Reject: Reject undeclared filesystem/environment/network/shell/model/tool authority, runtime grants reused in meta context and missing required replay records. Required outputs: Build-effect grant/deny log and hermetic input/replay artifact with positive/negative phase-authority fixtures."]},
+  "interface/language/effects/interpret-workflow-replay"
+  {:id "interface/language/effects/interpret-workflow-replay",
+   :semantic-source-id "language/effects/interpret-workflow-replay",
+   :task-links
+   [{:task-id
+     "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+     :path "specs/runtime-workflow/tasks.md",
+     :role :runtime-effect-resource-and-error-consumer,
+     :criterion-witnesses
+     [{:path "specs/runtime-workflow/tasks.md",
+       :marker "runtime-implementation-tasks",
+       :task-id
+       "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "7bd2eb14476d0d03ef30fc20df89f55fbaca9564f872dad79ffbede5baaa14dc",
+       :start-byte 41280,
+       :end-byte 42647,
+       :raw-sha256
+       "3f81418170b7caa0c1dd7cc29e627c8d47f8db03a432ca2c0272c71e370b6797"}]}],
+   :current-raw-predicates
+   ["Source obligation `language/effects/interpret-workflow-replay`: Interpret workflow event/replay operations and their time/random/activity/model/tool/review/retry/compensation records under the durable replay contract. Accept: Record workflow/event and workflow/replay operations with stable event/step identity, input/output schemas, effects, external results, time/random/activity/model/tool/review/retry/compensation decisions and replay IDs. Record mode writes and replay mode reads; concurrent branches replay deterministically with original handler labels/identity. Preserve R6 graph-declared replay-safe operations only where no R7/R8 recorded-output obligation applies. Reject: Reject missing/mismatched/reordered replay records, live nondeterministic work in recorded-output segments and silent repetition of external effects; emit L11-REPLAY-RACE when durable concurrency lacks a record. Required outputs: Typed handler/event/step graph, replay log, record-versus-replay traces, deterministic branch comparison and refusal diagnostics. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open."]},
+  "interface/language/facet/emit-agent-plan"
+  {:id "interface/language/facet/emit-agent-plan",
+   :semantic-source-id "language/facet/emit-agent-plan",
+   :task-links
+   [{:task-id "ai",
+     :path "specs/domains-workflow/tasks.md",
+     :role :agent-artifact-producer,
+     :criterion-witnesses
+     [{:path "specs/domains-workflow/tasks.md",
+       :marker "domains-implementation-tasks",
+       :task-id "ai",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "76b7e1396be346a9a65e4a9713e27302f1e35f0c7b4bdff863eae4c7197d22b1",
+       :start-byte 295575,
+       :end-byte 296792,
+       :raw-sha256
+       "23f32494485b4b19e27a3461e4e081dd65d9ef1b795badf3697aaf0cd56f25f4"}]}],
+   :current-raw-predicates
+   ["Source obligation `language/facet/emit-agent-plan`: Emit an agent facet's prompt/tool/model/evaluation/trace/guardrail artifacts with explicit model/tool effects and capabilities. Accept: Compile an explicitly activated agent facet into prompt artifacts, tool schemas, model-call declarations, evaluation hooks, trace requirements and guardrail checks; retain model/tool effects and capabilities without hidden runtime privilege. The SupportAgent example is an artifact-generation fixture, not authorization for live calls. Reject: Reject missing prompt/tool/model/evaluation/trace/guardrail products, inactive/unsupported facet use or authority inferred from prompt text. Required outputs: Versioned source-bound agent artifact bundle and accepted fixture plus missing-product/effect/grant rejection diagnostics. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime; they do not require blanket component completion. Implementation status remains Open."]},
+  "interface/language/library/compile-contract-examples"
+  {:id "interface/language/library/compile-contract-examples",
+   :semantic-source-id "language/library/compile-contract-examples",
+   :task-links
+   [{:task-id
+     "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+     :path "specs/stdlib-workflow/tasks.md",
+     :role :library-operation-producer,
+     :criterion-witnesses
+     [{:path "specs/stdlib-workflow/tasks.md",
+       :marker "stdlib-implementation-tasks",
+       :task-id
+       "stdlib/remaining-tasks-and-evidence/complete-pure-core-collections-text-numeric-and-testing-apis",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+       :start-byte 5805,
+       :end-byte 6316,
+       :raw-sha256
+       "08152b372225f28d153c9fcb14a24209095b62d8d53deeb887fa0cf03d7f89c6"}]}],
+   :current-raw-predicates
+   ["Decision criterion interface/language/library/compile-contract-examples: Compile positive and negative public documentation examples for every claimed major profile with actual declared imports and contracts. Reject: Reject missing imports, hidden state/authority, unsupported profile claims and examples whose diagnostic outcome disagrees with their public contract. Required outputs: Profile-qualified example build/diagnostic matrix tied to namespace/API/source versions and executable conformance artifacts."]},
+  "interface/language/library/publish-public-contract"
+  {:id "interface/language/library/publish-public-contract",
+   :semantic-source-id "language/library/publish-public-contract",
+   :task-links
+   [{:task-id
+     "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+     :path "specs/stdlib-workflow/tasks.md",
+     :role :public-library-contract-producer,
+     :criterion-witnesses
+     [{:path "specs/stdlib-workflow/tasks.md",
+       :marker "stdlib-implementation-tasks",
+       :task-id
+       "stdlib/remaining-tasks-and-evidence/reconcile-export-inventory-with-actual-callable-implementations",
+       :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+       :file-sha256
+       "e3b30356c8b98853ebab5a0f988f78517c747497dddd8f93ac9e5a24481eff25",
+       :start-byte 2759,
+       :end-byte 3312,
+       :raw-sha256
+       "0df8d8dbb244d886e67ec2458c437da7268047e02c31256ca6de14477ad24262"}]}],
+   :current-raw-predicates
+   ["Decision criterion interface/language/library/publish-public-contract: Publish machine-readable namespace/operation contracts for profile/type/effect/capability, allocation/resource, error/panic, blocking/nondeterminism and stability semantics; bind them to actual exports. Reject: Reject missing/false export metadata, hidden host behavior, untracked authority and public declarations inconsistent with callable implementations. Required outputs: Versioned public API/export/profile manifests and contract-to-implementation conformance/denial evidence."]}},
+ :limits
+ [:exact-frozen-subject-only
+  :no-later-head-acceptance
+  :later-applicability-separate
+  :no-implementation-acceptance
+  :no-project-or-final-denominator-credit
+  :no-clearance-of-Metadata372-Policy14-fixedwidth-OWN-old303-or569-held-actions],
+ :inert-corruption-controls
+ [{:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "Execute and evaluate declared support triage"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "Execute and evaluate declared support triage"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "prompt provenance, structured-output/taint, durable graph/replay, tool policy"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "prompt provenance, structured-output/taint, durable graph/replay, tool policy"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "explicit refund human-review transition"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "explicit refund human-review transition"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "Reject prompt policy escalation, unvalidated output, missing tool grant or write tool without required review"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "Reject prompt policy escalation, unvalidated output, missing tool grant or write tool without required review"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "agent/tool/prompt/memory/review graph, eval and replay reports"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "agent/tool/prompt/memory/review graph, eval and replay reports"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "Dependencies consume schema, workflow outputs"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "Dependencies consume schema, workflow outputs"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "implementation acceptance unassessed"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/domain/support-agent-integration"
+    "implementation acceptance unassessed"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "safe API only when the wrapper proves or checks every required precondition and cleanup obligation"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "safe API only when the wrapper proves or checks every required precondition and cleanup obligation"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "source-bound audit and actual boundary tests"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "source-bound audit and actual boundary tests"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "internal-only status as a separate permitted boundary"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "internal-only status as a separate permitted boundary"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "Reject invalid state escaping into safe code"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "Reject invalid state escaping into safe code"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "missing wrapper test/audit"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "missing wrapper test/audit"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "unproved precondition"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "unproved precondition"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "treating internal-only unsafe code as a safe exported API"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "treating internal-only unsafe code as a safe exported API"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "Selected runtime/provider service contracts and actual link/load/service-use evidence"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "Selected runtime/provider service contracts and actual link/load/service-use evidence"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "Expanded source profile/effect/grant facts"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "Expanded source profile/effect/grant facts"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "Authorize build/compile-time effects against hermetic package/provider/deployment policy"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "Authorize build/compile-time effects against hermetic package/provider/deployment policy"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "record each granted effect with input/output/replay identity"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "record each granted effect with input/output/replay identity"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "Reject undeclared filesystem/environment/network/shell/model/tool authority"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "Reject undeclared filesystem/environment/network/shell/model/tool authority"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "runtime grants reused in meta context"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "runtime grants reused in meta context"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "missing required replay records"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "missing required replay records"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "Build-effect grant/deny log"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "Build-effect grant/deny log"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "positive/negative phase-authority fixtures"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/authorize-and-record-build-effect"
+    "positive/negative phase-authority fixtures"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Interpret workflow event/replay operations"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Interpret workflow event/replay operations"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "time/random/activity/model/tool/review/retry/compensation records"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "time/random/activity/model/tool/review/retry/compensation records"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Record mode writes and replay mode reads"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Record mode writes and replay mode reads"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "concurrent branches replay deterministically with original handler labels/identity"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "concurrent branches replay deterministically with original handler labels/identity"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "no R7/R8 recorded-output obligation"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "no R7/R8 recorded-output obligation"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Reject missing/mismatched/reordered replay records"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Reject missing/mismatched/reordered replay records"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "live nondeterministic work in recorded-output segments"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "live nondeterministic work in recorded-output segments"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "silent repetition of external effects"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "silent repetition of external effects"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Typed handler/event/step graph, replay log, record-versus-replay traces"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "Typed handler/event/step graph, replay log, record-versus-replay traces"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/effects/interpret-workflow-replay"
+    "auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "Compile an explicitly activated agent facet"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "Compile an explicitly activated agent facet"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "prompt artifacts, tool schemas, model-call declarations, evaluation hooks, trace requirements and guardrail checks"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "prompt artifacts, tool schemas, model-call declarations, evaluation hooks, trace requirements and guardrail checks"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "retain model/tool effects and capabilities without hidden runtime privilege"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "retain model/tool effects and capabilities without hidden runtime privilege"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "artifact-generation fixture, not authorization for live calls"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "artifact-generation fixture, not authorization for live calls"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "Reject missing prompt/tool/model/evaluation/trace/guardrail products"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "Reject missing prompt/tool/model/evaluation/trace/guardrail products"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "inactive/unsupported facet use or authority inferred from prompt text"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "inactive/unsupported facet use or authority inferred from prompt text"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "Versioned source-bound agent artifact bundle"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "Versioned source-bound agent artifact bundle"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/facet/emit-agent-plan"
+    "expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "Compile positive and negative public documentation examples for every claimed major profile"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "Compile positive and negative public documentation examples for every claimed major profile"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "actual declared imports and contracts"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "actual declared imports and contracts"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "Reject missing imports, hidden state/authority, unsupported profile claims"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "Reject missing imports, hidden state/authority, unsupported profile claims"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "diagnostic outcome disagrees with their public contract"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "diagnostic outcome disagrees with their public contract"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "Profile-qualified example build/diagnostic matrix"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/compile-contract-examples"
+    "Profile-qualified example build/diagnostic matrix"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "Publish machine-readable namespace/operation contracts"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "Publish machine-readable namespace/operation contracts"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "profile/type/effect/capability, allocation/resource, error/panic, blocking/nondeterminism and stability semantics"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "profile/type/effect/capability, allocation/resource, error/panic, blocking/nondeterminism and stability semantics"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "bind them to actual exports"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "bind them to actual exports"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "Reject missing/false export metadata, hidden host behavior, untracked authority"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "Reject missing/false export metadata, hidden host behavior, untracked authority"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "public declarations inconsistent with callable implementations"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "public declarations inconsistent with callable implementations"]}
+  {:refused true,
+   :reason
+   [:actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "contract-to-implementation conformance/denial evidence"],
+   :case
+   [:missing-actual-obligation-output-refusal-dependency
+    "interface/language/library/publish-public-contract"
+    "contract-to-implementation conformance/denial evidence"]}
+  {:refused true,
+   :reason
+   [:producer-consumer-task-direction
+    "interface/domain/support-agent-integration"],
+   :case
+   [:wrong-role-direction
+    "interface/domain/support-agent-integration"]}
+  {:refused true,
+   :reason [:full-file-pin "specs/domains-workflow/tasks.md"],
+   :case
+   [:forged-file-pin "interface/domain/support-agent-integration"]}
+  {:refused true,
+   :reason [:literal-raw-pin "specs/domains-workflow/tasks.md" 294519],
+   :case
+   [:stale-source-witness
+    "interface/domain/support-agent-integration"]}
+  {:refused true,
+   :reason
+   [:producer-consumer-task-direction
+    "interface/gravity/unsafe-island-safe-api-eligibility"],
+   :case
+   [:wrong-role-direction
+    "interface/gravity/unsafe-island-safe-api-eligibility"]}
+  {:refused true,
+   :reason [:full-file-pin "specs/legality-workflow/tasks.md"],
+   :case
+   [:forged-file-pin
+    "interface/gravity/unsafe-island-safe-api-eligibility"]}
+  {:refused true,
+   :reason [:literal-raw-pin "specs/legality-workflow/tasks.md" 72210],
+   :case
+   [:stale-source-witness
+    "interface/gravity/unsafe-island-safe-api-eligibility"]}
+  {:refused true,
+   :reason
+   [:producer-consumer-task-direction
+    "interface/language/effects/authorize-and-record-build-effect"],
+   :case
+   [:wrong-role-direction
+    "interface/language/effects/authorize-and-record-build-effect"]}
+  {:refused true,
+   :reason [:full-file-pin "specs/expand-workflow/tasks.md"],
+   :case
+   [:forged-file-pin
+    "interface/language/effects/authorize-and-record-build-effect"]}
+  {:refused true,
+   :reason [:literal-raw-pin "specs/expand-workflow/tasks.md" 12203],
+   :case
+   [:stale-source-witness
+    "interface/language/effects/authorize-and-record-build-effect"]}
+  {:refused true,
+   :reason
+   [:producer-consumer-task-direction
+    "interface/language/effects/interpret-workflow-replay"],
+   :case
+   [:wrong-role-direction
+    "interface/language/effects/interpret-workflow-replay"]}
+  {:refused true,
+   :reason [:full-file-pin "specs/runtime-workflow/tasks.md"],
+   :case
+   [:forged-file-pin
+    "interface/language/effects/interpret-workflow-replay"]}
+  {:refused true,
+   :reason [:literal-raw-pin "specs/runtime-workflow/tasks.md" 41281],
+   :case
+   [:stale-source-witness
+    "interface/language/effects/interpret-workflow-replay"]}
+  {:refused true,
+   :reason
+   [:producer-consumer-task-direction
+    "interface/language/facet/emit-agent-plan"],
+   :case
+   [:wrong-role-direction "interface/language/facet/emit-agent-plan"]}
+  {:refused true,
+   :reason [:full-file-pin "specs/domains-workflow/tasks.md"],
+   :case [:forged-file-pin "interface/language/facet/emit-agent-plan"]}
+  {:refused true,
+   :reason [:literal-raw-pin "specs/domains-workflow/tasks.md" 295576],
+   :case
+   [:stale-source-witness "interface/language/facet/emit-agent-plan"]}
+  {:refused true,
+   :reason
+   [:producer-consumer-task-direction
+    "interface/language/library/compile-contract-examples"],
+   :case
+   [:wrong-role-direction
+    "interface/language/library/compile-contract-examples"]}
+  {:refused true,
+   :reason [:full-file-pin "specs/stdlib-workflow/tasks.md"],
+   :case
+   [:forged-file-pin
+    "interface/language/library/compile-contract-examples"]}
+  {:refused true,
+   :reason [:literal-raw-pin "specs/stdlib-workflow/tasks.md" 5806],
+   :case
+   [:stale-source-witness
+    "interface/language/library/compile-contract-examples"]}
+  {:refused true,
+   :reason
+   [:producer-consumer-task-direction
+    "interface/language/library/publish-public-contract"],
+   :case
+   [:wrong-role-direction
+    "interface/language/library/publish-public-contract"]}
+  {:refused true,
+   :reason [:full-file-pin "specs/stdlib-workflow/tasks.md"],
+   :case
+   [:forged-file-pin
+    "interface/language/library/publish-public-contract"]}
+  {:refused true,
+   :reason [:literal-raw-pin "specs/stdlib-workflow/tasks.md" 2760],
+   :case
+   [:stale-source-witness
+    "interface/language/library/publish-public-contract"]}
+  {:refused true,
+   :reason
+   [:complete-distinct-successor-conjunction
+    "gravity/hermetic-build-grants"],
+   :case
+   [:missing-successor-role
+    "gravity/hermetic-build-grants"
+    "interface/language/effects/authorize-and-record-build-effect"]}
+  {:refused true,
+   :reason
+   [:complete-distinct-successor-conjunction
+    "gravity/library-api-contract"],
+   :case
+   [:missing-successor-role
+    "gravity/library-api-contract"
+    "interface/language/library/publish-public-contract"]}
+  {:refused true,
+   :reason
+   [:complete-distinct-successor-conjunction
+    "gravity/library-api-contract"],
+   :case
+   [:missing-successor-role
+    "gravity/library-api-contract"
+    "interface/gravity/unsafe-island-safe-api-eligibility"]}
+  {:refused true,
+   :reason
+   [:complete-distinct-successor-conjunction
+    "gravity/workflow-ai-vertical-slice"],
+   :case
+   [:missing-successor-role
+    "gravity/workflow-ai-vertical-slice"
+    "interface/domain/support-agent-integration"]}
+  {:refused true,
+   :reason
+   [:complete-distinct-successor-conjunction
+    "gravity/workflow-ai-vertical-slice"],
+   :case
+   [:missing-successor-role
+    "gravity/workflow-ai-vertical-slice"
+    "interface/language/effects/interpret-workflow-replay"]}
+  {:refused true,
+   :reason
+   [:complete-distinct-successor-conjunction
+    "gravity/workflow-ai-vertical-slice"],
+   :case
+   [:missing-successor-role
+    "gravity/workflow-ai-vertical-slice"
+    "interface/language/facet/emit-agent-plan"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    5506],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/1449f191974ff754be4ed2e6"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/1449f191974ff754be4ed2e6"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/1449f191974ff754be4ed2e6"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    5721],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/81e82ba9ebe6c80f0da7458c"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/81e82ba9ebe6c80f0da7458c"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/81e82ba9ebe6c80f0da7458c"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    8268],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/8a088e39f71e161162011d65"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/8a088e39f71e161162011d65"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/8a088e39f71e161162011d65"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9350],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/b0476099c29ee19fd9b8283b"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/b0476099c29ee19fd9b8283b"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/b0476099c29ee19fd9b8283b"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9374],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/ea9af5667b0b095d5aadf517"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/ea9af5667b0b095d5aadf517"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/ea9af5667b0b095d5aadf517"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9395],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/08fbeb71ac7a9a5ce80d81ec"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/08fbeb71ac7a9a5ce80d81ec"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/08fbeb71ac7a9a5ce80d81ec"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9432],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/88e6c82eff0c6a6fb53002ab"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/88e6c82eff0c6a6fb53002ab"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/88e6c82eff0c6a6fb53002ab"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9461],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/6417313d2f333de7082cf785"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/6417313d2f333de7082cf785"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/6417313d2f333de7082cf785"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9521],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/f4ea0b5d5c73e8b9467f9cc7"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9822],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/8e92ffcc004134a32d87e553"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/8e92ffcc004134a32d87e553"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/8e92ffcc004134a32d87e553"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    9976],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/2c160e28d27085795f49c712"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/2c160e28d27085795f49c712"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/2c160e28d27085795f49c712"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    10180],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/10b263fc4b8c7b313581cec9"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/10b263fc4b8c7b313581cec9"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/10b263fc4b8c7b313581cec9"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    10252],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/033b858fcf81ea48527cb53c"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/033b858fcf81ea48527cb53c"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/033b858fcf81ea48527cb53c"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    10822],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/6bfc3a6e135070e2cd47ef2b"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/6bfc3a6e135070e2cd47ef2b"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/6bfc3a6e135070e2cd47ef2b"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    11215],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/523b8379cdd950c846157716"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/523b8379cdd950c846157716"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/523b8379cdd950c846157716"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    11480],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/10da89a275c908917e039346"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/10da89a275c908917e039346"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/10da89a275c908917e039346"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    11545],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/6bf793d5f7c5656aab741023"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/6bf793d5f7c5656aab741023"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/6bf793d5f7c5656aab741023"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/002-d1-system-architecture-overview.md"
+    11616],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/75eec15133c55efd31cbebd3"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/75eec15133c55efd31cbebd3"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/75eec15133c55efd31cbebd3"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7070],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/6a3fc5f3c758f30d5f92db8e"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/6a3fc5f3c758f30d5f92db8e"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/6a3fc5f3c758f30d5f92db8e"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7078],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/e8693bed2e6ae49b9763cf26"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/e8693bed2e6ae49b9763cf26"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/e8693bed2e6ae49b9763cf26"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7149],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/f906b9a1f284d1e6c9baff14"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/f906b9a1f284d1e6c9baff14"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/f906b9a1f284d1e6c9baff14"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7175],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/d06435ec2f90a888ca20a4ae"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/d06435ec2f90a888ca20a4ae"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/d06435ec2f90a888ca20a4ae"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7242],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/edf5c560d47b735d8aa5f368"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/edf5c560d47b735d8aa5f368"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/edf5c560d47b735d8aa5f368"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7275],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/36ba293412c0247c08c1cc4d"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/36ba293412c0247c08c1cc4d"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/36ba293412c0247c08c1cc4d"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7304],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/08c03d82bd660a18e3bca17a"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/08c03d82bd660a18e3bca17a"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/08c03d82bd660a18e3bca17a"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7351],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/b299622c70031e5c57f5b88b"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/b299622c70031e5c57f5b88b"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/b299622c70031e5c57f5b88b"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7404],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/0612cd01b329cf5f0bf60847"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/0612cd01b329cf5f0bf60847"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/0612cd01b329cf5f0bf60847"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7538],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/7fa2a8cf6bc98341299bc44b"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/7fa2a8cf6bc98341299bc44b"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/7fa2a8cf6bc98341299bc44b"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7640],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/74d6b9456610aa7cb23bfdeb"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/74d6b9456610aa7cb23bfdeb"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/74d6b9456610aa7cb23bfdeb"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7759],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/7f07fa593703d99ad1924731"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/7f07fa593703d99ad1924731"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/7f07fa593703d99ad1924731"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7859],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/356a5c17a41bbcbf09d5856a"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/356a5c17a41bbcbf09d5856a"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/356a5c17a41bbcbf09d5856a"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7944],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/b90b381d3891213365c90a44"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/b90b381d3891213365c90a44"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/b90b381d3891213365c90a44"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    7994],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/2482cd6586c76c087d4eed23"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/2482cd6586c76c087d4eed23"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/2482cd6586c76c087d4eed23"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8008],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/b0570b87a1510365300b31bb"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/b0570b87a1510365300b31bb"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/b0570b87a1510365300b31bb"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8119],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/844534eca1a60a18352d0b6a"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/844534eca1a60a18352d0b6a"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/844534eca1a60a18352d0b6a"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8204],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/45607af0ad3dce1fbc3c5aef"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/45607af0ad3dce1fbc3c5aef"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/45607af0ad3dce1fbc3c5aef"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8232],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/f136c5e4884858e8fe73a5eb"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/f136c5e4884858e8fe73a5eb"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/f136c5e4884858e8fe73a5eb"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8361],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/a2659431126f56f7c3b00841"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/a2659431126f56f7c3b00841"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/a2659431126f56f7c3b00841"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8523],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/22e991514a0487e8af6bfe1c"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/22e991514a0487e8af6bfe1c"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/22e991514a0487e8af6bfe1c"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8643],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/3bfecb436abb55b860f3f88d"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/3bfecb436abb55b860f3f88d"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/3bfecb436abb55b860f3f88d"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8660],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/d2a83acd2add7bf4821da9c1"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/d2a83acd2add7bf4821da9c1"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/d2a83acd2add7bf4821da9c1"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8712],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/2055ee0db6dd8eb4d007bd07"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/2055ee0db6dd8eb4d007bd07"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/2055ee0db6dd8eb4d007bd07"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8730],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/30c2d905b4b095aa09dc46b4"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/30c2d905b4b095aa09dc46b4"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/30c2d905b4b095aa09dc46b4"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8823],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/28753b4e765ed53eb5d99f78"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/28753b4e765ed53eb5d99f78"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/28753b4e765ed53eb5d99f78"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8919],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/92540536ac2cad5942257171"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/92540536ac2cad5942257171"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/92540536ac2cad5942257171"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8927],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/9caed46fb50632a0fb39322a"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/9caed46fb50632a0fb39322a"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/9caed46fb50632a0fb39322a"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8943],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/dc5576667f453e627d85f271"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/dc5576667f453e627d85f271"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/dc5576667f453e627d85f271"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8958],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/39e5e9305d1000e5334a0ea5"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/39e5e9305d1000e5334a0ea5"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/39e5e9305d1000e5334a0ea5"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8966],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/bc7b865a898332f1373ec440"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/bc7b865a898332f1373ec440"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/bc7b865a898332f1373ec440"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    8995],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/6edb3037da6a3ab2f2023bae"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/6edb3037da6a3ab2f2023bae"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/6edb3037da6a3ab2f2023bae"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    9022],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/f607120231191638e5ac4cb7"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/f607120231191638e5ac4cb7"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/f607120231191638e5ac4cb7"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    9072],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/ce8c4ab985665a3c98d1319c"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/ce8c4ab985665a3c98d1319c"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/ce8c4ab985665a3c98d1319c"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    9157],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/3dfa5a468e08da1bed029f06"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/3dfa5a468e08da1bed029f06"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/3dfa5a468e08da1bed029f06"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    9174],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/f5c6c4107feed5d647405297"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/f5c6c4107feed5d647405297"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/f5c6c4107feed5d647405297"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    9187],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/5a25912d48373018ff6be6b0"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/5a25912d48373018ff6be6b0"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/5a25912d48373018ff6be6b0"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    9244],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/755678d937cbb1f223ce2401"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/755678d937cbb1f223ce2401"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/755678d937cbb1f223ce2401"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    10317],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/3028a744efd5956f2c044bd4"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/3028a744efd5956f2c044bd4"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/3028a744efd5956f2c044bd4"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    11351],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/ed94ec0c3e34fa14b9a6e513"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/ed94ec0c3e34fa14b9a6e513"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/ed94ec0c3e34fa14b9a6e513"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md"
+    12243],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/61ad39ce8667564b4f87c0b9"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/61ad39ce8667564b4f87c0b9"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/61ad39ce8667564b4f87c0b9"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    2082],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/72ccabc5472257dbd5fdace6"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/72ccabc5472257dbd5fdace6"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/72ccabc5472257dbd5fdace6"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    2285],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/802bdd57d445e55e165c0a61"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/802bdd57d445e55e165c0a61"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/802bdd57d445e55e165c0a61"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    2545],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/ad7c67f86945dad31730e8f7"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/ad7c67f86945dad31730e8f7"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/ad7c67f86945dad31730e8f7"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    2878],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/0cd03a1cc41c3ecabe52c7d0"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/0cd03a1cc41c3ecabe52c7d0"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/0cd03a1cc41c3ecabe52c7d0"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3275],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/0631b3ea5395230e648ee07d"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/0631b3ea5395230e648ee07d"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/0631b3ea5395230e648ee07d"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3303],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/b24b59bdbc17e477ea1d6a91"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/b24b59bdbc17e477ea1d6a91"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/b24b59bdbc17e477ea1d6a91"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3339],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/20c682df6a71b5af98dda65a"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/20c682df6a71b5af98dda65a"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/20c682df6a71b5af98dda65a"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3392],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/206ad8d9325efd0df045a894"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/206ad8d9325efd0df045a894"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/206ad8d9325efd0df045a894"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3432],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/4e17133c95dbcee6d20b0b8f"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/4e17133c95dbcee6d20b0b8f"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/4e17133c95dbcee6d20b0b8f"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3469],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/71e81efa62dbc52154009106"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/71e81efa62dbc52154009106"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/71e81efa62dbc52154009106"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3506],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/89541537263fd84e68adb53b"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/89541537263fd84e68adb53b"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/89541537263fd84e68adb53b"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md"
+    3540],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/9886e0a21acf9c776dd8e894"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/9886e0a21acf9c776dd8e894"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/9886e0a21acf9c776dd8e894"]}
+  {:refused true,
+   :reason
+   [:literal-raw-pin
+    "docs/phase-00-foundation-and-thesis/008-d7-extensibility-philosophy.md"
+    4929],
+   :case
+   [:coherent-forged-original-source
+    "facet/foundation/a773f6f34d03eaf3602e92aa"]}
+  {:refused true,
+   :reason
+   [:exact-scope-state "facet/foundation/a773f6f34d03eaf3602e92aa"],
+   :case
+   [:false-whole-row-or-residual-acceptance
+    "facet/foundation/a773f6f34d03eaf3602e92aa"]}
+  {:refused true,
+   :reason
+   [:no-retroactive-successor-acceptance
+    "gravity/hermetic-build-grants"],
+   :case
+   [:retroactive-retirement-or-successor-promotion
+    "gravity/hermetic-build-grants"]}
+  {:refused true,
+   :reason
+   [:no-retroactive-successor-acceptance
+    "gravity/library-api-contract"],
+   :case
+   [:retroactive-retirement-or-successor-promotion
+    "gravity/library-api-contract"]}
+  {:refused true,
+   :reason
+   [:no-retroactive-successor-acceptance
+    "gravity/workflow-ai-vertical-slice"],
+   :case
+   [:retroactive-retirement-or-successor-promotion
+    "gravity/workflow-ai-vertical-slice"]}
+  {:refused true,
+   :reason :exact-fixture-gap-left-open,
+   :case :D2-fixture-already-covered}
+  {:refused true,
+   :reason :exact-D2-fixture-shape-preserved-not-accepted,
+   :case [:lost-D2-required-member :model-calls]}
+  {:refused true,
+   :reason :exact-D2-fixture-shape-preserved-not-accepted,
+   :case [:lost-D2-required-member :schema-validated-tools]}
+  {:refused true,
+   :reason :exact-D2-fixture-shape-preserved-not-accepted,
+   :case [:lost-D2-required-member :human-review-steps]}
+  {:refused true,
+   :reason :exact-D2-fixture-shape-preserved-not-accepted,
+   :case [:lost-D2-required-member :durable-replay-records]}
+  {:refused true,
+   :reason
+   [:complete-distinct-successor-conjunction
+    "gravity/library-api-contract"],
+   :case :safe-wrapper-replaced-by-metadata}
+  {:refused true,
+   :reason :unique-source-population,
+   :case :shared-reproducibility-counted-twice}
+  {:refused true,
+   :reason
+   [:no-role-or-scope-promotion
+    "interface/gravity/unsafe-island-safe-api-eligibility"
+    "metadata alone proves wrapper safety"],
+   :case
+   [:scope-or-permission-promotion
+    "interface/gravity/unsafe-island-safe-api-eligibility"]}
+  {:refused true,
+   :reason
+   [:no-role-or-scope-promotion
+    "interface/language/effects/authorize-and-record-build-effect"
+    "runtime grants authorize compile-time effects"],
+   :case
+   [:scope-or-permission-promotion
+    "interface/language/effects/authorize-and-record-build-effect"]}
+  {:refused true,
+   :reason
+   [:no-role-or-scope-promotion
+    "interface/language/facet/emit-agent-plan"
+    "agent artifacts authorize live calls"],
+   :case
+   [:scope-or-permission-promotion
+    "interface/language/facet/emit-agent-plan"]}
+  {:refused true,
+   :reason
+   [:no-role-or-scope-promotion
+    "interface/language/library/publish-public-contract"
+    "retired name discharges all attached facets"],
+   :case
+   [:scope-or-permission-promotion
+    "interface/language/library/publish-public-contract"]}
+  {:refused true,
+   :reason :exact-inventory-conservation,
+   :case :derived-inventory-erases-residual}
+  {:refused true,
+   :reason :old-context-not-whole-row-alias,
+   :case
+   [:old-context-or-triage-promoted-to-accepted-alias
+    "gravity/hermetic-build-grants"]}
+  {:refused true,
+   :reason :old-context-not-whole-row-alias,
+   :case
+   [:old-context-or-triage-promoted-to-accepted-alias
+    "gravity/library-api-contract"]}
+  {:refused true,
+   :reason :new-triage-history-not-retroactive,
+   :case
+   [:old-context-or-triage-promoted-to-accepted-alias
+    "gravity/workflow-ai-vertical-slice"]}
+  {:refused true,
+   :reason :literal-original-context-not-rewritten,
+   :case
+   [:old-literal-obligation-weakened "gravity/hermetic-build-grants"]}
+  {:refused true,
+   :reason :literal-original-context-not-rewritten,
+   :case
+   [:old-literal-obligation-weakened "gravity/library-api-contract"]}
+  {:refused true,
+   :reason
+   [:actual-fixture-obligations-retained
+    "real ordinary-pipeline agent/workflow products"],
+   :case :D2-numeric-counts-substituted-for-actual-operations}
+  {:refused true,
+   :reason :shared-facet-both-retired-owners-retained,
+   :case :shared-reproducibility-membership-dropped}]}
