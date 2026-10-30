@@ -1120,12 +1120,28 @@
          (or (:working-directory options) @root)))))
 
 (defn namespace-command
-  "Returns the exact ProcessBuilder argument vector for one namespace."
+  "Returns the exact ProcessBuilder argument vector for one namespace.
+  Opt-in :exact-test-vars and :child-fail-fast? forward development-test-runner
+  selection flags after the namespace, without changing the command prefix."
   ([namespace]
    (namespace-command namespace {}))
   ([namespace options]
+   (when (and (contains? options :exact-test-vars)
+              (not (and (vector? (:exact-test-vars options))
+                         (seq (:exact-test-vars options))
+                         (every? #(and (string? %) (not (str/blank? %)))
+                                 (:exact-test-vars options)))))
+     (throw (ex-info "Exact child selection requires a nonempty vector of names"
+                     {:id "SH01-PARALLEL-CHILD-SELECTION"})))
+   (when (and (contains? options :child-fail-fast?)
+              (not (instance? Boolean (:child-fail-fast? options))))
+     (throw (ex-info "Child fail-fast must be an explicit boolean"
+                     {:id "SH01-PARALLEL-CHILD-SELECTION"})))
    (cond-> (into (vec (command-prefix options))
                  ["--namespace" (namespace-name namespace)])
+     (:exact-test-vars options)
+     (into (mapcat (fn [name] ["--exact" name]) (:exact-test-vars options)))
+     (:child-fail-fast? options) (conj "--fail-fast")
      (forward-child-cache-option? options)
      (into ["--development-cache" (pr-str (:child-development-cache options))]))))
 
@@ -2152,31 +2168,51 @@
 
   `:process-launcher` receives `[command working-directory]`.  For fast unit
   tests it may return a result map directly; the production launcher returns a
-  java.lang.Process and stdout/stderr are drained concurrently."
+  java.lang.Process and stdout/stderr are drained concurrently.
+
+  Opt-in :resource-broker supplies existing with-lease options. This direct call
+  acquires and waits on the same thread, requires an explicit job resource class
+  and an actual Process, and consumes the normal process-result custody API.
+  It does not admit an operation, alter inherited environment, or cover startup."
   ([job]
    (run-namespace-process job {}))
   ([job options]
    (require-supported-namespace! (:namespace job))
-   (let [started (System/nanoTime)
-         command (namespace-command (:namespace job) options)
-         working-directory (or (:working-directory options) @root)
-         launcher (or (:process-launcher options) start-process)
-         launched (launcher command working-directory)
-         _ (when-let [observer (:process-launch-observer options)]
-             (observer))
-         result
-         (if (instance? Process launched)
-           (process-result launched options)
-           (if (map? launched)
-             (bound-launch-result launched options)
-             {:status :failed
-              :exit-code 1
-              :stderr (str "Process launcher returned unsupported value: "
-                           (pr-str (type launched)))}))]
-     (normalize-result
-      job
-      (assoc result :command command :child-jvm-launched? true)
-      (long (/ (- (System/nanoTime) started) 1000000.0))))))
+   (let [resource-owned? (contains? options :resource-broker)
+         _ (when (and resource-owned?
+                      (not (and (map? (:resource-broker options))
+                                 (contains? #{:normal :memory-heavy :exclusive}
+                                            (:resource-class job)))))
+             (throw (ex-info "Resource-owned child requires broker options and an explicit class"
+                             {:id "SH01-PARALLEL-RESOURCE-CALLER"})))
+         operation
+         (fn []
+           (let [started (System/nanoTime)
+                 command (namespace-command (:namespace job) options)
+                 working-directory (or (:working-directory options) @root)
+                 launcher (or (:process-launcher options) start-process)
+                 launched (launcher command working-directory)
+                 _ (when-let [observer (:process-launch-observer options)]
+                     (observer))
+                 result
+                 (if (instance? Process launched)
+                   (process-result launched options)
+                   (if resource-owned?
+                     (throw (ex-info "Resource-owned child requires an actual Process"
+                                     {:id "SH01-PARALLEL-RESOURCE-CALLER"}))
+                     (if (map? launched)
+                       (bound-launch-result launched options)
+                       {:status :failed
+                        :exit-code 1
+                        :stderr (str "Process launcher returned unsupported value: "
+                                     (pr-str (type launched)))})))]
+             (normalize-result
+              job
+              (assoc result :command command :child-jvm-launched? true)
+              (long (/ (- (System/nanoTime) started) 1000000.0)))))]
+     (if resource-owned?
+       (broker/with-lease (:resource-broker options) (:resource-class job) operation)
+       (operation)))))
 
 (defn- parse-positive-option
   [arguments index option]
