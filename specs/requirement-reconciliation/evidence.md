@@ -2152,3 +2152,65 @@ Original/candidate IDs, source documents, task bodies and task states are
 unchanged. The current provisional count remains 3 Accepted of 195, with 192
 remaining. Full entailment, independent facet/final-count acceptance and
 coordinator integration remain required.
+
+## Bootstrap diagnostic owner: exact producer and consumer join
+
+Task source `81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f` appends the
+original `bootstrap/compiler-diagnostic-compatibility` predicate to the existing
+Open diagnostic-schema producer task. Direct BOOT2/BOOT3/BOOT4 review found
+that the prior criteria did not explicitly require BOOT4006 for a diagnostic
+code gap. The addition requires that code, BOOT2004 for unstable/missing seed
+codes, actual accepted-code/source-span products and per-module diagnostic
+manifests. Drift consumes the existing policy-linked compatibility assessment
+and stage-comparison report; BOOT3003 rejects unreviewed drift. This preserves
+C15 origins, early-phase availability and redaction rules.
+
+`bootstrap-diagnostic-source-refinement.edn` records the exact insertion and
+full-file inverse. The other three Diagnostics task records, all existing
+criterion bodies, task identities and statuses are conserved. There is no new
+stable decision ID, task unit or implementation acceptance.
+
+`bootstrap-diagnostic-current-facet-trace.edn` retains all fifteen facets in
+fourteen BOOT2/BOOT3/BOOT4 occurrences attached to this original owner. Eight
+criterion roles bind diagnostic and seed production, module declarations,
+pipeline fact preservation, actual stage comparison, TEST13 fixture comparison
+and GOV2 assessment. The broader BOOT4 pass-preservation predicate stays with
+module/pipeline owners; a diagnostic manifest does not implement that pass.
+This is an owner entailment proposal pending independent facet acceptance.
+
+The refreshed 561-binding snapshot authenticates all 4,819 current spans with
+one Diagnostics-file pin change and unchanged historical predicate bytes.
+All 833 decision records remain exactly conserved and Open, with 931 current
+owning criterion witnesses; the added original-owner criterion is separate.
+The earlier granularity, ACC and C5 source adoptions retain their scopes and
+do not accept this addition. Finite owner-proposed facet coverage is now 668
+distinct original IDs, with the same four metadata overlaps.
+
+Source checks pass 2 tests / 15 assertions; Diagnostics projection tests pass
+4 / 65; SH tests pass 12 / 529; census tests pass 5 / 18; the language boundary
+passes 6 / 11. Documentation and full-language roadmap validators, generated
+Diagnostics/SH/census checks and pinned SH lint pass. An initial SH test ran
+concurrently with its projection writer and failed the derived-file equality
+check; after the writer completed, the sequential run passed. That initial
+failure supplies no acceptance evidence.
+
+The census generated from `3ad73ad25748c3a693dfe84ba3dd5a5e727d8421`
+and stored at `c20ab7f2b3cd63aa021490b44cf7eb9c23fe8695` remains 195
+total, 3 Accepted, 190 Open, 1 Partial and 1 unassessed: 192 remaining, with
+the provisional scoped unweighted ratio 3/195. This is not an independently
+accepted all-project denominator. Complete facet entailment, the three retired
+owner successor lineages, 254 task-reference-only joins, extension rebinding,
+independent current/final-count acceptance and coordinator integration remain.
+
+The complete inventory is refreshed at source
+`c20ab7f2b3cd63aa021490b44cf7eb9c23fe8695`, retaining its predecessor
+inventory hash and every original document/occurrence/facet ID. Its owner index
+now has 931 criterion-candidate resolutions, 254 task-reference-only joins and
+three retained retirements; no owner lacks a concrete criterion candidate.
+This resolves candidate discovery, not independently accepted entailment.
+Facet dispositions are 668 pending owner proposals, 5,576 preserved formatting
+and hierarchy contexts, 21,477 pending predicate conjunctions, 704 pending
+dependency joins and 360 pending owner/metadata adjudications. Population checks
+pass 2 / 16; serialized readback confirms all original populations and their
+disjointness from the explicit extensions. The two changed extension source
+descriptors still require rebinding.
