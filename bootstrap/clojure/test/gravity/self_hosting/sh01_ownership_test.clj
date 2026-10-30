@@ -223,7 +223,7 @@
 
 (def ^:private macro-helper-path "bootstrap/clojure/src/gravity/macro_run_storage.clj")
 (def ^:private macro-helper-consumer
-  "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj")
+  "bootstrap/clojure/src/gravity/macro.clj")
 (def ^:private macro-helper-test
   "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj")
 (def ^:private reader-helper-path "bootstrap/clojure/src/gravity/reader.clj")
@@ -269,7 +269,7 @@
             (get-in record [:standalone-test-owners macro-stage-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
-              "consumer" {"path" macro-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
+              "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
               "test" {"path" macro-helper-test "namespace" "gravity.self-hosting.macro-run-storage-test"
                       "registration" "standalone"}}
              {"id" "reader-artifact-assembly" "kind" "production-stage-helper" "owner" "sh-reader"
@@ -314,7 +314,10 @@
       (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-path)))]
         (is (= 'gravity.macro-run-storage (second (read reader)))))
       (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-consumer)))]
-        (is (= '(require '[gravity.macro-run-storage :as macro-run-storage]) (read reader)))))
+        (let [consumer (read reader)]
+          (is (= 'gravity.macro (second consumer)))
+          (is (some #{'[gravity.macro-run-storage :as macro-run-storage]}
+                    (rest (last consumer)))))))
     (is (str/includes? (slurp (path macro-helper-consumer)) "(macro-run-storage/exact? runs)"))
     (is (not (.exists (path "bootstrap/clojure/test/gravity/macro_run_storage_test.clj"))))
     (doseq [bad [(assoc-in record [:module-owners macro-helper-path] :master-coordinator)
