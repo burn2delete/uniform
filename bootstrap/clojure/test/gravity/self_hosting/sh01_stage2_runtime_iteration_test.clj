@@ -10413,8 +10413,11 @@
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
-        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
+        invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
+        runtime-plan (:plan (typed-catch-runtime-projection))
+        wide {:kind :gravity.type/list :shape :literal :element-types (vec (repeat 1025 :gravity.type/string))}]
     (doseq [arguments [[] [:gravity.type/string] [:gravity.type/nil :gravity.type/bool :gravity.type/map]
+                       [wide]
                        [{:kind :gravity.type/list :element-types [:gravity.type/string] :shape :literal}]
                        [:gravity.type/never :gravity.type/string] [:gravity.type/string :gravity.type/never]]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn arguments)
@@ -10427,6 +10430,32 @@
             compile #(invoke 'p15-s23-typed-compile-node % :call %2) lowered (compile context 65536)]
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function 'list :args (mapv #(hash-map :op :local :name (names %)) (:argument-node-ids call))} (:value lowered)))
+        (when (= [wide] arguments)
+          (is (= :accepted (:status result)))
+          (is (= 1025 (count (get-in descriptor [:argument-types 0 :element-types]))))
+          (let [argument-id (first (:argument-node-ids call))
+                members (apply list (map #(String. (str "member-" %)) (range 1025)))
+                actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan
+                         'p15-s23-runtime-evaluate-closed-instruction
+                         [(:value lowered) {(names argument-id) members} ""])]
+            (is (= ["" :normal] (subvec actual 1)))
+            (is (list? (first actual)))
+            (is (= 1 (count (first actual))))
+            (is (identical? members (first (first actual))))
+            (doseq [bad [(assoc-in wide [:element-types 0] :gravity.type/unknown)
+                         (assoc-in wide [:element-types 1024] :gravity.type/unknown)
+                         (assoc-in wide [:element-types 1024] :gravity.type/never)
+                         (assoc wide :shape :unknown) (assoc wide :extra :forged)
+                         (assoc wide :element-types (apply list (:element-types wide)))
+                         {:kind :gravity.type/map :shape :literal :member-types (:element-types wide)}]]
+              (is (= :rejected (:status (derive (assoc-in input [:types argument-id] bad)))))
+              (is (= :rejected (:status (invoke 'p15-s23-lc-validate-types [bad]))))
+              (is (= :rejected (:status (compile (-> context (assoc-in [:types argument-id] bad)
+                                                     (assoc-in [:parameter-types argument-id] bad)) 65536))))))
+          (doseq [type [(assoc wide :element-types (vec (repeat 1025 {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})))
+                        {:kind :gravity.type/map :shape :literal :member-types (vec (repeat 1026 :gravity.type/string))}]]
+            (is (= :accepted (:status (c7 'sh08-lc-validate-types [[type]]))))
+            (is (= :accepted (:status (invoke 'p15-s23-lc-validate-types [type]))))))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context (:work-count lowered))))
           (is (= :typed-lowering-work-limit (get-in (compile context (dec (:work-count lowered))) [:facts :reason]))))
