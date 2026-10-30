@@ -1,8 +1,9 @@
 # Predicate source bodies under current validation guards
 
-Owner: ACC-01. This is an independent-classification proposal for exactly 33
-original changed source units, not an implementation change or accepted
-behavioral-equivalence result. The original 29-path inventory is unchanged.
+Owner: ACC-01. This records the independently reviewed conditional source
+classification for exactly 33 original changed units, not an implementation
+change or unconditional behavioral-equivalence result. The original 29-path
+inventory is unchanged.
 
 ## Inputs and complete source equation
 
@@ -57,8 +58,22 @@ cell guard, admission of a retired work field, changed arity, lost historical
 body, changed inner result policy and changed inner integer representation.
 The total is 231 inert source corruption controls, not runtime assertions.
 
-Independent classification is pending and no original unit receives completion
-credit from this proposal alone. The existing predicate correspondence/helper
+Independent classification passes for exact `115dae50`, tree
+`bf1d15b770b6763bc4032067662a8865e76db81e`, receipt
+`e47a331ec7c613f6323e1d3dcad208b4adce6f690c9611413f4381800c93f9d2`.
+The sealed receipt records 13,050 checks and 339 corruption refusals; the
+reviewer's final handoff reports 13,052 checks. Only the sealed 13,050 are
+credited, and both observations remain recorded. The 339 include all 231
+authored cases independently reconstructed plus 108 additional controls.
+The consumer verified the receipt, private artifacts, full evidence-tree
+delta, all 33 equations, current file distinctions and policy pins. See
+`predicate-guarded-classification-consumption.edn`.
+
+The evidence commit and assessed main have different complete files in all
+three owners; selected builder and guard forms match. Conditional source
+classification retains the changed input contract. Formal disposition
+adoption and any roadmap completion credit remain separate. The original
+machine record's pending state is captured proposal history. The existing predicate correspondence/helper
 records and PR625's restored test definitions retain their own exact scopes;
 they do not prove this proposal's semantic or native boundaries. Genuine owner
 controls remain UNRUN. No whole predicate accounting removal, ACC01/PR502

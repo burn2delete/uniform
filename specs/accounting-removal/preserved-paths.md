@@ -117,7 +117,17 @@ helper mappings remain explicit rather than being treated as missing features.
   source and a shadowed helper. No Gravity or Bootstrap code is evaluated.
   This strengthens the source witness without proving whole-caller, transitive,
   mutable-var, call-frame resource or exception equivalence. Independent
-  classification remains pending and no unit receives completion credit yet.
+  classification now has independent conditional source PASS at exact
+  `2577f253`, receipt
+  `0b3f3b28b4626f63a501c7b5961201016fca79998632c743e7273bac4c61986f`:
+  1,508 checks and twelve effective corruption refusals, including coherent
+  double changes and helper shadowing. The exact surrounding chosen-let source
+  is conserved after the recorded inline substitution. The consumer verified
+  the source/tree/witness/callee/policy identities and unchanged C7 applicability
+  at `b1d590cc`; see `parameter-choice-classification-consumption.edn`.
+  This is the one-helper conditional source decision, not whole-caller,
+  dynamic-var, call-frame, transitive or runtime acceptance. Formal adoption
+  and whole ACC01/PR502 completion remain separate.
 - ACC-01 owns stacked mixed-ledger draft PR598 at
   `d58d61c4a83f09ebd3c742a3cc13b9d000244759`, tree
   `5b895b67131de6d209b50585551840fd3954011f`, based on PR595's exact
@@ -1063,9 +1073,17 @@ and records conditional incorporation of the old inner source. It explicitly
 does not preserve the old permissive extra-field input contract or claim
 unconditional behavior, native callbacks, termination, mutable bindings,
 transitive dependencies or approval of other native-helper uses/bounds.
-Independent classification remains pending; no unit receives completion credit
-yet. Genuine owner controls remain UNRUN, and all prior source/test receipts
-retain their separate scopes.
+Independent conditional source classification now passes at exact `115dae50`,
+receipt `e47a331ec7c613f6323e1d3dcad208b4adce6f690c9611413f4381800c93f9d2`.
+Its sealed count is 13,050 checks and 339 corruption refusals; the final
+handoff's 13,052-check count is separately preserved and not substituted.
+The consumer verified receipt/artifacts/tree, all 33 equations and unchanged
+assessed-main source/policy; see `predicate-guarded-classification-consumption.edn`.
+All three evidence-commit whole files differ from assessed main, while selected
+builders/guard forms match. The changed input contract and native/transitive/
+runtime limits remain explicit. Formal disposition adoption and roadmap credit
+remain separate. Genuine owner controls remain UNRUN, and all prior
+source/test receipts retain their separate scopes.
 
 ### Preserved List-join consumer control draft
 
