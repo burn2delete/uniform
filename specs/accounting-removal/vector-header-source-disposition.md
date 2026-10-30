@@ -56,6 +56,24 @@ executed. The author checker's initial parenthesis error is corrected and
 retained as history, not credited as a passing run.
 
 C7, C8, C14, L2, STD3, D9 and current accounting-removal policy govern review.
-Independent classification remains pending for all new decisions. The original
+Independent receipt
+`73205201ca01ef77a5dca10811b015fff2857fc590a6d9f5b80771dd862dbbd4`
+accepts rejecting restoration of the sixteen accounting remnants and holds
+the one metadata correspondence. It independently assesses all six envelopes,
+including four new Effects/lowering helper assessments. It passes 1,346
+source/data checks, forty header corruption refusals and thirty-six helper
+return corruption refusals. `vector-header-classification-consumption.edn`
+rehashes both independent analyzers, binds the frozen tree and inputs,
+reconstructs all six source equations and checks helper, support and policy
+pins against unchanged current main. No reviewer checker rerun is claimed.
+
+The hold requires an existing Gravity finite-List `vec` conversion contract or
+a pinned qualified source correspondence for ordered values. The String
+overload does not establish that List case. This is not an accounting rejection
+or a requirement for allocation, physical sharing or runtime List-storage
+equivalence. No host-language conversion assumption clears the hold.
+
+The original machine proposal remains historical input. Canonical adoption
+and whole-scope completion remain separate. The original
 29-path inventory and stable ACC IDs are unchanged. No whole PR569/ACC01/PR502,
 milestone, release or self-hosting credit follows.

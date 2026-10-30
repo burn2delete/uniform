@@ -51,9 +51,19 @@ decision. No whole-header equivalence follows from accounting classification.
 
 Six actual helper return envelopes, native-view and Vector-kind support pins,
 whole-file hashes, original-unit memberships and governing policy contracts
-are recorded. Twenty-four header source mutations and twenty-four helper
-return mutations refuse weakened inputs. Independent classification of this
-new packet remains pending; previous C7 caller decisions are not extended.
+are recorded. Twenty-four author header source mutations and twenty-four
+author helper return mutations refuse weakened inputs. Independent split
+receipt `73205201ca01ef77a5dca10811b015fff2857fc590a6d9f5b80771dd862dbbd4`
+accepts rejecting restoration of all sixteen accounting remnants, with 1,346
+source checks and 76 independent refusals (forty header, thirty-six helper).
+It separately holds the C7 metadata expression: the cited evidence lacks a
+finite-List `vec` conversion contract or qualified ordered-value source witness.
+The String overload does not clear that gap; the expression is not rejected as
+accounting. `vector-header-classification-consumption.edn` verifies both
+analyzers, exact frozen tree/inputs, six form equations and helper/support/policy
+pins against unchanged current main, without rerunning the reviewer checker.
+Earlier caller decisions are not extended, and no all-six-unit completion
+claim is made while the metadata correspondence remains held.
 Genuine execution is UNRUN. Outer budgets, charges and refusals remain visible
 and unendorsed. The original inventory, stable ACC IDs and PR502 open status
 are unchanged; no whole-scope completion is claimed.

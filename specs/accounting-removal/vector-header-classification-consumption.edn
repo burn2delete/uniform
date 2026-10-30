@@ -1,0 +1,703 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :metadata-decision
+ {:unit [defn sh08-vrest-header],
+  :disposition :held-not-rejected-as-accounting,
+  :historical (vec (rest elements)),
+  :current (subvec elements 1 length),
+  :verified
+  [:type-metadata-context
+   :element-count-binding
+   :unchanged-zero-case
+   :positive-length-suffix-bounds-source],
+  :gap
+  "STD3 specifies ordered Vector rest and in-range subvec. The pinned evidence supplies no finite persistent List-to-Vector vec conversion contract or independently qualified source witness for its ordered values. The String vec overload does not establish this List case. Do not infer that conversion from Clojure behavior or accounting removal.",
+  :next-evidence
+  :existing-Gravity-vec-finite-List-conversion-contract-or-pinned-qualified-source-correspondence,
+  :not-required-by-this-hold
+  [:allocation-or-physical-sharing-equivalence
+   :runtime-List-storage
+   :native-provider-runtime-or-callframe-proof]},
+ :tree "df48b9c46f6dc0936e608667460e08d93184e521",
+ :nonclaims
+ [:no-unconditional-semantic-equivalence
+  :no-allocation-sharing-native-runtimeListstorage-or-hostnumberidentity-proof
+  :no-termination-exception-transitive-runtime-proof
+  :no-outerquota-or-whole569-ACC01-PR502-acceptance
+  :no-target-execution-APPROVE-probe-or-sharedwrite
+  :no-heldPolicy14-Metadata-fixedwidth-OWN-ACC08-e7-retry],
+ :execution
+ {:read-eval false,
+  :target-helper-Bootstrap-compiler-native-kernel-runtime :UNRUN},
+ :consumer-verification
+ :receipt-analyzers-tree-inputs-six-form-equations-helper-envelopes-and-policy-pins,
+ :consumer-source-sha256
+ "707e944d6f625629a81a577433118404d06379f2907d6d0c6790e4d7e6140e0d",
+ :genuine-execution :UNRUN,
+ :parent "4bb3dbc9fe76445808f47da58c42f054dc786ca1",
+ :candidate "d97655efe5f98beb91680a1a465d5088b141a666",
+ :reviewer-thread "01a18528-c7af-75c1-a399-5eb23dbbe8e4",
+ :accounting-decision
+ {:count 16,
+  :disposition :reject-restoration-of-exact-listed-accounting-remnants,
+  :basis
+  :current-removal-policy-and-six-independent-normal-return-envelopes,
+  :retained-source :all-other-reader-forms-and-arguments-conserved,
+  :outer-limits :unresolved-unendorsed},
+ :source-distinction
+ {:assessed-main "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :evidence-production :unchanged-from-parent,
+  :six-selected-headers :identical-across-assessed-and-evidence,
+  :whole-files :not-equated},
+ :reproduction
+ {:path "/tmp/vector-header-independent-review.clj",
+  :sha256
+  "cc23f11cc12ce42f6c0034c68ed0aafe733b713a3a07ee427895e539443e162e",
+  :independent-envelope-analyzer
+  {:path "/tmp/validator-envelope-independent-review.clj",
+   :sha256
+   "9eaf035b2dbb2797d33d57fdd04172bea7c475e207378d6a458565e9180cde2a"}},
+ :header-controls
+ [{:unit [defn sh08-vemp-header],
+   :case :restore-accounting-0,
+   :refused true}
+  {:unit [defn sh08-vemp-header],
+   :case :restore-accounting-1,
+   :refused true}
+  {:unit [defn sh08-vemp-header], :case :arguments, :refused true}
+  {:unit [defn sh08-vemp-header],
+   :case :semantic-reason,
+   :refused true}
+  {:unit [defn sh08-vemp-header],
+   :case :call-reconstruction,
+   :refused true}
+  {:unit [defn sh08-vemp-header],
+   :case :edge-reconstruction,
+   :refused true}
+  {:unit [defn sh08-vrest-header],
+   :case :restore-accounting-0,
+   :refused true}
+  {:unit [defn sh08-vrest-header],
+   :case :restore-accounting-1,
+   :refused true}
+  {:unit [defn sh08-vrest-header], :case :arguments, :refused true}
+  {:unit [defn sh08-vrest-header],
+   :case :semantic-reason,
+   :refused true}
+  {:unit [defn sh08-vrest-header],
+   :case :call-reconstruction,
+   :refused true}
+  {:unit [defn sh08-vrest-header],
+   :case :edge-reconstruction,
+   :refused true}
+  {:unit [defn body-vemp-header],
+   :case :restore-accounting-0,
+   :refused true}
+  {:unit [defn body-vemp-header],
+   :case :restore-accounting-1,
+   :refused true}
+  {:unit [defn body-vemp-header],
+   :case :restore-accounting-2,
+   :refused true}
+  {:unit [defn body-vemp-header], :case :arguments, :refused true}
+  {:unit [defn body-vemp-header],
+   :case :semantic-reason,
+   :refused true}
+  {:unit [defn body-vemp-header],
+   :case :call-reconstruction,
+   :refused true}
+  {:unit [defn body-vemp-header],
+   :case :edge-reconstruction,
+   :refused true}
+  {:unit [defn body-vrest-header],
+   :case :restore-accounting-0,
+   :refused true}
+  {:unit [defn body-vrest-header],
+   :case :restore-accounting-1,
+   :refused true}
+  {:unit [defn body-vrest-header],
+   :case :restore-accounting-2,
+   :refused true}
+  {:unit [defn body-vrest-header], :case :arguments, :refused true}
+  {:unit [defn body-vrest-header],
+   :case :semantic-reason,
+   :refused true}
+  {:unit [defn body-vrest-header],
+   :case :call-reconstruction,
+   :refused true}
+  {:unit [defn body-vrest-header],
+   :case :edge-reconstruction,
+   :refused true}
+  {:unit [defn p15-s23-vemp-header],
+   :case :restore-accounting-0,
+   :refused true}
+  {:unit [defn p15-s23-vemp-header],
+   :case :restore-accounting-1,
+   :refused true}
+  {:unit [defn p15-s23-vemp-header],
+   :case :restore-accounting-2,
+   :refused true}
+  {:unit [defn p15-s23-vemp-header], :case :arguments, :refused true}
+  {:unit [defn p15-s23-vemp-header],
+   :case :semantic-reason,
+   :refused true}
+  {:unit [defn p15-s23-vemp-header],
+   :case :call-reconstruction,
+   :refused true}
+  {:unit [defn p15-s23-vemp-header],
+   :case :edge-reconstruction,
+   :refused true}
+  {:unit [defn p15-s23-vrest-header],
+   :case :restore-accounting-0,
+   :refused true}
+  {:unit [defn p15-s23-vrest-header],
+   :case :restore-accounting-1,
+   :refused true}
+  {:unit [defn p15-s23-vrest-header],
+   :case :restore-accounting-2,
+   :refused true}
+  {:unit [defn p15-s23-vrest-header], :case :arguments, :refused true}
+  {:unit [defn p15-s23-vrest-header],
+   :case :semantic-reason,
+   :refused true}
+  {:unit [defn p15-s23-vrest-header],
+   :case :call-reconstruction,
+   :refused true}
+  {:unit [defn p15-s23-vrest-header],
+   :case :edge-reconstruction,
+   :refused true}],
+ :assumptions
+ [:pinned-unrebound-helper-source
+  :L2-normal-tail-control-semantics
+  :conditions-unrefined
+  :loop-values-unknown],
+ :delivery :private-receipt-for-supported-helper-readback,
+ :new-helper-owner-assessments 4,
+ :helper-controls
+ [{:helper sh08-lc-native-arguments,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :work-limit,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :work-count,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :computed-reason,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :unknown-tail,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :loop-escape,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :shadowed-helper,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :work-limit,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :work-count,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :computed-reason,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :unknown-tail,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :loop-escape,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :case :shadowed-helper,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-native-arguments,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :work-limit,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-native-arguments,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :work-count,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-native-arguments,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :computed-reason,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-native-arguments,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :unknown-tail,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-native-arguments,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :loop-escape,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-native-arguments,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :shadowed-helper,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-validate-types,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :work-limit,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-validate-types,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :work-count,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-validate-types,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :computed-reason,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-validate-types,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :unknown-tail,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-validate-types,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :loop-escape,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper body-lc-validate-types,
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :case :shadowed-helper,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-native-arguments,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :work-limit,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-native-arguments,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :work-count,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-native-arguments,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :computed-reason,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-native-arguments,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :unknown-tail,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-native-arguments,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :loop-escape,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-native-arguments,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :shadowed-helper,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-validate-types,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :work-limit,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-validate-types,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :work-count,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-validate-types,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :computed-reason,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-validate-types,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :unknown-tail,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-validate-types,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :loop-escape,
+   :actual-return-map-mutated true,
+   :refused true}
+  {:helper p15-s23-lc-validate-types,
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :case :shadowed-helper,
+   :actual-return-map-mutated true,
+   :refused true}],
+ :disposition
+ :accept16-accounting-remnants-hold1-metadata-correspondence,
+ :headers
+ [{:unit [defn sh08-vemp-header],
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :historical-form-sha256
+   "5b60a0d677b354a073a4117b49d914fbbd34abc9e744290c18007b353b4f3a9b",
+   :current-form-sha256
+   "d0b4e505f1b8137394621b04db6c345134ce478bb302b5dd7d1ac5e2d6d252bd",
+   :complete-differences
+   [{:at [3 2 2 3 2 2 3 1 3],
+     :historical (+ reserved 0),
+     :main reserved,
+     :classification :zero-charge}
+    {:at [3 2 2 3 2 2 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-empty-work-limit
+      :vector-empty-vector-type-required),
+     :main :vector-empty-vector-type-required,
+     :classification :retired-validator-reason}]}
+  {:unit [defn sh08-vrest-header],
+   :path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :historical-form-sha256
+   "845deaf0b8b2d038ebb3b84301623c1c66ac0436f11e795ace39028e01621915",
+   :current-form-sha256
+   "951b312a2377f09a37089c13ff3e1c034f06c36c7268c62ba8ab203dddc55690",
+   :complete-differences
+   [{:at [3 2 2 3 2 2 3 1 3],
+     :historical (+ reserved 0),
+     :main reserved,
+     :classification :zero-charge}
+    {:at [3 2 2 3 2 2 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-rest-work-limit
+      :vector-rest-finite-positional-vector-type-required),
+     :main :vector-rest-finite-positional-vector-type-required,
+     :classification :retired-validator-reason}
+    {:at [3 2 2 3 2 2 3 2 3 2 2 3 1 1 :element-types 3],
+     :historical (vec (rest elements)),
+     :main (subvec elements 1 length),
+     :classification :C7-result-element-expression}]}
+  {:unit [defn body-vemp-header],
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :historical-form-sha256
+   "41543bebfad951af392edbba06b234088127cfadddc34e45028479acd69c726f",
+   :current-form-sha256
+   "071b9895c23182751414a2b34dd6dc9aa7c9ccd7584932d5b107315996c62532",
+   :complete-differences
+   [{:at [3 2 2 3 2 2 3 1 1],
+     :historical (body-lc-type-work [receiver] (- limit reserved)),
+     :main (body-lc-validate-types [receiver]),
+     :classification :retired-validator-call}
+    {:at [3 2 2 3 2 2 3 1 3],
+     :historical (+ reserved (get validation :work-count)),
+     :main reserved,
+     :classification :retired-validator-charge}
+    {:at [3 2 2 3 2 2 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-empty-work-limit
+      :vector-empty-vector-type-required),
+     :main :vector-empty-vector-type-required,
+     :classification :retired-validator-reason}]}
+  {:unit [defn body-vrest-header],
+   :path "bootstrap/gravity/src/gravity/effects.gravity",
+   :historical-form-sha256
+   "2e7404dcd0b95173390ec1a375194e8d318ed00f79a5b76ca09c3c389177e75a",
+   :current-form-sha256
+   "1e9392ba724607b34dd2262d8e90937fb0b45129a05398aaa847373489c7ceb8",
+   :complete-differences
+   [{:at [3 2 2 3 2 2 3 1 1],
+     :historical (body-lc-type-work [receiver] (- limit reserved)),
+     :main (body-lc-validate-types [receiver]),
+     :classification :retired-validator-call}
+    {:at [3 2 2 3 2 2 3 1 3],
+     :historical (+ reserved (get validation :work-count)),
+     :main reserved,
+     :classification :retired-validator-charge}
+    {:at [3 2 2 3 2 2 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-rest-work-limit
+      :vector-rest-finite-positional-vector-type-required),
+     :main :vector-rest-finite-positional-vector-type-required,
+     :classification :retired-validator-reason}]}
+  {:unit [defn p15-s23-vemp-header],
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :historical-form-sha256
+   "0901288de85ac71a410e5f61937e3dec8e9b6c920e18b195aa2bdc7c4e1f45b6",
+   :current-form-sha256
+   "e68a3fdaf4ea8d25d8f9fd48eaf87d342e948925f5c4bd2ea2bcf8c35f8803ea",
+   :complete-differences
+   [{:at [3 2 2 3 2 2 3 1 1],
+     :historical (p15-s23-lc-type-work [receiver] (- limit reserved)),
+     :main (p15-s23-lc-validate-types [receiver]),
+     :classification :retired-validator-call}
+    {:at [3 2 2 3 2 2 3 1 3],
+     :historical (+ reserved (get validation :work-count)),
+     :main reserved,
+     :classification :retired-validator-charge}
+    {:at [3 2 2 3 2 2 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-empty-work-limit
+      :vector-empty-vector-type-required),
+     :main :vector-empty-vector-type-required,
+     :classification :retired-validator-reason}]}
+  {:unit [defn p15-s23-vrest-header],
+   :path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :historical-form-sha256
+   "c3930645feeaba28737f77d931e924750857d9fee01ca317f1fc0bc1ce15b2c0",
+   :current-form-sha256
+   "338a8df57a2281bddeaf66a42e956b158ae6d4e9d8dadc4d5892df27558467f1",
+   :complete-differences
+   [{:at [3 2 2 3 2 2 3 1 1],
+     :historical (p15-s23-lc-type-work [receiver] (- limit reserved)),
+     :main (p15-s23-lc-validate-types [receiver]),
+     :classification :retired-validator-call}
+    {:at [3 2 2 3 2 2 3 1 3],
+     :historical (+ reserved (get validation :work-count)),
+     :main reserved,
+     :classification :retired-validator-charge}
+    {:at [3 2 2 3 2 2 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-rest-work-limit
+      :vector-rest-finite-positional-vector-type-required),
+     :main :vector-rest-finite-positional-vector-type-required,
+     :classification :retired-validator-reason}]}],
+ :consumer-history
+ [:initial-reader-delimiters-corrected-before-publication],
+ :metadata-correspondence :HELD-preserved-not-adopted,
+ :whole-PR569-ACC01-PR502 :incomplete,
+ :kind :vector-header-independent-split-classification-consumption,
+ :receipt-sha256
+ "73205201ca01ef77a5dca10811b015fff2857fc590a6d9f5b80771dd862dbbd4",
+ :positive-checks 1102,
+ :source-checks 1346,
+ :policy-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}
+  {:path
+   "docs/phase-16-standard-library/213-std3-collections-library-specification.md",
+   :sha256
+   "58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :author-checker
+ {:path "/tmp/acc01-vector-header-disposition.clj",
+  :sha256
+  "4b31c8c9d93ed1a6d19b9c60e792a2a81fbeb6f95c8595636f942753254fcf9b",
+  :mode :inspected-hashed-only,
+  :original-writer-executed false,
+  :reported24-header-and24-helper-controls
+  :not-used-as-independent-proof},
+ :canonical-disposition-adoption :not-performed,
+ :helper-envelopes
+ {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  {sh08-lc-native-arguments
+   #{{:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}},
+   sh08-lc-validate-types
+   #{{:keys #{:status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :malformed-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :nested-never}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}}},
+  "bootstrap/gravity/src/gravity/effects.gravity"
+  {body-lc-native-arguments
+   #{{:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}},
+   body-lc-validate-types
+   #{{:keys #{:status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :malformed-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :nested-never}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}}},
+  "bootstrap/gravity/p15_s23/emitter.gravity"
+  {p15-s23-lc-native-arguments
+   #{{:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}},
+   p15-s23-lc-validate-types
+   #{{:keys #{:status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :malformed-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :nested-never}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}}}},
+ :current-main-source-applicability
+ {:commit "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :all-three-assessed-files :unchanged},
+ :input-hashes
+ {"specs/accounting-removal/vector-header-source-disposition.edn"
+  "3b804f28ccd75f4239e53bfb46d39a8584655821313513d4f768e7fd27341844",
+  "specs/accounting-removal/preserved-source-inventory.edn"
+  "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0"},
+ :owner :ACC-01}
