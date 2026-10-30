@@ -39,17 +39,35 @@ form comparison. Outer budgets, width guards and carrier accounting are still
 present and remain separate unresolved work; this proposal does not approve
 their retention or remove them.
 
-## Proposed disposition and acceptance
+## Independently reviewed source disposition
 
-The requested decision is to retain the current four definitions and reject
+Independent classification accepts retaining the current four definitions and rejecting
 restoration of the eight listed accounting remnants under the repository's
 project-accounting removal instruction. All other complete-form source and
 arguments match history. The old zero-charge expressions and work-limit
 diagnostic alternatives remain recorded as history rather than recreated to
 obtain matching hashes. This request does not endorse the still-present outer
 budgets or width predicates. It does not claim arithmetic or host-number-object
-identity equivalence. Independent classification and acceptance remain pending;
-the four units receive no completion credit yet.
+identity equivalence. Exact packet `1da3e25b`, tree
+`53642c707fecf553b687d89fe47c72f36876ee1a`, has independent source
+classification receipt
+`5b7b28a3881386b00333f989711d173fdeca9a4a766046e3f4ab6ae9d65c467c`:
+155 source checks and twelve effective return-map mutation refusals. The
+consumer reproduced that receipt byte-identically and freshly verified all
+six selected definitions and governing policy pins against main `b1d590cc`.
+See `retired-validator-classification-consumption.edn`.
+
+This closes only restoration of the eight listed accounting remnants. All
+other caller source and arguments remain conserved. It grants no arithmetic,
+number-object identity, native/runtime, outer-quota or whole-PR569 acceptance.
+The original EDN records' pending states remain captured proposal history;
+this later consumption supplies the narrowly accepted decision.
+
+The evidence commit carries the older C7 whole-file hash `25e4dc4b...`, while
+the assessed main and current main carry `9c026369...`. The six selected
+definitions are identical across both; the complete files differ elsewhere.
+The evidence commit's C7 file is unchanged from its parent. No whole-file
+equivalence or current-source execution follows from the selected-form match.
 
 ### Current normal-return source envelope
 

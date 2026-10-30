@@ -1000,6 +1000,29 @@ composition acceptance and integration remain pending. Genuine kernel
 and target runtime remain UNRUN, with no held selector retry or whole-path/
 ACC01/PR502 completion credit.
 
+### Independent retired-validator remnant disposition
+
+Exact source packet `1da3e25b`, tree
+`53642c707fecf553b687d89fe47c72f36876ee1a`, has independent classification
+accepting rejection of restoration of the eight enumerated accounting remnants
+in `sh08-pc-first-work`, `sh08-pc-key-part`, `sh08-lsi-vector-first` and
+`sh08-vsl-parameter`. Receipt
+`5b7b28a3881386b00333f989711d173fdeca9a4a766046e3f4ab6ae9d65c467c`
+passes 155 source checks and twelve effective return-map mutation refusals.
+The consumer reproduced the receipt byte-identically, verified both full-file
+source identities, the four caller/two helper forms and current policy pins.
+See `retired-validator-classification-consumption.edn`.
+
+The assessed/current-main C7 whole file is `9c026369...`; the evidence commit
+retains older `25e4dc4b...` unchanged from its parent. All six selected forms
+match across those sources, while the files differ elsewhere. This is a source
+decision for exactly eight subtrees; it does not confer arithmetic/number-
+object identity, termination, native/runtime, transitive, outer-quota or whole
+PR569 acceptance. Current main applicability is bound to `b1d590cc` and the
+unchanged selected forms/policy. The old denied DSE-attribution review remains
+stopped; its exact original approval-policy error was preserved and the new
+packet was independently admitted as a distinct subject.
+
 ### Guarded predicate source incorporation proposal
 
 `predicate-guarded-incorporation.edn` and its companion Markdown bind exactly
@@ -1049,8 +1072,14 @@ projection definitions, with historical differences and transitive/runtime
 boundaries explicit. The complete-file equations, twelve inert corruption
 refusals, direct named-owner call arities, boundary 6/11, docs 240/19, roadmap
 and whitespace checks pass. Lint has zero errors and exactly the parent's
-152-warning/one-info multiset; new EDN has zero findings. Independent source
-review and CI remain pending; no duplicate reviewer is assigned. Genuine
+152-warning/one-info multiset; new EDN has zero findings. Independent SOURCE
+PASS is consumed in `list-join-consumer-review-consumption.edn`, receipt
+`eb6bb4b595135cc2e4d9934b8cae21bd2cf36639791ce4ca3d814e1ac109f4bb`:
+10,436 source checks and 27 corruption refusals, no blocking findings. Nine
+owner pins, six helper pins and 19 direct calls across eight owners are
+verified. The runtime projection helper differs from history but is unchanged
+from the parent; no behavior equivalence follows. Exact-head CI run
+41003858566 completed seven successes/two configured skips. Genuine
 kernels/helpers/projection/native/runtime execution is UNRUN. The parent and
 current-main integration remain unaccepted; no held action is retried or
 whole-path/ACC01/PR502/release/self-hosting authority inferred.
