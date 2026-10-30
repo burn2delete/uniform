@@ -2258,3 +2258,13 @@ status for the triage fixture. This lineage audit is separate from the 668
 pending facet-entailment proposals; that count is unchanged. Independent
 successor/facet acceptance, the identified task refinement, full original
 entailment, final counting and coordinator integration remain required.
+
+The complete inventory links those proposals at source
+`e9722bb166ff8f158c2d12d78348af870d35652c`. Only the three retired-owner
+candidate records gain successor references and an explicit pending-review
+state. All document, occurrence, facet, current criterion, extension and
+non-retired owner records remain equal to the predecessor; inventory checks
+pass 2 / 13. Counts remain 931 criterion candidates, 254 task-reference-only
+joins and three retained retirements with successor proposals. The scoped task
+census remains 3 Accepted of 195, with 192 remaining and provisional ratio
+3/195; no accepted whole-project count or additional completion follows.

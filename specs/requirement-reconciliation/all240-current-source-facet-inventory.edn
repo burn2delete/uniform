@@ -1,4 +1,14 @@
-{:owner-resolutions
+{:retired-owner-current-successor-proposals
+ {:path
+  "specs/requirement-reconciliation/retired-owner-current-successor-proposals.edn",
+  :sha256
+  "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be",
+  :source-commit "e9722bb166ff8f158c2d12d78348af870d35652c",
+  :subject-source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+  :authority :owner-proposal-pending-independent-acceptance},
+ :retired-owner-successor-checks
+ {:test 2, :pass 13, :fail 0, :error 0, :type :summary},
+ :owner-resolutions
  {"ai/profile-tool-contract"
   {:historical-task-reference nil,
    :current-historical-binding-id "ai/profile-tool-contract",
@@ -13722,11 +13732,24 @@
    :current-referenced-task nil,
    :supporting-original-owner-trace nil,
    :id "gravity/hermetic-build-grants",
+   :current-semantic-successor-proposal
+   {:path
+    "specs/requirement-reconciliation/retired-owner-current-successor-proposals.edn",
+    :authority :owner-proposal-pending-independent-acceptance,
+    :independent-successor-acceptance :pending,
+    :source-commit "e9722bb166ff8f158c2d12d78348af870d35652c",
+    :subject-source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :current-successor-criteria
+    ["interface/language/effects/authorize-and-record-build-effect"],
+    :exact-current-criterion-gap nil,
+    :sha256
+    "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be",
+    :original-id "gravity/hermetic-build-grants"},
    :additional-current-criterion-witness nil,
    :qualification
-   "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   "The original retired ID remains history. Current successor criteria are an explicit owner proposal, not an accepted whole-task alias or automatic entailment of attached context. The workflow/AI exact D2 positive fixture remains an actionable current-task refinement gap. Earlier history and independent acceptance are not extended.",
    :resolution-state
-   :retained-retirement-exact-successor-lineage-pending},
+   :retained-retirement-current-successor-proposed-independent-and-residual-joins-pending},
   "gravity/host-boundary-normalization"
   {:historical-task-reference
    {:path "specs/types-workflow/tasks.md",
@@ -13821,11 +13844,25 @@
    :current-referenced-task nil,
    :supporting-original-owner-trace nil,
    :id "gravity/library-api-contract",
+   :current-semantic-successor-proposal
+   {:path
+    "specs/requirement-reconciliation/retired-owner-current-successor-proposals.edn",
+    :authority :owner-proposal-pending-independent-acceptance,
+    :independent-successor-acceptance :pending,
+    :source-commit "e9722bb166ff8f158c2d12d78348af870d35652c",
+    :subject-source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :current-successor-criteria
+    ["interface/language/library/publish-public-contract"
+     "interface/gravity/unsafe-island-safe-api-eligibility"],
+    :exact-current-criterion-gap nil,
+    :sha256
+    "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be",
+    :original-id "gravity/library-api-contract"},
    :additional-current-criterion-witness nil,
    :qualification
-   "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   "The original retired ID remains history. Current successor criteria are an explicit owner proposal, not an accepted whole-task alias or automatic entailment of attached context. The workflow/AI exact D2 positive fixture remains an actionable current-task refinement gap. Earlier history and independent acceptance are not extended.",
    :resolution-state
-   :retained-retirement-exact-successor-lineage-pending},
+   :retained-retirement-current-successor-proposed-independent-and-residual-joins-pending},
   "gravity/migration-provenance-safety"
   {:historical-task-reference nil,
    :current-historical-binding-id
@@ -14846,11 +14883,35 @@
    :current-referenced-task nil,
    :supporting-original-owner-trace nil,
    :id "gravity/workflow-ai-vertical-slice",
+   :current-semantic-successor-proposal
+   {:path
+    "specs/requirement-reconciliation/retired-owner-current-successor-proposals.edn",
+    :authority :owner-proposal-pending-independent-acceptance,
+    :independent-successor-acceptance :pending,
+    :source-commit "e9722bb166ff8f158c2d12d78348af870d35652c",
+    :subject-source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+    :current-successor-criteria
+    ["interface/domain/support-agent-integration"
+     "interface/language/effects/interpret-workflow-replay"
+     "interface/language/facet/emit-agent-plan"],
+    :exact-current-criterion-gap
+    {:path "specs/domains-workflow/tasks.md",
+     :task-id "ai",
+     :existing-criterion "domain/support-agent-integration",
+     :predicate
+     "The task says declared support triage and requires review/replay artifacts, but does not explicitly bind the D2 one-model/one-schema-tool/one-review/one-durable-record positive fixture.",
+     :required-refinement
+     "Require that exact source-bound positive fixture and real ordinary-pipeline agent/workflow products, rejecting an omitted member or counts supplied without the corresponding operation/event. Keep tool-grant, schema, taint and replay-sensitive clock refusals with their actual owners.",
+     :status :actionable-current-task-refinement-required,
+     :implementation-credit :none},
+    :sha256
+    "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be",
+    :original-id "gravity/workflow-ai-vertical-slice"},
    :additional-current-criterion-witness nil,
    :qualification
-   "Exact identifiers locate candidates only; neither an owner, task reference, shared artifact nor scoped earlier review proves the entire attached source predicate.",
+   "The original retired ID remains history. Current successor criteria are an explicit owner proposal, not an accepted whole-task alias or automatic entailment of attached context. The workflow/AI exact D2 positive fixture remains an actionable current-task refinement gap. Earlier history and independent acceptance are not extended.",
    :resolution-state
-   :retained-retirement-exact-successor-lineage-pending},
+   :retained-retirement-current-successor-proposed-independent-and-residual-joins-pending},
   "hardware/capability-representation"
   {:historical-task-reference nil,
    :current-historical-binding-id "hardware/capability-representation",
@@ -32749,11 +32810,12 @@
   {:criterion-candidates-present-exact-full-predicate-entailment-pending
    931,
    :task-reference-only-exact-criterion-join-pending 254,
-   :retained-retirement-exact-successor-lineage-pending 3}},
+   :retained-retirement-current-successor-proposed-independent-and-residual-joins-pending
+   3}},
  :predecessor-inventory
- {:source-commit "1278921e1603a68d05c3fdc291b16e515650941c",
+ {:source-commit "c20ab7f2b3cd63aa021490b44cf7eb9c23fe8695",
   :sha256
-  "54f901fb4507af18b8bb9c2235be476120ed1f6d0fd58fda22acc8f662280a0b"},
+  "26b1ddace7f276380cfc84158854d64a6ebf54dee4549bff7daf3aeee8df54e4"},
  :authority :read-only-source-trace-not-task-or-entailment-acceptance,
  :implementation-credit :none,
  :occurrences
@@ -191567,7 +191629,7 @@
    :not-inferred-from-candidate-or-partial-facet-witness}],
  :checks {:test 2, :pass 16, :fail 0, :error 0, :type :summary},
  :final-task-or-requirement-denominator :not-conferred,
- :source-commit "c20ab7f2b3cd63aa021490b44cf7eb9c23fe8695",
+ :source-commit "e9722bb166ff8f158c2d12d78348af870d35652c",
  :documents
  [{:id "D0",
    :sequence 1N,
@@ -850110,7 +850172,15 @@
   :original-catalogue
   {:path "/tmp/acc11-final-facet-review/criterion-catalog.edn",
    :sha256
-   "811449cc66e60fa6b911fb8007424d0437130199b59cc760e33811d8d21fe40f"}},
+   "811449cc66e60fa6b911fb8007424d0437130199b59cc760e33811d8d21fe40f"},
+  :retired-owner-current-successor-proposals
+  {:path
+   "specs/requirement-reconciliation/retired-owner-current-successor-proposals.edn",
+   :sha256
+   "17e92c8a6d75c500ba530bb3b4e7f44f7fa76b1d584e53b0dc16a1cdcf9219be",
+   :source-commit "e9722bb166ff8f158c2d12d78348af870d35652c",
+   :subject-source-commit "08e8417a28055a2b249bb7b1bbce23bebe01c94a",
+   :authority :owner-proposal-pending-independent-acceptance}},
  :current-criteria
  {:decisions
   {:path
