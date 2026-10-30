@@ -178,3 +178,15 @@ an integration strategy that changes ancestry requires rechecking those pins.
 Only the coordinator may route acceptance and integrate the exact reviewed
 composition. No final global denominator, whole C1/C18/DOM17, source runtime,
 release, self-hosting or seed-retirement acceptance is conferred.
+
+Main advanced to `787637b9ae780a7cfef7ca5763611882a8f2b629`, tree
+`10296896f7c605b16b25cdf2981c23d0519b996c`, during preparation. Its four
+Resolver fixture/test paths are disjoint from this package. The private-branch
+merge `55b2f836c0ff45e8bf04309fe1b919b9460881ac` retains both the source-pin
+commits and the already committed main update; it does not integrate main.
+Every owned source mode/blob remains identical to the preceding candidate
+before refreshing the declared base in the composition record. Normative
+inputs remain exact. The incoming Resolver artifacts retain their main
+disposition and have not been executed or admitted by these source checks.
+The declared review base is now that exact `787637b9` commit, with independent
+affected-composition review and fresh exact-head CI/integration checks pending.

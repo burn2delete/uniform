@@ -64,7 +64,8 @@ The semantic key `compiler-api` names this package. Planning IDs appear only in 
 ## Finite plugin and domain source composition
 
 This later increment extracts the reviewed C17/C12 consumer and prerequisite
-producer criteria over main `70dcb2220701529dbb02bd2317a822eb3ac72fed`.
+producer criteria, initially over main `70dcb2220701529dbb02bd2317a822eb3ac72fed`.
+The current declared base is `787637b9ae780a7cfef7ca5763611882a8f2b629`.
 The [composition record](domain-contract-source-composition.edn) binds both
 archived exact source review receipts and six exact current criterion spans. Four
 prior main outcomes and their Open statuses remain, and the existing canonical
