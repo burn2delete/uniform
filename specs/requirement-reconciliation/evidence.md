@@ -3217,3 +3217,38 @@ All 833 decision records and their Open statuses remain exact. Existing source
 reviews retain captured subjects/scopes and implementation acceptance is unchanged.
 No compiler, domain checker, runtime/provider, broker/controller or target probe
 ran, and no restricted action was retried.
+
+Core publication uses metadata/census source
+`26e699e2defbfcf229d432410f9ab14183926c15` and complete inventory source
+`b7c699a0bbf37d66110e16df52191ffc97c02a90`. Complete inventory SHA256 is
+`e713835d0fb89af54d34c8f6633ce5a090634d3093fbbf98d74e281a8920252f`;
+Core trace SHA256 is
+`b530ead5955eb624290ca6f6768628677ba5bf2787bab9cad691d65d97803a58`.
+All 240 documents, 9,945 occurrences, 28,785 facets and 1,188 original owner
+identities remain conserved. Owner states are 984 candidates, 201 task-only joins
+and three retained retirement proposals. The finite index is 1,874 distinct IDs
+(1,772 + 103 - one existing context ID), with 22 overlaps and 1,311 pending
+proposals. Qualified original-source dispositions remain 507 semantic and 65
+context facets under prior exact scopes, with nine reviewed retirement facets
+outside the finite index. Inventory residuals are 5,418 formatting/hierarchy
+contexts, 20,427 pending complete predicates, 700 pending dependency joins and
+357 pending owner/metadata adjudications. The provisional census stays three
+Accepted, 190 Open, one Partial, one unassessed, 192 remaining out of 195 (3/195).
+
+Final focused checks pass: Core trace 2 tests/13 assertions; Core projection
+4/42; complete inventory 8/48 and serialized readback; SH 12/541 after generated
+writer completion; census 5/18; boundary 6/11; both document validators; generated
+SH/census checks; changed SH lint with zero findings; whitespace. Readback checks
+all C6 facets remain pending, exact old qualified IDs, nine source refinements,
+current Core spans, owner states and unchanged five-descriptor extension byte-only
+authority. Types accounting-history roles remain unchanged. No global snapshot
+silently renews earlier captured-subject reports.
+
+A subsequent source-gap inspection finds all six C16 owner identities already
+have criterion candidates, while C16's 114 original facets comprise fourteen
+format/hierarchy contexts, one pending proposal and 99 pending complete
+predicates. Candidate presence alone is not full current source entailment;
+complete C16 occurrence tracing remains concrete work. Independent C13 and
+Resolve review routing was reported by the existing orchestrator; no receipt
+or acceptance for either was delivered here during Core publication. No duplicate
+review, outbound message, new agent/chat, main integration or held action occurred.
