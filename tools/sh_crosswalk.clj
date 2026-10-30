@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "ffb3cbac042c3755f2296b98223e586486abca59", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c581bfb8465b1fcb066e51d3e335d14ae465dc72", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -655,13 +655,25 @@
          (select-keys syntax-pipeline-predecessor-review
                       [:status :input-fingerprint :source-version-bridge])))
 
-(def mapping-review
+(def current-main-predecessor-review
   (assoc macro-runtime-predecessor-review
          :input-fingerprint "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048"
          :source-version-bridge "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
          :macro-runtime-predecessor-review
          (select-keys macro-runtime-predecessor-review
                       [:status :input-fingerprint :source-version-bridge])))
+
+(def pr574-predecessor-review macro-runtime-predecessor-review)
+
+(def mapping-review
+  (assoc current-main-predecessor-review
+         :input-fingerprint "359dcbf1b0f0809a1c4b8b6fa1e3c19183e58182ca2b9fc03fb16c2ee9d621b7"
+         :current-main-predecessor-review current-main-predecessor-review
+         :pr574-predecessor-review pr574-predecessor-review
+         :published-d15-review (:published-d15-review (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn")))
+         :native-pure-source-review (:native-pure-source-review (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-composition-source-version.edn")))
+         :source-version-bridge "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn"
+         :qualification "Published Native and current macro ownership reporting composition only; all source/review histories retained, independent affected review pending."))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -750,6 +762,12 @@
     {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :pr574-composition-source-version
+     {:path "specs/sh-family-crosswalk/pr574-composition-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-composition-source-version.edn"))}
+     :pr574-conflict-composition-source-version
+     {:path "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn"))}
      :macro-runtime-source-version
      {:path "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
       :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/macro-runtime-source-version.edn"))}

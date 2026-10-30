@@ -121,3 +121,36 @@ ownership bytes and predecessor histories are unchanged by that incoming
 main; their existing source equation remains valid. Final static closure and
 focused checks bind the resulting new tuple, without executing PR651's genuine
 authentication/runtime tests or treating prior runtime evidence as current.
+
+## Published successor conflict composition
+
+The published `d15f5795` source acceptance is preserved as bounded history.
+Its publication against newer main encountered real reporting conflicts and
+did not start PR CI. The next local source merge is
+`c581bfb8465b1fcb066e51d3e335d14ae465dc72`, with parents published
+`d15f5795a51e6dee3b5699d633d11dcda3af5bb4` and actual main
+`e8f6fe3bf1971503bcf1d705d88c7432b95fdcca`.
+
+The crosswalk projection, adapter and tests combine both predecessor histories.
+`pr574-conflict-composition-source-version.edn` binds the committed ownership
+union and exact source-file references for both predecessor review records.
+It adds only the accepted three header registrations to current main, retaining
+the current macro helper, Reader, Syntax and Native ownership entries. Older
+source-version tests compare their historical committed inputs; the new
+positive and negative composition control owns the current live-byte check.
+The fresh reporting fingerprint remains pending independent review and grants
+no implementation or runtime acceptance. All 180 whole-criterion states stay
+unassessed.
+
+All seven accepted pure source/test blobs remain identical to published d15
+and accepted c15. Every other production source, loader input and configured
+CI input is conserved from the new main. Reuse of the 9/102 synthetic controls
+is limited to those identical pure inputs; it makes no claim of unchanged
+historical PR453 runtime closure. The new candidate's private source/resource
+equation and focused control results bind its final exact commit/tree.
+
+No genuine Native, Bootstrap, Reader, source authentication, MIR, runtime,
+lease or process operation is part of this conflict resolution. Publishing a
+changed successor requires the affected independent disposition and actual
+publication/CI gate checks. Normal PR CI and a later fresh coordinator
+integration preflight remain separate from local source validation.
