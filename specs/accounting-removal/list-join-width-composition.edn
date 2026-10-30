@@ -1,0 +1,103 @@
+{:parent-tree "49c42b821a44305b6dcd0bc7c54acb61cb5516d5",
+ :donor "edef2c00c103df4b5222cf44124c6e1d707820e4",
+ :owners
+ [{:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :function body-ij-element,
+   :caller body-ij-type-work,
+   :parent-file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :candidate-file-sha256
+   "54d8ff0cb2425e632d63cc4ac0f200cf6acbee7409e6e15da83cfccc7c9898ca",
+   :historical-donor-and-candidate-form-sha256
+   "28ab018a8b86a0a05ced2809eafc38fce7ba989b7e16b05f586dc40a9a0c5aac",
+   :unchanged-caller-form-sha256
+   "bf0499154074fe3718376891c9494a787fcb21d6578e49015f813bb42d35853a"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :function p15-s23-ij-element,
+   :caller p15-s23-ij-type-work,
+   :parent-file-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :candidate-file-sha256
+   "a6a1cfe27d592993623cff3783b851b6ac8cda4b065ea2dc9399dd77270e73b2",
+   :historical-donor-and-candidate-form-sha256
+   "9af62f61419ee70d917b9a28551263cd13ba8d3c00f2a25ea7c27df724d4028a",
+   :unchanged-caller-form-sha256
+   "736f9e90dbc6d6a977fdd9f640a886d4d8a2977699c5213561d67071211425d7"}],
+ :parent "c7a4d959d319e0e1bbaef059e41fc5c059497af8",
+ :donor-base "e9ec1c599614a99e3779b5e3a329e8d9a4b8fa80",
+ :source-check-count 1538,
+ :inert-source-refusals
+ [{:function body-ij-element,
+   :replacement
+   "(if finite? (if (vector? members) (<= width 1024) false) false)",
+   :result :refused-source-equation}
+  {:function body-ij-element,
+   :replacement "(if finite? true false)",
+   :result :refused-source-equation}
+  {:function body-ij-element,
+   :replacement "(if finite? false false)",
+   :result :refused-source-equation}
+  {:function body-ij-element,
+   :replacement "(if finite? (list? members) false)",
+   :result :refused-source-equation}
+  {:function body-ij-element,
+   :replacement "(if finite? (vector? type) false)",
+   :result :refused-source-equation}
+  {:function body-ij-element,
+   :replacement "(if homogeneous? (vector? members) false)",
+   :result :refused-source-equation}
+  {:function p15-s23-ij-element,
+   :replacement
+   "(if finite? (if (vector? members) (<= width 1024) false) false)",
+   :result :refused-source-equation}
+  {:function p15-s23-ij-element,
+   :replacement "(if finite? true false)",
+   :result :refused-source-equation}
+  {:function p15-s23-ij-element,
+   :replacement "(if finite? false false)",
+   :result :refused-source-equation}
+  {:function p15-s23-ij-element,
+   :replacement "(if finite? (list? members) false)",
+   :result :refused-source-equation}
+  {:function p15-s23-ij-element,
+   :replacement "(if finite? (vector? type) false)",
+   :result :refused-source-equation}
+  {:function p15-s23-ij-element,
+   :replacement "(if homogeneous? (vector? members) false)",
+   :result :refused-source-equation}],
+ :current-main-integration :unrun,
+ :genuine-compiler-effects-lowering-runtime :unrun,
+ :kind :list-join-width-consumer-composition,
+ :independent-review :pending,
+ :production-change
+ {:before
+  "(if finite? (if (vector? members) (<= width 1024) false) false)",
+  :after "(if finite? (vector? members) false)",
+  :occurrences-per-file 1},
+ :limits
+ [:no-helper-execution
+  :no-bootstrap-load
+  :no-transitive-behavior-proof
+  :outer-work-accounting-unresolved
+  :no-wide-context-support-claim
+  :no-PR502-closure
+  :no-release-or-self-hosting-credit],
+ :parent-acceptance :pending,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :complete-parent-files-conserved
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :sha256
+   "f15afdef6c91f20e6e228655537117db34dd1b5e28dc103a7c4c5769b17912d5"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :sha256
+   "d18ebccf0382726fa02bdcea0683b93a348ad8cad3c7cd05b427be770971595f"}
+  {:path
+   "specs/accounting-removal/list-join-consumer-controls-census.edn",
+   :sha256
+   "304269009dfc1e986dab2a8242e308f3fd9fa48cf1029d13ab92ae506d2e12a3"}
+  {:path "specs/accounting-removal/list-join-consumer-controls.md",
+   :sha256
+   "1fd3aa075747e46313b6f549b7a46bf708088d6bd5f73dd8ff55459210ae6caa"}]}
