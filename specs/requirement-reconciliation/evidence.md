@@ -1723,6 +1723,41 @@ are excluded. Their pending reviews, complete facet entailment and coordinator
 integration remain open. No implementation, runtime, release or self-hosting
 credit is conferred.
 
+## Qualified independent legacy ACC source-scope adoption
+
+The sealed phase-16 receipt has SHA256
+`59be0fb9c23e547143fdd90738289b152d96f8a50d0fa583eaa8074981e45963`
+for `17b4ee474f16bb5b74699f1eec5657b971c9a6c0`, tree
+`b0b51f1f4c0aedeb066302eb5e9f2aa763bc620c`. Its qualified source-scope PASS
+reports 6 tests / 266 assertions, 48 refusal controls and no blocking findings.
+The receipt, checker and control artifact hashes are verified. The reviewer
+did not author the ACC implementation criteria; the review excludes independent
+reacceptance of the reviewer's Stdlib predicates and any runtime reproduction.
+
+`legacy-acc13-qualified-current-applicability.edn` joins the receipt to
+`a993e1e062fa1086ae49d7b55136e41c9cced27e`. The entire scope artifact, ACC
+ledger/history, thirteen closing criteria, eight policy clauses, seven overlap
+relations, 66 component-interface memberships and their plan sources remain
+authentic. All 833 decision records and 195 task identities/states are exact.
+The 561 binding rows recover the reviewed rows after only the two later C-file
+pin inversions; all 4,819 current spans authenticate. Bootstrap source files are
+unchanged; historical whole-file executions are not relabeled current.
+
+`legacy-acc13-qualified-source-review-adoption.edn` records the qualified
+crosscutting source-scope and overlap acceptance. It supports zero additional
+registry entries under that explicit relation, not whole-task equivalence or a
+final project denominator. ACC-02/03 retain their original historical subjects,
+eleven ACC rows remain Open or Partial, and no closure is added to the three
+Accepted Reader tasks. Original pending labels remain derivation history under
+the new enumerated adoption authority.
+
+Only the ACC scope/adoption fields change in source dispositions; all 833
+records and the entire current 561-binding pointer remain identical. The census
+authenticates the adoption hash and exact subject/status before displaying its
+source-review status. Its progress arithmetic stays unchanged. Later C5 clauses,
+the finite 386 facet records, full entailment, final counting and coordinator
+integration remain separate. No implementation or execution credit is conferred.
+
 ### Governance14 and Performance/AI17 current allocation
 
 Task source `e8544466e159c5bd8898aeed0c928353fceeb0aa` composes ten

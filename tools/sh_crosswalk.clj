@@ -1355,6 +1355,28 @@
  :decision-records-unchanged 833,
  :applicability
  "specs/requirement-reconciliation/granularity13-qualified-current-applicability.edn"}
+    :legacy-acc13-qualified-source-review-adoption
+    {:reviewed-source "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+ :ACC-criteria 13,
+ :policy-criteria 8,
+ :component-interfaces 66,
+ :task-count-delta 0,
+ :implementation-credit :none,
+ :adoption
+ "specs/requirement-reconciliation/legacy-acc13-qualified-source-review-adoption.edn",
+ :final-denominator :not-accepted,
+ :source-commit "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :status
+ :independent-finite-ACC-source-scope-review-accepted-current-join-verified,
+ :new-completion-credit 0,
+ :overlap-relations 7,
+ :scope-artifact
+ {:path
+  "specs/requirement-reconciliation/legacy-acc13-current-scope-adjudication.edn",
+  :sha256
+  "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3"},
+ :applicability
+ "specs/requirement-reconciliation/legacy-acc13-qualified-current-applicability.edn"}
     :historical-criterion-source-composition
     {:source-commit "f1cb35013c9a132cda4557f7806616b19af0f3ed"
      :predecessor-input-fingerprint "4d79d6800a67b14d6162af7421dadc7646e0cbbaaaedb2b77127abc6be6abf25"

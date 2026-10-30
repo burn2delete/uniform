@@ -1,0 +1,237 @@
+{:receipt
+ {:path
+  "/Users/matt/.codex/visualizations/2026/10/29/01a18529-dad4-7de1-b68d-3e567c8976a3/legacy-acc13-review-17b4ee47/receipt.edn",
+  :sha256
+  "59be0fb9c23e547143fdd90738289b152d96f8a50d0fa583eaa8074981e45963",
+  :verdict :qualified-source-scope-pass,
+  :controls {:test 6, :pass 266, :fail 0, :error 0, :type :summary},
+  :negative-controls 48},
+ :coordinator-integration :required-separately,
+ :reviewed-source "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+ :excluded-later-work
+ [:C5-predicates
+  :finite386-facet-dispositions
+  :granularity13-source-adoption-scope-accepted-only-by-separate-receipt
+  :whole-facet-entailment
+  :final-count
+  :implementation],
+ :decision-and-binding-metadata
+ {:all833-decision-records :unchanged,
+  :current561-binding-pointer :unchanged,
+  :current-spans 4819},
+ :registry
+ {:total 195,
+  :accepted 3,
+  :remaining 192,
+  :authority :provisional-scoped-observation-only},
+ :implementation-credit :none,
+ :scope
+ :legacy-ACC-crosscutting-source-scope-and-overlap-relations-only,
+ :source-commit "a993e1e062fa1086ae49d7b55136e41c9cced27e",
+ :reviewer-exclusions
+ {:thread "01a18529-dad4-7de1-b68d-3e567c8976a3",
+  :authored-ACC13-implementation-criteria false,
+  :proposal-author :phase10,
+  :stdlib-body-semantic-reacceptance :excluded,
+  :stdlib-reference-scope :byte-and-binding-conservation-only},
+ :status
+ :independent-finite-ACC-source-scope-review-accepted-current-join-verified,
+ :kind
+ :qualified-independent-legacy-acc13-source-scope-review-adoption,
+ :sealed-source-review
+ {:schema :independent-legacy-acc13-scope-review-v1,
+  :identity-correction
+  {:handoff "55417b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+   :authenticated-as :PR554-plus-40-character-commit,
+   :basis
+   [:canonical-published-checkpoint :git-head-tree :artifact-hash]},
+  :execution
+  {:mode :immutable-Git-and-core-Clojure-DATA,
+   :author-code-loaded false,
+   :bootstrap-loaded false,
+   :runtime-or-producer-operation false,
+   :canonical-or-author-writes false,
+   :github-approval false,
+   :merge false,
+   :denied-or-unknown-operation-replay false},
+  :negative-controls
+  {:count 48,
+   :cases
+   [:missing-each-ACC-row
+    :weakened-each-original-closing-criterion
+    :coherently-weakened-each-row-and-rehashed-witness
+    :add-thirteen
+    :retire-row
+    :forged-file-hash
+    :forged-task
+    :shifted-span
+    :PR474-double-credit
+    :ACC02-evidence-as-Reader-closure
+    :both-historical-closures-as-fresh-execution],
+   :positive-valid-candidate-and-shared-single-unit true},
+  :checker-development
+  "Draft checker delimiter, table-selection and shape comparisons corrected; final controls pass. Draft checker errors were not candidate findings.",
+  :blocking-findings [],
+  :goal
+  {:original83-status :blocked,
+   :new-goal-created false,
+   :supplement-recorded true},
+  :controls {:test 6, :pass 266, :fail 0, :error 0, :type :summary},
+  :overlap-dispositions
+  [{:rows ["ACC-03" "ACC-06"],
+    :relation :premise-migration-vs-recursive-helper-admission,
+    :same-scope-alias false,
+    :disposition
+    "LR schema closure remains ACC03; unfinished helper admission remains ACC06. Shared LR source does not merge predicates.",
+    :new-completion-credit 0}
+   {:rows ["ACC-05" "ACC-09"],
+    :relation :explicit-existing-owner-partition,
+    :same-scope-alias :runtime-subobligation-only,
+    :disposition
+    "The same runtime construction/membership subobligation is routed to ACC09. Retain ACC05 dependency/remaining consumer boundary without creating a second runtime implementation or completion unit.",
+    :new-completion-credit 0}
+   {:rows ["ACC-05" "ACC-06" "ACC-07" "ACC-08"],
+    :relation :outer-pool-interface-dependencies,
+    :same-scope-alias false,
+    :disposition
+    "Do not duplicate outer allowances under PL helpers; preserve separately owned source/recursive/inference/module acceptance.",
+    :new-completion-credit 0}
+   {:rows ["ACC-08" "ACC-13"],
+    :relation :one-finite-integrated-change-shared-evidence,
+    :same-scope-alias :PR474-Core-envelope-binding-shape-unit-only,
+    :disposition
+    "Record the one integrated finite unit once, with both original criterion references; neither whole row closes.",
+    :new-completion-credit 0}
+   {:rows ["ACC-01" "ACC-13"],
+    :relation :discovery-classification-vs-owned-removal,
+    :same-scope-alias false,
+    :disposition
+    "The source census inventories/classifies discoveries; ACC13 requires their actual owner removal/retention dispositions and acceptance. Do not drop the latter because census found them.",
+    :new-completion-credit 0}
+   {:rows ["ACC-01" "ACC-12"],
+    :relation :inventory-vs-final-composed-closure,
+    :same-scope-alias false,
+    :disposition
+    "Inventory and final removal/test/contract/current-main evidence are distinct outputs. Their eight shared policy clauses refine existing rows rather than eight new tasks.",
+    :new-completion-credit 0}
+   {:rows ["ACC-10" "ACC-11"],
+    :relation :distinct-pipeline-owner-interfaces,
+    :same-scope-alias false,
+    :disposition
+    "MIR/Native production and optimization/lowering composition retain different producer/consumer checks; a common MIR input is not an alias.",
+    :new-completion-credit 0}],
+  :verdict :qualified-source-scope-pass,
+  :limits
+  [:exact-frozen-head-only
+   :not-current-later-head-acceptance
+   :not-ACC-implementation-closure
+   :not-independent-stdlib-predicate-reacceptance
+   :not-original-historical-runtime-result-reproduction
+   :not-full-facet-entailment
+   :not-final-whole-project-count
+   :not-canonical-adoption],
+  :reviewer
+  {:thread "01a18529-dad4-7de1-b68d-3e567c8976a3",
+   :authored-ACC13-implementation-criteria false,
+   :proposal-author :phase10,
+   :stdlib-body-semantic-reacceptance :excluded,
+   :stdlib-reference-scope :byte-and-binding-conservation-only},
+  :proposal
+  {:sha256
+   "b7f1b1caa4a66c5af08d59acb0c8de1386767cb31bf329abb339baaa313a1fe3",
+   :candidate "cd1f8ce15cff019d5997e4c5d3bb112c3376ef3d",
+   :tree "4b6970abb8d7c91d335e83573ed6dc33a09740d9",
+   :role :source-proposal-not-independent-review},
+  :scope-adjudication
+  {:ACC-denominator-delta 0,
+   :retired-tasks [],
+   :granularity-envelope-review :separate-phase13,
+   :new-tasks [],
+   :implementation-credit :none,
+   :final-195-denominator-acceptance :not-conferred,
+   :new-completion-credit 0,
+   :qualification
+   :no-additional-registry-entry-under-declared-crosscutting-interface-relation,
+   :whole-task-equivalence :not-established,
+   :canonical-adoption :pending},
+  :subject
+  {:pull-request 554,
+   :head "17b4ee474f16bb5b74699f1eec5657b971c9a6c0",
+   :tree "b0b51f1f4c0aedeb066302eb5e9f2aa763bc620c",
+   :relation-commit "d8a37ba6bec506d507b187df233ea980dd4af86b",
+   :applying-source "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
+   :path
+   "specs/requirement-reconciliation/legacy-acc13-current-scope-adjudication.edn",
+   :sha256
+   "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3"},
+  :verified
+  {:registry-task-records-and-statuses :conserved,
+   :entire-ledger-and-history
+   :byte-identical-to-frozen-proposal-source,
+   :old-execution-as-fresh :refused,
+   :reader-scopes-distinct true,
+   :accepted-reader-records 3,
+   :all-current-prior-span-and-file-hashes-authentic true,
+   :policy-clauses 8,
+   :dependency-plans-authentic-and-conserved true,
+   :component-interface-memberships 66,
+   :policy-owners ["ACC-01" "ACC-12"],
+   :open-or-partial 11,
+   :entire-source-dispositions
+   :equal-after-removing-single-legacy-scope-field,
+   :finite-PR474-evidence
+   :one-unit-shared-by-two-criteria-not-two-completions,
+   :decision-states {:open 833},
+   :historical-source-file-differences 6,
+   :registry-observation 195,
+   :historically-closed ["ACC-02" "ACC-03"],
+   :original-ACC-rows 13,
+   :overlap-relations 7,
+   :original-closing-criteria-and-dependencies :exact,
+   :historical-bindings-conserved 561,
+   :decisions-conserved 833},
+  :artifacts
+  {:checker
+   {:path
+    "/Users/matt/.codex/visualizations/2026/10/29/01a18529-dad4-7de1-b68d-3e567c8976a3/legacy-acc13-review-17b4ee47/review.clj",
+    :sha256
+    "e89fb23ec15e8c40207b389f2dbe309f42607adb7cb4e0974d731cd11a90b9b8"},
+   :controls
+   {:path
+    "/Users/matt/.codex/visualizations/2026/10/29/01a18529-dad4-7de1-b68d-3e567c8976a3/legacy-acc13-review-17b4ee47/controls.edn",
+    :sha256
+    "762f0e537c439bb5554eb4238c07078c212f2449e0832460234d6fbe221dd376"}}},
+ :limits
+ [:exact-frozen-head-only
+  :not-current-later-head-acceptance
+  :not-ACC-implementation-closure
+  :not-independent-stdlib-predicate-reacceptance
+  :not-original-historical-runtime-result-reproduction
+  :not-full-facet-entailment
+  :not-final-whole-project-count
+  :not-canonical-adoption],
+ :scope-adjudication
+ {:final-project-denominator :not-accepted,
+  :ACC-denominator-delta 0,
+  :policy-criteria 8,
+  :historical-closures ["ACC-02" "ACC-03"],
+  :component-interface-memberships 66,
+  :additional-registry-entries [],
+  :retired-entries [],
+  :original-criteria 13,
+  :new-completion-credit 0,
+  :unfinished-rows 11,
+  :overlap-relations 7,
+  :whole-task-equivalence :not-established},
+ :scope-artifact
+ {:path
+  "specs/requirement-reconciliation/legacy-acc13-current-scope-adjudication.edn",
+  :sha256
+  "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3"},
+ :step-specific-pending-statuses
+ :derivation-history-this-adoption-is-current-source-scope-authority,
+ :applicability
+ {:path
+  "specs/requirement-reconciliation/legacy-acc13-qualified-current-applicability.edn",
+  :sha256
+  "8a1989244e27958f19cdc911f1f19ed2b917ea1fbe8a75002add31b57b064501"}}

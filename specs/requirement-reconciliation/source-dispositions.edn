@@ -18,6 +18,15 @@
   :independent-finite-source-repartition-review-accepted-current-join-verified,
   :scope
   :thirteen-sibling-source-envelopes-and-conserved-witness-routing-only},
+ :legacy-acc13-qualified-source-review
+ {:path
+  "specs/requirement-reconciliation/legacy-acc13-qualified-source-review-adoption.edn",
+  :sha256
+  "18258b762395d5c0639daf13eb5fa8159d1eac833611e2ec08c08afd16553141",
+  :status
+  :independent-finite-ACC-source-scope-review-accepted-current-join-verified,
+  :scope
+  :legacy-ACC-crosscutting-source-scope-and-overlap-relations-only},
  :source-metadata-admissions
  [{:path
    "specs/requirement-reconciliation/gpu2-source-metadata-admission.edn",
@@ -9344,10 +9353,15 @@
   "5d836ec778683ce0cc1a20e635a487145de1c42f90b9ab279818ec7ed6dafad3",
   :source-commit "ebba8d97c454969e99c601ff970a5c23e7abe3ff",
   :status
-  :owner-adjudicated-source-relations-pending-independent-review,
+  :independent-finite-ACC-source-scope-review-accepted-current-join-verified,
   :counting
   :separate-crosscutting-remediation-ledger-not-additional-registry-entries,
-  :implementation-credit :none},
+  :implementation-credit :none,
+  :review-adoption
+  {:path
+   "specs/requirement-reconciliation/legacy-acc13-qualified-source-review-adoption.edn",
+   :sha256
+   "18258b762395d5c0639daf13eb5fa8159d1eac833611e2ec08c08afd16553141"}},
  :remaining-decisions
  [{:source-document-ids [],
    :required-output

@@ -65,6 +65,12 @@
                    (require! (= (:sha256 legacy-ref) (sh-inventory/sha256 text))
                              "Stale legacy ACC scope relation")
                    (edn/read-string text)))
+        legacy-review-ref (:review-adoption legacy-ref)
+        legacy-review (when legacy-review-ref
+                        (let [text (pinned-text ref (:path legacy-review-ref))]
+                          (require! (= (:sha256 legacy-review-ref) (sh-inventory/sha256 text))
+                                    "Stale legacy ACC review adoption")
+                          (edn/read-string text)))
         task (fn [row]
                (let [path (:path row) text (pinned-text ref path)
                      plan (str "specs/" (:component row) "-workflow/plan.md")
@@ -101,6 +107,11 @@
         (require! (every? (set (map :id tasks))
                          (mapcat #(map :task-id (:current-task-interfaces %)) (:rows legacy)))
                   "Missing task for legacy ACC interface relation")))
+    (when legacy-review
+      (require! (= (select-keys legacy-ref [:path :sha256]) (:scope-artifact legacy-review))
+                "Legacy ACC review names a different scope artifact")
+      (require! (= (:status legacy-ref) (:status legacy-review))
+                "Legacy ACC review status disagrees with its adoption"))
     {:kind :provisional-derived-task-census :schema-version 1 :authority :read-only-derived-task-census
      :source-commit ref :inventory-sha256 (sh-inventory/sha256 inventory)
      :dispositions {:path disposition-path :sha256 (sh-inventory/sha256 (slurp disposition-path))}
@@ -117,7 +128,7 @@
              :phase-and-migration-checkboxes :not-counted}
               legacy (assoc :legacy-remediation
                             {:source legacy-ref
-                             :status (:status legacy)
+                             :status (if legacy-review (:status legacy-review) (:status legacy))
                              :disposition (:scope-disposition legacy)}))
      :progress (progress tasks) :tasks (vec (sort-by :id tasks))
      :remaining-decisions {:count (count decisions) :source disposition-path
