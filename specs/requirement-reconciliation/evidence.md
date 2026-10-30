@@ -2392,3 +2392,56 @@ all five descriptors. Link checks pass 2 tests / 11 assertions, conserving the
 criterion and facet records, and proving original/extension ID disjointness.
 The original facet-proposal count remains 674. No implementation, scoped task
 ratio or final-count credit follows from these byte checks.
+
+## Complete C15 source and five original diagnostic owner joins
+
+Task source `916f020c064991fd308550e4e934c0b4443f6d6b` refines two
+existing Open Diagnostics tasks. The record producer gains concrete canonical
+record/stream, severity/lifecycle, location/fact, manifest-link and actual
+summary requirements plus source-specific foundation rejection context. The
+existing view/redaction task gains CLI/JSON/IDE/CI/localization/explain/quick-fix
+parity, semantic golden assertions and public/private/audit publication rules.
+Both other Diagnostics records, all original criterion bodies and task states
+are conserved. Actual summary counts describe stream contents, not work quotas.
+
+`c15-owner-source-refinement.edn` records the two exact insertions and full-file
+inverse. The additions retain early-phase nil availability, actual generated
+origins, privacy-qualified producer disclosure, resolved identity before public
+projection, authorized private records and suppressed internal audits. View
+goldens compare typed semantic fields, remediation categories/targets and order,
+allowing human wording to improve without changing identity. Diagnostics about
+diagnostics retain their offending subject and field context. Foundation
+records consume actual owning-checker failures; record production cannot
+substitute for architecture decisions, legality or release admission.
+
+`c15-complete-current-facet-trace.edn` retains all 133 C15 facets across 54 source
+occurrences, with 38 manually assessed semantic conjunction cases. The example
+schema's kernel/LLVM/C8 values remain one illustrative instance, not universal
+or invented early-reader context. Named dependency joins retain actual stage,
+syntax/origin, publication-policy, tooling and test producer/consumer roles.
+Thirteen foundation diagnostic predicates receive source-specific joins.
+Twenty other attached foundation scope/artifact/decision/legality predicates
+are explicitly retained as residuals and are not discharged by diagnostic data.
+
+Five original owners now have proposed exact current criterion conjunctions:
+foundation diagnostic context, generated origins, identity/order, views and
+redaction. These replace task-reference-only candidate discovery; they add no
+decision IDs or task units and do not confer independent source acceptance.
+All 833 decision records remain Open and exactly conserved, with 931 current
+owning witnesses. All 561 historical mappings and 4,819 raw predicate spans
+authenticate; one historical Diagnostics-file pin and the separately active
+bootstrap diagnostic criterion pin refresh while preserving their raw bodies.
+Earlier qualified reviews and finite Reader results retain their scopes.
+
+The finite owner-facet index now has 819 distinct original IDs and five exact
+metadata overlaps. An initial preparation assumed four C15 provenance overlaps
+and failed before canonical metadata writes. Actual ID-set inspection found
+one shared C15 preface facet; 674 + 146 - 1 is 819. The four preexisting overlaps
+remain unchanged. All duplicate raw hashes authenticate; no duplicate credit
+or allowance is introduced by the corrected population calculation.
+
+Source checks pass 2 tests / 16 assertions, including complete C15/owner/source
+populations, explicit residual separation, missing-member and tampered-source
+controls. Diagnostics projection tests pass 4 / 65. Complete source entailment,
+independent current/final-count acceptance and coordinator integration remain
+required. No compiler/runtime/broker/controller or diagnostic execution occurred.

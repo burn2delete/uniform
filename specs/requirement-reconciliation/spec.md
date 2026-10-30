@@ -58,6 +58,12 @@ The [current D2 fixture refinement](d2-triage-current-facet-trace.edn) addresses
 that identified gap in the existing AI task, with exact positive and negative
 source witnesses. Its independent source acceptance and actual future fixture
 execution remain separate from the immutable earlier lineage proposal.
+The [complete C15 source trace](c15-complete-current-facet-trace.edn) joins all
+133 C15 facets and thirteen foundation diagnostic predicates to current record,
+identity, view, redaction and test criteria. Five original diagnostic owners gain
+exact candidate joins; twenty unrelated foundation attachments remain residuals.
+These source proposals require independent acceptance and confer no execution
+or implementation credit.
 Family proposals use the preserved
 [proposal format](../../.specify/requirement-proposal-format.edn) and guarded
 field edits. Delivered decisions and their exact review receipts precede new
