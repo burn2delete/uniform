@@ -1,0 +1,16 @@
+{:kind :macro-runtime-ownership-source-version
+ :authority :source-conservation-only
+ :status :pending-independent-source-version-review
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn"
+  :before {:commit "c7804fa6b5826b5a73a0e98274079376fcf1f3be"
+           :sha256 "c03f626c84f8d2f21405c867735e4bcad8228eb4ced5a8f1a16123ca34e200a4"}
+  :after {:commit "ffb3cbac042c3755f2296b98223e586486abca59"
+          :sha256 "c742e291bf3aa0f85ad8c80b95b215680f2fa36a0dd218add9261e9c684845f4"}}
+ :added-entries
+ {:production-helper-associations "bootstrap/clojure/src/gravity/macro.clj"
+  :module-owners "bootstrap/clojure/src/gravity/macro.clj"
+  :standalone-test-owners "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"}
+ :predecessor-input-fingerprint "9bbe81fd3a6b40aa2cff2ba10d32764ab86faf692bd8d3cb133e018a022a4a4e"
+ :qualification
+ "Only macro plan runtime source/consumer/test ownership is added. All predecessor ownership entries, task predicates/statuses, routing, source pins and pending review history remain. This is read-only reporting provenance, not a compiler migration fingerprint or semantic acceptance. All current whole-criterion assessments remain unassessed."}

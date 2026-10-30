@@ -1,3 +1,104 @@
+(clojure.core/require 'gravity.macro)
+
+(declare
+ sh05-contain-coordinator-operation!
+ sh05-macro-boundary-fail!
+ sh05-macro-cached-binding
+ sh05-macro-compute-plan-identities
+ sh05-macro-execute!
+ sh05-macro-expected-function-count
+ sh05-macro-expected-function-names-hash
+ sh05-macro-expected-function-shapes-hash
+ sh05-macro-expected-functions-semantic-hash
+ sh05-macro-expected-plan-semantic-hash
+ sh05-macro-expected-source-byte-count
+ sh05-macro-expected-source-content-hash
+ sh05-macro-pinned-plan-identities
+ sh05-macro-plan-identities
+ sh05-macro-public-function-hashes
+ sh05-macro-public-function-shapes
+ sh05-macro-raise-rejection!
+ sh05-macro-read-pinned-source!
+ sh05-macro-resolve-digests!
+ sh05-macro-resolve-source-path
+ sh05-macro-source-relative-path
+ sh05-macro-version
+ sh05-resolve-expansion-template!
+ sh05-resolve-request-preimage!)
+
+(declare ^:private macro-stage-input)
+
+(def
+ ^{:private true} macro-stage-defaults
+ {:p15-s23-stage2-compiler-artifact-plan
+  #'p15-s23-stage2-compiler-artifact-plan,
+  :sh05-macro-execute! #'sh05-macro-execute!,
+  :sh05-resolve-expansion-template! #'sh05-resolve-expansion-template!,
+  :source-span #'source-span,
+  :p15-s23-stage2-runtime-execute-function
+  #'p15-s23-stage2-runtime-execute-function,
+  :p15-s23-stage2-compiler-artifact-semantic-input
+  #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh05-macro-resolve-digests! #'sh05-macro-resolve-digests!,
+  :sha256-hex #'sha256-hex,
+  :sh05-macro-compute-plan-identities
+  #'sh05-macro-compute-plan-identities,
+  :sh05-macro-resolve-source-path #'sh05-macro-resolve-source-path,
+  :sh05-contain-coordinator-operation!
+  #'sh05-contain-coordinator-operation!,
+  :c-backend-canonical-value #'c-backend-canonical-value,
+  :c4-macro-fail! #'c4-macro-fail!,
+  :sh05-macro-plan-identities #'sh05-macro-plan-identities,
+  :sh05-resolve-request-preimage! #'sh05-resolve-request-preimage!,
+  :sha256-bytes-hex #'sha256-bytes-hex,
+  :sh05-macro-boundary-fail! #'sh05-macro-boundary-fail!,
+  :input #'macro-stage-input,
+  :sh05-macro-raise-rejection! #'sh05-macro-raise-rejection!,
+  :c-backend-stage2-plan-emitter-source-rule!
+  #'c-backend-stage2-plan-emitter-source-rule!,
+  :sh05-macro-read-pinned-source! #'sh05-macro-read-pinned-source!,
+  :p15-s23-stage2-compiler-artifact-source-path
+  #'p15-s23-stage2-compiler-artifact-source-path,
+  :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :p15-s23-c6c10-canonical-digest #'p15-s23-c6c10-canonical-digest,
+  :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
+
+(defn- macro-stage-operations [] macro-stage-defaults)
+
+(defn-
+ macro-stage-input
+ [key]
+ (case
+  key
+  :c4-macro-diagnostic-ids
+  c4-macro-diagnostic-ids
+  :sh05-macro-cached-binding
+  sh05-macro-cached-binding
+  :sh05-macro-expected-function-count
+  sh05-macro-expected-function-count
+  :sh05-macro-expected-function-names-hash
+  sh05-macro-expected-function-names-hash
+  :sh05-macro-expected-function-shapes-hash
+  sh05-macro-expected-function-shapes-hash
+  :sh05-macro-expected-functions-semantic-hash
+  sh05-macro-expected-functions-semantic-hash
+  :sh05-macro-expected-plan-semantic-hash
+  sh05-macro-expected-plan-semantic-hash
+  :sh05-macro-expected-source-byte-count
+  sh05-macro-expected-source-byte-count
+  :sh05-macro-expected-source-content-hash
+  sh05-macro-expected-source-content-hash
+  :sh05-macro-pinned-plan-identities
+  sh05-macro-pinned-plan-identities
+  :sh05-macro-public-function-hashes
+  sh05-macro-public-function-hashes
+  :sh05-macro-public-function-shapes
+  sh05-macro-public-function-shapes
+  :sh05-macro-source-relative-path
+  sh05-macro-source-relative-path
+  :sh05-macro-version
+  sh05-macro-version))
+
 
 
 ;; SH-05 executes the pinned Gravity macro leaf over authenticated SH-04
@@ -42,190 +143,67 @@
 (def sh05-macro-envelope-stage :c4-macro)
 (def sh05-macro-sealed-artifact-kind :gravity/sh05-macro-products)
 
-(defn sh05-macro-boundary-fail!
-  [rule source-path missing-field observed facts]
-  (c4-macro-fail!
-   rule source-path
-   {:source-span (source-span source-path 0)
-    :macro 'gravity.core/defn
-    :macro-version sh05-macro-version
-    :profile :meta
-    :target :jvm
-    :build-effects []
-    :capabilities []
-    :hygiene {:marks [] :lexical-scopes []}}
-   {:severity :error
-    :missing-fields [missing-field]
-    :facts (merge {:sh05-boundary :gravity-macro-plan} facts)
-    :observed observed}))
+(defn
+ sh05-macro-boundary-fail!
+ [rule source-path missing-field observed facts]
+ (gravity.macro/boundary-fail!
+  rule
+  source-path
+  missing-field
+  observed
+  facts
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-(defn sh05-macro-resolve-source-path
-  []
-  (let [anchor (java.io.File.
-                (p15-s23-stage2-compiler-artifact-source-path))
-        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
-    (or
-     (loop [directory start]
-       (when directory
-         (let [candidate
-               (java.io.File. directory sh05-macro-source-relative-path)]
-           (if (.isFile candidate)
-             (.getPath candidate)
-             (recur (.getParentFile directory))))))
-     sh05-macro-source-relative-path)))
+(defn
+ sh05-macro-resolve-source-path
+ []
+ (gravity.macro/resolve-plan-source-path
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-(defn sh05-macro-read-pinned-source!
-  [request-source]
-  (let [source-path (sh05-macro-resolve-source-path)
-        nio-path (.toPath (java.io.File. source-path))
-        nofollow (into-array java.nio.file.LinkOption
-                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-        attributes
-        (try
-          (java.nio.file.Files/readAttributes
-           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
-          (catch Exception error
-            (sh05-macro-boundary-fail!
-             "C4-TRACE" request-source :pinned-macro-source-readable
-             source-path {:cause-message (.getMessage error)})))
-        _ (when-not (and attributes (.isRegularFile attributes)
-                         (= (long sh05-macro-expected-source-byte-count)
-                            (.size attributes)))
-            (sh05-macro-boundary-fail!
-             "C4-TRACE" request-source :exact-pinned-macro-source
-             source-path
-             {:expected-byte-count sh05-macro-expected-source-byte-count
-              :observed-byte-count (when attributes (.size attributes))}))
-        bytes
-        (try
-          (java.nio.file.Files/readAllBytes nio-path)
-          (catch Exception error
-            (sh05-macro-boundary-fail!
-             "C4-TRACE" request-source :pinned-macro-source-bytes
-             source-path {:cause-message (.getMessage error)})))
-        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
-    (when-not (and (= sh05-macro-expected-source-byte-count
-                      (alength bytes))
-                   (= sh05-macro-expected-source-content-hash content-hash))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE" request-source :pinned-macro-source-identity
-       source-path {:observed-content-hash content-hash
-                    :observed-byte-count (alength bytes)}))
-    {:source-path source-path
-     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
-     :source-byte-count (alength bytes)
-     :source-content-hash content-hash}))
+(defn
+ sh05-macro-read-pinned-source!
+ [request-source]
+ (gravity.macro/read-pinned-plan-source!
+  request-source
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-(defn- sh05-macro-compute-plan-identities
-  [plan]
-  (let [functions (:functions plan)
-        shapes
-        (into (sorted-map)
-              (map (fn [[name function]]
-                     [name (select-keys function [:arity :params])]))
-              functions)]
-    {:plan-semantic-hash
-     (p15-s23-c11-mir-digest
-      (p15-s23-stage2-compiler-artifact-semantic-input plan))
-     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
-     :function-count (count functions)
-     :function-names-hash
-     (p15-s23-c11-mir-digest (vec (keys functions)))
-     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
-     :public-function-hashes
-     (into (sorted-map)
-           (map (fn [name]
-                  [name (p15-s23-c11-mir-digest (get functions name))]))
-           (keys sh05-macro-public-function-hashes))
-     :public-function-shapes
-     (select-keys shapes (keys sh05-macro-public-function-shapes))}))
+(defn-
+ sh05-macro-compute-plan-identities
+ [plan]
+ (gravity.macro/compute-plan-identities
+  plan
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
 (def ^:private sh05-macro-pinned-plan-identities
   (atom nil))
 
-(defn sh05-macro-plan-identities
-  [plan]
-  (let [[pinned-plan pinned-identities] @sh05-macro-pinned-plan-identities]
-    (if (and pinned-plan (identical? pinned-plan plan))
-      pinned-identities
-      (sh05-macro-compute-plan-identities plan))))
+(defn
+ sh05-macro-plan-identities
+ [plan]
+ (gravity.macro/plan-identities
+  plan
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
-(defn sh05-macro-build-binding!
-  [request-source]
-  (let [source (sh05-macro-read-pinned-source! request-source)
-        emitter
-        (:emitter
-         (c-backend-stage2-plan-emitter-source-rule!
-          (:source-path source) :jvm))
-        raw-plan
-        (p15-s23-stage2-compiler-artifact-plan
-         emitter (:source-path source) (:source-text source))
-        identities (sh05-macro-compute-plan-identities raw-plan)]
-    (when-not
-     (and (= :gravity/stage2-compiler-artifact-plan (:kind raw-plan))
-          (true? (:compiler-artifact-plan? raw-plan))
-          (= 'gravity.macro (get-in raw-plan [:module :module]))
-          (= :meta (get-in raw-plan [:module :profile]))
-          (= :jvm (get-in raw-plan [:module :target]))
-          (= #{} (get-in raw-plan [:module :effects]))
-          (= #{} (get-in raw-plan [:module :capabilities]))
-          (= :safe (get-in raw-plan [:module :safety]))
-          (= sh05-macro-expected-plan-semantic-hash
-             (:plan-semantic-hash identities))
-          (= sh05-macro-expected-functions-semantic-hash
-             (:functions-semantic-hash identities))
-          (= sh05-macro-expected-function-count (:function-count identities))
-          (= sh05-macro-expected-function-names-hash
-             (:function-names-hash identities))
-          (= sh05-macro-expected-function-shapes-hash
-             (:function-shapes-hash identities))
-          (= sh05-macro-public-function-hashes
-             (:public-function-hashes identities))
-          (= sh05-macro-public-function-shapes
-             (:public-function-shapes identities)))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE" request-source :pinned-macro-plan-and-functions
-       identities {}))
-    (let [authenticated-plan-base
-          (assoc-in (dissoc raw-plan :plan-id)
-                    [:source :byte-count] (:source-byte-count source))
-          plan
-          (assoc authenticated-plan-base :plan-id
-                 (str "sha256:"
-                      (sha256-hex
-                       (pr-str
-                        (c-backend-canonical-value
-                         authenticated-plan-base)))))]
-      (reset! sh05-macro-pinned-plan-identities [plan identities])
-      (merge source identities
-             {:artifact :gravity/sh05-pinned-macro-plan-binding
-              :status :complete
-              :semantic-authority :gravity-source
-              :compiled-by :clojure-stage0-seed
-              :executed-by :clojure-stage2-generic-rule-runner
-              :generic-bridge-residual? true
-              :self-hosted? false
-              :plan plan}))))
+(defn
+ sh05-macro-build-binding!
+ [request-source]
+ (gravity.macro/build-plan-binding!
+  request-source
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))
 
 (def ^:private sh05-macro-cached-binding
   (delay (sh05-macro-build-binding! "<sh05-macro-bootstrap>")))
 
-(defn sh05-macro-current-binding!
-  [request-source]
-  (let [fresh (sh05-macro-read-pinned-source! request-source)
-        binding @sh05-macro-cached-binding
-        identities (sh05-macro-plan-identities (:plan binding))]
-    (when-not
-     (and (= (:source-byte-count fresh) (:source-byte-count binding))
-          (= (:source-content-hash fresh) (:source-content-hash binding))
-          (= (select-keys
-              binding
-              [:plan-semantic-hash :functions-semantic-hash
-               :function-count :function-names-hash
-               :function-shapes-hash :public-function-hashes
-               :public-function-shapes])
-             identities))
-      (sh05-macro-boundary-fail!
-       "C4-TRACE" request-source :fresh-macro-source-and-plan-binding
-       binding {}))
-    binding))
+(defn
+ sh05-macro-current-binding!
+ [request-source]
+ (gravity.macro/current-plan-binding!
+  request-source
+  ^{:line 112, :column 65}
+  (macro-stage-operations)))

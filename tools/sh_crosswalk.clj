@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "7b0800bf8a5113b323f693acbaecba11724a6104", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "ffb3cbac042c3755f2296b98223e586486abca59", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -284,7 +284,7 @@
   "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction"
   "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints"],
  "compiler-api"
- ["pipeline" "plugins" "pass-evidence" "development-boundaries"],
+ ["pipeline" "plugins" "pass-evidence" "development-boundaries" "domain-ir-boundaries"],
  "core"
  ["core/current-evidence-and-remaining-work/core1-lower-core-forms"
   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure"
@@ -637,13 +637,31 @@
  :prior-current-main-qualification
  "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."}
 )
-(def mapping-review
+(def compiler-domain-predecessor-review
   (assoc reader-dispatch-mapping-review
          :input-fingerprint "72d98bc3492489de1de0f43982ac06f707578f57468b3df934e2eec3c8e85aed"
          :source-version-bridge "specs/sh-family-crosswalk/reader-assembly-source-version.edn"
          :reader-assembly-predecessor-review reader-dispatch-mapping-review
          :reader-assembly-source-version
          "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
+
+(def syntax-pipeline-predecessor-review (assoc compiler-domain-predecessor-review :compiler-domain-predecessor-review compiler-domain-predecessor-review :input-fingerprint "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465" :compiler-domain-current-source {:status :pending-independent-affected-composition-review, :path "specs/compiler-api-workflow/domain-contract-source-composition.edn", :sha256 "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e", :source-commit "ce96db1e2d4fd2846b8939ca9b01d6f8d5934474", :implementation-credit :none, :global-count-adoption :none}))
+
+(def macro-runtime-predecessor-review
+  (assoc syntax-pipeline-predecessor-review
+         :input-fingerprint "9bbe81fd3a6b40aa2cff2ba10d32764ab86faf692bd8d3cb133e018a022a4a4e"
+         :source-version-bridge "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"
+         :syntax-pipeline-predecessor-review
+         (select-keys syntax-pipeline-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])))
+
+(def mapping-review
+  (assoc macro-runtime-predecessor-review
+         :input-fingerprint "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048"
+         :source-version-bridge "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
+         :macro-runtime-predecessor-review
+         (select-keys macro-runtime-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -732,6 +750,12 @@
     {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :macro-runtime-source-version
+     {:path "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/macro-runtime-source-version.edn"))}
+     :syntax-pipeline-source-version
+     {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"))}
      :reader-assembly-source-version
      {:path "specs/sh-family-crosswalk/reader-assembly-source-version.edn"
       :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))}
