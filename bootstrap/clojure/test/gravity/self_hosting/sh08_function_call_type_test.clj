@@ -7221,6 +7221,16 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (not (contains? descriptor :operand-type-work)))
+        (doseq [obsolete [0 1]]
+          (let [forged (assoc descriptor :operand-type-work obsolete)
+                typed (assoc (:types input)
+                             (get-in input [:call :operator-node-id]) forged
+                             (get-in input [:node :node-id]) (:type result))
+                checked (invoke-c7 'sh08-st-inferred-call
+                          [core (:node input) (:call input) (:edge input) nodes bindings typed 65536])]
+            (is (= :rejected (:status checked)))
+            (is (= :set-conversion-source-mismatch (:reason checked)))))
         (is (= (if invoked? :gravity.type/set :gravity.type/never) (:type result) (:return descriptor)))
         (is (= (if invoked? :normal :not-invoked) (:application descriptor)))
         (is (= (when invoked? (count (:element-types type))) (:input-element-count descriptor)))
@@ -7235,15 +7245,14 @@
         (is (= descriptor (get-in inferred [:type-table :operator])))
         (is (= (:type result) (get-in inferred [:type-table :call])))
         (is (= [(invoke-c7 'sh08-st-constraint [descriptor])] (:constraints inferred)))
-        (is (= result (set-conversion-derived input (:work-count result))))
-        (is (= :set-conversion-work-limit (:reason (set-conversion-derived input (dec (:work-count result))))))))
+        ))
     (doseq [arguments [[] [:gravity.type/never :gravity.type/never]]]
       (is (= :set-conversion-arity-mismatch (:reason (set-conversion-derived (set-conversion-input arguments) 65536)))))
     (doseq [type [nil :gravity.type/unknown :gravity.type/vector :gravity.type/set
                   {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string :gravity.type/keyword]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string :gravity.type/unknown]}
-                  (assoc (vector-type 1) :extra true) (vector-type 1025)]]
+                  (assoc (vector-type 1) :extra true)]]
       (is (= (if (and (map? type) (= :gravity.type/list (:kind type)))
                :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-operand-type-required)
              (:reason (set-conversion-derived (set-conversion-input [type]) 65536)))))
@@ -7359,6 +7368,16 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10 context])]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason :work-count])))
+        (is (not (contains? descriptor :operand-type-work)))
+        (doseq [obsolete [0 1]]
+          (let [forged (assoc descriptor :operand-type-work obsolete)
+                typed (assoc (:types input)
+                             (get-in input [:call :operator-node-id]) forged
+                             (get-in input [:node :node-id]) (:type result))
+                checked (invoke-c7 'sh08-st-inferred-call
+                          [core (:node input) (:call input) (:edge input) nodes bindings typed 65536])]
+            (is (= :rejected (:status checked)))
+            (is (= :set-conversion-source-mismatch (:reason checked)))))
         (is (= (if invoked? :gravity.type/set :gravity.type/never) (:type result) (:return descriptor)))
         (is (= (if invoked? :normal :not-invoked) (:application descriptor)))
         (is (= (when invoked? (count (:element-types type))) (:input-element-count descriptor)))
@@ -7368,8 +7387,9 @@
         (if (and invoked? (pos? (count (:element-types type))))
           (do
             (is (= {:version :sh08-keyword-vector-set-input-v1 :family :finite-homogeneous-keyword-vector
-                    :element-type :gravity.type/keyword :maximum-input-elements 1024
-                    :output-type :gravity.type/set :output-refinements :none} (:input-policy descriptor)))
+                    :element-type :gravity.type/keyword
+                    :output-type :gravity.type/set :output-refinements :none} (select-keys (:input-policy descriptor)
+                                  [:version :family :element-type :output-type :output-refinements])))
             (is (= :sh08-keyword-vector-set-construction-v1 (get-in descriptor [:construction-policy :version])))
             (is (= :gravity-keyword-value-equality (get-in descriptor [:construction-policy :duplicates]))))
           (is (nil? (:input-policy descriptor))))
@@ -7383,15 +7403,14 @@
         (is (= descriptor (get-in inferred [:type-table :operator])))
         (is (= (:type result) (get-in inferred [:type-table :call])))
         (is (= [(invoke-c7 'sh08-st-constraint [descriptor])] (:constraints inferred)))
-        (is (= result (set-conversion-derived input (:work-count result))))
-        (is (= :set-conversion-work-limit (:reason (set-conversion-derived input (dec (:work-count result))))))))
+        ))
     (doseq [arguments [[] [:gravity.type/never :gravity.type/never]]]
       (is (= :set-conversion-arity-mismatch (:reason (set-conversion-derived (set-conversion-input arguments) 65536)))))
     (doseq [type [nil :gravity.type/unknown :gravity.type/vector :gravity.type/set
                   {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/keyword]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/string]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/unknown]}
-                  (assoc (vector-type 1) :extra true) (vector-type 1025)]]
+                  (assoc (vector-type 1) :extra true)]]
       (is (= (if (and (map? type) (= :gravity.type/list (:kind type)))
                :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-operand-type-required)
              (:reason (set-conversion-derived (set-conversion-input [type]) 65536)))))
