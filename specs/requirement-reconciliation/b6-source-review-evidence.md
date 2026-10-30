@@ -38,7 +38,7 @@ adoption or held B2 acceptance.
 
 ## Complete source trace and producer boundary
 
-Trace/control commit `5fd4f50508f6621a2489ac4038a7bd16f6e43b47`, tree
+Initial trace/control commit `5fd4f50508f6621a2489ac4038a7bd16f6e43b47`, tree
 `705031177f4c92c1d0b83717e9a99c6e2a094f3f`, contains the
 [complete trace](b6-complete-source-facet-trace.edn), SHA256
 `05180467b44c6cea70b115573dfbb73a3764f97e99c33da375942ab04fc60691`.
@@ -62,15 +62,19 @@ subject requires its own affected review; no old review is reopened.
 ## Controls and exact limits
 
 The [mechanical controls](b6-source-controls.edn), SHA256
-`6347a91bf6a892f3e0719019d062f6f425af63d952f2c000fbec1dbe8be06910`,
-pass three tests/89 assertions. All 85 negative controls refuse: 71 required
+`b6c855efb1d7ff46bcfd756aae4d94b2b1a8d8ce8a061f194974ff768c6f01c9`,
+pass three tests/90 assertions at control checkpoint
+`291f6c837aa41abd3d8d16829f57cafdbf94d1b7`, tree
+`0b79731ecd940822376c0650ac6336f486f815e1`. The report retains the prior
+control record by immutable commit/hash and adds 84 actual serialized mutation
+hashes plus an in-suite positive prospective-model check. All 85 negative controls refuse: 71 required
 clause removals with coherent full-file and all-criterion hashes/offsets, plus
 role erasure, unconditional or missing UI conditions, sample-value grants,
 audited-import condition loss, declarations substituted for runtime validation,
 scalar-for-conjunction completion, deleted/duplicated facets, missing owner
 purpose, C18 pin relabelling, forged acceptance/count/implementation and source
 pin substitution. These prospective source models are not Git commits or
-actual backend inputs. The unmodified prospective model separately passes,
+actual backend inputs. The unmodified prospective model passes in-suite and in its captured extra check,
 showing that the coherent envelope itself is accepted by the source controls.
 
 Backend projection tests pass 5/211 assertions, language boundary tests 6/11,

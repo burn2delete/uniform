@@ -93,11 +93,13 @@
  :controls
  {:path "specs/requirement-reconciliation/b6-source-controls.edn",
   :sha256
-  "6347a91bf6a892f3e0719019d062f6f425af63d952f2c000fbec1dbe8be06910",
-  :checks {:test 3, :pass 89, :fail 0, :error 0, :type :summary},
+  "b6c855efb1d7ff46bcfd756aae4d94b2b1a8d8ce8a061f194974ff768c6f01c9",
+  :checks {:test 3, :pass 90, :fail 0, :error 0, :type :summary},
   :negative-controls 85,
   :clause-removals 71,
-  :authority :author-source-data-self-audit},
+  :authority :author-source-data-self-audit,
+  :serialized-mutations 84,
+  :actual-forged-pin-control 1},
  :route :coordinator-only,
  :amendment
  {:path
@@ -122,8 +124,8 @@
   :provisional-task-ratio [3 195],
   :authority :captured494-only-not-a-B6-adoption},
  :trace-controls-stage
- {:commit "5fd4f50508f6621a2489ac4038a7bd16f6e43b47",
-  :tree "705031177f4c92c1d0b83717e9a99c6e2a094f3f"},
+ {:commit "291f6c837aa41abd3d8d16829f57cafdbf94d1b7",
+  :tree "0b79731ecd940822376c0650ac6336f486f815e1"},
  :kind :one-B6-source-entailment-review-inputs,
  :reservation-inputs
  {:ledger
@@ -183,8 +185,14 @@
  :B6-index-and-current833-561-adoption :none,
  :new-decision-ids 0,
  :unmutated-prospective-model
- {:path "/tmp/B6-model-positive.log",
-  :sha256
-  "6cd07deaa637899e74700e21a66c11e8cdfdbb8c8b81c4abcef8c204386e5130",
-  :result :pass},
+ {:in-suite true,
+  :report "specs/requirement-reconciliation/b6-source-controls.edn",
+  :report-sha256
+  "b6c855efb1d7ff46bcfd756aae4d94b2b1a8d8ce8a061f194974ff768c6f01c9",
+  :result :pass,
+  :captured-extra-log
+  {:path "/tmp/B6-model-positive.log",
+   :sha256
+   "6cd07deaa637899e74700e21a66c11e8cdfdbb8c8b81c4abcef8c204386e5130",
+   :result :pass}},
  :projection {:tests 5, :assertions 211, :result :pass}}
