@@ -59,8 +59,9 @@ Pipeline, domain-IR and Pass Evidence criterion bodies with their generated
 roadmap views. The fifth literal outcome is the existing canonical domain-IR
 record, not a row-level task expansion. Keep historical workflow text intact.
 
-Bind C17/C12 receipts and adoption records as immutable Git objects and verify
-their current raw predicate spans. Run source conservation/refusal controls,
+Archive the exact C17/C12 receipts and their reviewed task-file bytes, retaining
+immutable Git adoption references as history. Verify their current raw predicate
+spans. Run source conservation/refusal controls,
 projection tests, affected SH checks, boundary and document validators. Append
 the domain routing key after the prior four routing positions so integer
 selectors retain their literal associations. Pin both source files and the

@@ -66,7 +66,7 @@ The semantic key `compiler-api` names this package. Planning IDs appear only in 
 This later increment extracts the reviewed C17/C12 consumer and prerequisite
 producer criteria over main `70dcb2220701529dbb02bd2317a822eb3ac72fed`.
 The [composition record](domain-contract-source-composition.edn) binds both
-immutable source review receipts and six exact current criterion spans. Four
+archived exact source review receipts and six exact current criterion spans. Four
 prior main outcomes and their Open statuses remain, and the existing canonical
 domain-IR outcome becomes the fifth local record. No global task denominator
 is adopted. The four source files are copied exactly from their declared

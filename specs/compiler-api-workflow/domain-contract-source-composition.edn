@@ -21,14 +21,17 @@
  [{:id :C17,
    :source-facets 108,
    :receipt
-   {:reference-kind :immutable-git-object,
+   {:reference-kind :archived-exact-bytes,
     :commit "e835a80f34138fd16277a510c0bca06287a3738e",
     :path
-    "specs/requirement-reconciliation/c17-independent-source-review.edn",
+    "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn",
     :sha256
-    "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7"},
+    "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7",
+    :original-path
+    "specs/requirement-reconciliation/c17-independent-source-review.edn"},
    :qualified-adoption
-   {:reference-kind :immutable-git-object,
+   {:reference-kind
+    :historical-Git-reference-not-live-check-dependency,
     :commit "e835a80f34138fd16277a510c0bca06287a3738e",
     :path
     "specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn",
@@ -130,18 +133,28 @@
       :prior-predicate-raw-bytes-preserved-addition-not-inherited,
       :end-byte 29649,
       :start-byte 25490},
-     :authority :exact-current-raw-predicate-only}}}
+     :authority :exact-current-raw-predicate-only}},
+   :reviewed-task-source
+   {:path
+    "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt",
+    :sha256
+    "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+    :original-path "specs/compiler-api-workflow/tasks.md",
+    :original-commit "726b04bbb4add5092074876522ced4792584ae30"}}
   {:id :C12,
    :source-facets 115,
    :receipt
-   {:reference-kind :immutable-git-object,
+   {:reference-kind :archived-exact-bytes,
     :commit "60ba445417ae22decbfbf57e35819d7493d9abd8",
     :path
-    "specs/requirement-reconciliation/c12-independent-source-review.edn",
+    "specs/compiler-api-workflow/review-inputs/domain-source-review.edn",
     :sha256
-    "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6"},
+    "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6",
+    :original-path
+    "specs/requirement-reconciliation/c12-independent-source-review.edn"},
    :qualified-adoption
-   {:reference-kind :immutable-git-object,
+   {:reference-kind
+    :historical-Git-reference-not-live-check-dependency,
     :commit "60ba445417ae22decbfbf57e35819d7493d9abd8",
     :path
     "specs/requirement-reconciliation/c12-qualified-source-review-adoption.edn",
@@ -239,7 +252,14 @@
       :end-byte 51509,
       :raw-sha256
       "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
-     :authority :exact-current-raw-predicate-only}}}],
+     :authority :exact-current-raw-predicate-only}},
+   :reviewed-task-source
+   {:path
+    "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt",
+    :sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :original-path "specs/compiler-api-workflow/tasks.md",
+    :original-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd"}}],
  :owned-paths
  ["specs/compiler-api-workflow/tasks.md"
   "docs/component-roadmaps/compiler-api.md"
@@ -252,9 +272,13 @@
   "specs/compiler-api-workflow/domain-contract-source-composition.edn"
   "tools/sh_crosswalk.clj"
   "specs/sh-family-crosswalk/crosswalk.edn"
-  "specs/sh-family-crosswalk/rollup.md"],
+  "specs/sh-family-crosswalk/rollup.md"
+  "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn"
+  "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt"
+  "specs/compiler-api-workflow/review-inputs/domain-source-review.edn"
+  "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt"],
  :source-reference-closure
- :immutable-Git-objects-not-live-reconciliation-paths,
+ :archived-exact-receipts-and-reviewed-task-bytes,
  :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
  :original-833-and-561-populations :not-recounted-or-adopted-here,
  :kind :finite-compiler-plugin-domain-source-composition,

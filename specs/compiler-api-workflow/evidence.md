@@ -111,3 +111,11 @@ claim ceilings, not compiler/domain/plugin semantics. SH regeneration caught
 the new artifact pinned to its preceding source commit and wrote no outputs;
 the artifact must be committed before its reference uses that commit. No denied
 operation is retried or routed through this source extraction.
+
+The source artifact was committed before SH pinning, and regeneration then
+passed with its actual artifact commit. The finite package archives exact
+copies of both sealed review receipts and their two reviewed task-file versions.
+Its runnable source checks use those local bytes and exact current predicates;
+the larger reconciliation branch and its global snapshots are not live test
+dependencies. Earlier qualified adoption references remain immutable history,
+with no renewed acceptance of this new main composition.

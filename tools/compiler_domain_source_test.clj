@@ -16,7 +16,8 @@
     (let [raw (String. (java.util.Arrays/copyOfRange bytes (int start) (int end)) "UTF-8")]
       (assert (= (:raw-sha256 w) (sha raw))) raw)))
 (defn immutable-input [r]
-  (let [raw (git-source (:commit r) (:path r))]
+  (let [raw (if (= :archived-exact-bytes (:reference-kind r)) (slurp (:path r))
+              (git-source (:commit r) (:path r)))]
     (assert (= (:sha256 r) (sha raw))) (edn/read-string raw)))
 (defn pending-only? [r]
   (and (= :pending-independent-affected-composition-review (:current-main-composition-review r))
@@ -27,15 +28,16 @@
   (is (= #{:C17 :C12} (set (map :id (:cohorts composition)))))
   (is (= 223 (reduce + (map :source-facets (:cohorts composition)))))
   (doseq [cohort (:cohorts composition)
-          :let [receipt (immutable-input (:receipt cohort)) adoption (immutable-input (:qualified-adoption cohort))]]
+          :let [receipt (immutable-input (:receipt cohort))
+                reviewed-source (slurp (get-in cohort [:reviewed-task-source :path]))]]
     (is (= :scoped-pass (:verdict receipt)))
     (is (= (:source-facets cohort) (count (:facet-verdicts receipt))))
-    (is (= :not-accepted (:whole-current-head adoption) (:final-denominator adoption)))
+    (is (every? (set (:exclusions receipt)) [:implementation :integration :final-count-or-denominator]))
     (is (= (get-in cohort [:normative-source :file-sha256])
            (sha (slurp (get-in cohort [:normative-source :path])))))
     (doseq [[role {:keys [reviewed-witness current-witness]}] (:criteria cohort)
             :let [current (slurp (:path current-witness))
-                  reviewed (span reviewed-witness (git-source (:source-commit reviewed-witness) (:path reviewed-witness)))]]
+                  reviewed (span reviewed-witness reviewed-source)]]
       (is (= reviewed-witness (get-in receipt [:criterion-verdicts role :witness])))
       (is (= current (git-source (:source-commit current-witness) (:path current-witness))))
       (is (= reviewed (span current-witness current)))
