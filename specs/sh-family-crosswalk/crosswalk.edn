@@ -13910,6 +13910,29 @@
    :later-added-predicates :pending-separate-review,
    :applicability
    "specs/requirement-reconciliation/safety-stdlib-current-applicability.edn"},
+  :B2-fixed-width-and-current-facet-trace
+  {:five-C-criteria-raw-bodies :exactly-preserved,
+   :all833-decision-records :unchanged,
+   :current-spans 4819,
+   :current-witnesses
+   "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn",
+   :manual-predicate-cases 32,
+   :task-count-delta 0,
+   :implementation-credit :none,
+   :full-B2-owner-trace
+   "specs/requirement-reconciliation/b2-complete-current-facet-trace.edn",
+   :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+   :source-facets 271,
+   :historical-bindings 561,
+   :status :pending-independent-complete-B2-facet-review,
+   :source-occurrences 47,
+   :criterion-conservation
+   "specs/requirement-reconciliation/all833-b2-fixed-width-current-criterion-conservation.edn",
+   :prior-qualified-source-adoptions :scope-conserved-not-extended,
+   :composition
+   "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
+   :applicability
+   "specs/requirement-reconciliation/b2-fixed-width-current-witness-applicability.edn"},
   :policy-product2-qualified-current-review-adoption
   {:receipt
    "specs/requirement-reconciliation/policy-product2-qualified-review-adoption.edn",
@@ -14328,7 +14351,7 @@
    :applicability
    "specs/requirement-reconciliation/schema25-qualified-current-applicability.edn"},
   :input-fingerprint
-  "4c1a8af2d673741bd3787ce520d937bcd68367b2d81d4aa902e1969ac58feaba"},
+  "914e70a5d9f65f9f19c9bdafca46340bf87c6359cc5cdc4ec40fc46edcca1447"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -14968,7 +14991,7 @@
   "backends"
   [{:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
@@ -14982,273 +15005,273 @@
      "- [ ] `backend-interface` Backend Interface and ABI\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: implement required-input/version validation; define per-target\nABI/layout mappings and reject unrepresentable values; connect runtime/provider\nselection and proof-to-target assumptions; exercise accepted and missing-proof,\nwrong-profile, unsupported-operation and incompatible-ABI handoffs. Yes/no:\nare unchecked inputs rejected, assumptions justified and ABI decisions explicit?\nAll must be yes. Evidence: [existing interface artifact](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00225-b1-document-source-artifact.clj).\nDecision owner: interface maintainer; recommendation: versioned shared envelope\nwith target-specific ABI records, not one host-shaped layout. Integration needs\nMIR/Lower facts; envelope fixtures and individual backends proceed in parallel.\nDecision criterion `backend/input-eligibility` (Open; checker).\nRequired outputs: Pre-generation backend eligibility report and proof-to-target assumption map.\nAccept: Before generation verify current MIR/domain IR, profile/target/ABI/layout, runtime or no-runtime proof, provider/effects/capability/safety/proof/source/debug/dependency packet and version compatibility; preserve C1/C14 pass and target operation dispositions.\nRefuse: Reject missing/stale/unverified packets, unsupported operations/profiles/features, unrepresentable ABI/layout, missing grants/providers and target assumptions without matching evidence; safe code must not depend on target undefined behavior.\nDependencies: Verified MIR/domain and Lower request; Profile/target/runtime/provider manifests; Current safety/proof/capability/source records. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-interface",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
      :start-byte 2851,
-     :end-byte 11137,
+     :end-byte 12414,
      :start-line 38,
-     :end-line 93,
+     :end-line 100,
      :sha256
-     "969f5693ce89113fc9d287a69a0a33ffeebe1676f3f3be3cd7a968350c021463",
+     "8b9871deea2d0433aefcd204ceab9634a12505a320c1de8cec1cb3bf4545ecf1",
      :raw
-     "- [ ] `backend-c` C\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: lock dialect/compiler/ABI matrix; lower values/control/errors/\nresources with explicit overflow/shift/narrowing behavior; generate helpers and\nfreestanding/hosted dependency records; compile/run positive fixtures and reject\nmissing provenance, hidden libc/allocator and unsafe assumptions. Yes/no: do\nresults and diagnostics agree with Gravity, is safe code free of target UB, and\nare helper dependencies explicit? Evidence: [C manifest assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/140134-c-backend-manifest.clj)\nrecords source, dialect, plan, execution and provenance inputs, not full C\nconformance. Decision owner: C maintainer; recommendation: preserve the contract's\nexplicit freestanding C11 versus hosted C17 distinction. Integrates Lower,\nRuntime and Emit; C expansion does not gate the selected LLVM candidate.\n\n\nExisting source obligation `backend/c/source-emission` (Open; B2 producer/consumer contract).\nRequired outputs: Declared-dialect C translation units and headers, C backend/build manifests, source/debug/provenance maps and compilation fixtures under the recorded flags.\nAccept: Consume B1-eligible verified MIR or domain IR; declare freestanding C11, hosted C17 or a named extension profile. Emit values, control, calls, closures, regions, linear cleanup, panic/error paths and initialized storage without importing C semantics. Preserve source/generated origins and proof-to-C assumptions; helpers belong to the artifact graph.\nPositive evidence: Compile hosted and freestanding fixtures under the exact declared compiler/flags, including structs, unions, calls, closures, regions, linear resources and error paths; compare Gravity observations and preserve maps.\nRefuse: Missing/unsupported dialect, unverified input, signed-overflow/uninitialized-read/invalid-shift/fallthrough/unchecked-narrowing UB, incomplete manifests or missing source/debug/provenance maps. Report applicable B2-DIALECT/B2-UB/B2-MANIFEST with MIR/domain anchor, source/generated origins, profile, target, dialect, missing fact, selected/rejected helper and remediation.\nDependencies consume actual artifacts: B1 eligible packet and C14 lowering/proof request; ABI, memory, numeric and helper outputs below; Emit/Build consume actual translation/header/build/map artifacts.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/abi-layout` (Open; B2 producer/consumer contract).\nRequired outputs: Pinned C ABI/layout manifest and checked exported-value/foreign-boundary representations.\nAccept: Record compiler family/version constraint, target/platform, data model, endianness, alignment, field order/padding, enum/tag widths, closure/slice/buffer/region/arena/linear-handle representations and FFI calling convention. Demonstrate layout for structs, tagged unions and exported/foreign values; safe representations preserve Gravity semantics.\nPositive evidence: Produce matching ABI/layout and calling-convention fixtures for the declared compiler/data model and reject mismatched or incomplete foreign boundaries.\nRefuse: Unpinned implementation-defined assumptions, incompatible or unrepresentable ABI/layout, incomplete FFI mapping or changed target/compiler facts without invalidation; report B2-ABI/B2-FFI with the exact missing subject.\nDependencies consume actual artifacts: B1/C14 target/layout request, Types/ownership representation facts and SAFE7 FFI contract; C source and foreign adapters consume this exact manifest.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/memory-lowering` (Open; B2 producer/consumer contract).\nRequired outputs: Pointer/memory/MMIO lowering with proof-to-assumption, audited unsafe-helper and volatile/atomic ordering records.\nAccept: Require object identity, valid range, alignment, lifetime, aliasing mode, mutability, nullability, allocator/provider identity and provenance across casts. Raw pointer arithmetic needs an explicit unsafe island or bounds/lifetime proof; isolate unsafe pointers in audited helpers. MMIO needs profile-specific width/address-space/ordering facts; volatile and atomics require their declared access and memory-order records.\nPositive evidence: Exercise valid pointer, region, buffer, cleanup and MMIO/atomic mappings with retained proof/check/audit metadata; reject missing/stale provenance, range, lifetime and access-order evidence.\nRefuse: Lost cast provenance, invalid bounds/lifetime/alignment/alias assumptions, unjustified strict-aliasing or check erasure, invalid object lifetime, ambient volatile/MMIO or weakened/missing atomic order. Emit B2-POINTER/B2-MMIO or B2-UB with exact facts and source context.\nDependencies consume actual artifacts: SAFE2/SAFE7/SAFE15 memory/FFI/proof artifacts, C14 fact map, selected allocator/provider and profile/device access contracts; source lowering consumes only matching current evidence.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/numeric-lowering` (Open; B2 producer/consumer contract).\nRequired outputs: C numeric-mode lowering, check/proof or helper decisions, MATH8 manifests, applicable MATH5 certificate references and matching compiler-flag assumptions.\nAccept: Checked integers keep checks or matching proof-elision records; wrapping uses unsigned or explicitly wrapped operations; saturating uses explicit helpers/inlining. Preserve declared floating modes and elementary-function certificates. Record every flag affecting floating/overflow behavior in the build manifest and match its proof assumptions.\nPositive evidence: Compile/run checked, wrapping, saturating and declared floating fixtures under recorded flags, including required exceptional/boundary cases; reject incompatible flags, proof subjects or unchecked operations.\nRefuse: Unsafe overflow, shift or narrowing, signed-UB shortcuts, changed floating behavior, missing/stale approximation evidence or compiler flags that invalidate the Gravity numeric contract; report B2-NUMERIC/B2-UB.\nDependencies consume actual artifacts: SAFE9 numeric legality, MATH8 mode and MATH5 certificate/checker outputs where applicable, C14 selected operation and Build compiler flags; no benchmark or backend optimization substitutes for matching evidence.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/helper-selection` (Open; B2 producer/consumer contract).\nRequired outputs: Profile-legal runtime helper manifest and artifact graph for panic/trap, checks, allocation/region/arena, cleanup, atomics, FFI, math and debug/provenance helpers.\nAccept: Select only explicit helpers declaring profile support and exact runtime/provider dependencies. Freestanding helpers must be supplied by the package/target when required. Firmware/kernel receive no hidden allocation, hosted libc, reflection, dynamic eval or GC shims; panic and errors follow the selected profile.\nPositive evidence: Demonstrate hosted and freestanding helper selection, actual graph inclusion and profile-specific panic/check behavior; reject forbidden or missing runtime dependencies.\nRefuse: Hidden/forbidden libc, allocator, runtime or GC dependence, unavailable/profile-incompatible helper, missing provider identity or undeclared helper artifact; emit B2-RUNTIME/B2-MANIFEST with selected/rejected helper and remediation.\nDependencies consume actual artifacts: P6/P7 and active profile legality, Runtime/provider panic/check/resource interfaces, package/target supplied freestanding helpers; Build/Emit consume the declared dependency graph.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit."},
+     "- [ ] `backend-c` C\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: lock dialect/compiler/ABI matrix; lower values/control/errors/\nresources with explicit overflow/shift/narrowing behavior; generate helpers and\nfreestanding/hosted dependency records; compile/run positive fixtures and reject\nmissing provenance, hidden libc/allocator and unsafe assumptions. Yes/no: do\nresults and diagnostics agree with Gravity, is safe code free of target UB, and\nare helper dependencies explicit? Evidence: [C manifest assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/140134-c-backend-manifest.clj)\nrecords source, dialect, plan, execution and provenance inputs, not full C\nconformance. Decision owner: C maintainer; recommendation: preserve the contract's\nexplicit freestanding C11 versus hosted C17 distinction. Integrates Lower,\nRuntime and Emit; C expansion does not gate the selected LLVM candidate.\n\n\nExisting source obligation `backend/c/source-emission` (Open; B2 producer/consumer contract).\nRequired outputs: Declared-dialect C translation units and headers, C backend/build manifests, source/debug/provenance maps and compilation fixtures under the recorded flags.\nAccept: Consume B1-eligible verified MIR or domain IR; declare freestanding C11, hosted C17 or a named extension profile. Emit values, control, calls, closures, regions, linear cleanup, panic/error paths and initialized storage without importing C semantics. Preserve source/generated origins and proof-to-C assumptions; helpers belong to the artifact graph.\nPositive evidence: Compile hosted and freestanding fixtures under the exact declared compiler/flags, including structs, unions, calls, closures, regions, linear resources and error paths; compare Gravity observations and preserve maps.\nRefuse: Missing/unsupported dialect, unverified input, signed-overflow/uninitialized-read/invalid-shift/fallthrough/unchecked-narrowing UB, incomplete manifests or missing source/debug/provenance maps. Report applicable B2-DIALECT/B2-UB/B2-MANIFEST with MIR/domain anchor, source/generated origins, profile, target, dialect, missing fact, selected/rejected helper and remediation.\nDependencies consume actual artifacts: B1 eligible packet and C14 lowering/proof request; ABI, memory, numeric and helper outputs below; Emit/Build consume actual translation/header/build/map artifacts.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/abi-layout` (Open; B2 producer/consumer contract).\nRequired outputs: Pinned C ABI/layout manifest and checked exported-value/foreign-boundary representations.\nAccept: Record compiler family/version constraint, target/platform, data model, endianness, alignment, field order/padding, enum/tag widths, closure/slice/buffer/region/arena/linear-handle representations and FFI calling convention. Demonstrate layout for structs, tagged unions and exported/foreign values; safe representations preserve Gravity semantics.\nPositive evidence: Produce matching ABI/layout and calling-convention fixtures for the declared compiler/data model and reject mismatched or incomplete foreign boundaries.\nRefuse: Unpinned implementation-defined assumptions, incompatible or unrepresentable ABI/layout, incomplete FFI mapping or changed target/compiler facts without invalidation; report B2-ABI/B2-FFI with the exact missing subject.\nDependencies consume actual artifacts: B1/C14 target/layout request, Types/ownership representation facts and SAFE7 FFI contract; C source and foreign adapters consume this exact manifest.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/memory-lowering` (Open; B2 producer/consumer contract).\nRequired outputs: Pointer/memory/MMIO lowering with proof-to-assumption, audited unsafe-helper and volatile/atomic ordering records.\nAccept: Require object identity, valid range, alignment, lifetime, aliasing mode, mutability, nullability, allocator/provider identity and provenance across casts. Raw pointer arithmetic needs an explicit unsafe island or bounds/lifetime proof; isolate unsafe pointers in audited helpers. MMIO needs profile-specific width/address-space/ordering facts; volatile and atomics require their declared access and memory-order records.\nPositive evidence: Exercise valid pointer, region, buffer, cleanup and MMIO/atomic mappings with retained proof/check/audit metadata; reject missing/stale provenance, range, lifetime and access-order evidence.\nRefuse: Lost cast provenance, invalid bounds/lifetime/alignment/alias assumptions, unjustified strict-aliasing or check erasure, invalid object lifetime, ambient volatile/MMIO or weakened/missing atomic order. Emit B2-POINTER/B2-MMIO or B2-UB with exact facts and source context.\nDependencies consume actual artifacts: SAFE2/SAFE7/SAFE15 memory/FFI/proof artifacts, C14 fact map, selected allocator/provider and profile/device access contracts; source lowering consumes only matching current evidence.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/numeric-lowering` (Open; B2 producer/consumer contract).\nRequired outputs: C numeric-mode lowering, check/proof or helper decisions, MATH8 manifests, applicable MATH5 certificate references and matching compiler-flag assumptions.\nAccept: Checked integers keep checks or matching proof-elision records; wrapping uses unsigned or explicitly wrapped operations; saturating uses explicit helpers/inlining. Preserve declared floating modes and elementary-function certificates. Record every flag affecting floating/overflow behavior in the build manifest and match its proof assumptions.\nPositive evidence: Compile/run checked, wrapping, saturating and declared floating fixtures under recorded flags, including required exceptional/boundary cases; reject incompatible flags, proof subjects or unchecked operations.\nRefuse: Unsafe overflow, shift or narrowing, signed-UB shortcuts, changed floating behavior, missing/stale approximation evidence or compiler flags that invalidate the Gravity numeric contract; report B2-NUMERIC/B2-UB.\nDependencies consume actual artifacts: SAFE9 numeric legality, MATH8 mode and MATH5 certificate/checker outputs where applicable, C14 selected operation and Build compiler flags; no benchmark or backend optimization substitutes for matching evidence.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nExisting source obligation `backend/c/helper-selection` (Open; B2 producer/consumer contract).\nRequired outputs: Profile-legal runtime helper manifest and artifact graph for panic/trap, checks, allocation/region/arena, cleanup, atomics, FFI, math and debug/provenance helpers.\nAccept: Select only explicit helpers declaring profile support and exact runtime/provider dependencies. Freestanding helpers must be supplied by the package/target when required. Firmware/kernel receive no hidden allocation, hosted libc, reflection, dynamic eval or GC shims; panic and errors follow the selected profile.\nPositive evidence: Demonstrate hosted and freestanding helper selection, actual graph inclusion and profile-specific panic/check behavior; reject forbidden or missing runtime dependencies.\nRefuse: Hidden/forbidden libc, allocator, runtime or GC dependence, unavailable/profile-incompatible helper, missing provider identity or undeclared helper artifact; emit B2-RUNTIME/B2-MANIFEST with selected/rejected helper and remediation.\nDependencies consume actual artifacts: P6/P7 and active profile legality, Runtime/provider panic/check/resource interfaces, package/target supplied freestanding helpers; Build/Emit consume the declared dependency graph.\nEvidence status: Open; actual compilation/execution and independent acceptance remain required. This source refinement performs neither and does not add a task unit.\n\nB2 C-subset refinement (Open; existing backend/c/source-emission).\nRequired outputs: Generated C width-sensitive declarations and operations using explicit fixed-width integer types, with their existing ABI/numeric representation facts.\nAccept: Where width matters, use explicit fixed-width C integer types and preserve the mapping from Gravity value width/mode through the pinned C compiler, target and data model. Any dialect, extension, helper or alternate representation used must remain explicit and profile-legal under the existing ABI/numeric contracts.\nPositive evidence: For every claimed width-sensitive representation, the generated declarations and compilation fixtures demonstrate the chosen type widths and Gravity numeric behavior under the recorded compiler/flags.\nRefuse: Width-sensitive generated C relies on ambient int/long width, loses declared Gravity width/mode facts, or uses an unsupported/unrepresentable type without a legal explicit mapping; emit applicable B2-ABI/B2-NUMERIC/B2-UB with the existing owning source context.\nDependencies consume actual artifacts: backend/c/source-emission consumes backend/c/abi-layout representation facts and backend/c/numeric-lowering mode/check/proof decisions. This adds no target selection or execution claim."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-c",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 11139,
-     :end-byte 12147,
-     :start-line 95,
-     :end-line 110,
+     :start-byte 12416,
+     :end-byte 13424,
+     :start-line 102,
+     :end-line 117,
      :sha256
      "90e31ba376154ceb3f69d0874d004fe70063ac619c3a969d098921606ef1f278",
      :raw
      "- [ ] `backend-llvm` LLVM\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: reconcile the selected Linux candidate with the full target\ncontract without changing its selection; implement missing operation/layout/\natomic/error/FFI mappings; admit attributes only from matching proofs; run LLVM\nverification, real native execution and missing-proof/poison/target-mismatch\nrejection; attach reproducibility and debug/provenance evidence. Yes/no: are\nattributes justified, undefined/poison shortcuts absent, target facts pinned\nand emitted artifacts executable? Evidence: [Linux artifact implementation](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/036-linux-artifact-record.clj).\nDecision owner: LLVM maintainer; recommendation: retain the adopted Linux\ncandidate and treat additional triples as explicit family extensions, not\nsilent release-target substitution. Integrates Lower/Emit/Runtime. The selected\ncandidate is a stage of this broader outcome, not evidence of all LLVM targets."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-llvm",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 12149,
-     :end-byte 17867,
-     :start-line 112,
-     :end-line 154,
+     :start-byte 13426,
+     :end-byte 19144,
+     :start-line 119,
+     :end-line 161,
      :sha256
      "964c42206a99a2d4588ffceca981af56b86cec3d3e8941dd8af7914892963918",
      :raw
      "- [ ] `backend-wasm` Wasm\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: record core/component/embedder target matrix; implement memory,\nresource-handle and canonical ABI lowering; implement typed async stream/future\ncompletion/cancellation/backpressure for claimed async targets; generate/import\nbindings; validate and execute modules with bounds, missing-grant, unsupported-\nfeature, resource-lifetime and replay rejection fixtures. Yes/no: are exports\nschema-correct, imports authorized, resource lifetimes enforced and selected\nfeatures actually supported? Evidence: [feature mapping](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00231-b4-document-feature-requirement.clj)\nis document coverage, not a working component runtime. Decision owner: Wasm\nmaintainer; recommendation: explicit core versus component acceptance tracks and\npinned embedder versions; do not treat synchronous core support as async-component\ncompletion. Parallel to LLVM; integrates Schema/Auth/Runtime and Emit.\nDecision criterion `backend/wasm/async-function-lowering` (Open; producer).\nRequired outputs: Typed async-component function ABI and scheduling/cancel/error/effect/replay map.\nAccept: For selected WASI0.3 or equivalent async targets lower async func imports/exports with explicit ownership, completion, scheduling, cancellation, traps/errors, effects/grants and replay events; core synchronous support does not imply this feature.\nRefuse: Reject unsupported async target, opaque host promise substitution, undeclared blocking scheduling, lost cancellation/grants or nondeterministic completion events omitted from required replay.\nDependencies: B1 eligible input and selected component world; Async canonical ABI and feature record; Runtime scheduling/cancellation and replay schema. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/wasm/atomic-volatile-lowering` (Open; producer-checker).\nRequired outputs: Shared-memory atomic mapping and explicit volatile/embedder eligibility record.\nAccept: Map supported atomic operations preserving declared memory order, shared-memory and embedder feature support; admit volatile/MMIO-like behavior only through a declared capability and ordering contract.\nRefuse: Reject absent shared memory/atomic features, weakened memory order, ambient MMIO/volatile access, missing grants and a fallback that fails the original ordering contract.\nDependencies: Selected memory/feature/embedder contract; Concurrency memory-order facts; Explicit volatile/MMIO provider capability if requested. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/wasm/future-lowering` (Open; producer).\nRequired outputs: Single-completion future ABI with owner, await/cancel/drop/result-schema/replay records.\nAccept: For selected async component targets lower future of T as a typed owned single-completion value, exposing outstanding work, close/drop/cancel behavior, continuation effects, completion/error ordering and replay policy.\nRefuse: Reject repeated completion, missing owner/result schema, leaked dropped work, erased cancellation/effects or nondeterministic completion substituted during replay.\nDependencies: Selected async-component world and feature record; Canonical ABI resource ownership; Runtime completion/cancel/drop and schema interfaces. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/wasm/simd-lowering` (Open; producer-checker).\nRequired outputs: SIMD lowering and lane/bounds/alignment/numeric/feature proof map with fallback decision.\nAccept: Lower supported vector operations only with lane/bounds/alignment/feature evidence and the declared strict/relaxed numeric semantics; choose an explicit profile-legal equivalent fallback or reject unsupported targets.\nRefuse: Reject unsupported SIMD features, out-of-bounds lanes, unjustified alignment/check elision, hidden relaxed reassociation or a fallback that changes the math/profile contract.\nDependencies: Verified vector MIR and lane/bounds evidence; Selected Wasm SIMD/relaxed feature record; Math mode/certificates and legal fallback contract. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-wasm",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 17870,
-     :end-byte 18787,
-     :start-line 157,
-     :end-line 171,
+     :start-byte 19147,
+     :end-byte 20064,
+     :start-line 164,
+     :end-line 178,
      :sha256
      "8dab12bc027e436503df0eb287c2d79c324e1819e61f9a4cde519eca8ae93184",
      :raw
      "- [ ] `backend-jvm` JVM\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: fix supported JVM/classloader/package matrix; complete bytecode\nand interop lowering; enforce nullability, exception translation, deterministic\nlinear cleanup and dynamic-use grants; execute packaged programs and reject\nungranted reflection/native access, unchecked null and missing metadata. Yes/no:\ndo real class/JAR artifacts execute, do host boundaries preserve semantics, and\nare cleanup/grants enforced? Evidence: [JVM manifest assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/142709-jvm-backend-manifest.clj)\nconsumes class/JAR and execution fields; inspection is not execution proof.\nDecision owner: JVM maintainer; recommendation: a pinned baseline classfile/JVM\npair plus explicit compatibility matrix. Integrates managed Runtime and Build;\nthis hosted path does not replace the selected native release."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-jvm",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 18789,
-     :end-byte 22039,
-     :start-line 173,
-     :end-line 200,
+     :start-byte 20066,
+     :end-byte 23316,
+     :start-line 180,
+     :end-line 207,
      :sha256
      "d478b8faea9270afa51b8c47c97ce109068ebfff4d7011008040538578c8fd1c",
      :raw
      "- [ ] `backend-js` JavaScript and TypeScript\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: declare Node/browser/edge adapter matrix; lower numeric and\ncontrol/resource semantics; generate declarations and checked null/undefined/\npromise adapters; preserve source maps/package side-effect policy; execute\nprograms and reject unauthorized globals, lossy numeric conversions and unsafe\nimports. Yes/no: do exports match declarations, numeric modes survive, host\nvalues are validated and denied globals stay inaccessible? Evidence:\n[JS manifest assembly](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/141626-js-ts-backend-manifest.clj)\nexplicitly records Node host globals; it does not establish every JS environment.\nDecision owner: JS maintainer; recommendation: separate runtime adapters sharing\none semantic lowering layer. Parallel to JVM/LLVM; integrates Schema/Runtime/UI.\nDecision criterion `backend/js/module-emission` (Open; producer).\nRequired outputs: Actual runtime-specific JS module/bundle and package/source-map/capability manifests.\nAccept: Emit for the declared ECMAScript/runtime/module/bundler/tree-shaking/package/side-effect/source-map contract; retain exported value/numeric/nullish/error/async boundaries and record all host globals/imports/providers.\nRefuse: Reject unavailable globals, denied or untyped imports outside audited wrappers, hidden package effects, eval/prototype mutation, lossy Number/BigInt conversion and unsupported runtime/module assumptions.\nDependencies: B1 eligible input and typed exports; Selected JS runtime/bundler/package policy; Host grants, checked adapters and numeric representation map. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/js/type-declaration-emission` (Open; producer).\nRequired outputs: Generated TypeScript declarations and exported-API correspondence report.\nAccept: Generate declarations faithfully matching Gravity exports with explicit opaque/unsafe/host/async/capability boundaries, numeric representation, nullish and promise/error adapters; retain source origins.\nRefuse: Reject erased boundary requirements, mismatched declarations/exports, unchecked null/undefined or unsafe host values and treating TypeScript annotations as replacement for Gravity or runtime validation.\nDependencies: Typed Gravity exported API; JS value/schema/async representation map; Host boundary and runtime validation contracts. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-js",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 22042,
-     :end-byte 22908,
-     :start-line 203,
-     :end-line 217,
+     :start-byte 23319,
+     :end-byte 24185,
+     :start-line 210,
+     :end-line 224,
      :sha256
      "5b107f0e835582a0d8bcb7a753b6877eb32e60694a7835381a918a3601324861",
      :raw
      "- [ ] `backend-mlir` MLIR\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: pin MLIR version/dialects and operation coverage; implement\ntypes/effects/ownership/proof attributes and verifiers; implement conversions and\nmetadata-preservation checks; run actual verification/conversion and reject\nillegal targets or fact loss. Yes/no: do modules verify, conversions preserve\nfacts and downstream consumers accept the result? Evidence:\n[MLIR manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00244-b7-document-mlir-manifest.clj)\nuses `stage0-recorded` version and a narrow operation map; nested complete flags\nare not tool execution. Decision owner: MLIR maintainer; recommendation: explicit\nversioned dialect registry and legal conversion pipeline. Optional MLIR use\nmust not become a prerequisite for backends that do not require it."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-mlir",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 22910,
-     :end-byte 27197,
-     :start-line 219,
-     :end-line 253,
+     :start-byte 24187,
+     :end-byte 28474,
+     :start-line 226,
+     :end-line 260,
      :sha256
      "f3e1bc7c3b2f8ce095d56cd993f8bd205c84125bc1a1c564474fae274d87d6b4",
      :raw
      "- [ ] `backend-gpu` GPU Backend\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: adopt API/device/toolchain matrix; implement kernel emission\nand argument ABI; generate explicit transfer/launch/cleanup stubs; execute real\nor declared simulator kernels and reject host-only effects, invalid barriers,\nimplicit transfers and uncertified relaxed math. Yes/no: do kernels run, buffer\nlifetimes hold, synchronization matches IR and numeric results meet mode?\nEvidence: [GPU manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00248-b8-document-gpu-manifest.clj)\nrecords a SPIR-V-shaped fixture, not device execution. Decision owner: GPU\nmaintainer; recommendation: one explicit reference API/device pair first with\nnamed additional target obligations. Integrates GPU domain/Runtime/Emit;\naccelerator availability does not gate the ordinary compiler release.\nDecision criterion `backend/gpu/argument-memory-abi` (Open; producer-checker).\nRequired outputs: Device argument ABI and buffer lifetime/alias/transfer-state report.\nAccept: Emit and validate address space, schema/layout, alignment, alias, lifetime, mutability, ownership and transfer-state facts for every kernel argument/buffer; linear ownership remains unless a provider proves safe sharing.\nRefuse: Reject missing layout/lifetime/alignment facts, invalid aliases, use-after-release, double release and a raw host pointer or unsafe sharing crossing the declared device ABI.\nDependencies: Verified GPU/domain IR and typed argument schemas; SAFE2/SAFE5 ownership and provider sharing proof; Target device ABI. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/gpu/kernel-emission` (Open; producer).\nRequired outputs: Kernel/device artifact with target/feature/launch, source/proof and numeric manifests.\nAccept: Lower accepted GPU constructs for the explicitly adopted API/device/toolchain/features, preserving lane/workgroup indices, memory spaces, barriers/atomics, source anchors and math evidence; emit the actual declared artifact.\nRefuse: Reject host IO/allocation/exceptions/reflection/eval/callback captures, unsupported recursion/dynamic dispatch, illegal barriers/launch geometry and uncertified relaxed math.\nDependencies: B1 eligible input; GPU profile and feature/launch records; Argument ABI and numeric certificates. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/gpu/transfer-launch-stubs` (Open; producer).\nRequired outputs: Host stubs and explicit transfer/queue/launch/completion/cleanup graph.\nAccept: Generate orchestration with direction, buffer ownership, provider grants, queue/fence/event dependencies, launch order, completion visibility and cleanup paths; keep host and device profiles separate.\nRefuse: Reject implicit transfers, missing completion dependencies, unsynchronized host reads/device writes, stale buffer handles, double cleanup and weakened synchronization scope/order.\nDependencies: Device argument ABI and lifetime report; Kernel and launch descriptor; Runtime/provider transfer and completion interfaces. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-gpu",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 27200,
-     :end-byte 33921,
-     :start-line 256,
-     :end-line 299,
+     :start-byte 28477,
+     :end-byte 35198,
+     :start-line 263,
+     :end-line 306,
      :sha256
      "13e8107a332b0989f49bca274134910dfa7bc7a28dca6ad2a1d4c0390b1b932f",
      :raw
      "- [ ] `backend-hdl` HDL\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: adopt HDL/toolchain and synthesis target record; implement\nstate/port/memory lowering and explicit width behavior; preserve clock/reset\ncrossing proofs; generate testbenches and simulate/synthesize; reject hidden\nruntime, illegal crossings and unrepresentable hardware behavior. Yes/no: does\nHDL synthesize, do cycle traces match source, and are width/reset/crossing rules\nenforced? Evidence: [HDL module fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00251-b9-document-hdl-module.clj)\nis a fixed string, not general lowering. Decision owner: hardware emitter\nmaintainer; recommendation: explicit SystemVerilog reference flow, subject to\narchitecture adoption and tool availability. Hardware IR is prerequisite for\nintegration; neither fabrication nor a completed OS is required for emitter work.\n\nSource-qualified acceptance: Source obligation `language/concurrency/emit-hardware-parallel-state`: Represent concurrent hardware behavior as explicit clock/reset/register/memory/timing state or signal-level domain IR rather than host threads. Accept: Lower declared concurrent hardware into explicit signal/state domain IR and HDL artifacts with clocks, resets, registers, memories, timing constraints and source maps. The L14 counter fixture retains enable/reset/state transitions and width-aware overflow-defined addition. Reject: Reject host-thread semantics, missing concurrent domain IR or hidden allocation/GC/reflection/host IO unless represented by permitted hardware constructs. Do not select a product ISA/device here. Required outputs: Circuit/state IR, clock/reset/register/memory/timing records, backend artifact and valid counter plus forbidden-service rejection fixtures. Dependencies consume versioned facts/receipts from expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs, types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts, effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering; they do not require blanket component completion. Implementation status remains Open.\nDecision criterion `backend/hdl/cdc-gate` (Open; checker).\nRequired outputs: Clock-crossing acceptance/refusal record with proof or hardware waiver.\nAccept: Accept a crossing only through a declared synchronizer, async FIFO, handshake, Gray-code proof or hardware-policy-approved waiver with source/destination domains, signal shape, latency, metastability and reset interaction.\nRefuse: Reject unmediated crossings, incompatible domain/reset assumptions, missing proof or a generic unsafe marker substituted for a hardware audit waiver.\nDependencies: Hardware IR clock/reset domains; Synchronizer/FIFO/protocol proof; Hardware audit policy. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/hdl/clock-reset-timing` (Open; producer).\nRequired outputs: Clock/reset-domain reports and target-format timing constraints.\nAccept: Emit frequencies/edges/generated-clock relationships, reset polarity/synchrony/values/release and required clocks/false or multicycle paths/IO delays/groups/frequency constraints, retaining signal/state/source relationships.\nRefuse: Reject missing target-required timing/reset data, unsupported constraint format, inconsistent domain relationships and unspecified power-on state without explicit hardware audit.\nDependencies: Typed hardware state/ports; Adopted HDL/synthesis target; Clock/reset/timing contract. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/hdl/cycle-aware-emission` (Open; producer).\nRequired outputs: Actual HDL, interface/state/memory manifests and source-cycle map.\nAccept: Lower verified fixed-width hardware IR into combinational/sequential/register/FSM/memory/port constructs with explicit signedness, overflow/truncation/wrapping/saturation, reset and pipeline behavior; statically unroll/structure/control finite iteration or reject it.\nRefuse: Reject hidden heap/GC/runtime dispatch/host IO/threads/eval, implicit host-sized arithmetic, width loss, illegal crossings and control that cannot be statically represented.\nDependencies: B1 hardware-eligible input; Fixed-width layout and clock/reset facts; CDC gate and synthesis target contract. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal.\n\nDecision criterion `backend/hdl/testbench-trace` (Open; producer).\nRequired outputs: Generated testbench and actual source-linked simulation trace with comparison report.\nAccept: Generate the declared conformance testbench and simulation-trace artifacts for the selected HDL flow, then compare cycle-level combinational/state/memory/reset/protocol behavior with source expectations; a declared trace schema alone is insufficient.\nRefuse: Reject missing generated testbench/trace, lost cycle/source/state correspondence, expected-versus-actual mismatch and a fixed fixture string or unexecuted trace contract reported as generation evidence.\nDependencies: Emitted HDL and source-cycle map; Selected simulator/testbench contract; Expected hardware conformance vectors. Consume exact interface artifacts, not whole-component completion.\nEvidence: actual positive and negative products, expected/actual owning diagnostics and source/operation context, compiler/pass/profile/target/provider/input/output identities, and independent replay/checker evidence where required. All implementation and source-facet acceptance remains Open/unassessed; no runtime has been executed by this allocation proposal."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-hdl",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 33924,
-     :end-byte 34780,
-     :start-line 302,
-     :end-line 315,
+     :start-byte 35201,
+     :end-byte 36057,
+     :start-line 309,
+     :end-line 322,
      :sha256
      "c2308b168b23577336eb936fda7d74097112d75c5420202de9f4eb53ae6bf4ed",
      :raw
      "- [ ] `backend-workflow` Workflow Backend\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: implement graph/provider lowering; emit schemas and replay/\nidempotency policy; encode retry/compensation/review transitions; run emitted\ngraphs through a declared runtime including restart/replay; reject unrecorded\nnondeterminism, missing review and repeated external effects. Yes/no: can the\ngraph resume/replay correctly, are external effects guarded and origins retained?\nEvidence: [workflow graph fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00255-b10-document-workflow-graph.clj)\nis fixed graph/event text, not general executable lowering. Decision owner:\ngraph maintainer; recommendation: provider-neutral graph plus a versioned runtime\nadapter. Parallel to native backends; depends on Workflow/Schema/Auth interfaces."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-workflow",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 34782,
-     :end-byte 35764,
-     :start-line 317,
-     :end-line 332,
+     :start-byte 36059,
+     :end-byte 37041,
+     :start-line 324,
+     :end-line 339,
      :sha256
      "6cde5f44b42a3a601dc3ed2ea1bb1ab3b09c3bccb6ef8940e659afcc8d56b543",
      :raw
      "- [ ] `backend-ai` AI Artifacts\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: implement AI artifact/provider binding; emit structured-output,\ntaint and human-review boundary records; connect workflow/runtime adapters;\nexecute accepted model/tool fixtures and reject injection, wrong provider,\nmissing review and unvalidated output; bind evaluations to emitted identities.\nYes/no: do artifacts execute only permitted actions, preserve schema/taint and\nreview, and retain exact model/prompt/tool provenance? Baseline evidence:\n[workflow graph fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00255-b10-document-workflow-graph.clj)\ncontains model/tool/review nodes but proves no live provider completion.\nDecision owner: AI adapter maintainer; recommendation: provider-neutral artifacts\nwith explicit adapters, not a vendor SDK as semantics. Integrates AI domain,\nWorkflow/Schema/Auth/Runtime; no live model call is required for unrelated builds."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-ai",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 35766,
-     :end-byte 36677,
-     :start-line 334,
-     :end-line 348,
+     :start-byte 37043,
+     :end-byte 37954,
+     :start-line 341,
+     :end-line 355,
      :sha256
      "fd43b4f51cc9becd190f608958df14c0b1c5f63958eb3c074c480c42540c9079",
      :raw
      "- [ ] `backend-query` Query and Relational\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: adopt dialect/provider matrix; implement parameterized lowering\nand null/collation/numeric mappings; generate row/transaction/migration adapters;\nexecute queries and reject tainted SQL, unauthorized writes, schema drift and\nunapproved data loss. Yes/no: do rows match types, parameterization survive and\ntransactions/migrations respect policy? Evidence:\n[query fixtures](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00259-b11-document-validate-source-overrides.clj)\ncontain one parameterized select and no-op migration, not general query support.\nDecision owner: relational maintainer; recommendation: one explicit dialect\nadapter with provider/version records, then separate conformance per extension.\nIntegrates Query domain/Schema/Runtime; no database service gates compiler bootstrap."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-query",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 36679,
-     :end-byte 37732,
-     :start-line 350,
-     :end-line 366,
+     :start-byte 37956,
+     :end-byte 39009,
+     :start-line 357,
+     :end-line 373,
      :sha256
      "6bc0b395b6e7a9ff489a31b486678d6c3e6bcb33ed48841983a378b6adbd6d7b",
      :raw
      "- [ ] `backend-mobile` Mobile\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: adopt platform/version/package matrix; implement typed platform\nbindings and UI/lifecycle/threading adapters; emit resources/permissions and\npackage metadata; run simulator/device apps and reject absent permissions,\nwrong-thread UI, invalid lifecycle use and hidden background work; attach source\nmaps/store-audit records. Yes/no: does the bundle launch, do lifecycle and denial\npaths execute correctly, and are host values/errors normalized? Evidence:\n[mobile fixture](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00263-b12-document-app-bundle.clj)\nis an iOS-shaped string validated by substring checks, not an actual app bundle.\nDecision owner: mobile maintainer; recommendation: independent iOS and Android\nadapters and explicit simulator/device evidence, not one generic mobile claim.\nIntegrates UI/Runtime/Emit/Build; external signing/store publication remains a\nseparate authorized action and does not gate unrelated compiler components."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-mobile",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 37734,
-     :end-byte 38634,
-     :start-line 368,
-     :end-line 382,
+     :start-byte 39011,
+     :end-byte 39911,
+     :start-line 375,
+     :end-line 389,
      :sha256
      "64d4c41ddd0c801f12bf87ce4e66ed4c04627851240df6a8bfec3a998dd2d5f7",
      :raw
      "- [ ] `backend-emission` Artifact Emission Contract\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: implement common record/schema checks across all artifact\nkinds; bind hashes and provenance to actual bytes and dependencies; enforce\nmissing/stale/contradictory evidence rejection; attach per-family conformance\npacks before package/release consumers. Yes/no: do records identify real bytes,\nall required edges exist and tampering/staleness reject? Evidence:\n[emission contract implementation](../../bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early/26010-artifact-emission-contract-and-backend-inputs.clj)\nassembles required records; existence is not family execution evidence. Decision\nowner: artifact maintainer; recommendation: one versioned envelope with\nkind-specific validation. Independent family fixtures may develop in parallel;\nBuild/Release consume accepted records later."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-emission",
     :checked false}
    {:path "specs/backends-workflow/tasks.md",
     :file-sha256
-    "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+    "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
     :authority :component-implementation-ledger,
     :source
     {:path "specs/backends-workflow/tasks.md",
-     :start-byte 38636,
-     :end-byte 45298,
-     :start-line 384,
-     :end-line 412,
+     :start-byte 39913,
+     :end-byte 46575,
+     :start-line 391,
+     :end-line 419,
      :sha256
      "1c32dbaf19a6d40385864704616351c6c4d39a26e8e8b10102723a9c9279d2ac",
      :raw
      "- [ ] `backend-conformance` Backend Conformance\n\nStatus: Open\n\nProjected task block:\nRemaining tasks: reconcile canonical operation/domain fixture matrix; implement\nfamily adapters and exact rejection assertions; execute or semantically compare\nreal outputs; check evidence/provenance preservation and nondeterminism replay;\nrecord unavailable targets explicitly without converting skips to passes;\npublish exact-source family coverage. Yes/no: does each claim have positive and\nnegative execution evidence, are metadata checks independent of result equality,\nand are unavailable targets honestly open? Evidence:\n[existing test-matrix artifact](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00224-backend-test-matrix-file-artifact.clj)\nis a starting integration surface, not acceptance. Decision owner: conformance\nmaintainer; recommendation: shared fixture semantics plus target-specific runners,\nwith explicit availability records. Conformance interface work is parallel;\nfamily acceptance awaits its actual backend. No automatic release closure follows.\n\nDecision allocation interface/testing/test6/abi-layout (Open). Role: backend conformance maintainer. Record and validate target ABI, layout, calling convention and runtime assumptions. Refusals and conditional cases: Reject target ABI/layout/calling-convention/runtime assumption mismatch or missing declaration; compare produced layout and ABI reports with the selected target contract. Required outputs: Target-bound ABI/layout report, calling convention/runtime assumptions and TEST6006 mismatch diagnostics. Consume actual dependency interface outputs: backend-interface; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.\n\nDecision allocation interface/testing/test6/differential (Open). Role: backend conformance maintainer. Where possible compare backend semantic results and artifacts with reference interpreter or another backend to detect divergence (SHOULD, conditional). Refusals and conditional cases: Where a reference interpreter or second backend comparison is possible, compare observable results/artifacts and detect deliberate divergence. Record comparator availability and justified omission when unavailable; unavailable conditional evidence never becomes a pass. Required outputs: Conditional backend/reference comparison report, actual comparator identities and divergence or availability disposition. Consume actual dependency interface outputs: release/remaining-tasks-and-evidence/execute-differential-conformance-fixtures; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.\n\nDecision allocation interface/testing/test6/manifest (Open). Role: backend conformance maintainer. Emit backend artifact manifests naming backend/target/profile/runtime/source hash and reject missing manifests. Refusals and conditional cases: Reject a missing backend artifact manifest or absent/mismatched backend, target, profile, runtime or source-hash identity. Required outputs: Lowered artifact manifest with backend/target/profile/runtime/source hash and TEST6004 refusal. Consume actual dependency interface outputs: backend-emission; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.\n\nDecision allocation interface/testing/test6/report (Open). Role: backend conformance maintainer. Emit backend conformance, execution, diagnostic, source-map, ABI/layout and differential reports; backend release claims require results for the required target matrix, not only its default target. Refusals and conditional cases: Reject a backend release claim tested only on its default target when the required matrix is larger. Runtime-backed cases require explicit runtime and capability grants; unavailable cases remain open and missing execution/diagnostic/source-map/ABI-layout/differential reports are visible gaps. Required outputs: Backend conformance, execution, diagnostic, source-map, ABI/layout and conditional differential reports for the required profile/target/backend/runtime/artifact matrix. Consume actual dependency interface outputs: backend-interface, backend-emission, release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.\n\nDecision allocation interface/testing/test6/source-maps (Open). Role: backend conformance maintainer. Map backend diagnostics and target source maps back to Gravity source spans. Refusals and conditional cases: Reject target diagnostics or source maps that cannot resolve to the original/generated Gravity source spans; exercise a broken source-map edge independently of result equality. Required outputs: Target-to-Gravity diagnostic/source-map validation report and TEST6005 mismatch diagnostics. Consume actual dependency interface outputs: backend-emission; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed.\n\nDecision allocation interface/testing/test6/unsupported-rejection (Open). Role: backend conformance maintainer. Reject unsupported MIR behavior with stable diagnostics rather than silently mislowering it. Refusals and conditional cases: Feed unsupported MIR behavior and require stable unsupported-operation diagnostics before emission; reject silent lowering to wrong target behavior or metadata-only success without the expected refusal. Required outputs: Unsupported MIR negative fixture result, stable TEST6003 diagnostic and rejected-emission evidence. Consume actual dependency interface outputs: lower/current-evidence-and-remaining-work/lower1-validate-lowering-inputs; whole-component completion is not a prerequisite. Retain exact source/compiler/pass/profile/target and checker/provider identities, actual positive products and refused-case diagnostics. Implementation acceptance remains unassessed."},
     :owner-source "docs/component-roadmaps/backends.md",
     :component "backends",
-    :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+    :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
     :id "backend-conformance",
     :checked false}],
   "build"
@@ -18613,7 +18636,7 @@
   "docs/component-roadmaps/auth.md"
   "6a235f9ef64eb5fce58e0d6d67853a8b2aaeb6c380f93281cc4ab5c7680863cb",
   "docs/component-roadmaps/backends.md"
-  "09b23ffb0c64054e2c6fb0257473b1881947486638787ea33fec5aa06f2f94df",
+  "fea2d14692b608a528b9a942d985f98f265a1e9ca9c69b988ea733b582932aaf",
   "docs/component-roadmaps/build.md"
   "6012d6135329a13fcf4a51f47e6687c576bdf7b4cf96e64bfbbc2ba0c3f7e39b",
   "docs/component-roadmaps/cli.md"
@@ -18693,7 +18716,7 @@
   "specs/auth-workflow/tasks.md"
   "fe5009a0ed2e6ba130986eb7707d086e4c299371beca1a0545b6f92c2d17bca2",
   "specs/backends-workflow/tasks.md"
-  "557fbd00a80813b61fcee61c02c3d9b5f1671ad9928fcfe6667126368ddc5ecf",
+  "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
   "specs/build-workflow/tasks.md"
   "864de14236958e0cb99e69f9a93b13320da2facad4b8ec81865d3b24c2efcc4e",
   "specs/cli-workflow/tasks.md"
@@ -18780,7 +18803,7 @@
   "specs/build-workflow/tasks.md"
   "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
   "docs/component-roadmaps/backends.md"
-  "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+  "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
   "docs/component-roadmaps/tools.md"
   "df11890b21f71d3f246cc47e9f63d866239a0d68",
   "specs/compiler-api-workflow/tasks.md"
@@ -18838,7 +18861,7 @@
   "specs/platform-workflow/tasks.md"
   "19e1120301643581e6a8b55b933ec12643d0ba2f",
   "specs/backends-workflow/tasks.md"
-  "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+  "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
   "specs/evolution-workflow/tasks.md"
   "46a58eddd4e412064c7a5d0898cc1e583e3dffcc",
   "docs/component-roadmaps/release.md"

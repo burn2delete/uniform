@@ -1,0 +1,102 @@
+{:all833-decision-records :unchanged,
+ :current-spans 4819,
+ :historical-IDs 561,
+ :new-width-criterion-witness
+ {:path "specs/backends-workflow/tasks.md",
+  :marker "backends-implementation-tasks",
+  :task-id "backend-c",
+  :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+  :file-sha256
+  "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+  :start-byte 11139,
+  :end-byte 12414,
+  :raw-sha256
+  "48cf7d5e447ebfeebb5247228686db2231ac3e9d77315381eb62f9d7dfa23956"},
+ :implementation-credit :none,
+ :new-facet-review :pending,
+ :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+ :current-bindings
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn",
+  :sha256
+  "afdc75a8a18b640768a2ee9ec694afd2daf2bbc9ecf313cd0c5fdc03d7c20aba"},
+ :five-reviewed-C-raw-bodies :exact,
+ :predecessor
+ {:path
+  "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
+  :sha256
+  "15d5afcad1d9e3649f4b444a4f9e88361bbfce11608fd27101eaae6b9fda6d13"},
+ :historical-file-pin-changes 2,
+ :kind :B2-fixed-width-exact-current-witness-applicability,
+ :composition
+ {:path
+  "specs/requirement-reconciliation/b2-fixed-width-source-facet-refinement.edn",
+  :sha256
+  "8322fbbe35c6eae9108735651c67d2ecefa82a16bfe732d8657465a4672250ab"},
+ :full-file-inverse :exact-declared-insertion-removal,
+ :current-C-criterion-witnesses
+ [{:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :raw-sha256
+   "1bfd2021ce6cc41e3932e73656766bca34b8d815b35d94e1ff82c966af0d8b83",
+   :marker "backends-implementation-tasks",
+   :B2-fixed-width-pin-refresh
+   :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+   :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+   :end-byte 5389,
+   :original-obligation-id "backend/c/source-emission",
+   :start-byte 3776}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :raw-sha256
+   "b37d8757c57a82ba724e609a956a6b734a4874a0208ca11e6353345bcd7e48c4",
+   :marker "backends-implementation-tasks",
+   :B2-fixed-width-pin-refresh
+   :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+   :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+   :end-byte 6699,
+   :original-obligation-id "backend/c/abi-layout",
+   :start-byte 5391}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :raw-sha256
+   "009b1133a852a34bca99b17f844dbe273beef88b52624c8ca538ec419d18cf3d",
+   :marker "backends-implementation-tasks",
+   :B2-fixed-width-pin-refresh
+   :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+   :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+   :end-byte 8235,
+   :original-obligation-id "backend/c/memory-lowering",
+   :start-byte 6701}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :raw-sha256
+   "eb28703be0685594599143656f32a0bcc92e3fe8956dafc7043f94c072a5b2f1",
+   :marker "backends-implementation-tasks",
+   :B2-fixed-width-pin-refresh
+   :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+   :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+   :end-byte 9721,
+   :original-obligation-id "backend/c/numeric-lowering",
+   :start-byte 8237}
+  {:path "specs/backends-workflow/tasks.md",
+   :task-id "backend-c",
+   :file-sha256
+   "3797e10fc0a6d433aabdf846212b248a99e961fd84680ee7397043b7607ffd67",
+   :raw-sha256
+   "6f1b616966c35d4397b892a770186d756c5a33f697b52a9eb3a285224a83f703",
+   :marker "backends-implementation-tasks",
+   :B2-fixed-width-pin-refresh
+   :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+   :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+   :end-byte 11137,
+   :original-obligation-id "backend/c/helper-selection",
+   :start-byte 9723}]}

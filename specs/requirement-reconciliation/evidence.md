@@ -1044,6 +1044,47 @@ reports zero findings on both changed SH files. Independent acceptance,
 full-facet disposition, granularity, legacy ACC scope, final counting and
 integration remain open.
 
+## Exact B2 fixed-width amendment and complete owner facet trace
+
+Source `89a96a0c132790a256fad24bf86810c5b6c5b4bd` adds the exact B2
+C-subset fixed-width predicate to `backend-c`. The source facet is
+`B2/partition-facet/f96f49eb0c48f7f5bf137df68d987a12c199183a18ff38b27898d31f7074bc7e`.
+Generated width-sensitive C must use explicit fixed-width integer types with
+the existing ABI/numeric facts; ambient int/long assumptions, lost Gravity
+width/mode or unsupported representation without a legal explicit mapping
+refuse. Positive evidence inspects generated declarations and compilation under
+the recorded flags. No new artifact kind, target, task or decision is created.
+
+All five independently reviewed C criterion bodies and the other fourteen
+backend records remain exact. The declared insertion reverses to the prior
+task-file hash. The current 561-binding refresh changes two Backend-file span
+pins while preserving raw predicate bytes and all IDs. All 4,819 current spans,
+931 decision-criterion witnesses and five C criterion bodies authenticate;
+the new width witness is separate and pending independent facet review.
+Prior granularity, ACC and C-source adoptions retain their scopes.
+
+`b2-complete-current-facet-trace.edn` preserves all 271 facets and 47 source
+occurrences with 32 manually assessed predicate conjunctions, seven current
+criterion witnesses and ten explicit C-subset predicate joins. It records
+actual dependency artifact directions, named artifact-schema refinements,
+diagnostic/refusal cases, retained hierarchy and provenance. These are manual
+owner entailment proposals, not keyword/owner-membership proofs or independent
+full-B2 acceptance. Source checks pass 2 tests / 19 assertions.
+
+The current proposal index contains 653 distinct original facets across the
+372 provenance records, fourteen policy/EFIR records and 271 B2 records. Four
+B2 preface facets overlap the provenance cohort and have matching raw hashes.
+The first index attempt refused an incorrect assumption of one overlap before
+canonical writes; the actual four identities are retained explicitly. An early
+diagnostic stdout label still printed 656 after the canonical index was
+corrected to 653; the label is not authority. Its generator now derives the
+printed count from the index. No requirement or completion ratio is inferred.
+
+Backend projection tests pass 5/211, and the generated projection, structural
+document and full-language roadmap checks pass. Full B2/remaining corpus
+entailment, independent facet acceptance, final counting and coordinator
+integration remain open. No compiler or runtime operation was executed.
+
 ## Twenty Math and Backend decision allocations
 
 The preserved private proposal has SHA256
