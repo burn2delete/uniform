@@ -7,6 +7,13 @@ Bootstrap retains the original arities and supplies explicit callable Vars and
 fixed configuration. The stage never imports or resolves bootstrap. These are
 trusted seed composition APIs; injected operations and the retained internal
 reader re-verification port do not grant caller proof authority.
+An explicit invocation triggers fresh current-source reader re-verification.
+Nil invocation/boundary cases retain their existing legacy compatibility
+behavior; these views and association predicates are not standalone admission
+certificates.
+View construction expects C2 semantic validation to have run already; its
+invocation check authenticates the retained source/envelope binding. Full C2
+artifact validation remains in the source constructor before syntax creation.
 
 D1, D2, D3, D9, L1, C1, C2, C3, C15 and TEST2 govern this boundary. C2 retains
 literal decoding and reader authentication. C3 owns the native syntax view and
@@ -36,8 +43,40 @@ Before extraction, real paired fixtures with metadata, an instant, a UUID and a
 repeated UUID emitted two syntax objects, three occurrence bindings and the
 same artifact identity:
 `sha256:0e62cacb7046ae54171f5a9188beb07794ae58053526a16c763b5cdaed1e92fc`.
-Full product comparison, adversarial regression and independent review are in
-progress on the draft PR.
+Complete C3 artifacts and complete reader views compare equal before and after
+extraction for both source spellings. Their artifact and projection identities
+match across the pair, while physical path/extension and authenticated envelope
+provenance remain distinct. Source metadata and repeated occurrences survive.
+
+Direct tests reject changed decoded instants, malformed occurrence structure,
+missing/duplicate literal records, changed raw spelling and literal spans,
+missing/extra reader invocations, unbound instants/UUIDs, altered projection
+identity, reader revision and upstream provenance. Source/envelope owner and
+internal-token substitutions stop view construction before projection. A
+coherent descriptor rewrite across every occurrence, with public projection and
+artifact ids recomputed, still fails actual reader association. Full syntax
+verification rejects that product with C3-SERIALIZE in its existing
+serialization-first order. No production verifier ordering was changed to fit
+the tests. Late Var interposition, private wrappers and interruption restoration
+also survive.
+
+Executed development checks:
+
+| Check | Result |
+| --- | --- |
+| Full genuine C3 and reader-view comparison, both extensions | Equal across extraction |
+| Combined syntax pipeline, C3 compatibility and fresh-C2 suites | 33 tests, 374 assertions; passed |
+| C3 construction, verification and artifact identity helpers | 12 tests, 163 assertions; passed |
+| Ownership, catalog and language-boundary suites | 50 tests, 1025 assertions; passed |
+| Documentation, roadmap and governance validators | Passed; 240 documents, 19 indexes, 185 existing dispositions |
+| Changed-file lint and whitespace checks | Passed; no new warnings or errors |
+| Cold `gravity.syntax` loading | 25 public operations; bootstrap not loaded |
+
+The existing CI syntax command includes these tests without a new runner or
+registration path. The existing syntax ownership/component records remain
+unchanged, as do all source/function pins and migration/reporting fingerprints.
+Independent exact-source acceptance and final remote checks are tracked on
+the pull request before integration.
 
 This slice preserves the existing registered `inst`/`uuid` surface. It adds no
 tag, reader extension authority, language feature or resource accounting.
