@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.macro-run-storage :as macro-run-storage]
             [gravity.macro :as macro]))
 
 (defn- operations [] ((ns-resolve 'gravity.bootstrap 'macro-stage-operations)))
@@ -210,7 +211,7 @@
 (deftest receipt-reuse-requires-current-stage-and-seed-operations
   (doseq [v [#'macro/verify #'macro/expanded-syntax-object
              #'bootstrap/sh05-macro-gravity-verifier-report
-             #'gravity.macro-run-storage/exact?]]
+             #'macro-run-storage/exact?]]
     (let [original @v calls (atom 0)]
       (assert-interposition-misses
        (fn [operation]
