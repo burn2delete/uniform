@@ -23,6 +23,8 @@
    "5d5f6cb441c94b4ae7e0d32856deacb93fceb87f1dfdcbe45b39d1b385a598f1",
    :criterion-raw-sha256
    "660d3c31b63ef84b1e3182690e80c4e13fe372b221130d8fae7084c9cc45bf32",
+   :serialized-mutation-sha256
+   "f03d2d756bc03d1f0d554e6361c3b635583c680331a99e444f92ffbd52c3e748",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :target "runtime kind, ECMAScript version"],
@@ -34,6 +36,8 @@
    "4ca70a15633529521cf1c44b8fba47ed5c65246cade4e51d36d102502b3c654b",
    :criterion-raw-sha256
    "4097b2b3badd64255ebdc6c6a135838e068c65048818b1d80cfe3fc5ede4d9bc",
+   :serialized-mutation-sha256
+   "de944b176ba69c28f3e400316fde2898820183266a9f47afe1a063cc1b34f39e",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -47,6 +51,8 @@
    "26eea4ca7b70b756b106e333e9aa618a6ecebef9fda5e558890d5fae5ab829c9",
    :criterion-raw-sha256
    "54edcfa41e3ca65c68f2838639d5456fdb68b8070c93c16d55332d6e46f6b820",
+   :serialized-mutation-sha256
+   "12d6ab3fd373763cf0ded7011b3baaf527182d9353888b5840f7e377d2be2c4a",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :target "JSX/UI transform when used"],
    :refused true,
@@ -57,6 +63,8 @@
    "15cb4343a83099762aaaed0c53f4dd992cc09c2fa863f613a7e4d708715745b4",
    :criterion-raw-sha256
    "582fd69f50774475b6f0fba3d8f5b40defff2beeeaa10d34b000ee52d4863d61",
+   :serialized-mutation-sha256
+   "97799808dcd2323946592ae0bd8ca4d5878739f6c5199bdd7b8f44d4f8317411",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :target "worker/thread/event-loop model"],
@@ -68,6 +76,8 @@
    "0950bf491baea7a7616d8bf779696d49555a0e700646a9d9d522f04b0f2e8973",
    :criterion-raw-sha256
    "e2458e0ef81a24df909002bf8e625af2893012c4ef5a3a7dcea24460fbd3654a",
+   :serialized-mutation-sha256
+   "24557327795cd3d4c4242f90f35df25821c76ee498be2acf7aeaa787e93d43f0",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -81,6 +91,8 @@
    "5281f0ce88c8156b233b68cc7936c7fa1a68c442c4a61f5673a4e45cc59c489e",
    :criterion-raw-sha256
    "ce884bccc242910cd37635503f18b552d659776a57d797afcb7f5bcbf3e0e5aa",
+   :serialized-mutation-sha256
+   "d2131133ec8678ad574d3629955c9b7bd50667fa067ee44faad95e21f3cde7e2",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :target "supported built-ins/polyfills"],
    :refused true,
@@ -91,6 +103,8 @@
    "8a9ab03f6a3841183f825a2d5c3e5cd9da2bae267f367cc52eb5c9d782d8d5be",
    :criterion-raw-sha256
    "08e941dccf9055374d923d3790786795c6cd0ebf1dced067fe857f605eb538a7",
+   :serialized-mutation-sha256
+   "45e0c34be00f291b8579c95397ccd221bd3acf666da61dd02f801a10627fa027",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -104,6 +118,8 @@
    "0e53e009952e434fceab7fd086a524bde811c0f2fd1f38d586f74bf6a62b0662",
    :criterion-raw-sha256
    "dbc64f70bad08a18f66634a7ab23a0d3c999ac94069754722490ac1aa619eac9",
+   :serialized-mutation-sha256
+   "394dade148c53d8043a9586301d9b13793d36028233311881854de4bd7262aeb",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -117,6 +133,8 @@
    "ab78a0ee3b4b46e6530b710110a8db0d4432e4f6de83700b0d61e1a3b94112e2",
    :criterion-raw-sha256
    "d4184fe7b56ac310d57dbe90968a101b8297023396af7f42792bfc856a330a9d",
+   :serialized-mutation-sha256
+   "91ef22f19342b3ad027a685780d69b65525ee534283c53b062a880ac8e28303a",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :target "actual JS module or bundle"],
    :refused true,
@@ -127,6 +145,8 @@
    "23384db6e341ee879a1795a177d4f6b7c2a2e9f5ec97fc9aff83511b5ffcd9fc",
    :criterion-raw-sha256
    "36a1cb32fca2a2f66b44bbb7aa7eb4dc7af8247b25945d3f6fc05fcd816b1345",
+   :serialized-mutation-sha256
+   "207e2ffc21f88559e7c742989d14f2459f0e62cf712b6313cc8f715601ec9d35",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :target "UI/component bindings when selected"],
@@ -138,6 +158,8 @@
    "33ab007281f31ab361a9c55082c0927b84944ddc84ca5f769efd3833dadbc6b7",
    :criterion-raw-sha256
    "50583ac65a7105741df5d31d7ece06f1ea84eb890f0524a6c485a24faaa89b3f",
+   :serialized-mutation-sha256
+   "f034e449c37d4478862cce3deacc17b749b65bd325ec3070ca18c1be428b599d",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -151,6 +173,8 @@
    "5a59b240892d28186bab6c8037469c25efc3d18d95528b83d73807b6499cf631",
    :criterion-raw-sha256
    "073ad280ba1df6af52bf70d43336f6007711e5db5938573c7df1176ca9082549",
+   :serialized-mutation-sha256
+   "38a01236382d625ef9c958c18ae21fb40d6d415fb576f488b62a7663984ae87b",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -164,6 +188,8 @@
    "f4c16d5198ac3c92283c0f8a9bd24a75b0e617ee5c9af99192dcecfe83ed3609",
    :criterion-raw-sha256
    "29dc7b262f46c1004efc5a29f6d6b41485174987035ef05de965d38c45b0b4a0",
+   :serialized-mutation-sha256
+   "0c1f49d0f99bd09ceeca8b1ca14a6973389bf6254c04abb6b8edc4c75866f1bc",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -177,6 +203,8 @@
    "9b3f0f1a8060f34cc745083247012090b68da5a40d6dcd3322503c41315f3e58",
    :criterion-raw-sha256
    "4ae3d5057e6f0ec7a706ef31e98017960b1b5d315d7bc8f8e46cbe271ce939ef",
+   :serialized-mutation-sha256
+   "d02a5bdcbf4dea56defe04e9d8fe63c1429dc33fa0998eefda840b5dd1a1d238",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :value "serialization schema when exported"],
@@ -188,6 +216,8 @@
    "f8e0248e2b0c925e93ab6e1bdcdd9760e017b57bf778169bc9d966d3a3782bb9",
    :criterion-raw-sha256
    "c1b41deb365028b5db97a4921590eed5a731ff628972eeb7f7448a7397eb04b0",
+   :serialized-mutation-sha256
+   "3e97f680918cd77e244e9362f58d3ed3d2d7b9cc7031c6b7a9f8875660ab5bd7",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :value "host-value taint policy"],
    :refused true,
@@ -198,6 +228,8 @@
    "b939bfb81784357791758fd4bcfc713339910605ab8619667c83a796801e66a6",
    :criterion-raw-sha256
    "137c1ec1f3b7a73fa172c3bc1dc704eccb7a91309547510f6512d5f9b88ca3ea",
+   :serialized-mutation-sha256
+   "4e607c7e8eb84e80e400495ecb4a8b22bf439aae99c66ecd57fcf8c3eeeba715",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -211,6 +243,8 @@
    "bcadaf31437e4d171c7aa7e2c317c337e7908651ca9a89fedaa6f2668b0ec920",
    :criterion-raw-sha256
    "b8e38ce5738e64c4a4f82ebdfc7c28fc12efe8b9931e8b4effc34c08e6032821",
+   :serialized-mutation-sha256
+   "75a9c9a1d9d61f5df2538ae6c375dfe8acf7871dc188c9715059adf1542b61b9",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -224,6 +258,8 @@
    "8b3f1a7c575b6e2c81471497063ddf235f876599ff370c2fa59dd4eafc6e2ad5",
    :criterion-raw-sha256
    "4afe649c8af83f44c28297d4c091007f5ba9c50a7af871d798bb2cbc59230162",
+   :serialized-mutation-sha256
+   "0e859a26e09d84e5929666c0d1290efef6b8475ec7561d070b62a50129397c87",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :value "actual declared runtime validation"],
@@ -235,6 +271,8 @@
    "fb2f54fdba19bab2856458404025faa5be87deec80e6401740b40b3238d3f981",
    :criterion-raw-sha256
    "ec96121297ed1876a7943ef33a81575e1f543d31882ac56a423c77463396ae7f",
+   :serialized-mutation-sha256
+   "dba0ef4af490dc36ba78c8554003e1657160dc46895db018d8a82a7444e38934",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -248,6 +286,8 @@
    "a064c12aa9ebe74b0e1ac0fc2049f7b5cf25a556b2d1ff06afc9cb44a0968488",
    :criterion-raw-sha256
    "45bcc0c68d1d7d0032b6dc1f7ca1aa24f50e6b89f9f9a8a0dcbd8205f1133a57",
+   :serialized-mutation-sha256
+   "edf15754585edd291459362529ecd0ebee56e6593d436225587c9a9cc61daea2",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -261,6 +301,8 @@
    "5eadd7606d14ee932020866cbd7d2507c67d084a1a09b2d590bdfb46dd7935da",
    :criterion-raw-sha256
    "6540069bea93c2efa9626edcc9b735a98caaa67c4c2276398990a265de41d8e1",
+   :serialized-mutation-sha256
+   "c35a8a992539a925ae2431e44cbd2ce6a7e385728f96a864909fbe66abb7ca1d",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :async "promise creation and awaiting"],
    :refused true,
@@ -271,6 +313,8 @@
    "adccefc415e14de79ba7321a32cae0b9fef6fffcad39e5371f81f6a233a72174",
    :criterion-raw-sha256
    "cc718e7d7912109ad1dcd0d5e5013d258890bedca68a6b96fe6c95b2faeb64ee",
+   :serialized-mutation-sha256
+   "caf623227670898cb6cbdf474d5329fd0fd59d5e534d956c83ba406180bde350",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -284,6 +328,8 @@
    "5ad718588e34cf911681fda120100e0b27831c15da939bdb456c85851944c494",
    :criterion-raw-sha256
    "3880216b04ad78e67d7a4ab9336f1e59e8a7fdb23f954d036ecd77d5d5013dd6",
+   :serialized-mutation-sha256
+   "a76ef70445f3326f2fd26609f12375224e096abace44576c7884bc4fa7246ec7",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -297,6 +343,8 @@
    "7f3de8ff1c122161a98caf0027bc032784eadc48e2ab013782457593f1b55cd7",
    :criterion-raw-sha256
    "cfcd471ee66057325812d355249b113001418685684eedcbf30bc9f18b8eb045",
+   :serialized-mutation-sha256
+   "45b75d77d60cd06a02dfb3e580f43959fae4490c5067046e673e25e610be1dc2",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -310,6 +358,8 @@
    "28043e97231c36bd1efd3d93a4733088c3da54e3736086acbbdd3d5fe5dea73a",
    :criterion-raw-sha256
    "e7cf95899e1c0406ce8a1331d201f6e7dae439eb995ebea1afe44c2f47c0b3f0",
+   :serialized-mutation-sha256
+   "176a9cf730413a8af86c5fe8a8bf3df1392353f9a33dc25f85aa21763105f730",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -323,6 +373,8 @@
    "3e141c93ae7546c5e29120da2609b837ca9f321e5662994d7e0fee56a3ba2c2e",
    :criterion-raw-sha256
    "7b79660d4734c8ef7470a49deb37f69aa3d283b2bfee50c0f1677e4747aa4357",
+   :serialized-mutation-sha256
+   "08aa309273c1a1ef11281da200e6ce04fe991d25ed9f84202208a15e99fb49b5",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -336,6 +388,8 @@
    "09fe602e83039561faf331d72b6e8291f67e474dc086e560bd8fa14769421b63",
    :criterion-raw-sha256
    "1027b748dbd139ee220e32f013a5dec5b250c483a2b3a245a1f33e3872d1e28f",
+   :serialized-mutation-sha256
+   "236f933941675baa1389450d2a5f619a861ad86178650ff116ea0f4b315e0a9c",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :host "every host global and package import"],
@@ -347,6 +401,8 @@
    "c60cd1d2e931eb363fd349574845a9d433f707ea4aa6a42e20999019885df6c0",
    :criterion-raw-sha256
    "3cf7f690dc7f4566e6e788f7dda6334bac7bcad973ad9a0ed42aef2f645d7680",
+   :serialized-mutation-sha256
+   "698ae76ed01d1451e0f76e4c5336701709209caf5c718d9ce0f9a4867e409f94",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :host "version or integrity constraint"],
    :refused true,
@@ -357,6 +413,8 @@
    "32cca734698309cd380e00c0149add5f1e7573a9f49c63be8824c2995aa81b52",
    :criterion-raw-sha256
    "ad3fcee9991dc7656ecad15030a0fdc3e49c478b5b67123128ba435da1925542",
+   :serialized-mutation-sha256
+   "811266f73b91e32b157e87f9e6ef243622a5be1bb78c636db1479885ee437d21",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :host "typed wrapper/schema, trust/taint level"],
@@ -368,6 +426,8 @@
    "6c861b0d004034e7a5f5bf71efd7432dc644ff86b73acbb45a8fb87c4e537e9d",
    :criterion-raw-sha256
    "2a1d0b9434b5c5bca8e0ea6933f0f9301c90743dee8df9028215d3888ec560c9",
+   :serialized-mutation-sha256
+   "c349966e11b8a1104fe01cac9314ea74c330d2a52a70704baf1006e682a099d7",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :host "browser/Node/edge availability"],
    :refused true,
@@ -378,6 +438,8 @@
    "91e1295a1442b7d22ee3b45ea7fe2bbdb02335f5962eca3313acf255b8805487",
    :criterion-raw-sha256
    "4e4d6e2beb9eef78ac1690e0bd43b7174a3663c132b5ba7c825234a1e2f1562d",
+   :serialized-mutation-sha256
+   "1a73a060d386ce70da6d90705a0b7c54cf04ae1ed063466d1b5d15e97fdd193b",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -391,6 +453,8 @@
    "28fbeff512f2100d4708dfa0be3dbdc054042c454ed00eb09373f97ade6233d2",
    :criterion-raw-sha256
    "0047f6fd956de42e067163d99b23552a1d16da5337e5013444067a289f26b0b4",
+   :serialized-mutation-sha256
+   "b064936d36c2d98a370774381f8b75b5f013db478065bf8d5b7708b08d224aa9",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -404,6 +468,8 @@
    "940cc309fd31ca69f973a18bc585e7e204e85d2f72c3e59654a1338a5cc10368",
    :criterion-raw-sha256
    "dd11bb8fd78ede21dbc3dee420ee9dd7bde8b1dcc5bbc9ca5bcb9317086af797",
+   :serialized-mutation-sha256
+   "625242d07a45799c1dfca8fc743ab438bd64246d26e39b0c6a4431ce3072af90",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -417,6 +483,8 @@
    "aafb02ca10af294d85a4084c937864a4ef84624810eff098a061980fe5e3157c",
    :criterion-raw-sha256
    "a457ecc86e26aa81799b6ba4b393fca42d163e42cd7df1373ab0ea7c14d9fc72",
+   :serialized-mutation-sha256
+   "4d4d096c74e8fdc8aac6771de8d3274de1f2c6ae894f8fbea6b3a266302dc855",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -430,6 +498,8 @@
    "73195ea1b624f06b6131b25c7af35687e3ea36be498f1048713034cde6f823e9",
    :criterion-raw-sha256
    "7c8f98ce5d835e40985f1c041c142155ecbde72e3b114ed6c9c53b183a63b06c",
+   :serialized-mutation-sha256
+   "fa5257ee35b0b890a7f550f5e913ad89217788455d1eab0825825d845bcbcaa0",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -443,6 +513,8 @@
    "6fb8d9d6bbd0b12f64dd921b190cbc00411d3c930395908980b385a2f93d6d3b",
    :criterion-raw-sha256
    "15a7ec4d856ba10986146bb24618b9b43c8365308015ddb5d4dd321bbb1dc8e8",
+   :serialized-mutation-sha256
+   "f03c37f4c9690a1a165536734caddc530821bd12cc774f2247e9659b8694ee8f",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -456,6 +528,8 @@
    "1e77f2904b83b1eb4c0ed14ea70c9bbd47e2d7d49ee8b63709f855f71b7157a9",
    :criterion-raw-sha256
    "299f5e02c1b5238437f77c781616819c38e7260942b926187317c16d868bc7ac",
+   :serialized-mutation-sha256
+   "b59d6494af760532d165c2d063137e8074c3a51c41851c82a9796a7217430002",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -469,6 +543,8 @@
    "c40e180c772d9316e4621465fef239ddb7ba1aaa3d7f33825fb38d9c048cdad3",
    :criterion-raw-sha256
    "a6c1d89fd44e2983a1876378381bfc29013a63d53ed1e8c45785eff96ab8695b",
+   :serialized-mutation-sha256
+   "ff42acb608f60a255095d92418ce9fff82e3284b1c4b9ec10ed8785c6e2da96d",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :numeric "typed arrays for packed numeric data"],
@@ -480,6 +556,8 @@
    "b79a736458111b83dd0796c629ce9b4f4eb6291dde75eddda5f4f5b27d6b825f",
    :criterion-raw-sha256
    "9d9b63bcfc5f3e83e6b171f74c4449d6420c49b3bdb72cce828fee091f93b0de",
+   :serialized-mutation-sha256
+   "32703caa8ba3184486d28c057d719e026c115b9e601d25e7bdd6cd551dce71a7",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -493,6 +571,8 @@
    "8f2ac902746a9b0bef836c8832651570640f398efe0c9a2fe4f7bc880f520f54",
    :criterion-raw-sha256
    "750cfbc72492c493e3c14622fe26e89461bacee531b4cda0096ee25a274af2a0",
+   :serialized-mutation-sha256
+   "0339ca99d1c5790b4b9151cd71122e2ab35b7ef64c1419f6a97a4d437bec80a6",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -506,6 +586,8 @@
    "2d870144bfc18d9c38a37c871749589a3a7257f8ab48f641f16d3472d6bcbe42",
    :criterion-raw-sha256
    "434066c393e3aa5dcf5651445661157c565bcd897bc22e76a2bc977cce95cc16",
+   :serialized-mutation-sha256
+   "6c732ba0611aa32e924625e2d79a42f120206503619be89e307ba1a234682c18",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -519,6 +601,8 @@
    "3bfa5252a511e30b83bd8c62e5e7fbd08c62296d75250ed95fdf2ebb6051b55c",
    :criterion-raw-sha256
    "a326d408a0588792d9bc96aace68eac6674d25412b2e519365cd87f70ae335f8",
+   :serialized-mutation-sha256
+   "23889d05083b79775ce413dbf001944550e2a974c1fee870533381fb58eb0340",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -532,6 +616,8 @@
    "37b724b197d865a40cb67da585e2807c6ab5e50086fa6fbf776812e629211a35",
    :criterion-raw-sha256
    "853ff7acfb30a3d4cf4b67dba0fa4a8877e8d7f809ddf63ac3b4004f89642a32",
+   :serialized-mutation-sha256
+   "b502bdd288e320737614ca1fc2490c833e607c98f77a599e0da4602ddc0425ce",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -545,6 +631,8 @@
    "d5b3fd04837d542e3e89f0a5a505ffb3f02b74e6338c082ad0484638d7aae8ee",
    :criterion-raw-sha256
    "4b4dbba1079f415da53f6b2e6db4288a4c1069cfeee7700789b63fe02043077a",
+   :serialized-mutation-sha256
+   "553acc4b89ef47abad077b1864383160ad5d05bcae394995eea1a83a4cd924fd",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -558,6 +646,8 @@
    "ad6e09b9495c691ee3133f22bcb74971ce40eba2da46499ea0c581349e60b675",
    :criterion-raw-sha256
    "4ac57fd8ede0f6d357319417b1ecdd14219619314f71caee173c445d5691bf22",
+   :serialized-mutation-sha256
+   "2156e833ff4e5b20baed4c9f3dd7d3944c1381f906b4e617a2a3ee48949bb379",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :ui "Only when UI lowering is selected"],
    :refused true,
@@ -568,6 +658,8 @@
    "4c1f6e2a78679369db53b4254f6c2a329af7d293163b21a3a1e5a77bf15951f0",
    :criterion-raw-sha256
    "1ff0bac77f131644c829ae783cc9dfe0d3d6f3bf1ed4a583372f22fa0c37f470",
+   :serialized-mutation-sha256
+   "0ddf8a7e9df0cabc268db5c079e27397584bdc52bccaecf35c832706d70d3405",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control [:required-clause :ui "component name and props schema"],
    :refused true,
@@ -578,6 +670,8 @@
    "ebcf677b0b9053321ac5c32a782e825051440b2d1facdb57415543ccaeebfd67",
    :criterion-raw-sha256
    "38d4b3cc43b6a47412a805376ad72fa0517c13cc1c0dd91e5b25834168653f97",
+   :serialized-mutation-sha256
+   "fcc1ae75f66c903c2de4ab6854353cba6fc4b436a88bed4d8637cc45c6955e5c",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :ui "state/effect hooks or runtime equivalents"],
@@ -589,6 +683,8 @@
    "b4cbe8ee43a5e97c7275567c4e3cccf71f39f9a228a333c17a62c252de320501",
    :criterion-raw-sha256
    "5f5d6d06ec6c22567a770078c6526e6520ca206fc1af100310c3eed7fb0627b2",
+   :serialized-mutation-sha256
+   "beeff3b78625f9dc6a858f8d36cee5e8f23e52ef2d47313cb5ebfe79eceed3d9",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -602,6 +698,8 @@
    "31d0e95d0098e63d7c39c514fd751211025c76b1022052cb824b72fa8f45bdf7",
    :criterion-raw-sha256
    "98ab105d3987c3f542a3d4ac5329b89641fd9a6a70fa0c35cde1b63ceca119fc",
+   :serialized-mutation-sha256
+   "4d36927b9071686336fd59eaba864b7cb8d7ed9e6be99c6544cb38b78ddba4a8",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :ui "hydration or server/client boundary"],
@@ -613,6 +711,8 @@
    "b28f8171c6a36e7dd3322d95569a35af4999d75d4a3dd4203e98afcae92c4417",
    :criterion-raw-sha256
    "2164f309a2ab95956135ca0ebeb7ff019d8ab89b95f48274404282538ba85de5",
+   :serialized-mutation-sha256
+   "c71d4eff2ff63dc6daf7f628b6c35a1b95a5ff6e2f483a8fde770b20276d2dff",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -626,6 +726,8 @@
    "3d9f4387c3f18c07e96f50cb7cf105e3a3b982cc5d5c6741a00adaab5cdb6b2d",
    :criterion-raw-sha256
    "ff50b6eeb2ff0bee53b8b7eb2763a71dd23812176b73baf25d293a764ed8f830",
+   :serialized-mutation-sha256
+   "92b041c050ed4d8815775128c9246daa2b0b0dd63a7817aac49cd0455c4ed32b",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -639,6 +741,8 @@
    "944f9fd55806d52ea8c54f5f9a94591f65b2b00e89ca3c0bb5c61cc78ddcd801",
    :criterion-raw-sha256
    "fc44847de5e8e9d716463f24788cc0b9e3a516797590c1d76328b8d1fc700f9d",
+   :serialized-mutation-sha256
+   "835b0af78cb0793538b18fb49b4c8291b4b96746f158749eb7c0670d1baf1489",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -652,6 +756,8 @@
    "c68e8024ad47a87314f955c03607cd6842b4ff47010433a35fa8e827ae1ec08e",
    :criterion-raw-sha256
    "8a65c5d37680a09f595ee703e58ea175b0d97eb9f5da2628871466d4650ddad6",
+   :serialized-mutation-sha256
+   "bc3db101251fcfd36b235f2be1fe0df8cb301d8084bab8119896a74cdaee0898",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -665,6 +771,8 @@
    "9a81f8435ac861107ee61c26aba521885af6cd0bd3bd6b852b2d8abf965f2660",
    :criterion-raw-sha256
    "fc9b577a92fed94a61b694532b4871e4a3a4cd88dd1170516d32294facdbe71d",
+   :serialized-mutation-sha256
+   "d43762eafcdbe6d5dc220e81797d3c5382c6792225028118767e68cceb946609",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -678,6 +786,8 @@
    "2353f9f7b1c4200a663cf1237564e83289adf28a57b566a67ab4e9ea3041fd08",
    :criterion-raw-sha256
    "76a7133916c1f50b311058a26493bf91b6d065d29576d0dc2ef7f95e1882c5df",
+   :serialized-mutation-sha256
+   "5a3de95f12c344a9decb28555f5e6c3b743dcdaf5fe1f3dc394007247c0e2a19",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -691,6 +801,8 @@
    "6c15083b24392236a7c98aedacdb36ed6ea3bb066318e1187a1a2ee970bccae0",
    :criterion-raw-sha256
    "6c18550930c85c687f87e24d2aeb72cc8193c76591daf338a3173b06abd094b4",
+   :serialized-mutation-sha256
+   "33cf2d56b7043a2ce24a2c501e825e6c86704fc25103f31edb425e6ade4dee02",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -704,6 +816,8 @@
    "c1706e90a804eea5f62d7dff284fd059ca2442bcdf7bef8696d66431e654c464",
    :criterion-raw-sha256
    "b13c922b54564535249e9be81c864dd7587804cc0035da66fdd31b2d60495a87",
+   :serialized-mutation-sha256
+   "23f9168f688fc4bf231a45bbf042c58ad5ab50e7b3d0b76a004d0433ac87914f",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -717,6 +831,8 @@
    "2158d8d8cc95bf6def4dbc94ba26c77f5df5adc76a06341a1de50b6b9af9e748",
    :criterion-raw-sha256
    "7054749d1600fb1e2fbfcc3dba5f1d5d92fe469b2ed26c2540c2cfe70dae5051",
+   :serialized-mutation-sha256
+   "7439e78581d09a51471c407b5974f0cc4095859bdd3cf69ac9922baeb6b2de65",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -730,6 +846,8 @@
    "e176ad107043c012b61ddd5ff0e4ec2a7fec5093b6520f9b39cdb8a45a086618",
    :criterion-raw-sha256
    "2e39f78b02284200d0f2f498653f9d44bb6c02dc240eea8a1b7f97b321d68cfb",
+   :serialized-mutation-sha256
+   "b7026043ae8ade49758a4d74c06d04f52b2fe5a1b07afdf072f09112bc7e4d94",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -743,6 +861,8 @@
    "928bc5e6d2928b6fb2ad0a717685618d15a402e0e906c950390f063b5ca535de",
    :criterion-raw-sha256
    "949a0cdc7833ea3bd34538ac30cd93df68d93a1906c6320f30416dea63aa3af7",
+   :serialized-mutation-sha256
+   "f55845b667cb7473471674a04f95afd0e7b0ea54593103b9302848797f035f70",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -756,6 +876,8 @@
    "10d7cf0bb43c8cade8532ca6c2ea133903e67f5cf8585e285ad3a3506eb0ccac",
    :criterion-raw-sha256
    "3bc2a0962ea8ae87ee72b23c542624f7b5f3de6dcc2add6080cafb210e5799c1",
+   :serialized-mutation-sha256
+   "231bcd953daef0a4858a50e11b637acea1e711766984cce88e91002384aca71a",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -769,6 +891,8 @@
    "eabbd32887bbbd90bab7bcf483e4c660d1ff26f122aec7728fa3738bb5dd75ee",
    :criterion-raw-sha256
    "84c18136eba0dcfee5e858b133e5b012c954d3b2a092d00e72b70827ad19f56c",
+   :serialized-mutation-sha256
+   "76ff16096944d9ac73f190e1a860a2d75a5561eb87b13c9763386d00506ca328",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -782,6 +906,8 @@
    "7aba7e67fc482146b7ec31b612849b349fa050bda1fec8f2eda7e1dce18e0aac",
    :criterion-raw-sha256
    "1845588bf9453cb5e542d3f615fa1de5afe1782bc1ade6685f6334b6dc1b9bb2",
+   :serialized-mutation-sha256
+   "9f82dd08b84a436ea088eaeef26eef2999c9295d9b015242dc45e0e06b47b9f1",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -795,6 +921,8 @@
    "8b490b3f259990bcf8b7079dfeb7e8956d8fee07aca45fbc7b4df73dff2608e7",
    :criterion-raw-sha256
    "259cc069762b14486d2eed3752c5402de05ce248032164a54a0968be06a041a6",
+   :serialized-mutation-sha256
+   "c941aa18582dec36d1641397fa31164c29d58640337bdf71852aee4b570caae6",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -808,6 +936,8 @@
    "e0832facdff23490d38f91d4960ed48b0cab777fd493bd1e6552792d5ec06081",
    :criterion-raw-sha256
    "325c379b1413f970241e06c59081c86d476bea5cf81b6efe338c2d57912f13a5",
+   :serialized-mutation-sha256
+   "9fbfcbd457ecf0b06f5b25fd84a5893fe827f08160c151f7e90843eccc6e4c9c",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -821,6 +951,8 @@
    "1dfa9d335a6859a5c06274c6a51a478b973034f8c29e4d3130db06ed2cb43594",
    :criterion-raw-sha256
    "ac96387a3e469867a7735292441954cb6046de6cb83c2ef8500139e67da0cf2b",
+   :serialized-mutation-sha256
+   "08e01353500223c160bd304d13f179a933aef71d5ee21701d3e52df27a1009f4",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -834,6 +966,8 @@
    "b4188787952be14482f0488d9c900c2147974f87412a2ac04524986fa95c7a94",
    :criterion-raw-sha256
    "d2218f233018e751974666878dd4caf67515793aa113e65ea1359f8bc01c2186",
+   :serialized-mutation-sha256
+   "b3809ed0e1afb83f6e388120d84c2aed020104d27d35eb676a79081c957b94d6",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause :verification "UI metadata only when enabled"],
@@ -845,6 +979,8 @@
    "8f2317676242acfdc4090b39fca21dd5baff28702ab550a11e7d1a82fb4b725e",
    :criterion-raw-sha256
    "cd79c09c06ef2eaccd42cb83f26aa2eab2141c18b9fca8191e2d4a5afbc3f878",
+   :serialized-mutation-sha256
+   "86ad42065fa7d8b1bb4a6360bef2fe58885ffc86120f36acc8d01d255cc79824",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -858,6 +994,8 @@
    "ff7d350932db5d10fef8af40328ff93562c78c9799c7b5e29b3a4673c81c61f8",
    :criterion-raw-sha256
    "947c4cf514b91c8c6d63e0a848c62223e4353a692e50e24befba70b03db052d3",
+   :serialized-mutation-sha256
+   "d534bf80155a416001b00c10486fd7001e86b3c44a97feaf093874bb878f944f",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -871,6 +1009,8 @@
    "e3fc87a25225abf58963f23af9738474be7984782b99ec899c3226a8561a82d6",
    :criterion-raw-sha256
    "9f3a338143ce5d58f1de93be6f4ba549a143983cf033601942d7df9620a76c30",
+   :serialized-mutation-sha256
+   "333f7ee3e8609325570cbf8b5c3fca6d8a58bfb464cb8a94e31752cf260b4d02",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control
    [:required-clause
@@ -884,64 +1024,125 @@
    "ce70aaef5925e1bffc1a2ec97afa636588636de21cb3e26bec2c166e592ba172",
    :criterion-raw-sha256
    "66e5dae6a2b63a8912e18629a4ad66144f1bcd84a7ac1e6bb9df4f3ceaa2fa32",
+   :serialized-mutation-sha256
+   "9976f1a93a39a97805a5192df73a6377711a482c93cd45b4dd82d011daf1c80c",
    :model-scope :prospective-source-text-not-Git-commit-admission}
   {:control :semantic-owner-role-erasure,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "42d5437d8397340933ff561b1233ce8277214940eba9c15ab73d649c18ab609d",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :unconditional-UI,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "15b7b03a6597d2bbdb28c8df3fb9f19e179c472e7f5df174e5a75a76063eacac",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :UI-condition-loss,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "aa71fd8637ce6e839414777472ede4bf0aaa87805d485d2fcb52cee6539da00d",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :illustrative-values-as-default-support,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "c57be580a82e3222c7419d812132b5ccd2592ac488d10aaf58c134fb550e6763",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :opaque-import-wrapper-condition-loss,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "3e59f5f54ef84b6997c27e47b1e0fb266446b02a43a1138d6124e9bd38d52688",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :declarations-as-runtime-validation,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "982491e719fa523c4608c91c4b58374d9c86fbe86fd7e4b9c4fb60fcfba0e00c",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :scalar-field-as-whole-conjunction,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "4f0d869dc3b2fd38e2bb8c92538d6e228693e4350b3b568607d7c86260e226a9",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :facet-deletion-with-recomputed-count,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "3e8d170cb80e519164770624a2a61d8743ffc345732a3613cc4d42c9996db1c0",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :duplicate-facet-with-recomputed-count,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "a20b57eccc235e5561505e88f41303b8b2b90a31501609e2c93f984ba586df5c",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :owner-conjunction-purpose-deletion,
    :refused true,
    :diagnostic "Assert failed: (some #{key} (:criterion-keys row))",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "2a2e6d53904d47e6b13ea8040b043e64c24de059212508b108c0bbaef7ccd2d9",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :C18-frozen-pin-relabel,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "1e1d14ae5af0724b0c3577738520412b5ae4db854d5aca13db0a6d64cfbe1643",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :author-assigned-source-acceptance,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "eafd53c9884a3fe80c387abe1927849ced6a13ac369ffd47f26152805639cf53",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :implementation-or-count-promotion,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
-   :trace-rehashed true}
+   :coherent-trace-serialization true,
+   :serialized-mutation-sha256
+   "061bdde424a0f57a9b0acc23dd34b4c5a0b930acba2f60018a2eb962667c9687",
+   :criterion-source-bytes :unchanged,
+   :model-scope :prospective-source-trace-not-Git-commit-admission}
   {:control :forged-real-source-pin,
    :refused true,
    :diagnostic "Assert failed: (apply = values)",
    :actual-pin-control true}],
- :checks {:test 3, :pass 89, :fail 0, :error 0, :type :summary},
+ :checks {:test 3, :pass 90, :fail 0, :error 0, :type :summary},
+ :predecessor
+ {:commit "70ca479fb30dab71f2f6f8fc197b69aa2fddd2b5",
+  :path "specs/requirement-reconciliation/b6-source-controls.edn",
+  :sha256
+  "6347a91bf6a892f3e0719019d062f6f425af63d952f2c000fbec1dbe8be06910",
+  :qualification
+  :new-report-adds-explicit-serialized-mutation-hashes-and-in-suite-model-positive},
  :kind :B6-author-mechanical-source-controls,
  :subject-task-source "1e95777f44d2fc292c3cbd0fa185a53ceb5013ed",
  :independent-review :pending,
@@ -952,5 +1153,5 @@
   :frozen-C18-pins-unchanged
   :no-held-operation-or-numeric-acceptance],
  :checker-sha256
- "9fbd3ab0e77b9b29611cf31e3c1e1637cd6c62deb5a8d725cabbd80f0fa86fde",
+ "a660fe0256579b9fbd3a0ec128973fb6712c427112adcc2d640a0b174307af0c",
  :source-conjunctions :complete-occurrences-not-fragment-completion}
