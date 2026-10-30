@@ -2990,7 +2990,7 @@
                  'p15-s23-runtime-module-id? 1 'p15-s23-runtime-module-source? 1
                  'p15-s23-runtime-namespace-read-source? 2 'p15-s23-runtime-namespace-read-valid? 2
                  'runtime-validate-initializer 1 'p15-s23-runtime-initializer-type? 2
-                 'p15-s23-runtime-string-set-insertion-work 3 'p15-s23-runtime-keyword-set-contains-work 3 'p15-s23-runtime-character-set-contains-work 3
+                 'runtime-insert-scalar-set 2 'runtime-scalar-set-contains 2 'p15-s23-runtime-character-set-contains-work 3
                  'runtime-construct-scalar-set 1 'runtime-construct-character-set 1 'runtime-convert-vector-set 1 'runtime-convert-keyword-list-set 1
                  'p15-s23-runtime-module-census 1 'p15-s23-runtime-instruction-children 1
                  'runtime-module-reads 2 'p15-s23-runtime-initialize-module 2
@@ -11399,107 +11399,101 @@
           (is (= :rejected (:status (compile (mutate context) 65536)))))))))
 
 (deftest current-gravity-keyword-set-contains-runtime-development-kernel
+  ;; Detached source preparation: this selector has not been executed.
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
-        work #(invoke 'p15-s23-runtime-keyword-set-contains-work %1 %2 %3)
+        work (fn [items needle] (invoke 'runtime-scalar-set-contains items needle))
         literal (fn [value] {:op :literal :value value})
         query (fn [items needle] {:op :builtin-call :function 'contains? :args [items needle]})
-        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
-        charge (fn [items needle]
-                 (let [n (count items) units (+ (count (str needle)) (reduce + 0 (map #(count (str %)) items)))]
-                   (+ 2 (* 2 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
-    (doseq [[items needle expected] [[#{} :absent false] [#{:one} :one true] [#{:one} :other false]
-                                    [#{:left :right} :right true] [#{:left :right} :missing false]
-                                    [#{:space/name} :space/name true] [#{:space/name} :other/name false]]]
-      (let [result (work items needle 65536) n (count items) reserved (charge items needle)]
+        evaluate (fn [ir] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir {} ""))
+
+        ;; Raw native storage is deliberate malformed-domain input, not a foreign provider.
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                     (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                  (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[raw-items needle expected] [[#{} :absent false] [#{:one} :one true] [#{:one} :other false] [#{:right :left} :right true] [#{:right :left} :missing false] [#{:space/name} :space/name true] [#{:space/name} :other/name false]]]
+      (let [items (if (vector? raw-items) (set raw-items) raw-items)
+            before (vec items) result (work items needle) n (count items)]
         (is (= :accepted (:status result)))
         (is (= expected (:value result)))
-        (is (= reserved (:work-count result)))
-        (is (= :exact-logical-membership-reservation (:work-count-kind result)))
-        (is (= :not-established (:provider-cpu-bound result)))
+        (is (= n (:input-element-count result)))
         (is (<= (:comparison-attempts result) (+ (quot (* n (dec n)) 2) n)))
-        (is (= result (work items needle reserved)))
-        (let [limited (work items needle (dec reserved))]
-          (is (= :keyword-set-contains-work-limit (:reason limited)))
-          (is (= 0 (:comparison-attempts limited))))
-        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))))
-    (let [left (clojure.lang.Keyword/intern nil "a/b") right (clojure.lang.Keyword/intern "a" "b")]
-      (is (= (str left) (str right)))
-      (is (= false (:value (work #{left} right 65536)))))
-    (let [forward (into (sorted-set-by #(compare (str %1) (str %2))) [:a :b :c])
-          reverse-order (into (sorted-set-by #(compare (str %2) (str %1))) [:a :b :c])]
-      (doseq [items [forward reverse-order] needle [:a :c :missing]]
-        (let [reserved (charge items needle)]
-          (is (= (not= needle :missing) (:value (work items needle reserved))))
-          (is (= reserved (:work-count (work items needle reserved))))
-          (is (= :keyword-set-contains-work-limit (:reason (work items needle (dec reserved)))))
-          (is (= 0 (:comparison-attempts (work items needle (dec reserved))))))))
-    (let [callbacks (atom 0)
-          protected (fn [members]
-                      (reify clojure.lang.IPersistentSet
-                        (count [_] (count members)) (seq [_] (seq members))
-                        (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-                        (empty [_] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-                        (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-                        (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-                        (get [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-                        (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "Set mutation")))
-                        Object
-                        (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-                        (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "Set hash")))))
-          opaque (proxy [Object] []
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))]
-      (is (= true (:value (work (protected [:a :b]) :a 65536))))
-      (is (= false (:value (work (protected [:a :b]) :missing 65536))))
-      (doseq [items [(protected [opaque]) (protected [:hit opaque]) (protected [opaque :hit])]
-              needle [:hit :missing]]
-        (let [result (work items needle 65536)]
-          (is (= :keyword-set-contains-value-domain-required (:reason result)))
+        (is (not-any? (set (keys result)) [:work-count :work-count-kind :value-work-model :construction-reservation]))
+        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))
+        (is (= before (vec items)))
+        ))
+    (let [left (clojure.lang.Keyword/intern nil "a/b") right (clojure.lang.Keyword/intern "a" "b")] (is (= (str left) (str right))) (is (= false (:value (work #{left} right)))))
+        ;; Preserve semantic domain negatives removed with the former accounting model.
+    (doseq [bad [nil false 7 1.5 "text" 'symbol \a [] {} '()]]
+      (doseq [members [[bad] [:a bad] [bad :a]]]
+        (let [items (native-set members) result (work items :a)]
+          (is (= :rejected (:status result)))
           (is (= 0 (:comparison-attempts result)))))
-      (doseq [needle [:same :missing]]
-        (let [items (protected [:same :same]) result (work items needle 65536)]
-          (is (= :keyword-set-contains-value-domain-required (:reason result)))
+      (let [result (work #{:a} bad)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result)))))
+    (doseq [items [nil [] {} '() "not-a-set"]]
+      (is (= :rejected (:status (work items :a)))))
+    (let [items (native-set [:a :a])]
+      (is (= 2 (count items)))
+      (doseq [needle [:a :absent]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
           (is (= :duplicate-keyword-class (:domain-failure result)))
-          (is (= (charge items needle) (:work-count result)))
-          (is (= :exact-logical-membership-reservation (:work-count-kind result)))
-          (is (pos? (:comparison-attempts result)))))
-      (is (= :keyword-set-contains-value-domain-required (:reason (work (protected [:hit]) opaque 65536))))
-      (is (= 0 @callbacks)))
-    (doseq [items [nil [] {} '(:a) "set" #{"text"} #{nil} #{1} '#{:hit (println "never")}]]
-      (is (= :keyword-set-contains-value-domain-required (:reason (work items :hit 65536))))
-      (let [result (evaluate (query (literal items) (literal :hit)))]
-        (is (= (if (map? items) [false "" :normal] [(first result) "" :rejected]) result))))
-    (doseq [needle [nil 'symbol false 1 [] {}] items [#{} #{:hit}]]
-      (if (and (= 'symbol needle) (empty? items))
-        (let [result (work items needle 65536)]
-          (is (= :accepted (:status result)))
-          (is (= false (:value result))))
-        (is (= :keyword-set-contains-value-domain-required (:reason (work items needle 65536))))))
-    (let [wide (into #{} (map #(keyword (str "member" %)) (range 1024))) result (work wide :missing 65536)]
-      (is (= :keyword-set-contains-work-limit (:reason result)))
-      (is (= 65537 (:work-count result)))
-      (is (= :exceeded-allowance-lower-bound (:work-count-kind result)))
+          (is (= 1 (:comparison-attempts result))))))
+
+
+    (let [large (into #{} (map (fn [i] (keyword (str "member" i))) (range 2050)))
+          hit :member2049 miss :absent long-value (keyword (apply str (repeat 70000 "x")))]
+      (doseq [[needle expected] [[hit true] [miss false]]]
+        (is (= expected (:value (work large needle))))
+        (is (= [expected "" :normal] (evaluate (query (literal large) (literal needle))))))
+      (is (= true (:value (work #{long-value} long-value)))))
+    ;; Native enumeration is fixed by array storage; the hit precedes a late invalid member.
+    (let [items (native-set [:a "mixed"]) result (work items :a)]
+      (is (= [:a "mixed"] (vec items)))
+      (is (= :rejected (:status result)))
       (is (= 0 (:comparison-attempts result)))
-      (is (= :keyword-set-contains-value-width (:reason (work (conj wide :extra) :missing 65536)))))
-    (doseq [budget [-1 nil 1.5]]
-      (is (= :keyword-set-contains-work-limit (:reason (work #{} :key budget)))))
-    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
-          payload (Object.) escape {:op :throw :value (literal payload)}
-          left (evaluate (query (say "set" escape) (say "unreached" (literal :key))))
-          right (evaluate (query (say "set" (literal #{:key})) (say "needle" escape)))]
-      (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{:key})) (say "needle" (literal :key))))))
-      (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal :key))))))
-      (is (= [payload "set\n" :thrown] left))
-      (is (= [payload "set\nneedle\n" :thrown] right))
-      (is (identical? payload (first left)))
-      (is (identical? payload (first right))))
-    (let [failure (AssertionError. "original Keyword needle representation failure") original-str str
-          observed (with-redefs [clojure.core/str (fn [& values]
-                                                  (if (= [:explode] values) (throw failure) (apply original-str values)))]
-                     (seed-throw-test-capture #(work #{} :explode 65536)))]
-      (is (identical? failure observed)))))
+      (is (= ["" :rejected] (subvec (evaluate (query (literal items) (literal :a))) 1))))
+    (let [callbacks (atom 0) deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+          protected (reify clojure.lang.IPersistentSet
+                      (count [_] (deny)) (seq [_] (deny)) (cons [_ _] (deny))
+                      (empty [_] (deny)) (equiv [_ _] (deny)) (contains [_ _] (deny))
+                      (get [_ _] (deny)) (disjoin [_ _] (deny)))
+          opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))]
+      (doseq [[items needle] [[protected :a] [#{:a} opaque]]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :set-membership-native-data-required (:reason result)))
+          (is (= 0 (:comparison-attempts result)))))
+
+      (is (zero? @callbacks)))
+    ;; Inert metadata remains valid; a cycle in that metadata must fail before comparisons.
+    (let [items (with-meta #{:a} {:visible (subvec [:hidden :valid :hidden] 1 2)})]
+      (is (= true (:value (work items :a)))))
+    (let [metadata (clojure.lang.PersistentArrayMap. (object-array [:cycle nil]))
+          items (with-meta #{:a} metadata)
+          field (.getDeclaredField clojure.lang.PersistentArrayMap "array")]
+      (is (.trySetAccessible field))
+      (.set field metadata (object-array [:cycle items]))
+      (let [result (work items :a)]
+        (is (= :rejected (:status result)))
+        (is (= :cyclic-carrier (:native-reason result)))
+        (is (= 0 (:comparison-attempts result)))))
+    (let [say (fn [text value] {:op :do, :body [{:op :println, :args [(literal text)], :effect :io/write, :capability :io/stdout} value]}) payload (Object.) escape {:op :throw, :value (literal payload)} left (evaluate (query (say "set" escape) (say "unreached" (literal :key)))) right (evaluate (query (say "set" (literal #{:key})) (say "needle" escape)))] (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{:key})) (say "needle" (literal :key)))))) (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal :key)))))) (is (= [payload "set\n" :thrown] left)) (is (= [payload "set\nneedle\n" :thrown] right)) (is (identical? payload (first left))) (is (identical? payload (first right))))
+    ;; Removing content accounting also removes the old str-based refusal path.
+    (let [original-str str calls (atom 0)
+          result (with-redefs [clojure.core/str
+                              (fn [& values]
+                                (when (= [:a] values) (swap! calls inc))
+                                (apply original-str values))]
+                   (work #{:a} :a))]
+      (is (= true (:value result)))
+      (is (zero? @calls)))))
 
 (deftest current-gravity-set-conversion-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -24100,92 +24094,119 @@
 
 
 (deftest current-gravity-string-set-contains-runtime-development-kernel
-  ;; Protected views below have coherent finite cardinality/enumeration.
-  ;; Detectable malformed views are robustness controls, not an impostor-proof boundary.
+  ;; Detached source preparation: this selector has not been executed.
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
-        work #(invoke 'p15-s23-runtime-keyword-set-contains-work %1 %2 %3)
-        literal #(hash-map :op :literal :value %)
+        work (fn [items needle] (invoke 'runtime-scalar-set-contains items needle))
+        literal (fn [value] {:op :literal :value value})
         query (fn [items needle] {:op :builtin-call :function 'contains? :args [items needle]})
-        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
-        callbacks (atom 0) protected (fn [members declared]
-                    (reify clojure.lang.IPersistentSet
-                      (count [_] declared) (seq [_] (seq members))
-                      (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-                      (empty [_] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-                      (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-                      (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-                      (get [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-                      (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "Set mutation")))
-                      Object
-                      (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-                      (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "Set hash")))))
-        view #(protected % (count %))
-        opaque (proxy [Object] []
-                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
-                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
-                 (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))
-        charge (fn [members needle] (let [n (count members) units (reduce + (count needle) (map count members))]
-                                     (+ 2 (* 2 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
-    (is (= (.hashCode "Aa") (.hashCode "BB")))
-    (doseq [[members needle expected]
-            [[[] "" false] [[""] "" true] [[".gravity" ".qst"] ".gravity" true]
-             [[".gravity" ".qst"] ".qst" true] [[".qst" ".gravity"] ".gravity" true]
-             [[".gravity" ".qst"] ".txt" false] [["Aa"] "BB" false] [["Aa" "BB"] "BB" true]
-             [["a"] "A" false] [["\u00e9"] "e\u0301" false]
-             [["\ud83d\ude00"] "\ud83d\ude00" true] [["\ud83d\ude00"] "\ud83d\ude01" false]
-             [["\n" "\u0000"] "\u0000" true] [["equal"] (String. (.toCharArray "equal")) true]]]
-      (let [items (view members) reserved (charge members needle) result (work items needle 65536)]
+        evaluate (fn [ir] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir {} ""))
+
+        ;; Raw native storage is deliberate malformed-domain input, not a foreign provider.
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                     (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                  (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[raw-items needle expected] [[[] "" false] [[""] "" true] [[".gravity" ".qst"] ".gravity" true] [[".gravity" ".qst"] ".qst" true] [[".qst" ".gravity"] ".gravity" true] [[".gravity" ".qst"] ".txt" false] [["Aa"] "BB" false] [["Aa" "BB"] "BB" true] [["a"] "A" false] [["\u00e9"] "e\u0301" false] [["\ud83d\ude00"] "\ud83d\ude00" true] [["\ud83d\ude00"] "\ud83d\ude01" false] [["\n" "\u0000"] "\u0000" true] [["equal"] (String. (.toCharArray "equal")) true]]]
+      (let [items (if (vector? raw-items) (set raw-items) raw-items)
+            before (vec items) result (work items needle) n (count items)]
         (is (= :accepted (:status result)))
         (is (= expected (:value result)))
-        (is (= reserved (:work-count result)))
-        (is (= :exact-logical-membership-reservation (:work-count-kind result)))
-        (is (= :gravity/string-set-membership-logical-content-work-v1 (:value-work-model result)))
-        (is (= :not-established (:provider-cpu-bound result)))
-        (is (= result (work items needle reserved)))
-        (is (= result (work items needle 1000000)))
-        (let [short (work items needle (dec reserved))]
-          (is (= :string-set-contains-work-limit (:reason short)))
-          (is (= 0 (:comparison-attempts short))))
-        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))))
-    (doseq [bad [opaque nil false 7 :keyword \a [] {} (StringBuilder. "text")]
-            members [[bad] ["hit" bad] [bad "hit"]]]
-      (let [result (work (view members) "hit" 65536)]
-        (is (= :string-set-contains-value-domain-required (:reason result)))
+        (is (= n (:input-element-count result)))
+        (is (<= (:comparison-attempts result) (+ (quot (* n (dec n)) 2) n)))
+        (is (not-any? (set (keys result)) [:work-count :work-count-kind :value-work-model :construction-reservation]))
+        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))
+        (is (= before (vec items)))
+        ))
+
+    (let [left (String. (.toCharArray "\ud83d\ude00")) right (String. (.toCharArray "\ud83d\ude00"))
+          items (native-set [left right])]
+      (is (not (identical? left right)))
+      (is (= left right))
+      (is (= 2 (count items)))
+      (is (= [left right] (vec items)))
+      (is (= :passed (:status (bootstrap/p15-s23-stage2-runtime-invoke-builtin plan 'hosted-native-data-preflight [items]))))
+      (doseq [needle [left "missing"]]
+        (let [member (work items needle) inserted (invoke 'runtime-insert-scalar-set items needle)]
+          (is (= :rejected (:status member) (:status inserted)))
+          (is (= :duplicate-string-class (:domain-failure member) (:domain-failure inserted)))
+          (is (= 1 (:comparison-attempts member) (:comparison-attempts inserted)))
+          (is (= 0 (:insertions inserted)))
+          (is (= ["" :rejected] (subvec (evaluate (query (literal items) (literal needle))) 1)))
+          (is (= ["" :rejected]
+                 (subvec (evaluate {:op :builtin-call :function 'conj :args [(literal items) (literal needle)]}) 1)))))
+      (is (identical? left (first (seq items))))
+      (is (identical? right (second (seq items)))))
+        ;; Preserve semantic domain negatives removed with the former accounting model.
+    (doseq [bad [nil false 7 1.5 :keyword 'symbol \a [] {} (StringBuilder. "text")]]
+      (doseq [members [[bad] ["a" bad] [bad "a"]]]
+        (let [items (native-set members) result (work items "a")]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:comparison-attempts result)))))
+      (let [result (work #{"a"} bad)]
+        (is (= :rejected (:status result)))
         (is (= 0 (:comparison-attempts result)))))
-    (doseq [needle [opaque nil false 7 :keyword \a [] {} (StringBuilder. "text")]]
-      (is (= :rejected (:status (work (view ["hit"]) needle 65536)))))
-    (doseq [members [["same" (String. (.toCharArray "same"))] ["" ""]] needle ["same" "missing"]]
-      (let [result (work (view members) needle 65536)]
-        (is (= :string-set-contains-value-domain-required (:reason result)))
-        (is (= :duplicate-string-class (:domain-failure result)))
-        (is (= (charge members needle) (:work-count result)))
-        (is (pos? (:comparison-attempts result)))))
-    (doseq [[members declared] [[[] 1] [["a" "b"] 1]]]
-      (let [result (work (protected members declared) "a" 65536)]
-        (is (= :string-set-contains-value-domain-required (:reason result)))
+    (doseq [items [nil [] {} '() "not-a-set"]]
+      (is (= :rejected (:status (work items "a")))))
+    (let [items (native-set ["a" (String. (.toCharArray "a"))])]
+      (is (= 2 (count items)))
+      (doseq [needle ["a" "absent"]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :duplicate-string-class (:domain-failure result)))
+          (is (= 1 (:comparison-attempts result))))))
+
+
+    (let [large (into #{} (map (fn [i] (str "member" i)) (range 2050)))
+          hit "member2049" miss "absent" long-value (apply str (repeat 70000 "x"))]
+      (doseq [[needle expected] [[hit true] [miss false]]]
+        (is (= expected (:value (work large needle))))
+        (is (= [expected "" :normal] (evaluate (query (literal large) (literal needle))))))
+      (is (= true (:value (work #{long-value} long-value)))))
+    ;; Native enumeration is fixed by array storage; the hit precedes a late invalid member.
+    (let [items (native-set ["a" :mixed]) result (work items "a")]
+      (is (= ["a" :mixed] (vec items)))
+      (is (= :rejected (:status result)))
+      (is (= 0 (:comparison-attempts result)))
+      (is (= ["" :rejected] (subvec (evaluate (query (literal items) (literal "a"))) 1))))
+    (let [callbacks (atom 0) deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+          protected (reify clojure.lang.IPersistentSet
+                      (count [_] (deny)) (seq [_] (deny)) (cons [_ _] (deny))
+                      (empty [_] (deny)) (equiv [_ _] (deny)) (contains [_ _] (deny))
+                      (get [_ _] (deny)) (disjoin [_ _] (deny)))
+          opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))]
+      (doseq [[items needle] [[protected "a"] [#{"a"} opaque]]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :set-membership-native-data-required (:reason result)))
+          (is (= 0 (:comparison-attempts result)))))
+
+      (is (zero? @callbacks)))
+    ;; Inert metadata remains valid; a cycle in that metadata must fail before comparisons.
+    (let [items (with-meta #{"a"} {:visible (subvec [:hidden :valid :hidden] 1 2)})]
+      (is (= true (:value (work items "a")))))
+    (let [metadata (clojure.lang.PersistentArrayMap. (object-array [:cycle nil]))
+          items (with-meta #{"a"} metadata)
+          field (.getDeclaredField clojure.lang.PersistentArrayMap "array")]
+      (is (.trySetAccessible field))
+      (.set field metadata (object-array [:cycle items]))
+      (let [result (work items "a")]
+        (is (= :rejected (:status result)))
+        (is (= :cyclic-carrier (:native-reason result)))
         (is (= 0 (:comparison-attempts result)))))
-    (doseq [[members needle] [[[] (apply str (repeat 65535 "x"))]
-                              [[(apply str (repeat 40000 "x"))] ""]
-                              [(vec (repeat 1024 "x")) "x"]]]
-      (let [result (work (view members) needle 65536)]
-        (is (= :string-set-contains-work-limit (:reason result)))
-        (is (= 65537 (:work-count result)))
-        (is (= 0 (:comparison-attempts result)))))
-    (is (= :string-set-contains-value-width (:reason (work (view (vec (repeat 1025 "x"))) "x" 65536))))
-    (doseq [budget [-1 nil 1.5]]
-      (is (= :keyword-set-contains-work-limit (:reason (work #{} "x" budget)))))
-    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
-          payload (Object.) escape {:op :throw :value (literal payload)}
-          left (evaluate (query (say "set" escape) (say "unreached" (literal "x"))))
-          right (evaluate (query (say "set" (literal #{"x"})) (say "needle" escape)))]
-      (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{"x"})) (say "needle" (literal "x"))))))
-      (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal "x"))))))
-      (is (identical? payload (first left)))
-      (is (= ["set\n" :thrown] (subvec left 1)))
-      (is (identical? payload (first right)))
-      (is (= ["set\nneedle\n" :thrown] (subvec right 1))))
-    (is (= 0 @callbacks))))
+    (let [say (fn [text value] {:op :do, :body [{:op :println, :args [(literal text)], :effect :io/write, :capability :io/stdout} value]}) payload (Object.) escape {:op :throw, :value (literal payload)} left (evaluate (query (say "set" escape) (say "unreached" (literal "x")))) right (evaluate (query (say "set" (literal #{"x"})) (say "needle" escape)))] (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{"x"})) (say "needle" (literal "x")))))) (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal "x")))))) (is (identical? payload (first left))) (is (= ["set\n" :thrown] (subvec left 1))) (is (identical? payload (first right))) (is (= ["set\nneedle\n" :thrown] (subvec right 1))))
+    ;; Removing content accounting also removes the old str-based refusal path.
+    (let [original-str str calls (atom 0)
+          result (with-redefs [clojure.core/str
+                              (fn [& values]
+                                (when (= ["a"] values) (swap! calls inc))
+                                (apply original-str values))]
+                   (work #{"a"} "a"))]
+      (is (= true (:value result)))
+      (is (zero? @calls)))))
 (deftest current-gravity-string-set-contains-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -28157,115 +28178,93 @@
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
 
 (deftest current-gravity-string-set-insertion-runtime-development-kernel
+  ;; Detached source preparation: helper and evaluator controls remain UNRUN.
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
-        insert #(invoke 'p15-s23-runtime-string-set-insertion-work %1 %2 %3)
+        direct (fn [items value] (invoke 'runtime-insert-scalar-set items value))
         literal (fn [value] {:op :literal :value value})
         conj-ir (fn [items value] {:op :builtin-call :function 'conj :args [items value]})
-        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
-        reserve (fn [items value]
-                  (let [n (count items) units (+ (count value) (reduce + 0 (map count (seq items))))]
-                    (+ 5 (* 4 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
-    (doseq [[items value expected present?] [[#{} "a" #{"a"} false]
-                                            [#{"a"} "b" #{"a" "b"} false]
-                                            [#{"a"} "a" #{"a"} true]
-                                            [#{"a" "b"} "a" #{"a" "b"} true]
-                                            [#{""} "" #{""} true]
-                                            [#{} "" #{""} false]]]
-      (let [result (insert items value 65536) work (reserve items value)]
+        evaluate (fn [ir] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir {} ""))
+        insert (fn [items value] (evaluate (conj-ir (literal items) (literal value))))
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                     (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                  (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[items value expected] [[#{} "a" #{"a"} false] [#{"a"} "b" #{"a" "b"} false] [#{"a"} "a" #{"a"} true] [#{"a" "b"} "a" #{"a" "b"} true] [#{""} "" #{""} true] [#{} "" #{""} false]]]
+      (let [before (vec items) result (direct items value) actual (insert items value)
+            present? (contains? items value)]
         (is (= :accepted (:status result)))
         (is (= expected (:value result)))
         (is (= present? (:member-present? result)))
-        (is (= work (:work-count result)))
-        (is (= :exact-logical-insertion-reservation (:work-count-kind result)))
-        (is (= :not-established (:provider-cpu-bound result)))
         (is (= (if present? 0 (inc (count items))) (:insertions result)))
-        (is (= result (insert items value work)))
-        (let [short (insert items value (dec work))]
-          (is (= :rejected (:status short)))
-          (is (= :string-set-insertion-work-limit (:reason short)))
-          (is (= work (:work-count short)))
-          (is (= 0 (:insertions short))))
-        (is (= [expected "" :normal] (evaluate (conj-ir (literal items) (literal value)))))
-        (is (= (count items) (:input-element-count result)))))
-    (let [rocket (String. (Character/toChars 128640)) copy (String. rocket)
-          composed (str (char 233)) combining (str (char 101) (char 769))]
-      (is (= true (:member-present? (insert #{rocket} copy 65536))))
-      (is (= 1 (count (:value (insert #{rocket} copy 65536)))))
-      (is (= false (:member-present? (insert #{composed} combining 65536))))
-      (is (= 2 (count (:value (insert #{composed} combining 65536)))))
-      (is (= false (:member-present? (insert #{"A"} "a" 65536)))))
-    (let [callbacks (atom 0)
-          protected (fn [members]
-                      (reify clojure.lang.IPersistentSet
-                        (count [_] (count members)) (seq [_] (seq members))
-                        (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver cons")))
-                        (empty [_] (swap! callbacks inc) (throw (AssertionError. "receiver empty")))
-                        (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver equivalence")))
-                        (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver lookup")))
-                        (get [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver lookup")))
-                        (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver mutation")))
-                        Object
-                        (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver equality")))
-                        (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "receiver hash")))))
-          items (protected ["a" "b"])]
-      (doseq [[value expected] [["a" ["a" "b"]] ["c" ["a" "b" "c"]]]]
-        (let [result (insert items value 65536)]
-          (is (= :accepted (:status result)))
-          (is (= expected (vec (sort (seq (:value result))))))
-          (is (= ["a" "b"] (vec (seq items))))))
-      (doseq [members [["a" (Object.)] [(Object.) "a"] ["a" :mixed] ["a" {:op :throw :value "stored"}]]]
-        (is (= :string-set-insertion-value-domain-required (:reason (insert (protected members) "a" 65536)))))
-      (doseq [value ["a" "absent"]]
-        (let [items (protected ["a" "a"]) result (insert items value 65536)]
+        (is (= (count items) (:input-element-count result)))
+        (is (not-any? (set (keys result)) [:work-count :work-count-kind :value-work-model :construction-reservation]))
+        (is (= [expected "" :normal] actual))
+        (when present?
+          (is (identical? items (:value result)))
+          (is (identical? items (first actual))))
+        (is (= before (vec items)))))
+    (let [rocket (String. (Character/toChars 128640)) copy (String. rocket) composed (str (char 233)) combining (str (char 101) (char 769))] (is (= true (:member-present? (direct #{rocket} copy)))) (is (= 1 (count (:value (direct #{rocket} copy))))) (is (= false (:member-present? (direct #{composed} combining)))) (is (= 2 (count (:value (direct #{composed} combining))))) (is (= false (:member-present? (direct #{"A"} "a")))))
+        (doseq [bad [nil false 7 1.5 :keyword 'symbol \a [] {} (StringBuilder. "text")]]
+      (doseq [members [[bad] ["a" bad] [bad "a"]]]
+        (let [items (native-set members) result (direct items "a")]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items "a") 1)))))
+      (let [result (direct #{"a"} bad)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))))
+    (doseq [items [nil [] {} '() "not-a-set"]]
+      (is (= :rejected (:status (direct items "a")))))
+    (let [items (native-set ["a" (String. (.toCharArray "a"))])]
+      (is (= 2 (count items)))
+      (doseq [needle ["a" "absent"]]
+        (let [result (direct items needle)]
           (is (= :rejected (:status result)))
           (is (= :duplicate-string-class (:domain-failure result)))
-          (is (= (reserve items value) (:work-count result)))
-          (is (= :exact-logical-insertion-reservation (:work-count-kind result)))
-          (is (= 0 (:insertions result)))))
+          (is (= 1 (:comparison-attempts result)))
+          (is (= 0 (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items needle) 1))))))
+
+    (let [items (into #{} (map (fn [i] (str "member" i)) (range 2050))) hit "member2049" miss "absent" long-value (apply str (repeat 70000 "x"))]
+      (doseq [[value present?] [[hit true] [miss false] [long-value false]]]
+        (let [before (vec items) result (direct items value)]
+          (is (= :accepted (:status result)))
+          (is (= present? (:member-present? result)))
+          (is (= (if present? (count items) (inc (count items))) (count (:value result))))
+          (is (= [(:value result) "" :normal] (insert items value)))
+          (is (= before (vec items))))))
+    (let [items (native-set ["a" :mixed]) result (direct items "a")]
+      (is (= ["a" :mixed] (vec items)))
+      (is (= :rejected (:status result)))
+      (is (= 0 (:comparison-attempts result) (:insertions result)))
+      (is (= ["" :rejected] (subvec (insert items "a") 1))))
+    (doseq [[items value] [[#{"a"} :mixed] [#{:mixed} "a"] [#{"a"} 17]]]
+      (let [result (direct items value)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))
+        (is (= ["" :rejected] (subvec (insert items value) 1)))))
+    (let [callbacks (atom 0) deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+          protected (reify clojure.lang.IPersistentSet
+                      (count [_] (deny)) (seq [_] (deny)) (cons [_ _] (deny))
+                      (empty [_] (deny)) (equiv [_ _] (deny)) (contains [_ _] (deny))
+                      (get [_ _] (deny)) (disjoin [_ _] (deny)))
+          opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))]
+      (doseq [[items value] [[protected "a"] [#{"a"} opaque]]]
+        (let [result (direct items value)]
+          (is (= :rejected (:status result)))
+          (is (= :set-membership-native-data-required (:member-reason result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items value) 1)))))
       (is (zero? @callbacks)))
-    (doseq [items [nil [] {} #{1} #{:keyword} #{\a} #{nil} #{"a" :mixed}]
-            value ["a" :keyword]]
-      (is (= :rejected (:status (insert items value 65536))))
-      (when (set? items)
-        (if (and (= #{:keyword} items) (= :keyword value))
-          (is (= [#{:keyword} "" :normal] (evaluate (conj-ir (literal items) (literal value)))))
-          (if (and (= #{"a" :mixed} items) (= :keyword value))
-            (let [result (evaluate (conj-ir (literal items) (literal value)))]
-              (is (= ["" :rejected] (subvec result 1)))
-              (is (contains? #{:string-set-insertion-value-domain-required :keyword-set-insertion-value-domain-required}
-                             (get-in result [0 :reason]))))
-            (is (= :string-set-insertion-value-domain-required (get-in (evaluate (conj-ir (literal items) (literal value))) [0 :reason])))))))
-    (doseq [value [nil 1 false \a :keyword [] {}]]
-      (is (= :rejected (:status (insert #{"a"} value 65536)))))
-    (let [wide #(into #{} (map str (range %)))]
-      (is (= :string-set-insertion-value-width (:reason (insert (wide 1025) "a" 65536))))
-      (let [limited (insert (wide 1024) "0" 65536)]
-        (is (= :string-set-insertion-work-limit (:reason limited)))
-        (is (= 0 (:comparison-attempts limited) (:insertions limited)))))
-    (let [large (apply str (repeat 40000 "x")) result (insert #{"a"} large 65536)]
-      (is (= :string-set-insertion-work-limit (:reason result)))
-      (is (= 65537 (:work-count result)))
-      (is (= result (insert #{"a"} large 1000000)))
-      (is (= 0 (:insertions result))))
-    (doseq [budget [-1 nil 1.5]]
-      (is (= :string-set-insertion-work-limit (:reason (insert #{} "a" budget)))))
-    (let [say (fn [label expr] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} expr]})
-          payload (String. "original conj transfer")]
-      (is (= [#{"a" "b"} "items\nvalue\n" :normal]
-             (evaluate (conj-ir (say "items" (literal #{"a"})) (say "value" (literal "b"))))))
-      (doseq [[ir output] [[(conj-ir (say "items" {:op :throw :value (literal payload)}) (say "value" (literal "b"))) "items\n"]
-                           [(conj-ir (say "items" (literal #{"a"})) (say "value" {:op :throw :value (literal payload)})) "items\nvalue\n"]]]
-        (let [result (evaluate ir)]
-          (is (identical? payload (first result)))
-          (is (= [output :thrown] (subvec result 1))))))
-    (let [value "no-string-coercion" original-str str calls (atom 0)
-          result (with-redefs [clojure.core/str (fn [& args]
-                                                 (if (= [value] args) (do (swap! calls inc) (throw (AssertionError. "String coercion")))
-                                                   (apply original-str args)))]
-                   (insert #{"a"} value 65536))]
-      (is (= :accepted (:status result)))
-      (is (zero? @calls)))))
+    (let [metadata {:visible (subvec [:hidden :valid :hidden] 1 2)} items (with-meta #{"a"} metadata)]
+      (is (identical? items (:value (direct items "a"))))
+      (is (identical? items (first (insert items "a"))))
+      (is (identical? metadata (meta items))))
+    (let [say (fn [label expr] {:op :do, :body [{:op :println, :args [(literal label)], :effect :io/write, :capability :io/stdout} expr]}) payload (String. "original conj transfer")] (is (= [#{"a" "b"} "items\nvalue\n" :normal] (evaluate (conj-ir (say "items" (literal #{"a"})) (say "value" (literal "b")))))) (doseq [[ir output] [[(conj-ir (say "items" {:op :throw, :value (literal payload)}) (say "value" (literal "b"))) "items\n"] [(conj-ir (say "items" (literal #{"a"})) (say "value" {:op :throw, :value (literal payload)})) "items\nvalue\n"]]] (let [result (evaluate ir)] (is (identical? payload (first result))) (is (= [output :thrown] (subvec result 1))))))))
 
 (deftest current-gravity-string-set-insertion-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -30236,69 +30235,101 @@
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
 
 (deftest current-gravity-integer-set-contains-runtime-development-kernel
+  ;; Detached source preparation: this selector has not been executed.
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
-        work #(invoke 'p15-s23-runtime-keyword-set-contains-work %1 %2 %3)
-        construct #(invoke 'runtime-construct-scalar-set %)
-        literal #(hash-map :op :literal :value %)
-        query #(hash-map :op :builtin-call :function 'contains? :args [%1 %2])
-        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
-        charge (fn [n] (+ 2 (* 2 n) (quot (* n (dec n)) 2) (* (inc n) (inc n))))
-        huge (bigint "12345678901234567890123456789012345678901234567890")]
-    (doseq [[members needle expected] [[[] 32 false] [[9 10 13 32 44] 32 true] [[9 10 13 32 44] 11 false]
-                                        [[1 2] 2 true] [[-1 0 1] -1 true] [[huge] huge true] [[huge] 0 false]
-                                        [[Long/MIN_VALUE Long/MAX_VALUE] Long/MAX_VALUE true]]]
-      (let [items (set members) result (work items needle 65536) reserved (charge (count items))
-            ctor (construct (vec members)) ir {:op :set-literal :items (mapv literal members)}]
-        (is (= :accepted (:status result) (:status ctor)))
+        work (fn [items needle] (invoke 'runtime-scalar-set-contains items needle))
+        literal (fn [value] {:op :literal :value value})
+        query (fn [items needle] {:op :builtin-call :function 'contains? :args [items needle]})
+        evaluate (fn [ir] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir {} ""))
+        huge (bigint "12345678901234567890123456789012345678901234567890") construct (fn [input] (invoke 'runtime-construct-scalar-set input))
+        ;; Raw native storage is deliberate malformed-domain input, not a foreign provider.
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                     (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                  (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[raw-items needle expected] [[[] 32 false] [[9 10 13 32 44] 32 true] [[9 10 13 32 44] 11 false] [[1 2] 2 true] [[-1 0 1] -1 true] [[huge] huge true] [[huge] 0 false] [[Long/MIN_VALUE Long/MAX_VALUE] Long/MAX_VALUE true]]]
+      (let [items (if (vector? raw-items) (set raw-items) raw-items)
+            before (vec items) result (work items needle) n (count items)]
+        (is (= :accepted (:status result)))
         (is (= expected (:value result)))
-        (is (= reserved (:work-count result)))
-        (is (= :gravity/integer-set-membership-logical-leaf-work-v1 (:value-work-model result)))
-        (is (= :original-integer-values (:representation result)))
-        (is (= :not-established (:precision-bound result) (:provider-cpu-bound result) (:provider-heap-bound result)))
-        (is (= result (work items needle reserved)))
-        (is (= :integer-set-contains-work-limit (:reason (work items needle (dec reserved)))))
-        (is (= 0 (:comparison-attempts (work items needle (dec reserved)))))
-        (is (= [expected "" :normal] (evaluate (query ir (literal needle)))))))
-    (let [callbacks (atom 0)
-          protected (fn [members]
-            (reify clojure.lang.IPersistentSet
-              (count [_] (count members)) (seq [_] (seq members))
-              (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-              (empty [_] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-              (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-              (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-              (get [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-              (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "Set mutation")))
-              Object (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-              (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "Set hash")))))
-          opaque (proxy [Object] []
-            (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
-            (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
-            (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))]
-      (doseq [needle [1 7]]
-        (is (= (= needle 1) (:value (work (protected [1 2]) needle 65536))))
-        (doseq [bad [opaque 1.0 1M 1/2 :one 'one \1 nil true]]
-          (let [result (work (protected [1 bad]) needle 65536)
-                ctor (construct [1 bad])]
-            (is (= :rejected (:status result) (:status ctor)))
-            (is (= 0 (:comparison-attempts result) (:comparison-attempts ctor) (:insertions ctor)))))
-        (let [duplicate (work (protected [1 1N]) needle 65536)]
-          (is (= :duplicate-integer-class (:domain-failure duplicate)))
-          (is (= (charge 2) (:work-count duplicate)))))
-      (is (= :duplicate-set-literal-integer (:reason (construct [1 1N]))))
-      (is (= 0 (:insertions (construct [1 1N]))))
-      (is (= :rejected (:status (work (protected [1]) opaque 65536))))
-      (is (zero? @callbacks)))
-    (let [wide (set (range 1024)) result (work wide 0 65536)]
-      (is (= :integer-set-contains-work-limit (:reason result)))
+        (is (= n (:input-element-count result)))
+        (is (<= (:comparison-attempts result) (+ (quot (* n (dec n)) 2) n)))
+        (is (not-any? (set (keys result)) [:work-count :work-count-kind :value-work-model :construction-reservation]))
+        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))
+        (is (= before (vec items)))
+        (is (= :accepted (:status (construct (vec raw-items))))) (is (= [expected "" :normal] (evaluate (query {:op :set-literal :items (mapv literal raw-items)} (literal needle)))))))
+    (let [original-str str failure (AssertionError. "Integer formatting must not run")] (with-redefs [clojure.core/str (fn [& values] (if (some integer? values) (throw failure) (apply original-str values)))] (is (= true (:value (work #{huge} huge)))) (is (= :accepted (:status (construct [huge]))))))
+        ;; Preserve semantic domain negatives removed with the former accounting model.
+    (doseq [bad [nil false 1.0 1M 1/2 :keyword 'symbol \a [] {} "text"]]
+      (doseq [members [[bad] [1 bad] [bad 1]]]
+        (let [items (native-set members) result (work items 1)]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:comparison-attempts result)))))
+      (let [result (work #{1} bad)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result)))))
+    (doseq [items [nil [] {} '() "not-a-set"]]
+      (is (= :rejected (:status (work items 1)))))
+    (let [items (native-set [1 1N])]
+      (is (= 2 (count items)))
+      (doseq [needle [1 2050]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :duplicate-integer-class (:domain-failure result)))
+          (is (= 1 (:comparison-attempts result))))))
+
+    (doseq [bad [1.0 1M 1/2 :one 'one \1 nil true]] (let [result (construct [1 bad])] (is (= :rejected (:status result))) (is (= 0 (:comparison-attempts result) (:insertions result))))) (let [result (construct [1 1N])] (is (= :duplicate-set-literal-integer (:reason result))) (is (= 0 (:insertions result))))
+    (let [large (into #{} (map identity (range 2050)))
+          hit 2049 miss 2050 long-value huge]
+      (doseq [[needle expected] [[hit true] [miss false]]]
+        (is (= expected (:value (work large needle))))
+        (is (= [expected "" :normal] (evaluate (query (literal large) (literal needle))))))
+      (is (= true (:value (work #{long-value} long-value)))))
+    ;; Native enumeration is fixed by array storage; the hit precedes a late invalid member.
+    (let [items (native-set [1 :mixed]) result (work items 1)]
+      (is (= [1 :mixed] (vec items)))
+      (is (= :rejected (:status result)))
       (is (= 0 (:comparison-attempts result)))
-      (is (= :integer-set-contains-value-width (:reason (work (conj wide 1024) 0 65536)))))
-    (let [original-str str failure (AssertionError. "Integer formatting must not run")]
-      (with-redefs [clojure.core/str (fn [& values]
-                                     (if (some integer? values) (throw failure) (apply original-str values)))]
-        (is (= true (:value (work #{huge} huge 65536))))
-        (is (= :accepted (:status (construct [huge]))))))))
+      (is (= ["" :rejected] (subvec (evaluate (query (literal items) (literal 1))) 1))))
+    (let [callbacks (atom 0) deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+          protected (reify clojure.lang.IPersistentSet
+                      (count [_] (deny)) (seq [_] (deny)) (cons [_ _] (deny))
+                      (empty [_] (deny)) (equiv [_ _] (deny)) (contains [_ _] (deny))
+                      (get [_ _] (deny)) (disjoin [_ _] (deny)))
+          opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))]
+      (doseq [[items needle] [[protected 1] [#{1} opaque]]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :set-membership-native-data-required (:reason result)))
+          (is (= 0 (:comparison-attempts result)))))
+      (let [result (construct [1 opaque])] (is (= :rejected (:status result))) (is (= 0 (:comparison-attempts result) (:insertions result))))
+      (is (zero? @callbacks)))
+    ;; Inert metadata remains valid; a cycle in that metadata must fail before comparisons.
+    (let [items (with-meta #{1} {:visible (subvec [:hidden :valid :hidden] 1 2)})]
+      (is (= true (:value (work items 1)))))
+    (let [metadata (clojure.lang.PersistentArrayMap. (object-array [:cycle nil]))
+          items (with-meta #{1} metadata)
+          field (.getDeclaredField clojure.lang.PersistentArrayMap "array")]
+      (is (.trySetAccessible field))
+      (.set field metadata (object-array [:cycle items]))
+      (let [result (work items 1)]
+        (is (= :rejected (:status result)))
+        (is (= :cyclic-carrier (:native-reason result)))
+        (is (= 0 (:comparison-attempts result)))))
+
+    ;; Removing content accounting also removes the old str-based refusal path.
+    (let [original-str str calls (atom 0)
+          result (with-redefs [clojure.core/str
+                              (fn [& values]
+                                (when (= [1] values) (swap! calls inc))
+                                (apply original-str values))]
+                   (work #{1} 1))]
+      (is (= true (:value result)))
+      (is (zero? @calls)))))
 
 (deftest current-gravity-integer-set-construction-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -33190,110 +33221,101 @@ else
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
 
 (deftest current-gravity-symbol-set-contains-runtime-development-kernel
+  ;; Detached source preparation: this selector has not been executed.
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
-        work #(invoke 'p15-s23-runtime-keyword-set-contains-work %1 %2 %3)
+        work (fn [items needle] (invoke 'runtime-scalar-set-contains items needle))
         literal (fn [value] {:op :literal :value value})
         query (fn [items needle] {:op :builtin-call :function 'contains? :args [items needle]})
-        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
-        charge (fn [items needle]
-                 (let [n (count items) units (+ (count (str needle)) (reduce + 0 (map #(count (str %)) items)))]
-                   (+ 2 (* 2 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
-    (doseq [[items needle expected] [[#{} 'absent false] [#{'one} 'one true] [#{'one} 'other false]
-                                    [#{'left 'right} 'right true] [#{'left 'right} 'missing false]
-                                    [#{'space/name} 'space/name true] [#{'space/name} 'other/name false]
-                                    [#{'A} 'a false] [#{'gravity.core/println} 'gravity.core/println true]]]
-      (let [result (work items needle 65536) n (count items) reserved (charge items needle)]
+        evaluate (fn [ir] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir {} ""))
+
+        ;; Raw native storage is deliberate malformed-domain input, not a foreign provider.
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                     (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                  (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[raw-items needle expected] [[#{} (quote absent) false] [#{(quote one)} (quote one) true] [#{(quote one)} (quote other) false] [#{(quote right) (quote left)} (quote right) true] [#{(quote right) (quote left)} (quote missing) false] [#{(quote space/name)} (quote space/name) true] [#{(quote space/name)} (quote other/name) false] [#{(quote A)} (quote a) false] [#{(quote gravity.core/println)} (quote gravity.core/println) true]]]
+      (let [items (if (vector? raw-items) (set raw-items) raw-items)
+            before (vec items) result (work items needle) n (count items)]
         (is (= :accepted (:status result)))
         (is (= expected (:value result)))
-        (is (= reserved (:work-count result)))
-        (is (= :exact-logical-membership-reservation (:work-count-kind result)))
-        (is (= :gravity/symbol-set-membership-logical-content-work-v1 (:value-work-model result)))
-        (is (= :not-established (:provider-cpu-bound result)))
+        (is (= n (:input-element-count result)))
         (is (<= (:comparison-attempts result) (+ (quot (* n (dec n)) 2) n)))
-        (is (= result (work items needle reserved)))
-        (let [limited (work items needle (dec reserved))]
-          (is (= :symbol-set-contains-work-limit (:reason limited)))
-          (is (= 0 (:comparison-attempts limited))))
-        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))))
-    (let [left (symbol nil "a/b") right (symbol "a" "b")
-          copy (with-meta (symbol "a" "b") {:copied true})]
-      (is (= (str left) (str right)))
-      (is (= false (:value (work #{left} right 65536))))
-      (is (= true (:value (work #{right} copy 65536)))))
-    (let [callbacks (atom 0)
-          protected (fn [members]
-                      (reify clojure.lang.IPersistentSet
-                        (count [_] (count members)) (seq [_] (seq members))
-                        (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-                        (empty [_] (swap! callbacks inc) (throw (AssertionError. "Set construction")))
-                        (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-                        (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-                        (get [_ _] (swap! callbacks inc) (throw (AssertionError. "Set lookup")))
-                        (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "Set mutation")))
-                        Object
-                        (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "Set equality")))
-                        (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "Set hash")))))
-          opaque (proxy [Object] []
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))]
-      (is (= true (:value (work (protected '[a b]) 'a 65536))))
-      (is (= false (:value (work (protected '[a b]) 'missing 65536))))
-      (doseq [items [(protected [opaque]) (protected ['hit opaque]) (protected [opaque 'hit])]
-              needle ['hit 'missing]]
-        (let [result (work items needle 65536)]
+        (is (not-any? (set (keys result)) [:work-count :work-count-kind :value-work-model :construction-reservation]))
+        (is (= [expected "" :normal] (evaluate (query (literal items) (literal needle)))))
+        (is (= before (vec items)))
+        ))
+    (let [left (symbol nil "a/b") right (symbol "a" "b") copy (with-meta (symbol "a" "b") {:copied true})] (is (= (str left) (str right))) (is (= false (:value (work #{left} right)))) (is (= true (:value (work #{right} copy)))))
+        ;; Preserve semantic domain negatives removed with the former accounting model.
+    (doseq [bad [nil false 7 1.5 :keyword "text" \a [] {} '()]]
+      (doseq [members [[bad] ['a bad] [bad 'a]]]
+        (let [items (native-set members) result (work items 'a)]
           (is (= :rejected (:status result)))
           (is (= 0 (:comparison-attempts result)))))
-      (doseq [needle ['same 'missing]]
-        (let [items (protected ['same (with-meta 'same {:copy true})]) result (work items needle 65536)]
-          (is (= :symbol-set-contains-value-domain-required (:reason result)))
-          (is (= :duplicate-symbol-class (:domain-failure result)))
-          (is (= (charge items needle) (:work-count result)))
-          (is (= :exact-logical-membership-reservation (:work-count-kind result)))))
-      (let [result (work (protected ['hit "not-a-Symbol"]) 'hit 65536)]
-        (is (= :symbol-set-contains-value-domain-required (:reason result)))
-        (is (= 0 (:comparison-attempts result))))
-      (is (= :keyword-set-contains-value-domain-required (:reason (work (protected ['hit]) opaque 65536))))
-      (is (zero? @callbacks)))
-    (doseq [[items needle expected-reason] [[#{:hit} 'hit :keyword-set-contains-value-domain-required]
-                                           [#{"hit"} 'hit :keyword-set-contains-value-domain-required]
-                                           [#{'hit} :hit :keyword-set-contains-value-domain-required]
-                                           [#{'hit} "hit" :string-set-contains-value-domain-required]]]
-      (is (= expected-reason (:reason (work items needle 65536)))))
-    (doseq [budget [0 1]]
-      (let [result (work #{'a} 'a budget)]
-        (is (= :keyword-set-contains-work-limit (:reason result)))
-        (is (= 2 (:work-count result)))
+      (let [result (work #{'a} bad)]
+        (is (= :rejected (:status result)))
         (is (= 0 (:comparison-attempts result)))))
-    (let [exact (symbol (apply str (repeat 65534 "x"))) over (symbol (apply str (repeat 65535 "x")))
-          accepted (work #{} exact 65536) rejected (work #{} over 65536)]
-      (is (= 65536 (charge #{} exact) (:work-count accepted)))
-      (is (= :accepted (:status accepted)))
-      (is (= false (:value accepted)))
-      (is (= :symbol-set-contains-work-limit (:reason rejected)))
-      (is (= 65537 (:work-count rejected)))
-      (is (= 0 (:comparison-attempts rejected))))
-    (let [wide (into #{} (map #(symbol (str "member" %)) (range 1024))) result (work wide 'missing 65536)]
-      (is (= :symbol-set-contains-work-limit (:reason result)))
-      (is (= 65537 (:work-count result)))
+    (doseq [items [nil [] {} '() "not-a-set"]]
+      (is (= :rejected (:status (work items 'a)))))
+    (let [items (native-set ['a (with-meta 'a {:copy true})])]
+      (is (= 2 (count items)))
+      (doseq [needle ['a 'absent]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :duplicate-symbol-class (:domain-failure result)))
+          (is (= 1 (:comparison-attempts result))))))
+
+
+    (let [large (into #{} (map (fn [i] (symbol (str "member" i))) (range 2050)))
+          hit 'member2049 miss 'absent long-value (symbol (apply str (repeat 70000 "x")))]
+      (doseq [[needle expected] [[hit true] [miss false]]]
+        (is (= expected (:value (work large needle))))
+        (is (= [expected "" :normal] (evaluate (query (literal large) (literal needle))))))
+      (is (= true (:value (work #{long-value} long-value)))))
+    ;; Native enumeration is fixed by array storage; the hit precedes a late invalid member.
+    (let [items (native-set ['a :mixed]) result (work items 'a)]
+      (is (= ['a :mixed] (vec items)))
+      (is (= :rejected (:status result)))
       (is (= 0 (:comparison-attempts result)))
-      (is (= :symbol-set-contains-value-width (:reason (work (conj wide 'extra) 'missing 65536)))))
-    (let [say (fn [text value] {:op :do :body [{:op :println :args [(literal text)] :effect :io/write :capability :io/stdout} value]})
-          payload (Object.) escape {:op :throw :value (literal payload)}
-          left (evaluate (query (say "set" escape) (say "unreached" (literal 'key))))
-          right (evaluate (query (say "set" (literal #{'key})) (say "needle" escape)))]
-      (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{'key})) (say "needle" (literal 'key))))))
-      (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal 'key))))))
-      (is (identical? payload (first left)))
-      (is (identical? payload (first right)))
-      (is (= ["set\n" :thrown] (subvec left 1)))
-      (is (= ["set\nneedle\n" :thrown] (subvec right 1))))
-    (let [failure (AssertionError. "original Symbol work representation failure") original-str str
-          observed (with-redefs [clojure.core/str (fn [& values]
-                                                  (if (= ['explode] values) (throw failure) (apply original-str values)))]
-                     (seed-throw-test-capture #(work #{} 'explode 65536)))]
-      (is (identical? failure observed)))))
+      (is (= ["" :rejected] (subvec (evaluate (query (literal items) (literal 'a))) 1))))
+    (let [callbacks (atom 0) deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+          protected (reify clojure.lang.IPersistentSet
+                      (count [_] (deny)) (seq [_] (deny)) (cons [_ _] (deny))
+                      (empty [_] (deny)) (equiv [_ _] (deny)) (contains [_ _] (deny))
+                      (get [_ _] (deny)) (disjoin [_ _] (deny)))
+          opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))]
+      (doseq [[items needle] [[protected 'a] [#{'a} opaque]]]
+        (let [result (work items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :set-membership-native-data-required (:reason result)))
+          (is (= 0 (:comparison-attempts result)))))
+
+      (is (zero? @callbacks)))
+    ;; Inert metadata remains valid; a cycle in that metadata must fail before comparisons.
+    (let [items (with-meta #{'a} {:visible (subvec [:hidden :valid :hidden] 1 2)})]
+      (is (= true (:value (work items 'a)))))
+    (let [metadata (clojure.lang.PersistentArrayMap. (object-array [:cycle nil]))
+          items (with-meta #{'a} metadata)
+          field (.getDeclaredField clojure.lang.PersistentArrayMap "array")]
+      (is (.trySetAccessible field))
+      (.set field metadata (object-array [:cycle items]))
+      (let [result (work items 'a)]
+        (is (= :rejected (:status result)))
+        (is (= :cyclic-carrier (:native-reason result)))
+        (is (= 0 (:comparison-attempts result)))))
+    (let [say (fn [text value] {:op :do, :body [{:op :println, :args [(literal text)], :effect :io/write, :capability :io/stdout} value]}) payload (Object.) escape {:op :throw, :value (literal payload)} left (evaluate (query (say "set" escape) (say "unreached" (literal (quote key))))) right (evaluate (query (say "set" (literal #{(quote key)})) (say "needle" escape)))] (is (= [true "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{(quote key)})) (say "needle" (literal (quote key))))))) (is (= [false "set\nneedle\n" :normal] (evaluate (query (say "set" (literal #{})) (say "needle" (literal (quote key))))))) (is (identical? payload (first left))) (is (identical? payload (first right))) (is (= ["set\n" :thrown] (subvec left 1))) (is (= ["set\nneedle\n" :thrown] (subvec right 1))))
+    ;; Removing content accounting also removes the old str-based refusal path.
+    (let [original-str str calls (atom 0)
+          result (with-redefs [clojure.core/str
+                              (fn [& values]
+                                (when (= ['a] values) (swap! calls inc))
+                                (apply original-str values))]
+                   (work #{'a} 'a))]
+      (is (= true (:value result)))
+      (is (zero? @calls)))))
 
 (deftest current-gravity-symbol-set-contains-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -33506,84 +33528,93 @@ else
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
 
 (deftest current-gravity-keyword-set-insertion-runtime-development-kernel
+  ;; Detached source preparation: helper and evaluator controls remain UNRUN.
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        direct (fn [items value] (invoke 'runtime-insert-scalar-set items value))
         literal (fn [value] {:op :literal :value value})
         conj-ir (fn [items value] {:op :builtin-call :function 'conj :args [items value]})
-        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
-        insert #(evaluate (conj-ir (literal %1) (literal %2)))
-        reserve (fn [items value]
-                  (let [n (count items) units (+ (count (str value)) (reduce + 0 (map #(count (str %)) (seq items))))]
-                    (+ 5 (* 4 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
-    (doseq [[items value expected] [[#{} :a #{:a}] [#{:a} :b #{:a :b}] [#{:a} :a #{:a}]
-                                   [#{:a :b} :a #{:a :b}] [#{:left/name} :right/name #{:left/name :right/name}]]]
-      (let [before (vec (seq items)) membership (invoke 'p15-s23-runtime-keyword-set-contains-work items value (- 65536 (+ 3 (* 2 (count items)))))
-            result (insert items value)]
-        (is (= [expected "" :normal] result))
-        (is (= before (vec (seq items))))
-        (is (= (reserve items value) (+ 3 (* 2 (count items)) (:work-count membership))))))
-    (let [callbacks (atom 0)
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))
-          protected (fn [members]
-                      (reify clojure.lang.IPersistentSet
-                        (count [_] (count members)) (seq [_] (seq members))
-                        (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver cons")))
-                        (empty [_] (swap! callbacks inc) (throw (AssertionError. "receiver empty")))
-                        (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver equivalence")))
-                        (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver lookup")))
-                        (get [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver lookup")))
-                        (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver mutation")))
-                        Object
-                        (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver equality")))
-                        (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "receiver hash")))))
-          items (protected [:a :b])]
-      (doseq [[value expected] [[:a [:a :b]] [:c [:a :b :c]]]]
-        (let [result (insert items value)]
-          (is (= ["" :normal] (subvec result 1)))
-          (is (= expected (vec (sort (seq (first result))))))
-          (is (= [:a :b] (vec (seq items))))))
-      (doseq [members [[:a opaque] [opaque :a] [:a "mixed"] [:a {:op :throw :value :stored}]]]
-        (let [result (insert (protected members) :a)]
-          (is (= ["" :rejected] (subvec result 1)))))
-      (doseq [value [:a :absent]]
-        (let [items (protected [:a :a]) result (insert items value)]
-          (is (= ["" :rejected] (subvec result 1)))
-          (is (= :duplicate-keyword-class (get-in result [0 :domain-failure])))
-          (is (= (reserve items value) (get-in result [0 :work-count])))))
-      (let [large (keyword (apply str (repeat 40000 "x")))
-            result (insert (protected [:a large]) :a)]
-        (is (= ["" :rejected] (subvec result 1)))
-        (is (= :keyword-set-insertion-work-limit (get-in result [0 :reason])))
-        (is (= 65537 (get-in result [0 :work-count]))))
+        evaluate (fn [ir] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir {} ""))
+        insert (fn [items value] (evaluate (conj-ir (literal items) (literal value))))
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                     (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                  (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[items value expected] [[#{} :a #{:a}] [#{:a} :b #{:b :a}] [#{:a} :a #{:a}] [#{:b :a} :a #{:b :a}] [#{:left/name} :right/name #{:left/name :right/name}]]]
+      (let [before (vec items) result (direct items value) actual (insert items value)
+            present? (contains? items value)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (is (= present? (:member-present? result)))
+        (is (= (if present? 0 (inc (count items))) (:insertions result)))
+        (is (= (count items) (:input-element-count result)))
+        (is (not-any? (set (keys result)) [:work-count :work-count-kind :value-work-model :construction-reservation]))
+        (is (= [expected "" :normal] actual))
+        (when present?
+          (is (identical? items (:value result)))
+          (is (identical? items (first actual))))
+        (is (= before (vec items)))))
+
+        (doseq [bad [nil false 7 1.5 "text" 'symbol \a [] {} '()]]
+      (doseq [members [[bad] [:a bad] [bad :a]]]
+        (let [items (native-set members) result (direct items :a)]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items :a) 1)))))
+      (let [result (direct #{:a} bad)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))))
+    (doseq [items [nil [] {} '() "not-a-set"]]
+      (is (= :rejected (:status (direct items :a)))))
+    (let [items (native-set [:a :a])]
+      (is (= 2 (count items)))
+      (doseq [needle [:a :absent]]
+        (let [result (direct items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :duplicate-keyword-class (:domain-failure result)))
+          (is (= 1 (:comparison-attempts result)))
+          (is (= 0 (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items needle) 1))))))
+
+    (let [items (into #{} (map (fn [i] (keyword (str "member" i))) (range 2050))) hit :member2049 miss :absent long-value (keyword (apply str (repeat 70000 "x")))]
+      (doseq [[value present?] [[hit true] [miss false] [long-value false]]]
+        (let [before (vec items) result (direct items value)]
+          (is (= :accepted (:status result)))
+          (is (= present? (:member-present? result)))
+          (is (= (if present? (count items) (inc (count items))) (count (:value result))))
+          (is (= [(:value result) "" :normal] (insert items value)))
+          (is (= before (vec items))))))
+    (let [items (native-set [:a "mixed"]) result (direct items :a)]
+      (is (= [:a "mixed"] (vec items)))
+      (is (= :rejected (:status result)))
+      (is (= 0 (:comparison-attempts result) (:insertions result)))
+      (is (= ["" :rejected] (subvec (insert items :a) 1))))
+    (doseq [[items value] [[#{:a} "mixed"] [#{"mixed"} :a] [#{:a} 17]]]
+      (let [result (direct items value)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))
+        (is (= ["" :rejected] (subvec (insert items value) 1)))))
+    (let [callbacks (atom 0) deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+          protected (reify clojure.lang.IPersistentSet
+                      (count [_] (deny)) (seq [_] (deny)) (cons [_ _] (deny))
+                      (empty [_] (deny)) (equiv [_ _] (deny)) (contains [_ _] (deny))
+                      (get [_ _] (deny)) (disjoin [_ _] (deny)))
+          opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))]
+      (doseq [[items value] [[protected :a] [#{:a} opaque]]]
+        (let [result (direct items value)]
+          (is (= :rejected (:status result)))
+          (is (= :set-membership-native-data-required (:member-reason result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items value) 1)))))
       (is (zero? @callbacks)))
-    (doseq [[items value] [[#{"a"} :a] [#{:a} "a"] [#{\a} :a] [#{:a} \a]]]
-      (let [result (insert items value)]
-        (is (= ["" :rejected] (subvec result 1)))
-        (is (= :string-set-insertion-value-domain-required (get-in result [0 :reason])))))
-    (let [wide (into #{} (map #(keyword (str "k" %)) (range 1025))) result (insert wide :a)]
-      (is (= :keyword-set-insertion-value-width (get-in result [0 :reason]))))
-    ;; Printed Keyword length includes its colon. The empty input's full
-    ;; membership plus construction reservation is five units plus that length.
-    (let [exact (keyword (apply str (repeat 65530 "x")))
-          over (keyword (apply str (repeat 65531 "x")))
-          accepted (insert #{} exact) rejected (insert #{} over)]
-      (is (= 65536 (reserve #{} exact)))
-      (is (= [#{exact} "" :normal] accepted))
-      (is (= ["" :rejected] (subvec rejected 1)))
-      (is (= :keyword-set-insertion-work-limit (get-in rejected [0 :reason])))
-      (is (= 65537 (get-in rejected [0 :work-count]))))
-    (let [say (fn [label expr] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} expr]})
-          payload (String. "original Keyword insertion transfer")]
-      (is (= [#{:a :b} "items\nvalue\n" :normal]
-             (evaluate (conj-ir (say "items" (literal #{:a})) (say "value" (literal :b))))))
-      (doseq [[ir output] [[(conj-ir (say "items" {:op :throw :value (literal payload)}) (say "value" (literal :b))) "items\n"]
-                           [(conj-ir (say "items" (literal #{:a})) (say "value" {:op :throw :value (literal payload)})) "items\nvalue\n"]]]
-        (let [result (evaluate ir)]
-          (is (identical? payload (first result)))
-          (is (= [output :thrown] (subvec result 1))))))))
+    (let [metadata {:visible (subvec [:hidden :valid :hidden] 1 2)} items (with-meta #{:a} metadata)]
+      (is (identical? items (:value (direct items :a))))
+      (is (identical? items (first (insert items :a))))
+      (is (identical? metadata (meta items))))
+    (let [say (fn [label expr] {:op :do, :body [{:op :println, :args [(literal label)], :effect :io/write, :capability :io/stdout} expr]}) payload (String. "original Keyword insertion transfer")] (is (= [#{:b :a} "items\nvalue\n" :normal] (evaluate (conj-ir (say "items" (literal #{:a})) (say "value" (literal :b)))))) (doseq [[ir output] [[(conj-ir (say "items" {:op :throw, :value (literal payload)}) (say "value" (literal :b))) "items\n"] [(conj-ir (say "items" (literal #{:a})) (say "value" {:op :throw, :value (literal payload)})) "items\nvalue\n"]]] (let [result (evaluate ir)] (is (identical? payload (first result))) (is (= [output :thrown] (subvec result 1))))))))
 
 (deftest current-gravity-keyword-set-insertion-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -35687,92 +35718,93 @@ else
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot 65536)))))))))
 
 (deftest current-gravity-symbol-set-insertion-runtime-development-kernel
+  ;; Detached source preparation: helper and evaluator controls remain UNRUN.
   (let [plan (:plan (typed-catch-runtime-projection))
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
+        direct (fn [items value] (invoke 'runtime-insert-scalar-set items value))
         literal (fn [value] {:op :literal :value value})
         conj-ir (fn [items value] {:op :builtin-call :function 'conj :args [items value]})
-        evaluate #(invoke 'p15-s23-runtime-evaluate-closed-instruction % {} "")
-        insert #(evaluate (conj-ir (literal %1) (literal %2)))
-        reserve (fn [items value]
-                  (let [n (count items) units (+ (count (str value)) (reduce + 0 (map #(count (str %)) (seq items))))]
-                    (+ 5 (* 4 n) (quot (* n (dec n)) 2) (* (inc n) units))))]
-    (doseq [[items value expected] [[#{} 'a #{'a}] [#{'a} 'b #{'a 'b}] [#{'a} 'a #{'a}]
-                                   [#{'a 'b} 'a #{'a 'b}] [#{'left/name} 'right/name #{'left/name 'right/name}]]]
-      (let [before (vec (seq items)) membership (invoke 'p15-s23-runtime-keyword-set-contains-work items value (- 65536 (+ 3 (* 2 (count items)))))
-            result (insert items value)]
-        (is (= [expected "" :normal] result))
-        (is (= before (vec (seq items))))
-        (is (= (reserve items value) (+ 3 (* 2 (count items)) (:work-count membership))))))
-    (let [left (symbol nil "a/b") right (symbol "a" "b")
-          copy (with-meta (symbol "a" "b") {:copied true})
-          non-bmp (symbol (String. (Character/toChars 0x1f600)))]
-      (is (= (str left) (str right)))
-      (is (= [#{left right} "" :normal] (insert #{left} right)))
-      (is (= [#{right} "" :normal] (insert #{right} copy)))
-      (is (= [#{non-bmp} "" :normal] (insert #{} non-bmp)))
-      (is (= 2 (count (str non-bmp)))))
-    (let [callbacks (atom 0)
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hash")))
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "member equality")))
-                   (toString [] (swap! callbacks inc) (throw (AssertionError. "member printing"))))
-          protected (fn [members]
-                      (reify clojure.lang.IPersistentSet
-                        (count [_] (count members)) (seq [_] (seq members))
-                        (cons [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver cons")))
-                        (empty [_] (swap! callbacks inc) (throw (AssertionError. "receiver empty")))
-                        (equiv [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver equivalence")))
-                        (contains [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver lookup")))
-                        (get [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver lookup")))
-                        (disjoin [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver mutation")))
-                        Object
-                        (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver equality")))
-                        (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "receiver hash")))))
-          items (protected ['a 'b])]
-      (doseq [[value expected] [['a ['a 'b]] ['c ['a 'b 'c]]]]
-        (let [result (insert items value)]
-          (is (= ["" :normal] (subvec result 1)))
-          (is (= expected (vec (sort (seq (first result))))))
-          (is (= ['a 'b] (vec (seq items))))))
-      (doseq [members [['a opaque] [opaque 'a] ['a "mixed"] ['a {:op :throw :value 'stored}]]]
-        (let [result (insert (protected members) 'a)]
-          (is (= ["" :rejected] (subvec result 1)))))
-      (doseq [value ['a 'absent]]
-        (let [items (protected ['a 'a]) result (insert items value)]
-          (is (= ["" :rejected] (subvec result 1)))
-          (is (= :duplicate-symbol-class (get-in result [0 :domain-failure])))
-          (is (= (reserve items value) (get-in result [0 :work-count])))))
-      (let [large (symbol (apply str (repeat 40000 "x")))
-            result (insert (protected ['a large]) 'a)]
-        (is (= ["" :rejected] (subvec result 1)))
-        (is (= :symbol-set-insertion-work-limit (get-in result [0 :reason])))
-        (is (= 65537 (get-in result [0 :work-count]))))
+        evaluate (fn [ir] (invoke 'p15-s23-runtime-evaluate-closed-instruction ir {} ""))
+        insert (fn [items value] (evaluate (conj-ir (literal items) (literal value))))
+        native-set (fn [members]
+                     (let [backing (clojure.lang.PersistentArrayMap.
+                                     (object-array (mapcat (fn [x] [x x]) members)))
+                           ctor (.getDeclaredConstructor clojure.lang.PersistentHashSet
+                                  (into-array Class [clojure.lang.IPersistentMap clojure.lang.IPersistentMap]))]
+                       (is (.trySetAccessible ctor))
+                       (.newInstance ctor (object-array [nil backing]))))]
+    (doseq [[items value expected] [[#{} (quote a) #{(quote a)}] [#{(quote a)} (quote b) #{(quote b) (quote a)}] [#{(quote a)} (quote a) #{(quote a)}] [#{(quote b) (quote a)} (quote a) #{(quote b) (quote a)}] [#{(quote left/name)} (quote right/name) #{(quote right/name) (quote left/name)}]]]
+      (let [before (vec items) result (direct items value) actual (insert items value)
+            present? (contains? items value)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (is (= present? (:member-present? result)))
+        (is (= (if present? 0 (inc (count items))) (:insertions result)))
+        (is (= (count items) (:input-element-count result)))
+        (is (not-any? (set (keys result)) [:work-count :work-count-kind :value-work-model :construction-reservation]))
+        (is (= [expected "" :normal] actual))
+        (when present?
+          (is (identical? items (:value result)))
+          (is (identical? items (first actual))))
+        (is (= before (vec items)))))
+    (let [left (symbol nil "a/b") right (symbol "a" "b") copy (with-meta (symbol "a" "b") {:copied true}) non-bmp (symbol (String. (Character/toChars 128512)))] (is (= (str left) (str right))) (is (= [#{left right} "" :normal] (insert #{left} right))) (is (= [#{right} "" :normal] (insert #{right} copy))) (is (= [#{non-bmp} "" :normal] (insert #{} non-bmp))) (is (= 2 (count (str non-bmp)))))
+        (doseq [bad [nil false 7 1.5 :keyword "text" \a [] {} '()]]
+      (doseq [members [[bad] ['a bad] [bad 'a]]]
+        (let [items (native-set members) result (direct items 'a)]
+          (is (= :rejected (:status result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items 'a) 1)))))
+      (let [result (direct #{'a} bad)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))))
+    (doseq [items [nil [] {} '() "not-a-set"]]
+      (is (= :rejected (:status (direct items 'a)))))
+    (let [items (native-set ['a (with-meta 'a {:copy true})])]
+      (is (= 2 (count items)))
+      (doseq [needle ['a 'absent]]
+        (let [result (direct items needle)]
+          (is (= :rejected (:status result)))
+          (is (= :duplicate-symbol-class (:domain-failure result)))
+          (is (= 1 (:comparison-attempts result)))
+          (is (= 0 (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items needle) 1))))))
+
+    (let [items (into #{} (map (fn [i] (symbol (str "member" i))) (range 2050))) hit 'member2049 miss 'absent long-value (symbol (apply str (repeat 70000 "x")))]
+      (doseq [[value present?] [[hit true] [miss false] [long-value false]]]
+        (let [before (vec items) result (direct items value)]
+          (is (= :accepted (:status result)))
+          (is (= present? (:member-present? result)))
+          (is (= (if present? (count items) (inc (count items))) (count (:value result))))
+          (is (= [(:value result) "" :normal] (insert items value)))
+          (is (= before (vec items))))))
+    (let [items (native-set ['a :mixed]) result (direct items 'a)]
+      (is (= ['a :mixed] (vec items)))
+      (is (= :rejected (:status result)))
+      (is (= 0 (:comparison-attempts result) (:insertions result)))
+      (is (= ["" :rejected] (subvec (insert items 'a) 1))))
+    (doseq [[items value] [[#{'a} :mixed] [#{:mixed} 'a] [#{'a} 17]]]
+      (let [result (direct items value)]
+        (is (= :rejected (:status result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))
+        (is (= ["" :rejected] (subvec (insert items value) 1)))))
+    (let [callbacks (atom 0) deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+          protected (reify clojure.lang.IPersistentSet
+                      (count [_] (deny)) (seq [_] (deny)) (cons [_ _] (deny))
+                      (empty [_] (deny)) (equiv [_ _] (deny)) (contains [_ _] (deny))
+                      (get [_ _] (deny)) (disjoin [_ _] (deny)))
+          opaque (proxy [Object] [] (equals [_] (deny)) (hashCode [] (deny)) (toString [] (deny)))]
+      (doseq [[items value] [[protected 'a] [#{'a} opaque]]]
+        (let [result (direct items value)]
+          (is (= :rejected (:status result)))
+          (is (= :set-membership-native-data-required (:member-reason result)))
+          (is (= 0 (:comparison-attempts result) (:insertions result)))
+          (is (= ["" :rejected] (subvec (insert items value) 1)))))
       (is (zero? @callbacks)))
-    (doseq [[items value] [[#{"a"} 'a] [#{'a} "a"] [#{\a} 'a] [#{'a} \a] [#{:a} 'a] [#{'a} :a]]]
-      (let [result (insert items value)]
-        (is (= ["" :rejected] (subvec result 1)))
-        (is (= :string-set-insertion-value-domain-required (get-in result [0 :reason])))))
-    (let [wide (into #{} (map #(symbol (str "k" %)) (range 1025))) result (insert wide 'a)]
-      (is (= :symbol-set-insertion-value-width (get-in result [0 :reason]))))
-    ;; Symbol display accounts only for work. The empty input's full
-    ;; membership plus construction reservation is five units plus that length.
-    (let [exact (symbol (apply str (repeat 65531 "x")))
-          over (symbol (apply str (repeat 65532 "x")))
-          accepted (insert #{} exact) rejected (insert #{} over)]
-      (is (= 65536 (reserve #{} exact)))
-      (is (= [#{exact} "" :normal] accepted))
-      (is (= ["" :rejected] (subvec rejected 1)))
-      (is (= :symbol-set-insertion-work-limit (get-in rejected [0 :reason])))
-      (is (= 65537 (get-in rejected [0 :work-count]))))
-    (let [say (fn [label expr] {:op :do :body [{:op :println :args [(literal label)] :effect :io/write :capability :io/stdout} expr]})
-          payload (String. "original Symbol insertion transfer")]
-      (is (= [#{'a 'b} "items\nvalue\n" :normal]
-             (evaluate (conj-ir (say "items" (literal #{'a})) (say "value" (literal 'b))))))
-      (doseq [[ir output] [[(conj-ir (say "items" {:op :throw :value (literal payload)}) (say "value" (literal 'b))) "items\n"]
-                           [(conj-ir (say "items" (literal #{'a})) (say "value" {:op :throw :value (literal payload)})) "items\nvalue\n"]]]
-        (let [result (evaluate ir)]
-          (is (identical? payload (first result)))
-          (is (= [output :thrown] (subvec result 1))))))))
+    (let [metadata {:visible (subvec [:hidden :valid :hidden] 1 2)} items (with-meta #{'a} metadata)]
+      (is (identical? items (:value (direct items 'a))))
+      (is (identical? items (first (insert items 'a))))
+      (is (identical? metadata (meta items))))
+    (let [say (fn [label expr] {:op :do, :body [{:op :println, :args [(literal label)], :effect :io/write, :capability :io/stdout} expr]}) payload (String. "original Symbol insertion transfer")] (is (= [#{(quote b) (quote a)} "items\nvalue\n" :normal] (evaluate (conj-ir (say "items" (literal #{(quote a)})) (say "value" (literal (quote b))))))) (doseq [[ir output] [[(conj-ir (say "items" {:op :throw, :value (literal payload)}) (say "value" (literal (quote b)))) "items\n"] [(conj-ir (say "items" (literal #{(quote a)})) (say "value" {:op :throw, :value (literal payload)})) "items\nvalue\n"]]] (let [result (evaluate ir)] (is (identical? payload (first result))) (is (= [output :thrown] (subvec result 1))))))))
 
 (deftest current-gravity-symbol-set-insertion-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
