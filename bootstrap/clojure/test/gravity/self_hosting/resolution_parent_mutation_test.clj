@@ -949,3 +949,201 @@
         ((:restore! alias))
         (is ((:restored? alias)))
         (is (every? (fn [[var value]] (identical? value @var)) before-roots))))))
+
+;; SOURCE PREPARATION ONLY. Actual source fixtures supply the runs; no synthetic
+;; artifact, verifier result or standalone chunk calculation supplies a positive.
+(defn- fresh-trace-order-parent [size]
+  (when (some? ((implementation 'sh07-proof-transaction-context!)))
+    (throw (ex-info "Trace-order control cannot borrow a proof transaction" {})))
+  (let [source (.getCanonicalPath
+                (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-06/accepted/trace-order-"
+                              size ".gravity")))
+        reader (.getCanonicalPath (io/file b/sh03-reader-source-relative-path))
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}}
+        syntax (b/compiler-c3-syntax-source-artifact
+                 source (slurp source) (b/reader-project-context-for-source source)
+                 nil nil reader invocation)
+        parent (b/sh05-macro-artifact-from-c3-artifact source syntax invocation)
+        trace (:macro-expansion-trace parent)]
+    (when-not (and (= :complete (get-in parent [:capability-based-proof :status]))
+                   (= size (:expanded-defn-count parent) (count trace)
+                      (count (get-in parent [:gravity-macro-boundary :expansion-runs])))
+                   (= size (count (set (map :input-syntax-id trace))))
+                   (= size (count (set (map :output-syntax-id trace)))))
+      (throw (ex-info "Actual fixture did not produce distinct ordered Macro runs"
+                      {:fixture-size size})))
+    {:source source :reader reader :invocation invocation :parent parent}))
+
+(defn- trace-order-parent [parent kind]
+  (let [trace (:macro-expansion-trace parent) size (count trace)
+        edge (min 15 (dec size))
+        changed (case kind
+                  :permutation (assoc trace 0 (peek trace) (dec size) (first trace))
+                  :insertion (let [at (min 16 size)]
+                               (into (conj (subvec trace 0 at) (peek trace))
+                                     (subvec trace at)))
+                  :deletion (into (subvec trace 0 edge) (subvec trace (inc edge)))
+                  :duplicate (assoc trace edge (first trace)))
+        backing (object-array (mapcat identity parent))
+        position (first (keep #(when (= :macro-expansion-trace (aget backing %)) (inc %))
+                              (range 0 (alength backing) 2)))
+        aliased (clojure.lang.PersistentArrayMap. backing)]
+    (when-not (and position (= parent aliased) (not= trace changed)
+                   (every? (fn [step] (some #(identical? step %) trace)) changed))
+      (throw (ex-info "Trace order fixture must retain only actual produced steps" {:kind kind})))
+    {:parent aliased :before trace :after changed
+     :mutate! #(aset backing position changed)
+     :restore! #(aset backing position trace)
+     :restored? #(and (identical? trace (:macro-expansion-trace aliased)) (= parent aliased))}))
+
+(defn- observe-trace-order [source parent invocation mutate! operation]
+  (let [trace-var (implementation 'sh05-macro-trace-id)
+        projection-var (implementation 'sh05-macro-trace-identity-input)
+        stream-var (implementation 'sh05-expanded-syntax-stream-id)
+        verify-var (implementation 'sh06-resolution-verify-sh05)
+        trace-id @trace-var projection @projection-var stream-id @stream-var verify @verify-var
+        changed? (atom false) details (atom [])
+        record! (fn [event data]
+                  (swap! details conj (merge {:event event :after-mutation? @changed?} data)))]
+    (with-redefs-fn
+      {trace-var
+       (fn [path operand]
+         ;; Count ALL trace-ID calls for this actual source, including an
+         ;; unexpected stale operand after replacement of the parent slot.
+         (when (= source path)
+           (record! :trace-id-enter {:current-operand? (identical? operand (:macro-expansion-trace parent))}))
+         (let [value (trace-id path operand)]
+           (when (= source path) (record! :trace-id-return {:value value}))
+           value))
+       projection-var
+       (fn [operand]
+         (let [value (projection operand)]
+           (when (identical? operand (:macro-expansion-trace parent))
+             (record! :projection-return {:value value}))
+           value))
+       stream-var
+       (fn [path operand]
+         (let [value (stream-id path operand)]
+           (when (and (= source path) (identical? operand (:expanded-syntax-stream parent)))
+             (record! :stream-id-return {:value value}))
+           value))
+       verify-var
+       (fn [value]
+         (let [report (verify value)]
+           (when (identical? parent value) (record! :macro-report {:report report}))
+           report))}
+      (fn []
+        (assoc (observe-construction
+                parent invocation
+                (when mutate! #(do (mutate!) (reset! changed? true) (record! :trace-mutated {})))
+                operation)
+               :details @details)))))
+
+(defn- check-trace-order! [size kind]
+  (reset! observations {:phase :constructing-fresh-trace-order-parent :size size :kind kind})
+  (let [{:keys [source reader invocation parent]} (fresh-trace-order-parent size)
+        alias (trace-order-parent parent kind) parent (:parent alias)
+        stored-id (:macro-expansion-trace-id parent)
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+        construct #(b/sh06-resolution-artifact-from-sh05-artifact source parent inputs reader invocation)
+        before-roots (into {} (for [name ['sh05-macro-trace-id 'sh05-macro-trace-identity-input
+                                          'sh05-expanded-syntax-stream-id 'sh06-resolution-verify-sh05
+                                          'sh06-resolution-run-request!]
+                                   :let [var (implementation name)]] [var @var]))]
+    (try
+      (let [positive (observe-trace-order source parent invocation nil construct)
+            projections (mapv :value (filter #(= :projection-return (:event %)) (:details positive)))
+            expected-chunks (case size 15 [15] 16 [16] 17 [16 1])]
+        (reset! observations {:phase :positive-order-reachability :size size :kind kind
+                              :events (:events positive) :details (:details positive)})
+        (when-let [error (:error positive)] (throw error))
+        (when-not (and (= :complete (get-in positive [:value :capability-based-proof :status]))
+                       (= 2 (count projections)
+                          (count (filter #(= :trace-id-return (:event %)) (:details positive))))
+                       (every? :current-operand? (filter #(= :trace-id-enter (:event %)) (:details positive))))
+          (throw (ex-info "Actual positive did not reach two original trace projections"
+                          {:id "RV1-TRACE-REACHABILITY" :size size :kind kind})))
+        ;; Inspect the actual original projection returns, not a replacement
+        ;; partition model. Width 16 is an encoding detail, never admission fuel.
+        (doseq [value projections]
+          (is (= size (:item-count value)))
+          (is (= expected-chunks (mapv :item-count (:item-chunks value))))
+          (is (= (vec (range size)) (mapv :ordinal (mapcat :items (:item-chunks value))))))
+        (let [public (b/sh06-resolution-artifact-verification
+                       (:value positive) :gravity.bootstrap/legacy invocation)]
+          (when-not (= :passed (:status public))
+            (throw (ex-info "Fresh public order positive failed"
+                            {:phase :independent-positive :failed-checks (:failed-checks public)})))
+          (let [changed (try (observe-trace-order source parent invocation (:mutate! alias) construct)
+                             (finally ((:restore! alias))))
+                events (:events changed) details (:details changed)
+                later (filter :after-mutation? details)
+                report (:report (first (filter #(= :macro-report (:event %)) later)))
+                before (take-while #(not= :parent-mutated (:event %)) events)
+                after (rest (drop-while #(not= :parent-mutated (:event %)) events))
+                result {:phase :trace-order-control-complete :size size :kind kind
+                        :before-trace (:before alias) :after-trace (:after alias)
+                        :positive-projections projections :public-positive-report public
+                        :changed-events events :changed-details details :changed-error (:error changed)
+                        :original-failed-macro-report report
+                        :second-id-skipped? (not-any? #(= :trace-id-enter (:event %)) later)
+                        :earlier-full-trace-refusal? (false? (get-in report [:checks :trace-replay-current?]))
+                        :digest-reuse-evidence? false :alias-restored? ((:restored? alias))
+                        :no-synthetic-step-or-report? true :whole-rv1-closed? false}]
+            (reset! observations result)
+            (is (:mutated? changed))
+            (is (= :resolve-return (:event (last before))))
+            (is (= 1 (count (filter #(= :parent-mutated (:event %)) events))))
+            (is (= (case kind :insertion (inc size) :deletion (dec size) size) (count (:after alias))))
+            (is (not= (:before alias) (:after alias)))
+            (is (= stored-id (:macro-expansion-trace-id parent)))
+            (is (= 1 (count (filter #(= :trace-id-return (:event %)) details))))
+            (is (= stored-id (:value (first (filter #(= :trace-id-return (:event %)) details)))))
+            (is (:second-id-skipped? result))
+            (is (:earlier-full-trace-refusal? result))
+            (is (= [:trace-mutated :stream-id-return :macro-report] (mapv :event later)))
+            (is (= (:expanded-syntax-stream-id parent) (:value (second later))))
+            (is (= :failed (:status report)))
+            (is (= :passed (get-in report [:gravity-verifiers :template :status])))
+            (is (= :passed (get-in report [:gravity-verifiers :resolved :status])))
+            (is (some #{:trace-replay-current} (:failed-checks report)))
+            (is (true? (get-in report [:checks :macro-output-current?])))
+            (is (false? (get-in report [:checks :generated-origins-current?])))
+            (is (true? (get-in report [:checks :input-lineage-current?])))
+            (is (not-any? #(= :resolve-enter (:event %)) after))
+            (is (= "C5-UNRESOLVED" (:id (ex-data (:error changed)))))
+            (is (nil? (:value changed)))
+            (is (every? #(and (:same-parent? %) (:invocation-current? %)
+                             (:proof-transaction-absent? %) (:observed-roots-stable? %))
+                        (filter #(= :macro-enter (:event %)) events)))
+            (is (:alias-restored? result)))))
+      (finally
+        ((:restore! alias))
+        (is ((:restored? alias)))
+        (is (every? (fn [[var value]] (identical? value @var)) before-roots))))))
+
+(deftest actual-macro-trace-15-permutation-before-second-id
+  (check-trace-order! 15 :permutation))
+(deftest actual-macro-trace-15-insertion-before-second-id
+  (check-trace-order! 15 :insertion))
+(deftest actual-macro-trace-15-deletion-before-second-id
+  (check-trace-order! 15 :deletion))
+(deftest actual-macro-trace-15-duplicate-before-second-id
+  (check-trace-order! 15 :duplicate))
+(deftest actual-macro-trace-16-permutation-before-second-id
+  (check-trace-order! 16 :permutation))
+(deftest actual-macro-trace-16-insertion-before-second-id
+  (check-trace-order! 16 :insertion))
+(deftest actual-macro-trace-16-deletion-before-second-id
+  (check-trace-order! 16 :deletion))
+(deftest actual-macro-trace-16-duplicate-before-second-id
+  (check-trace-order! 16 :duplicate))
+(deftest actual-macro-trace-17-permutation-before-second-id
+  (check-trace-order! 17 :permutation))
+(deftest actual-macro-trace-17-insertion-before-second-id
+  (check-trace-order! 17 :insertion))
+(deftest actual-macro-trace-17-deletion-before-second-id
+  (check-trace-order! 17 :deletion))
+(deftest actual-macro-trace-17-duplicate-before-second-id
+  (check-trace-order! 17 :duplicate))
