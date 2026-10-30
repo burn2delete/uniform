@@ -81,3 +81,33 @@ current SH-01 acceptance was performed for this documentation/tooling change.
 The independent review found stale three-record authority introductions in the
 ledger and roadmap. The successor corrects both to four records, preserves
 the original three task blocks, and adds checks for those authority statements.
+
+## Finite plugin and domain source composition
+
+Base: `70dcb2220701529dbb02bd2317a822eb3ac72fed`, tree
+`0d8e95c8451cf2bcf74ad70c353b10cac5f665c1`. Source extraction commit:
+`f25e6f571e610587da8142f5b0fc33e7806d440e`. The task authority, generated
+roadmap, projector and projector tests match the corresponding files in source
+context `8ba98ee7683d7f87a431b7b6d273b06fd5d1a144` exactly: four files,
+190 insertions and ten deletions. All four prior main outcomes retain their
+full predicate bodies as exact prefixes and their Open statuses. The existing
+canonical domain-IR record becomes the fifth local outcome. No global count,
+implementation acceptance or other component source is imported.
+
+The composition record authenticates frozen C17 receipt
+`2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7`
+and C12 receipt
+`efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6`
+through immutable Git objects, with six exact current raw criterion witnesses.
+Both earlier source scopes remain conditional captured evidence; independent
+review of this new main composition is pending. No reviewer checker runs.
+
+Observed source conservation controls pass four tests/78 assertions; projection
+tests pass five tests/77 assertions. Controls include coherent first-sentence
+removals with recalculated full-file/raw hashes and byte ranges, forged pins,
+wrong scope promotion, unchanged prior main outcomes and absence of copied
+reconciliation/bootstrap/lifecycle payloads. These check source identity and
+claim ceilings, not compiler/domain/plugin semantics. SH regeneration caught
+the new artifact pinned to its preceding source commit and wrote no outputs;
+the artifact must be committed before its reference uses that commit. No denied
+operation is retried or routed through this source extraction.
