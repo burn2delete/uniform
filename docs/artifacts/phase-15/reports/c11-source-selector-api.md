@@ -112,3 +112,12 @@ This is a local source freeze awaiting one affected composition review routed
 through Reconciliation. No push, CI dispatch, integration preflight, GitHub
 approval or merge is performed by this step. Current-composition CI and a
 fresh exact-base preflight remain gates for any later coordinator integration.
+
+Main subsequently advanced to `bf570797d32c0bd78d81cd51d034376d019c6dc1`
+through PR651. A conflict-free local merge preserves its ten incoming paths,
+including the Syntax plan-runtime extraction and expanded syntax CI selection,
+byte-for-byte. No incoming path overlaps this candidate's owned delta. The
+ownership bytes and predecessor histories are unchanged by that incoming
+main; their existing source equation remains valid. Final static closure and
+focused checks bind the resulting new tuple, without executing PR651's genuine
+authentication/runtime tests or treating prior runtime evidence as current.
