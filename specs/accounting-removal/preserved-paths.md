@@ -1,5 +1,26 @@
 # PR502 preserved path reconciliation
 
+## Accepted exact historical-evidence composition; CI pending
+
+[PR643](https://github.com/burn2delete/uniform/pull/643) publishes unchanged
+`404fc27bf8bc12aaa79a9c56a1a3e940ea402ad2`, tree
+`21d40ff1da04a23fcb0bb11932d0f45f6bef9609`, on exact main `70dcb222`.
+`verifier-main-composition-review-consumption.edn` consumes independent receipt
+`bdd25e161664579154c142d94c24085c6d2093850321276dcc05dfb5f47e11d6`:
+qualified historical SOURCE/DATA PASS, 163 checks and 43 coherently rehashed
+refusals, no blocking findings in that scope. All three reviewed evidence blobs
+and modes are identical; every other main entry is unchanged. The original
+receipt's assignment-context gate and its separate withdrawal addendum are
+both preserved and verified. No foreign checker was rerun.
+
+The candidate remains draft pending actual configured CI and fresh exact
+integration preflight. Inspection preflight passes clean branch, exact base,
+ancestry and distinct-tree checks; it is not the final integration transaction.
+Historical input/fixture provenance, the two non-equivalent production forms,
+PR599 caveat and PR598 finding remain unchanged. No current compiler/fixture,
+genuine target, dynamic consumer, release/self-hosting or full ACC-01/PR502
+acceptance follows from this evidence-only composition.
+
 ## Publication scope reassessment; exact composition review pending
 
 Accounting withdrew its blanket Bootstrap publication gate after inspecting the
