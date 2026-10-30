@@ -55,3 +55,10 @@ This increment does not claim completion of the macro stage. Artifact assembly,
 source snapshots, compatibility routing, older macro helpers and their remaining
 accounting removal remain open. No release, migration, seed-retirement,
 self-hosting or performance authority is established by namespace extraction.
+
+The ownership reporting source-version bridge retains the previous ownership
+file and pins the three added macro helper entries to their existing source
+commit. It conserves predecessor entries and review history; all 180 current
+whole-criterion assessments remain unassessed. This repairs read-only reporting
+provenance after helper registration and does not renew compiler migration or
+release evidence.
