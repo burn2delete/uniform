@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 10 (count publics)))
+    (is (= 20 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -36,6 +36,98 @@
     (is (true? (.isDynamic ^clojure.lang.Var (seed-var '*sh06-resolution-operation-binding*))))
     (is (not (contains? (ns-aliases 'gravity.resolution) 'b)))
     (is (= '[gravity.bootstrap] (get-in contract [:dependency-direction :forbids])))))
+
+(deftest declaration-records-preserve-qualified-identity-and-origin
+  ;; These supplied syntax records test normalization, not C4 authentication.
+  (let [ops (operations)
+        span {:byte-start 7 :byte-end 20 :line-start 2 :column-start 3 :ignored true}
+        module {:module 'example.records :exports ['public-value 'other/qualified]
+                :profile :meta :target :jvm :effects #{:io/write}
+                :capabilities #{:io/stdout} :safety :safe}
+        parent {:artifact-id "synthetic-expanded-parent"
+                :expanded-syntax-stream
+                [{:form '(def public-value 1) :span span :syntax/id "syntax-public"}
+                 {:form '(defn private-value [x] x) :span span :syntax/id "syntax-private"}
+                 {:form '(def other/qualified (fn [x] x)) :span span :syntax/id "syntax-qualified"}
+                 {:form '(defconst answer 42) :span span :syntax/id "syntax-constant"}
+                 {:form '(defn 17 [] nil) :span span :syntax/id "syntax-invalid-name"}
+                 {:form '(println public-value) :span span :syntax/id "syntax-expression"}]}
+        records (resolution/definition-records module parent ops)
+        [_public _private qualified constant] records]
+    (is (= ['public-value 'private-value 'qualified 'answer] (mapv :name records)))
+    (is (= [:public :private :public :private] (mapv :visibility records)))
+    (is (= [:var :function :function :compile-time-constant] (mapv :kind records)))
+    (is (= 'other (:namespace qualified)))
+    (is (= {:name 'other :version "workspace"} (:package qualified)))
+    (is (= [:gravity.type/value :gravity.type/function :gravity.type/function :gravity.type/value]
+           (mapv :type-ref records)))
+    (is (= [0 1 2 3] (mapv #(get-in % [:semantic-span :ordinal]) records)))
+    (is (= "syntax-constant" (:definition-syntax-id constant)))
+    (doseq [record records]
+      (is (= span (:source-span record)))
+      (is (= {:ordinal (get-in record [:semantic-span :ordinal])
+              :byte-start 7 :byte-end 20 :line-start 2 :column-start 3} (:semantic-span record)))
+      (is (= "synthetic-expanded-parent" (:definition-artifact-id record)))
+      (is (= [[:meta] [:jvm] [:io/write] [:io/stdout] :safe :namespace]
+             ((juxt :profile-set :target-set :effects :capabilities :safety :binding-class) record))))
+    (doseq [[form expected] [['(defmacro m [x] x) :macro]
+                            ['(defschema S {}) :schema]
+                            ['(defprotocol P) :protocol]
+                            ['(let [x 1] x) nil]
+                            ['plain-symbol nil]]]
+      (is (= expected (resolution/definition-kind form))))
+    (is (= {:ordinal 9} (resolution/semantic-span nil 9)))
+    (is (= {:name 'example.records :version "workspace"}
+           (resolution/package-record 'example.records)))))
+
+(deftest upstream-identities-preserve-precedence-and-deterministic-fallbacks
+  (let [ops (operations)
+        parent {:artifact-id "parent" :expanded-syntax-stream-id "stream"
+                :macro-expansion-trace-id "trace"}
+        with-c2 (assoc-in parent [:gravity-macro-boundary :authenticated-sh04-artifact
+                                  :c2-reader-artifact :source-unit-record :source-id] "c2-source")
+        with-revision (assoc-in with-c2 [:gravity-macro-boundary :authenticated-sh04-artifact
+                                         :gravity-syntax-boundary :reader-source-revision :revision-id] "revision")
+        with-envelope (assoc-in parent [:gravity-macro-boundary :authenticated-envelope
+                                         :semantic-envelope-id] "envelope")]
+    (is (= "revision" (resolution/source-revision-id with-revision ops)))
+    (is (= "c2-source" (resolution/source-revision-id with-c2 ops)))
+    (is (= "envelope" (resolution/envelope-id with-envelope ops)))
+    (doseq [operation [resolution/source-revision-id resolution/envelope-id]]
+      (let [id (operation parent ops)]
+        (is (re-matches #"sha256:[0-9a-f]{64}" id))
+        (is (= id (operation (into (array-map) (reverse (seq parent))) ops)))
+        (is (not= id (operation (assoc parent :macro-expansion-trace-id "changed") ops)))))
+    (is (not= (resolution/source-revision-id parent ops) (resolution/envelope-id parent ops)))
+    (is (not= (resolution/envelope-id parent ops)
+              (resolution/envelope-id (assoc parent :artifact-id "changed") ops)))))
+
+(deftest core-catalog-and-explicit-overrides-retain-their-boundaries
+  (let [ops (operations) records (resolution/core-records ops)
+        by-name (into {} (map (juxt :name identity)) records)
+        candidates [{:namespace 'one :name 'x :identity :first}
+                    {:namespace 'two :name 'x :identity :other}
+                    {:namespace 'one :name 'x :identity :later}]
+        overrides {:candidate-bindings candidates}]
+    (is (= (sort (keys by-name)) (map :name records)))
+    (is (= (range (count records)) (map #(get-in % [:semantic-span :ordinal]) records)))
+    (is (= (count records) (count by-name)))
+    (is (= :special-form (:kind (by-name 'let))))
+    (is (= :type (:kind (by-name 'I64))))
+    (is (= :var (:kind (by-name 'count))))
+    (is (= [[:io/write] [:io/stdout]] ((juxt :effects :capabilities) (by-name 'println))))
+    (is (= [[] []] ((juxt :effects :capabilities) (by-name 'count))))
+    (is (= [:all] (:target-set (by-name 'I64))))
+    (is (= (vec (sort (input :known-source-profiles))) (:profile-set (by-name 'let))))
+    (is (every? #(= :safe (:safety %)) records))
+    (is (= 1 (count (set (map :definition-artifact-id records)))))
+    (is (= (count records) (count (set (map :definition-syntax-id records)))))
+    (is (= overrides (resolution/request-overrides {:metadata {:compiler {:sh06-request overrides}}})))
+    (doseq [value [nil [] "not-a-record"]]
+      (is (= {} (resolution/request-overrides {:metadata {:compiler {:sh06-request value}}}))))
+    (is (= :first (:identity (resolution/candidate-for overrides 'one 'x))))
+    (is (= :other (:identity (resolution/candidate-for overrides 'two 'x))))
+    (is (nil? (resolution/candidate-for overrides 'one 'missing)))))
 
 (deftest actual-source-emits-bindings-and-rejects-an-unresolved-reference
   (let [artifact @real-artifact binding (real-binding) ops (operations)
@@ -200,10 +292,13 @@
 
 (deftest equal-valued-configuration-cache-and-thread-bindings-invalidate-receipts
   (doseq [name ['sh06-resolution-source-relative-path 'sh06-resolution-expected-source-content-hash
-                'sh06-resolution-public-function-shapes 'sh06-resolution-cached-binding]]
+                'sh06-resolution-public-function-shapes 'sh06-resolution-cached-binding
+                'known-source-profiles 'sh06-resolution-all-core-symbols
+                'sh06-resolution-special-symbols 'sh06-resolution-type-symbols]]
     (let [v (seed-var name) original @v
           replacement (cond (string? original) (String. ^String original)
                             (map? original) (reduce-kv assoc {} original)
+                            (set? original) (into #{} (map identity) original)
                             :else (atom @original))]
       (is (not (identical? original replacement)))
       (assert-interposition-misses #(with-redefs-fn {v replacement} %))))
