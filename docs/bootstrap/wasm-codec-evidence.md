@@ -211,6 +211,33 @@ authority substitution was involved. These working checks do not transfer CI
 or acceptance to a new commit. Exact independent review, final committed lint,
 full semantic CI and clean current-main integration preflight remain required.
 
+## C emitter parent
+
+Candidate f9b8dcbe39dd0fead8992383be6677b926529273, tree
+4bd530ad8db2ab1bf52ca4c825defbb1ad015427, passed all ten enabled jobs in
+CI 41235526009. Tested merge 2e423a9b2676a68157a4ae44728913cf1692516b has
+exact parents f2bfea387b60077a64e0dcbf2573c6afad0126e9 and f9b8dcbe, with
+the same tree. Macro 16/293 and Resolution 54/2307 exit zero under configured
+900-second watchdogs. Downloaded Macro/Resolution/Bootstrap receipt manifests
+all verify, with digests fe556c8423214902ae262470fbb2f3e10d6e5dd3ff441f01197cd0f94558f970,
+5714f3934605c67eb730407911da694bfad3697bb8c92089e3179d97aa3a8087, and
+21e374f04851933f4a6e1a1246d18810ec0d707e3a8de31a0e34f599385c8a39.
+That green remains bound to its exact candidate/base.
+
+Main then integrated C PR715 as be67f820c1cfb0fb9e0db3115ea06d4df8c14cd2,
+tree 42d5bb60820144f22db49862cf19172518a90aac. Four actual shared conflicts
+were resolved by complete-parent reconstruction of five registration/require/map
+files using /tmp/uniform-wasm-codec-compose-c-main.clj. Both independent C and
+Wasm adversarial registration tests remain; all C/LLVM/Wasm bodies, tests and
+consumers remain unchanged from their respective parents. C evidence is exact.
+
+Fresh C/LLVM/Wasm and normalized C7 regressions pass 19/446, ownership 27/922,
+language 6/11, docs 240/19 and roadmap/governance. All three original complete
+record/text captures and both binaries match; source hashes, plan IDs, B4 data
+identities and five-file current-base source reconstruction verify. The new
+exact commit still requires independent acceptance, final committed lint, its
+own full semantic CI and clean current-main preflight. No check is transferred.
+
 ## Unsupported boundaries
 
 Data emission and integer decoding do not authenticate MIR or B1 packets,
