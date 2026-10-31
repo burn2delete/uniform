@@ -9,6 +9,32 @@
     {:arglists ([lineage fragment-manifest _operations]),
      :operation-inputs [],
      :admission :none},
+    match-guard-source-valid?
+    {:arglists ([guard operations]),
+     :operation-inputs [:p15-s23-sh02-sha256-id?],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
+    match-group-coherent?
+    {:arglists
+     ([node-by-id
+       references
+       match-node
+       records
+       skeleton
+       pattern-records
+       operations]),
+     :operation-inputs
+     [:p15-s23-sh02-sha256-id?
+      :sh07-b11-clause
+      :sh07-b11-guard-source
+      :sh07-b11-guard-valid?
+      :sh07-b11-match-pattern-graph-complete?
+      :sh07-b11-match-pattern-record-coherent?
+      :sh07-core-descendant-node-ids],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     request-preflight!
     {:arglists [[request operations]],
      :operation-inputs
@@ -37,6 +63,12 @@
      :operation-inputs
      [:reader-canonical-hash :sh05-path-neutral-semantic-value],
      :admission :none},
+    match-products-coherent?
+    {:arglists ([core operations]),
+     :operation-inputs [:sh07-b11-match-group-coherent?],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     run-structural-request-for-test
     {:arglists [[authenticated-request operations]],
      :operation-inputs
@@ -146,6 +178,18 @@
      [[source-path value evidence projection-form-id operations]],
      :operation-inputs [:reader-canonical-hash],
      :admission :none},
+    match-pattern-graph-complete?
+    {:arglists ([pattern-records _operations]),
+     :operation-inputs [],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
+    match-guard-source
+    {:arglists ([guard _operations]),
+     :operation-inputs [],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     request-diagnostic!
     {:arglists ([request rule-specific operations]),
      :operation-inputs [:reader-canonical-hash],
@@ -198,6 +242,12 @@
     {:arglists [[lineage sh05-step operations]],
      :operation-inputs [:reader-canonical-hash],
      :admission :none},
+    match-clause
+    {:arglists ([record operations]),
+     :operation-inputs [:input],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     fragment-record
     {:arglists
      ([_lineage
@@ -321,6 +371,15 @@
       :sh07-core-neutral-value
       :sh07-core-projected-form-id],
      :admission :none},
+    match-guard-valid?
+    {:arglists ([guard ordinal operations]),
+     :operation-inputs
+     [:p15-s23-sh02-sha256-id?
+      :sh07-b11-guard-source
+      :sh07-b11-guard-source-valid?],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     projected-form-id
     {:arglists
      [[source-revision-id root-syntax-id path kind operations]],
@@ -351,6 +410,28 @@
       :sh07-core-semantic-mutation
       :sh07-core-semantic-var-reference],
      :admission :none},
+    match-pattern-record-coherent?
+    {:arglists
+     ([node-by-id
+       references
+       branch-by-clause
+       record
+       record-by-ordinal
+       operations]),
+     :operation-inputs
+     [:input
+      :p15-s23-sh02-sha256-id?
+      :sh07-b11-branch-tree
+      :sh07-b11-guard-source-valid?],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
+    match-branch-tree
+    {:arglists ([node-by-id record operations]),
+     :operation-inputs [:sh07-core-descendant-node-ids],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     resolve-result
     {:arglists
      ([source-path
@@ -405,6 +486,14 @@
     :sh04-syntax-strip-host-metadata
     :sh05-path-neutral-semantic-value
     :sh06-resolution-artifact-verification
+    :sh07-b11-branch-tree
+    :sh07-b11-clause
+    :sh07-b11-guard-source
+    :sh07-b11-guard-source-valid?
+    :sh07-b11-guard-valid?
+    :sh07-b11-match-group-coherent?
+    :sh07-b11-match-pattern-graph-complete?
+    :sh07-b11-match-pattern-record-coherent?
     :sh07-b13-alias-name
     :sh07-b13-binding-order
     :sh07-b13-fragment-coverage
@@ -514,14 +603,34 @@
       :sh07-core-source-path-from-resolution],
      :admission :none}},
    :governing-contracts
-   [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2 B13 L9],
+   [D1
+    D2
+    D3
+    D9
+    L2
+    C1
+    C3
+    C4
+    C5
+    C6
+    C15
+    BOOT2
+    BOOT8
+    TEST2
+    L1
+    C2
+    B13
+    L9
+    L7],
    :seed-inputs
    [:*sh07-core-execution-binding*
     :sh07-core-cached-binding
     :sh07-core-development-binding
     :sh07-core-public-function-shapes
     :sh07-core-source-relative-path
-    :sh07-b9-handler-descriptor-keys],
+    :sh07-b9-handler-descriptor-keys
+    :sh07-b11-match-clause-keys
+    :sh07-b11-match-pattern-record-keys],
    :unsupported
    [:canonical-c6-admission
     :lowering-assembly
@@ -542,7 +651,10 @@
     :transfer-predicate-native-carrier-validation
     :transfer-predicate-legality-fact-presence-and-proof
     :handler-predicate-native-and-complete-core-validation
-    :handler-predicate-legality-fact-presence-and-proof],
+    :handler-predicate-legality-fact-presence-and-proof
+    :match-predicate-native-and-complete-core-validation
+    :match-exhaustiveness-guard-type-and-legality-proof
+    :match-runtime-selection],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -570,7 +682,9 @@
     :native-core-node-and-error-transfer-records
     :c5-provenance-and-projection-failure-reason
     :native-core-node-handler-transfer-and-reference-records
-    :handler-descriptor-key-configuration],
+    :handler-descriptor-key-configuration
+    :native-core-match-branch-pattern-skeleton-and-reference-records
+    :match-descriptor-key-configuration],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -595,7 +709,8 @@
      :template-and-resolved-replay-failure
      :error-transfer-structural-coherence
      :projection-verification-failure-carrier
-     :typed-handler-structural-coherence],
+     :typed-handler-structural-coherence
+     :match-structural-coherence],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -627,7 +742,10 @@
     :structural-transfer-coherence-result
     :projection-diagnostic-construction-record
     :descendant-node-id-set
-    :structural-typed-handler-coherence-result],
+    :structural-typed-handler-coherence-result
+    :match-guard-and-clause-projections
+    :match-branch-descendants
+    :structural-match-coherence-result],
    :clojure-seed-boundary? true,
    :contract-boundary
    :checked-core-supported-data-runtime-and-test-execution})
@@ -4052,6 +4170,634 @@
        (get handlers-by-try try-id)))
      try-by-id))))
 
+(defn
+ match-guard-source
+ [guard _operations]
+ (when
+  (map? guard)
+  (select-keys
+   guard
+   [:rule-version :source-child-index :form-id :syntax-id])))
+
+(defn
+ match-guard-source-valid?
+ [guard operations]
+ (let
+  [p15-s23-sh02-sha256-id?
+   (.valAt ^clojure.lang.ILookup operations :p15-s23-sh02-sha256-id?)]
+  (and
+   (map? guard)
+   (=
+    #{:source-child-index :rule-version :syntax-id :form-id}
+    (set (keys guard)))
+   (= :sh07-root-map-guard-v1 (:rule-version guard))
+   (integer? (:source-child-index guard))
+   (pos? (:source-child-index guard))
+   (odd? (:source-child-index guard))
+   (every?
+    p15-s23-sh02-sha256-id?
+    ((juxt :form-id :syntax-id) guard)))))
+
+(defn
+ match-guard-valid?
+ [guard ordinal operations]
+ (let
+  [p15-s23-sh02-sha256-id?
+   (.valAt ^clojure.lang.ILookup operations :p15-s23-sh02-sha256-id?)
+   sh07-b11-guard-source
+   (.valAt ^clojure.lang.ILookup operations :sh07-b11-guard-source)
+   sh07-b11-guard-source-valid?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b11-guard-source-valid?)
+   source
+   (sh07-b11-guard-source guard)
+   region
+   (:conditional-region guard)]
+  (and
+   (sh07-b11-guard-source-valid? source)
+   (integer? (:child-index guard))
+   (pos? (:child-index guard))
+   (=
+    {:kind :match-guard,
+     :match-syntax-id (:match-syntax-id region),
+     :clause-ordinal ordinal}
+    region)
+   (p15-s23-sh02-sha256-id? (:match-syntax-id region))
+   (=
+    guard
+    (assoc
+     source
+     :child-index
+     (:child-index guard)
+     :conditional-region
+     region
+     :evaluation
+     :once-after-structural-success
+     :on-pattern-failure
+     :next-candidate
+     :on-true
+     :branch-body
+     :on-false
+     :next-candidate
+     :non-boolean-type-effect-legality
+     :pending-later-legality)))))
+
+(defn
+ match-branch-tree
+ [node-by-id record operations]
+ (let
+  [sh07-core-descendant-node-ids
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-descendant-node-ids)
+   body
+   (sh07-core-descendant-node-ids
+    node-by-id
+    (:branch-core-node-id record))]
+  (if
+   (contains? record :guard)
+   (into
+    body
+    (sh07-core-descendant-node-ids
+     node-by-id
+     (get-in record [:guard :node-id])))
+   body)))
+
+(defn
+ match-clause
+ [record operations]
+ (let
+  [sh07-b11-match-clause-keys
+   ((:input operations) :sh07-b11-match-clause-keys)]
+  (cond->
+   (select-keys record sh07-b11-match-clause-keys)
+   (contains? record :guard)
+   (assoc
+    :guard
+    (when (map? (:guard record)) (dissoc (:guard record) :node-id))))))
+
+(defn
+ match-pattern-graph-complete?
+ [pattern-records _operations]
+ (let
+  [roots
+   (filterv
+    (fn* [p1__160#] (nil? (:parent-ordinal p1__160#)))
+    pattern-records)
+   root-groups
+   (group-by (juxt :core-node-id :clause-ordinal) roots)]
+  (and
+   (every? (fn* [p1__161#] (= 1 (count p1__161#))) (vals root-groups))
+   (every?
+    (fn
+     [record]
+     (if
+      (contains? #{:vector :map} (:pattern-kind record))
+      (and
+       (if
+        (= :map (:pattern-kind record))
+        (map? (:pattern-value record))
+        true)
+       (let
+        [children
+         (filterv
+          (fn*
+           [p1__162#]
+           (= (:ordinal record) (:parent-ordinal p1__162#)))
+          pattern-records)
+         indexes
+         (mapv (fn* [p1__163#] (peek (:path p1__163#))) children)
+         map-pattern?
+         (= :map (:pattern-kind record))
+         width
+         (if
+          map-pattern?
+          (count (:pattern-value record))
+          (:vector-width record))]
+        (and
+         (=
+          (- width (if (contains? record :guard) 1 0))
+          (count children))
+         (= (count children) (count (set indexes)))
+         (every?
+          (fn*
+           [p1__164#]
+           (and
+            (integer? p1__164#)
+            (<= 0 p1__164#)
+            (not=
+             p1__164#
+             (get-in record [:guard :source-child-index]))
+            (if
+             map-pattern?
+             (and (odd? p1__164#) (< p1__164# (* 2 width)))
+             (< p1__164# width))))
+          indexes))))
+      true))
+    pattern-records))))
+
+(defn
+ match-pattern-record-coherent?
+ [node-by-id
+  references
+  branch-by-clause
+  record
+  record-by-ordinal
+  operations]
+ (let
+  [p15-s23-sh02-sha256-id?
+   (.valAt ^clojure.lang.ILookup operations :p15-s23-sh02-sha256-id?)
+   sh07-b11-branch-tree
+   (.valAt ^clojure.lang.ILookup operations :sh07-b11-branch-tree)
+   sh07-b11-guard-source-valid?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b11-guard-source-valid?)
+   sh07-b11-match-pattern-record-keys
+   ((:input operations) :sh07-b11-match-pattern-record-keys)
+   parent
+   (when-some
+    [ordinal (:parent-ordinal record)]
+    (get record-by-ordinal ordinal))
+   root
+   (get record-by-ordinal (:root-ordinal record))
+   branch-record
+   (get branch-by-clause (:clause-ordinal record))
+   branch-tree
+   (when branch-record (sh07-b11-branch-tree node-by-id branch-record))
+   expected-uses
+   (if
+    (:pattern-binding-id record)
+    (->>
+     references
+     (filter
+      (fn*
+       [p1__165#]
+       (and
+        (= (:pattern-binding-id record) (:binding-id p1__165#))
+        (contains? branch-tree (:core-node-id p1__165#)))))
+     (mapv :syntax-id))
+    [])]
+  (and
+   (=
+    (cond->
+     sh07-b11-match-pattern-record-keys
+     (contains? record :guard)
+     (conj :guard))
+    (set (keys record)))
+   (if
+    (contains? record :guard)
+    (and
+     (= :map (:pattern-kind record))
+     (= 0 (:depth record))
+     (nil? (:parent-ordinal record))
+     (sh07-b11-guard-source-valid? (:guard record)))
+    true)
+   (integer? (:ordinal record))
+   (not (neg? (:ordinal record)))
+   (integer? (:clause-ordinal record))
+   (not (neg? (:clause-ordinal record)))
+   (integer? (:local-ordinal record))
+   (not (neg? (:local-ordinal record)))
+   (= 0 (:root-local-ordinal record))
+   (integer? (:root-ordinal record))
+   (<= 0 (:root-ordinal record) (:ordinal record))
+   (=
+    (:local-ordinal record)
+    (- (:ordinal record) (:root-ordinal record)))
+   (integer? (:depth record))
+   (not (neg? (:depth record)))
+   (vector? (:path record))
+   (= (:depth record) (count (:path record)))
+   (every?
+    (fn* [p1__166#] (and (integer? p1__166#) (not (neg? p1__166#))))
+    (:path record))
+   (contains?
+    #{:wildcard :vector :binding :literal :map}
+    (:pattern-kind record))
+   (p15-s23-sh02-sha256-id? (:pattern-form-id record))
+   (p15-s23-sh02-sha256-id? (:pattern-syntax-id record))
+   (p15-s23-sh02-sha256-id? (:core-node-id record))
+   (p15-s23-sh02-sha256-id? (:authenticated-sh06-artifact-id record))
+   (p15-s23-sh02-sha256-id? (:sh06-semantic-projection-id record))
+   (= expected-uses (:pattern-binding-use-syntax-ids record))
+   (case
+    (:pattern-kind record)
+    :vector
+    (and
+     (nil? (:pattern-value record))
+     (integer? (:vector-width record))
+     (not (neg? (:vector-width record)))
+     (nil? (:pattern-binding-id record))
+     (nil? (:pattern-binding-scope-id record)))
+    :map
+    (and
+     (map? (:pattern-value record))
+     (every? keyword? (keys (:pattern-value record)))
+     (=
+      (contains? record :guard)
+      (contains? (:pattern-value record) :when))
+     (if
+      (contains? record :guard)
+      (<
+       (get-in record [:guard :source-child-index])
+       (* 2 (count (:pattern-value record))))
+      true)
+     (nil? (:vector-width record))
+     (nil? (:pattern-binding-id record))
+     (nil? (:pattern-binding-scope-id record)))
+    :binding
+    (and
+     (symbol? (:pattern-value record))
+     (not= '_ (:pattern-value record))
+     (p15-s23-sh02-sha256-id? (:pattern-binding-id record))
+     (p15-s23-sh02-sha256-id? (:pattern-binding-scope-id record))
+     (nil? (:vector-width record)))
+    :wildcard
+    (and
+     (= '_ (:pattern-value record))
+     (nil? (:vector-width record))
+     (nil? (:pattern-binding-id record))
+     (nil? (:pattern-binding-scope-id record)))
+    :literal
+    (and
+     (nil? (:vector-width record))
+     (nil? (:pattern-binding-id record))
+     (nil? (:pattern-binding-scope-id record))))
+   (if
+    (nil? parent)
+    (and
+     (= (:ordinal record) (:root-ordinal record))
+     (= 0 (:local-ordinal record))
+     (nil? (:parent-local-ordinal record))
+     (= 0 (:depth record))
+     (empty? (:path record)))
+    (and
+     (contains? #{:vector :map} (:pattern-kind parent))
+     (= (:core-node-id record) (:core-node-id parent))
+     (= (:clause-ordinal record) (:clause-ordinal parent))
+     (= (:root-ordinal record) (:root-ordinal parent))
+     (= (:parent-local-ordinal record) (:local-ordinal parent))
+     (= (:depth record) (inc (:depth parent)))
+     (= (:path parent) (pop (:path record)))
+     (if
+      (= :map (:pattern-kind parent))
+      (and
+       (map? (:pattern-value parent))
+       (odd? (peek (:path record)))
+       (not=
+        (peek (:path record))
+        (get-in parent [:guard :source-child-index]))
+       (< (peek (:path record)) (* 2 (count (:pattern-value parent)))))
+      (< (peek (:path record)) (:vector-width parent)))))
+   (= (:core-node-id record) (:core-node-id root))
+   (= (:clause-ordinal record) (:clause-ordinal root)))))
+
+(defn
+ match-group-coherent?
+ [node-by-id
+  references
+  match-node
+  records
+  skeleton
+  pattern-records
+  operations]
+ (let
+  [p15-s23-sh02-sha256-id?
+   (.valAt ^clojure.lang.ILookup operations :p15-s23-sh02-sha256-id?)
+   sh07-b11-clause
+   (.valAt ^clojure.lang.ILookup operations :sh07-b11-clause)
+   sh07-b11-guard-source
+   (.valAt ^clojure.lang.ILookup operations :sh07-b11-guard-source)
+   sh07-b11-guard-valid?
+   (.valAt ^clojure.lang.ILookup operations :sh07-b11-guard-valid?)
+   sh07-b11-match-pattern-graph-complete?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b11-match-pattern-graph-complete?)
+   sh07-b11-match-pattern-record-coherent?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b11-match-pattern-record-coherent?)
+   sh07-core-descendant-node-ids
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-descendant-node-ids)
+   records
+   (vec (sort-by :clause-ordinal records))
+   pattern-records
+   (vec (sort-by :ordinal pattern-records))
+   pattern-record-by-ordinal
+   (into {} (map (juxt :ordinal identity)) pattern-records)
+   branch-by-clause
+   (into {} (map (juxt :clause-ordinal identity)) records)
+   attributes
+   (:attributes match-node)
+   scrutinee-node-id
+   (first (:children match-node))
+   branch-node-ids
+   (mapv :branch-core-node-id records)
+   guarded
+   (filterv (fn* [p1__167#] (contains? p1__167# :guard)) records)
+   guard-indexes
+   (mapv
+    (fn* [p1__168#] (get-in p1__168# [:guard :child-index]))
+    guarded)
+   expected-indexes
+   (mapv inc (range (count records)))
+   expected-bindings
+   (vec (keep :pattern-binding-id pattern-records))
+   expected-clauses
+   (mapv sh07-b11-clause records)]
+  (and
+   (seq records)
+   (not-any?
+    (fn*
+     [p1__169#]
+     (contains? #{:wildcard :binding} (:pattern-kind p1__169#)))
+    (butlast records))
+   (= (range (count records)) (map :clause-ordinal records))
+   (every?
+    (fn* [p1__170#] (= (count records) (:clause-count p1__170#)))
+    records)
+   (= expected-indexes (mapv :branch-child-index records))
+   (= branch-node-ids (mapv :branch-core-node-id records))
+   (=
+    (:children match-node)
+    (into
+     (into [scrutinee-node-id] branch-node-ids)
+     (map
+      (fn* [p1__171#] (get-in p1__171# [:guard :node-id]))
+      guarded)))
+   (=
+    guard-indexes
+    (vec
+     (range
+      (inc (count records))
+      (+ 1 (count records) (count guarded)))))
+   (if
+    (seq guarded)
+    (=
+     [guard-indexes :sh07-root-map-guard-v1 :sh07-root-map-guard-v1]
+     [(:guard-child-indexes attributes)
+      (:guard-rule-version attributes)
+      (:lowering-rule-version match-node)])
+    (and
+     (not (contains? attributes :guard-rule-version))
+     (not (contains? attributes :guard-child-indexes))))
+   (every?
+    (fn*
+     [p1__172#]
+     (and
+      (= :map (:pattern-kind p1__172#))
+      (sh07-b11-guard-valid?
+       (when
+        (map? (:guard p1__172#))
+        (dissoc (:guard p1__172#) :node-id))
+       (:clause-ordinal p1__172#))
+      (p15-s23-sh02-sha256-id? (get-in p1__172# [:guard :node-id]))
+      (=
+       (get-in p1__172# [:guard :conditional-region])
+       (get-in
+        node-by-id
+        [(get-in p1__172# [:guard :node-id]) :evaluation :region]))
+      (=
+       ((juxt :form-id :syntax-id) (:guard p1__172#))
+       ((juxt :form-id :syntax-id)
+        (get-in
+         node-by-id
+         [(get-in p1__172# [:guard :node-id]) :source])))
+      (=
+       (get-in p1__172# [:guard :conditional-region :match-syntax-id])
+       (get-in p1__172# [:conditional-region :match-syntax-id]))))
+    guarded)
+   (every?
+    (fn*
+     [p1__173#]
+     (=
+      (:guard p1__173#)
+      (when-let
+       [guard
+        (:guard (get branch-by-clause (:clause-ordinal p1__173#)))]
+       (sh07-b11-guard-source guard))))
+    (filter (comp nil? :parent-ordinal) pattern-records))
+   (= #{scrutinee-node-id} (set (map :scrutinee-core-node-id records)))
+   (= expected-bindings (:resolved-binding-ids match-node))
+   (= 0 (:scrutinee-child-index attributes))
+   (= (count records) (:branch-count attributes))
+   (= expected-indexes (:branch-child-indexes attributes))
+   (= expected-clauses (:branch-clauses attributes))
+   (=
+    (set (range (count records)))
+    (set (map :clause-ordinal pattern-records)))
+   (sh07-b11-match-pattern-graph-complete? pattern-records)
+   (every?
+    (fn*
+     [p1__174#]
+     (sh07-b11-match-pattern-record-coherent?
+      node-by-id
+      references
+      branch-by-clause
+      p1__174#
+      pattern-record-by-ordinal))
+    pattern-records)
+   (=
+    :scrutinee-then-source-ordered-pattern-candidates
+    (:evaluation-order attributes))
+   (= :not-asserted-by-sh07-b11 (:runtime-reachability attributes))
+   (=
+    :source-ordered-pattern-candidates
+    (:selection-policy attributes))
+   (=
+    :pending-sh08
+    (:result-type-join attributes)
+    (:exhaustiveness attributes))
+   (=
+    :scrutinee-then-source-ordered-pattern-candidates
+    (get-in match-node [:evaluation :kind]))
+   (=
+    [{:index 0, :core-node-id scrutinee-node-id}]
+    (get-in match-node [:evaluation :order]))
+   (every?
+    (fn
+     [record]
+     (let
+      [branch-tree
+       (sh07-core-descendant-node-ids
+        node-by-id
+        (:branch-core-node-id record))
+       expected-pattern-binding-ids
+       (->>
+        pattern-records
+        (filter
+         (fn*
+          [p1__175#]
+          (= (:clause-ordinal record) (:clause-ordinal p1__175#))))
+        (keep :pattern-binding-id)
+        vec)
+       expected-uses
+       (if
+        (:pattern-binding-id record)
+        (->>
+         references
+         (filter
+          (fn*
+           [p1__176#]
+           (and
+            (= (:pattern-binding-id record) (:binding-id p1__176#))
+            (contains? branch-tree (:core-node-id p1__176#)))))
+         (mapv :syntax-id))
+        [])]
+      (and
+       (= (:node-id match-node) (:core-node-id record))
+       (= expected-pattern-binding-ids (:pattern-binding-ids record))
+       (= expected-uses (:pattern-binding-use-syntax-ids record))
+       (= :evaluate-scrutinee-once (:scrutinee-evaluation record))
+       (=
+        :conditionally-evaluate-selected-branch
+        (:branch-evaluation record))
+       (=
+        {:kind :match-branch,
+         :match-syntax-id
+         (get-in record [:conditional-region :match-syntax-id]),
+         :clause-ordinal (:clause-ordinal record)}
+        (:conditional-region record))
+       (=
+        (:authenticated-sh06-artifact-id attributes)
+        (:authenticated-sh06-artifact-id record))
+       (=
+        (:sh06-semantic-projection-id attributes)
+        (:sh06-semantic-projection-id record)))))
+    records)
+   (= (:node-id match-node) (:core-node-id skeleton))
+   (= scrutinee-node-id (:scrutinee-core-node-id skeleton))
+   (= branch-node-ids (:branch-core-node-ids skeleton))
+   (= :source-ordered-pattern-candidates (:selection-policy skeleton))
+   (= :not-asserted-by-sh07-b11 (:runtime-reachability skeleton))
+   (=
+    :pending-sh08
+    (:result-type-join skeleton)
+    (:exhaustiveness skeleton))
+   (=
+    (:authenticated-sh06-artifact-id attributes)
+    (:authenticated-sh06-artifact-id skeleton))
+   (=
+    (:sh06-semantic-projection-id attributes)
+    (:sh06-semantic-projection-id skeleton)))))
+
+(defn
+ match-products-coherent?
+ [core operations]
+ (let
+  [sh07-b11-match-group-coherent?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b11-match-group-coherent?)
+   nodes
+   (:nodes core)
+   records
+   (:match-branch-records core)
+   skeletons
+   (:match-decision-skeletons core)
+   pattern-records
+   (:match-pattern-records core)
+   references
+   (:reference-uses core)
+   node-by-id
+   (when
+    (vector? nodes)
+    (into {} (map (juxt :node-id identity)) nodes))
+   match-nodes
+   (when
+    (vector? nodes)
+    (filterv
+     (fn*
+      [p1__177#]
+      (and (map? p1__177#) (= :match (:core-form p1__177#))))
+     nodes))
+   match-by-id
+   (when
+    (vector? match-nodes)
+    (into {} (map (juxt :node-id identity)) match-nodes))
+   records-by-match
+   (when (vector? records) (group-by :core-node-id records))
+   patterns-by-match
+   (when
+    (vector? pattern-records)
+    (group-by :core-node-id pattern-records))
+   skeleton-by-match
+   (when
+    (vector? skeletons)
+    (into {} (map (juxt :core-node-id identity)) skeletons))]
+  (and
+   (vector? nodes)
+   (vector? records)
+   (vector? skeletons)
+   (vector? pattern-records)
+   (vector? references)
+   (= (count nodes) (count node-by-id))
+   (= (mapv :ordinal records) (vec (range (count records))))
+   (=
+    (mapv :ordinal pattern-records)
+    (vec (range (count pattern-records))))
+   (= (count match-nodes) (count match-by-id))
+   (= (count skeletons) (count skeleton-by-match))
+   (= (set (keys match-by-id)) (set (keys records-by-match)))
+   (= (set (keys match-by-id)) (set (keys skeleton-by-match)))
+   (= (set (keys match-by-id)) (set (keys patterns-by-match)))
+   (every?
+    (fn
+     [[match-id match-node]]
+     (sh07-b11-match-group-coherent?
+      node-by-id
+      references
+      match-node
+      (get records-by-match match-id)
+      (get skeleton-by-match match-id)
+      (get patterns-by-match match-id)))
+    match-by-id))))
+
 (doseq
  [operation
   [#'build-plan-binding!
@@ -4115,7 +4861,16 @@
    #'projection-diagnostic!
    #'descendant-node-ids
    #'handler-group-coherent?
-   #'error-handlers-coherent?]]
+   #'error-handlers-coherent?
+   #'match-branch-tree
+   #'match-products-coherent?
+   #'match-guard-source
+   #'match-guard-valid?
+   #'match-pattern-graph-complete?
+   #'match-pattern-record-coherent?
+   #'match-clause
+   #'match-guard-source-valid?
+   #'match-group-coherent?]]
  (alter-meta!
   operation
   assoc

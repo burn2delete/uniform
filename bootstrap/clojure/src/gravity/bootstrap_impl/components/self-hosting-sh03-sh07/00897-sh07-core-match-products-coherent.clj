@@ -1,52 +1,11 @@
 
 
-(defn sh07-core-match-products-coherent?
-  [core]
-  (let [nodes (:nodes core)
-        records (:match-branch-records core)
-        skeletons (:match-decision-skeletons core)
-        pattern-records (:match-pattern-records core)
-        references (:reference-uses core)
-        node-by-id
-        (when (vector? nodes)
-          (into {} (map (juxt :node-id identity)) nodes))
-        match-nodes
-        (when (vector? nodes)
-          (filterv #(and (map? %) (= :match (:core-form %))) nodes))
-        match-by-id
-        (when (vector? match-nodes)
-          (into {} (map (juxt :node-id identity)) match-nodes))
-        records-by-match
-        (when (vector? records) (group-by :core-node-id records))
-        patterns-by-match
-        (when (vector? pattern-records)
-          (group-by :core-node-id pattern-records))
-        skeleton-by-match
-        (when (vector? skeletons)
-          (into {} (map (juxt :core-node-id identity)) skeletons))]
-    (and
-     (vector? nodes)
-     (vector? records)
-     (vector? skeletons)
-     (vector? pattern-records)
-     (vector? references)
-     (= (count nodes) (count node-by-id))
-     (= (mapv :ordinal records) (vec (range (count records))))
-     (= (mapv :ordinal pattern-records)
-        (vec (range (count pattern-records))))
-     (= (count match-nodes) (count match-by-id))
-     (= (count skeletons) (count skeleton-by-match))
-     (= (set (keys match-by-id)) (set (keys records-by-match)))
-     (= (set (keys match-by-id)) (set (keys skeleton-by-match)))
-     (= (set (keys match-by-id)) (set (keys patterns-by-match)))
-     (every?
-      (fn [[match-id match-node]]
-        (sh07-b11-match-group-coherent?
-         node-by-id references match-node
-         (get records-by-match match-id)
-         (get skeleton-by-match match-id)
-         (get patterns-by-match match-id)))
-      match-by-id))))
+(defn
+ sh07-core-match-products-coherent?
+ [core]
+ (gravity.checked-core/match-products-coherent?
+  core
+  (checked-core-stage-operations)))
 
 (defn sh07-core-verification-checks
   [artifact expected upstream-verification]
