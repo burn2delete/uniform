@@ -82,16 +82,16 @@
     (denied!)))
 
 (defn- reader-build!
-  [_capability _request]
-  ;; Fixed production link, NOT caller-selected code or a host read dressed up
-  ;; as a Gravity result. Stage2/Reader owners must replace this exact gap.
-  (reject! "T1004" :reader-effectful-bridge-unavailable 4))
+  [capability request]
+  ;; Resolve only this fixed normal constructor, after permission/preflight and
+  ;; inside the original lexical issuer. Do not wrap its original failures.
+  ((requiring-resolve 'gravity.bootstrap/reader-declared-input-build!) capability request))
 
 (defn run-declared-input-build!
   "Actual local host entry from gravity.cli.dispatch. Explicit argv grants
   are authority at this host boundary; policy/request DATA can only narrow it.
   No target file, filesystem provider, callback or result is accepted as proof.
-  The fixed Reader bridge is still absent and production calls fail closed."
+  The fixed normal Reader constructor must complete within the issuer lifetime."
   [arguments]
   (let [options (parse-command arguments)
         principal (get options "--principal")
@@ -119,6 +119,44 @@
        grant (:inputs request)
        (fn [capability] (reader-build! capability request))))))
 
+(defn success-json
+  "Closed output projection of the constructor's verified C2 value. This is
+  presentation, not a grant or artifact authentication API. Never serialize
+  source text, input contents, internal envelopes or authority objects."
+  [artifact]
+  (letfn [(native-map! [value]
+            (when-not (and (contains? #{clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap}
+                                     (class value))
+                           (nil? (meta value))
+                           (every? #(= clojure.lang.Keyword (class %)) (keys value)))
+              (reject! "T1004" :reader-build-result-invalid 4)))
+          (hash! [value]
+            (when-not (and (= String (class value))
+                           (re-matches #"sha256:[0-9a-f]{64}" value))
+              (reject! "T1004" :reader-build-result-invalid 4))
+            value)]
+    (native-map! artifact)
+    (when-not (and (= clojure.lang.Keyword (class (:kind artifact)))
+                   (= :gravity/stage0-c2-reader-document-artifact (:kind artifact))
+                   (or (nil? (:status artifact))
+                       (and (= clojure.lang.Keyword (class (:status artifact)))
+                            (contains? #{:accepted :passed} (:status artifact))))
+                   (or (not (contains? artifact :exit-code))
+                       (and (= Long (class (:exit-code artifact))) (= 0 (:exit-code artifact)))))
+      (reject! "T1004" :reader-build-result-invalid 4))
+    (let [unit (:source-unit-record artifact)]
+      (native-map! unit)
+      (let [artifact-id (hash! (:artifact-id artifact))
+            source-id (hash! (:source-id unit))
+            bytes-hash (hash! (:bytes-hash unit))]
+        {:exit-code 0
+         :json (str "{\"status\":\"passed\",\"code\":null,"
+                    "\"artifactKind\":\"gravity/stage0-c2-reader-document-artifact\","
+                    "\"artifactId\":\"" artifact-id "\",\"sourceId\":\"" source-id
+                    "\",\"sourceBytesHash\":\"" bytes-hash
+                    "\",\"profile\":\"meta\",\"target\":\"jvm\",\"phase\":\"build\","
+                    "\"capability\":\"fs/read\",\"exitCode\":0,\"runtimeAccepted\":false}")}))))
+
 (defn diagnostic-json
   "Closed, redacted JSON failure report for this command; no input text/paths.
   Only implementation-owned error enums are rendered."
@@ -126,9 +164,14 @@
   (let [data (ex-data error)
         reason (:reason data)
         known #{:command-shape :local-build-read-denied
-                :reader-effectful-bridge-unavailable}
-        reason (if (contains? known reason) reason :build-input-rejected)
-        code (if (contains? #{"T1006" "T1003" "T1004"} (:id data)) (:id data) "T1003")
+                :reader-effectful-bridge-unavailable :reader-build-result-invalid}
+        reason (if (and (= clojure.lang.Keyword (class reason)) (contains? known reason))
+                 reason :build-input-rejected)
+        code (cond
+               (and (= String (class (:id data)))
+                    (contains? #{"T1006" "T1003" "T1004"} (:id data))) (:id data)
+               (= "L15-CONTRACT" (:id data)) "T1003"
+               :else "T1004")
         status (case code "T1006" 2 "T1004" 4 6)]
     {:exit-code status
      :json (str "{\"status\":\"rejected\",\"code\":\"" code
