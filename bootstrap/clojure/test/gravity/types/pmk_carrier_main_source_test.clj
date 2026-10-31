@@ -6,9 +6,9 @@
 (def owners [["sh08" "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"]
              ["body" "bootstrap/gravity/src/gravity/effects.gravity"]
              ["p15-s23" "bootstrap/gravity/p15_s23/emitter.gravity"]])
-;; The pinned source equation still includes historical accounting; only these
-;; two live owners remove it. Effects keeps its independent C8 budget adapter.
-(def unmetered-owners #{"sh08" "p15-s23"})
+;; The pinned source equation still includes historical accounting; only the
+;; live C7 owner removes it. Effects and the emitter keep their microbudgets.
+(def unmetered-owners #{"sh08"})
 (defn unmetered-owner? [prefix] (contains? unmetered-owners prefix))
 (defn before [path]
   (let [r (shell/sh "git" "show" (str base ":" path))] (assert (zero? (:exit r))) (:out r)))

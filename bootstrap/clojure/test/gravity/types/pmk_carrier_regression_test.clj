@@ -13,9 +13,9 @@
   [["sh08" 'pr359-descriptor-c7]
    ["body" 'pr359-descriptor-body]
    ["p15-s23" 'pr359-descriptor-emit]])
-;; C7 and the emitter are unmetered after accounting removal; Effects retains
-;; its independent C8 budget/work contract.
-(def ^:private unmetered-owners #{"sh08" "p15-s23"})
+;; C7 is unmetered after accounting removal; Effects and the emitter retain
+;; their independent microbudget/work contracts.
+(def ^:private unmetered-owners #{"sh08"})
 (defn- unmetered-owner? [[prefix _]] (contains? unmetered-owners prefix))
 
 (defn- invoke [[prefix adapter] suffix & args]
