@@ -757,9 +757,6 @@
                  [[record record] :binding-id])))
     (is (false?
          (invoke engine-plan 'sh07-b48-index-carrier-valid?
-                 [[record record] :binding-id])))
-    (is (false?
-         (invoke engine-plan 'sh07-b48-index-carrier-valid?
                  [[node node] :node-id])))
     (is (false?
          (invoke engine-plan 'sh07-b48-index-carrier-valid?
