@@ -131,6 +131,37 @@ script is `/tmp/uniform-wasm-codec-compose.clj`. This real composition makes no
 causal-remedy claim about any earlier CI result. Final checks and independent
 acceptance must bind the final exact commit and current integration base.
 
+## Current CI-policy parent
+
+The accepted composition 7eb2a008c1d360deccc7ce171cadfb8926c82e5d, tree
+c8cd953f15f83263e6f5b1e90ecfa13aef1d73f7, remains failed historical evidence.
+Run 41230850970 timed out Resolution at 600 seconds, exit 124; the other nine
+enabled jobs passed. Its downloaded checksum manifest verifies at
+`/tmp/uniform-wasm-codec-ci-resolution-41230850970-nonpass`, digest
+a3fdcfc74a4736731865881c2cb9f52f450036e0c674f279f45f9cd88dd14f39.
+Tested merge 31dd00c791e1894d9b77bf7ee431794df5a16ba9 has exact parents
+c4bf8f55629855720d58c33a02cb405053c4f2e1 and 7eb2a008, and tree c8cd953f.
+The log has namespace headings but no completed summary or active test id.
+Cause and process cleanup remain unknown. The failed head is not rerun.
+
+Current main 79f285f30350362ca4ea8fb99bf0159014c32139, tree
+8c7e1c22ab679c458b22cb6ab4d9690abfc35d8d, independently integrated PR 711's
+CI selection and host-watchdog policy. The new composition incorporates its
+three CI files unchanged, without conflicts or an authored CI delta. They set
+Macro/Resolution child watchdogs to 900 seconds and workflow jobs to 20 minutes.
+This source-changing slice requires full semantic selection. These settings
+and any future result do not repair the old failure, establish its cause,
+prove an old-bound pass or transfer prior green checks.
+
+Every Wasm/LLVM source, test, consumer, registration and namespace row remains
+byte-identical to 7eb2a008. Fresh current-main focused tests pass 12/217,
+ownership 26/905, language 6/11, documentation 240/19 and roadmap/governance.
+Fresh production matches all three original complete/text captures and both
+binary modules; source hashes, plan IDs, B4 data identities and five-file
+current-base reconstruction pass. These remain working composition checks,
+not committed-head authority bookends. Final exact acceptance, full semantic
+CI and clean current-main integration preflight are still required.
+
 ## Unsupported boundaries
 
 Data emission and integer decoding do not authenticate MIR or B1 packets,

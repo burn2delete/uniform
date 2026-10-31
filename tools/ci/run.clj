@@ -8,6 +8,7 @@
 
 (def output "target/ci")
 (def runtime-deps "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
+(def semantic-modes #{"static" "contracts" "bootstrap" "macro" "resolution" "checked-core-runtime"})
 
 (defn command [heap & args]
   (into ["clojure" (str "-J-Xmx" heap) "-Srepro" "-Sdeps" runtime-deps] args))
@@ -108,14 +109,78 @@
                      (System/getenv "CI_PR_HEAD_SHA")
                      (str/split (str/trim (slurp (io/file output "checkout-parents.log"))) #"\s+"))))
 
-(defn changed-clojure-paths [base]
+(defn parse-raw-diff [raw]
+  (if (str/blank? raw)
+    []
+    (let [tokens (str/split raw #"\u0000")]
+      (when (odd? (count tokens))
+        (throw (ex-info "Malformed raw Git diff output" {:token-count (count tokens)})))
+      (mapv (fn [[header path]]
+              (let [[_ old-mode new-mode _old-object _new-object status]
+                    (or (re-matches #":(\d{6}) (\d{6}) ([0-9a-f]+) ([0-9a-f]+) ([A-Z])" header)
+                        (throw (ex-info "Malformed raw Git diff header" {:header header :path path})))]
+                {:old-mode old-mode
+                 :new-mode new-mode
+                 :status status
+                 :path path}))
+            (partition 2 tokens)))))
+
+(defn changed-file-records [base]
   (let [result (execute! "changed-path-discovery" 30
-                         ["git" "diff" "--name-only" "--diff-filter=ACMR" "-z" base "HEAD"])]
+                         ["git" "diff" "--raw" "--no-renames" "-z" base "HEAD"])]
     (when-not (= :passed (:status result))
       (throw (ex-info "Cannot determine changed files; selection failed closed" result)))
-    (->> (str/split (slurp (io/file output "changed-path-discovery.log")) #"\u0000")
-         (filter #(or (str/ends-with? % ".clj") (str/ends-with? % ".edn")))
-         vec)))
+    (parse-raw-diff (slurp (io/file output "changed-path-discovery.log")))))
+
+(defn changed-paths [base]
+  (mapv :path (changed-file-records base)))
+
+(defn changed-clojure-paths [base]
+  (->> (changed-file-records base)
+       (filter #(and (contains? #{"A" "M"} (:status %))
+                     (or (str/ends-with? (:path %) ".clj")
+                         (str/ends-with? (:path %) ".edn"))))
+       (mapv :path)))
+
+(defn docs-only-path? [path]
+  (and (string? path) (str/ends-with? path ".md")))
+
+(defn docs-only-record? [{:keys [old-mode new-mode status path]}]
+  (and (docs-only-path? path)
+       (= "100644" new-mode)
+       (case status
+         "A" (= "000000" old-mode)
+         "M" (= "100644" old-mode)
+         false)))
+
+(defn docs-only-change? [event base changes]
+  (and (= "pull_request" event)
+       (re-matches #"[0-9a-f]{40}" (or base ""))
+       (seq changes)
+       (every? docs-only-record? changes)))
+
+(defn pull-request-selection []
+  (if (not= "pull_request" (System/getenv "GITHUB_EVENT_NAME"))
+    {:kind :full :reason :non-pull-request}
+    (let [base (checkout-base)
+          changes (changed-file-records base)
+          paths (mapv :path changes)
+          clojure-paths (->> changes
+                             (filter #(and (contains? #{"A" "M"} (:status %))
+                                           (or (str/ends-with? (:path %) ".clj")
+                                               (str/ends-with? (:path %) ".edn"))))
+                             (mapv :path))
+          docs-only? (docs-only-change? "pull_request" base changes)]
+      {:kind (if docs-only? :docs-only :full)
+       :reason (if docs-only? :known-documentation-only :non-documentation-change)
+       :base base
+       :paths paths
+       :clojure-paths clojure-paths})))
+
+(defn skip-for-docs-only? [mode selection]
+  (and (contains? semantic-modes mode)
+       (= :docs-only (:kind selection))
+       (not (contains? #{"static" "contracts"} mode))))
 
 (defn contract-commands []
   [(script "docs" "tools/validate_gravity_docs.clj")
@@ -137,10 +202,20 @@
     (apply command "512m" "-M:leaf-test"
            (mapcat (fn [entry] ["--namespace" (str (:namespace entry))]) selected))))
 
+(declare commands-for-selection)
+
 (defn commands [mode]
+  (commands-for-selection mode nil))
+
+(defn commands-for-selection [mode selection]
   (case mode
-    "static" (let [base (checkout-base)
-                   paths (changed-clojure-paths base)]
+    "static" (let [base (or (:base selection) (checkout-base))
+                   paths (if (contains? selection :clojure-paths)
+                           (:clojure-paths selection)
+                           (if (contains? selection :paths)
+                             (filterv #(or (str/ends-with? % ".clj") (str/ends-with? % ".edn"))
+                                      (:paths selection))
+                             (changed-clojure-paths base)))]
                (concat [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]
                         ["workflow-lint" 30 ["actionlint" "-color"]]
                         ["clojure-lint" 60 ["clj-kondo" "--lint" "tools/ci"]]
@@ -176,11 +251,11 @@
                  ["ownership-inventory" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-ownership-test")]]
-    "macro" [["macro-regression" 600
+    "macro" [["macro-regression" 900
               (command "2g" "-M:dev-test"
                        "--namespace" "gravity.macro.pipeline-test"
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
-    "resolution" [["resolution-regression" 600
+    "resolution" [["resolution-regression" 900
                    (command "2g" "-M:dev-test"
                             "--namespace" "gravity.resolution.pipeline-test"
                             "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
@@ -216,10 +291,32 @@
     "leaves-darwin" [["fresh-darwin-leaf-catalog" 180 (leaf-command "darwin")]]
     (throw (ex-info "Unknown CI mode" {:mode mode}))))
 
+(defn docs-only-static-commands [selection]
+  [["whitespace" 30 ["git" "diff" "--check" (:base selection) "HEAD"]]])
+
 (defn run! [mode]
-  (let [results (mapv #(apply execute! %) (commands mode))]
-    (spit (io/file output (str mode "-summary.edn")) (str (pr-str results) "\n"))
-    (if (every? #(= :passed (:status %)) results) 0 1)))
+  (let [selection (if (contains? semantic-modes mode)
+                    (pull-request-selection)
+                    {:kind :full :reason :non-semantic-mode})
+        skipped? (skip-for-docs-only? mode selection)
+        docs-only? (= :docs-only (:kind selection))
+        results (cond
+                  skipped? [{:id (str mode "-docs-only-skip")
+                             :status :skipped
+                             :reason :docs-only-pr
+                             :selection (:kind selection)}]
+                  (and docs-only? (= "static" mode))
+                  (mapv #(apply execute! %) (docs-only-static-commands selection))
+                  :else (mapv #(apply execute! %) (commands-for-selection mode selection)))
+        summary (if (= :full (:kind selection))
+                  results
+                  {:mode mode :selection selection :results results})]
+    (spit (io/file output (str mode "-summary.edn")) (str (pr-str summary) "\n"))
+    (when skipped?
+      (println "CI mode" mode "skipped for known documentation-only PR; required matrix job retained"))
+    (when (and docs-only? (= "static" mode))
+      (println "CI mode static ran the docs-only whitespace check; remaining semantic checks are retained by the matrix"))
+    (if (every? #(contains? #{:passed :skipped} (:status %)) results) 0 1)))
 
 (when (seq *command-line-args*)
   (System/exit (run! (first *command-line-args*))))

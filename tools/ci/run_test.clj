@@ -10,21 +10,66 @@
 (require '[ci.lint :as lint])
 (require '[ci.lint-context :as context])
 
-(defn fixture-tool! [directory argv input allowed-exits]
-  (let [log (java.io.File/createTempFile "tool-" ".log" directory)
-        process (.start (doto (ProcessBuilder. ^java.util.List argv)
-                          (.directory directory) (.redirectErrorStream true) (.redirectOutput log)))]
+(defn fixture-tool!
+  ([directory argv input allowed-exits]
+   (fixture-tool! directory argv input allowed-exits directory))
+  ([directory argv input allowed-exits log-directory]
+   (let [log (if log-directory
+               (java.io.File/createTempFile "tool-" ".log" log-directory)
+               (java.io.File/createTempFile "tool-" ".log"))
+         process (.start (doto (ProcessBuilder. ^java.util.List argv)
+                           (.directory directory) (.redirectErrorStream true) (.redirectOutput log)))]
+     (try
+       (with-open [stdin (.getOutputStream process)]
+         (.write stdin (.getBytes input java.nio.charset.StandardCharsets/UTF_8)))
+       (when-not (.waitFor process 10 java.util.concurrent.TimeUnit/SECONDS)
+         (throw (ex-info "Fixture tool timed out" {:argv argv})))
+       (when-not (contains? allowed-exits (.exitValue process))
+         (throw (ex-info "Fixture tool failed" {:argv argv :log (slurp log)})))
+       (slurp log)
+       (finally
+         (when (.isAlive process) (.destroyForcibly process))
+         (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS))))))
+
+(defn git-fixture! [directory args]
+  (fixture-tool! directory (into ["git"] args) "" #{0} nil))
+
+(defn initialize-git-fixture! [directory]
+  (git-fixture! directory ["init" "-q"])
+  (git-fixture! directory ["config" "user.email" "ci-fixture@example.invalid"])
+  (git-fixture! directory ["config" "user.name" "CI fixture"]))
+
+(defn write-fixture-file! [directory path content]
+  (let [file (io/file directory path)]
+    (when-let [parent (.getParentFile file)] (.mkdirs parent))
+    (spit file content)))
+
+(defn commit-fixture! [directory message]
+  (git-fixture! directory ["add" "-A"])
+  (git-fixture! directory ["commit" "-q" "-m" message])
+  (str/trim (git-fixture! directory ["rev-parse" "HEAD"])))
+
+(defn delete-fixture-tree! [directory]
+  (doseq [file (reverse (file-seq directory))]
+    (io/delete-file file true)))
+
+(defn assert-git-selection! [initial-files change expected?]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-selection-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))]
     (try
-      (with-open [stdin (.getOutputStream process)]
-        (.write stdin (.getBytes input java.nio.charset.StandardCharsets/UTF_8)))
-      (when-not (.waitFor process 10 java.util.concurrent.TimeUnit/SECONDS)
-        (throw (ex-info "Fixture tool timed out" {:argv argv})))
-      (when-not (contains? allowed-exits (.exitValue process))
-        (throw (ex-info "Fixture tool failed" {:argv argv :log (slurp log)})))
-      (slurp log)
-      (finally
-        (when (.isAlive process) (.destroyForcibly process))
-        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+      (initialize-git-fixture! directory)
+      (doseq [[path content] initial-files]
+        (write-fixture-file! directory path content))
+      (let [base (commit-fixture! directory "base")]
+        (change directory)
+        (let [head (commit-fixture! directory "change")
+              raw (git-fixture! directory ["diff" "--raw" "--no-renames" "-z" base head])
+              changes (ci/parse-raw-diff raw)]
+          (is (= expected? (ci/docs-only-change? "pull_request" base changes))
+              (pr-str changes))
+          changes))
+      (finally (delete-fixture-tree! directory)))))
 
 (defn lint-fixture! [directory before after]
   (spit (io/file directory "before.clj") before)
@@ -123,6 +168,65 @@
     (is (= "HEAD^" (ci/base-ref base))))
   (let [sha (apply str (repeat 40 "a"))]
     (is (= sha (ci/base-ref sha)))))
+
+(deftest documentation-only-selection-is-conservative
+  (let [base (apply str (repeat 40 "a"))]
+    (let [regular-doc (fn [path]
+                        {:old-mode "100644" :new-mode "100644" :status "M" :path path})]
+      (is (ci/docs-only-change? "pull_request" base
+                                (mapv regular-doc ["README.md" "docs/guide.md"])))
+      (doseq [paths [["bootstrap/gravity/src/gravity/runtime.gravity"]
+                     [".github/workflows/ci.yml"]
+                     ["notes.txt"]
+                     ["README.md; echo unexpected"]
+                     []]]
+        (is (not (ci/docs-only-change? "pull_request" base (mapv regular-doc paths)))
+            (pr-str paths))))
+    (is (not (ci/docs-only-change? "pull_request" nil
+                                   [{:old-mode "100644" :new-mode "100644"
+                                     :status "M" :path "README.md"}])))
+    (is (not (ci/docs-only-change? "push" base
+                                   [{:old-mode "100644" :new-mode "100644"
+                                     :status "M" :path "README.md"}])))
+    (doseq [mode ["bootstrap" "macro" "resolution" "checked-core-runtime"]]
+      (is (ci/skip-for-docs-only? mode {:kind :docs-only}) mode))
+    (is (not (ci/skip-for-docs-only? "static" {:kind :docs-only})))
+    (is (not (ci/skip-for-docs-only? "contracts" {:kind :docs-only})))
+    (is (not (ci/skip-for-docs-only? "leaves-portable" {:kind :docs-only})))
+    (is (not (ci/skip-for-docs-only? "macro" {:kind :full})))
+    (is (= [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]]
+           (ci/docs-only-static-commands {:base base :kind :docs-only})))))
+
+(deftest raw-git-selection-rejects-structural-document-lookalikes
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]]
+                                  (fn [directory]
+                                    (write-fixture-file! directory "README.md" "# changed\n"))
+                                  true)))
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]
+                                   ["src/compiler.gravity" "(seed)\n"]]
+                                  (fn [directory]
+                                    (git-fixture! directory ["rm" "-q" "src/compiler.gravity"])
+                                    (write-fixture-file! directory "README.md" "# changed\n"))
+                                  false)))
+  (is (seq (assert-git-selection! [["src/compiler.gravity" "(seed)\n"]]
+                                  (fn [directory]
+                                    (git-fixture! directory ["rm" "-q" "src/compiler.gravity"])
+                                    (write-fixture-file! directory "notes.md" "# renamed\n"))
+                                  false)))
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]]
+                                  (fn [directory]
+                                    (fixture-tool! directory ["chmod" "755" "README.md"] "" #{0}))
+                                  false)))
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]]
+                                  (fn [directory]
+                                    (git-fixture! directory ["rm" "-q" "README.md"])
+                                    (fixture-tool! directory ["ln" "-s" "docs.md" "README.md"] "" #{0}))
+                                  false)))
+  (is (seq (assert-git-selection! [["baseline.txt" "base\n"]]
+                                  (fn [directory]
+                                    (write-fixture-file! directory "script.md" "# executable\n")
+                                    (fixture-tool! directory ["chmod" "755" "script.md"] "" #{0}))
+                                  false))))
 
 (deftest pr-comparison-uses-the-tested-merge-parent
   (let [stale-base (apply str (repeat 40 "a"))
