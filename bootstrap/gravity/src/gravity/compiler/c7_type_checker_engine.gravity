@@ -22069,7 +22069,7 @@
                                                                           (if (sh08-mr-binding? operator-binding module) true
                                                                             (if (sh08-ma-binding? operator-binding module) true
                                                                               (if (sh08-cq-binding? operator-binding module) true
-                                                                                (sh08-vn-binding? operator-binding module) true false))))))))))))))))))))))))))))))
+                                                                                (if (sh08-vn-binding? operator-binding module) true false)))))))))))))))))))))))))))))))
                     (recur (rest remaining) (rest remaining-edges) next-bindings
                       constraints diagnostics)
                     (if (map? intrinsic)
