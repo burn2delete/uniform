@@ -9738,10 +9738,9 @@
                    :definitions (:definitions core)
                    :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
                    :recursion-components []}}
-        bound (invoke 'sh08-ft-inference-round-bound [(:nodes core) (:function-records core) (:calls core) (:lexical-bindings core)])
         inference (invoke 'sh08-ft-infer-acyclic-with-context
                     [(:nodes core) nodes (:lexical-bindings core) (:definitions core) (:calls core) (:call-edges core)
-                     skeletons {} bound (assoc context :loop-work-left 65536)])
+                     skeletons {} context])
         record (first (:function-records core))
         record (assoc record :ordinal 0 :definition-kind :named-top-level
                        :definition-core-node-id (:core-node-id (first (:definitions core)))
