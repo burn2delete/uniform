@@ -7,8 +7,9 @@ The source base is main f485e117186084a5ab4a04358831f4f93e0dab0a, tree
 3eca3173a9605e7c121fa217ee5fecaf070c506b. This independent slice does not
 contain the unmerged effects or diagnostics candidates.
 
-Four existing native C11 algorithms move from the Bootstrap component
-00739-shared control-flow code into gravity.mir: validate-terminator!,
+Four existing native C11 algorithms move from
+bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj
+into gravity.mir: validate-terminator!,
 validate-cfg!, valid-dominance-edge? and valid-terminator-use?. The stage
 consumes explicit require/terminator operations, key schema, checked-Core/MIR
 data, expected envelope/products, definitions, positions, join and optional
@@ -78,8 +79,19 @@ bounded-canonical-c11-cfg-entry diagnostic label is retained for compatibility;
 it does not enforce a count allowance. Other Bootstrap algorithms, source,
 admission, native ingress and carrier policy are unchanged.
 
-Contextual lint, docs/roadmap/governance validation, independent review, exact
-final-head CI and clean current-main integration preflight remain required.
+The existing C11 bootstrap-free leaf also passes 6 / 99. Contextual lint covers
+all six changed Clojure paths against exact main f485e117, including the full
+Bootstrap context: 3492 unchanged baseline warnings, zero blocking warnings or
+errors. No lint rule or configuration changes. Docs validate 240 documents / 19
+phase indexes; roadmap and governance pass. These are ordinary source checks;
+no ledger or authoritative migration credit is changed.
+
+Both independent source reviews conditionally accept
+6215c2c4cddd65475d4c9b9041ff366a96d76f8d, tree
+5a9275f7a06b517b0c6fd344b671dfb9fb19c8be, against f485e117. This subsequent
+evidence-only update changes no source, tests or registration and requires
+exact independent review. Its own final-head CI and clean current-main
+integration preflight remain mandatory before integration.
 
 ## Unsupported boundaries
 
