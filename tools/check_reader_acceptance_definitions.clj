@@ -133,5 +133,45 @@
     (is (some #{'["normal-unknown" "normal-effect"]} (nodes negative)))
     (is (some #{"C2-EXTENSION"} (nodes negative)))))
 
+(defn inert-observer-reports [helper visits false-guard?]
+  ;; Evaluate only the extracted observer closure and its post-command check
+  ;; over core DATA. Never evaluate the command, redefinitions, project Var,
+  ;; namespace, constructor, consumer, provider or any acceptance test body.
+  (let [observer (first (vals (second (first (calls helper 'with-redefs-fn)))))
+        guard (first (calls observer 'when))
+        observer (if false-guard?
+                   (walk/postwalk-replace {guard (cons 'when (cons false (nnext guard)))} observer)
+                   observer)
+        ;; Only direct forms in the outer let body can protect command return.
+        postcheck (first (filter #(and (seq? %) (= 'is (first %))) (drop 2 (nth helper 3))))
+        make-observer (eval (list 'fn '[consume inspect-live observations resource-artifact?] observer))
+        check-observations (eval (list 'fn '[observations] (or postcheck nil)))
+        resource-shape (definition forms 'resource-artifact?)
+        resource? (eval (cons 'fn (drop 2 resource-shape)))
+        observations (atom 0) inspections (atom 0) forwards (atom []) reports (atom [])
+        product {:reader-extension-invocation-records [{:schema-version 3}]}
+        observer (make-observer (fn [& args] (swap! forwards conj args) product)
+                                (fn [_ _] (swap! inspections inc)) observations resource?)]
+    (with-redefs [clojure.test/report #(swap! reports conj %)]
+      (dotimes [_ visits] (observer :core-authority :core-path product :core-context))
+      (check-observations observations))
+    {:failures (count (filter #(= :fail (:type %)) @reports))
+     :inspections @inspections :observations @observations :forwards (count @forwards)}))
+
+(deftest live-observer-cannot-silently-skip-or-duplicate
+  (let [helper (definition forms 'normal-build!)
+        ;; Remove precisely the new direct post-command check to model F1.
+        old (walk/postwalk-replace {'(is (= 1 @observations)) nil} helper)]
+    (is (= {:failures 0 :inspections 0 :observations 0 :forwards 1}
+           (inert-observer-reports old 1 true)))
+    (is (= {:failures 1 :inspections 0 :observations 0 :forwards 1}
+           (inert-observer-reports helper 1 true)))
+    (is (= {:failures 1 :inspections 0 :observations 0 :forwards 0}
+           (inert-observer-reports helper 0 false)))
+    (is (= {:failures 0 :inspections 1 :observations 1 :forwards 3}
+           (inert-observer-reports helper 1 false)))
+    (is (= {:failures 1 :inspections 2 :observations 2 :forwards 6}
+           (inert-observer-reports helper 2 false)))))
+
 (let [report (run-tests)]
   (when (pos? (+ (:fail report) (:error report))) (System/exit 1)))

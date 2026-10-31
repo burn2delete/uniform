@@ -55,12 +55,14 @@
   ;; its live issuer. Always forward the original authority/path/context to the
   ;; unchanged consumer. No parser, compiler, issuer, handler, provider or result
   ;; replacement; no authority object escapes this lexical observer.
-  (let [consume @#'bootstrap/sh03-c3-precomputed-c2-verify!]
-    (with-redefs-fn
+  (let [consume @#'bootstrap/sh03-c3-precomputed-c2-verify!
+        observations (atom 0)
+        artifact (with-redefs-fn
       {#'bootstrap/sh03-c3-precomputed-c2-verify!
        (fn [& arguments]
          (let [verified (apply consume arguments)]
            (when (and (= 4 (count arguments)) (resource-artifact? verified))
+             (swap! observations inc)
              ;; These really re-enter fresh reconstruction in verification mode.
              ;; They are NOT a causal provider-read counter.
              (is (= verified (apply consume arguments)))
@@ -69,7 +71,11 @@
                            (fn [candidate]
                              (apply consume (assoc (vec arguments) 2 candidate)))))
            verified))}
-      #(invocation/run-declared-input-build! arguments))))
+      #(invocation/run-declared-input-build! arguments))]
+    ;; Count matching live consumers, never provider reads. This check must
+    ;; run after every successful command, even when its observer never fires.
+    (is (= 1 @observations))
+    artifact))
 
 (defn- rehash-c2 [artifact]
   ;; Public identity recomputation is DATA, never authentication authority.
