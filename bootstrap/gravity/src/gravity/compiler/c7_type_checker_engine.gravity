@@ -8403,7 +8403,7 @@
            (if (= :gravity.type/never (first arguments)) true
              (if (= :gravity.type/vector (get (first arguments) :kind))
                (let [elements (get (first arguments) :element-types)]
-                 (if (vector? elements) (if (<= (count elements) 1024) (if invoked? (< (count elements) 1024) true) false) false)) false))
+                 (vector? elements)) false))
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
                (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
@@ -8451,35 +8451,31 @@
                (assoc (first arguments) :element-types (conj (get (first arguments) :element-types) (get arguments 1))) :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-va-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-va-derive [core node call edge nodes bindings types forms]
   ; STD3 persistent append preserves the complete prefix and adds one value.
   ; Both operand types stay checked even when normal invocation is impossible.
-  (let [args (get call :argument-node-ids) work (+ 64 (count args) (count (get core :function-records))
-               (if (vector? (get (get types (first args)) :element-types))
-                 (count (get (get types (first args)) :element-types)) 0))
-        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :vector-append-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-va-source core node call edge nodes bindings types (get core :module))]
-        (if (= header nil)
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
-                   (if (= 2 (count args)) :vector-append-operand-type-required :vector-append-arity-mismatch)
-                   nil :established-vector-and-typed-value (sh08-ft-ordered-child-types args types)) :work-count work)
-          (if (sh08-ft-all-true?
-                [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
-                 (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
-                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
-                 (loop [i 0]
-                   (if (= i 3) true
-                     (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
-                       (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
-                             (= (get child :source) (sh08-ma-form-source form))
-                             (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
-                         (recur (+ i 1)) false))))])
-            (let [descriptor (sh08-va-finish header)]
-              {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-va-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :vector-append-source-mismatch nil :exact-operator-vector-value-source (get node :node-id)) :work-count work)))))))
+  (let [args (get call :argument-node-ids)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        header (sh08-va-source core node call edge nodes bindings types (get core :module))]
+    (if (= header nil)
+      (sh08-sm-failure "C7-TYPE-MISMATCH"
+        (if (= 2 (count args)) :vector-append-operand-type-required :vector-append-arity-mismatch)
+        nil :established-vector-and-typed-value (sh08-ft-ordered-child-types args types))
+      (if (sh08-ft-all-true?
+            [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
+             (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+             (loop [i 0]
+               (if (= i 3) true
+                 (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                   (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
+                         (= (get child :source) (sh08-ma-form-source form))
+                         (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
+                     (recur (+ i 1)) false))))])
+        (let [descriptor (sh08-va-finish header)]
+          {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
+           :constraint (sh08-va-constraint descriptor)})
+        (sh08-sm-failure "C7-VERIFY" :vector-append-source-mismatch nil :exact-operator-vector-value-source (get node :node-id))))))
 
 (defn sh08-va-node? [node context]
   (if (= :call (get node :core-form))
@@ -8945,20 +8941,17 @@
 (defn sh08-pl-finish [header]
   (assoc header :parameter-types (get header :argument-types) :return (get header :result-type)))
 
-(defn sh08-pl-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-pl-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids)]
     (if (= false (vector? args))
-      (assoc (sh08-sm-failure "C7-VERIFY" :list-prepend-call-shape-required nil :argument-vector args) :work-count 1)
-      (let [base (+ 64 (count args) (count (get core :function-records)))]
-        (if (> base budget)
-          (assoc (sh08-sm-failure "C7-GENERIC" :list-prepend-work-limit nil :remaining-type-join-units budget) :work-count base)
-          (if (= false (= 2 (count args)))
-            (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :list-prepend-arity-mismatch nil :binary-list-prepend (count args)) :work-count base)
-            (if (= false (if (vector? (get node :children)) (= 3 (count (get node :children))) false))
-              (assoc (sh08-sm-failure "C7-VERIFY" :list-prepend-call-shape-required nil :binary-call-children (get node :children)) :work-count base)
+      (sh08-sm-failure "C7-VERIFY" :list-prepend-call-shape-required nil :argument-vector args)
+      (if (= false (= 2 (count args)))
+        (sh08-sm-failure "C7-TYPE-MISMATCH" :list-prepend-arity-mismatch nil :binary-list-prepend (count args))
+        (if (= false (if (vector? (get node :children)) (= 3 (count (get node :children))) false))
+          (sh08-sm-failure "C7-VERIFY" :list-prepend-call-shape-required nil :binary-call-children (get node :children))
             (if (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))))
-              (let [arguments [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)]
-                  validation (sh08-pl-validate-types arguments) work base]
+          (let [arguments [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)]
+                validation (sh08-pl-validate-types arguments)]
               (if (= :accepted (get validation :status))
                   (let [header (sh08-pl-source core node call edge nodes bindings types (get core :module) validation)]
                     (if (if (map? header) (if (= :symbol-set-insertion (get validation :collection-family))
@@ -8968,16 +8961,15 @@
                           (sh08-si-call-forms? node nodes forms))) false)
                       (let [descriptor (sh08-pl-finish header)]
                         {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-                         :constraint (sh08-pl-constraint descriptor) :work-count work})
-                      (assoc (sh08-sm-failure "C7-VERIFY" (if (= :symbol-set-insertion (get validation :collection-family))
+                         :constraint (sh08-pl-constraint descriptor)})
+                      (sh08-sm-failure "C7-VERIFY" (if (= :symbol-set-insertion (get validation :collection-family))
             :symbol-set-insertion-source-mismatch
-            (if (= :keyword-set-insertion (get validation :collection-family)) :keyword-set-insertion-source-mismatch (if (= :string-set-insertion (get validation :collection-family)) :string-set-insertion-source-mismatch :list-prepend-source-mismatch))) nil :exact-operator-list-value-source (get node :node-id)) :work-count work)))
-                  (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" (get validation :reason) nil (if (sh08-syin-selected? arguments)
+            (if (= :keyword-set-insertion (get validation :collection-family)) :keyword-set-insertion-source-mismatch (if (= :string-set-insertion (get validation :collection-family)) :string-set-insertion-source-mismatch :list-prepend-source-mismatch))) nil :exact-operator-list-value-source (get node :node-id))))
+                  (sh08-sm-failure "C7-TYPE-MISMATCH" (get validation :reason) nil (if (sh08-syin-selected? arguments)
             :finite-symbol-set-and-symbol-value
             (if (sh08-ksin-selected? arguments) :finite-keyword-set-and-keyword-value
                    (if (if (= :gravity.type/set (get arguments 0)) true (if (sh08-lc-native-map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false)) :finite-string-set-and-string-value :established-list-and-first-order-value))) arguments)
-                         :work-count work)))
-              (assoc (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-source-identities nil) :work-count base)))))))))
+              (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-source-identities nil)))))))))
 
 (defn sh08-syin-inferred-call [core node call edge nodes bindings types]
   (let [args (get call :argument-node-ids)]
@@ -9042,28 +9034,26 @@
           (if (= (get types (get call :operator-node-id)) descriptor)
             (= (get types (get node :node-id)) (get descriptor :result-type)) false) false)) false) false)))
 
-(defn sh08-va-step [node types binding-types functions context budget]
+(defn sh08-va-step [node types binding-types functions context]
   (let [call (get (get context :ordering-operators) (first (get node :children)))
         args (get call :argument-node-ids)]
     (if (= false (vector? args))
-      (assoc (sh08-sm-failure "C7-VERIFY" :conj-call-shape-required nil :argument-vector args) :work-count 1)
+      (sh08-sm-failure "C7-VERIFY" :conj-call-shape-required nil :argument-vector args)
     (if (loop [remaining (if (= 0 (count args)) [] (if (= 1 (count args)) [(get args 0)] [(get args 0) (get args 1)]))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))
       (let [receiver (get types (get args 0) :gravity.type/unknown)]
     (if (if (= 2 (count args))
           (if (if (= nil receiver) true (if (keyword? receiver) (= :gravity.type/unknown receiver) false)) true
             (let [value-type (get types (get args 1) :gravity.type/unknown)]
               (if (= nil value-type) true (if (keyword? value-type) (= :gravity.type/unknown value-type) false)))) false)
-      (if (< budget 2)
-        (assoc (sh08-sm-failure "C7-GENERIC" :conj-dispatch-work-limit nil :remaining-type-join-units budget) :work-count 2)
-        {:status :deferred :type :gravity.type/unknown :work-count 2})
+      {:status :deferred :type :gravity.type/unknown}
       (if (if (sh08-pl-list? receiver) true (if (= :gravity.type/set receiver) true (if (map? receiver) (= :gravity.type/set (get receiver :kind)) false)))
         (sh08-pl-derive (get context :ordering-core) node call
           (get (get context :ordering-edges) (get node :node-id))
-          (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget)
+          (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms))
         (sh08-va-derive (get context :ordering-core) node call
           (get (get context :ordering-edges) (get node :node-id))
-          (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))))
-      (assoc (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-operand-identities nil) :work-count 2)))))
+          (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))))
+      (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-operand-identities nil)))))
 
 ; L2/L5/STD3 evaluated first-order values, not syntax or quoted-data authority.
 (defn sh08-lc-ancestor? [value ancestors]
