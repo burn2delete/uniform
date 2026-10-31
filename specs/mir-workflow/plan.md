@@ -33,17 +33,8 @@ semantic ID, display title, unchecked checkbox, exact evidence/status and concre
 exit criteria. Preserve the full historical tasks file as a frozen suffix. Its
 four migration tasks remain separate from compiler completion.
 
-`tools/mir_task_projection.clj` uses the accepted shared pure parser and strict
-HTTPS-only field policy. It validates all records before writing only the marked
-table region in `docs/component-roadmaps/mir.md`. It accepts only --check or
---write; no caller-selected input/output paths, registry or discovery is added.
-Existing title/ID checks and explicit acceptance consistency remain enforced.
-The focused test covers projection and rejection controls. The four workflow
-artifacts explain the authority transfer. Seven owned files only; shared tooling,
-all other packages and compiler sources/tests stay unchanged.
-
-The generated roadmap retains its exact header and five rows, all admission and
-acceptance wording, source links and milestones. No producer or consumer receipt
+The roadmap links to the task ledger, which retains all admission and acceptance
+wording, source links and milestones. No producer or consumer receipt
 is imported as task completion. New task authority is an editing location, not
 an admission result or a change to the requirement for checked producer facts.
 
@@ -52,26 +43,16 @@ an admission result or a change to the requirement for checked producer facts.
 Run from repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/mir_task_projection.clj --write
-clojure -J-Xmx512m -M tools/mir_task_projection.clj --check
-clojure -J-Xmx512m -M tools/mir_task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-Compare original/current table bytes, all five component/heading/title IDs, exact
-cell text and full historical suffix. Remove only the additive navigation and
-region markers and compare the entire roadmap to baseline, preserving admission
-and acceptance wording. Check five affected Markdown documents for ASCII and
-file/heading links, including missing-file/missing-heading negative controls.
-Preserve the existing canonical-truth table, interface references and C11 link.
-Exercise missing/duplicate IDs and markers, malformed records, title mismatch,
-checkbox/status disagreement, stale projections and unsupported links. Isolated
-subprocess controls prove checks are read-only, writes change only the fixed
-roadmap, extra path arguments cannot write and the shared helper cannot dispatch.
-Run whitespace and clean exact-base/head/tree integration preflight. Record
-actual observations and limits; no compiler semantic suite is required here.
+Compare the preserved task criteria, IDs and historical suffix. Check the
+affected Markdown documents for ASCII and file/heading links, preserve the
+canonical-truth links and C11 reference, and run whitespace plus clean
+exact-base/head/tree integration preflight. No compiler semantic suite is
+required here.
 
 ## Delivery and remaining work
 
