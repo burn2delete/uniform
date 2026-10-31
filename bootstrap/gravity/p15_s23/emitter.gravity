@@ -5035,10 +5035,8 @@
         ancestry {:source-call call :source-edge edge :source-binding (get header :source-binding)
                   :input-node-id (get args 0) :key-node-id (get args 1) :value-node-id (get args 2)
                   :input-shape input :value-shape value :transition transition}
-        size (+ 1 (get input :shape-size 0) (get value :shape-size 0))
         shape (if normal?
                 {:call-links (p15-s23-ma-add (get value :call-links []) (get input :call-links [])),
-     :shape-size size,
      :shape-kind :map,
      :parts (get transition :parts),
      :type type,
@@ -5049,8 +5047,7 @@
      :node-id id,
      :binding-links [],
      :coordinate-system :ordered-map-entry-value-slots}
-                {:shape-size size,
-     :shape-kind :scalar,
+                {:shape-kind :scalar,
      :type :gravity.type/never,
      :source (get header :source),
      :association ancestry,
@@ -5059,7 +5056,7 @@
      :binding-links []})]
     {:descriptor (assoc header :input-shape input :value-shape value :transition transition :result-shape (if normal? shape nil)
                    :parameter-types (get header :argument-types) :return type :result-type type)
-     :shape shape :type type :shape-size size}))
+     :shape shape :type type}))
 
 (defn p15-s23-ma-descriptor [context node]
   (let [core (get context :core) types (get context :types) id (get node :node-id)
@@ -5282,10 +5279,8 @@
         type (if normal? (get transition :type) :gravity.type/never)
         ancestry {:source-call call :source-edge (get header :source-edge) :source-binding (get header :source-binding)
                   :input-node-id (get args 0) :key-node-id (get args 1) :input-shape input :transition change}
-        size (+ 1 (get input :shape-size 0))
         shape (if normal?
                 {:call-links (get input :call-links []),
-     :shape-size size,
      :shape-kind :map,
      :parts (get change :parts),
      :type type,
@@ -5296,8 +5291,7 @@
      :binding-links [],
      :coordinate-system :ordered-map-entry-value-slots,
      :removal ancestry}
-                {:shape-size size,
-     :shape-kind :scalar,
+                {:shape-kind :scalar,
      :type :gravity.type/never,
      :source (get header :source),
      :status :accepted,
@@ -5306,7 +5300,7 @@
      :removal ancestry})]
     {:descriptor (assoc header :input-shape input :transition change :result-shape (if normal? shape nil)
                    :parameter-types (get header :argument-types) :return type :result-type type)
-     :shape shape :type type :shape-size size}))
+     :shape shape :type type}))
 
 (defn p15-s23-mr-family-finish [header nodes]
   (let [argument-id (get (get (get header :source-call) :argument-node-ids) 0)
@@ -5329,7 +5323,7 @@
     type
     :result-type
     type)
-     :shape nil :type type :shape-size 0}))
+     :shape nil :type type}))
 
 (defn p15-s23-mr-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-map-removal-constraint-v1 :application descriptor}
@@ -21427,9 +21421,11 @@
              (= (= [] (get row :remaining-after)) (get row :exhaustive-after?))
              (if (= index 0) true (= previous (get row :remaining-before)))
              (vector? extractions)
-             true
+             (= extractions (get (get row :solution) :binding-extractions))
              (= (get row :matched-shapes) (get (get row :solution) :selected-shapes))
-             true])
+             (= (let [dependencies {:scrutinee-node-id (first children) :constructor-shape shape :pattern-tree tree :branch-node-id body-id :extractions extractions}]
+                  (if guarded? (assoc dependencies :guard (get row :guard)) dependencies))
+                (get row :dependencies))])
            (let
             [projected
              (p15-s23-typed-pattern-project
