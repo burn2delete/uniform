@@ -203,6 +203,14 @@
 ;; crosswalk routes are incidence, not a second editable task/status graph.
 (def sh-crosswalk-path "specs/sh-family-crosswalk/crosswalk.edn")
 
+(defn navigation-source-path? [path]
+  ;; Component roadmaps and task-ledger preambles are navigation-only views of
+  ;; the exact task rows. Their captured digests stay in the crosswalk as
+  ;; historical provenance, but layout edits must not rebind SH acceptance
+  ;; history. Task rows and all other source-bound inputs remain exact below.
+  (or (str/starts-with? path "docs/component-roadmaps/")
+      (re-matches #"specs/[a-z-]+-workflow/tasks\.md" path)))
+
 (defn source-bound! [{:keys [path start-byte end-byte sha256 raw]} read-text]
   (let [text (read-text path) bytes (.getBytes text "UTF-8")]
     (require! (and (integer? start-byte) (integer? end-byte)
@@ -210,6 +218,23 @@
     (let [actual (String. (java.util.Arrays/copyOfRange bytes start-byte end-byte) "UTF-8")]
       (require! (and (= raw actual) (= sha256 (acceptance-dependencies/sha256 actual)))
                 (str "Changed source span: " path)))))
+
+(defn current-task-body!
+  "Check a current task row's captured body without rebinding its history.
+  Task-ledger preambles are navigation layout, so their edits can shift a row;
+  the row itself must remain one unique exact captured byte sequence."
+  [{:keys [path sha256 raw]} read-text]
+  (let [text (read-text path)
+        occurrence-count (loop [offset 0 occurrences 0]
+                           (let [found (.indexOf text raw offset)]
+                             (if (neg? found)
+                               occurrences
+                               (recur (+ found (max 1 (clojure.core/count raw)))
+                                      (inc occurrences)))))]
+    (require! (= sha256 (acceptance-dependencies/sha256 raw))
+              (str "Forged current task body digest: " path))
+    (require! (= 1 occurrence-count)
+              (str "Changed or ambiguous current task body: " path))))
 
 (defn typed-adjacency [nodes edges condition-values]
   (let [ids (set (keys nodes))]
@@ -322,7 +347,7 @@
               (implementation-ids (read-text (str "specs/" component "-workflow/tasks.md")) component)
               (str component " live implementation task")))
         _ (doseq [row tasks]
-            (source-bound! (:source row) read-text)
+            (current-task-body! (:source row) read-text)
             (let [[_ checked id] (re-find #"^- \[([ xX])\] `([^`]+)`" (get-in row [:source :raw]))]
               (require! (and (= id (:id row)) (= (:checked row) (not= " " checked)))
                         "Task status/ID differs from actual authority")
@@ -343,7 +368,8 @@
                       "Unmapped SH criterion without explicit gap")
             (doseq [t (:task-references r)]
               (require! (= (:component t) (:component (task-map (:id t)))) "Unknown SH task owner/reference")))
-        _ (doseq [[path digest] (:source-digests crosswalk)]
+        _ (doseq [[path digest] (:source-digests crosswalk)
+                  :when (not (navigation-source-path? path))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.

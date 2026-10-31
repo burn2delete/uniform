@@ -6,7 +6,7 @@ Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](ev
 
 The existing fifteen backend family keys identify grouped implementation records.
 This marked region is their sole editable task authority. Every record remains
-Open and unchecked. Projection preserves each original Remaining tasks paragraph,
+Open and unchecked. Each record preserves its original Remaining tasks paragraph,
 including acceptance questions, evidence limits and integration context. These are
 family records, not newly numbered individual clauses or completion percentages.
 Historical migration checkboxes below remain separate from implementation status.

@@ -6,6 +6,10 @@
 (require '[sh-inventory] '[sh-crosswalk])
 (def composition (edn/read-string (slurp "specs/compiler-api-workflow/domain-contract-source-composition.edn")))
 (def compiler-api-task-path "specs/compiler-api-workflow/tasks.md")
+(def compiler-api-prior-outcome-ids
+  #{"pipeline" "plugins" "pass-evidence" "development-boundaries"})
+(def compiler-api-task-record-pattern
+  #"(?s)^- \[([ x])\] `([^`]+)` ([^\n|]+)\n\nStatus: ([^\n|]+)\n\n(.*)$")
 (defn sha [text] (sh-inventory/sha256 text))
 (def git-source
   (memoize (fn [commit path]
@@ -29,6 +33,19 @@
        (= :not-conferred (:integration-eligibility r))
        (= :none (:implementation-credit r)) (= :not-adopted (:global-denominator r))))
 
+(defn compiler-api-task-records [text]
+  (let [start "<!-- compiler-api-implementation-tasks:start -->"
+        end "<!-- compiler-api-implementation-tasks:end -->"
+        body (subs text (+ (.indexOf text start) (count start)) (.indexOf text end))
+        blocks (str/split (str/trim body) #"\n\n(?=- \[[ x]\] `)")]
+    (mapv (fn [block]
+            (let [[_ checked id title status criteria]
+                  (re-matches compiler-api-task-record-pattern block)]
+              (assert (and checked id title status criteria)
+                      "Malformed compiler API task record")
+              {:checked checked :id id :title title :status status :criteria criteria}))
+          blocks)))
+
 (deftest exact-frozen-reviews-and-current-predicate-bytes
   (is (= #{:C17 :C12} (set (map :id (:cohorts composition)))))
   (is (= 223 (reduce + (map :source-facets (:cohorts composition)))))
@@ -49,6 +66,23 @@
       (is (= current (git-source (:source-commit current-witness) (:path current-witness))))
       (is (= reviewed (span current-witness current)))
       (is (= (.indexOf ^String current ^String reviewed) (.lastIndexOf ^String current ^String reviewed))))))
+
+(deftest prior-main-outcomes-and-historical-statuses-survive
+  (let [current (compiler-api-task-records (slurp compiler-api-task-path))
+        previous (compiler-api-task-records
+                   (git-source (:base-commit composition) compiler-api-task-path))
+        current-by-id (into {} (map (juxt :id identity) current))]
+    (is (= (:current-outcomes composition) (mapv :id current)))
+    (is (every? #(= "Open" (:status %)) current))
+    (doseq [old (filter #(compiler-api-prior-outcome-ids (:id %)) previous)
+            :let [fresh (get current-by-id (:id old))]]
+      (is (some? fresh))
+      (is (= (select-keys old [:id :title :status])
+             (select-keys fresh [:id :title :status])))
+      ;; The editable ledger may extend a prior criterion, but must not rewrite
+      ;; its existing semantic/history prefix. The retired table projection is
+      ;; intentionally not parsed or compared here.
+      (is (str/starts-with? (:criteria fresh) (:criteria old))))))
 
 (deftest coherent-byte-mutations-and-forged-pins-refuse
   (doseq [cohort (:cohorts composition) [_ {:keys [current-witness]}] (:criteria cohort)
