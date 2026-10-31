@@ -163,13 +163,17 @@
   #'sh06-resolution-resolve-source-path,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh06-resolution-definition-kind #'sh06-resolution-definition-kind,
   :sha256-hex #'sha256-hex,
+  :sh06-resolution-core-record #'sh06-resolution-core-record,
   :c-backend-canonical-value #'c-backend-canonical-value,
+  :reader-canonical-hash #'reader-canonical-hash,
   :sh06-resolution-read-current-source!
   #'sh06-resolution-read-current-source!,
   :c-backend-resolve-p15-s23-compiler-source-path
   #'c-backend-resolve-p15-s23-compiler-source-path,
   :sh06-resolution-binding-current! #'sh06-resolution-binding-current!,
+  :sh06-resolution-package #'sh06-resolution-package,
   :sh06-resolution-current-source-key
   #'sh06-resolution-current-source-key,
   :sha256-bytes-hex #'sha256-bytes-hex,
@@ -182,6 +186,7 @@
   :p15-s23-stage2-compiler-artifact-source-path
   #'p15-s23-stage2-compiler-artifact-source-path,
   :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :sh06-resolution-semantic-span #'sh06-resolution-semantic-span,
   :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
 
 ^{:line 100, :column 18}
@@ -204,10 +209,15 @@
   sh06-resolution-public-function-shapes
   :sh06-resolution-source-relative-path
   sh06-resolution-source-relative-path
-  ^{:line 104, :column 38}
-  (throw
-   ^{:line 104, :column 45}
-   (ex-info "Unknown resolution stage input" {:input field}))))
+  :known-source-profiles
+  known-source-profiles
+  :sh06-resolution-all-core-symbols
+  sh06-resolution-all-core-symbols
+  :sh06-resolution-special-symbols
+  sh06-resolution-special-symbols
+  :sh06-resolution-type-symbols
+  sh06-resolution-type-symbols
+  (throw (ex-info "Unknown resolution stage input" {:input field}))))
 
 (defn
  sh06-resolution-boundary-fail!
