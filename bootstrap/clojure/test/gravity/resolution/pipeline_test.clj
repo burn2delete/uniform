@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 30 (count publics)))
+    (is (= 38 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -298,6 +298,80 @@
     (is (= [{:dependency-edge 0} {:explicit-edge 0} {:explicit-edge 1}] (mapv :semantic-span result)))
     (is (= span (:source-span (first result))))
     (is (= [] (resolution/dependency-edges source {:module 'consumer} [] {} ops)))))
+
+(deftest product-projections-retain-analysis-and-compatibility-records
+  ;; Supplied analysis exercises projection only, without C5 authentication.
+  (let [ops (operations)
+        analysis {:binding-table [{:binding-id "binding" :source-span {:line-start 3}}]
+                  :resolution-table [{:binding-id "binding" :resolution-order :lexical}]
+                  :alias-table [{:alias 'lib}]
+                  :dependency-records [{:namespace 'library}]
+                  :exports ['value] :lexical-scope-graph [{:scope-id "scope"}]
+                  :dependency-graph {:nodes ['consumer 'library] :edges []}
+                  :cross-profile-edge-report [{:boundary :pure-core-api}]
+                  :incremental-invalidation-inputs {:imports ['library]}}
+        product (resolution/product-projections analysis ops)]
+    (is (= (assoc analysis :artifact :gravity/namespace-analysis) (:namespace-analysis product)))
+    (is (= (:binding-table analysis) (get-in product [:binding-table :bindings])))
+    (is (= (:resolution-table product) (get-in product [:binding-table :resolution-table])))
+    (is (= ((seed-var 'sh06-resolution-order-compatibility) :lexical)
+           (get-in product [:resolution-table 0 :resolution-kind])))
+    (is (= (:alias-table analysis) (get-in product [:alias-table :aliases])))
+    (is (= (:dependency-records analysis) (get-in product [:import-export-table :imports])))
+    (is (= (:exports analysis) (get-in product [:import-export-table :exports])))
+    (is (= (:lexical-scope-graph analysis) (get-in product [:lexical-scope-graph :scopes])))
+    (is (= (:cross-profile-edge-report analysis) (get-in product [:cross-profile-edge-report :records])))
+    (is (= (:incremental-invalidation-inputs analysis) (get-in product [:incremental-invalidation-keys :inputs])))
+    (is (not= (get-in product [:incremental-invalidation-keys :invalidation-id])
+              (get-in (resolution/product-projections (assoc analysis :incremental-invalidation-inputs {}) ops)
+                      [:incremental-invalidation-keys :invalidation-id])))))
+
+(deftest identity-chunks-preserve-representation-and-semantic-invalidation
+  (let [ops (operations) values (vec (range 17))
+        chunks (resolution/identity-chunks values ops)
+        changed (resolution/identity-chunks (assoc values 16 :changed) ops)]
+    (is (= [] (resolution/identity-chunks [] ops)))
+    (is (= [0 1] (mapv :chunk-index chunks)))
+    (is (= [16 1] (mapv :entry-count chunks)))
+    (is (= chunks (resolution/identity-chunks (seq values) ops)))
+    (is (= (first chunks) (first changed)))
+    (is (not= (second chunks) (second changed)))))
+
+(deftest artifact-identities-and-summaries-retain-the-existing-semantic-boundary
+  ;; These pure identity helpers do not authenticate supplied chunks or artifacts.
+  (let [ops (operations)
+        artifact {:kind :resolution :slice :SH-06 :task :normalization
+                  :gravity-resolution-boundary
+                  {:adapter-contract :test :resolved-analysis {:artifact-id "analysis"}
+                   :authenticated-resolution-request {:module {:source-revision-id "source"}}}
+                  :sh05-macro-artifact {:artifact-id "macro" :expanded-syntax-stream-id "stream"
+                                        :macro-expansion-trace-id "trace"}
+                  :binding-table {:bindings [{:binding-id "binding" :source-span {:line-start 1}}]}
+                  :resolution-table [{:binding-id "binding" :source-span {:line-start 2}}]
+                  :dependency-graph {:nodes ['consumer 'library]
+                                     :edges [{:from 'consumer :to 'library :source-span {:line-start 3}}]}
+                  :incremental-invalidation-keys {:invalidation-id "invalidation"}}
+        chunks (resolution/product-identity-chunks artifact ops)
+        preimage (resolution/artifact-identity-input artifact ops)
+        id (resolution/artifact-id artifact ops)
+        summary (resolution/envelope-summary artifact ops)
+        relocated (-> artifact
+                      (assoc-in [:binding-table :bindings 0 :source-span :line-start] 30)
+                      (assoc-in [:resolution-table 0 :source-span :line-start] 40)
+                      (assoc-in [:dependency-graph :edges 0 :source-span :line-start] 50))]
+    (is (= preimage (resolution/artifact-identity-input-with-chunks artifact chunks ops)))
+    (is (= id ((:reader-canonical-hash ops) preimage)))
+    (is (= summary (resolution/envelope-summary-with-chunks artifact chunks)))
+    (is (= [1 1 1] ((juxt :binding-count :reference-count :dependency-edge-count) summary)))
+    (is (= "source" (:source-revision-id summary)))
+    (is (= id (resolution/artifact-id relocated ops)))
+    (is (= (:source-span (first (:resolution-table artifact))) {:line-start 2}))
+    (doseq [changed [(assoc-in artifact [:binding-table :bindings 0 :binding-id] "other")
+                     (assoc-in artifact [:resolution-table 0 :binding-id] "other")
+                     (assoc-in artifact [:dependency-graph :edges 0 :to] 'other)
+                     (assoc-in artifact [:sh05-macro-artifact :macro-expansion-trace-id] "other")
+                     (assoc-in artifact [:incremental-invalidation-keys :invalidation-id] "other")]]
+      (is (not= id (resolution/artifact-id changed ops))))))
 
 (deftest actual-nested-bindings-emit-and-out-of-scope-binding-rejects
   (let [compile-fixture (fn [name]
