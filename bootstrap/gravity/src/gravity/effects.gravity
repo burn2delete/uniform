@@ -1500,7 +1500,7 @@
   (if (sh09-exact-keys? inputs #{:artifact :schema-version :module-requests})
     (if (body-all? [(= :gravity/sh08-module-type-inputs (get inputs :artifact)) (= 1 (get inputs :schema-version))
                     (vector? (get inputs :module-requests))])
-      (<= (count (get inputs :module-requests)) 256) false) false))
+      true false) false))
 
 (defn body-caller-request-valid? [request typed]
   (if (sh09-exact-keys? request
@@ -1551,11 +1551,10 @@
     (if (= 0 (count tables)) true
       (let [table (first tables)]
         (if (vector? table)
-          (if (<= (count table) 256)
-            (if (loop [entries table]
-                  (if (= 0 (count entries)) true
-                    (if (map? (first entries)) (recur (rest entries)) false)))
-              (recur (rest tables)) false) false) false)))))
+          (if (loop [entries table]
+                (if (= 0 (count entries)) true
+                  (if (map? (first entries)) (recur (rest entries)) false)))
+            (recur (rest tables)) false) false)))))
 
 (defn body-input-valid? [typed verification binding]
   (if (sh09-exact-keys? typed (body-top-level-keys typed))
@@ -1611,19 +1610,35 @@
         (if (map? (first remaining)) (recur (rest remaining)) false))) false))
 
 (defn body-first-order-value-type? [type]
-  (loop [pending [type] visits 0]
+  (loop [pending [[type []]]]
     (if (= 0 (count pending)) true
-      (if (>= visits 65536) false
-        (let [index (- (count pending) 1) item (get pending index) next (subvec pending 0 index)]
-          (if (if (body-ni-valid-view? item)
-                (if (map? item) (= :gravity/c7-function-type (get item :artifact)) false) true) false
+      (let [index (- (count pending) 1)
+            frame (get pending index)
+            item (get frame 0)
+            ancestors (get frame 1)
+            next (subvec pending 0 index)]
+        (if (if (body-ni-valid-view? item)
+              (if (map? item) (= :gravity/c7-function-type (get item :artifact)) false)
+              true)
+          false
+          (if (if (map? item)
+                (body-lc-ancestor? item ancestors)
+                (if (if (vector? item) true (if (set? item) true (seq? item)))
+                  (body-lc-ancestor? item ancestors)
+                  false))
+            false
             (recur
               (if (map? item)
                 (loop [fields (keys item) result next]
                   (if (= 0 (count fields)) result
-                    (recur (rest fields) (conj result (get item (first fields))))))
-                (if (if (vector? item) true (if (set? item) true (seq? item))) (body-add item next) next))
-              (+ visits 1))))))))
+                    (recur (rest fields)
+                      (conj result [(get item (first fields)) (conj ancestors item)]))))
+                (if (if (vector? item) true (if (set? item) true (seq? item)))
+                  (loop [remaining item result next]
+                    (if (= 0 (count remaining)) result
+                      (recur (rest remaining)
+                        (conj result [(first remaining) (conj ancestors item)]))))
+                  next)))))))))
 
 (defn body-first-order-parameters? [parameters]
   (loop [remaining parameters]
@@ -2065,7 +2080,7 @@
                       (body-maps? locals) (body-maps? (get core :definitions))
                       (body-maps? (get core :match-branch-records))])
       (body-all?
-        [(> (count nodes) 0) (<= (count nodes) 65536) (<= (count functions) 256)
+        [(> (count nodes) 0)
          (= (count nodes) (count (body-index nodes :node-id)) (count (get typed :type-table)))
          (= (set (keys (body-index nodes :node-id))) (set (keys (get typed :type-table))))
          (= (count records) (count functions) (count (body-index functions :function-id)))
@@ -3378,7 +3393,7 @@
            (if (= :gravity.type/never (first arguments)) true
              (if (= :gravity.type/vector (get (first arguments) :kind))
                (let [elements (get (first arguments) :element-types)]
-                 (if (vector? elements) (if (<= (count elements) 1024) (if invoked? (< (count elements) 1024) true) false) false)) false))
+                 (vector? elements)) false))
            (loop [remaining arguments]
              (if (= 0 (count remaining)) true
                (if (contains? #{nil :gravity.type/unknown} (first remaining)) false (recur (rest remaining)))))] )
@@ -6758,7 +6773,7 @@
   (if (= :gravity.type/map type) true
     (if (if (map? type) (= :gravity.type/map (get type :kind)) false)
       (let [members (get type :member-types)]
-        (if (if (vector? members) (<= (count members) 1024) false)
+        (if (vector? members)
           (loop [i 0]
             (if (= i (count members)) true
               (if (< (+ i 1) (count members))
@@ -6809,9 +6824,9 @@
   ; finite coordinates and selected type without inferring presence from types.
   (let [parts (get input :parts) type (get (get header :argument-types) 0) members (get type :member-types)]
     (if (if (= :normal (get header :application))
-          (if (vector? parts) (if (<= (count parts) 512)
+          (if (vector? parts)
             (body-all? [(= :accepted (get input :status)) (= :map (get input :shape-kind))
-                  (= type (get input :type)) (vector? members) (= (* 2 (count parts)) (count members))]) false) false) false)
+                  (= type (get input :type)) (vector? members) (= (* 2 (count parts)) (count members))]) false) false)
       (loop [index 0 seen #{} selected nil]
         (if (= index (count parts)) selected
           (let [part (get parts index) key (get part :key) shape (get part :shape)]
@@ -7018,7 +7033,7 @@
                     (let [parts (get shape :parts)
                           actual (get types (get args (get census :parameter-index)))
                           members (get actual :member-types) supplied-members (get (get shape :type) :member-types)]
-                      (if (if (vector? parts) (if (<= (count parts) 512) (if (vector? members) (vector? supplied-members) false) false) false)
+                      (if (if (vector? parts) (if (vector? members) (vector? supplied-members) false) false)
                         (loop [i 0 seen #{} selected nil]
                           (if (= i (count parts)) {:status :accepted :types selected}
                             (let [part (get parts i) key (get part :key) coordinate (+ 1 (* 2 i))]
@@ -7128,10 +7143,9 @@
 
 (defn body-pc-even-count? [values]
   (if (vector? values)
-    (if (<= (count values) 1024)
-      (loop [remaining values]
-        (if (= 0 (count remaining)) true
-          (if (= 1 (count remaining)) false (recur (rest (rest remaining)))))) false) false))
+    (loop [remaining values]
+      (if (= 0 (count remaining)) true
+        (if (= 1 (count remaining)) false (recur (rest (rest remaining)))))) false))
 
 (defn body-pc-link-core? [record node core nodes bindings]
   (let [bid (get record :binding-id) owner-id (get record :let-core-node-id)
@@ -7141,10 +7155,17 @@
       (let [owner (body-pc-current-node owner-id nodes) initializer (body-pc-current-node initializer-id nodes)
             binding (get bindings bid) children (get owner :children) ids (get owner :resolved-binding-ids)
             attrs (get node :attributes) source (get initializer :source)]
-        (if (if (map? owner) (if (map? initializer) (if (map? binding)
-              (if (vector? children) (if (vector? ids)
-                (if (<= (count children) 1024) (if (<= (count ids) 1024)
-                  (if (< index (count children)) (< index (count ids)) false) false) false) false) false) false) false) false)
+        (if (if (map? owner)
+              (if (map? initializer)
+                (if (map? binding)
+                  (if (vector? children)
+                    (if (vector? ids)
+                      (if (< index (count children)) (< index (count ids)) false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
           (if (if (symbol? (get record :name)) (if (symbol? (get binding :name)) (symbol? (get attrs :symbol)) false) false)
             (if (loop [remaining [(get record :definition-syntax-id) (get binding :definition-syntax-id)
                                  (get record :binding-scope-id) (get binding :scope-id)
@@ -7905,18 +7926,17 @@
   (if (body-pc-keys? source #{:form-id :syntax-id :semantic-span :origin-chain :generated-origin})
     (body-all? [(body-pc-id? (get source :form-id)) (body-pc-id? (get source :syntax-id))
       (if (= nil (get source :semantic-span)) true (map? (get source :semantic-span)))
-      (if (vector? (get source :origin-chain)) (<= (count (get source :origin-chain)) 256) false)
+      (if (vector? (get source :origin-chain)) true false)
       (if (= nil (get source :generated-origin)) true
         (let [origins (get source :generated-origin)]
           (if (vector? origins)
-            (if (<= (count origins) 256)
-              (loop [remaining origins]
-                (if (= 0 (count remaining)) true
-                  (let [origin (first remaining)]
-                    (if (body-pc-keys? origin #{:origin-id :kind :from-syntax-id :role})
-                      (if (body-pc-id? (get origin :origin-id))
-                        (if (body-pc-id? (get origin :from-syntax-id))
-                          (recur (rest remaining)) false) false) false)))) false) false)))]) false))
+            (loop [remaining origins]
+              (if (= 0 (count remaining)) true
+                (let [origin (first remaining)]
+                  (if (body-pc-keys? origin #{:origin-id :kind :from-syntax-id :role})
+                    (if (body-pc-id? (get origin :origin-id))
+                      (if (body-pc-id? (get origin :from-syntax-id))
+                        (recur (rest remaining)) false) false) false)))) false)))]) false))
 
 (defn body-pc-links-domain? [links]
   (if (vector? links)
