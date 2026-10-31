@@ -16206,7 +16206,7 @@
 (defn- inequality-list-type [members]
   {:kind :gravity.type/list :shape :literal :element-types (vec members)})
 
-(defn- list-inequality-type-pairs []
+(defn list-inequality-type-pairs []
   (let [f inequality-list-type s :gravity.type/string k :gravity.type/keyword]
     [[(f []) (f [])] [(f [s k]) (f [k s])]
      [(f [(f [s :gravity.type/nil])]) (f [(f [k :gravity.type/bool])])]
@@ -16219,7 +16219,10 @@
         derive (fn [{:keys [core node call edge nodes bindings types forms]}]
                  (invoke-c7 'sh08-ane-derive [core node call edge nodes bindings types forms ]))
         k :gravity.type/keyword s :gravity.type/string
-        pairs (take 4 (list-inequality-type-pairs))]
+        pairs [[(finite []) (finite [])] [(finite [k s]) (finite [s k])]
+               [(finite [(finite [s :gravity.type/nil]) :gravity.type/bool])
+                (finite [(finite [k :gravity.type/bool]) :gravity.type/nil])]
+               [(finite []) (finite [(finite [s])])]]]
     (doseq [pair pairs]
       (let [{:keys [core node call edge nodes forms bindings products binding-types module] :as input} (atomic-inequality-input pair)
             result (derive input) descriptor (:descriptor result)
