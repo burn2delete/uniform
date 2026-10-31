@@ -43,7 +43,7 @@
         (alter-meta! v assoc :test
                      (fn [] (swap! events conj symbol)
                        (test/is (not (and fail-first? (= symbol 'a))))))))
-    (alter-meta! fixture assoc ::test/once-fixtures [once-fixture] ::test/each-fixtures [each-fixture])
+    (alter-meta! fixture assoc :clojure.test/once-fixtures [once-fixture] :clojure.test/each-fixtures [each-fixture])
     (try
       (let [result
             (binding [*out* out *err* writer test/*test-out* out runner/*machine-result-sink* #(swap! records conj %)]
