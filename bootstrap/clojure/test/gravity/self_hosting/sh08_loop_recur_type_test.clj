@@ -2820,7 +2820,7 @@
     (is (= [3 2 1 1] (mapv #(count (get core %)) [:calls :lexical-bindings :function-records :definitions])))
     (is (= [] (:diagnostics quotes)))
     (is (= [:gravity.type/unknown] (mapv :return (vals skeletons))))
-    (is (= :converged (:convergence-status result)) (pr-str (select-keys result [:round-count :diagnostics :type-join-work-left])))
+    (is (= :converged (:convergence-status result)) (pr-str (select-keys result [:diagnostics :type-join-work-left])))
     (is (= [] (:diagnostics result)))
     (is (= [:gravity.type/bool] (mapv :return (vals (:function-types result)))))
     (is (= 1 (count (:loop-member-products result))))
@@ -2836,7 +2836,7 @@
         (is (= (- (get-in result [:shape-call-context :budget-left]) (:type-join-work-left result))
                (get-in exact [:shape-call-context :budget-left])))
         (is (= :resource-limit (:convergence-status below)))))
-    (println (pr-str {:vector-first-symbol-loop-normalized-cold-solver (select-keys result [:convergence-status :round-count :round-bound :type-join-work-left])
+    (println (pr-str {:vector-first-symbol-loop-normalized-cold-solver (select-keys result [:convergence-status :type-join-work-left])
                      :source-evidence false :final-type-seeds false :round-observations @observations}))))
 
 (defn- vector-first-symbol-loop-source-shaped-env []

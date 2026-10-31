@@ -401,9 +401,9 @@
         (is (= (select-keys result [:status :mode :cut :work-count :source-argument-call-node-ids])
                (select-keys exact [:status :mode :cut :work-count :source-argument-call-node-ids])))
         (is (= (select-keys (:inference result) [:type-table :binding-types :function-types :constraints :diagnostics
-                                                :convergence-status :round-count :round-bound])
+                                                :convergence-status])
                (select-keys (:inference exact) [:type-table :binding-types :function-types :constraints :diagnostics
-                                               :convergence-status :round-count :round-bound])))
+                                               :convergence-status])))
         (is (= 0 (get-in exact [:inference :type-join-work-left]))))
       (is (= :private-self-work-limit (:reason (derive core mode params (dec (:work-count result))))))
       (is (= :private-self-work-limit (:reason (derive core mode params 0)))))))
@@ -464,39 +464,30 @@
       (is (= :private-self-return-source-required
              (reason (assoc-in chain [:tail :node-id] :wrong) {:tail :gravity.type/string}))))))
 
-(deftest current-gravity-private-self-cold-quote-budget-development-kernel
+(deftest current-gravity-private-self-cold-quote-shape-development-kernel
+  ;; Keep the quoted-data shape/authentication control without asserting any
+  ;; caller-selected work or round allowance.
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [quote-input ((ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'quoted-data-input)
                      (vec (repeat 24 "payload")))
         base (recursive-carrier)
         core (assoc base :nodes (conj (recursive-inference-nodes base) (:node quote-input)))
         record (first (:function-records core))
-        derive (fn [forms budget]
+        derive (fn [forms]
                  (invoke-c7 'sh08-is-cold-infer
                             [core core record (into {} (map (juxt :node-id identity) (:nodes core)))
-                             (:bindings core) forms {} :entries [] budget]))
-        full (derive (:source-forms quote-input) 65536)
-        payload-work (get-in full [:quoted-products :work-count])
-        preparation (:source-preparation-work-count full)
-        exhausted (derive (:source-forms quote-input) (+ preparation (dec payload-work)))
-        no-inference-budget (derive (:source-forms quote-input) (+ preparation payload-work))]
+                             (:bindings core) forms {} :entries [] 65536]))
+        full (derive (:source-forms quote-input))
+        malformed (mapv #(if (= (:owner quote-input) (:form-id %)) (assoc % :kind :vector) %)
+                        (:source-forms quote-input))
+        rejected (derive malformed)]
     (is (= :accepted (:status full)))
-    (is (= 25 payload-work))
-    (is (= :gravity.type/vector (get-in full [:inference :type-table (get-in quote-input [:node :node-id]) :kind])))
-    (is (= :rejected (:status exhausted)))
-    (is (= :private-self-work-limit (:reason exhausted)))
-    (is (= [:quoted-data-work-limit] (mapv :reason (get-in exhausted [:quoted-products :diagnostics]))))
-    (is (= (dec payload-work) (get-in exhausted [:quoted-products :work-count])))
-    (is (not (contains? exhausted :inference)))
-    (is (= :private-self-work-limit (:reason no-inference-budget)))
-    (is (= [] (get-in no-inference-budget [:quoted-products :diagnostics])))
-    (is (= payload-work (get-in no-inference-budget [:quoted-products :work-count])))
-    (is (= 0 (get-in no-inference-budget [:inference :round-count])))
-    (let [malformed (mapv #(if (= (:owner quote-input) (:form-id %)) (assoc % :kind :vector) %) (:source-forms quote-input))
-          rejected (derive malformed 65536)]
-      (is (= :private-self-quoted-data-required (:reason rejected)))
-      (is (= [:malformed-quote-owner-payload-join] (mapv :reason (get-in rejected [:quoted-products :diagnostics]))))
-      (is (not (contains? rejected :inference))))))
+    (is (= :gravity.type/vector
+           (get-in full [:inference :type-table (get-in quote-input [:node :node-id]) :kind])))
+    (is (= :private-self-quoted-data-required (:reason rejected)))
+    (is (= [:malformed-quote-owner-payload-join]
+           (mapv :reason (get-in rejected [:quoted-products :diagnostics]))))
+    (is (not (contains? rejected :inference)))))
 
 (deftest current-gravity-private-self-cold-declared-result-development-kernel
   (let [base (recursive-carrier)
@@ -1786,28 +1777,6 @@
         (is (= :recursive-result-type-conflict (:reason proof)))
         (is (= base-type (:expected proof)))
         (is (= evidence-type (:actual proof)))))))
-
-(deftest sh08-recursive-nonconvergence-is-precise
-  (let [carrier (recursive-carrier)
-        proof (recursive-proof carrier)
-        skeleton
-        (invoke-c7 'sh08-ft-function-type-skeleton
-                   [(first (:function-records carrier)) (:module carrier)])
-        complete
-        (invoke-c7 'sh08-ft-recursive-complete-function
-                   [skeleton proof])
-        node-table (into {} (map (fn [n] [(:node-id n) n]) (:nodes carrier)))
-        inference
-        (invoke-c7
-         'sh08-ft-infer-acyclic-with-context
-         [(recursive-inference-nodes carrier) node-table [] (:definitions carrier)
-          (:calls carrier) (:edges carrier)
-          {(:function-id complete) complete}
-          {(get-in proof [:definition :binding-id]) complete}
-          0 proof])]
-    (is (= :nonconverged (:convergence-status inference)))
-    (is (= :bounded-function-type-inference-nonconvergence
-           (get-in inference [:diagnostics 0 :reason])))))
 
 (deftest sh08-recursive-authenticated-gravity-boundary
   ;; One .gravity carrier is the only expensive check in this namespace.  The

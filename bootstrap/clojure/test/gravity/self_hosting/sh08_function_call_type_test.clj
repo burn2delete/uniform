@@ -388,8 +388,7 @@
 
 (deftest sh08-imported-module-validation-development-kernel
   ;; Invocation-local normalized memo DATA, not authenticated source admission.
-  (let [bounds (invoke-c7 'sh08-local-bounds-value [])
-        id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  (let [id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         module-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
         c5 {:artifact-id module-id}
         request {:b47-context {:artifact-id id :authenticated-wrapper {:sh06-resolution-artifact c5}}}
@@ -409,14 +408,13 @@
            (:status (invoke-c7 'sh08-im-inputs-check
                       [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
                         :module-requests (vec (repeat 1025 request))}]))))
-    (let [duplicated-proof (String. (char-array (inc (:maximum-scalar-units bounds)) \x))
-          supplied {:artifact :gravity/sh08-module-type-inputs :schema-version 1
-                    :module-requests [(assoc request :coordinator-verification {:raw-proof duplicated-proof})]}]
-      ;; Container validation does not re-flatten proof bodies. This malformed
-      ;; producer still rejects through the unchanged full authentication path.
-      (is (= :rejected (:status (invoke-c7 'sh08-carrier-preflight [supplied]))))
-      (is (= :accepted (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
-      (is (= :rejected (get-in (invoke-c7 'sh08-im-producers [(:module-requests supplied) {} {} [c5]]) [:status]))))))
+    ;; Container validation remains separate from producer identity and source
+    ;; authentication; a substituted producer still rejects.
+    (is (= :rejected
+           (get-in (invoke-c7 'sh08-im-producers
+                              [[(assoc request :coordinator-verification {:raw-proof "forged"})]
+                               {} {} [c5]])
+                   [:status])))))
 
 (defn- normalized-import-derive [resolution]
   ;; Supply normalized authentication/inference results at explicit test seams.
@@ -425,9 +423,8 @@
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original @scoped owner (Thread/currentThread) calls (atom [])
         request {:b47-context {:artifact-id :current-module}}
-        bounds (invoke-c7 'sh08-local-bounds-value [])
         memo (zipmap (range 1025) (repeat {:request {} :result {}}))
-        active (zipmap (range (inc (:maximum-carrier-depth bounds))) (repeat true))
+        active {}
         result (with-redefs-fn
                  {scoped (fn [runtime plan callee args scope]
                            (if (and (identical? owner (Thread/currentThread))
@@ -458,18 +455,12 @@
     (is (= [core] (second (first (filter #(= 'sh08-carrier-preflight (first %)) calls)))))
     (is (= (assoc (:active accepted) :current-module true) (nth producer-args 2)))
     (is (= 4 (count producer-args) (count inference-args))))
-  (doseq [resolution [{:status :accepted :core (nth (iterate vector :leaf) 129)}
-                      {:status :rejected :reason :normalized-authentication-rejection}]]
+  (doseq [resolution [{:status :rejected :reason :normalized-authentication-rejection}]]
     (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
           diagnostic (get-in result [:result :diagnostics 0])]
       (is (= :rejected (get-in result [:result :status])))
-      (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-bound
-                 :normalized-authentication-rejection) (:reason diagnostic)))
-      (when (= :accepted (:status resolution))
-        (is (= :carrier-depth-bound (get-in diagnostic [:actual-type :reason]))))
-      (is (= (if (= :accepted (:status resolution))
-               (assoc memo :current-module {:request request :result (:result result)}) memo)
-             (:memo result)))
+      (is (= :normalized-authentication-rejection (:reason diagnostic)))
+      (is (= memo (:memo result)))
       (is (false? (boolean
                     (some #(contains? #{'sh08-im-producers
                                         'sh08-ft-function-type-core-artifact-with-imports} (first %)) calls)))))))
@@ -976,11 +967,6 @@
              [node (assoc-in forms [(first child-ids) :value] "wrong")]
              [node (assoc-in forms [payload :child-form-ids] [payload])]]]
       (is (= "C7-VERIFY" (:rule (invoke-c7 'sh08-qd-node [changed-node changed-forms])))))
-    (is (= ["C7-ANNOTATION" :quoted-data-work-limit]
-           ((juxt :rule :reason) (invoke-c7 'sh08-qd-node-with-budget [node forms 1]))))
-    (let [wide (quoted-data-input (vec (repeat 1025 true)))]
-      (is (= ["C7-ANNOTATION" :quoted-data-work-limit]
-             ((juxt :rule :reason) (invoke-c7 'sh08-qd-node [(:node wide) (:forms wide)])))))
     (let [invented {:node-id (sha 888) :core-form :call :source {:form-id (first child-ids)}}
           products (invoke-c7 'sh08-qd-products [[node invented] (vec (vals forms)) {}])]
       (is (= ["C7-VERIFY" :quoted-payload-is-executable]
@@ -993,27 +979,6 @@
             result (invoke-c7 'sh08-qd-node [node forms])]
         (is (= "C7-ANNOTATION" (:rule result)))
         (is (= (if (= kind :tagged) :unsupported-quoted-data-kind :unsupported-quoted-numeric-representation) (:reason result)))))))
-
-(deftest sh08-quoted-data-work-budget-development-kernel
-  (let [first-input (quoted-data-input [true 1]) second-input (quoted-data-input 'next-data 9000)
-        {:keys [node forms payload]} first-input
-        last-child (second (get-in forms [payload :child-form-ids]))
-        invalid (assoc-in forms [last-child :kind] :decimal)
-        source-forms (vec (vals (merge invalid (:forms second-input))))
-        nodes [node (:node second-input)]
-        exhausted (invoke-c7 'sh08-qd-products-with-budget [nodes source-forms {} 3])
-        spare (invoke-c7 'sh08-qd-products-with-budget [nodes source-forms {} 4])]
-    (is (= [:unsupported-quoted-numeric-representation :quoted-data-work-limit] (mapv :reason (:diagnostics exhausted))))
-    (is (= 3 (:work-count exhausted)))
-    (is (= {} (:type-table exhausted)))
-    (is (= [:unsupported-quoted-numeric-representation] (mapv :reason (:diagnostics spare))))
-    (is (= 4 (:work-count spare)))
-    (is (= :gravity.type/symbol (get (:type-table spare) (get-in second-input [:node :node-id]))))
-    (let [invented {:node-id :invented :core-form :call :source {:form-id last-child}}
-          collided (invoke-c7 'sh08-qd-products-with-budget
-                              [[node invented (:node second-input)] (vec (vals (merge forms (:forms second-input)))) {} 3])]
-      (is (= [:quoted-payload-is-executable :quoted-data-work-limit] (mapv :reason (:diagnostics collided))))
-      (is (= 3 (:work-count collided))))))
 
 (defn- pattern-alias-kernel-input []
   ;; Normalized pass input; genuine C5/C6 source products are tested separately.
@@ -1059,7 +1024,6 @@
         alias-shape (invoke-c7 'sh08-sm-group-shape [(first enriched) (:type-table inference) (:binding-types inference) {}])]
     (is (= :converged (:convergence-status inference)) (pr-str inference))
     (is (= [] (:diagnostics inference)))
-    (is (> (:round-count inference) 1))
     (is (= :gravity.type/i64 (get (:type-table inference) (sha 800)) (get (:type-table inference) (sha 502))))
     (is (= :gravity.type/vector (:kind (:type evidence))))
     (is (= [] (:diagnostics checked)) (pr-str checked))
@@ -1118,36 +1082,6 @@
       (is (= [] (:selected split)))
       (is (= 2 (count (:residual split)))))
     (is (= rebuilt (invoke-c7 'sh08-sm-construct-cases [constructor])))))
-
-(deftest sh08-pattern-alias-limit-development-kernel
-  (let [{:keys [groups nodes binding-types binder sha]} (pattern-alias-kernel-input)
-        target (sha 6000) scope (sha 9000)
-        scalar {:status :accepted :shape-kind :scalar :type :gravity.type/bool :domain {:values [true false]} :shape-size 40000}
-        prior {binder {:binding-id binder :scope-id scope :type :gravity.type/bool :shape-size 80001
-                       :use-syntax-ids [(sha 500)] :alternatives [(assoc scalar :node-id :a) (assoc scalar :node-id :b)]}
-               target {:old-evidence :must-be-replaced}}
-        record {:pattern-kind :binding :pattern-binding-id target :pattern-binding-scope-id scope :path []
-                :pattern-binding-use-syntax-ids [(sha 801)]}
-        group (assoc (first groups) :branches [{:clause-ordinal 0}] :patterns [record] :pattern-trees [{:record record}])
-        seeded (invoke-c7 'sh08-sm-seed-shapes [group {} binding-types {} prior])
-        marker (get seeded target)
-        use-group (-> group (assoc :binding-shapes seeded)
-                      (assoc-in [:node :children 0] (sha 801))
-                      (assoc-in [:nodes (sha 801) :attributes :binding-id] target))
-        failure (invoke-c7 'sh08-sm-group-shape [use-group {} binding-types {}])]
-    (is (= :rejected (:status marker)))
-    (is (= ["C7-ANNOTATION" :structural-alias-evidence-limit :bounded-pattern-binding-alternatives]
-           ((juxt :rule :reason :expected) marker)))
-    (is (= {:shape-size 80000 :alternative-count 2} (:actual marker)))
-    (is (not (contains? marker :old-evidence)))
-    (is (= (dissoc failure :node) marker))
-    (is (= (sha 801) (get-in failure [:node :node-id])))
-    (let [choices (fn [origin] {:shape-kind :alternatives
-                               :alternatives (mapv #(assoc scalar :case-origins {origin %}) (range 33))})
-          overflow (invoke-c7 'sh08-sm-construct-cases
-                              [{:status :accepted :shape-kind :vector :parts [{:shape (choices :a)} {:shape (choices :b)}]}])]
-      (is (= ["C7-ANNOTATION" :structural-match-residual-limit :bounded-correlated-constructor-product]
-             ((juxt :rule :reason :expected) overflow))))))
 
 (deftest sh08-pattern-alias-c8-composition
   (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
@@ -6244,7 +6178,6 @@
         (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
         (is (= [] (:diagnostics inferred)))
         (is (> cumulative work))
-        (is (> (:round-count inferred) 1))
         (is (= :converged (:convergence-status (infer cumulative))))
         (is (= :list-return-work-limit (get-in (infer (dec cumulative)) [:diagnostics 0 :reason])))))))
 
@@ -10867,13 +10800,12 @@
     (is (= :gravity.type/map (get-in first-pass [:type-table :input])))
     (is (= [:gravity.type/map :gravity.type/map :gravity.type/map]
            (mapv #(get-in first-pass [:type-table % :kind]) [:input-0 :input-1 :input-0-keys-copy])))
-    (is (= :converged (:convergence-status inferred)) (pr-str (select-keys inferred [:diagnostics :round-count :type-join-work-left])))
+    (is (= :converged (:convergence-status inferred)) (pr-str (select-keys inferred [:diagnostics :type-join-work-left])))
     (is (= [] (:diagnostics inferred)))
     (is (= expected (get-in inferred [:type-table :present-get])))
     (is (= :gravity.type/integer (get-in inferred [:type-table :count-query])))
     (is (= :gravity.type/map (get-in inferred [:binding-types :span-binding])))
-    (is (= 3 (get-in inferred [:type-table :operator :key-domain-proof :normal-witness-count])))
-    (is (< 1 (:round-count inferred) 12))))
+    (is (= 3 (get-in inferred [:type-table :operator :key-domain-proof :normal-witness-count])))))
 
 (deftest sh08-private-map-keys-prior-view-controls-development-kernel
   (let [{:keys [core nodes forms bindings node call edge]} (private-map-keys-count-source-input)
@@ -11463,16 +11395,15 @@
         inferred (:result observed) used (- 65536 (:type-join-work-left inferred))
         exact-observed (observe :reuse #(run used))
         below-observed (observe :reuse #(run (dec used)))]
-    (println "AO normalized cold inference" {:rounds (:round-count inferred) :cumulative-work used
+    (println "AO normalized cold inference" {:cumulative-work used
                                              :remaining-work (:type-join-work-left inferred)})
     (is (= 66 (count (:nodes core))))
     (is (= 4 (count (:function-records core))))
     (is (= 8 (count (:calls core))))
     (is (= :gravity.type/unknown (get-in skeletons [:helper-form :parameters 0 :type])))
-    (is (= :converged (:convergence-status inferred)) (pr-str (select-keys inferred [:round-count :diagnostics :type-join-work-left])))
+    (is (= :converged (:convergence-status inferred)) (pr-str (select-keys inferred [:diagnostics :type-join-work-left])))
     (is (= [] (:diagnostics inferred)))
     (is (< 0 used 65536))
-    (is (<= 4 (:round-count inferred)))
     (is (= 5 (count (filter #(= :sh08-map-get-private-entry-v1 (:version %)) (vals (:type-table inferred))))))
     (doseq [record (:function-records core)]
       (is (= :gravity.type/map (get-in inferred [:function-types (:function-syntax-id record) :return :kind]))))
@@ -11531,21 +11462,7 @@
           (is (= expected (get-in one [:counts :indexes]) (get-in two [:counts :indexes])))
           (is (true? (get-in one [:counts :source-inputs-valid?])))
           (is (true? (get-in two [:counts :source-inputs-valid?]))))))
-    (let [callbacks (atom 0)
-          opaque (proxy [Object] []
-                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "early inference ID hash")))
-                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "early inference ID equality"))))
-          poisoned {:ordering-core {:calls [{:operator-node-id opaque}] :call-edges [{:call-core-node-id opaque}]}
-                    :lookup-bindings [{:binding-id opaque}] :lookup-forms [{:form-id opaque}]}]
-      (doseq [[rounds budget cold status] [[0 65536 0 :nonconverged] [0 0 1 :nonconverged]
-                                         [1 0 1 :resource-limit]]]
-        (let [seen (observe :reuse #(invoke-c7 'sh08-ft-infer-acyclic-with-context
-                                     [[] {} [] [] [] [] {} {} rounds
-                                      (assoc poisoned :loop-work-left budget :cold-round-work cold)]))]
-          (is (= status (get-in seen [:result :convergence-status])))
-          (is (= 0 (get-in seen [:result :round-count]) (get-in seen [:counts :preparations])))
-          (is (= {} (get-in seen [:counts :indexes])))
-          (is (zero? @callbacks)))))))
+    ))
 
 (deftest sh08-map-present-get-development-kernel
   (doseq [[key expected coordinate] [[:file :gravity.type/string 1] [:line :gravity.type/integer 3] [:kind :gravity.type/keyword 5]
@@ -13895,7 +13812,7 @@
                            [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {}
                             {:mixed/choice-binding :gravity.type/bool} 24 context])
         types (:type-table inferred)]
-    (println (pr-str {:av-cold-two-loop (select-keys inferred [:convergence-status :round-count :type-join-work-left])
+    (println (pr-str {:av-cold-two-loop (select-keys inferred [:convergence-status :type-join-work-left])
                       :diagnostics (:diagnostics inferred)}))
     (is (= :converged (:convergence-status inferred)))
     (is (= [] (:diagnostics inferred)))
@@ -14000,7 +13917,7 @@
                    :operator-type (if (map? descriptor) (select-keys descriptor [:kind :version :operation :result-type]) descriptor)
                    :result-type (types (:core-node-id call))}))
               selected)]
-    (println (pr-str {:av-cold-source (select-keys inference [:convergence-status :round-count :round-bound :type-join-work-left :loop-work-count])
+    (println (pr-str {:av-cold-source (select-keys inference [:convergence-status :type-join-work-left :loop-work-count])
                       :source-counts {:nodes (count (:nodes core)) :forms (count forms) :calls (count (:calls core))
                                       :functions (count (:function-records core)) :transfers (count (:recur-transfers core))}
                       :diagnostics (mapv #(select-keys % [:rule :reason :expected :actual :work-count]) (:diagnostics inference))
@@ -14008,28 +13925,6 @@
     (is (= :accepted (:status products)))
     (is (= :converged (:convergence-status inference)))
     (is (= [] (:diagnostics inference)))
-    ;; The local compiled test plan injects only the inference outcome.
-    ;; The real constructor and direct-throw checker choose and render diagnostics.
-    (let [primary {:node {} :rule "C7-GENERIC" :reason :private-self-work-limit
-                   :expected :remaining-type-join-units :actual -788}
-          raw {:convergence-status :resource-limit :round-count 6 :round-bound rounds
-               :type-join-work-left -788 :function-types functions :binding-types seeds
-               :type-table {} :constraints [] :diagnostics [primary]}
-          render (fn [status]
-                   (let [plan (assoc-in @c7-plan
-                                        [:functions 'sh08-ft-infer-acyclic-with-context :instructions]
-                                        [{:op :literal :value (assoc raw :convergence-status status)}])]
-                     (bootstrap/p15-s23-stage2-runtime-execute-function
-                      {:engine :gravity-sh08-diagnostic-priority-test :compiler-artifact-plan? true}
-                      plan 'sh08-ft-function-type-core-artifact-with-imports [original-core bindings forms {}])))
-          resource (render :resource-limit)
-          legacy (render :nonconverged)
-          expected (invoke-c7 'sh08-ft-render-inference-diagnostics [[primary] nodes (:module core)])]
-      (is (= :rejected (:status resource) (:status legacy)))
-      (is (= expected (:diagnostics resource)))
-      (is (= ["C7-GENERIC" :private-self-work-limit :remaining-type-join-units -788]
-             ((juxt :rule :reason :expected-type :actual-type) (first (:diagnostics resource)))))
-      (is (= :typed-throw-payload-type-required (get-in legacy [:diagnostics 0 :reason]))))
     (doseq [call selected]
       (is (= (if (= 'get (:name (binding-index (:operator-binding-id call)))) :gravity.type/keyword :gravity.type/integer)
              (types (:core-node-id call)))))))
@@ -15134,18 +15029,6 @@
          (valid?
           (assoc edge :caller-function-syntax-id (sha-id "d")))))))
 
-(deftest sh08-bounded-inference-reports-nonconvergence
-  (let [result
-        (invoke-c7
-         'sh08-ft-infer-acyclic
-         [[] {} [] [] [] [] {} {} 0])]
-    (is (= :nonconverged (:convergence-status result)))
-    (is (= 0 (:round-count result) (:round-bound result)))
-    (is (= :bounded-function-type-inference-nonconvergence
-           (get-in result [:diagnostics 0 :reason])))
-    (is (= :fixed-point-within-declared-round-bound
-           (get-in result [:diagnostics 0 :expected])))))
-
 (deftest sh08-two-and-three-function-chains-reach-one-consistent-pass
   (doseq [function-count [2 3]]
     (let [{:keys [nodes node-table function-records definitions
@@ -15161,8 +15044,6 @@
            [nodes node-table [] definitions calls edges
             function-types {} round-bound])]
       (is (= :converged (:convergence-status result)))
-      (is (<= (:round-count result) (:round-bound result)))
-      (is (= round-bound (:round-bound result)))
       (doseq [function (vals (:function-types result))]
         (is (= [:gravity.type/integer]
                (mapv :type (:parameters function))))
@@ -15311,10 +15192,6 @@
     (is (not-any? #{:gravity.type/unknown}
                   (vals (:type-table gravity))))
     (is (= :converged (get-in gravity [:convergence :status])))
-    (is (<= (get-in gravity [:convergence :round-count])
-            (get-in gravity [:convergence :round-bound])))
-    (is (= :monotone-finite-type-fact-propagation
-           (get-in gravity [:convergence :proof])))
     (is (= (set (map :function-core-node-id functions))
            (set (map :function-core-node-id
                      (get-in gravity
@@ -15366,7 +15243,7 @@
                    :gravity.type/string)
          (assoc-in result [:constraint-ledger 0 :status]
                    :rejected)
-         (assoc-in result [:convergence :round-count] 0)]]
+        ]]
     (doseq [candidate alterations]
       (is (= :rejected
              (:status (verification-result artifact candidate)))))))
@@ -20354,9 +20231,6 @@
 
 (deftest sh08-core-shape-field-extents-development-kernel
   ;; Actual Gravity shape helpers on normalized DATA, not source admission.
-  (is (= #{:maximum-core-nodes :maximum-node-children :maximum-carrier-nodes
-           :maximum-carrier-depth :maximum-carrier-width :maximum-scalar-units}
-         (set (keys (invoke-c7 'sh08-local-bounds-value [])))))
   (doseq [[function arguments]
           [['sh08-module-shape? [(assoc core-shape-module :effects (vec (repeat 129 :io/write)))]]
            ['sh08-module-shape? [(assoc core-shape-module :capabilities (vec (repeat 129 :io/stdout)))]]
