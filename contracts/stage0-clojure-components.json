@@ -144,7 +144,7 @@
       "kind": "production-verification-helper",
       "owner": "sh-macro",
       "source": {"path": "bootstrap/clojure/src/gravity/macro_run_storage.clj", "namespace": "gravity.macro-run-storage"},
-      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj", "namespace": "gravity.bootstrap", "owner": "sh-macro"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/macro.clj", "namespace": "gravity.macro", "owner": "sh-macro"},
       "test": {"path": "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj", "namespace": "gravity.self-hosting.macro-run-storage-test", "registration": "standalone"}
     },
     {

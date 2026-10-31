@@ -101,7 +101,7 @@
    :test-path "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"}
   "bootstrap/clojure/src/gravity/macro_run_storage.clj"
   {:namespace gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
-   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj"
+   :consumer-path "bootstrap/clojure/src/gravity/macro.clj"
    :test-path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"}
   "bootstrap/clojure/src/gravity/reader.clj"
   {:namespace gravity.reader :owner :sh-reader :slice "SH-03"
