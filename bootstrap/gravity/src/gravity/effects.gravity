@@ -3289,17 +3289,16 @@
         type (if normal? (get transition :type) :gravity.type/never)
         ancestry {:source-call call :source-edge (get header :source-edge) :source-binding (get header :source-binding)
                   :input-node-id (get args 0) :key-node-id (get args 1) :input-shape input :transition change}
-        size (+ 1 (get input :shape-size 0))
         shape (if normal?
                 {:status :accepted :shape-kind :map :type type :node-id id :source (get header :source)
                  :constructor-origin :persistent-map-removal :coordinate-system :ordered-map-entry-value-slots
-                 :binding-links [] :parts (get change :parts) :removal ancestry :shape-size size
+                 :binding-links [] :parts (get change :parts) :removal ancestry
                  :call-links (get input :call-links [])}
                 {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get header :source)
-                 :binding-links [] :removal ancestry :shape-size size})]
+                 :binding-links [] :removal ancestry})]
     {:descriptor (assoc header :input-shape input :transition change :result-shape (if normal? shape nil)
                    :parameter-types (get header :argument-types) :return type :result-type type)
-     :shape shape :type type :shape-size size}))
+     :shape shape :type type}))
 
 (defn body-mr-family-finish [header nodes]
   (let [argument-id (get (get (get header :source-call) :argument-node-ids) 0)
@@ -3308,7 +3307,7 @@
         evidence {:kind :map-family-type-only :type :gravity.type/map :node-id argument-id :source (get argument :source)}]
     {:descriptor (assoc header :input-type-evidence evidence :input-shape nil :transition nil :result-shape nil
                    :parameter-types (get header :argument-types) :return type :result-type type)
-     :shape nil :type type :shape-size 0}))
+     :shape nil :type type}))
 
 (defn body-mr-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-map-removal-constraint-v1 :application descriptor}
@@ -4385,7 +4384,8 @@
 
 (defn body-lset-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-    (if (body-lset-ids? node call nodes bindings module)
+    (let []
+      (if (body-lset-ids? node call nodes bindings module)
       (let [args (get call :argument-node-ids) children (get node :children)
             operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
             binding (get bindings bid) receiver (get types (first args))
@@ -4460,10 +4460,9 @@
                                                  :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                     {:status :rejected :reason :list-set-conversion-source-mismatch}))
                 {:status :rejected :reason :list-set-conversion-source-mismatch})
-            {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required}))
-      {:status :rejected :reason :list-set-conversion-source-mismatch})
-    {:status :rejected :reason :list-set-conversion-source-mismatch})
-  {:status :rejected :reason :list-set-conversion-source-mismatch}))
+            {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required})))
+      {:status :rejected :reason :list-set-conversion-source-mismatch}))
+    {:status :rejected :reason :list-set-conversion-source-mismatch}))
 
 (defn body-lset-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-list-set-conversion-constraint-v1 :application descriptor}
@@ -4883,7 +4882,8 @@
 
 (defn body-pmk-source [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-    (if (body-mkeys-ids? node call nodes bindings module)
+    (let []
+      (if (body-mkeys-ids? node call nodes bindings module)
       (let [args (get call :argument-node-ids) children (get node :children)
             operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
             binding (get bindings bid) receiver (get types (first args))
@@ -4954,10 +4954,9 @@
                                                  :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                     {:status :rejected :reason :private-map-keys-source-mismatch}))
                 {:status :rejected :reason :private-map-keys-source-mismatch}))
-            {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))
-      {:status :rejected :reason :private-map-keys-source-mismatch})
-    {:status :rejected :reason :private-map-keys-source-mismatch})
-  {:status :rejected :reason :private-map-keys-source-mismatch}))
+            {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required})))
+      {:status :rejected :reason :private-map-keys-source-mismatch}))
+    {:status :rejected :reason :private-map-keys-source-mismatch}))
 
 (defn body-pmk-parameter [census core node nodes bindings forms]
   (let [record (get census :function-record) params (get record :parameter-binding-ids)
@@ -5913,7 +5912,8 @@
 
 (defn body-vemp-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-    (if (body-vemp-ids? node call nodes bindings module)
+    (let []
+      (if (body-vemp-ids? node call nodes bindings module)
       (let [args (get call :argument-node-ids) children (get node :children)
             operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
             binding (get bindings bid) receiver (get types (first args))
@@ -5981,10 +5981,9 @@
                                                :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]}}
                   {:status :rejected :reason :vector-empty-source-mismatch}))
               {:status :rejected :reason :vector-empty-source-mismatch})
-            {:status :rejected :reason :vector-empty-vector-type-required}))
-      {:status :rejected :reason :vector-empty-source-mismatch})
-    {:status :rejected :reason :vector-empty-source-mismatch})
-  {:status :rejected :reason :vector-empty-source-mismatch}))
+            {:status :rejected :reason :vector-empty-vector-type-required})))
+      {:status :rejected :reason :vector-empty-source-mismatch}))
+    {:status :rejected :reason :vector-empty-source-mismatch}))
 
 (defn body-vemp-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-vector-empty-constraint-v1 :application descriptor}
@@ -7445,17 +7444,17 @@
       (let [kind (body-pc-value-kind value) type (body-pc-literal-type kind)
             domain (get shape :domain) values (get domain :values)
             fields (if (= :core mode)
-                     #{:node-id :type :source :binding-links :shape-size :status :shape-kind :domain}
-                     #{:status :type :data-origin :source :binding-links :shape-size :shape-kind :domain})]
+                     #{:node-id :type :source :binding-links :status :shape-kind :domain}
+                     #{:status :type :data-origin :source :binding-links :shape-kind :domain})]
         (if (if (= :core mode)
               (if (map? node) (if (= :literal (get node :core-form)) (= kind (get (get node :attributes) :literal-kind)) false) false)
               (= :quoted-data mode))
-          (if (if (map? shape) (if (= 8 (count shape))
+          (if (if (map? shape) (if (= 7 (count shape))
                 (loop [keys (keys shape)] (if (= 0 (count keys)) true
                   (if (keyword? (first keys)) (recur (rest keys)) false))) false) false)
             (if (body-all?
                   [(= fields (set (keys shape))) (keyword? type) (= type (get shape :type))
-                   (= :accepted (get shape :status)) (= :scalar (get shape :shape-kind)) (= 1 (get shape :shape-size))
+                   (= :accepted (get shape :status)) (= :scalar (get shape :shape-kind))
                    (if (vector? (get shape :binding-links)) (= 0 (count (get shape :binding-links))) false)
                    (if (= :core mode) (if (= id (get shape :node-id)) (= (get node :source) (get shape :source)) false)
                      (if (if (= (get (get shape :source) :form-id) (get (get shape :data-origin) :form-id))
