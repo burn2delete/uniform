@@ -88,3 +88,22 @@ unchanged. Full SH-23, PKG and namespace completion receive no credit.
 Records are under /tmp/uniform-package-selection-evidence/; controls, verifier
 and logs use /tmp/uniform-package-selection-*. Exact lint, independent review,
 own CI and clean actual-main composition/preflight remain required.
+
+## Actual Effects main composition
+
+Main advanced tob2f4cbbc598ec1a0e1e3f38743ba2beffa708bd6, tree
+459f9bdb482056a3b7150fde799003ca3f777690, through integrated Effects PR699.
+Package source7a36e77aaef30d6efa9240790f3d35d59ce57cfa merges that actual
+parent normally. Three shared metadata conflicts are resolved from four complete
+parent files, keeping every incoming helper, owner, diagnostic regression and
+primary catalog/count formula. The exact original Package bodies, wrappers,
+tests and registration semantics survive; its helper index is found by id.
+
+Fresh composition passes Package/compatibility19/281, isolated C8/C15 leaves
+15/352, ownership33/1013, language6/11, docs240/19 and roadmap/governance.
+The current producer and verifier again match all sixteen original complete/text
+captures and both actual source hashes. Full history, supplied identities,
+provenance, eight refusals, exact old public arglists and normalized source
+bodies conserve. All unrelated incoming Effects/Lowering/CI files remain exact
+main. These are working-source observations; the final committed tuple still
+requires contextual lint, independent review, own CI and exact clean preflight.

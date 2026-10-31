@@ -98,6 +98,10 @@
   {:namespace gravity.package :owner :sh-package-build :slice "SH-23"
    :consumer-path "bootstrap/clojure/src/gravity/build/package_selection.clj"
    :test-path "bootstrap/clojure/test/gravity/package/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/effects.clj"
+  {:namespace gravity.effects :owner :sh-effects :slice "SH-09"
+   :consumer-path "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj"
+   :test-path "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj"}
   "bootstrap/clojure/src/gravity/lowering.clj"
   {:namespace gravity.lowering :owner :master-coordinator :slice "SH-17"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-012-p15-s23-c14-policy-base-through-p15-s23-b2-c17-expected-source-content-hash.clj"
@@ -169,6 +173,7 @@
 
  :module-owners
  {"bootstrap/clojure/src/gravity/package.clj" :sh-package-build
+  "bootstrap/clojure/src/gravity/effects.clj" :sh-effects
   "bootstrap/clojure/src/gravity/lowering.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/backend/js.clj" :sh-target-js
   "bootstrap/clojure/src/gravity/backend/jvm.clj" :sh-target-jvm
