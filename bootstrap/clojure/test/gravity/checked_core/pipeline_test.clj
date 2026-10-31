@@ -17,12 +17,15 @@
     sh07-core-neutral-value sh07-core-macro-trace sh07-core-root-syntax-id
     sh07-core-decimal-evidence-complete! sh07-core-semantic-macro-trace
     sh07-core-source-occurrence-context sh07-core-build-form-tree sh07-core-source-map-order
-    sh07-core-parameter-binding-paths])
+    sh07-core-parameter-binding-paths sh07-core-lineage-with-semantic-trace sh07-core-lineage
+    sh07-core-projection-binding-input sh07-b13-alias-name sh07-b13-fragment-record
+    sh07-b13-fragment-manifest sh07-b13-binding-order sh07-b13-fragment-coverage
+    sh07-b13-module-assembly-manifest])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 22 (count publics)))
+    (is (= 30 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -31,7 +34,7 @@
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= :none (:admission api)))
       (is (= contract (:gravity/namespace-contract (meta (publics name))))))
-    (is (= '#{source-occurrence-context projected-source-mismatch}
+    (is (= '#{source-occurrence-context projected-source-mismatch lineage-with-semantic-trace}
            (set (keys (:private-implementation contract)))))
     (doseq [[name api] (:private-implementation contract)
             :let [v (ns-resolve 'gravity.checked-core name)]]
@@ -109,6 +112,69 @@
     (is (= "actual.gravity" (core/source-path-from-resolution
                               {:gravity-resolution-boundary {:authenticated-resolution-request
                                                              {:provenance {:actual-source-path "actual.gravity"}}}} ops)))))
+
+(def ^:private lineage-input
+  {:artifact-id :authenticated-owner-id
+   :gravity-resolution-boundary
+   {:resolved-analysis {:module-contract {:namespace 'unit :profile :meta :target :jvm :effects [] :capabilities [] :safety :safe :exports ['value]}
+                        :binding-table [{:binding-id :path-specific-id :name 'value :kind :var :namespace 'unit :visibility :public}]
+                        :resolution-table [{:reference-syntax-id :syntax :symbol 'value :position :value :resolution-order :local-binding}]
+                        :alias-table [{:alias 'dep :namespace 'dependency}]
+                        :lexical-scope-graph {:scope-count 1 :edge-count 0 :status :accepted}}}
+   :sh05-macro-artifact
+   {:expanded-syntax-stream [{:form '(def value 1)}] :macro-expansion-trace []
+    :gravity-macro-boundary {:authenticated-sh04-artifact {:c2-reader-artifact
+                                                        {:source-unit-record {:bytes-hash :source-byte-hash :path "/unit.gravity"}}}}}})
+
+(deftest lineage-separates-authenticated-owner-identity-from-semantic-projection
+  (let [ops (operations) result (core/lineage lineage-input ops)
+        changed-owner (core/lineage (assoc lineage-input :artifact-id :different-authenticated-id) ops)]
+    (is (= result (b/sh07-core-lineage lineage-input)))
+    (is (= :source-byte-hash (:source-revision-id result)))
+    (is (= :authenticated-owner-id (:authenticated-sh06-artifact-id result)))
+    (is (= (:sh06-semantic-projection-id result) (:sh06-artifact-id result)))
+    (is (= (dissoc result :authenticated-sh06-artifact-id)
+           (dissoc changed-owner :authenticated-sh06-artifact-id)))
+    (doseq [changed [(assoc-in lineage-input [:sh05-macro-artifact :expanded-syntax-stream 0 :form] '(def value 2))
+                     (assoc-in lineage-input [:gravity-resolution-boundary :resolved-analysis :binding-table 0 :name] 'other)
+                     (assoc-in lineage-input [:gravity-resolution-boundary :resolved-analysis :module-contract :profile] :hosted)
+                     (assoc-in lineage-input [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                                              :c2-reader-artifact :source-unit-record :bytes-hash] :changed-source)]]
+      (is (not= (:sh06-semantic-projection-id result) (:sh06-semantic-projection-id (core/lineage changed ops)))))))
+
+(deftest fragments-preserve-binding-and-reference-order-and-reject-undeclared-aliases
+  (let [ops (operations) lineage {:source-revision-id :source :sh06-semantic-projection-id :semantic :alias-table-id :aliases}
+        trees [{:root {:form-id :root-a} :records [{:form-id :root-a :syntax-id :syntax-a}]}
+               {:root {:form-id :root-b} :records [{:form-id :root-b :syntax-id :syntax-b}]}]
+        bindings [{:binding-id :external} {:binding-id :b :definition-syntax-id :syntax-b}
+                  {:binding-id :a :definition-syntax-id :syntax-a}]
+        resolutions [{:reference-syntax-id :syntax-a :binding-id :external :resolution-order :alias-qualified-required-binding :symbol 'dep/value}
+                     {:reference-syntax-id :syntax-a :binding-id :a :resolution-order :local-binding :symbol 'value}]
+        aliases [{:alias 'dep}]
+        ordered (core/binding-order :module trees bindings ops)
+        fragments (core/fragment-manifest lineage :module trees ordered resolutions aliases ops)
+        coverage (core/fragment-coverage :module (mapcat :records trees) ordered resolutions fragments ops)
+        assembly (core/module-assembly-manifest lineage fragments ops)]
+    (is (= [:a :b :external] (mapv :binding-id ordered)))
+    (is (= [0 1] (mapv :ordinal fragments)))
+    (is (= [:a] (:local-binding-ids (first fragments))))
+    (is (= [:external] (:external-binding-ids (first fragments))))
+    (is (= ['dep] (:alias-names (first fragments))))
+    (is (= [:syntax-a :syntax-a] (:resolution-reference-syntax-ids (first fragments))))
+    (is (= [:root-a :root-b] (:covered-root-form-ids coverage) (:ordered-fragment-ids assembly)))
+    (is (= [:a :b] (:covered-local-binding-ids coverage)))
+    (is (= :source (:content-id assembly) (:source-revision-id assembly)))
+    (is (= :semantic (:module-id assembly) (:sh06-semantic-projection-id assembly)))
+    (is (= fragments (b/sh07-b13-fragment-manifest lineage :module trees ordered resolutions aliases)))
+    (is (= ["C6-VERIFY" :fragment-undeclared-alias]
+           ((juxt :id :reason) (ex-data (caught #(core/fragment-record lineage :module 0 (first trees) ordered resolutions [] ops))))))))
+
+(deftest projection-binding-input-excludes-only-the-existing-nonsemantic-envelope-fields
+  (let [ops (operations) request {:forms [{:form-id :form :value 1}] :projection-binding :old :provenance {:source-path "/a"}}
+        first-input (core/projection-binding-input request ops)]
+    (is (= first-input (b/sh07-core-projection-binding-input request)))
+    (is (= first-input (core/projection-binding-input (assoc request :projection-binding :new :provenance {:source-path "/b"}) ops)))
+    (is (not= first-input (core/projection-binding-input (assoc-in request [:forms 0 :value] 2) ops)))))
 
 (deftest module-and-source-contract-drift-reject-before-binding-publication
   ;; Real current source bytes with isolated compiler result ports. No admission.
@@ -189,7 +255,7 @@
 
 (deftest every-stage-operation-and-compatibility-root-invalidates-receipts
   (let [private-stages (map #(ns-resolve 'gravity.checked-core %)
-                           '[source-occurrence-context projected-source-mismatch])
+                           '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace])
         vars (set (concat (vals (ns-publics 'gravity.checked-core)) private-stages
                          (map seed-var projection-compatibility-names) (filter var? (vals (operations)))
                          (map seed-var '[checked-core-stage-operations sh07-core-source-path sh07-core-plan-identities
@@ -237,7 +303,7 @@
 
 (deftest construction-roots-detect-the-new-runtime-inputs-before-owner-work
   (let [expected (set (concat (vals (ns-publics 'gravity.checked-core))
-                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch])
+                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace])
                               (map seed-var projection-compatibility-names)
                               (filter var? (vals (operations)))
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input

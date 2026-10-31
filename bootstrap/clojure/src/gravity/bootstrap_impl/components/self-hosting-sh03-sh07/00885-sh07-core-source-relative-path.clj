@@ -65,6 +65,17 @@
  sh07-core-source-path-from-resolution
  sh07-core-value-kind)
 
+(declare
+ sh07-b13-alias-name
+ sh07-b13-binding-order
+ sh07-b13-fragment-coverage
+ sh07-b13-fragment-manifest
+ sh07-b13-fragment-record
+ sh07-b13-module-assembly-manifest
+ sh07-core-lineage
+ ^{:private true} sh07-core-lineage-with-semantic-trace
+ sh07-core-projection-binding-input)
+
 (def
  ^{:private true} checked-core-stage-defaults
  {:p15-s23-stage2-compiler-artifact-plan
@@ -74,10 +85,13 @@
   :sh07-core-current-source-key #'sh07-core-current-source-key,
   :sh07-core-source-path-from-resolution
   #'sh07-core-source-path-from-resolution,
+  :sh07-b13-fragment-record #'sh07-b13-fragment-record,
   :p15-s23-stage2-runtime-execute-function
   #'p15-s23-stage2-runtime-execute-function,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh07-core-lineage-with-semantic-trace
+  #'sh07-core-lineage-with-semantic-trace,
   :sh07-core-children #'sh07-core-children,
   :read-forms #'read-forms,
   :sh07-core-projected-form-id #'sh07-core-projected-form-id,
@@ -88,12 +102,14 @@
   #'p15-s23-c6c10-literal-scalar-descriptor,
   :c-backend-resolve-p15-s23-compiler-source-path
   #'c-backend-resolve-p15-s23-compiler-source-path,
+  :sh07-b13-alias-name #'sh07-b13-alias-name,
   :sh07-core-source-occurrence-context
   #'sh07-core-source-occurrence-context,
   :sh07-core-neutral-value #'sh07-core-neutral-value,
   :sh03-reader-host-character-value!
   #'sh03-reader-host-character-value!,
   :sh07-core-decimal-descriptor #'sh07-core-decimal-descriptor,
+  :sh07-core-semantic-macro-trace #'sh07-core-semantic-macro-trace,
   :sh07-core-projected-source-mismatch
   #'sh07-core-projected-source-mismatch,
   :sh07-core-projected-syntax-id #'sh07-core-projected-syntax-id,

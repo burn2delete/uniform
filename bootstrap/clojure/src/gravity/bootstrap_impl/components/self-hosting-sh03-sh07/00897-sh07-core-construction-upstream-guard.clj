@@ -130,7 +130,25 @@
  #'sh07-core-source-map-order
  #'sh07-core-source-occurrence-context
  #'sh07-core-source-path-from-resolution
- #'sh07-core-value-kind]
+ #'sh07-core-value-kind
+ #'gravity.checked-core/alias-name
+ #'gravity.checked-core/binding-order
+ #'gravity.checked-core/fragment-coverage
+ #'gravity.checked-core/fragment-manifest
+ #'gravity.checked-core/fragment-record
+ #'gravity.checked-core/module-assembly-manifest
+ #'gravity.checked-core/lineage
+ #'gravity.checked-core/lineage-with-semantic-trace
+ #'gravity.checked-core/projection-binding-input
+ #'sh07-b13-alias-name
+ #'sh07-b13-binding-order
+ #'sh07-b13-fragment-coverage
+ #'sh07-b13-fragment-manifest
+ #'sh07-b13-fragment-record
+ #'sh07-b13-module-assembly-manifest
+ #'sh07-core-lineage
+ #'sh07-core-lineage-with-semantic-trace
+ #'sh07-core-projection-binding-input]
     (filter var? (vals checked-core-stage-defaults))))
   (mapv
    (fn
