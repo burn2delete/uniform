@@ -129,4 +129,3 @@
                                    :test-target "subject.gravity" input)
                nil (catch clojure.lang.ExceptionInfo observed observed))))
     (is (= [["subject.gravity" :test-target input]] @seen))))
-
