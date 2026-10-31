@@ -2,15 +2,20 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.macro-run-storage :as macro-run-storage]
             [gravity.macro :as macro]))
 
 (defn- operations [] ((ns-resolve 'gravity.bootstrap 'macro-stage-operations)))
 (defn- caught [operation]
   (try (operation) nil (catch clojure.lang.ExceptionInfo error error)))
-(defn- fixture-path [extension]
-  (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-05/accepted/defn-basic" extension))))
-(defn- context [extension]
-  (let [source (fixture-path extension)
+(defn- fixture-path
+  ([extension] (fixture-path extension "defn-basic"))
+  ([extension basename]
+   (.getCanonicalPath (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-05/accepted/" basename extension)))))
+(defn- context
+  ([extension] (context extension "defn-basic"))
+  ([extension basename]
+  (let [source (fixture-path extension basename)
         reader (.getCanonicalPath (io/file bootstrap/sh03-reader-source-relative-path))
         invocation {:reader-source-path reader :authenticated-envelope-options {:source :development-current}}
         c3 (bootstrap/compiler-c3-syntax-source-artifact
@@ -21,7 +26,7 @@
         syntax (second (bootstrap/sh05-source-syntax-stream c3))
         request (bootstrap/sh05-default-macro-request source c3 module syntax (second forms))]
     {:source source :invocation invocation :c3 c3 :request request
-     :binding (bootstrap/sh05-macro-current-binding! source)}))
+     :binding (bootstrap/sh05-macro-current-binding! source)})))
 (def ^:private gravity-context (delay (context ".gravity")))
 (def ^:private qst-context (delay (context ".qst")))
 
@@ -29,7 +34,7 @@
   (let [contract (:gravity/namespace-contract (meta #'macro/expand))
         ops (operations)]
     (is (= 'gravity.macro (:namespace contract)))
-    (is (= 14 (count (:public-api contract))))
+    (is (= 50 (count (:public-api contract))))
     (is (= (set (keys (:public-api contract))) (set (keys (ns-publics 'gravity.macro)))))
     (is (= (set (:operation-inputs contract)) (set (keys ops))))
     (doseq [[name api] (:public-api contract)]
@@ -122,3 +127,156 @@
                                                           (fn [] (throw (StackOverflowError.))) ops)))]
       (is (= "C4-DEPTH" (:id data)))
       (is (= "java.lang.StackOverflowError" (get-in data [:facts :contained-host-error]))))))
+
+(defn- artifact-context [extension]
+  (let [{:keys [source c3 invocation] :as ctx} (context extension "defn-multiple")]
+    (assoc ctx :artifact (macro/assemble source c3 false invocation (operations)))))
+(def ^:private multi-gravity (delay (artifact-context ".gravity")))
+(def ^:private multi-qst (delay (artifact-context ".qst")))
+(defn- private-var [name] (or (ns-resolve 'gravity.bootstrap name)
+                            (throw (ex-info "Required seed seam is absent" {:name name}))))
+(defn- with-report-context [operation]
+  (let [ctx (atom {:open? true :owner-thread-id (.getId (Thread/currentThread))
+                   :phase :construction :epoch 0 :receipts [] :executions {}
+                   :reuses {} :check-catalogs {} :failed-report-executions 0})]
+    (try
+      (with-bindings {(private-var '*sh07-proof-transaction-context*) ctx}
+        (operation ctx))
+      (finally (swap! ctx assoc :open? false :receipts [])))))
+
+(deftest multi-artifact-construction-and-verification-are-co-canonical
+  (doseq [ctx [multi-gravity multi-qst]]
+    (let [{:keys [source c3 invocation artifact]} @ctx
+          ops (operations)
+          report (macro/verify artifact false invocation ops)]
+      (is (= :passed (:status report)))
+      (is (= report (bootstrap/sh05-macro-artifact-verification artifact invocation)))
+      (is (= artifact (bootstrap/sh05-macro-artifact-from-c3-artifact source c3 invocation)))
+      (is (= 2 (:expanded-defn-count artifact)))
+      (is (= '[(def add-one (fn [x] (+ x 1))) (def double-value (fn [x] (+ x x)))]
+             (:expanded-forms artifact)))
+      (is (= "sha256:aa7c78fa3b2fbd8568f6b1baf92f224876d2452ae20e107b48614aba13039901"
+             (:artifact-id artifact)))
+      (is (= (:artifact-id artifact) (macro/artifact-id artifact ops)))
+      (is (= source (get-in artifact [:provenance :source-path])))
+      (is (= (mapv :syntax/id (subvec (bootstrap/sh05-source-syntax-stream c3) 1))
+             (mapv :input-syntax-id (:macro-expansion-trace artifact)))))))
+
+(deftest invalid-parent-rejects-before-macro-work
+  (let [{:keys [source c3 invocation]} @multi-gravity
+        calls (atom 0)
+        ops (assoc (operations) :sh05-macro-current-binding! (fn [& _] (swap! calls inc)))
+        error (caught #(macro/assemble source (assoc c3 :artifact-id "forged") false invocation ops))]
+    (is (= "C4-RETURN" (:id (ex-data error))))
+    (is (= [:authenticated-c3-syntax-parent] (:missing-fields (ex-data error))))
+    (is (zero? @calls))))
+
+(deftest artifact-forgeries-and-physical-provenance-drift-fail-verification
+  (let [{:keys [artifact invocation]} @multi-gravity
+        runs (get-in artifact [:gravity-macro-boundary :expansion-runs])
+        mutations [(assoc artifact :expanded-defn-count 99)
+                   (assoc-in artifact [:gravity-macro-boundary :expansion-runs] (vec (reverse runs)))
+                   (assoc-in artifact [:gravity-macro-boundary :expansion-runs] (vec (rest runs)))
+                   (assoc-in artifact [:expanded-syntax-stream 1 :origin] [])
+                   (assoc-in artifact [:macro-environment :macros 0 :version] "forged")
+                   (assoc-in artifact [:gravity-macro-boundary :plan-binding :self-hosted?] true)
+                   (assoc-in artifact [:capability-based-proof :status] :forged)]
+        path-drift (assoc-in artifact [:provenance :source-path] "different-source.gravity")]
+    (with-report-context
+      (fn [_]
+        (doseq [changed (conj mutations path-drift)]
+          (let [report (bootstrap/sh05-macro-artifact-verification changed invocation)]
+            (is (= :failed (:status report)))
+            (is (seq (:failed-checks report)))))))
+    (is (= (:artifact-id artifact) (macro/artifact-id path-drift (operations))))
+    (is (= {:ordinary {:digest-ref 0} :metadata {:doc "kept"}}
+           (macro/path-neutral-value {:ordinary {:digest-ref 0} :metadata {:doc "kept"}
+                                      :actual-source-path "/physical"} (operations))))))
+
+(defn- assert-interposition-misses [interpose]
+  (let [{:keys [artifact invocation]} @multi-gravity]
+    (with-report-context
+      (fn [ctx]
+        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
+        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
+        (is (= 1 (get-in @ctx [:executions :sh05])))
+        (is (= 1 (get-in @ctx [:reuses :sh05])))
+        (interpose #(dotimes [_ 2]
+                      (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))))
+        (is (= 3 (get-in @ctx [:executions :sh05])))
+        (is (= 1 (get-in @ctx [:reuses :sh05])))
+        (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
+        (is (= 2 (get-in @ctx [:reuses :sh05])))))))
+
+(deftest receipt-reuse-requires-current-stage-and-seed-operations
+  (doseq [v [#'macro/verify #'macro/expanded-syntax-object
+             #'bootstrap/sh05-macro-gravity-verifier-report
+             #'macro-run-storage/exact?]]
+    (let [original @v calls (atom 0)]
+      (assert-interposition-misses
+       (fn [operation]
+         (with-redefs-fn {v (fn [& args] (swap! calls inc) (apply original args))} operation)))
+      (is (pos? @calls))))
+  (let [defaults (private-var 'macro-stage-defaults)
+        original @defaults
+        copied (reduce-kv assoc {} original)]
+    (is (= original copied))
+    (is (not (identical? original copied)))
+    (assert-interposition-misses
+     #(with-redefs-fn {defaults (assoc copied :verifier-root (fn [] :not-a-guard))} %)))
+  (let [cache (private-var 'sh05-macro-pinned-plan-identities)
+        replacement (atom @@cache)]
+    (assert-interposition-misses #(with-redefs-fn {cache replacement} %)))
+  (let [version (private-var 'sh05-macro-version)
+        replacement (String. ^String @version)]
+    (is (= @version replacement))
+    (is (not (identical? @version replacement)))
+    (assert-interposition-misses #(with-redefs-fn {version replacement} %))))
+
+(deftest identical-value-thread-binding-disables-receipt-reuse
+  (let [v #'macro/verify dynamic? (.isDynamic v) original @v]
+    (try
+      (.setDynamic v true)
+      (assert-interposition-misses #(with-bindings {v original} (%)))
+      (finally (.setDynamic v dynamic?)))))
+
+(deftest invocation-rejection-precedes-the-stage-verifier
+  (let [{:keys [artifact]} @multi-gravity calls (atom 0)
+        options (private-var 'sh03-reader-authenticated-envelope-options)]
+    (with-redefs-fn
+      {options (fn [& _] (throw (ex-info "invalid invocation" {:id "TEST-INVOCATION"})))
+       #'macro/verify (fn [& _] (swap! calls inc))}
+      #(is (= "TEST-INVOCATION"
+              (:id (ex-data (caught (fn [] (bootstrap/sh05-macro-artifact-verification artifact {:invalid true}))))))))
+    (is (zero? @calls))))
+
+(deftest interrupted-macro-verification-unwinds-production-receipt-lifetime
+  (let [{:keys [artifact source invocation]} @multi-gravity
+        interrupt (InterruptedException. "macro verification")
+        cleanup (atom nil)
+        observer (private-var '*sh07-proof-transaction-cleanup-observer*)
+        ;; Isolate lifetime control flow; no checked-core admission runs.
+        prerequisites {(private-var 'sh07-core-assert-pinned-revision!) (fn [& _] {})
+                       (private-var 'sh07-proof-transaction-source-snapshot) (fn [_] {})
+                       (private-var 'sh07-proof-transaction-core-snapshot) (fn [] {})}
+        observed
+        (try
+          (with-redefs-fn prerequisites
+            #(with-bindings {observer (fn [value] (reset! cleanup value))}
+               (bootstrap/sh07-core-file-proof-transaction
+                source
+                (fn [_]
+                  (bootstrap/sh05-macro-artifact-verification artifact invocation)
+                  (with-redefs [bootstrap/sh05-macro-gravity-verifier-report (fn [& _] (throw interrupt))]
+                    (bootstrap/sh05-macro-artifact-verification artifact invocation))))))
+          (catch InterruptedException error [error (.isInterrupted (Thread/currentThread))])
+          (finally (Thread/interrupted)))]
+    (is (identical? interrupt (first observed)))
+    (is (true? (second observed)))
+    (is (= {:open? false :cleanup-complete? true :retained-receipt-count 0}
+           (select-keys @cleanup [:open? :cleanup-complete? :retained-receipt-count])))))
+
+(deftest old-helper-vars-stay-unmapped
+  (doseq [suffix ["carrier" "expansion-replay" "provenance" "proof"]]
+    (is (nil? (ns-resolve 'gravity.bootstrap
+                         (symbol (str "semantic-late-sh05-macro-artifact-verification*-" suffix)))))))
