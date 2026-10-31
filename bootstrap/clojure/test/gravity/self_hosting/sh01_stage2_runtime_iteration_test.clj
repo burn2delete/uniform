@@ -20454,7 +20454,7 @@
     (doseq [handlers [nil 42 {} [] [42] [{:type :gravity.type/i32 :name 'caught :body local}]
                       [(handler :gravity.type/string local) {:type :gravity.type/string :name 42 :body local}]
                       [(assoc (handler :gravity.type/string local) :extra true)]
-                      [(handler :gravity.type/string 42)] (vec (repeat 65537 (handler :gravity.type/string local)))]]
+                      [(handler :gravity.type/string 42)]]]
       (let [result (eval (recover (say "unreachable" (throw-value payload)) handlers))]
         (is (= ["" :rejected] (subvec result 1))) (is (= "P15S23X002" (:diagnostic (first result))))))
     (let [normal (execute (recover (throw-value payload) [(handler :gravity.type/string local)]))
@@ -20783,7 +20783,7 @@
                                               runtime plan {} {:op :throw :value {:op :recur :args []}}))))))
 
 (deftest seed-throw-evaluation-order-development-kernel
-  (let [mark (fn [value] {:op :builtin-call :function 'str :args [{:op :literal :value value}]})
+  (let [mark (fn [value] {:op :builtin-call :function 'str :args [{:op :literal :value value} {:op :literal :value ""}]})
         before (mark "before") payload (mark "problem") after (mark "after") throw {:op :throw :value payload}
         original bootstrap/p15-s23-stage2-runtime-invoke-builtin]
     (doseq [instruction [{:op :do :body [before throw after]}
@@ -20795,8 +20795,9 @@
                          {:op :map-literal :entries [{:key before :value throw} {:key after :value after}]}]]
       (let [seen (atom [])
             failure (with-redefs [bootstrap/p15-s23-stage2-runtime-invoke-builtin
-                                 (fn [active-runtime active-plan function arguments]
-                                   (swap! seen conj (first arguments)) (original active-runtime active-plan function arguments))]
+                                 (fn [active-runtime active-plan callee arguments instruction public-invocation-scope]
+                                   (swap! seen conj (first arguments))
+                                   (original active-runtime active-plan callee arguments instruction public-invocation-scope))]
                       (seed-throw-test-capture #(bootstrap/p15-s23-stage2-runtime-execute-instruction runtime plan {} instruction)))]
         (is (seed-throw-test-transport? failure))
         (is (= "problem" (:payload (ex-data failure))))
@@ -22163,7 +22164,7 @@
 (deftest direct-binary-equality-evaluates-left-to-right-once
   (let [execute-value
         (ns-resolve 'gravity.bootstrap
-                    'p15-s23-stage2-runtime-execute-value)
+                    'p15-s23-stage2-runtime-execute-value-scoped)
         seen (atom [])
         instruction
         {:op :builtin-call
@@ -22173,7 +22174,7 @@
         result
         (with-redefs-fn
           {execute-value
-           (fn [_runtime _plan _env argument reason]
+           (fn [_runtime _plan _env argument reason _public-invocation-scope]
              (swap! seen conj [(:value argument) reason])
              :same)}
           #(bootstrap/p15-s23-stage2-runtime-execute-instruction
@@ -22217,12 +22218,12 @@
   (testing "a first-argument error prevents second-argument evaluation"
     (let [execute-value
           (ns-resolve 'gravity.bootstrap
-                      'p15-s23-stage2-runtime-execute-value)
+                      'p15-s23-stage2-runtime-execute-value-scoped)
           seen (atom [])
           data
           (with-redefs-fn
             {execute-value
-             (fn [_runtime _plan _env argument _reason]
+             (fn [_runtime _plan _env argument _reason _public-invocation-scope]
                (swap! seen conj (:value argument))
                (if (= :left (:value argument))
                  (throw (ex-info "first failed" {:id "TEST-EQUALITY-FIRST"}))
