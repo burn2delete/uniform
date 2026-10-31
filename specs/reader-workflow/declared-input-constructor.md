@@ -89,7 +89,8 @@ The native test loader now includes the existing hosted-view helper and calls
 the original validator's strict three-argument body through its spy, avoiding
 recursive two-argument redefinition. Production native guards are unchanged.
 
-The actual command's private `gravity.build.invocation/reader-build!` still
+At this constructor candidate's historical source cut, the actual command's
+private `gravity.build.invocation/reader-build!` still
 unconditionally throws `T1004 :reader-effectful-bridge-unavailable`. That is the
 remaining concrete owner interface: after this constructor is reviewed, its
 body must call the fixed `gravity.bootstrap/reader-declared-input-build!` with
@@ -98,6 +99,13 @@ needed. The command dispatcher also currently discards the returned build value;
 its existing `--format json` success-output path must be connected by its owner.
 This Reader candidate does not edit the issuer, command, Stage2 builtin/bridge
 or emitter files and does not claim the normal command is connected.
+
+Current source status after PR692, merge `482417c3b241544685045e9ec3578a1be9e0e39e`:
+the fixed constructor is connected to the normal build invocation and JSON
+dispatcher. The paragraph above records the earlier candidate, not the current
+API. Opt-in actual normal-entry acceptance definitions and their unrun status
+are described in [normal effectful acceptance definitions](normal-effectful-acceptance-definitions.md).
+Source integration does not establish genuine effectful execution acceptance.
 
 The existing paired `reader-extension-binding/granted.qst` and `.gravity`
 fixtures and replay assertion definitions are conserved and remain unrun.
