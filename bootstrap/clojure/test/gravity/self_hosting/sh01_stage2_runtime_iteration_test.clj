@@ -6644,7 +6644,7 @@
         (is (= {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
                            :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :provider-cpu-bound :not-established} (:membership-policy descriptor)))
         (is (= (if (= :normal (:application descriptor)) :gravity.type/bool :gravity.type/never)
@@ -11635,7 +11635,7 @@
                       (is (= [:memory/allocate] (:latent-effects descriptor)))
                       (is (= (if invoked? [:memory/allocate] []) (:direct-effects descriptor)))
                       (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
-                      (is (= :not-established (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
+                      (is (not (contains? (get descriptor :construction-policy) :value-work)))
                       (is (= (if invoked? #{:memory/allocate} #{}) (get-in graph [:nodes id :direct])))
                       (is (= invoked? (:normal-completion-possible? allocation)))
                       (is (= :runtime-value-dependent (get-in allocation [:extent :result-cardinality])))
@@ -12374,7 +12374,7 @@
         (is (= (if normal? [:memory/allocate] []) (:direct-effects descriptor)))
         (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
         (is (= :normal-invocation-even-empty (get-in descriptor [:construction-policy :allocation])))
-        (is (= :not-established (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
+        (is (not (contains? (get descriptor :construction-policy) :value-work)))
         (is (= (get-in descriptor [:construction-policy :operation]) (:behavior allocation)))
         (is (= (:input-element-count descriptor) (get-in allocation [:extent :upper-bound])))
         (is (= :runtime-value-dependent (get-in allocation [:extent :result-cardinality])))
@@ -15946,7 +15946,8 @@
         (is (= :gravity.type/bool (:return descriptor) (:result-type descriptor)))
         (is (= :sh08-keyword-set-inequality-v1 (:version record)))
         (is (= 'gravity.collections (:semantic-owner record)))
-        (is (= :both-complete-domains-before-value-comparison (get-in record [:type-domain :validation])))
+        (is (= :both-complete-before-result (get-in record [:equality-policy :domain-validation])))
+        (is (not (contains? record :type-domain)))
         (is (= :keyword-only (get-in record [:equality-policy :members])))
         (is (= record (get-in (first (filter #(= id (get-in % [:lhs :core-node-id])) rows)) [:solution :keyword-set-equality])))
         (is (= :finite-persistent-keyword-sets (get-in descriptor [:inequality-policy :domain])))
@@ -16274,7 +16275,8 @@
         (is (= :gravity.type/bool (:return descriptor) (:result-type descriptor)))
         (is (= :sh08-vector-inequality-v1 (:version record)))
         (is (= 'gravity.collections (:semantic-owner record)))
-        (is (= :both-complete-domains-before-value-comparison (get-in record [:type-domain :validation])))
+        (is (= :equal (get-in record [:equality-policy :count])))
+        (is (not (contains? record :type-domain)))
         (is (= :unsupported (get-in record [:equality-policy :numeric])))
         (is (= record (get-in (first (filter #(= id (get-in % [:lhs :core-node-id])) rows)) [:solution :vector-equality])))
         (is (= :finite-persistent-vectors (get-in descriptor [:inequality-policy :domain])))
@@ -24536,7 +24538,7 @@
         (is (= :sh08-string-set-contains-v2 (:version descriptor)))
         (is (= :gravity.type/bool (:result-type descriptor) (get-in facts [:type-table id])))
         (is (= :guarded-atomic-string-leaf (get-in descriptor [:membership-policy :comparison])))
-        (is (= :gravity/string-set-membership-logical-content-work-v1 (get-in descriptor [:membership-policy :value-work-model])))
+        (is (not (contains? (get descriptor :membership-policy) :value-work-model)))
         (is (= #{} (:direct record)))
         (is (nil? (:allocation record)))
         (is (= (get-in descriptor [:source-call :ordered-evaluation-node-ids]) (:dependencies record) (:evaluated-children record)))))
@@ -24680,7 +24682,7 @@
         (is (= :character-only (:members policy) (:needle policy)))
         (is (= :all-before-hit-or-miss (:domain-validation policy)))
         (is (= :validated-before-result (:member-uniqueness policy)))
-        (is (= :gravity/character-set-membership-logical-content-work-v1 (:value-work-model policy)))
+        (is (not (contains? policy :value-work-model)))
         (is (= :existing-atomic-character-ir-values (:character-premise policy)))
         (is (= :c2-owned (:source-decoding policy)))
         (is (= :not-established (:host-surrogate-rejection policy) (:carrier-text-codepoint-consistency policy)))
@@ -26733,7 +26735,9 @@
         (is (= :same-established-generic-integer-leaves (get-in policy [:equality-policy :numeric])))
         (is (= :sh08-vector-keyword-set-leaf-equality-v1 (get-in policy [:keyword-set-leaf-equality :version])))
         (is (= :sh08-keyword-set-equality-v1 (get-in policy [:keyword-set-leaf-equality :equality-version])))
-        (is (= :aggregate-repeated-owned-leaf-reservations (get-in policy [:keyword-set-leaf-equality :budget])))
+        (is (= :owned-pair-equality-with-remaining-vector-allowance
+               (get-in policy [:keyword-set-leaf-equality :comparison-validation])))
+        (is (not (contains? (get-in policy [:keyword-set-leaf-equality]) :budget)))
         (is (= :none (get-in policy [:keyword-set-leaf-equality :per-leaf-reset])))
         (is (= 'gravity.math (get-in policy [:numeric-equality :semantic-owner])))
         (is (= :proof-required (get-in policy [:numeric-equality :numeric-mode])))
@@ -29038,11 +29042,12 @@
             expected (if inequality? {:op :if :test eq-ir :then (literal false) :else (literal true)} eq-ir)
             coherent (fn [changed] (-> context (assoc-in [:types :operator] changed)
                                       (assoc :call-facts {:call (c7 fact [changed module])} :ledger [(c7 constraint [changed])])))
-            policy (if inequality? (get-in descriptor [:string-set-equality :type-domain]) (:equality-policy descriptor))]
+            policy (if inequality? (get-in descriptor [:string-set-equality :equality-policy]) (:equality-policy descriptor))]
         (is (= :accepted (:status result)))
         (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
         (is (= expected (:value compiled)))
-        (is (= :not-established (:static-cardinality policy) (:operand-extent policy)))
+        (is (= [:independently-established-string-sets :both-complete-before-result]
+               ((juxt :domain :domain-validation) policy)))
         (is (not (contains? descriptor :operand-counts)))
         (is (= compiled (compile context (:work-count compiled))))
         (is (= :rejected (:status (compile context (dec (:work-count compiled))))))
@@ -29050,6 +29055,8 @@
                          (assoc descriptor :operand-counts [0 0]) (assoc descriptor :operand-domains [:finite-string-set :finite-string-set])
                          (assoc descriptor :direct-effects [:memory/allocate])
                          (if inequality? (assoc-in descriptor [:string-set-equality :type-domain :static-cardinality] :known)
+                           (assoc-in descriptor [:equality-policy :static-cardinality] :known))
+                         (if inequality? (assoc-in descriptor [:string-set-equality :equality-policy :domain-validation] :first-mismatch)
                            (assoc-in descriptor [:equality-policy :static-cardinality] :known))]]
           (is (= :rejected (:status (compile (coherent changed) 65536)))))
         (doseq [changed [(assoc context :ledger []) (update context :ledger into (:ledger context))
@@ -29480,7 +29487,8 @@
         (is (= :sh08-string-set-carrier-inequality-v1 (:version descriptor)))
         (is (= 'not= (:operation descriptor)))
         (is (= :sh08-string-set-carrier-equality-v1 (get-in descriptor [:string-set-equality :equality-version])))
-        (is (= :not-established (get-in descriptor [:string-set-equality :type-domain :static-cardinality])))
+        (is (= [:independently-established-string-sets :both-complete-before-result]
+               ((juxt :domain :domain-validation) (get-in descriptor [:string-set-equality :equality-policy]))))
         (is (not (contains? (:string-set-equality descriptor) :operand-counts)))
         (is (= (:string-set-equality descriptor) (get-in row [:solution :string-set-equality])))
         (is (= #{} (:direct record)))
@@ -35080,11 +35088,13 @@ else
         (is (= :normal (:application descriptor)))
         (is (= [:finite-persistent-integer-set :generic-integer-only :generic-integer-only :original-integer-values]
                ((juxt :input :members :needle :comparison) (:membership-policy descriptor))))
-        (is (= [:set-then-value-once :all-before-hit-or-miss :validated-before-result :full-worst-case-reservation]
-               ((juxt :operand-evaluation :domain-validation :member-uniqueness :budget) (:membership-policy descriptor))))
-        (is (= [:gravity/integer-set-membership-logical-leaf-work-v1 :one-per-validated-integer-leaf :none :none :impossible :none]
-               ((juxt :value-work-model :representation-unit-policy :conversion :arithmetic :overflow :rounding)
-                (:membership-policy descriptor))))
+        (is (= [:set-then-value-once :all-before-hit-or-miss :validated-before-result]
+               ((juxt :operand-evaluation :domain-validation :member-uniqueness) (:membership-policy descriptor))))
+        (is (= [:none :none :impossible :none]
+               ((juxt :conversion :arithmetic :overflow :rounding) (:membership-policy descriptor))))
+        (is (not (contains? (:membership-policy descriptor) :budget)))
+        (is (not (contains? (:membership-policy descriptor) :value-work-model)))
+        (is (not (contains? (:membership-policy descriptor) :representation-unit-policy)))
         (is (= :proof-required (:numeric-mode descriptor)))
         (is (= [:not-established :not-established] ((juxt :precision-bound :provider-heap-bound) (:membership-policy descriptor))))
         (is (= [:none :none :none :none :unobserved :not-established]
@@ -35243,12 +35253,14 @@ else
         (is (= :normal (:application descriptor)))
         (is (= [:finite-persistent-symbol-set :symbol-only :symbol-only :guarded-atomic-symbol-leaf]
                ((juxt :input :members :needle :comparison) (:membership-policy descriptor))))
-        (is (= [:set-then-value-once :all-before-hit-or-miss :validated-before-result :full-worst-case-reservation]
-               ((juxt :operand-evaluation :domain-validation :member-uniqueness :budget) (:membership-policy descriptor))))
-        (is (= [:gravity/symbol-set-membership-logical-content-work-v1 :jvm-utf16-symbol-display-for-work-only
-                :original-namespace-and-name :none :none :none]
-               ((juxt :value-work-model :representation-unit-policy :symbol-equality :normalization :coercion :resolution-authority)
+        (is (= [:set-then-value-once :all-before-hit-or-miss :validated-before-result]
+               ((juxt :operand-evaluation :domain-validation :member-uniqueness) (:membership-policy descriptor))))
+        (is (= [:original-namespace-and-name :none :none :none]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority)
                 (:membership-policy descriptor))))
+        (is (not (contains? (:membership-policy descriptor) :budget)))
+        (is (not (contains? (:membership-policy descriptor) :value-work-model)))
+        (is (not (contains? (:membership-policy descriptor) :representation-unit-policy)))
         (is (= [:none :none :none :none :unobserved :not-established]
                ((juxt :mutation :construction :refinement :cardinality-facts :enumeration-order :provider-cpu-bound)
                 (:membership-policy descriptor))))
@@ -36909,9 +36921,10 @@ else
         (is (not (contains? descriptor :type-domain-work-count)))
         (is (nil? (:set-member-count descriptor)))
         (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
-        (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
-               ((juxt :symbol-equality :normalization :coercion :resolution-authority :representation-unit-policy)
+        (is (= [:original-namespace-and-name :none :none :none]
+               ((juxt :symbol-equality :normalization :coercion :resolution-authority)
                 (:membership-policy descriptor))))
+        (is (not (contains? (:membership-policy descriptor) :representation-unit-policy)))
         (is (= [:none :none :none] ((juxt :construction :refinement :cardinality-facts) (:membership-policy descriptor))))
         (is (some #{:inferred-member-carrier} (:invalidation descriptor)))
         (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
