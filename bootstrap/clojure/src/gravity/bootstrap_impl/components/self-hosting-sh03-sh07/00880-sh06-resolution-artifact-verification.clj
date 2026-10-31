@@ -190,7 +190,10 @@
      #'known-source-profiles
      #'sh06-resolution-all-core-symbols
      #'sh06-resolution-special-symbols
-     #'sh06-resolution-type-symbols]))]
+     #'sh06-resolution-type-symbols
+     #'sh06-resolution-boundary-keys
+     #'sh06-resolution-envelope-stage
+     #'sh06-resolution-sealed-artifact-kind]))]
  ^{:line 158, :column 1}
  (defn
   sh06-resolution-artifact-verification
