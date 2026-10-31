@@ -12,35 +12,35 @@ editable task location changes; this does not close any implementation outcome.
 - [Owning compiler contract](../../docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md) remains normative.
 - [Upstream language contract](../../docs/phase-01-core-language/014-l4-macro-system-specification.md) remains normative.
 - [Implementation tasks](tasks.md#implementation-tasks) is the sole editable task ledger.
-- [Component roadmap](../../docs/component-roadmaps/expand.md) retains release acceptance, interfaces and evidence. Its implementation table is generated.
+- [Component roadmap](../../docs/component-roadmaps/expand.md) retains release acceptance, interfaces and evidence, with a direct link to the task ledger.
 - [Canonical inventory](../../docs/document-inventory.json) owns contract identity.
 
 ## User scenarios and acceptance
 
 ### US1 - Find the next real component task
 
-Select an existing `expand/1` through `expand/5` task. Its title, status and
-concrete exit evidence project verbatim into the existing roadmap table.
-Missing/duplicate IDs, mismatched ID/title labels, malformed records and stale
-projections reject. There is no second editable implementation ledger.
+Select an existing `expand/1` through `expand/5` task from the sole ledger.
+Its title, status and concrete exit evidence remain there as the editable
+record, and the roadmap provides navigation to it. There is no second editable
+implementation ledger.
 
 ### US2 - Distinguish migration from implementation completion
 
 The original migration checkboxes remain frozen outside the implementation
 region. All five implementation tasks remain open at transfer. Check a task only
 with explicit `Accepted;` status and an immutable accepted-outcome receipt,
-independently reviewed by its owner. The tool checks structure and checkbox/status
-consistency; receipt validity and semantic acceptance require actual review.
+independently reviewed by its owner. The ledger keeps checkbox/status explicit;
+receipt validity and semantic acceptance require actual review.
 Workflow scaffolding, macro source translation and passing structural checks do
 not prove compiler completion or generated-program conformance.
 
 ## Scope and compatibility
 
-Own the four Expand workflow artifacts, Expand roadmap and focused Clojure
-projection tool/test. Preserve phase/title semantic IDs and explicit `expand/1` through `expand/5` labels,
-all table cells, existing headings, links, release criteria and historical
-checkboxes. Do not change Syntax or other components, compiler source, normative
-contracts or dashboard behavior. No automatic
+Own the four Expand workflow artifacts and Expand roadmap. Preserve phase/title
+semantic IDs and explicit `expand/1` through `expand/5` labels, task criteria,
+existing headings, links, release criteria and historical checkboxes. Do not
+change Syntax or other components, compiler source, normative contracts or
+dashboard behavior. No automatic
 workflow discovery, external Specify CLI, dependency readiness or overall
 progress percentage is claimed.
 
@@ -60,7 +60,7 @@ authentication, effect/capability grants and generated-program safety remain req
 
 ## Implementation naming review
 
-`expand-workflow` and `expand-task-projection` name the subsystem and behavior.
+`expand-workflow` and its component roadmap name the subsystem and behavior.
 Existing `expand/*` identities remain compatible. Follow
 [semantic naming guidance](../../.specify/semantic-names.md); legacy implementation
 renames remain outside this change.

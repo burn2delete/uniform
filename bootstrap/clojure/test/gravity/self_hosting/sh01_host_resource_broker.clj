@@ -1003,6 +1003,7 @@
       (throw throwable))))
 
 (def ^:private ^:dynamic *process-custody* nil)
+
 (def ^:private quarantined-leases (atom {}))
 
 (defn retain-process-start-custody!
@@ -1116,6 +1117,7 @@
                                {:id "SH01-BROKER-DISPOSITION" :observation observation}))
       (throw primary))))
 
+
 (defn with-lease
   "Runs `thunk` while holding exactly one reviewed host-wide resource lease.
 
@@ -1125,24 +1127,11 @@
   or an exit guard for a one-shot parent. The legacy three-argument path is
   unchanged."
   ([options resource-class thunk]
-   (let [lease (acquire! options resource-class)
-         processes (atom [])]
-     (binding [*process-custody* processes]
-       (try
-         (thunk)
-         (finally
-           (if (every? terminal-process-custody? @processes)
-             (release! lease)
-             (do
-              ;; Keep strong references to the lease, actual process tokens and
-              ;; observations. Do not release capacity on an unresolved result
-              ;; or throw. This is in-JVM custody, not OS containment on death.
-               (swap! quarantined-leases assoc (:released? lease)
-                      {:lease lease :processes processes})
-               (emit! options
-                      (event resource-class :quarantined
-                             {:coordination-root (:coordination-root lease)
-                              :diagnostic-id "SH01-BROKER-PROCESS-CUSTODY"})))))))))
+   (let [lease (acquire! options resource-class)]
+     (try
+       (thunk)
+       (finally
+         (release! lease)))))
   ([options resource-class thunk observe!]
    (when-not (ifn? observe!)
      (fail! "SH01-BROKER-DISPOSITION" "Disposition observer must be callable" {}))

@@ -1192,7 +1192,7 @@
           (catch Throwable custody-error
             (when-not (identical? original custody-error)
               (.addSuppressed original custody-error))))
-        (restore-interrupt! original)
+        (when custody (restore-interrupt! original))
         (throw original)))))
 
 (defn- report-counter?
@@ -2216,6 +2216,38 @@
                    :selection {:namespaces [namespace] :test-vars (vec (sort qualified))
                                :fail-fast? (boolean (:child-fail-fast? options))}}}))))
 
+(defn- open-development-result-input! [file]
+  (java.nio.file.Files/newInputStream
+   (.toPath (io/file file))
+   (into-array java.nio.file.OpenOption
+               [java.nio.file.StandardOpenOption/READ java.nio.file.LinkOption/NOFOLLOW_LINKS])))
+
+(defn- read-development-result-bytes! [file limit exceeded!]
+  (let [input (open-development-result-input! file) primary (volatile! nil)]
+    (try
+      (let [bytes (.readNBytes ^java.io.InputStream input (int limit))]
+        (when-not (= -1 (.read ^java.io.InputStream input)) (exceeded!))
+        bytes)
+      (catch Throwable error (vreset! primary error) (throw error))
+      (finally
+        (try (.close ^java.io.InputStream input)
+             (catch Throwable close-error
+               ;; Close diagnostics cannot mask the original read or lose a
+               ;; suppressed interruption, including cyclic Throwable causes.
+               (try
+                 (let [seen (java.util.IdentityHashMap.)]
+                   (loop [cause close-error]
+                     (when (and cause (not (.containsKey seen cause)))
+                       (.put seen cause true)
+                       (if (instance? InterruptedException cause)
+                         (.interrupt (Thread/currentThread))
+                         (recur (.getCause ^Throwable cause))))))
+                 (catch Throwable _ nil))
+               (if-let [original @primary]
+                 (when-not (identical? original close-error)
+                   (try (.addSuppressed ^Throwable original close-error) (catch Throwable _ nil)))
+                 (throw close-error))))))))
+
 (defn- read-development-result
   [delivery process-result]
   (let [fail! (fn [field & [record cause]]
@@ -2225,14 +2257,7 @@
                                 cause)))]
     (try
       (let [limit (:limit-bytes delivery)
-            bytes (with-open [input (java.nio.file.Files/newInputStream
-                                    (.toPath (io/file (:file delivery)))
-                                    (into-array java.nio.file.OpenOption
-                                                [java.nio.file.StandardOpenOption/READ
-                                                 java.nio.file.LinkOption/NOFOLLOW_LINKS]))]
-                    (let [bytes (.readNBytes input (int limit))]
-                      (when-not (= -1 (.read input)) (fail! :limit))
-                      bytes))
+            bytes (read-development-result-bytes! (:file delivery) limit #(fail! :limit))
             decoder (doto (.newDecoder StandardCharsets/UTF_8)
                       (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
                       (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
@@ -2500,21 +2525,16 @@
                         #(when (:parent-report options)
                            (reset! publication (publish-parent-report! job options request-id %))))]
            (if (:parent-report options) (assoc result :parent-report @publication) result))
-         (broker/with-lease (:resource-broker options) (:resource-class job) operation))
+         (broker/with-lease (:resource-broker options) (:resource-class job) operation (fn [_] nil)))
        (operation)))
       (finally
         (when (and report-facts (:interrupted? @report-facts))
           (.interrupt (Thread/currentThread))))))))
 
-(defn run-namespace-process
-  "Run the ordinary namespace path, preserving the owner's unsupported guard."
-  ([job] (run-namespace-process job {}))
-  ([job options]
-   (require-supported-namespace! (:namespace job))
-   (run-namespace-process-owned job options)))
-
 (def ^:private resolution-parent-namespace 'gravity.self-hosting.resolution-parent-mutation-test)
+
 (def ^:private resolution-parent-selector "actual-macro-trace-input-syntax-id-mutation-at-second-id")
+
 (def ^:private resolution-canonical-lock "/private/tmp/gravity-sh07-heavy.lock")
 
 (defn- resolution-common-broker-root
@@ -2542,9 +2562,8 @@
   (let [path (.toPath (io/file resolution-canonical-lock))
         channel (java.nio.channels.FileChannel/open
                  path
-                 (into-array java.nio.file.OpenOption
-                             [java.nio.file.StandardOpenOption/CREATE java.nio.file.StandardOpenOption/WRITE
-                              java.nio.file.LinkOption/NOFOLLOW_LINKS])
+                 #{java.nio.file.StandardOpenOption/CREATE java.nio.file.StandardOpenOption/WRITE
+                   java.nio.file.LinkOption/NOFOLLOW_LINKS}
                  (into-array java.nio.file.attribute.FileAttribute
                              [(java.nio.file.attribute.PosixFilePermissions/asFileAttribute
                                (java.nio.file.attribute.PosixFilePermissions/fromString "rw-------"))]))]
@@ -2629,6 +2648,14 @@
        {:namespace resolution-parent-namespace :resource-class :exclusive} options
        {:acquire! #(acquire-resolution-lock! custody)
         :finalize! #(finalize-resolution-lock! custody %)}))))
+
+
+(defn run-namespace-process
+  "Run the ordinary namespace path, preserving the owner's unsupported guard."
+  ([job] (run-namespace-process job {}))
+  ([job options]
+   (require-supported-namespace! (:namespace job))
+   (run-namespace-process-owned job options)))
 
 (defn- parse-positive-option
   [arguments index option]

@@ -63,6 +63,7 @@
   [delivery inherited]
   (machine-result-file-sink delivery inherited))
 
+
 (def namespace-catalog
   [{:namespace 'gravity.bootstrap-test
     :path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
