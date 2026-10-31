@@ -28,7 +28,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 20 (count publics)))
+    (is (= 40 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -129,6 +129,335 @@
     (is (= :first (:identity (resolution/candidate-for overrides 'one 'x))))
     (is (= :other (:identity (resolution/candidate-for overrides 'two 'x))))
     (is (nil? (resolution/candidate-for overrides 'one 'missing)))))
+
+(deftest dependency-records-preserve-explicit-boundary-facts
+  ;; Supplied declarations exercise record normalization, not module admission.
+  (let [ops (operations)
+        module {:module 'example.consumer :profile :meta :target :jvm}
+        required {:module 'example.library :alias 'library :refer ['value]
+                  :profile :core :effects #{:io/read} :capabilities #{:io/input}}
+        imported {:module 'foreign.library :alias 'foreign :kind :import
+                  :boundary :typed-ffi :visibility :private}
+        overrides {:candidate-bindings [{:namespace 'example.library :name 'value
+                                         :target :wasm :visibility :private
+                                         :capabilities #{:library/read}}
+                                        {:namespace 'example.library :name 'later
+                                         :target :llvm :visibility :public}]}
+        records (resolution/import-records source (assoc module :requires [required] :imports [imported]) overrides ops)
+        [namespace-record foreign-record] records]
+    (is (= ['example.library 'foreign.library] (mapv :namespace records)))
+    (is (= ['library 'foreign] (mapv :alias records)))
+    (is (= [:namespace :foreign] (mapv :kind records)))
+    (is (= :core (:profile namespace-record)))
+    (is (= [:wasm] (:targets namespace-record)))
+    (is (= [:library/read] (:capabilities namespace-record)))
+    (is (= [:io/read] (:effects namespace-record)))
+    (is (= :private (:visibility namespace-record)))
+    (is (= :pure-core-api (:boundary namespace-record)))
+    (is (= ['value] (:refer namespace-record)))
+    (is (= [:safe :boundary-checked] (mapv :safety records)))
+    (is (= :typed-ffi (:boundary foreign-record)))
+    (is (= :meta (:profile foreign-record)))
+    (is (= [:jvm] (:targets foreign-record)))
+    (is (= [0 1] (mapv #(get-in % [:semantic-span :dependency-ordinal]) records)))
+    (is (every? :foreign-record-complete? records))
+    (is (= (:source-span namespace-record) (:source-span foreign-record)))
+    (doseq [bad [(dissoc imported :alias) (dissoc imported :boundary)
+                 (assoc imported :module "not-a-symbol")]]
+      (is (false? (boolean (:foreign-record-complete?
+                           (resolution/dependency-record source module bad {} 0 ops))))))
+    (is (= records (resolution/import-records source (assoc module :requires [required] :imports [imported])
+                                             (into (array-map) (reverse (seq overrides))) ops)))
+    (is (not= (:dependency-artifact-id namespace-record)
+              (:dependency-artifact-id
+               (resolution/dependency-record source module (assoc required :boundary :schema) overrides 0 ops))))))
+
+(deftest import-and-explicit-bindings-retain-precedence-and-provenance
+  (let [ops (operations)
+        module {:module 'example.consumer :source-path source :profile :meta :target :jvm
+                :requires [{:refer ['referred]}] :imports []}
+        dependency {:namespace 'example.library :kind :namespace :refer ['referred]
+                    :profile :core :targets [:wasm] :visibility :private
+                    :effects [:io/read] :capabilities [:library/read] :safety :safe
+                    :source-span {:source source :form-index 0} :dependency-artifact-id "dependency-id"}
+        candidates [{:namespace 'example.library :name 'referred :visibility :public
+                     :target-set [:llvm] :capabilities [:candidate/read]}
+                    {:namespace 'example.library :name 'explicit :visibility :private}
+                    {:namespace 'example.library :name 'explicit :visibility :public}
+                    {:namespace 'other.library :name 'unrelated}]
+        bindings (resolution/import-binding-records module [dependency] {:candidate-bindings candidates} ops)
+        [referred explicit] bindings]
+    (is (= ['referred 'explicit] (mapv :name bindings)))
+    (is (= [:public :private] (mapv :visibility bindings)))
+    (is (= [:llvm] (:target-set referred)))
+    (is (= [:candidate/read] (:capabilities referred)))
+    (is (= [:library/read] (:capabilities explicit)))
+    (is (= [:core] (:profile-set referred)))
+    (is (= [:io/read] (:effects referred)))
+    (is (= :gravity.type/imported-var (:type-ref referred)))
+    (is (= {:name 'example.library :version "workspace"} (:package referred)))
+    (is (= [0 1] (mapv #(get-in % [:semantic-span :binding-ordinal]) bindings)))
+    (is (every? #(= :import (:binding-class %)) bindings))
+    (is (every? #(= "dependency-id" (:definition-artifact-id %)) bindings))
+    (is (every? #(= (:source-span dependency) (:source-span %)) bindings))
+    (is (= 2 (count (set (map :definition-syntax-id bindings)))))
+    (let [foreign (first (resolution/import-binding-records nil [(assoc dependency :kind :foreign)] {} ops))]
+      (is (= [:foreign :gravity.interop/foreign-value] ((juxt :kind :type-ref) foreign))))
+    (let [parent {:artifact-id "expanded-parent"}
+          overrides {:candidate-bindings [{:name 'referred :namespace 'example.library}
+                                          {:name 'local-candidate :kind :function}
+                                          {:name 'qualified :namespace 'other.library :profile :core
+                                           :target-set [:wasm] :effects [:io/read]
+                                           :capabilities [:library/read] :visibility :private}]}
+          explicit-records (resolution/explicit-candidate-records module parent overrides ops)
+          [local qualified] explicit-records]
+      (is (= ['local-candidate 'qualified] (mapv :name explicit-records)))
+      (is (= ['example.consumer 'other.library] (mapv :namespace explicit-records)))
+      (is (= [:function :var] (mapv :kind explicit-records)))
+      (is (= [[:meta] [:core]] (mapv :profile-set explicit-records)))
+      (is (= [[:jvm] [:wasm]] (mapv :target-set explicit-records)))
+      (is (= :private (:visibility qualified)))
+      (is (= [:io/read] (:effects qualified)))
+      (is (= [:library/read] (:capabilities qualified)))
+      (is (= [0 1] (mapv #(get-in % [:semantic-span :explicit-candidate]) explicit-records)))
+      (is (= :safe (:safety local)))
+      (is (not= (:definition-artifact-id local)
+                (:definition-artifact-id
+                 (first (resolution/explicit-candidate-records module {:artifact-id "changed-parent"} overrides ops))))))))
+
+(deftest pattern-binding-paths-preserve-order-and-recovery-boundaries
+  (let [ops (operations)
+        pattern '[left [right _]]
+        expected '[{:name left :path [7 0]} {:name right :path [7 1 0]}]]
+    (is (= expected (resolution/match-pattern-binding-paths pattern [7] ops)))
+    (is (= expected (resolution/unique-match-binding-paths pattern [7] ops)))
+    (is (= expected (resolution/let-loop-binding-paths pattern [7])))
+    (is (= '[{:name one :path [1]} {:name two :path [5 0]}]
+           (resolution/match-pattern-binding-paths
+            (array-map :first 'one :when '(predicate one) :last '[two]) [] ops)))
+    (is (= [] (resolution/match-pattern-binding-paths '(quote literal) [] ops)))
+    (is (= [] (resolution/match-pattern-binding-paths '_ [] ops)))
+    (is (nil? (resolution/unique-match-binding-paths '[one [one]] [] ops)))
+    ;; Let/loop recovery enumerates each vector leaf once. This is not L7
+    ;; admission of duplicate bindings or variadic destructuring.
+    (is (= '[{:name one :path [0]} {:name two :path [1 0]} {:name tail :path [4]}]
+           (resolution/let-loop-binding-paths '[one [two one] _ & tail] [])))
+    (is (= '[{:name value :path [3]}] (resolution/let-loop-binding-paths 'value [3])))
+    (doseq [valid ['[one [two _]] '[1 :tag nil true false "text"]
+                   '{:kind :tag :payload [value]} '(quote literal)]]
+      (is (true? (resolution/fixed-vector-pattern? valid ops))))
+    (doseq [unsupported ['[one & tail] '{:when true :value value}
+                         '(Constructor value) '{not-a-keyword value}]]
+      (is (false? (resolution/fixed-vector-pattern? unsupported ops))))))
+
+(deftest lexical-collection-preserves-sequential-visibility-and-context
+  ;; These supplied expanded records test collection, not C4 authentication.
+  (let [ops (operations)
+        syntax {:syntax/id "synthetic-expanded-owner" :span {:source "synthetic" :line-start 4}
+                :form '(fn self [items :- I64]
+                         (let [[left [right _]] items copy left]
+                           (self (+ copy right))))}
+        parent {:expanded-syntax-stream [syntax]}
+        analysis (resolution/analysis-inputs {} parent {:shadow-policy {:forbidden ['left]}} ops)
+        scopes (:lexical-scopes analysis) refs (:references analysis)
+        scopes-by-id (into {} (map (juxt :scope-id identity)) scopes)
+        visible (fn [reference]
+                  (set (mapcat #(map :name (:bindings (scopes-by-id %))) (:scope-chain reference))))
+        left-ref (first (filter #(= 'left (:symbol %)) refs))
+        copy-ref (first (filter #(= 'copy (:symbol %)) refs))
+        self-ref (first (filter #(= 'self (:symbol %)) refs))
+        bindings (mapcat :bindings scopes)]
+    (is (= analysis (resolution/analysis-inputs nil parent {:shadow-policy {:forbidden ['left]}} ops)))
+    (is (= #{'self 'items 'left 'right 'copy} (set (map :name bindings))))
+    (is (not (some #(= '_ (:name %)) bindings)))
+    (is (not (some #(= 'I64 (:name %)) bindings)))
+    (is (= #{'self 'items 'left 'right} (visible left-ref)))
+    (is (= #{'self 'items 'left 'right 'copy} (visible copy-ref)))
+    (is (contains? (visible self-ref) 'self))
+    (is (some #(and (= 'I64 (:symbol %)) (= :type (:position %))) refs))
+    (is (false? (:allow-shadow? (first (filter #(= 'left (:name %)) bindings)))))
+    (is (every? #(= (:span syntax) (:source-span %)) refs))
+    (is (= (range 1 (inc (count refs))) (map #(get-in % [:semantic-span :ordinal]) refs)))
+    (is (= (count refs) (count (set (map :syntax-id refs)))))
+    (is (= (count scopes) (count (set (map :scope-id scopes)))))
+    (doseq [name '[semantic-late-sh06-resolution-analysis-inputs-parameter-names
+                  semantic-late-sh06-resolution-analysis-inputs-make-traversal]]
+      (is (nil? (ns-resolve 'gravity.bootstrap name)))
+      (is (nil? (ns-resolve 'gravity.resolution name))))))
+
+(deftest dependency-edge-normalization-retains-origins-and-order
+  (let [ops (operations) span {:source "dependency" :line-start 2}
+        imports [{:namespace 'library :kind :namespace :boundary :pure-core-api :source-span span}]
+        result (resolution/dependency-edges
+                source {:module 'consumer} imports
+                {:module-graph {:edges [['library 'next]
+                                        {:from 'next :to 'last :kind :generated :boundary :schema}]}} ops)]
+    (is (= [['consumer 'library] ['library 'next] ['next 'last]]
+           (mapv (juxt :from :to) result)))
+    (is (= [:namespace :namespace :generated] (mapv :kind result)))
+    (is (= [:pure-core-api nil :schema] (mapv :boundary result)))
+    (is (= [{:dependency-edge 0} {:explicit-edge 0} {:explicit-edge 1}] (mapv :semantic-span result)))
+    (is (= span (:source-span (first result))))
+    (is (= [] (resolution/dependency-edges source {:module 'consumer} [] {} ops)))))
+
+(deftest product-projections-retain-analysis-and-compatibility-records
+  ;; Supplied analysis exercises projection only, without C5 authentication.
+  (let [ops (operations)
+        analysis {:binding-table [{:binding-id "binding" :source-span {:line-start 3}}]
+                  :resolution-table [{:binding-id "binding" :resolution-order :lexical}]
+                  :alias-table [{:alias 'lib}]
+                  :dependency-records [{:namespace 'library}]
+                  :exports ['value] :lexical-scope-graph [{:scope-id "scope"}]
+                  :dependency-graph {:nodes ['consumer 'library] :edges []}
+                  :cross-profile-edge-report [{:boundary :pure-core-api}]
+                  :incremental-invalidation-inputs {:imports ['library]}}
+        product (resolution/product-projections analysis ops)]
+    (is (= (assoc analysis :artifact :gravity/namespace-analysis) (:namespace-analysis product)))
+    (is (= (:binding-table analysis) (get-in product [:binding-table :bindings])))
+    (is (= (:resolution-table product) (get-in product [:binding-table :resolution-table])))
+    (is (= ((seed-var 'sh06-resolution-order-compatibility) :lexical)
+           (get-in product [:resolution-table 0 :resolution-kind])))
+    (is (= (:alias-table analysis) (get-in product [:alias-table :aliases])))
+    (is (= (:dependency-records analysis) (get-in product [:import-export-table :imports])))
+    (is (= (:exports analysis) (get-in product [:import-export-table :exports])))
+    (is (= (:lexical-scope-graph analysis) (get-in product [:lexical-scope-graph :scopes])))
+    (is (= (:cross-profile-edge-report analysis) (get-in product [:cross-profile-edge-report :records])))
+    (is (= (:incremental-invalidation-inputs analysis) (get-in product [:incremental-invalidation-keys :inputs])))
+    (is (not= (get-in product [:incremental-invalidation-keys :invalidation-id])
+              (get-in (resolution/product-projections (assoc analysis :incremental-invalidation-inputs {}) ops)
+                      [:incremental-invalidation-keys :invalidation-id])))))
+
+(deftest identity-chunks-preserve-representation-and-semantic-invalidation
+  (let [ops (operations) values (vec (range 17))
+        chunks (resolution/identity-chunks values ops)
+        changed (resolution/identity-chunks (assoc values 16 :changed) ops)]
+    (is (= [] (resolution/identity-chunks [] ops)))
+    (is (= [0 1] (mapv :chunk-index chunks)))
+    (is (= [16 1] (mapv :entry-count chunks)))
+    (is (= chunks (resolution/identity-chunks (seq values) ops)))
+    (is (= (first chunks) (first changed)))
+    (is (not= (second chunks) (second changed)))))
+
+(deftest artifact-identities-and-summaries-retain-the-existing-semantic-boundary
+  ;; These pure identity helpers do not authenticate supplied chunks or artifacts.
+  (let [ops (operations)
+        artifact {:kind :resolution :slice :SH-06 :task :normalization
+                  :gravity-resolution-boundary
+                  {:adapter-contract :test :resolved-analysis {:artifact-id "analysis"}
+                   :authenticated-resolution-request {:module {:source-revision-id "source"}}}
+                  :sh05-macro-artifact {:artifact-id "macro" :expanded-syntax-stream-id "stream"
+                                        :macro-expansion-trace-id "trace"}
+                  :binding-table {:bindings [{:binding-id "binding" :source-span {:line-start 1}}]}
+                  :resolution-table [{:binding-id "binding" :source-span {:line-start 2}}]
+                  :dependency-graph {:nodes ['consumer 'library]
+                                     :edges [{:from 'consumer :to 'library :source-span {:line-start 3}}]}
+                  :incremental-invalidation-keys {:invalidation-id "invalidation"}}
+        chunks (resolution/product-identity-chunks artifact ops)
+        preimage (resolution/artifact-identity-input artifact ops)
+        id (resolution/artifact-id artifact ops)
+        summary (resolution/envelope-summary artifact ops)
+        relocated (-> artifact
+                      (assoc-in [:binding-table :bindings 0 :source-span :line-start] 30)
+                      (assoc-in [:resolution-table 0 :source-span :line-start] 40)
+                      (assoc-in [:dependency-graph :edges 0 :source-span :line-start] 50))]
+    (is (= preimage (resolution/artifact-identity-input-with-chunks artifact chunks ops)))
+    (is (= id ((:reader-canonical-hash ops) preimage)))
+    (is (= summary (resolution/envelope-summary-with-chunks artifact chunks)))
+    (is (= [1 1 1] ((juxt :binding-count :reference-count :dependency-edge-count) summary)))
+    (is (= "source" (:source-revision-id summary)))
+    (is (= id (resolution/artifact-id relocated ops)))
+    (is (= (:source-span (first (:resolution-table artifact))) {:line-start 2}))
+    (doseq [changed [(assoc-in artifact [:binding-table :bindings 0 :binding-id] "other")
+                     (assoc-in artifact [:resolution-table 0 :binding-id] "other")
+                     (assoc-in artifact [:dependency-graph :edges 0 :to] 'other)
+                     (assoc-in artifact [:sh05-macro-artifact :macro-expansion-trace-id] "other")
+                     (assoc-in artifact [:incremental-invalidation-keys :invalidation-id] "other")]]
+      (is (not= id (resolution/artifact-id changed ops))))))
+
+(deftest envelope-descriptor-retains-digest-lineage-and-actual-path-inputs
+  ;; Descriptor projection is DATA construction, not envelope authentication.
+  (let [base (operations) digests (atom []) properties (atom []) fields (atom [])
+        ops (assoc base
+                   :p15-s23-c6c10-canonical-digest
+                   (fn [path value]
+                     (swap! digests conj [path value])
+                     ((:reader-canonical-hash base) value))
+                   :input (fn [field] (swap! fields conj field) ((:input base) field))
+                   :system-property (fn [name]
+                                      (swap! properties conj name)
+                                      (str "observed-directory-" (count @properties))))
+        binding {:source-content-hash "source-hash" :source-byte-count 17
+                 :plan-semantic-hash "plan-hash" :functions-semantic-hash "functions-hash"
+                 :public-function-hashes {'sh06-build-resolution-template "builder-hash"}
+                 :public-function-shapes [['sh06-build-resolution-template 1]]}
+        summary {:artifact-id "semantic-product" :source-revision-id "source-revision"}
+        descriptor (resolution/envelope-descriptor source binding summary ops)
+        evidence ((:reader-canonical-hash base) (second (first @digests)))
+        sealed ((:reader-canonical-hash base) (second (nth @digests 2)))]
+    (is (= [[source {:domain :gravity/sh06-resolution-envelope-evidence-v1
+                     :summary summary :plan-semantic-hash "plan-hash"}]
+            [source {:domain :gravity/sh06-resolution-result-identity-v1
+                     :semantic-input {:summary summary}}]
+            [source {:resolution-result "semantic-product"}]] @digests))
+    (is (= ["user.dir" "user.dir"] @properties))
+    (is (= {:sh06-resolution-envelope-stage 1 :sh06-resolution-sealed-artifact-kind 1
+            :sh06-resolution-source-relative-path 1} (frequencies @fields)))
+    (is (= {:source-path source :workspace-root "observed-directory-1"
+            :invocation-root "observed-directory-2"} (:actual-path-provenance descriptor)))
+    (is (= :gravity/private-authenticated-envelope-descriptor (:artifact descriptor)))
+    (is (= 2 (:schema-version descriptor)))
+    (is (= "builder-hash" (get-in descriptor [:source-revision :builder-semantic-hash])))
+    (is (= "source-hash" (get-in descriptor [:source-revision :source-content-hash])))
+    (is (= (:public-function-shapes binding) (get-in descriptor [:source-revision :function-shapes])))
+    (is (= summary (get-in descriptor [:semantic-projections 0 :value])))
+    (is (= (count summary) (get-in descriptor [:semantic-projections 0 :entry-count])))
+    (is (= [evidence] (get-in descriptor [:fact-transitions 0 :evidence-ids])))
+    (is (= {evidence {:status :checked}} (get-in descriptor [:proof-composite :proof-certificate-table])))
+    (is (= "semantic-product" (get-in descriptor [:lineage 0 :semantic-id])))
+    (is (= sealed (get-in descriptor [:lineage 0 :artifact-id])))
+    (is (= evidence (get-in descriptor [:lineage 0 :verification-id])))
+    (is (= [evidence] (get-in descriptor [:reference-closure :fact-reference-ids])))
+    (is (= [evidence] (get-in descriptor [:reference-closure :proof-reference-ids])))
+    (is (= [] (get-in descriptor [:reference-closure :runtime-check-reference-ids])))
+    (is (= [:identity-subject-equality :digest-graph-reachability]
+           (get-in descriptor [:preservation :residual-checks])))
+    (let [failure (ex-info "digest refused" {:id "UNIT-DIGEST"})
+          calls-before @properties]
+      (is (identical? failure
+                      (caught #(resolution/envelope-descriptor
+                                source binding summary
+                                (assoc ops :p15-s23-c6c10-canonical-digest
+                                       (fn [& _] (throw failure)))))))
+      (is (= calls-before @properties)))))
+
+(deftest boundary-key-selection-adds-only-the-existing-module-carrier
+  (let [ops (operations) expected (input :sh06-resolution-boundary-keys)
+        ordinary {:authenticated-resolution-request {:artifact :gravity/sh06-ordinary-module-resolution-request}}]
+    (is (= expected (resolution/boundary-keys-for {} ops)))
+    (is (= expected (resolution/boundary-keys-for nil ops)))
+    (is (= expected (resolution/boundary-keys-for {:authenticated-resolution-request {:artifact :other}} ops)))
+    (is (= (conj expected :module-inputs) (resolution/boundary-keys-for ordinary ops)))
+    (is (= #{:supplied-key :module-inputs}
+           (resolution/boundary-keys-for ordinary (assoc ops :input (fn [_] #{:supplied-key})))))))
+
+(deftest actual-nested-bindings-emit-and-out-of-scope-binding-rejects
+  (let [compile-fixture (fn [name]
+                          (let [path (.getCanonicalPath
+                                      (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-06/" name ".gravity")))]
+                            (b/compiler-c5-resolution-source-artifact
+                             path (slurp path :encoding "UTF-8")
+                             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                             (.getCanonicalPath (io/file b/sh03-reader-source-relative-path)) invocation)))
+        accepted (compile-fixture "lexical-normalization")
+        rejected (caught #(compile-fixture "lexical-leak"))]
+    (is (= :accepted (:status accepted)))
+    (is (= "sha256:0fdf519ad7657aa8b291b7aa46df085324bb1fb6bff3cb290b5ecbaf5c8152f2"
+           (:artifact-id accepted)))
+    (is (= 276 (count (get-in accepted [:binding-table :bindings]))))
+    (is (= 21 (count (:resolution-table accepted))))
+    (is (= :passed (:status (b/sh06-resolution-artifact-verification accepted :gravity.bootstrap/legacy invocation))))
+    (is (= "C5-UNRESOLVED" (:id (ex-data rejected))))
+    (is (= 'right (:symbol (ex-data rejected))))))
 
 (deftest actual-source-emits-bindings-and-rejects-an-unresolved-reference
   (let [artifact @real-artifact binding (real-binding) ops (operations)
@@ -307,6 +636,14 @@
     (is (not (identical? @v copied)))
     (assert-interposition-misses #(with-redefs-fn {v copied} %))))
 
+(deftest descriptor-configuration-roots-invalidate-old-receipts
+  (doseq [name '[sh06-resolution-envelope-stage sh06-resolution-sealed-artifact-kind
+                sh06-resolution-boundary-keys]]
+    (let [v (seed-var name) original @v
+          replacement (if (set? original) (conj original :unit-extra) :unit-different)]
+      (is (not= original replacement))
+      (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
+
 (deftest equal-valued-configuration-cache-and-thread-bindings-invalidate-receipts
   (doseq [name ['sh06-resolution-source-relative-path 'sh06-resolution-expected-source-content-hash
                 'sh06-resolution-public-function-shapes 'sh06-resolution-cached-binding
@@ -361,7 +698,14 @@
         expected (set (concat (vals (ns-publics 'gravity.resolution))
                               [(seed-var 'resolution-stage-operations)
                                (seed-var 'resolution-stage-defaults)
-                               (seed-var 'resolution-stage-input)]))]
+                               (seed-var 'resolution-stage-input)
+                               (seed-var 'sh06-resolution-dependency-record)
+                               (seed-var 'source-span)
+                               (seed-var 'resolution-stage-system-property)
+                               (seed-var 'p15-s23-c6c10-canonical-digest)
+                               (seed-var 'sh06-resolution-envelope-stage)
+                               (seed-var 'sh06-resolution-sealed-artifact-kind)
+                               (seed-var 'sh06-resolution-boundary-keys)]))]
     ;; Isolate the existing readonly drift seam; no parent/owner admission runs.
     (with-redefs-fn
       {environment (fn [] (swap! reads inc) {})}
