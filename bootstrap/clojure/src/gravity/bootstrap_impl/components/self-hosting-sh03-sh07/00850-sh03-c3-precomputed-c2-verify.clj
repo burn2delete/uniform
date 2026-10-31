@@ -4,6 +4,13 @@
   ([candidate source-path c2-artifact]
    (sh03-c3-precomputed-c2-verify! candidate source-path c2-artifact nil))
   ([candidate source-path c2-artifact invocation]
+  ;; The host pure companion is produced after Gravity's raw verification.
+  ;; Its presence cannot be authenticated by the standard SH03 envelope.
+  ;; Refuse before source selection or any envelope/registered-literal port.
+  (when (contains? c2-artifact :pure-extension-results)
+    (c2-reader-fail!
+     "C2-HASH" source-path {:stage :read-source}
+     {:missing-fields [:authenticated-pure-extension-results]}))
   (let [context (sh03-reader-verification-invocation! source-path invocation)
         boundary (:gravity-reader-boundary c2-artifact)
         envelope (:authenticated-envelope boundary)
