@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.sh08-function-call-type-test
-  (:require [clojure.java.io :as io]
+  (:require
             [clojure.string :as str]
             [clojure.walk :as walk]
             [clojure.test :refer [deftest is testing]]
