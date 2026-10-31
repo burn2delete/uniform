@@ -13844,10 +13844,10 @@
                            (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch)))) nil :exact-operator-set-needle-source
                        (get node :node-id))))
           (sh08-sm-failure "C7-TYPE-MISMATCH" (get domain :reason) nil
-            (if (= :integer (get domain :membership-family)) :established-finite-integer-set-and-integer
-              (if (= :symbol (get domain :membership-family)) :established-finite-symbol-set-and-symbol
-                (if (= :character (get domain :membership-family)) :established-finite-character-set-and-character
-                  (if (= :string (get domain :membership-family)) :established-finite-string-set-and-string
+            (if (= :integer-set-contains-operand-type-required (get domain :reason)) :established-finite-integer-set-and-integer
+              (if (= :symbol-set-contains-operand-type-required (get domain :reason)) :established-finite-symbol-set-and-symbol
+                (if (= :character-set-contains-operand-type-required (get domain :reason)) :established-finite-character-set-and-character
+                  (if (= :string-set-contains-operand-type-required (get domain :reason)) :established-finite-string-set-and-string
                     :established-finite-keyword-set-and-keyword)))) arguments)))
       (sh08-sm-failure "C7-VERIFY" :keyword-set-contains-source-mismatch nil :closed-membership-source-identities nil))
     (sh08-sm-failure "C7-TYPE-MISMATCH" :keyword-set-contains-arity-mismatch nil :binary-membership-call nil)))
