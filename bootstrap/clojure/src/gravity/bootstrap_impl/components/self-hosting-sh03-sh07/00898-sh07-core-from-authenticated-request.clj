@@ -27,6 +27,8 @@
    (sh07-core-current-source-key)
    captured
    @sh07-core-cached-binding
+   construction
+   (assoc construction :execution-binding captured)
    _
    (when-not
     (= (second (:source input-key)) (:source-content-hash captured))

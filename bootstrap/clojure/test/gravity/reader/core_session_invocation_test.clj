@@ -1,6 +1,7 @@
 (ns gravity.reader.core-session-invocation-test
   "SOURCE/injected-port checks only. No Bootstrap, Reader or Gravity plan load."
   (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]
             [clojure.test :refer [deftest is]]
             [clojure.walk :as walk]))
 
@@ -27,6 +28,27 @@
     sh07-core-verification-session-upstream-identity-keys
     sh07-core-verification-session-expected-integrity
     sh07-core-verification-session-upstream-snapshot sh07-core-verification-session-binding])
+(defn- nested-definition [source name]
+  (definition (mapcat #(tree-seq coll? seq %) source) name))
+(defn- install-native-validator! [n]
+  ;; Only the existing strict native checker and its fixed field-access helpers
+  ;; are evaluated. No authority closure, Bootstrap or target module loads.
+  (let [prefix "../bootstrap-p15/"
+        fields (forms (str prefix "00588-p15-s23-stage2-native-carrier-header.clj"))
+        maps (forms (str prefix "00700-static-rebuild-token-009-p15-s23-stage2-closed-checked-core-verify-through-p15-s23-trusted-carrier-vector-classes.clj"))
+        native (forms (str prefix "00700-static-rebuild-token-010-p15-s23-trusted-carrier-set-classes-through-p15-s23-trusted-carrier-validation.clj"))]
+    (intern n 'p15-s23-hosted-native-view-reason
+            (fn [& _] (throw (AssertionError. "Hosted policy is outside this strict fixture"))))
+    (binding [*ns* n]
+      (doseq [name '[p15-s23-stage2-native-hashset-field p15-s23-stage2-native-hashset-field-once
+                    p15-s23-stage2-native-arraymap-field p15-s23-stage2-native-arraymap-field-once]]
+        (eval (nested-definition fields name)))
+      (eval (nested-definition maps 'p15-s23-trusted-carrier-map-classes))
+      (doseq [name '[p15-s23-trusted-carrier-set-classes p15-s23-trusted-carrier-list-classes
+                    p15-s23-trusted-carrier-scalar-classes p15-s23-host-native-field
+                    p15-s23-host-arraymap-storage-valid? p15-s23-host-carrier-header
+                    p15-s23-trusted-carrier-validation]]
+        (eval (nested-definition native name))))))
 (def ^:private resolution
   {:artifact-id :fixture-resolution
    :provenance {:source-path "fixture.gravity"}
@@ -54,6 +76,7 @@
                            (throw (ex-info "Strict fixture context refused" {:id "C2-HASH"}))))]
     (try
       (binding [*ns* n] (clojure.core/refer 'clojure.core))
+      (install-native-validator! n)
       (doseq [[name value]
               {'reader-canonical-hash digest
                'sh07-core-exact-comparison-value identity
@@ -85,6 +108,8 @@
         (intern n name value))
       (binding [*ns* n]
         (doseq [name helper-names] (eval (definition helpers name)))
+        (doseq [name '[sh07-core-session-propagate-control! sh07-core-session-known-diagnostic]]
+          (eval (definition session-forms name)))
         (doseq [form [body (definition session-forms 'sh07-core-verification-session-valid?)
                       (definition session-forms 'sh07-core-artifact-verification-against-expected)]]
           (eval form)))
@@ -99,6 +124,7 @@
     (fn [{:keys [create events expected replay]}]
       (let [session (create resolution invocation)]
         (is (= :ready (:status session)))
+        (is (not (contains? session :expected-build-failure)))
         (is (= [[:construct 2] [:verify 3]] (mapv (fn [[stage args]] [stage (count args)]) @events)))
         (is (identical? invocation (second (second (first @events)))))
         (is (identical? invocation (nth (second (second @events)) 2)))
@@ -208,21 +234,228 @@
                            (assoc-in expected [:core :catalog] [:substituted])]]
           (is (= :failed (:status (replay candidate session)))))))))
 
-(deftest existing-interruption-and-error-containment-are-preserved
+(deftest expected-construction-failures-are-distinct-redacted-and-invalid
+  (doseq [[outcome diagnostic]
+          [[nil {:origin :expected-core-construction :kind :nil-return}]
+           [(ex-info "secret /private/path" {:id "untrusted" :secret :payload})
+            {:origin :expected-core-construction :kind :exception
+             :exception-class "clojure.lang.ExceptionInfo"}]
+           [(java.io.IOException. "secret /private/path")
+            {:origin :expected-core-construction :kind :exception
+             :exception-class "java.io.IOException"}]]]
+    (with-model session-body
+      (fn [{:keys [create namespace expected valid? replay]}]
+        (intern namespace 'sh07-core-from-resolution-artifact
+                (fn [& _] (if (instance? Throwable outcome) (throw outcome) outcome)))
+        (let [session (create resolution invocation)]
+          (is (= :failed (:status session)))
+          (is (= :expected-build-failed (:failure-reason session)))
+          (is (= diagnostic (:expected-build-failure session)))
+          (is (nil? (:expected session)))
+          (is (nil? (:session-binding session)))
+          (is (false? (boolean (valid? expected session))))
+          (is (= :failed (:status (replay expected session)))))))))
+
+(deftest construction-fatal-and-causal-interruption-propagate-original-object
+  ;; Synthetic throwables only; no machine failure or target execution.
+  (doseq [cause [(AssertionError. "fixture fatal")
+                 (OutOfMemoryError. "synthetic only")
+                 (Throwable. "fixture non-Exception")
+                 (InterruptedException. "fixture interrupt")]
+          wrapped? [false true]
+          preinterrupted? [false true]]
+    (with-model session-body
+      (fn [{:keys [create namespace]}]
+        (let [error (if wrapped? (ex-info "fixture wrapper" {} cause) cause)]
+          (intern namespace 'sh07-core-from-resolution-artifact (fn [& _] (throw error)))
+          (try
+            (Thread/interrupted)
+            (when preinterrupted? (.interrupt (Thread/currentThread)))
+            (let [observed (try (create resolution invocation) nil
+                                (catch Throwable caught
+                                  {:error caught :interrupted (.isInterrupted (Thread/currentThread))}))]
+              (Thread/interrupted)
+              (is (identical? error (:error observed)))
+              (is (= (or preinterrupted? (instance? InterruptedException cause))
+                     (:interrupted observed))))
+            (finally (Thread/interrupted)))))))
+  (with-model session-body
+    (fn [{:keys [create namespace]}]
+      (let [outer (Exception. "fixture cyclic outer")
+            inner (Exception. "fixture cyclic inner")]
+        (.initCause outer inner)
+        (.initCause inner outer)
+        (intern namespace 'sh07-core-from-resolution-artifact (fn [& _] (throw outer)))
+        (is (= {:origin :expected-core-construction :kind :exception
+                :exception-class "java.lang.Exception"}
+               (:expected-build-failure (create resolution invocation))))))))
+
+(deftest complete-causal-scan-preserves-interruption-after-fatal-nodes
+  (doseq [shape [:direct-fatal :wrapped-fatal :deeper-interrupt :interrupt-before-fatal :cycle]
+          preinterrupted? [false true]]
+    (with-model session-body
+      (fn [{:keys [create namespace events]}]
+        (let [interrupt (InterruptedException. "fixture interrupt")
+              fatal (AssertionError. "synthetic fatal")
+              _ (.initCause fatal interrupt)
+              outer (case shape
+                      :direct-fatal fatal
+                      :wrapped-fatal (ex-info "fixture wrapper" {} fatal)
+                      :deeper-interrupt (do (.initCause interrupt (Exception. "fixture tail"))
+                                            (ex-info "fixture wrapper" {} (Exception. "fixture middle" fatal)))
+                      :interrupt-before-fatal (do (.initCause interrupt fatal) interrupt)
+                      :cycle (do (.initCause interrupt fatal) (ex-info "fixture wrapper" {} fatal)))
+              original-cause (.getCause ^Throwable outer)]
+          (intern namespace 'sh07-core-from-resolution-artifact (fn [& _] (throw outer)))
+          (try
+            (Thread/interrupted)
+            (when preinterrupted? (.interrupt (Thread/currentThread)))
+            (let [observed (try (create resolution invocation) nil
+                                (catch Throwable caught
+                                  {:error caught :interrupted (.isInterrupted (Thread/currentThread))}))]
+              (Thread/interrupted)
+              (is (identical? outer (:error observed)) (str shape))
+              (is (true? (:interrupted observed)) (str shape))
+              (is (identical? original-cause (.getCause ^Throwable (:error observed))))
+              (is (empty? @events)))
+            (finally (Thread/interrupted)))))))
+  ;; Existing interrupt state must also survive ordinary containment.
+  (with-model session-body
+    (fn [{:keys [create namespace]}]
+      (intern namespace 'sh07-core-from-resolution-artifact
+              (fn [& _] (throw (java.io.IOException. "fixture ordinary"))))
+      (try
+        (.interrupt (Thread/currentThread))
+        (let [session (create resolution invocation)
+              interrupted? (.isInterrupted (Thread/currentThread))]
+          (Thread/interrupted)
+          (is (= :exception (get-in session [:expected-build-failure :kind])))
+          (is (true? interrupted?)))
+        (finally (Thread/interrupted))))))
+
+(deftest upstream-error-containment-and-direct-interruption-are-preserved
+  (with-model session-body
+    (fn [{:keys [create namespace]}]
+      (intern namespace 'sh06-resolution-artifact-verification
+              (fn [& _] (throw (AssertionError. "fixture Error"))))
+      (let [session (create resolution invocation)]
+        (is (= :failed (:status session)))
+        (is (= :upstream-verification-failed (:failure-reason session)))
+        (is (not (contains? session :expected-build-failure))))))
   (doseq [port '[sh07-core-from-resolution-artifact sh06-resolution-artifact-verification]]
     (with-model session-body
       (fn [{:keys [create namespace]}]
-        (intern namespace port (fn [& _] (throw (AssertionError. "fixture Error"))))
-        (is (= :failed (:status (create resolution invocation))))))
-    (with-model session-body
-      (fn [{:keys [create namespace]}]
-        (intern namespace port (fn [& _] (throw (InterruptedException. "fixture interrupt"))))
+        (let [original (InterruptedException. "fixture interrupt")]
+        (intern namespace port (fn [& _] (throw original)))
         (try
           ;; Capture before clojure.test reporting can touch interruptible IO.
           (let [observed (try (create resolution invocation) nil
                              (catch InterruptedException error
                                {:error error :interrupted (.isInterrupted (Thread/currentThread))}))]
             (Thread/interrupted)
-            (is (instance? InterruptedException (:error observed)))
+            (is (identical? original (:error observed)))
             (is (true? (:interrupted observed))))
-          (finally (Thread/interrupted)))))))
+          (finally (Thread/interrupted))))))))
+
+(def ^:private diagnostic-contract
+  (:code-proposal (edn/read-string (slurp "specs/reader-workflow/expected-core-failure-source-trace.edn"))))
+
+(defn- with-failed-construction [error operation]
+  (with-model session-body
+    (fn [{:keys [create namespace] :as model}]
+      (intern namespace 'sh07-core-from-resolution-artifact (fn [& _] (throw error)))
+      (operation (assoc model :session (create resolution invocation))))))
+
+(deftest only-known-literal-codes-and-top-level-reasons-are-projected
+  (doseq [code (:code-whitelist diagnostic-contract) field [:id :rule]]
+    (let [input (String. ^String code)]
+      (with-failed-construction (ex-info "secret path" {field input :secret "private payload"})
+        (fn [{:keys [session valid? replay expected]}]
+          (let [known (get-in session [:expected-build-failure :known-diagnostic])]
+            (is (= {:schema-version 1 :code code} known))
+            (is (not (identical? input (:code known))))
+            (is (= :expected-build-failed (:failure-reason session)))
+            (is (false? (boolean (valid? expected session))))
+            (is (= :failed (:status (replay expected session)))))))))
+  (doseq [reason (:C6-VERIFY-top-level-reason-whitelist diagnostic-contract)]
+    (with-failed-construction (ex-info "secret" {:id "C6-VERIFY" :reason reason :secret "private"})
+      (fn [{:keys [session]}]
+        (is (= {:schema-version 1 :code "C6-VERIFY" :reason reason}
+               (get-in session [:expected-build-failure :known-diagnostic]))))))
+  (doseq [[data expected]
+          [[{:id "C6-VERIFY" :rule "C6-VERIFY"} {:schema-version 1 :code "C6-VERIFY"}]
+           [{:id "C6-VERIFY" :reason :unknown} {:schema-version 1 :code "C6-VERIFY"}]
+           [{:id "C3-ID" :reason :trusted-artifact-carrier} {:schema-version 1 :code "C3-ID"}]
+           [{:id "C6-VERIFY" :facts {:reason :trusted-artifact-carrier}} {:schema-version 1 :code "C6-VERIFY"}]
+           [{:id "secret-id" :reason :trusted-artifact-carrier} nil]
+           [{:id "C6-VERIFY" :rule "C3-ID"} nil]
+           [{:id "unknown" :rule "C6-VERIFY"} nil]
+           [{:id false :rule "C6-VERIFY"} nil]
+           [{:id 1} nil] [{} nil]]]
+    (with-failed-construction (ex-info "secret" data)
+      (fn [{:keys [session]}]
+        (is (= expected (get-in session [:expected-build-failure :known-diagnostic])))))))
+
+(deftest foreign-exception-and-data-callbacks-are-never-invoked
+  (let [calls (atom 0)
+        callback (fn [& _] (swap! calls inc) (throw (AssertionError. "foreign callback")))
+        foreign-map (proxy [clojure.lang.APersistentMap clojure.lang.IObj] []
+                      (valAt [& _] (callback)) (seq [] (callback)) (count [] (callback))
+                      (assoc [_ _] (callback)) (without [_] (callback)) (empty [] (callback))
+                      (entryAt [_] (callback)) (containsKey [_] (callback))
+                      (equals [_] (callback)) (hashCode [] (callback))
+                      (meta [] (callback)) (withMeta [_] (callback)))
+        foreign-value (proxy [Object] [] (equals [_] (callback)) (hashCode [] (callback)))
+        foreign-lookup (reify clojure.lang.ILookup
+                         (valAt [_ _] (callback)) (valAt [_ _ _] (callback)))
+        foreign-comparator (reify java.util.Comparator (compare [_ _ _] (callback)))
+        raw-map (fn [entries] (clojure.lang.PersistentArrayMap. (object-array entries)))
+        cyclic-array (object-array 4)
+        cyclic-map (clojure.lang.PersistentArrayMap. cyclic-array)
+        _ (aset cyclic-array 0 :id) _ (aset cyclic-array 1 "C6-VERIFY")
+        _ (aset cyclic-array 2 :cycle) _ (aset cyclic-array 3 cyclic-map)
+        errors [(proxy [clojure.lang.ExceptionInfo] ["secret" {}] (getData [] (callback)))
+                (proxy [Exception clojure.lang.IExceptionInfo] ["secret"] (getData [] (callback)))]
+        data [foreign-map (raw-map [:id "C6-VERIFY" foreign-value "secret"])
+              {:id foreign-value} {:id "C6-VERIFY" :other foreign-lookup}
+              {:id "C6-VERIFY" :other (sorted-map-by foreign-comparator)}
+              (with-meta {:id "C6-VERIFY"} foreign-map)
+              (raw-map [:id "C6-VERIFY" :dangling]) cyclic-map]]
+    (doseq [error (concat errors (map #(ex-info "secret" %) data))]
+      (with-failed-construction error
+        (fn [{:keys [session]}]
+          (is (= #{:origin :kind :exception-class} (set (keys (:expected-build-failure session)))))
+          (is (= :failed (:status session)))
+          (is (zero? @calls)))))
+    (is (zero? @calls))))
+
+(deftest projection-failures-propagate-with-complete-control-policy
+  (doseq [kind [:ordinary :fatal :interrupt :fatal-before-interrupt :wrapped-fatal-before-interrupt]
+          preinterrupted? [false true]]
+    (with-model session-body
+      (fn [{:keys [create namespace events]}]
+        (let [interrupt (InterruptedException. "synthetic interrupt")
+              fatal (doto (AssertionError. "synthetic fatal") (.initCause interrupt))
+              error (case kind
+                      :ordinary (java.io.IOException. "projection failed")
+                      :fatal (AssertionError. "synthetic fatal only")
+                      :interrupt interrupt
+                      :fatal-before-interrupt fatal
+                      :wrapped-fatal-before-interrupt (ex-info "wrapper" {} fatal))
+              original-cause (.getCause ^Throwable error)]
+          (intern namespace 'sh07-core-from-resolution-artifact
+                  (fn [& _] (throw (ex-info "construction" {:id "C6-VERIFY"}))))
+          (intern namespace 'p15-s23-trusted-carrier-validation (fn [& _] (throw error)))
+          (try
+            (Thread/interrupted)
+            (when preinterrupted? (.interrupt (Thread/currentThread)))
+            (let [observed (try (create resolution invocation) nil
+                                (catch Throwable caught
+                                  {:error caught :flag (.isInterrupted (Thread/currentThread))}))]
+              (Thread/interrupted)
+              (is (identical? error (:error observed)))
+              (is (identical? original-cause (.getCause ^Throwable (:error observed))))
+              (is (= (or preinterrupted? (contains? #{:interrupt :fatal-before-interrupt :wrapped-fatal-before-interrupt} kind))
+                     (:flag observed)))
+              (is (empty? @events)))
+            (finally (Thread/interrupted))))))))

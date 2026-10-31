@@ -128,3 +128,144 @@ test edit had an unmatched delimiter; its nonpass is retained separately from
 the passing corrected run. Independent affected review remains the next
 criterion. No Accounting adoption, selector retry, CI rerun or actual target
 execution was performed, and the separate frozen candidates were untouched.
+
+## Failed expected-construction origin (source successor)
+
+The retained ACC09 source `bf25769ea6470f37978e757c182fbbb7960258b2`
+returned `:failed` / `:expected-build-failed` in session 56177. Its complete
+original output SHA256 is
+`d865cafe74acc6b0b09a37b323049e5f51f5d3f7fd42f96df39d54388cfbba13`;
+its stop receipt SHA256 is
+`53327b55b4de46cb12b3a91d8fc33779892898e6537041774deaa79b73e5134f`.
+Neither exposes the underlying expected-construction outcome. The cause remains
+unknown: the old handler collapsed a normal nil return and a caught Throwable.
+This successor starts at merged PR701, commit
+`f485e117186084a5ab4a04358831f4f93e0dab0a`, and changes only that local
+construction boundary, its injected controls and this contract.
+
+The earlier statement that all output fields are unchanged applies to the
+invocation increment. This successor explicitly extends schema 2 failed
+sessions with optional `:expected-build-failure`, present exactly when expected
+construction yields nil. Its closed forms are:
+
+```clojure
+{:origin :expected-core-construction :kind :nil-return}
+{:origin :expected-core-construction :kind :exception
+ :exception-class "java.io.IOException"}
+```
+
+The exception class is the caught host exception's binary class name, not a
+claimed underlying cause. Origin names the owning call boundary, not a guessed
+Reader/C5/lowering stage. No message, stack, path, ex-data, cause object,
+Throwable, arbitrary diagnostic id or reason is copied. Existing source-path
+and provenance fields remain as before; the added diagnostic carries none.
+No safe upstream diagnostic identifier is established by the retained failure,
+so none is invented or extracted from untrusted ex-data.
+
+The root session kind and schema version remain unchanged because ready
+products, their keys, all admission/replay inputs and existing status/reason
+fields are unchanged. Existing source consumers inspect readiness and identity;
+there is no closed root-key validator for failed sessions. Consumers selecting
+a closed failed-session projection must explicitly opt into this optional
+field; consumers expecting the exact old failed map must update their
+expectation. The two diagnostic variants have exactly the keys shown above.
+They are local development diagnostics, not an authenticated product or new
+authority field. Failed sessions remain invalid and replay fails closed.
+
+Normal nil still has `:expected-build-failed`; ordinary Exception containment
+has the same reason but records `:kind :exception`. Direct InterruptedException
+still restores the thread flag and rethrows the identical object. The
+construction handler now catches Exception rather than Throwable: direct
+Error and other non-Exception Throwables propagate unchanged. For a caught
+Exception, a causal InterruptedException restores the flag and rethrows the
+original outer Exception; any causal non-Exception Throwable also propagates
+that original outer object. Identity tracking terminates cyclic cause chains
+without a depth quota. Causes are inspected only to preserve fatal/interruption
+control flow, never serialized. This is an explicit construction error-policy
+change: fatal failures are no longer converted to ordinary absence. Synthetic
+injected throwables check it without causing actual machine failure.
+
+Upstream verification's existing catch-Throwable containment and direct
+interrupt policy are byte/form unchanged and outside this correction. This
+successor makes no stronger claim about causal failures at that upstream
+boundary. Construction still uses the same two/unary ports, then the same
+upstream three/unary ports after ordinary containment. No callbacks, pins,
+Reader options, construction guards, integrity helpers, catalogs, validators,
+authoritative verifier or replay bodies change. Omitted/nil ready output and
+explicit ready output retain their exact previous values.
+
+The added source controls distinguish nil, ExceptionInfo and IOException,
+assert exact redacted maps and failed-session refusal, propagate synthetic
+fatal and causal interruption objects with flag preservation, and terminate a
+cyclic cause chain. Existing forwarding, malformed invocation, legacy, stale,
+substituted, catalog and integrity controls remain. These are injected source
+checks, with no Bootstrap or Gravity target execution.
+
+The exact missing observable for any future separately authorized diagnostic
+run is the new failed-only field from the actual session returned to ACC09,
+bound to that future source and original invocation inputs. The current ACC09
+consumer projects only status/reason into its exception, so merely installing
+this source would not expose the new field in its old output. Accounting alone
+owns any consumer change. A future class-only result may still leave the
+specific internal cause unknown; it cannot retroactively enrich session 56177.
+No selector retry, fourth selector, provider/CLI/runtime run, diagnostic probe,
+lease, pin renewal, Accounting fixture adoption or publication is authorized
+by these source definitions. OWN independent affected review is next; original
+failed receipts and the open genuine acceptance goal remain unchanged.
+
+Local source verification for this successor passed 8 tests / 124 assertions,
+with no Bootstrap namespace loaded; language boundary passed 6 / 11. Test lint
+reported zero errors/warnings, both documentation validators passed, and diff
+hygiene passed. Source preservation compared the exact failed bf257 session
+and seven ports to the merged base, confirmed all eight other session-file
+forms unchanged, and compared complete injected ready results for explicit,
+omitted and nil invocation. The unchanged upstream branch, status/reason
+expressions and original session root-map expression are form-equal. These
+checks do not establish actual Reader/C5/Core semantic acceptance.
+
+## Independent causal-interruption correction
+
+Independent review of source `e0decbd02aed148b06c22f1bc6f33dc23fd50f1a`
+returned changes-requested with one P2 finding F1 after 113 qualified checks.
+Receipt SHA256 is
+`d3bfb006d7ced8983424f6403569f5a9a6571d5ea7b2502bce8a20bcb1e86745`.
+That source and its freeze remain immutable history. Its class-only privacy,
+closed failed-only metadata and ready-output checks passed; it did not receive
+acceptance. Its early fatal exit missed interruption deeper in a cause chain,
+and a direct fatal root bypassed its Exception-only catch entirely.
+
+The two reproduced chains are ExceptionInfo -> AssertionError ->
+InterruptedException and direct AssertionError -> InterruptedException. Both
+previously propagated the identical outer object with the interrupt flag false.
+This correction replaces the initial candidate's construction catch policy
+above with a local catch-Throwable scan that visits every identity-distinct
+cause before deciding the outcome. It remembers whether any node is a
+non-Exception Throwable and whether any node is InterruptedException. After
+the scan, it restores the flag if interruption was found, then rethrows the
+identical outer object if either fact requires propagation. No fatal node exits
+the scan early. Cycles terminate by identity, without a depth quota. Preexisting
+interrupt state is never cleared by production code. Fatal failures remain
+propagated rather than normalized to nil or ordinary diagnostics.
+
+This is confined to construction control flow. Schema 2, both exact diagnostic
+variants, ordinary Exception containment, nil returns, same-object invocation
+forwarding, omitted/nil behavior, ready output, integrity/catalog checks and
+failed-session refusal are unchanged from e0dec. The upstream catch policy and
+all other session-file forms and seven source ports stay unchanged. No new
+component or general error framework is introduced.
+
+Injected regressions cover both exact reported chains, deeper interruption
+after fatal nodes, interruption before fatal nodes, cycles containing both,
+preexisting interrupt flags, original outer/cause identity and absence of
+upstream calls after propagation. Existing direct/wrapped fatal and interrupt,
+ordinary ExceptionInfo/IOException, nil, privacy, stale/substitution, malformed
+invocation, ready, catalog and integrity controls remain. The old receipt's
+historical 8/124 source success did not include these two failing chains and
+must not be treated as proof of their correctness.
+
+The original bf257/session 56177 root cause remains unknown. ACC09's existing
+status/reason projection still omits the diagnostic and remains separate future
+fixture work owned by Accounting. This correction authorizes no selector retry,
+fourth launch, runtime/CLI/provider/probe/lease, pin renewal, publication or CI.
+The candidate stops for OWN's same-reviewer independent affected review before
+adoption. The original genuine acceptance goal remains open.

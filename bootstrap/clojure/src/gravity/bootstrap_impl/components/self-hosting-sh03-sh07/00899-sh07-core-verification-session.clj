@@ -1,4 +1,57 @@
+(defn- sh07-core-session-propagate-control! [error]
+  ;; Inspect the complete chain before propagation, including fatal roots.
+  (let [seen (java.util.IdentityHashMap.)
+        [fatal? interrupted?]
+        (loop [cause error fatal? false interrupted? false]
+          (if (and cause (not (.containsKey seen cause)))
+            (do
+              (.put seen cause true)
+              (recur (.getCause ^Throwable cause)
+                     (or fatal? (not (instance? Exception cause)))
+                     (or interrupted? (instance? InterruptedException cause))))
+            [fatal? interrupted?]))]
+    (when interrupted? (.interrupt (Thread/currentThread)))
+    (when (or fatal? interrupted?) (throw error))))
 
+(defn- sh07-core-session-known-diagnostic [error]
+  (try
+    (when (identical? clojure.lang.ExceptionInfo (class error))
+      (let [data (.getData ^clojure.lang.ExceptionInfo error)]
+        ;; No data operation precedes strict native validation.
+        (when (and (= :passed (:status (p15-s23-trusted-carrier-validation data :default-only)))
+                   (map? data))
+          (let [known-code (fn [value]
+                             (when (identical? String (class value))
+                               (case value
+                                 "C2-HASH" "C2-HASH"
+                                 "C3-ID" "C3-ID"
+                                 "C4-TRACE" "C4-TRACE"
+                                 "C6-ORIGIN" "C6-ORIGIN"
+                                 "C6-VERIFY" "C6-VERIFY"
+                                 nil)))
+                id (:id data) rule (:rule data)
+                code (if (and (some? id) (some? rule))
+                       (when (and (identical? String (class id))
+                                  (identical? String (class rule))
+                                  (.equals ^String id rule))
+                         (known-code id))
+                       (known-code (or id rule)))
+                reason (when (and (= "C6-VERIFY" code)
+                                  (identical? clojure.lang.Keyword (class (:reason data))))
+                         (get #{:checked-core-operation-revision-drift
+                                :checked-core-source-drift :checked-core-toolchain-drift
+                                :construction-check-catalog-drift :construction-dependency-drift
+                                :construction-selected-reader-drift :envelope-source-location
+                                :sh06-binding-projection-not-bijective :sh06-lexical-scope-projection-mismatch
+                                :sh06-projected-resolution-dangling :sh06-reference-projection-mismatch
+                                :sh06-resolution-projection-incomplete :trusted-artifact-carrier
+                                :trusted-semantic-components :unexpanded-defn}
+                              (:reason data)))]
+            (when code
+              (cond-> {:schema-version 1 :code code} reason (assoc :reason reason)))))))
+    (catch Throwable error
+      (sh07-core-session-propagate-control! error)
+      (throw error))))
 
 (defn sh07-core-verification-session
   "Build one fresh expected SH-07 artifact for development-time replay.
@@ -16,15 +69,20 @@
   (let [upstream-snapshot
         (sh07-core-verification-session-upstream-snapshot resolution-artifact)
         source-path (:source-path upstream-snapshot)
-        expected
+        expected-build
         (try
-          (if (some? invocation)
-            (sh07-core-from-resolution-artifact resolution-artifact invocation)
-            (sh07-core-from-resolution-artifact resolution-artifact))
-          (catch InterruptedException interrupted
-            (.interrupt (Thread/currentThread))
-            (throw interrupted))
-          (catch Throwable _ nil))
+          {:value (if (some? invocation)
+                    (sh07-core-from-resolution-artifact resolution-artifact invocation)
+                    (sh07-core-from-resolution-artifact resolution-artifact))}
+          (catch Throwable error
+            (sh07-core-session-propagate-control! error)
+            (let [known (sh07-core-session-known-diagnostic error)]
+              {:value nil
+               :failure (cond-> {:origin :expected-core-construction
+                                 :kind :exception
+                                 :exception-class (.getName (class error))}
+                          known (assoc :known-diagnostic known))})))
+        expected (:value expected-build)
         upstream-verification
         (try
           (if (some? invocation)
@@ -48,7 +106,7 @@
           (not= :passed (:status upstream-verification))
           :upstream-verification-failed
           :else nil)]
-    {:artifact sh07-core-verification-session-kind
+    (cond-> {:artifact sh07-core-verification-session-kind
      :schema-version sh07-core-verification-session-schema-version
      :status status
      :source-path source-path
@@ -65,7 +123,11 @@
                 (= :passed (:status upstream-verification)))
        (sh07-core-verification-session-binding
         upstream-snapshot expected upstream-verification))
-     :failure-reason failure-reason})))
+     :failure-reason failure-reason}
+      (nil? expected)
+      (assoc :expected-build-failure
+             (or (:failure expected-build)
+                 {:origin :expected-core-construction :kind :nil-return}))))))
 
 (defn- sh07-core-verification-session-valid?
   [artifact session]

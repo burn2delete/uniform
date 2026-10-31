@@ -71,9 +71,13 @@
 (defn-
  sh07-core-construction-roots
  []
+ (let [capture (fn [v]
+                 [v (if (identical? v #'*sh07-core-execution-binding*)
+                      {:root (.getRawRoot ^clojure.lang.Var v) :outer (var-get v)}
+                      (var-get v))])]
  (into
   (mapv
-   (fn [v] [v (var-get v)])
+   capture
    (concat
     [#'gravity.checked-core/build-plan-binding!
  #'gravity.checked-core/current-plan-binding!
@@ -247,7 +251,7 @@
   (mapv
    (fn
     [name]
-    (let [v (ns-resolve 'gravity.bootstrap name)] [v (var-get v)]))
+    (let [v (ns-resolve 'gravity.bootstrap name)] (capture v)))
    '[sh06-resolution-artifact-verification
      sh06-resolution-artifact-verification-contained
      sh06-resolution-artifact-verification*
@@ -286,7 +290,7 @@
      sh07-core-run-structural-request-for-test
      sh07-core-execute!
      sh07-core-verification-checks
-     sh07-core-proof-from-checks])))
+     sh07-core-proof-from-checks]))))
 
 (defn- sh07-core-construction-phase []
   (when-let [context (sh07-proof-transaction-context!)]
@@ -331,7 +335,13 @@
   (let [{:keys [artifact report source-path dependencies bindings roots phase carrier reader catalog thread invocation]} facts]
     (when-not (and (= thread (.getId (Thread/currentThread)))
                    (= phase (sh07-core-construction-phase))
-                   (every? (fn [[v root]] (identical? root (var-get v))) roots)
+                   (every? (fn [[v root]]
+                             (if (identical? v #'*sh07-core-execution-binding*)
+                               (and (identical? (:root root) (.getRawRoot ^clojure.lang.Var v))
+                                    (identical? (if (contains? facts :execution-binding)
+                                                  (:execution-binding facts) (:outer root))
+                                                (var-get v)))
+                               (identical? root (var-get v)))) roots)
                    (= catalog (sh07-core-construction-catalog report))
                    (= carrier (sh07-core-construction-carrier! artifact))
                    (= reader (sh07-core-construction-reader artifact invocation))
