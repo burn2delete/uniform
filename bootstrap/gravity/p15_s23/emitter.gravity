@@ -12944,13 +12944,13 @@
                           :safety-rule :same-integral-value-equality-no-conversion-overflow-or-rounding
                           :equality-policy {:domain :same-integral-type :comparison :original-integer-values
                                             :conversion :none :arithmetic :none :overflow :impossible
-                                            :rounding :none :cross-type :unsupported}}
+                                            :rounding :none :cross-type :unsupported}})
                     :inequality-policy (assoc (get result :inequality-policy)
                       :domain :finite-flat-persistent-vectors :members :supported-atomic-and-generic-integer
                       :numeric :same-established-generic-integer-leaves
                       :integer-cross-family :unsupported :nested-vectors :unsupported
                       :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families)
-                    :invalidation (conj (conj (conj (get result :invalidation) :numeric-equality) :integral-type) :numeric-mode)))
+                    :invalidation (conj (conj (conj (get result :invalidation) :numeric-equality) :integral-type) :numeric-mode))
                   result))]
                 (if (= :flat-keyword-set-vector (get validation :vector-comparison-domain))
                   (let [policy (assoc (get result :vector-equality)
@@ -13003,7 +13003,7 @@
                          :domain-validation :both-complete-before-result
                          :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
-                         :collection-construction :none}
+                         :collection-construction :none :provider-cpu-bound :not-established}
                               :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
                               :entry-contract :type-conforming-typed-calls)
                             :operand-domains (get validation :operand-domains)}
@@ -13029,7 +13029,7 @@
                          :domain-validation :both-complete-before-result
                          :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
-                         :collection-construction :none}
+                         :collection-construction :none :provider-cpu-bound :not-established}
                               :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
                               :entry-contract :type-conforming-typed-calls)
                             :operand-counts (get validation :operand-counts)}
@@ -13055,7 +13055,7 @@
                          :domain-validation :both-complete-before-result
                          :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
-                         :collection-construction :none}
+                         :collection-construction :none :provider-cpu-bound :not-established}
                             :operand-counts (get validation :operand-counts)}
                          :inequality-policy {:operation :complement-of-binary-keyword-set-value-equality
                             :domain :finite-persistent-keyword-sets :members :keyword-only

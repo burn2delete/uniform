@@ -15495,13 +15495,14 @@
                          :nil-bearing :unsupported :cross-family :unsupported
                          :nested-list-versus-atomic :unsupported
                          :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}
+                             }
               :inequality-policy {:operation :complement-of-binary-list-value-equality :domain :finite-persistent-lists
                                   :operand-evaluation :left-to-right-once :operand-position :non-tail
                                   :nil-bearing :unsupported :cross-family :unsupported :identity :unobserved
                                   :coercion :none :normalization :none :locale :none :numeric :unsupported
                                   :collections :finite-persistent-lists :construction :none
                                   :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
-              :invalidation (conj (conj (conj (get header :invalidation) :list-equality) :list-domain) :value-policy)} ) nil)
+              :invalidation (conj (conj (conj (get header :invalidation) :list-equality) :list-domain) :value-policy)) nil)
 (if (= :integer (get validation :comparison-domain))
           (assoc header :numeric-equality {:version :sh08-integer-inequality-v1
                            :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
@@ -15569,13 +15570,13 @@
                           :safety-rule :same-integral-value-equality-no-conversion-overflow-or-rounding
                           :equality-policy {:domain :same-integral-type :comparison :original-integer-values
                                             :conversion :none :arithmetic :none :overflow :impossible
-                                            :rounding :none :cross-type :unsupported}}
+                                            :rounding :none :cross-type :unsupported}})
                     :inequality-policy (assoc (get result :inequality-policy)
                       :domain :finite-flat-persistent-vectors :members :supported-atomic-and-generic-integer
                       :numeric :same-established-generic-integer-leaves
                       :integer-cross-family :unsupported :nested-vectors :unsupported
                       :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families)
-                    :invalidation (conj (conj (conj (get result :invalidation) :numeric-equality) :integral-type) :numeric-mode)))
+                    :invalidation (conj (conj (conj (get result :invalidation) :numeric-equality) :integral-type) :numeric-mode))
                   result))]
                 (if (= :flat-keyword-set-vector (get validation :vector-comparison-domain))
                   (let [policy (assoc (get result :vector-equality)
