@@ -6675,6 +6675,9 @@
     (is (= :gravity.type/applied-list-set-conversion (:kind descriptor)))
     (is (= :sh08-list-set-conversion-v1 (:version descriptor)))
     (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
+    (is (= :all-physical-keywords-before-equality-or-hash
+           (get-in descriptor [:construction-policy :domain-validation])))
+    (is (not (contains? descriptor :runtime-census-policy)))
     (is (not (contains? descriptor :input-element-count)))
     (is (not (contains? descriptor :result-count))))
   (doseq [type [:gravity.type/list

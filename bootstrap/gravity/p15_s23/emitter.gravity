@@ -6228,6 +6228,7 @@
                                       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
                                       :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
                                       :construction-policy {:input :homogeneous-keyword-persistent-list :operand-evaluation :once :operand-position :non-tail
+                                       :domain-validation :all-physical-keywords-before-equality-or-hash
                                        :payload-evaluation :none :original :unchanged :duplicates :gravity-keyword-value-equality
                                        :result-carrier :persistent-set :output-refinements :none :order :unspecified}
                                       :allocation-policy {:behavior :possible-persistent-set-from-keyword-list-construction :condition :normal-operand-completion
