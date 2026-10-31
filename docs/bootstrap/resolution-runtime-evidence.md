@@ -77,3 +77,18 @@ baseline warnings. Structural docs (240/19), the full-language roadmap and the
 crosswalk projection pass. The new namespace cold-loads ten public APIs without
 loading bootstrap. The final candidate still requires independent acceptance,
 exact-head CI and integration preflight; local results alone grant none of those.
+
+Current main e091f38d adds the independently reviewed C11 pure source interface
+and header registrations. Source merge c8fd8e43 preserves the resolution
+implementation, tests and CI commands byte-for-byte from a83255c9. The new
+composition bridge binds the ownership union: removing the three resolution
+entries reproduces main, and removing the three Native entries reproduces the
+original resolution input. Both immutable projection/review histories remain
+referenced, with every current criterion unassessed. Its reporting fingerprint
+is f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e.
+
+Composition checks passed reporting conservation 20/313, updated
+ownership/catalog/language 51/1047, dependencies 14/402 and Native pure helpers
+2/41. The latter kept Bootstrap unloaded and grant no C11 product authority.
+The earlier base-mismatch disposition remains a nonpass; final review and CI
+must bind the new composition, without renewing compiler or migration pins.

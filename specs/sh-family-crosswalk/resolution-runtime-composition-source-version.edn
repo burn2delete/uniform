@@ -1,0 +1,57 @@
+{:resolution-source-ownership
+ {:commit "dc44fa6bf37a098a09691507d0a724f59782683e",
+  :sha256
+  "b7e54552cb35ab2f13374d3751f510c194e5558b6c99a4a102cb1e6e1c1c1d85"},
+ :authority :source-conservation-only,
+ :predecessors
+ {:main
+  {:commit "e091f38d467538cb94b1ad53de0e662b54c51535",
+   :path "specs/sh-family-crosswalk/crosswalk.edn",
+   :sha256
+   "1181edfa1818f85161e099cfa6b6a6a784b248c002ebb935c1a842eb03ce3bb6",
+   :review
+   {:status :pending-source-version-review,
+    :input-fingerprint
+    "5fe8f9a8d3b7297cd8613e48637528ec01fe0a35f58182a98a4dfa28bfaa8af7",
+    :source-version-bridge
+    "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"}},
+  :resolution
+  {:commit "a83255c9de9158c6925b97637cd5d64cbdb71892",
+   :path "specs/sh-family-crosswalk/crosswalk.edn",
+   :sha256
+   "0025c59a8e2beb3a1f484f07fb609a5e280765be2d0285c1d1e7ca721e400da9",
+   :review
+   {:status :pending-source-version-review,
+    :input-fingerprint
+    "7e0d51192fd8ea2eae7f66dd0d9f20ef2971b77ad25dd923de817f79b9462c40",
+    :source-version-bridge
+    "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"}}},
+ :native-entries
+ {:module-owners
+  ["bootstrap/clojure/src/gravity/source_interface_header.clj"
+   "bootstrap/clojure/test/gravity/source_interface_header_test.clj"],
+  :reserved-leaf-modules ["source-interface-header"]},
+ :native-source-ownership
+ {:commit "3cd79ed80a3c3808f0471dfbbf68dab8ca3a0aa4",
+  :sha256
+  "a6348c6b187c94df3f482d04c60460aabdeea048845e8573438a109105a141af"},
+ :added-entries
+ {:production-helper-associations
+  "bootstrap/clojure/src/gravity/resolution.clj",
+  :module-owners "bootstrap/clojure/src/gravity/resolution.clj",
+  :standalone-test-owners
+  "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj"},
+ :status :pending-independent-affected-composition-review,
+ :kind :resolution-runtime-pr574-source-composition,
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn",
+  :before
+  {:commit "e091f38d467538cb94b1ad53de0e662b54c51535",
+   :sha256
+   "a6348c6b187c94df3f482d04c60460aabdeea048845e8573438a109105a141af"},
+  :after
+  {:commit "c8fd8e437ef921041b181e2f09ee1a37d716d357",
+   :sha256
+   "868180b50622c3646deaf1ff25a380eb996db868ae7c8a43f2faf8afbf1522ed"}},
+ :qualification
+ "Conserve the current Native source-interface and resolution runtime ownership union. Removing the three resolution entries reproduces main; removing the three Native entries reproduces the original resolution source input. Preserve both immutable review/projection histories and all 180 unassessed states. Reporting provenance only; no compiler migration, source-contract pin or broader acceptance renewal."}
