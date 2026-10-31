@@ -7,6 +7,7 @@
   (:require [gravity.checked-core]
             [gravity.mir]
             [gravity.runtime]
+            [gravity.backend.c]
             [gravity.backend.llvm]
             [gravity.types]
             [gravity.resolution]
