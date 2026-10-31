@@ -21,8 +21,11 @@ This data-only boundary consumes the frozen current-development request,
 resolved template, candidate, replay reports and digest vector produced by the
 actual paired standard Reader/C5/Core runs of the products composition. It does
 not repeat that unchanged upstream producer. Each artifact is read as exactly
-one EDN value, native carriers are validated, and all input byte hashes are
-checked before and after use. The source request's original actual path is
+one EDN value, and all input byte hashes are checked before and after use.
+Request, resolved template and expected candidate receive explicit native
+carrier validation. Replay reports are checked for passed status; the digest
+vector is checked for 46 entries. Both are strict-EDN, hash-witnessed observations
+without admission authority. The source request's original actual path is
 preserved; it is not replaced by the consumer worktree path.
 
 The producer source identifier above names the final reviewed source whose
