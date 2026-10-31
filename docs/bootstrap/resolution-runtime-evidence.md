@@ -4,6 +4,8 @@ This increment moves the current SH-06 source authentication, plan binding and
 execution algorithms into gravity.resolution. D1, D2, D3, D9, L3, C1, C3, C4,
 C5, C15 and TEST2 govern this boundary. Gravity-authored resolution remains the
 semantic authority. Clojure remains the explicit temporary seed.
+Operation maps are trusted implementation dependencies, not an authority or
+sandbox boundary; arbitrary supplied operations cannot establish acceptance.
 
 The stage consumes source paths/bytes, compiler and emitter snapshots, plan
 records and explicit seed operations. It emits source identities, development
@@ -58,4 +60,14 @@ nonpass remains recorded; no Reader pin or guard was changed. Current-source
 SH-06 tests use the existing explicit development invocation. The initial
 extraction also exposed an incorrectly auto-resolved legacy context keyword;
 its original gravity.bootstrap identity is restored before the passing paired
-artifact comparison. Final exact checks and review remain pending in the PR.
+artifact comparison.
+
+Local validation passed the complete current-source CI selection (24 tests,
+578 assertions), ownership/catalog/language selection (51/1037), source-version
+conservation (16/212), acceptance dependencies (14/402), and CI harness (11/101).
+After naming the existing shared cache lock, its focused policy regression
+passed 1/10. Changed-source lint reports zero blockers with 3505 unchanged
+baseline warnings. Structural docs (240/19), the full-language roadmap and the
+crosswalk projection pass. The new namespace cold-loads ten public APIs without
+loading bootstrap. The final candidate still requires independent acceptance,
+exact-head CI and integration preflight; local results alone grant none of those.
