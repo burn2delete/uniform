@@ -1861,7 +1861,7 @@
 (deftest body-keyword-set-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
+        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input))
         c7 (ns-resolve upstream 'invoke-c7)]
     (doseq [arguments [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/keyword]
                        [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/keyword]} :gravity.type/keyword]
@@ -2945,7 +2945,7 @@
         c7 (ns-resolve upstream 'invoke-c7)]
     (doseq [extent [0 1 3]]
       (let [{:keys [core nodes bindings types forms] :as input} (input-fn extent)
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             count-result (c7 'sh08-cq-derive [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms])
             count-descriptor (:descriptor count-result)
             ordering (c7 'sh08-io-descriptor [core (nodes :guard) (second (:calls core)) (second (:call-edges core)) nodes bindings types (:module core)])
@@ -3023,7 +3023,7 @@
     (doseq [[base access?] [[(source 3) false] [(two (source 3)) false]
                            [(nth-source 3 false) true] [(get-source 3) true]]]
       (let [{:keys [core nodes bindings] :as input} (complete (convert base :increment))
-            access (when access? (:descriptor (access-derive input 65536)))
+            access (when access? (:descriptor (access-derive input)))
             {:keys [request facts successors accesses]} (body-unit-step-products input access)
             valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
             descriptor (get-in facts [:type-table :inc-op]) id (:call-core-node-id descriptor)
@@ -3089,7 +3089,7 @@
         derive (ns-resolve upstream 'vector-loop-nth-derived) c7 (ns-resolve upstream 'invoke-c7)
         alias (ns-resolve upstream 'bounded-successor-alias)]
     (doseq [input [(complete (source 3 false)) (complete (source 3 true)) (complete (alias (source 3 false)))]]
-      (let [{:keys [core nodes bindings types]} input descriptor (:descriptor (derive input 65536))
+      (let [{:keys [core nodes bindings types]} input descriptor (:descriptor (derive input))
             {:keys [facts request context count-result]} (body-vector-loop-nth-products input descriptor)
             valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
             replace-access (fn [changed] (-> facts (assoc-in [:type-table :nth-op] changed)
@@ -3141,7 +3141,7 @@
         derive (ns-resolve upstream 'vector-loop-nth-derived) c7 (ns-resolve upstream 'invoke-c7)
         alias (ns-resolve upstream 'bounded-successor-alias)]
     (doseq [input [(complete (source 3)) (complete (source 1)) (complete (alias (source 3)))]]
-      (let [{:keys [core nodes bindings types]} input descriptor (:descriptor (derive input 65536))
+      (let [{:keys [core nodes bindings types]} input descriptor (:descriptor (derive input))
             {:keys [facts request context count-result]} (body-vector-loop-nth-products input descriptor)
             valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
             replace-access (fn [changed] (-> facts (assoc-in [:type-table :nth-op] changed)
@@ -3847,7 +3847,7 @@
         pairs ((ns-resolve upstream 'keyword-set-inequality-type-pairs))]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -3913,7 +3913,7 @@
                                  :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
                           :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
-        result ((ns-resolve upstream 'atomic-inequality-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'atomic-inequality-derived) input) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
                      {:module (:module base)
@@ -4480,7 +4480,7 @@
         pairs (for [family [:gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64 :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64] pair [[family family] [family :gravity.type/never] [:gravity.type/never family]]] pair)]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -4546,7 +4546,7 @@
                                  :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
                           :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
-        result ((ns-resolve upstream 'atomic-inequality-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'atomic-inequality-derived) input) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
                      {:module (:module base)
@@ -4580,7 +4580,7 @@
         pairs [[:gravity.type/integer :gravity.type/integer] [:gravity.type/integer :gravity.type/never] [:gravity.type/never :gravity.type/integer]]]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -4645,7 +4645,7 @@
                                  :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
                           :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
-        result ((ns-resolve upstream 'atomic-inequality-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'atomic-inequality-derived) input) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
                      {:module (:module base)
@@ -4683,7 +4683,7 @@
                        [:gravity.type/never :gravity.type/keyword] [:gravity.type/keyword :gravity.type/never]])]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -4740,7 +4740,7 @@
                                  :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
                           :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
-        result ((ns-resolve upstream 'atomic-inequality-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'atomic-inequality-derived) input) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
                      {:module (:module base)
@@ -5980,7 +5980,7 @@
         pairs ((ns-resolve upstream 'vector-inequality-type-pairs))]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -6109,7 +6109,7 @@
                [:gravity.type/never (v [i])] [(v [i]) :gravity.type/never]]]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -6176,7 +6176,7 @@
                                  :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
                           :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
-        result ((ns-resolve upstream 'atomic-inequality-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'atomic-inequality-derived) input) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
                      {:module (:module base)
@@ -6205,7 +6205,7 @@
 (deftest body-character-set-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
+        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input))
         c7 (ns-resolve upstream 'invoke-c7)]
     (doseq [arguments [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/character]
                        [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/character :gravity.type/character]} :gravity.type/character]
@@ -6281,7 +6281,7 @@
 (deftest body-string-set-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
+        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input))
         c7 (ns-resolve upstream 'invoke-c7)]
     (doseq [arguments [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/string]
                        [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string :gravity.type/string]} :gravity.type/string]
@@ -6519,7 +6519,7 @@
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         base ((ns-resolve upstream 'vector-loop-get-input) 3)
         input ((ns-resolve upstream 'vector-loop-nth-completed) base)
-        result ((ns-resolve upstream 'vector-loop-nth-derived) input 65536)
+        result ((ns-resolve upstream 'vector-loop-nth-derived) input)
         core (:core input) descriptor (:descriptor result)
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms input)))}}}
         facts {:type-table (assoc (:types input) :nth-op descriptor :read (:type result))}
@@ -6774,7 +6774,7 @@
                [:gravity.type/never (v [ks])] [(v [ks]) :gravity.type/never]]]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -6904,7 +6904,7 @@
                  [:gravity.type/never ((ns-resolve upstream 'inequality-keyword-set-type) [:gravity.type/string])]]]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -7063,7 +7063,7 @@
 (deftest body-integer-set-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
+        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input))
         c7 (ns-resolve upstream 'invoke-c7)]
     (doseq [arguments [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/integer]
                        [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/integer :gravity.type/integer]} :gravity.type/integer]
@@ -8531,7 +8531,7 @@
 (deftest body-symbol-set-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
+        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input))
         c7 (ns-resolve upstream 'invoke-c7)]
     (doseq [arguments [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/symbol]
                        [{:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol :gravity.type/symbol]} :gravity.type/symbol]
@@ -9094,7 +9094,7 @@
                                  :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
                           :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
-        result ((ns-resolve upstream 'list-equality-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'list-equality-derived) input) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
                      {:module (:module base)
@@ -9178,7 +9178,7 @@
                     {:result result :calls @calls}))]
     (doseq [[left right] pairs]
       (let [{:keys [core node call edge nodes bindings types forms module] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -9257,7 +9257,7 @@
                                  :evaluation-order [] :recursion-components [] :error-transfers [] :error-handlers []})
         input (assoc base :core core :nodes (into {} (map (juxt :node-id identity) node-list)) :node (last node-list)
                           :call call :edge edge :types (into {} (map (fn [[k v]] [(ids k) v]) (:types base))))
-        result ((ns-resolve upstream 'atomic-inequality-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'atomic-inequality-derived) input) descriptor (:descriptor result)
         invoke (ns-resolve upstream 'invoke-c7)
         facts (merge (select-keys core [:function-records :call-edges :recursion-components :lexical-bindings])
                      {:module (:module base)
@@ -9592,7 +9592,7 @@
 (deftest body-symbol-set-carrier-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input 65536))
+        input-fn (ns-resolve upstream 'map-contains-input) derive (fn [input] ((ns-resolve upstream 'keyword-set-contains-derived) input))
         c7 (ns-resolve upstream 'invoke-c7)
         carrier (:result-type (c7 (quote sh08-syin-validate-types) [[{:kind :gravity.type/set, :shape :literal, :element-types []} :gravity.type/symbol]]))]
     (doseq [arguments [[carrier :gravity.type/symbol]
