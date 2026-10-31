@@ -186,6 +186,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/checked_core.clj", "namespace": "gravity.checked-core"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj", "namespace": "gravity.bootstrap", "owner": "sh-core"},
       "test": {"path": "bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj", "namespace": "gravity.checked-core.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "types-products",
+      "kind": "production-stage-helper",
+      "owner": "sh-types",
+      "source": {"path": "bootstrap/clojure/src/gravity/types.clj", "namespace": "gravity.types"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/c7_type_checker/inference.clj", "namespace": "gravity.c7-type-checker.inference", "owner": "sh-types"},
+      "test": {"path": "bootstrap/clojure/test/gravity/c7_type_checker_test.clj", "namespace": "gravity.c7-type-checker-test", "registration": "bootstrap-free"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
