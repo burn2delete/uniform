@@ -5,7 +5,11 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {current-plan-binding!
+   {module-assembly-manifest
+    {:arglists ([lineage fragment-manifest _operations]),
+     :operation-inputs [],
+     :admission :none},
+    current-plan-binding!
     {:arglists ([operations]),
      :operation-inputs
      [:input :sh07-core-build-binding! :sh07-core-current-source-key],
@@ -23,15 +27,48 @@
       :p15-s23-stage2-runtime-execute-function
       :sh04-syntax-strip-host-metadata],
      :admission :none},
+    alias-name
+    {:arglists ([resolution _operations]),
+     :operation-inputs [],
+     :admission :none},
     children
     {:arglists [[value _operations]],
      :operation-inputs [],
+     :admission :none},
+    binding-order
+    {:arglists ([_module trees bindings _operations]),
+     :operation-inputs [],
+     :admission :none},
+    projection-binding-input
+    {:arglists ([request operations]),
+     :operation-inputs [:sh05-path-neutral-semantic-value],
+     :admission :none},
+    fragment-manifest
+    {:arglists
+     ([lineage module trees bindings resolutions aliases operations]),
+     :operation-inputs [:sh07-b13-fragment-record],
      :admission :none},
     source-map-order
     {:arglists [[resolution-artifact syntaxes trees operations]],
      :operation-inputs
      [:sh07-core-projected-source-mismatch
       :sh07-core-source-occurrence-context],
+     :admission :none},
+    fragment-coverage
+    {:arglists
+     ([_module
+       forms
+       _bindings
+       resolutions
+       fragment-manifest
+       _operations]),
+     :operation-inputs [],
+     :admission :none},
+    lineage
+    {:arglists ([resolution-artifact operations]),
+     :operation-inputs
+     [:sh07-core-lineage-with-semantic-trace
+      :sh07-core-semantic-macro-trace],
      :admission :none},
     decimal-descriptor
     {:arglists
@@ -60,6 +97,18 @@
     macro-trace
     {:arglists [[lineage sh05-step operations]],
      :operation-inputs [:reader-canonical-hash],
+     :admission :none},
+    fragment-record
+    {:arglists
+     ([_lineage
+       _module
+       ordinal
+       tree
+       bindings
+       resolutions
+       aliases
+       operations]),
+     :operation-inputs [:sh07-b13-alias-name],
      :admission :none},
     value-kind
     {:arglists [[value _operations]],
@@ -167,15 +216,19 @@
     :sh03-reader-host-character-value!
     :sh04-syntax-strip-host-metadata
     :sh05-path-neutral-semantic-value
+    :sh07-b13-alias-name
+    :sh07-b13-fragment-record
     :sh07-core-build-binding!
     :sh07-core-children
     :sh07-core-current-source-key
     :sh07-core-decimal-descriptor
+    :sh07-core-lineage-with-semantic-trace
     :sh07-core-neutral-value
     :sh07-core-plan-identities
     :sh07-core-projected-form-id
     :sh07-core-projected-source-mismatch
     :sh07-core-projected-syntax-id
+    :sh07-core-semantic-macro-trace
     :sh07-core-semantic-span
     :sh07-core-source-occurrence-context
     :sh07-core-source-path
@@ -203,9 +256,14 @@
     projected-source-mismatch
     {:arglists [[source target operations]],
      :operation-inputs [:sh07-core-value-kind],
+     :admission :none},
+    lineage-with-semantic-trace
+    {:arglists ([resolution-artifact semantic-trace operations]),
+     :operation-inputs
+     [:reader-canonical-hash :sh05-path-neutral-semantic-value],
      :admission :none}},
    :governing-contracts
-   [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2],
+   [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2 B13],
    :seed-inputs
    [:*sh07-core-execution-binding*
     :sh07-core-cached-binding
@@ -223,7 +281,8 @@
     :release
     :performance
     :self-hosting
-    :seed-retirement],
+    :seed-retirement
+    :backend-artifact-manifest-completion],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -231,7 +290,10 @@
     :function-and-argument-carriers
     :owner-verified-c5-and-syntax-records
     :c2-form-occurrences
-    :literal-decoding-records],
+    :literal-decoding-records
+    :verified-c5-semantic-records
+    :projected-fragment-trees
+    :bindings-resolutions-and-aliases],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -241,7 +303,8 @@
      :host-containment
      :source-occurrence-bijections
      :decimal-c2-evidence
-     :projected-parent-child-links],
+     :projected-parent-child-links
+     :fragment-undeclared-alias],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -252,9 +315,14 @@
     :form-trees
     :source-collection-order
     :macro-origin-traces
-    :private-decimal-occurrence-state],
+    :private-decimal-occurrence-state
+    :semantic-source-lineage
+    :projection-binding-inputs
+    :fragment-manifests
+    :fragment-coverage
+    :module-assembly-records],
    :clojure-seed-boundary? true,
-   :contract-boundary :checked-core-runtime-and-source-projection})
+   :contract-boundary :checked-core-runtime-projection-and-lineage})
 
 (defn
  source-path
@@ -1679,6 +1747,383 @@
        (conj result {:name item, :path (conj parameter-path index)}))
       :else
       (recur (next remaining) (inc index) result))))))
+ (defn-
+ lineage-with-semantic-trace
+ [resolution-artifact semantic-trace operations]
+ (let
+  [reader-canonical-hash
+   ^{:line 6, :column 5}
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh05-path-neutral-semantic-value
+   ^{:line 8, :column 5}
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh05-path-neutral-semantic-value)
+   boundary
+   ^{:line 12, :column 5}
+   (:gravity-resolution-boundary resolution-artifact)
+   analysis
+   ^{:line 14, :column 5}
+   (:resolved-analysis boundary)
+   sh05
+   ^{:line 16, :column 5}
+   (:sh05-macro-artifact resolution-artifact)
+   neutral
+   sh05-path-neutral-semantic-value
+   source-unit
+   ^{:line 20, :column 5}
+   (get-in
+    sh05
+    [:gravity-macro-boundary
+     :authenticated-sh04-artifact
+     :c2-reader-artifact
+     :source-unit-record])
+   source-revision-id
+   ^{:line 27, :column 5}
+   (:bytes-hash source-unit)
+   expanded-forms
+   ^{:line 29, :column 5}
+   (mapv :form ^{:line 29, :column 17} (:expanded-syntax-stream sh05))
+   neutral-expanded-forms
+   ^{:line 31, :column 5}
+   (neutral expanded-forms)
+   semantic-module
+   ^{:line 33, :column 5}
+   (select-keys
+    ^{:line 34, :column 6}
+    (:module-contract analysis)
+    [:namespace
+     :profile
+     :target
+     :safety
+     :effects
+     :capabilities
+     :exports])
+   binding-semantics
+   ^{:line 43, :column 5}
+   (mapv
+    ^{:line 44, :column 6}
+    (fn*
+     [p1__151#]
+     ^{:line 46, :column 7}
+     (select-keys
+      p1__151#
+      [:name
+       :kind
+       :namespace
+       :package
+       :binding-class
+       :visibility
+       :profile-set
+       :target-set
+       :type-ref
+       :effects
+       :capabilities
+       :safety
+       :semantic-span]))
+    ^{:line 61, :column 6}
+    (:binding-table analysis))
+   resolution-semantics
+   ^{:line 63, :column 5}
+   (mapv
+    ^{:line 64, :column 6}
+    (fn*
+     [p1__152#]
+     ^{:line 66, :column 7}
+     (select-keys
+      p1__152#
+      [:reference-syntax-id
+       :symbol
+       :position
+       :resolution-order
+       :semantic-span
+       :resolution-kind]))
+    ^{:line 74, :column 6}
+    (:resolution-table analysis))
+   alias-semantics
+   ^{:line 76, :column 5}
+   (vec ^{:line 76, :column 10} (:alias-table analysis))
+   sh05-artifact-id
+   ^{:line 78, :column 5}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-semantic-sh05-artifact-v1,
+     :source-revision-id source-revision-id,
+     :expanded-forms neutral-expanded-forms,
+     :macro-trace semantic-trace})
+   semantic-projection-id
+   ^{:line 85, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-semantic-sh06-artifact-v1,
+     :source-revision-id source-revision-id,
+     :module semantic-module,
+     :expanded-forms neutral-expanded-forms,
+     :bindings binding-semantics,
+     :aliases alias-semantics,
+     :resolutions resolution-semantics})]
+  {:macro-expansion-trace-id
+   ^{:line 94, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-semantic-macro-trace-v1,
+     :source-revision-id source-revision-id,
+     :trace semantic-trace}),
+   :authenticated-envelope-id
+   ^{:line 99, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-semantic-upstream-envelope-v1,
+     :source-revision-id source-revision-id,
+     :sh05-artifact-id sh05-artifact-id}),
+   :expanded-syntax-stream-id
+   ^{:line 104, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-semantic-expanded-stream-v1,
+     :source-revision-id source-revision-id,
+     :expanded-forms neutral-expanded-forms}),
+   :sh05-artifact-id sh05-artifact-id,
+   :sh06-analysis-artifact-id
+   ^{:line 110, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-semantic-sh06-analysis-v1,
+     :source-revision-id source-revision-id,
+     :module semantic-module,
+     :bindings binding-semantics,
+     :aliases alias-semantics,
+     :resolutions resolution-semantics}),
+   :resolution-table-id
+   ^{:line 118, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-sh06-resolution-table-v1,
+     :resolutions resolution-semantics}),
+   :binding-table-id
+   ^{:line 122, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-sh06-binding-table-v1,
+     :bindings binding-semantics}),
+   :alias-table-id
+   ^{:line 126, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-sh06-alias-table-v1,
+     :aliases alias-semantics}),
+   :source-revision-id source-revision-id,
+   :sh06-semantic-projection-id semantic-projection-id,
+   :sh06-artifact-id semantic-projection-id,
+   :lexical-scope-graph-id
+   ^{:line 133, :column 6}
+   (reader-canonical-hash
+    {:domain :gravity/sh07-sh06-lexical-scope-graph-v1,
+     :source-revision-id source-revision-id,
+     :graph
+     ^{:line 137, :column 8}
+     (neutral
+      ^{:line 138, :column 9}
+      (select-keys
+       ^{:line 139, :column 10}
+       (:lexical-scope-graph analysis)
+       [:scope-count :edge-count :status]))}),
+   :authenticated-sh06-artifact-id
+   ^{:line 142, :column 6}
+   (:artifact-id resolution-artifact)}))
+ (defn
+  lineage
+  [resolution-artifact operations]
+  (let
+   [sh07-core-lineage-with-semantic-trace
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-lineage-with-semantic-trace)
+    sh07-core-semantic-macro-trace
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-semantic-macro-trace)
+    sh05
+    (:sh05-macro-artifact resolution-artifact)]
+   (sh07-core-lineage-with-semantic-trace
+    resolution-artifact
+    (sh07-core-semantic-macro-trace (:macro-expansion-trace sh05)))))
+ (defn
+  projection-binding-input
+  [request operations]
+  (let
+   [sh05-path-neutral-semantic-value
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh05-path-neutral-semantic-value)]
+   {:domain :gravity/sh07-authenticated-sh06-core-projection-v15,
+    :request
+    (->
+     request
+     (dissoc :projection-binding :provenance)
+     sh05-path-neutral-semantic-value)}))
+ (defn
+  alias-name
+  [resolution _operations]
+  (when
+   (= :alias-qualified-required-binding (:resolution-order resolution))
+   (some-> (:symbol resolution) namespace symbol)))
+ (defn
+  fragment-record
+  [_lineage
+   _module
+   ordinal
+   tree
+   bindings
+   resolutions
+   aliases
+   operations]
+  (let
+   [sh07-b13-alias-name
+    (.valAt ^clojure.lang.ILookup operations :sh07-b13-alias-name)
+    forms
+    (:records tree)
+    form-ids
+    (mapv :form-id forms)
+    syntax-ids
+    (set (map :syntax-id forms))
+    local-bindings
+    (filterv
+     (fn*
+      [p1__153#]
+      (contains? syntax-ids (:definition-syntax-id p1__153#)))
+     bindings)
+    local-binding-ids
+    (mapv :binding-id local-bindings)
+    local-binding-id-set
+    (set local-binding-ids)
+    fragment-resolutions
+    (filterv
+     (fn*
+      [p1__154#]
+      (contains? syntax-ids (:reference-syntax-id p1__154#)))
+     resolutions)
+    external-binding-ids
+    (->>
+     fragment-resolutions
+     (map :binding-id)
+     (remove local-binding-id-set)
+     distinct
+     vec)
+    alias-names
+    (->> fragment-resolutions (keep sh07-b13-alias-name) distinct vec)
+    available-aliases
+    (set (map :alias aliases))
+    root-form-id
+    (get-in tree [:root :form-id])
+    root-node-id
+    root-form-id
+    content
+    {:ordinal ordinal,
+     :root-form-ids [root-form-id],
+     :form-ids form-ids,
+     :local-binding-ids local-binding-ids,
+     :external-binding-ids external-binding-ids,
+     :resolution-reference-syntax-ids
+     (mapv :reference-syntax-id fragment-resolutions),
+     :alias-names alias-names,
+     :root-node-ids [root-node-id]}
+    content-id
+    root-form-id
+    fragment-id
+    root-form-id]
+   (when-not
+    (every? available-aliases alias-names)
+    (throw
+     (ex-info
+      "SH-07-B13 fragment referenced an undeclared alias"
+      {:id "C6-VERIFY",
+       :stage :core-lowering,
+       :reason :fragment-undeclared-alias,
+       :ordinal ordinal,
+       :alias-names alias-names})))
+   (assoc content :fragment-id fragment-id :content-id content-id)))
+ (defn
+  fragment-manifest
+  [lineage module trees bindings resolutions aliases operations]
+  (let
+   [sh07-b13-fragment-record
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-b13-fragment-record)]
+   (mapv
+    (fn*
+     [p1__155# p2__156#]
+     (sh07-b13-fragment-record
+      lineage
+      module
+      p1__155#
+      p2__156#
+      bindings
+      resolutions
+      aliases))
+    (range)
+    trees)))
+ (defn
+  binding-order
+  [_module trees bindings _operations]
+  (let
+   [fragment-by-syntax
+    (into
+     {}
+     (mapcat
+      (fn
+       [ordinal tree]
+       (map (fn [form] [(:syntax-id form) ordinal]) (:records tree)))
+      (range)
+      trees))
+    indexed
+    (map-indexed vector bindings)
+    local?
+    (fn*
+     [p1__157#]
+     (contains? fragment-by-syntax (:definition-syntax-id p1__157#)))]
+   (->>
+    indexed
+    (sort-by
+     (fn
+      [[index binding]]
+      [(if
+        (local? binding)
+        (get
+         fragment-by-syntax
+         (:definition-syntax-id binding)
+         Integer/MAX_VALUE)
+        Integer/MAX_VALUE)
+       index]))
+    (mapv second))))
+ (defn
+  fragment-coverage
+  [_module forms _bindings resolutions fragment-manifest _operations]
+  (let
+   [local-binding-ids
+    (vec (mapcat :local-binding-ids fragment-manifest))]
+   {:covered-local-binding-ids local-binding-ids,
+    :form-count (count forms),
+    :fragment-count (count fragment-manifest),
+    :root-form-count (count (mapcat :root-form-ids fragment-manifest)),
+    :covered-resolution-reference-syntax-ids
+    (vec (mapcat :resolution-reference-syntax-ids fragment-manifest)),
+    :covered-form-ids (vec (mapcat :form-ids fragment-manifest)),
+    :local-binding-count (count local-binding-ids),
+    :covered-root-form-ids
+    (vec (mapcat :root-form-ids fragment-manifest)),
+    :resolution-count (count resolutions)}))
+ (defn
+  module-assembly-manifest
+  [lineage fragment-manifest _operations]
+  (let
+   [content
+    {:ordered-fragment-ids (mapv :fragment-id fragment-manifest),
+     :root-form-ids (vec (mapcat :root-form-ids fragment-manifest)),
+     :source-revision-id (:source-revision-id lineage),
+     :sh06-semantic-projection-id
+     (:sh06-semantic-projection-id lineage),
+     :alias-table-id (:alias-table-id lineage)}
+    content-id
+    (:source-revision-id lineage)]
+   (assoc
+    content
+    :content-id
+    content-id
+    :module-id
+    (:sh06-semantic-projection-id lineage))))
  (doseq
   [operation
    [#'build-plan-binding!
@@ -1704,7 +2149,16 @@
     #'source-map-order
     #'source-occurrence-context
     #'source-path-from-resolution
-    #'value-kind]]
+    #'value-kind
+    #'alias-name
+    #'binding-order
+    #'fragment-coverage
+    #'fragment-manifest
+    #'fragment-record
+    #'module-assembly-manifest
+    #'lineage
+    #'lineage-with-semantic-trace
+    #'projection-binding-input]]
   (alter-meta!
    operation
    assoc
