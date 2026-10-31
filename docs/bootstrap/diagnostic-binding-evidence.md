@@ -44,3 +44,54 @@ Focused positive and adversarial tests, affected carrier and native C15 tests,
 language boundary, docs/roadmap/governance, exact contextual lint, independent
 acceptance, own CI and clean exact current-main preflight are required before
 integration. A draft PR will be maintained throughout this work.
+
+## Working implementation and evidence
+
+Draft PR723 was opened at scope commitaacf02850 before implementation. The
+native module now exposes resolve-request-id, bind-private-record and
+verify-private-record. The existing Reader wrapper forwards the same data and
+retains a late canonical-digest Var plus its original missing-request rule.
+Its complete component text is conserved apart from that wrapper; normalized
+resolver body equality is checked against the frozen base. No Reader source,
+pin, canonical encoder, semantic rule, CI policy or Gravity C15 source changes.
+The existing component's test dependencies now declare the real C15 import.
+
+The complete current Gravity C15 source compiles with108 functions and source
+SHA-2564dea49ae632a5d07399ec5db45112103f44c510534b097a1199c7720da86aacf.
+The native C15 validator rejects an actual empty artifact with C15-SCHEMA.
+A new private diagnostic about that schema failure uses its actual rule and
+typed missing-field/system facts. Its original full exception and source path
+are retained separately. This does not retag or authenticate an upstream semantic
+diagnostic. The private record's unavailable profile/target/primary context is
+explicit nil, as permitted for compiler-diagnostics by C15.
+
+Before controls ran to completion at the scope commit. After controls run
+through the new stage with the same source text, complete plan, original fields
+and native error. Eight complete and serialized pairs compare equal, including
+the entire source plan, unresolved record, full digest request, bound candidate,
+fresh verification and actual C15-FACTS source rejection. Source text/hash and
+the complete-request canonical digest recompute. Captures and logs are retained
+under /tmp/uniform-diagnostic-binding-evidence/ and
+/tmp/uniform-diagnostic-binding-*. The private record ID is
+sha256:48d4391dc8ef5937c9ff8aa21428793fa26551bfd09b3cab721e049bce8be51f.
+
+The binding hashes the complete request, then hashes it again for source
+verification against the separate original eleven fields. Candidate deletion
+and replacement, coherent changed requests/digests, changed original fields,
+and a digest-provider drift all reject C15-ID. Malformed typed fields reject
+their source-owned C15 rule; construction failures return unchanged and unresolved
+without a digest call. Human remediation wording changes the private record
+but preserves its identity; semantic fact changes alter identity. Failed fresh
+verification exposes no successful candidate. Supplied operations remain trusted
+seed inputs; source-verifier nonclaims are preserved verbatim.
+
+The focused carrier/binding suite passes8 tests/198 assertions. An initial
+strict reader check caught one extra closing delimiter in a new test before
+execution; it was removed. Inspection also corrected that test's expected
+missing-request diagnostic to the actual C2-HASH/missing-fields record before
+execution. Neither required a production behavior change. These observations
+remain ordinary development evidence. Affected native C15 passes8/216 in its
+separate leaf JVM, ownership31/975, language6/11, docs240/19 and roadmap/governance
+pass. Final lint, independent review, own CI and clean exact preflight are still
+required. The historical full C15 compatibility Reader-pin nonpass remains
+unreached and unretried; these focused source and native tests do not replace it.
