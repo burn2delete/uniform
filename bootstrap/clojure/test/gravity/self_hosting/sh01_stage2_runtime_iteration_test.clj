@@ -977,7 +977,7 @@
         context (typed-keyword-lookup-kernel-context (:value (invoke 'p15-s23-typed-context module input observation)))
         work-context {:lookup-core (:core context) :lookup-nodes (:nodes context) :lookup-forms (:forms context) :lookup-bindings {}}
         node (get-in context [:nodes :lookup])
-        step #(c7 'sh08-kl-step [%1 (:types context) {} {} %2 %3])
+        step #(c7 'sh08-kl-step [%1 (:types context) {} {} %2])
         result (step node work-context 65536)
         enriched (assoc context :ledger [(:constraint result)])
         compile #(invoke 'p15-s23-typed-compile-node %1 :lookup %2)]
@@ -1018,11 +1018,11 @@
       (is (= :accepted (:status missing)))
       (is (= :gravity.type/nil (:type missing)))
       (is (= :absent (get-in missing [:constraint :solution :presence]))))
-    (let [never (c7 'sh08-kl-step [node (assoc (:types context) :vector :gravity.type/never) {} {} work-context 65536])]
+    (let [never (c7 'sh08-kl-step [node (assoc (:types context) :vector :gravity.type/never) {} {} work-context])]
       (is (= :gravity.type/never (:type never)))
       (is (= :no-normal-result (get-in never [:constraint :solution :presence]))))
     (let [nodes (mapv (:nodes context) [:lookup-key :vector-left :vector-right :vector :lookup])
-          infer #(c7 'sh08-ft-infer-acyclic-with-context [nodes (:nodes context) [] [] [] [] {} {} 2 (assoc work-context :loop-work-left %)])
+          infer #(c7 'sh08-ft-infer-acyclic-with-context [nodes (:nodes context) [] [] [] [] {} {} 2])
           total (* 2 (:work-count result))]
       (is (= :converged (:convergence-status (infer total))))
       (is (= :gravity.type/string (get-in (infer total) [:type-table :lookup])))
@@ -1041,7 +1041,7 @@
           bindings {:again :gravity.type/bool :value :gravity.type/integer}
           pass #(c7 'sh08-ft-infer-pass-with-context [nodes [] [] [] [] {} bindings (assoc work-context :loop-core loop-core :loop-work-left %)])
           high (pass 65536)
-          loop-only (c7 'sh08-ft-loop-type-step [loop-core (:type-table high) bindings 65536])
+          loop-only (c7 'sh08-ft-loop-type-step [loop-core (:type-table high) bindings])
           narrow (pass (:work-count loop-only))]
       (is (= :accepted (:status loop-only)))
       (is (= (+ (:work-count result) (:work-count loop-only)) (:loop-work-count high)))
@@ -3313,7 +3313,7 @@
         prepare (fn [throw?]
                   (let [{:keys [input observation] :as data} (typed-function-recur-kernel-data throw?)
                         core (get-in input [:request :canonical-core-artifact]) types (get-in input [:typed :type-table])
-                        checked (c7 'sh08-ft-loop-type-step [core types {} 65536])
+                        checked (c7 'sh08-ft-loop-type-step [core types {}])
                         rows (c7 'sh08-ft-loop-constraints [(:constraints checked) (into {} (map (juxt :node-id identity) (:nodes core))) (:module core)])
                         typed (assoc (:typed input) :constraint-ledger rows)
                         report {:artifact :gravity/sh08-function-type-verification :status :passed :expected typed :candidate typed}]
@@ -3368,9 +3368,9 @@
     (doseq [bad [(assoc-in core [:recur-transfers 0 :target-id] "foreign")
                  (assoc-in core [:recur-transfers 0 :tail-position] false)
                  (assoc-in core [:recur-transfers 0 :argument-node-ids] [:next-value :next-flag])]]
-      (is (= :rejected (:status (c7 'sh08-ft-loop-type-step [bad (get-in input [:typed :type-table]) {} 65536])))))
+      (is (= :rejected (:status (c7 'sh08-ft-loop-type-step [bad (get-in input [:typed :type-table]) {}])))))
     (is (= "C7-TYPE-MISMATCH"
-           (get-in (c7 'sh08-ft-loop-type-step [core (assoc (get-in input [:typed :type-table]) :next-flag :gravity.type/string) {} 65536]) [:issues 0 :rule])))
+           (get-in (c7 'sh08-ft-loop-type-step [core (assoc (get-in input [:typed :type-table]) :next-flag :gravity.type/string) {}]) [:issues 0 :rule])))
     (is (= :rejected (:status (invoke 'p15-s23-typed-context module (update-in input [:typed :constraint-ledger] #(into % %)) observation))))
     (let [{:keys [module input observation definition]} (prepare true)
           result (invoke 'p15-s23-typed-compile-function emitter module definition input observation)
@@ -4371,7 +4371,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [type [:gravity.type/map :gravity.type/never]]
       (let [{:keys [core node call edge nodes bindings types forms]} (input-fn 'count [type])
-            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0} :locals {:arg0 'packet} :parameter-types {:arg0 type}
                      :call-facts {:call (c7 'sh08-cq-call-fact [descriptor (:module core)])} :ledger [(c7 'sh08-cq-constraint [descriptor])]}
@@ -4783,10 +4783,9 @@
         changed-input (-> (:input-shape descriptor)
                           (assoc-in [:parts 1 :value-node-id] (sha 9997))
                           (assoc-in [:parts 1 :shape :node-id] (sha 9997)))
-        changed-transition (c7 'sh08-mr-transition [changed-input (:key descriptor) 65536])
+        changed-transition (c7 'sh08-mr-transition [changed-input (:key descriptor)])
         header (apply dissoc descriptor [:input-shape :transition :result-shape :parameter-types :return :result-type])
-        changed-descriptor (:descriptor (c7 'sh08-mr-finish [header changed-input changed-transition
-                                             (get-in descriptor [:result-shape :call-join-work])]))]
+        changed-descriptor (:descriptor (c7 'sh08-mr-finish [header changed-input changed-transition]))]
     (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
     (doseq [changed [changed-descriptor (assoc-in descriptor [:allocation-policy :absent-key] :none)]]
       (let [typed (walk/postwalk #(if (= descriptor %) changed %) (:typed input))
@@ -4994,7 +4993,7 @@
         n :gravity.type/nil k :gravity.type/keyword nk (nullable k)]
     (doseq [[left right] [[n k] [k n] [nk n]]]
       (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
-            derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
+            derived (c7 'sh08-ij-derive [core node nodes types bindings forms])
             row (c7 'sh08-ij-row [(:premise derived)])
             types (assoc types (:node-id node) nk)
             facts {:type-table types :constraint-ledger [row]}
@@ -5019,7 +5018,7 @@
         (doseq [[condition-type condition] [[:gravity.type/bool true] [:gravity.type/bool false]
                                             [(nullable :gravity.type/bool) nil] [(nullable :gravity.type/bool) false]]]
           (let [actual-types (assoc types (nids :condition) condition-type)
-                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms 65536])
+                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms])
                 actual-row (c7 'sh08-ij-row [(:premise actual-join)])
                 actual-facts {:type-table actual-types :constraint-ledger [actual-row]}
                 actual-checked (invoke 'p15-s23-ij-context core actual-facts bindings forms 65536)
@@ -5066,7 +5065,7 @@
     (doseq [[left right] [[(finite [s]) (finite [])] [(finite []) (finite [s])]
                          [homogeneous (finite [])] [(finite [s s]) homogeneous]]]
       (let [{:keys [core node nodes types bindings forms nids refs]} (input-fn left right)
-            derived (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])
+            derived (c7 'sh08-ij-derive [core node nodes types bindings forms])
             row (c7 'sh08-ij-row [(:premise derived)])
             types (assoc types (:node-id node) homogeneous)
             facts {:type-table types :constraint-ledger [row]}
@@ -5114,7 +5113,7 @@
           (let [condition-type (cond (nil? condition) :gravity.type/nil (keyword? condition) :gravity.type/keyword
                                      (string? condition) :gravity.type/string :else :gravity.type/bool)
                 actual-types (assoc types (nids :condition) condition-type)
-                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms 65536])
+                actual-join (c7 'sh08-ij-derive [core node nodes actual-types bindings forms])
                 actual-row (c7 'sh08-ij-row [(:premise actual-join)])
                 actual-facts {:type-table actual-types :constraint-ledger [actual-row]}
                 actual-checked (check actual-facts 65536)
@@ -6067,7 +6066,6 @@
               (is (= (second (:parameter-binding-ids proof))
                      (get-in (into {} (map (juxt :node-id identity) (:nodes core)))
                              [(get-in proof [:return-witness :witnesses 0 :node-id]) :attributes :binding-id])))
-              (is (<= 0 (:prior-attempt-work proof) (:source-reservation-work proof) (:work-count proof) 65536))
               (is (= [join-id] (get-in core [:recursion-components 0 :function-syntax-ids])))
               (is (= [(:ordinal (:self-edge proof))] (get-in core [:recursion-components 0 :internal-call-edge-ordinals])))
               (is (= 1 (count (filter #(= join-id (:caller-function-syntax-id %) (:callee-function-syntax-id %)) (:call-edges core)))))
@@ -7777,7 +7775,7 @@
         association-header (dissoc association :input-shape :value-shape :transition :result-shape :parameter-types :return :result-type)
         stale-association (:descriptor (c7 'sh08-ma-finish
                                           [association-header (assoc-in (:input-shape association) [:call-links 0 :body-source :syntax-id] :stale)
-                                           (:value-shape association) (get-in association [:result-shape :call-join-work])]))]
+                                           (:value-shape association)]))]
     (is (= (get-in cases [0 :input :typed :identity-input]) (get-in cases [1 :input :typed :identity-input])))
     (is (map? association))
     ;; Rebuild the existing P finite projection so this stale input-body link
@@ -9301,7 +9299,7 @@
                     (assoc-in [:forms :list-type-form] {:form-id :list-type-form :syntax-id :list-type :value 'List :parent-form-id :parameter-form})
                     (assoc-in [:bindings :list] {:binding-id :list :name 'List :kind :type :binding-class :core :namespace 'gravity.core}))
         call (get-in context [:calls :call]) edge (get-in context [:edges :call])
-        checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+        checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context)])
         pair {:parameter :parameter :argument actual :chosen :gravity.type/list :compatibility (:premise checked)}
         row (assoc (first (:ledger base)) :rhs [pair] :kind :argument-compatibility :compatibility-rule-version :sh08-bare-list-parameter-v1)
         fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual])
@@ -9346,7 +9344,7 @@
             row (first (:constraints (constrain input)))
             pairs (mapv (fn [index]
                           (let [actual (get types (get (:argument-node-ids call) index))
-                                expected (c7 'sh08-lp-compatibility [core call edge callee index actual nodes bindings 65536])
+                                expected (c7 'sh08-lp-compatibility [core call edge callee index actual nodes bindings])
                                 checked (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings 65536)
                                 pair {:parameter (get order index) :argument actual :chosen (get-in callee [:parameters index :type])}]
                             (is (= expected checked))
@@ -9384,7 +9382,7 @@
         type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
     (doseq [members [[] [s] [s s]]]
       (let [actual (positional members) {:keys [core call edge callee nodes bindings declaration]} (input-fn actual)
-            expected (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
+            expected (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings])
             checked (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
             app-id (:type-form-id declaration) ctor-id (:constructor-form-id declaration) member-id (:element-form-id declaration)
             forms {app-id {:form-id app-id :syntax-id (:type-syntax-id declaration) :kind :list :child-form-ids [ctor-id member-id]}
@@ -9446,7 +9444,7 @@
                         (assoc-in [:forms member-id] {:form-id member-id :syntax-id (:element-syntax-id declaration) :value 'String :parent-form-id app-id})
                         (update :bindings merge (select-keys (:bindings parameter) [(:type-binding-id declaration) (:element-binding-id declaration)])))
             call (get-in context [:calls :call]) edge (get-in context [:edges :call])
-            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context)])
             pair {:parameter :parameter :argument actual :chosen type :compatibility (:premise checked)}
             row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
             fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
@@ -9501,7 +9499,7 @@
                                                   :parent-form-id :parameter-form :child-form-ids []})
                         (update :bindings merge (select-keys (:bindings parameter) [(:type-binding-id declaration)])))
             call (get-in context [:calls :call]) edge (get-in context [:edges :call])
-            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context)])
             pair (cond-> {:parameter :parameter :argument actual :chosen type}
                    (= :accepted (:status checked)) (assoc :compatibility (:premise checked)))
             row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
@@ -9575,7 +9573,7 @@
                               (assoc-in [:bindings :second-parameter]
                                         (assoc (get-in context [:bindings :parameter]) :binding-id :second-parameter :name 'suffix :definition-syntax-id :second-name-syntax))
                               (assoc-in [:calls :call] call2) (assoc-in [:edges :call] edge2))
-                checked2 (c7 'sh08-lp-compatibility [(:core candidate) call2 edge2 function2 0 actual (:nodes candidate) (:bindings candidate) 65536])
+                checked2 (c7 'sh08-lp-compatibility [(:core candidate) call2 edge2 function2 0 actual (:nodes candidate) (:bindings candidate)])
                 pair2 (assoc pair :compatibility (:premise checked2))
                 row2 (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair2 {:parameter :second-parameter
                                                                                    :argument :gravity.type/string :chosen :gravity.type/string}])])
@@ -11370,7 +11368,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -14664,8 +14662,8 @@
     (doseq [mutate mutations]
       (let [{:keys [core node call edge nodes bindings types module] :as changed} (mutate input)]
         (is (= :rejected (:status (derive changed 65536))))
-        (is (= :rejected (:status (c7 'sh08-st-inferred-call [core node call edge nodes bindings (merge typed types) 65536]))))
-        (let [validation (c7 'sh08-st-type-work [[(:arg0 types)] 65536])]
+        (is (= :rejected (:status (c7 'sh08-st-inferred-call [core node call edge nodes bindings (merge typed types)]))))
+        (let [validation (c7 'sh08-st-type-work [[(:arg0 types)]])]
           (is (nil? (c7 'sh08-st-source [core node call edge nodes bindings types module validation])))
           (is (nil? (body 'body-st-source core node call edge nodes bindings types module validation)))
           (is (nil? (lower 'p15-s23-st-source core node call edge nodes bindings types module validation))))
@@ -14768,7 +14766,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/integer]}
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/unknown]}]]
       (let [{:keys [core node call edge nodes bindings types forms module]} (input-fn 'count [type])
-            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call :gravity.type/integer)
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
                      :call-facts {:call (c7 'sh08-cq-call-fact [descriptor module])}
@@ -16554,7 +16552,7 @@
     (doseq [mutate mutations]
       (let [{:keys [core node call edge nodes bindings types module] :as changed} (mutate input)]
         (is (= :rejected (:status (derive changed 65536))))
-        (is (= :rejected (:status (c7 'sh08-ane-inferred-call [core node call edge nodes bindings (merge typed types) 65536]))))
+        (is (= :rejected (:status (c7 'sh08-ane-inferred-call [core node call edge nodes bindings (merge typed types)]))))
         (let [validation (c7 'sh08-ane-type-work [[(:arg0 types) (:arg1 types)] 65536])]
           (is (nil? (c7 'sh08-ane-source [core node call edge nodes bindings types module validation])))
           (is (nil? (body 'body-ane-source core node call edge nodes bindings types module validation)))
@@ -17613,7 +17611,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [family families arguments [[family family] [family :gravity.type/never] [:gravity.type/never family]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ie-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ie-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -17689,7 +17687,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [arguments [[:gravity.type/set (finite [k k])] [(finite [k]) :gravity.type/set]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -17812,7 +17810,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [arguments [[(finite []) (finite [])] [(finite [k k]) (finite [k])]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -17983,7 +17981,7 @@
     (doseq [arguments [[(finite []) (finite [])] [(finite [k s]) (finite [s k])]
                        [(finite [(finite [(nullable s)])]) (finite [k])]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ve-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -20340,7 +20338,9 @@
                    (assoc-in typed [:recursive-proof :parameter-value-premise :entry-values :entries]
                              (vec (repeat 2048 (get-in typed [:recursive-proof :parameter-value-premise :entry-values :entries 0]))))
                    (assoc-in typed [:recursive-proof :parameter-value-premise :cold-entry-derivation :source-argument-call-node-ids] [:forged])
-                   (assoc-in typed [:recursive-proof :inferred-return-type] :gravity.type/bool)]]
+                   (assoc-in typed [:recursive-proof :inferred-return-type] :gravity.type/bool)
+                   ;; Retired C7 accounting fields are not optional proof extensions.
+                   (assoc-in typed [:recursive-proof :work-count] 1)]]
         (is (= :rejected (:status (check core bad forms 65536)))))
       (is (= :rejected (:status (check (assoc-in core [:module :exports] ['without-path]) typed forms 65536))))
       (is (= :rejected (:status (check core typed (mapv #(if (= :self-op (:form-id %)) (assoc % :value 'forged) %) forms) 65536))))
@@ -23366,7 +23366,7 @@
     (doseq [arguments [[(finite [i k]) (finite [i k])] [(finite [i]) (finite [i i])]
                        [(finite []) (finite [i])] [:gravity.type/never (finite [i])] [(finite [i]) :gravity.type/never]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ve-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -23912,7 +23912,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -24193,7 +24193,7 @@
     (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]
                        [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} k] [{:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} :gravity.type/never]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -26185,7 +26185,7 @@
                        [(finite []) (finite [ks])] [(finite [ks]) (finite [ks ks])]
                        [:gravity.type/never (finite [ks])] [(finite [ks]) :gravity.type/never]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ve-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -27640,7 +27640,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [arguments [[(finite [k]) (finite [])] [(finite []) (finite [k])] [(finite [k k]) (finite [k])]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -28784,15 +28784,15 @@
         nodes {:entry-0 {:source {:form-id :entry-0}} :entry-1 {:source {:form-id :entry-1}}}
         types {:again b :value s :seen carrier :other-again b :other-value s :other-seen carrier
                :entry-0 :gravity.type/never :entry-1 b}
-        entries #(invoke 'p15-s23-is-entry-values [census nodes %1 %2])
-        result (entries types 65536)
+        entries #(invoke 'p15-s23-is-entry-values [census nodes %1])
+        result (entries types)
         return-nodes {:body {:node-id :body :core-form :if :children [:guard :self :answer]}
                       :guard {:node-id :guard :core-form :reference :children []}
                       :self {:node-id :self :core-form :call :children []}
                       :answer {:node-id :answer :core-form :reference :children []}}
         return-types {:guard b :self :gravity.type/unknown :answer carrier}
-        witness #(invoke 'p15-s23-is-return-witness [record return-nodes %1 %2])
-        returned (witness return-types 65536)]
+        witness #(invoke 'p15-s23-is-return-witness [record return-nodes %1])
+        returned (witness return-types)]
     (is (true? (invoke 'p15-s23-ss-type? [carrier])))
     (is (true? (invoke 'p15-s23-is-value-type? [carrier])))
     (is (false? (invoke 'p15-s23-ds-type? [carrier])))
@@ -28819,29 +28819,26 @@
     (is (= [b s carrier] (:parameter-types result)))
     (is (= 2 (:normal-entry-count result)))
     (is (every? :normal-invocation? (:entries result)))
-    (is (= result (entries types (:work-count result))))
-    (is (= :private-self-work-limit (:reason (entries types (dec (:work-count result))))))
-    (is (= :private-self-work-limit (:reason (entries types 0))))
-    (is (= :private-self-entry-type-conflict (:reason (entries (assoc types :other-value :gravity.type/keyword) 65536))))
+    (is (= result (entries types)))
+    (is (= :private-self-entry-type-conflict (:reason (entries (assoc types :other-value :gravity.type/keyword)))))
     (doseq [wrong [:gravity.type/set :gravity.type/unknown
                    (assoc carrier :extra true) (assoc carrier :element-type :gravity.type/keyword)
                    (assoc carrier :element-type carrier) (assoc carrier :kind :gravity.type/vector)]]
       (is (false? (invoke 'p15-s23-is-value-type? [wrong])))
-      (is (= :private-self-independent-entry-types-required (:reason (entries (assoc types :seen wrong) 65536)))))
+      (is (= :private-self-independent-entry-types-required (:reason (entries (assoc types :seen wrong))))))
     (let [abort (assoc types :again :gravity.type/never :other-again :gravity.type/never)]
-      (is (= :private-self-normal-entry-required (:reason (entries abort 65536)))))
+      (is (= :private-self-normal-entry-required (:reason (entries abort)))))
     (let [abort (assoc types :other-again :gravity.type/never :other-seen :gravity.type/unknown)
-          retained (entries abort 65536)]
+          retained (entries abort)]
       (is (= :accepted (:status retained)))
       (is (= 1 (:normal-entry-count retained)))
       (is (= [b s carrier] (:parameter-types retained))))
     (is (= :accepted (:status returned)))
     (is (= carrier (:return-type returned)))
     (is (= [:self] (:pending-return-node-ids returned)))
-    (is (= returned (witness return-types (:work-count returned))))
-    (is (= :private-self-work-limit (:reason (witness return-types (dec (:work-count returned))))))
-    (is (= :private-self-independent-return-required (:reason (witness (assoc return-types :answer :gravity.type/never) 65536))))
-    (is (= :private-self-return-value-type-required (:reason (witness (assoc return-types :answer :gravity.type/set) 65536))))
+    (is (= returned (witness return-types)))
+    (is (= :private-self-independent-return-required (:reason (witness (assoc return-types :answer :gravity.type/never)))))
+    (is (= :private-self-return-value-type-required (:reason (witness (assoc return-types :answer :gravity.type/set)))))
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "carrier hash")))
                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "carrier equality"))))]
@@ -29089,7 +29086,7 @@
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string}
         {:keys [core node nodes forms bindings types module call edge]} ((ns-resolve upstream 'atomic-equality-input) [carrier carrier])
-        result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                  :calls {:call call} :edges {:call edge} :call-order {:call 0}
                  :call-facts {:call (c7 'sh08-kse-call-fact [descriptor module])} :ledger [(c7 'sh08-kse-constraint [descriptor])]
@@ -29690,7 +29687,7 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core node call edge nodes bindings types forms module]} ((ns-resolve upstream 'list-predicate-input) [:gravity.type/list])
-        result (c7 'sh08-listp-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-listp-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                  :calls {:call call} :edges {:call edge} :call-order {:call 0}
                  :call-facts {:call (c7 'sh08-listp-call-fact [descriptor module])} :ledger [(c7 'sh08-listp-constraint [descriptor])]
@@ -29708,10 +29705,10 @@
             slot [[:calls :call :argument-node-ids 0] [:calls :call :operator-node-id] [:calls :call :operator-binding-id]
                   [:calls :call :core-node-id] [:nodes :call :node-id] [:nodes :call :children 0] [:nodes :call :children 1]
                   [:nodes :call :source :form-id] [:nodes :call :source :syntax-id]
-                  [:forms :call :child-form-ids 0] [:forms :call :child-form-ids 1]] budget [0 65536]]
+                  [:forms :call :child-form-ids 0] [:forms :call :child-form-ids 1]]]
       (let [changed (assoc-in context slot bad) changed-node (get-in changed [:nodes :call])]
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node changed :call budget))))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-list-predicate changed changed-node budget))))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node changed :call 65536))))
+        (is (= :rejected (:status (lower 'p15-s23-typed-compile-list-predicate changed changed-node 65536))))
         (is (zero? @callbacks))))
     (doseq [bad [opaque [opaque] {:opaque opaque}]]
       (let [id :sibling row (assoc-in (first (:ledger context)) [:lhs :core-node-id] id)
@@ -29909,7 +29906,7 @@
     (doseq [arguments [[(finite []) (finite [])] [(finite [k s]) (finite [s k])]
                        [(finite [(finite [s])]) (finite [(finite [k])])]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-le-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-le-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -29985,7 +29982,7 @@
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core node call edge nodes bindings types forms module]} ((ns-resolve upstream 'atomic-equality-input) [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
                                                                                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}])
-        result (c7 'sh08-le-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-le-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                  :calls {:call call} :edges {:call edge} :call-order {:call 0}
                  :call-facts {:call (c7 'sh08-le-call-fact [descriptor module])} :ledger [(c7 'sh08-le-constraint [descriptor])]
@@ -30365,7 +30362,7 @@
         c7 (ns-resolve upstream 'invoke-c7) input-fn (ns-resolve upstream 'list-prepend-input)
         finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}
         {:keys [core node nodes forms bindings types module call edge]} (input-fn finite :gravity.type/keyword)
-        result (c7 'sh08-pl-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-pl-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -30403,7 +30400,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -31348,7 +31345,7 @@
 (defn- let-vector-slice-kernel-context [input]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core node call edge nodes forms bindings types module child]} input
-        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         types (assoc types :slice-operator descriptor :slice-call (:type result) :slice-let (:type result))
         descriptors (if child [(:descriptor child) descriptor] [descriptor])
         fact-names (if child ['sh08-scv-call-fact 'sh08-vsl-call-fact] ['sh08-vsl-call-fact])
@@ -31781,7 +31778,7 @@ else
             g (.getPath (io/file root (str stem ".gravity"))) q (.getPath (io/file root (str stem ".qst")))
             content (slurp g) source-forms (bootstrap/read-forms g content)
             {:keys [core nodes bindings types forms call edge]} (input text "sha256:" 7 end)
-            result (c7 'sh08-vsl-derive [core (nodes :argument-slice-call) call edge nodes bindings types forms 65536])
+            result (c7 'sh08-vsl-derive [core (nodes :argument-slice-call) call edge nodes bindings types forms])
             expected-body (list 'let ['characters (list 'vec text)]
                                (list 'if (list '= '(subvec characters 0 7) (vec "sha256:"))
                                      (list 'tail-characters (list 'subvec 'characters 7 end)) false))]
@@ -31849,7 +31846,7 @@ else
       (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)
             g (.getPath (io/file root (str stem ".gravity"))) q (.getPath (io/file root (str stem ".qst")))
             text (slurp g) {:keys [core node call edge nodes bindings types forms]} (input "sha256:0af" 7 end)
-            result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms])
             source-forms (bootstrap/read-forms g text)]
         (is (= text (slurp q)))
         (is (= source-forms (bootstrap/read-forms q (slurp q))))
@@ -31954,7 +31951,7 @@ else
             g (.getPath (io/file root (str stem ".gravity"))) q (.getPath (io/file root (str stem ".qst")))
             text (slurp g)
             {:keys [core node call edge nodes bindings types forms] :as data} (input "0af" start)
-            result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms])
             source-forms (bootstrap/read-forms g text)]
         (is (= text (slurp q)))
         (is (= source-forms (bootstrap/read-forms q (slurp q))))
@@ -32370,7 +32367,7 @@ else
             {:keys [core node call edge nodes bindings types forms]} (input text start)]
         (is (= gravity-text qst-text))
         (is (= (list 'let ['characters (list 'vec text)] (list 'subvec 'characters start (list 'count 'characters))) body))
-        (is (= expected (:status (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]))) relative)))))
+        (is (= expected (:status (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms]))) relative)))))
 
 (deftest current-gravity-let-vector-slice-runtime-guards-development-kernel
   (let [rt (:plan (typed-catch-runtime-projection))
@@ -32496,7 +32493,7 @@ else
 (defn- literal-vector-slice-kernel-context [input]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core node call edge nodes forms bindings types module]} input
-        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)]
+        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)]
     {:result result :descriptor descriptor
      :context {:core core :nodes nodes :forms forms :bindings bindings
                :types (assoc types (:operator-node-id call) descriptor (:core-node-id call) (:type result))
@@ -32627,7 +32624,7 @@ else
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         establish (ns-resolve upstream 'vector-slice-established)
         {:keys [core node call edge nodes forms bindings types module child]} (establish input)
-        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms 65536])
+        result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms])
         descriptor (:descriptor result) child-descriptor (:descriptor child)]
     {:result result :descriptor descriptor :child child-descriptor
      :context {:core core :nodes nodes :forms forms :bindings bindings
@@ -32805,7 +32802,7 @@ else
 (defn- literal-string-vector-kernel-context [input]
   (let [c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         {:keys [core node call edge nodes forms bindings types module]} input
-        result (c7 'sh08-scv-derive [core node call edge nodes bindings types forms 65536])
+        result (c7 'sh08-scv-derive [core node call edge nodes bindings types forms])
         descriptor (:descriptor result)]
     {:result result :descriptor descriptor
      :context {:core core :nodes nodes :forms forms :bindings bindings
@@ -32994,7 +32991,7 @@ else
                                                    [(bigint "123456789012345678901234567890")
                                                     (bigint "123456789012345678901234567890") :vector false 0]]]
       (let [{:keys [core node call edge nodes forms bindings types module quotient inner]} (input factor divisor kind empty?)
-            result (c7 'sh08-cqs-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            result (c7 'sh08-cqs-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
             qcall (:call inner) count-call (:count-call inner) counted (get-in inner [:counted :descriptor])
             qd (:descriptor quotient)
             facts {(:core-node-id count-call) (c7 'sh08-cq-call-fact [counted module])
@@ -33106,7 +33103,7 @@ else
                              [(literal [(bigint "123456789012345678901234567890") 10]) (bigint "12345678901234567890123456789")]
                              [(counted :vector false 1) 1] [(counted :map true 4) 0]]]
       (let [{:keys [core node call edge nodes forms bindings types module]} input
-            result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
             count-call (:count-call input) count-descriptor (get-in input [:counted :descriptor])
             facts (cond-> {} count-call (assoc (:core-node-id count-call) (c7 'sh08-cq-call-fact [count-descriptor module]))
                             true (assoc (:core-node-id call) (c7 'sh08-nq-call-fact [descriptor module])))
@@ -33227,7 +33224,7 @@ else
         make-context
         (fn [input]
           (let [{:keys [core node call edge nodes forms bindings types module quotient inner]} input
-                result (c7 'sh08-cqs-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+                result (c7 'sh08-cqs-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
                 qcall (:call inner) count-call (:count-call inner) counted (get-in inner [:counted :descriptor])
                 qd (:descriptor quotient)]
             (is (= :accepted (:status result)))
@@ -33303,7 +33300,7 @@ else
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
         make-context (fn [input]
           (let [{:keys [core node call edge nodes forms bindings types module]} input
-                result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)]
+                result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)]
             (is (= :accepted (:status result)))
             {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
              :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -33358,7 +33355,7 @@ else
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [arguments [[(finite []) k] [(finite [k k]) k] [(finite [k]) :gravity.type/never] [:gravity.type/never k]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -33644,7 +33641,7 @@ else
         c7 (ns-resolve upstream 'invoke-c7) input-fn (fn [receiver needle] ((ns-resolve upstream 'map-contains-input) [receiver needle]))
         finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}
         {:keys [core node nodes forms bindings types module call edge]} (input-fn finite :gravity.type/symbol)
-        result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -35444,7 +35441,7 @@ else
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core node call edge nodes bindings types forms module]} ((ns-resolve upstream 'atomic-inequality-input) [{:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
                                                                                  {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}])
-        result (c7 'sh08-ane-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-ane-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                  :calls {:call call} :edges {:call edge} :call-order {:call 0}
                  :call-facts {:call (c7 'sh08-ane-call-fact [descriptor module])} :ledger [(c7 'sh08-ane-constraint [descriptor])]
@@ -35523,7 +35520,7 @@ else
                                 :nodes (into {} (map (juxt :node-id identity) node-list))
                                 :types (into {} (map (fn [[id t]] [(remap-id id) t]) (:types base))))
             result (c7 'sh08-ane-derive [foreign-core (:node foreign) (:call foreign) foreign-edge (:nodes foreign)
-                                       (:bindings foreign) (:types foreign) (:forms foreign) 65536])
+                                       (:bindings foreign) (:types foreign) (:forms foreign)])
             descriptor (:descriptor result)
             mixed (-> context
                       (update :nodes merge (:nodes foreign)) (update :forms merge (:forms foreign))
@@ -35913,7 +35910,7 @@ else
         c7 (ns-resolve upstream 'invoke-c7) input-fn (ns-resolve upstream 'list-prepend-input)
         finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}
         {:keys [core node nodes forms bindings types module call edge]} (input-fn finite :gravity.type/symbol)
-        result (c7 'sh08-pl-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-pl-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -36617,7 +36614,7 @@ else
     (doseq [arguments [[carrier k]
                        [carrier :gravity.type/never]]]
       (let [{:keys [core node nodes forms bindings types module call edge]} (input-fn arguments)
-            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -37853,5 +37850,7 @@ else
         run #(bootstrap/p15-s23-stage2-runtime-execute-function
                runtime plan 'p15-s23-is-cold-metadata-valid? [core facts record bindings forms % cut])]
     (is (true? (run cold)))
+    ;; The current cold schema is closed: retired accounting keys are tamper.
+    (is (false? (run (assoc cold :work-count 1))))
     (doseq [changed ((helper 'cold-metadata-invalid-inputs) cold)]
       (is (false? (run changed))))))
