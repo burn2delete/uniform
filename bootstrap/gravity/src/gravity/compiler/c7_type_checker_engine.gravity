@@ -6600,26 +6600,22 @@
      :invalidation [:call-edges :calls :binding-table :function-records :callee-body :type-table :error-transfers :evaluation-order]
      :profile (get (get core :module) :profile) :target (get (get core :module) :target) :status :solved :diagnostics []}))
 
-(defn sh08-tc-products-with-source-forms [core types functions bindings direct source-forms budget]
+(defn sh08-tc-products-with-source-forms [core types functions bindings direct source-forms]
   (if (if (= 0 (count (get direct :throws))) (= 0 (count (get core :error-handlers))) false) direct
-  (let [scoped (sh08-tc-scope-with-types core (get direct :throws) budget types)]
+  (let [scoped (sh08-tc-scope-with-types core (get direct :throws) types)]
     (if (= :accepted (get scoped :status))
       (if (= false (get scoped :active?))
-        (assoc direct :work-count (+ (get direct :work-count 0) (get scoped :work-count)))
-        (let [scope (get scoped :scope) initial (+ (get scoped :work-count) (* 8 (count (get core :nodes))) (* 100 (count (get core :error-handlers)))
-                    (* 70 (count (get core :call-edges))) (count bindings) (count (get core :definitions))
-                    (* 3 (count (get core :function-records)))
-                    (* (count (get core :calls)) (+ (count bindings) (count (get core :definitions))
-                                                   (* 2 (count (get core :function-records))))))
-              owners (sh08-th-owners core (- budget initial))
+        direct
+        (let [scope (get scoped :scope)
+              owners (sh08-th-owners core)
               nodes (sh08-ft-node-index (get core :nodes)) records (sh08-ft-function-record-index (get core :function-records))
               calls (sh08-ft-index (get core :calls) :core-node-id) binding-index (sh08-ft-binding-index bindings)
               definitions (sh08-ft-index (get core :definitions) :binding-id)
-              expected (if (if (<= initial budget) (= :accepted (get owners :status)) false)
+              expected (if (= :accepted (get owners :status))
                          (sh08-ft-index (sh08-ft-build-call-edges (get core :nodes) (get core :definitions) bindings
                                           (get core :calls) (get core :function-records)) :call-core-node-id) {})
-              checked-edges (if (= :accepted (get owners :status)) (loop [edges (get core :call-edges) work 0]
-                          (if (= 0 (count edges)) {:status :accepted :edge nil :work-count work}
+              checked-edges (if (= :accepted (get owners :status)) (loop [edges (get core :call-edges)]
+                          (if (= 0 (count edges)) {:status :accepted :edge nil}
                             (let [edge (first edges) call (get calls (get edge :call-core-node-id))
                                   node (get nodes (get edge :call-core-node-id))
                                   bare-keyword-anchor? (if (contains? scope (get edge :caller-function-syntax-id))
@@ -6650,31 +6646,31 @@
                                                         (if (= :gravity.type/never receiver) (= :gravity.type/keyword key-type) false)))
                                                 (sh08-mg-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) false)) false) false))
                                   checked (if private-map-keys?
-(sh08-pmk-check-with-forms core node call edge nodes binding-index types source-forms (- budget initial (get owners :work-count) work))
+(sh08-pmk-check-with-forms core node call edge nodes binding-index types source-forms)
 (if bare-keyword-anchor?
 (sh08-bka-inferred-call core node call edge nodes binding-index types)
 (if list-set?
-(sh08-lset-inferred-call core node call edge nodes binding-index types (- budget initial (get owners :work-count) work))
+(sh08-lset-inferred-call core node call edge nodes binding-index types)
 (if map-keys?
-(sh08-mkeys-inferred-call core node call edge nodes binding-index types (- budget initial (get owners :work-count) work))
+(sh08-mkeys-inferred-call core node call edge nodes binding-index types)
 (if vector-rest?
                                             (sh08-vrest-inferred-call core node call edge nodes binding-index types
-                                              (- budget initial (get owners :work-count) work))
+                                             )
                                           (if vector-empty?
                                             (sh08-vemp-inferred-call core node call edge nodes binding-index types
-                                              (- budget initial (get owners :work-count) work))
+                                             )
 (if (if (contains? scope (get edge :caller-function-syntax-id))
                                             (if (if (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-scv-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (sh08-cqs-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (sh08-nq-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) false)
                                             (if (if (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-scv-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (sh08-cqs-binding? (get binding-index (get call :operator-binding-id)) (get core :module)))
                                               (if (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-scv-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-vsl-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-vsl-inferred-call core node call edge nodes binding-index types
-                                              (- budget initial (get owners :work-count) work)) (sh08-scv-inferred-call core node call edge nodes binding-index types
-                                              (- budget initial (get owners :work-count) work))) (sh08-cqs-inferred-call core node call edge nodes binding-index types
-                                              (- budget initial (get owners :work-count) work)))
+                                             ) (sh08-scv-inferred-call core node call edge nodes binding-index types
+                                             )) (sh08-cqs-inferred-call core node call edge nodes binding-index types
+                                             ))
                                               (sh08-nq-inferred-call core node call edge nodes binding-index types
-                                              (- budget initial (get owners :work-count) work)))
+                                             ))
                                           (if get2?
                                             (sh08-mg-inferred-work core node call edge nodes binding-index types calls
-                                              (- budget initial (get owners :work-count) work))
+                                             )
                                           (if vector-first?
                                             (sh08-vf-inferred-call core node call edge nodes binding-index types
 )
@@ -6687,35 +6683,35 @@
                                                 (sh08-ssin-inferred-call core node call edge nodes binding-index types)))
                                               (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-bare-keyword-anchor-set-equality :gravity.type/applied-string-set-equality} (get (get types (first (get node :children))) :kind))
                                               (sh08-kse-inferred-call core node call edge nodes binding-index types
-                                                (- budget initial (get owners :work-count) work))
+                                               )
                                               (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains} (get (get types (first (get node :children))) :kind))
                                                 (sh08-ksm-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work))
+                                                 )
                                                 (if (= :gravity.type/applied-list-equality (get (get types (get call :operator-node-id)) :kind))
                                                   (sh08-le-inferred-call core node call edge nodes binding-index types
-                                                    (- budget initial (get owners :work-count) work)) (sh08-ve-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work))))))
+                                                   ) (sh08-ve-inferred-call core node call edge nodes binding-index types
+                                                 )))))
                                             (if predicate?
                                               (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module)))))))))))
                                                 (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                                   (sh08-st-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work))
+                                                 )
                                                   (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-ane-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-chp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (sh08-nilp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work))) (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-boolp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-symp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-listp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (sh08-setp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work))) (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-mapp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-kp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-strp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)) (sh08-ip-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)))))))))))
+                                                 ) (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-chp-inferred-call core node call edge nodes binding-index types
+                                                 ) (sh08-nilp-inferred-call core node call edge nodes binding-index types
+                                                 )) (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-boolp-inferred-call core node call edge nodes binding-index types
+                                                 ) (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-symp-inferred-call core node call edge nodes binding-index types
+                                                 ) (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-listp-inferred-call core node call edge nodes binding-index types
+                                                 ) (sh08-setp-inferred-call core node call edge nodes binding-index types
+                                                 )) (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-mapp-inferred-call core node call edge nodes binding-index types
+                                                 ) (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-kp-inferred-call core node call edge nodes binding-index types
+                                                 ) (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) (sh08-strp-inferred-call core node call edge nodes binding-index types
+                                                 ) (sh08-ip-inferred-call core node call edge nodes binding-index types
+                                                 ))))))))))
                                                 (sh08-vp-inferred-call core node call edge nodes binding-index types
-                                                  (- budget initial (get owners :work-count) work)))
-                                              {:status :accepted :work-count 0})))))))))))
-                                  total (if (contains? checked :work-count) (+ work (get checked :work-count)) work)]
+                                                 ))
+                                              {:status :accepted})))))))))))
+]
                               (if (= :accepted (get checked :status))
                               (if (if (contains? scope (get edge :caller-function-syntax-id))
                                     (if (= :local-function (get edge :classification))
@@ -6772,40 +6768,32 @@
                                                 (if (sh08-mr-binding? (get binding-index (get call :operator-binding-id)) (get core :module))
                                                   (sh08-mr-inferred-call-valid? core node call edge nodes binding-index types)
                                                   (sh08-ma-inferred-call-valid? core node call edge nodes binding-index types))))))))))))))) true)
-                                (recur (rest edges) total)
+                                (recur (rest edges))
                                 {:status :rejected :edge edge :reason (if predicate? (if (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) true (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-ip-binding? (get binding-index (get call :operator-binding-id)) (get core :module)))))))))))
                                                                           (if (sh08-st-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :set-conversion-source-mismatch (if (sh08-ane-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :atomic-inequality-source-mismatch (if (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-nilp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-chp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :character-predicate-source-mismatch :nil-predicate-source-mismatch) (if (sh08-boolp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :boolean-predicate-source-mismatch (if (sh08-symp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :symbol-predicate-source-mismatch (if (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) true (sh08-setp-binding? (get binding-index (get call :operator-binding-id)) (get core :module))) (if (sh08-listp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :list-predicate-source-mismatch :set-predicate-source-mismatch) (if (sh08-mapp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :map-predicate-source-mismatch (if (sh08-kp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :keyword-predicate-source-mismatch (if (sh08-strp-binding? (get binding-index (get call :operator-binding-id)) (get core :module)) :string-predicate-source-mismatch :integer-predicate-source-mismatch))))))))) :vector-predicate-source-mismatch)
                                                                           (if (= :gravity.type/applied-list-equality (get (get types (get call :operator-node-id)) :kind))
-                                                                            :list-equality-source-mismatch :vector-equality-source-mismatch)) :work-count total})
-                              (assoc checked :edge edge :work-count total))))) {:status :accepted :edge nil :work-count 0})
+                                                                            :list-equality-source-mismatch :vector-equality-source-mismatch)) })
+                              (assoc checked :edge edge))))) {:status :accepted :edge nil})
               bad-edge (get checked-edges :edge)
-              validation-work (get checked-edges :work-count)
               recursive? (loop [components (get core :recursion-components)]
                            (if (= 0 (count components)) false
                              (if (loop [ids (get (first components) :function-syntax-ids)]
                                    (if (= 0 (count ids)) false (if (contains? scope (first ids)) true (recur (rest ids))))) true
                                (recur (rest components)))))
-              derived (if (> (+ initial validation-work) budget)
-                        (assoc (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-reconstruction-visits (+ initial validation-work))
-                          :work-count (+ initial validation-work (get owners :work-count 0)))
-                        (if (= :rejected (get owners :status)) owners
-                        (if (contains? #{:list-inequality-work-limit :list-equality-work-limit :string-set-insertion-work-limit :nonnegative-integer-quotient-work-limit :vector-slice-work-limit :string-character-vector-work-limit :count-quotient-scaling-work-limit :keyword-set-insertion-work-limit :symbol-set-insertion-work-limit :keyword-set-contains-work-limit :keyword-set-equality-work-limit :bare-keyword-anchor-set-equality-work-limit :string-set-equality-work-limit :vector-equality-work-limit :vector-predicate-work-limit :integer-predicate-work-limit :set-conversion-work-limit :list-set-conversion-work-limit :map-predicate-work-limit  :keyword-predicate-work-limit :string-predicate-work-limit :set-predicate-work-limit :list-predicate-work-limit :symbol-predicate-work-limit :boolean-predicate-work-limit :nil-predicate-work-limit :character-predicate-work-limit :atomic-inequality-work-limit :vector-inequality-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit :integer-set-contains-work-limit :vector-first-work-limit :map-get-work-limit :vector-empty-work-limit :vector-rest-work-limit :map-keys-work-limit :private-map-keys-work-limit} (get checked-edges :reason))
-                          (assoc (sh08-th-error "C7-GENERIC" (get checked-edges :reason) {} :bounded-reconstruction-visits (+ initial validation-work))
-                            :work-count (+ initial validation-work (get owners :work-count 0)))
-                        (if (if (= bad-edge nil) (= false recursive?) false)
+              derived (if (= :rejected (get owners :status)) owners
+                                                (if (if (= bad-edge nil) (= false recursive?) false)
                         (if (= :accepted (get owners :status))
-                          (sh08-tc-graph core types (get owners :owners) scope (- budget initial validation-work (get owners :work-count))
+                          (sh08-tc-graph core types (get owners :owners) scope
                             (sh08-eh-groups (get core :error-handlers) binding-index)) owners)
                         (if (contains? #{:vector-slice-source-mismatch :vector-slice-receiver-proof-required :vector-slice-receiver-type-required :vector-slice-index-type-required :vector-slice-bounds-required :vector-slice-arity-mismatch :string-character-vector-source-mismatch :string-character-vector-literal-required :string-character-vector-unsupported-text :string-character-vector-width :string-character-vector-arity-mismatch :count-quotient-scaling-source-mismatch :count-quotient-scaling-proof-required :count-quotient-scaling-arity-mismatch :list-equality-source-mismatch :list-equality-operand-type-required :list-equality-pair-type-required
                                  :list-equality-arity-mismatch :list-equality-type-width :list-equality-type-depth
                                  :list-predicate-source-mismatch :list-predicate-operand-type-required :list-predicate-arity-mismatch}
                               (get checked-edges :reason))
-                          (assoc (sh08-th-error (if recursive? "C7-ANNOTATION" "C7-VERIFY") (get checked-edges :reason)
+                          (sh08-th-error (if recursive? "C7-ANNOTATION" "C7-VERIFY") (get checked-edges :reason)
                                    (get nodes (get bad-edge :call-core-node-id) {}) :original-acyclic-local-edges bad-edge)
-                            :work-count (+ initial validation-work (get owners :work-count 0)))
                           (sh08-th-error (if recursive? "C7-ANNOTATION" "C7-VERIFY")
                           :unsupported-or-incoherent-throwing-call-component
-                          (get nodes (get bad-edge :call-core-node-id) {}) :original-acyclic-local-edges bad-edge))))))]
+                          (get nodes (get bad-edge :call-core-node-id) {}) :original-acyclic-local-edges bad-edge))))]
           (if (= :accepted (get derived :status))
             (let [thrown (loop [remaining (get core :function-records) out (get direct :throws)]
                            (if (= 0 (count remaining)) out
@@ -6813,20 +6801,15 @@
                                (recur (rest remaining) (if (contains? scope id)
                                  (assoc out id (get (get derived :nodes) (get record :body-core-node-id) [])) out)))))
                   rows (loop [edges (get core :call-edges) out (sh08-eh-constraints core
-                                (sh08-eh-groups (get core :error-handlers) binding-index) types (get derived :nodes) (get direct :constraints))
-                              work (+ initial validation-work (get owners :work-count) (get derived :work-count))]
-                         (if (> work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-row-visits work)
-                         (if (= 0 (count edges)) {:status :accepted :constraints out :work-count work}
+                                (sh08-eh-groups (get core :error-handlers) binding-index) types (get derived :nodes) (get direct :constraints))]
+                         (if (= 0 (count edges)) {:status :accepted :constraints out}
                            (let [edge (first edges)]
                              (if (contains? scope (get edge :caller-function-syntax-id))
                                (recur (rest edges)
-                                 (conj out (sh08-tc-constraint core edge calls nodes records binding-index types functions (get derived :nodes)))
-                                 (+ work 70 (* 4 (sh08-tc-error-work (get nodes (get edge :call-core-node-id))
-                                   (get derived :nodes) (get (get records (get edge :callee-function-syntax-id)) :body-core-node-id)))))
-                               (recur (rest edges) out (+ work 1)))))))]
+                                 (conj out (sh08-tc-constraint core edge calls nodes records binding-index types functions (get derived :nodes))))
+                               (recur (rest edges) out)))))]
               (if (= :accepted (get rows :status))
-                (assoc direct :throws thrown :constraints (get rows :constraints)
-                  :work-count (+ (get direct :work-count 0) (get rows :work-count))) rows))
+                (assoc direct :throws thrown :constraints (get rows :constraints)) rows))
             (if (contains? #{:string-set-insertion-source-mismatch :string-set-insertion-operand-type-required :string-set-insertion-type-width :string-set-insertion-arity-mismatch
                             :keyword-set-insertion-source-mismatch :symbol-set-insertion-source-mismatch :keyword-set-insertion-operand-type-required :symbol-set-insertion-operand-type-required :keyword-set-insertion-type-width :symbol-set-insertion-type-width :keyword-set-insertion-arity-mismatch :symbol-set-insertion-arity-mismatch :keyword-set-contains-source-mismatch :keyword-set-contains-operand-type-required
                             :keyword-set-contains-arity-mismatch :keyword-set-contains-type-width
@@ -6838,10 +6821,10 @@
                             :integer-predicate-source-mismatch :integer-predicate-operand-type-required :integer-predicate-arity-mismatch
                             :set-conversion-source-mismatch :list-set-conversion-source-mismatch :set-conversion-operand-type-required :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-arity-mismatch :map-predicate-source-mismatch :map-predicate-operand-type-required :map-predicate-arity-mismatch  :keyword-predicate-source-mismatch :keyword-predicate-operand-type-required :keyword-predicate-arity-mismatch :string-predicate-source-mismatch :string-predicate-operand-type-required :string-predicate-arity-mismatch :set-predicate-arity-mismatch :set-predicate-operand-type-required :set-predicate-source-mismatch :symbol-predicate-arity-mismatch :symbol-predicate-operand-type-required :symbol-predicate-source-mismatch :boolean-predicate-arity-mismatch :boolean-predicate-operand-type-required :boolean-predicate-source-mismatch :nil-predicate-arity-mismatch :character-predicate-arity-mismatch :nil-predicate-operand-type-required :character-predicate-operand-type-required :nil-predicate-source-mismatch :character-predicate-source-mismatch :atomic-inequality-arity-mismatch :atomic-inequality-operand-type-required :atomic-inequality-source-mismatch :character-set-contains-type-width :string-set-contains-type-width :character-set-contains-arity-mismatch :string-set-contains-arity-mismatch :character-set-contains-operand-type-required :string-set-contains-operand-type-required :character-set-contains-source-mismatch :string-set-contains-source-mismatch :vector-first-source-mismatch :vector-first-nonempty-complete-positional-type-required :map-get-source-mismatch :map-get-private-entry-presence-required :map-get-private-entry-selected-type-required :vector-empty-source-mismatch :vector-empty-vector-type-required :vector-rest-source-mismatch :map-keys-source-mismatch :vector-rest-finite-positional-vector-type-required :map-keys-finite-keyword-map-type-required}
                   (get checked-edges :reason))
-              (assoc derived :work-count (+ initial validation-work (get owners :work-count 0) (get derived :work-count 0))) derived)))) scoped))))
+              derived)))) scoped))))
 
-(defn sh08-tc-products [core types functions bindings direct budget]
-  (sh08-tc-products-with-source-forms core types functions bindings direct nil budget))
+(defn sh08-tc-products [core types functions bindings direct]
+  (sh08-tc-products-with-source-forms core types functions bindings direct nil))
 
 (defn sh08-th-type-map [table thrown]
   (loop [ids (keys table) out table]
