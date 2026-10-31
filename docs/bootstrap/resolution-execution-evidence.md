@@ -46,3 +46,10 @@ The pending-artifact-id flag is only an intermediate digest-construction mode;
 it does not publish an artifact or supply proof authority. Every new API is
 marked admission:none. Focused tests, full regression, real paired artifact and
 rejection parity, contextual lint and independent review remain pending.
+
+Focused execution/digest, carrier, phase-order, contract and root-interposition
+checks pass 7 tests / 1584 assertions. The accepted and unresolved-rejection
+execution test runs the actual current Gravity resolver leaf on normalized
+requests. It is semantic execution evidence, not authenticated source or
+publication admission. Broader regression and paired full-artifact comparisons
+remain in progress.
