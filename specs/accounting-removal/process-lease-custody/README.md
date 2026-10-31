@@ -83,7 +83,7 @@ implementation and do not claim actual OS/lease behavior.
 Run with only the Clojure, spec.alpha and core.specs.alpha jars on the classpath:
 
 ```text
-java -Xmx256m -cp <three-core-jars> clojure.main specs/accounting-removal/process-lease-custody/check.clj
+java -Xmx256m -cp <three-core-jars> clojure.main specs/accounting-removal/process_lease_custody/check.clj
 ```
 
 The controls cover normal/failed exits, EOF-drained truncation, failed timeout
