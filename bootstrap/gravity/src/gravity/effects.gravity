@@ -18679,8 +18679,8 @@ true
                        (+ progress 1) rounds)
                 (recur (rest pending) (conj deferred node) graph progress rounds))
               {:status :rejected :reason :unsupported-nonlocal-or-higher-order-call :node node})
-            {:status :rejected :reason :unsupported-body-operation :node node}))))))
-    (body-failure :malformed-declared-self-summary))
+              {:status :rejected :reason :unsupported-body-operation :node node})))))
+    (body-failure :malformed-declared-self-summary)))
 
 (defn body-derive-nodes-with-foreign [core facts foreign]
   (body-derive-nodes-pass core facts foreign {} #{}))
@@ -18775,28 +18775,34 @@ true
       (body-failure :untrusted-recursive-body-proof))))
 
 (defn body-derive-recursive-nodes [core facts foreign]
-  (if (body-rv? facts) (body-ds-derive-recursive-nodes core facts foreign)
-  (let [proof (get facts :recursive-proof) classified (body-classify-nodes core facts)]
-    (if (body-recursive-proof-valid? core facts)
-      (if (= :accepted (get classified :status))
-        (loop [summaries (body-function-bottom facts) rounds 0 seen #{}]
-          (if (contains? seen summaries)
-            (body-failure :recursive-effect-equations-mismatch)
-            (let [derived (body-derive-nodes-pass core facts foreign proof
-                            (get summaries (get proof :function-syntax-id)))
-                  next (if (= :accepted (get derived :status)) (body-function-summary facts (get derived :nodes)) {})]
-              (if (= :accepted (get derived :status))
-                (if (= summaries next)
-                  (let [final (body-derive-nodes-pass core facts foreign proof
-                                (get next (get proof :function-syntax-id)))]
-                    (if (= :accepted (get final :status))
-                      (if (if (= next (body-function-summary facts (get final :nodes)))
-                            (body-graph-equations-valid? core facts foreign (get final :nodes)) false)
-                        (assoc final :fixed-point-rounds (+ rounds 1))
-                        (body-failure :recursive-effect-equations-mismatch)) final))
-                  (recur next (+ rounds 1) (conj seen summaries))) derived)))
-            (body-failure :recursive-effect-equations-mismatch))) classified)
-      (body-failure :untrusted-recursive-body-proof))))
+  (if (body-rv? facts)
+    (body-ds-derive-recursive-nodes core facts foreign)
+    (let [proof (get facts :recursive-proof)
+          classified (body-classify-nodes core facts)]
+      (if (body-recursive-proof-valid? core facts)
+        (if (= :accepted (get classified :status))
+          (loop [summaries (body-function-bottom facts) rounds 0 seen #{}]
+            (if (contains? seen summaries)
+              (body-failure :recursive-effect-equations-mismatch)
+              (let [derived (body-derive-nodes-pass core facts foreign proof
+                              (get summaries (get proof :function-syntax-id)))
+                    next (if (= :accepted (get derived :status))
+                           (body-function-summary facts (get derived :nodes)) {})]
+                (if (= :accepted (get derived :status))
+                  (if (= summaries next)
+                    (let [final (body-derive-nodes-pass core facts foreign proof
+                                  (get next (get proof :function-syntax-id)))]
+                      (if (= :accepted (get final :status))
+                        (if (if (= next (body-function-summary facts (get final :nodes)))
+                              (body-graph-equations-valid? core facts foreign (get final :nodes))
+                              false)
+                          (assoc final :fixed-point-rounds (+ rounds 1))
+                          (body-failure :recursive-effect-equations-mismatch))
+                        final))
+                    (recur next (+ rounds 1) (conj seen summaries)))
+                  derived))))
+          classified)
+        (body-failure :untrusted-recursive-body-proof)))))
 
 (defn body-loop-summary [core graph]
   (loop [remaining (get core :recur-transfers) out {}]
@@ -18839,7 +18845,9 @@ true
 (defn body-ds-derive-loop-nodes [core facts foreign]
   (let [proof (get facts :recursive-proof)
         classified (body-classify-nodes core facts)
-        joined (if (= :accepted (get classified :status)) (body-loop-joins core facts) classified)]
+        joined (if (= :accepted (get classified :status))
+                 (body-loop-joins core facts)
+                 classified)]
     (if (body-recursive-proof-valid? core facts)
       (if (= :accepted (get joined :status))
         (if (body-loop-values-valid? core facts)
@@ -18847,57 +18855,84 @@ true
             (loop [state bottom rounds 0 seen #{}]
               (if (contains? seen state)
                 (body-failure :declared-self-loop-effect-error-equations-mismatch)
-                (let [derived (body-derive-nodes-pass core facts foreign
-                                (assoc proof :loop-summaries (get state :loops))
-                                (get (get state :functions) (get proof :function-syntax-id)))
-                      next (if (= :accepted (get derived :status)) (body-ds-loop-state core facts (get derived :nodes)) derived)]
+                (let [derived (body-derive-nodes-pass
+                               core facts foreign
+                               (assoc proof :loop-summaries (get state :loops))
+                               (get (get state :functions) (get proof :function-syntax-id)))
+                      next (if (= :accepted (get derived :status))
+                             (body-ds-loop-state core facts (get derived :nodes))
+                             derived)]
                   (if (= :accepted (get next :status))
                     (if (body-ds-loop-state-equal? state next)
-                      (let [final (body-derive-nodes-pass core facts foreign
-                                    (assoc proof :loop-summaries (get next :loops))
-                                    (get (get next :functions) (get proof :function-syntax-id)))
-                            checked (if (= :accepted (get final :status)) (body-ds-loop-state core facts (get final :nodes)) final)]
+                      (let [final (body-derive-nodes-pass
+                                   core facts foreign
+                                   (assoc proof :loop-summaries (get next :loops))
+                                   (get (get next :functions) (get proof :function-syntax-id)))
+                            checked (if (= :accepted (get final :status))
+                                      (body-ds-loop-state core facts (get final :nodes))
+                                      final)]
                         (if (= :accepted (get checked :status))
                           (if (if (body-ds-loop-state-equal? next checked)
-                                (body-graph-equations-valid? core facts foreign (get final :nodes)) false)
+                                (body-graph-equations-valid? core facts foreign (get final :nodes))
+                                false)
                             (assoc final :fixed-point-rounds (+ rounds 1)
                               :summary-domain :effects-and-escaping-error-types
                               :loop-summary-domain :effects-with-lexical-child-source-errors)
-                            (body-failure :declared-self-loop-effect-error-equations-mismatch)) checked))
-                      (recur next (+ rounds 1) (conj seen state))) next))))
-          (body-failure :incoherent-loop-result-type)) joined)
-      (body-failure :untrusted-recursive-body-proof)))))
+                            (body-failure :declared-self-loop-effect-error-equations-mismatch))
+                          checked))
+                      (recur next (+ rounds 1) (conj seen state)))
+                    next)))))
+          (body-failure :incoherent-loop-result-type))
+        joined)
+      (body-failure :untrusted-recursive-body-proof))))
 
 (defn body-derive-loop-nodes [core facts foreign]
-  (if (body-rv? facts) (body-ds-derive-loop-nodes core facts foreign)
-  (let [proof (get facts :recursive-proof {})
-        classified (body-classify-nodes core facts)
-        joined (if (= :accepted (get classified :status))
-                 (body-loop-joins core facts) classified)]
-    (if (if (contains? facts :recursive-proof) (body-recursive-proof-valid? core facts) true)
-      (if (= :accepted (get joined :status))
-        (if (body-loop-values-valid? core facts)
-          (loop [functions (body-function-bottom facts) summaries (body-loop-summary core {})
-                 rounds 0 seen #{}]
-            (if (contains? seen [functions summaries])
-              (body-failure :loop-effect-equations-mismatch)
-              (let [derived (body-derive-nodes-pass core facts foreign
-                              (assoc proof :loop-summaries summaries) (get functions (get proof :function-syntax-id)))
-                    next-functions (if (= :accepted (get derived :status)) (body-function-summary facts (get derived :nodes)) {})
-                    next (if (= :accepted (get derived :status)) (body-loop-summary core (get derived :nodes)) {})]
-                (if (= :accepted (get derived :status))
-                  (if (if (= summaries next) (= functions next-functions) false)
-                    (let [final (body-derive-nodes-pass core facts foreign
-                                  (assoc proof :loop-summaries next) (get next-functions (get proof :function-syntax-id)))]
-                      (if (= :accepted (get final :status))
-                        (if (body-all? [(= next (body-loop-summary core (get final :nodes)))
-                                        (= next-functions (body-function-summary facts (get final :nodes)))
-                                        (body-graph-equations-valid? core facts foreign (get final :nodes))])
-                          (assoc final :fixed-point-rounds (+ rounds 1))
-                          (body-failure :loop-effect-equations-mismatch)) final))
-                    (recur next-functions next (+ rounds 1) (conj seen [functions summaries]))) derived)))
-          (body-failure :incoherent-loop-result-type)) joined)
-      (body-failure :untrusted-recursive-body-proof)))))
+  (if (body-rv? facts)
+    (body-ds-derive-loop-nodes core facts foreign)
+    (let [proof (get facts :recursive-proof {})
+          classified (body-classify-nodes core facts)
+          joined (if (= :accepted (get classified :status))
+                   (body-loop-joins core facts)
+                   classified)]
+      (if (if (contains? facts :recursive-proof)
+            (body-recursive-proof-valid? core facts)
+            true)
+        (if (= :accepted (get joined :status))
+          (if (body-loop-values-valid? core facts)
+            (loop [functions (body-function-bottom facts)
+                   summaries (body-loop-summary core {})
+                   rounds 0
+                   seen #{}]
+              (if (contains? seen [functions summaries])
+                (body-failure :loop-effect-equations-mismatch)
+                (let [derived (body-derive-nodes-pass core facts foreign
+                                (assoc proof :loop-summaries summaries)
+                                (get functions (get proof :function-syntax-id)))
+                      next-functions (if (= :accepted (get derived :status))
+                                       (body-function-summary facts (get derived :nodes))
+                                       {})
+                      next (if (= :accepted (get derived :status))
+                             (body-loop-summary core (get derived :nodes))
+                             {})]
+                  (if (= :accepted (get derived :status))
+                    (if (if (= summaries next) (= functions next-functions) false)
+                      (let [final (body-derive-nodes-pass core facts foreign
+                                    (assoc proof :loop-summaries next)
+                                    (get next-functions (get proof :function-syntax-id)))]
+                        (if (= :accepted (get final :status))
+                          (if (body-all?
+                                [(= next (body-loop-summary core (get final :nodes)))
+                                 (= next-functions (body-function-summary facts (get final :nodes)))
+                                 (body-graph-equations-valid? core facts foreign (get final :nodes))])
+                            (assoc final :fixed-point-rounds (+ rounds 1))
+                            (body-failure :loop-effect-equations-mismatch))
+                          final))
+                      (recur next-functions next (+ rounds 1)
+                             (conj seen [functions summaries])))
+                    derived))))
+            (body-failure :incoherent-loop-result-type))
+          joined)
+        (body-failure :untrusted-recursive-body-proof)))))
 
 (defn body-derive-nodes [core facts]
   (body-derive-nodes-with-foreign core facts {}))
@@ -19073,7 +19108,7 @@ true
                     (recur (rest remaining) (+ ordinal 1)
                       (assoc thrown owner (if (if occurring? (= false (contains? (set (get thrown owner [])) type)) false)
                                             (conj (get thrown owner []) type) (get thrown owner []))))
-                    (assoc (body-failure :incoherent-typed-throw-transfer) :node node))))))
+                    (assoc (body-failure :incoherent-typed-throw-transfer) :node node)))))
           (body-failure :incoherent-throw-source-type-census))))))
 
 (defn body-throw-joins [request facts]
@@ -19265,7 +19300,7 @@ true
                 (recur (rest remaining))
                 {:status :rejected :rule "C8-UNDECLARED"
                  :reason :namespace-effect-outside-source-allowance
-                 :node node :effect missing})))))
+                 :node node :effect missing}))))
         (let [function (get functions (get (first functions-left) :function-syntax-id))
               effects (get (get graph :functions) (get function :function-id))
               missing (loop [labels (vec (get effects :inferred))]
@@ -19279,7 +19314,7 @@ true
             {:status :rejected :rule "C8-UNDECLARED"
              :reason :function-effect-outside-source-allowance
              :node (get indexed (get function :function-core-node-id))
-             :function (get function :function-id) :effect missing})))))
+             :function (get function :function-id) :effect missing}))))))
 
 ; Effect analysis is semantic composition. It does not admit or reserve
 ; compiler work units. Each stage returns its own semantic evidence.
@@ -19579,19 +19614,17 @@ true
           core (get request :canonical-core-artifact) facts (get typed :identity-input)
           producers (body-producer-entries request facts)]
       (if (= :accepted (get producers :status))
-        (if (body-aggregate-valid? core facts (get producers :entries))
-          (let [derived (body-analyze-producers (get producers :entries))]
-            (if (= :accepted (get derived :status))
-              (let [imports (body-foreign-bindings request facts (get derived :bank))]
-                (if (= :accepted (get imports :status))
-                  (let [caller (body-analyze-module request facts (get imports :foreign))]
-                    (if (= :accepted (get caller :status))
-                      (body-accepted-result typed binding core (get caller :graph) (get derived :bank) (get imports :foreign))
-                      (body-error-result typed caller)))
-                  (body-error typed (get imports :reason) {})))
-              (assoc (body-error-result (get derived :producer-facts typed) derived)
-                     :producer-module (get derived :producer-module))))
-          (body-error typed :aggregate-body-node-or-function-limit {}))
+        (let [derived (body-analyze-producers (get producers :entries))]
+          (if (= :accepted (get derived :status))
+            (let [imports (body-foreign-bindings request facts (get derived :bank))]
+              (if (= :accepted (get imports :status))
+                (let [caller (body-analyze-module request facts (get imports :foreign))]
+                  (if (= :accepted (get caller :status))
+                    (body-accepted-result typed binding core (get caller :graph) (get derived :bank) (get imports :foreign))
+                    (body-error-result typed caller)))
+                (body-error typed (get imports :reason) {})))
+            (assoc (body-error-result (get derived :producer-facts typed) derived)
+                   :producer-module (get derived :producer-module))))
         (body-error typed (get producers :reason) {})))
     (body-error typed (if (body-imported? typed) :imported-body-effects-pending :untrusted-sh08-body-effect-input) {})))
 
