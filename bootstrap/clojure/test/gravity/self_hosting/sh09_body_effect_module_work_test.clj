@@ -105,7 +105,7 @@
         (is (= :retained-child-detail (:effect result)))
         (is (= (vec (range (inc failure))) calls))
         (is (= (:module-key (get entries failure)) (:producer-module result)))
-        (is (identical? (:facts (get entries failure)) (:producer-facts result))))))
+        (is (identical? (:facts (get entries failure)) (:producer-facts result)))))
     (let [duplicate (scripted-producer-analysis [(first entries) (first entries)] nil)]
       (is (= :accepted (get-in duplicate [:result :status])))
       (is (= [0 0] (:calls duplicate)))
@@ -113,7 +113,7 @@
       (is (= {:producer-index 0}
              (get-in duplicate [:result :bank (:module-key (first entries)) :graph]))))
     (is (= {:status :accepted :bank {}}
-           (:result (scripted-producer-analysis [] nil)))))
+           (:result (scripted-producer-analysis [] nil))))))
 
 (deftest producer-key-domain-is-complete-before-child-execution-or-native-hashing
   (let [entries (producer-fixtures) callbacks (atom 0) realizations (atom 0)
