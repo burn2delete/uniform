@@ -53,3 +53,24 @@ execution test runs the actual current Gravity resolver leaf on normalized
 requests. It is semantic execution evidence, not authenticated source or
 publication admission. Broader regression and paired full-artifact comparisons
 remain in progress.
+
+The full affected resolution regression passes 54 tests / 2293 assertions,
+zero failures and zero errors, on source ee4c01f1 with the final 0db5585d tests.
+All six complete before/after comparisons pass: actual library and consumer
+artifacts plus generated C5-UNRESOLVED rejection payloads in both .gravity and
+.qst spellings. Each consumer retains one freshly verified library premise;
+all four accepted products pass fresh public verification. Library identity is
+sha256:7cee4a4156c5eb1ddd4ed19e94a6ee6938bd19bb594cdc495863eb648f8cf0a4
+(267 bindings / 10 resolutions); consumer identity is
+sha256:4b7cf3c7880ab84ad20efb41b158d70f43392107a8a107724473d7fdb935903d
+(267 / 6). Both listish? rejections retain two generated origin records.
+Whole-payload equality includes actual source and header provenance.
+
+These comparisons bind the 3e608639 baseline source context; the intervening
+094e5a77 merge changed documentation only. All nine moved algorithm bodies are
+conserved after reversing the explicit operation/input seam and normalizing
+reader-generated anonymous symbols. Contextual lint passes zero blockers,
+language boundary 6 / 11, documentation 240 / 19 and roadmap validation pass.
+Independent source review found no blockers on 0db5585d; exact evidence-only
+acceptance, current-main composition, successful final CI and clean integration
+preflight remain required. No source, admission or release authority is promoted.
