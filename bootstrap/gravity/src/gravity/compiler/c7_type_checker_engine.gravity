@@ -10594,96 +10594,85 @@
 (defn sh08-vrest-optional-id? [id]
   (if (= nil id) true (sh08-sse-ids? [id] 1)))
 
-(defn sh08-vrest-header [core node call edge nodes bindings types module budget]
+(defn sh08-vrest-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-  (let [limit (if (> budget 65536) 65536 budget)
-        base (+ 129 (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :vector-rest-work-limit :work-count base}
-      (if (sh08-vrest-ids? node call nodes bindings module)
-        (let [args (get call :argument-node-ids) children (get node :children)
-              operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
-              binding (get bindings bid) receiver (get types (first args))
-              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
-          (if (> reserved limit) {:status :rejected :reason :vector-rest-work-limit :work-count reserved}
-            (let [validation (sh08-lc-validate-types [receiver])
-                  work reserved]
-              (if (= false (= :accepted (get validation :status)))
-                {:status :rejected :reason :vector-rest-finite-positional-vector-type-required
-                 :work-count work}
-                (if (sh08-vrest-type? receiver)
-                  (let [elements (get receiver :element-types) length (count elements)
-                        result-count (if (= length 0) 0 (- length 1))
-                        construction-work (+ 1 result-count) total (+ work construction-work)]
-                    (if (> total limit) {:status :rejected :reason :vector-rest-work-limit :work-count total}
-                      (let [result-type {:kind :gravity.type/list :shape :literal
-                                         :element-types (if (= length 0) [] (subvec elements 1 length))}
-                            work total]
-                        (if (if (sh08-nq-ids? node call nodes bindings module)
-                        (if (map? edge)
-                          (if (integer? (get edge :ordinal))
-                            (if (>= (get edge :ordinal) 0)
-                              (sh08-ft-all-true? [(sh08-vrest-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
-                                                 (sh08-vrest-optional-id? (get edge :caller-function-syntax-id))
-                                                 (sh08-vrest-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
-                    (let [caller (loop [remaining (get core :function-records)]
-                                   (if (= 0 (count remaining)) nil
-                                     (let [record (first remaining)]
-                                       (if (if (map? record)
-                                             (sh08-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
-                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
-                                           record (recur (rest remaining))) :invalid-vector-rest-owner))))
-                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
-                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
-                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
-                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
-                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
-                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
-                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
-                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
-                      (if (sh08-ft-all-true?
-                            [(= false (= :invalid-vector-rest-owner caller))
-                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
-                             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
-                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
-                             (= expected-call call) (= expected-edge edge) (sh08-lq-binding? binding module)
-                             (= 'rest (get binding :name))
-                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
-                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
-                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-                             (contains? '#{rest gravity.core/rest} (get (get operator :attributes) :symbol))
-                             (= :operator-then-arguments (get (get node :evaluation) :kind))
-                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
-                                (get (get node :evaluation) :order))])
-                        {:status :accepted :work-count work
-                         :descriptor {:kind :gravity.type/applied-vector-rest :version :sh08-vector-rest-v1
-                                      :operation 'rest :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-vector-rest
-                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
-                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-                                      :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
-                                      :query-policy {:input :finite-positional-persistent-vector :operand-evaluation :once :operand-position :non-tail
-                                                     :payload-evaluation :none :original :unchanged :order :stored-order
-                                                     :selection :after-index-zero :result-carrier :persistent-list :flow-refinement :none
-                                                     :type-validation :entire-finite-positional-type-including-head}
-                                      :allocation-policy {:behavior :possible-persistent-list-suffix-construction :condition :normal-operand-completion
-                                                          :effect :memory/allocate :empty-result :possible}
-                                      :storage-policy {:representation :development-persistent-list :collection-construction :list-spine-copy
-                                                       :copy :list-spine :stored-values :shallow-share :input-storage :not-retained :borrow :none
-                                                       :lifetime :persistent-values :allocation :possible-even-empty
-                                                       :provider-allocation-bound :not-established}
-                                      :value-origin {:kind :vector-value-rest :operation 'rest :operand-node-id (first args)}
- :profile-validation-work (- reserved base)
-                                      :construction-work construction-work :result-count result-count
-                                      :application :normal :latent-effects [:memory/allocate] :direct-effects [:memory/allocate] :capabilities [] :thrown-error-effects []
-                                      :parameter-types [receiver] :return result-type :result-type result-type
-                                      :profile (get module :profile) :target (get module :target)
-                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy :construction-work
-                                                     :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
-                        {:status :rejected :reason :vector-rest-source-mismatch :work-count work}))
-                    {:status :rejected :reason :vector-rest-source-mismatch :work-count work}))))
-                  {:status :rejected :reason :vector-rest-finite-positional-vector-type-required :work-count work})))))
-        {:status :rejected :reason :vector-rest-source-mismatch :work-count base})))
-    {:status :rejected :reason :vector-rest-source-mismatch :work-count 129}))
+    (if (sh08-vrest-ids? node call nodes bindings module)
+      (let [args (get call :argument-node-ids) children (get node :children)
+            operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
+            binding (get bindings bid) receiver (get types (first args))
+            validation (sh08-lc-validate-types [receiver])]
+        (if (= false (= :accepted (get validation :status)))
+          {:status :rejected :reason :vector-rest-finite-positional-vector-type-required}
+          (if (sh08-vrest-type? receiver)
+            (let [elements (get receiver :element-types) length (count elements)
+                  result-count (if (= length 0) 0 (- length 1))
+                  result-type {:kind :gravity.type/list :shape :literal
+                               :element-types (if (= length 0) [] (subvec elements 1 length))}]
+              (if (if (sh08-nq-ids? node call nodes bindings module)
+                    (if (map? edge)
+                      (if (integer? (get edge :ordinal))
+                        (if (>= (get edge :ordinal) 0)
+                          (sh08-ft-all-true? [(sh08-vrest-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                             (sh08-vrest-optional-id? (get edge :caller-function-syntax-id))
+                                             (sh08-vrest-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
+                (let [caller (loop [remaining (get core :function-records)]
+                               (if (= 0 (count remaining)) nil
+                                 (let [record (first remaining)]
+                                   (if (if (map? record)
+                                         (sh08-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
+                                     (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
+                                       record (recur (rest remaining))) :invalid-vector-rest-owner))))
+                      expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                                     :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                                     :evaluation-order :operator-then-arguments :result-policy :call-result}
+                      expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                     :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                                     :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                     :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                                     :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+                  (if (sh08-ft-all-true?
+                        [(= false (= :invalid-vector-rest-owner caller))
+                         (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                         (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                         (= expected-call call) (= expected-edge edge) (sh08-lq-binding? binding module)
+                         (= 'rest (get binding :name))
+                         (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                         (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                             :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                         (contains? '#{rest gravity.core/rest} (get (get operator :attributes) :symbol))
+                         (= :operator-then-arguments (get (get node :evaluation) :kind))
+                         (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
+                            (get (get node :evaluation) :order))])
+                    {:status :accepted
+                     :descriptor {:kind :gravity.type/applied-vector-rest :version :sh08-vector-rest-v1
+                                  :operation 'rest :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-vector-rest
+                                  :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                  :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+                                  :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
+                                  :query-policy {:input :finite-positional-persistent-vector :operand-evaluation :once :operand-position :non-tail
+                                                 :payload-evaluation :none :original :unchanged :order :stored-order
+                                                 :selection :after-index-zero :result-carrier :persistent-list :flow-refinement :none
+                                                 :type-validation :entire-finite-positional-type-including-head}
+                                  :allocation-policy {:behavior :possible-persistent-list-suffix-construction :condition :normal-operand-completion
+                                                      :effect :memory/allocate :empty-result :possible}
+                                  :storage-policy {:representation :development-persistent-list :collection-construction :list-spine-copy
+                                                   :copy :list-spine :stored-values :shallow-share :input-storage :not-retained :borrow :none
+                                                   :lifetime :persistent-values :allocation :possible-even-empty
+                                                   :provider-allocation-bound :not-established}
+                                  :value-origin {:kind :vector-value-rest :operation 'rest :operand-node-id (first args)}
+                                  :result-count result-count
+                                  :application :normal :latent-effects [:memory/allocate] :direct-effects [:memory/allocate] :capabilities [] :thrown-error-effects []
+                                  :parameter-types [receiver] :return result-type :result-type result-type
+                                  :profile (get module :profile) :target (get module :target)
+                                  :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                                 :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy
+                                                 :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
+                    {:status :rejected :reason :vector-rest-source-mismatch}))
+                {:status :rejected :reason :vector-rest-source-mismatch}))
+            {:status :rejected :reason :vector-rest-finite-positional-vector-type-required})))
+      {:status :rejected :reason :vector-rest-source-mismatch})
+    {:status :rejected :reason :vector-rest-source-mismatch}))
 
 (defn sh08-vrest-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-vector-rest-constraint-v1 :application descriptor}
@@ -10691,7 +10680,7 @@
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-rest}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application :normal :direct-effects [:memory/allocate]
-              :construction-work (get descriptor :construction-work) :allocation-policy (get descriptor :allocation-policy)
+              :allocation-policy (get descriptor :allocation-policy)
               :storage-policy (get descriptor :storage-policy)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
@@ -10707,9 +10696,8 @@
      :profile (get module :profile) :target (get module :target) :effects [:memory/allocate] :capabilities [] :status :inferred
      :dispatch :direct-vector-rest :applied-vector-rest descriptor :effect-facts-source :audited-vector-list-suffix-construction}))
 
-(defn sh08-vrest-derive [core node call edge nodes bindings types forms budget]
-  (let [result (sh08-vrest-header core node call edge nodes bindings types (get core :module) budget)
-        work (get result :work-count)]
+(defn sh08-vrest-derive [core node call edge nodes bindings types forms]
+  (let [result (sh08-vrest-header core node call edge nodes bindings types (get core :module))]
     (if (= :accepted (get result :status))
       (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
         (if (if (sh08-sse-ids? ids 2)
@@ -10724,10 +10712,9 @@
                                                  (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
                           (recur (+ index 1)) false)))) false) false) false)
           (assoc result :type (get (get result :descriptor) :result-type) :constraint (sh08-vrest-constraint (get result :descriptor)))
-          (assoc (sh08-sm-failure "C7-VERIFY" :vector-rest-source-mismatch nil :original-unary-vector-rest-call (get node :node-id)) :work-count work)))
-      (assoc (sh08-sm-failure (if (= :vector-rest-work-limit (get result :reason)) "C7-GENERIC"
-                               (if (= :vector-rest-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH"))
-               (get result :reason) nil :validated-complete-finite-positional-vector (get call :argument-node-ids)) :work-count work))))
+          (sh08-sm-failure "C7-VERIFY" :vector-rest-source-mismatch nil :original-unary-vector-rest-call (get node :node-id))))
+      (sh08-sm-failure (if (= :vector-rest-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH")
+        (get result :reason) nil :validated-complete-finite-positional-vector (get call :argument-node-ids)))))
 
 (defn sh08-vrest-entry? [node call nodes bindings types module]
   ; Route unary rest candidates; this is not admission evidence.
@@ -10748,13 +10735,13 @@
                     (if (map? input) (= false (= :gravity.type/list (get input :kind))) true))) true)) true)
           false)) false) false))
 
-(defn sh08-vrest-inferred-call [core node call edge nodes bindings types budget]
-  (let [result (sh08-vrest-header core node call edge nodes bindings types (get core :module) budget)]
+(defn sh08-vrest-inferred-call [core node call edge nodes bindings types]
+  (let [result (sh08-vrest-header core node call edge nodes bindings types (get core :module))]
     (if (= :accepted (get result :status))
       (if (if (= (get (get result :descriptor) :result-type) (get types (get node :node-id)))
               (= (get result :descriptor) (get types (get call :operator-node-id))) false)
-        {:status :accepted :work-count (get result :work-count)}
-        {:status :rejected :reason :vector-rest-source-mismatch :work-count (get result :work-count)})
+        {:status :accepted}
+        {:status :rejected :reason :vector-rest-source-mismatch})
       result)))
 
 (defn sh08-vemp-ids? [node call nodes bindings module]
@@ -10804,82 +10791,74 @@
 (defn sh08-vemp-optional-id? [id]
   (if (= nil id) true (sh08-sse-ids? [id] 1)))
 
-(defn sh08-vemp-header [core node call edge nodes bindings types module budget]
+(defn sh08-vemp-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-  (let [limit (if (> budget 65536) 65536 budget)
-        base (+ 129 (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :vector-empty-work-limit :work-count base}
-      (if (sh08-vemp-ids? node call nodes bindings module)
-        (let [args (get call :argument-node-ids) children (get node :children)
-              operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
-              binding (get bindings bid) receiver (get types (first args))
-              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
-          (if (> reserved limit) {:status :rejected :reason :vector-empty-work-limit :work-count reserved}
-            (let [validation (sh08-lc-validate-types [receiver])
-                  work reserved]
-              (if (= false (= :accepted (get validation :status)))
-                {:status :rejected :reason :vector-empty-vector-type-required
-                 :work-count work}
-                (if (sh08-vemp-type? receiver)
-                  (if (if (sh08-nq-ids? node call nodes bindings module)
-                        (if (map? edge)
-                          (if (integer? (get edge :ordinal))
-                            (if (>= (get edge :ordinal) 0)
-                              (sh08-ft-all-true? [(sh08-vemp-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
-                                                 (sh08-vemp-optional-id? (get edge :caller-function-syntax-id))
-                                                 (sh08-vemp-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
-                    (let [caller (loop [remaining (get core :function-records)]
-                                   (if (= 0 (count remaining)) nil
-                                     (let [record (first remaining)]
-                                       (if (if (map? record)
-                                             (sh08-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
-                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
-                                           record (recur (rest remaining))) :invalid-vector-empty-owner))))
-                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
-                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
-                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
-                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
-                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
-                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
-                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
-                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
-                      (if (sh08-ft-all-true?
-                            [(= false (= :invalid-vector-empty-owner caller))
-                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
-                             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
-                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
-                             (= expected-call call) (= expected-edge edge) (sh08-lq-binding? binding module)
-                             (= 'empty? (get binding :name))
-                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
-                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
-                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-                             (contains? '#{empty? gravity.core/empty?} (get (get operator :attributes) :symbol))
-                             (= :operator-then-arguments (get (get node :evaluation) :kind))
-                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
-                                (get (get node :evaluation) :order))])
-                        {:status :accepted :work-count work
-                         :descriptor {:kind :gravity.type/applied-vector-empty :version :sh08-vector-empty-v1
-                                      :operation 'empty? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-vector-empty
-                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
-                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-                                      :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
-                                      :query-policy {:input :persistent-vector :operand-evaluation :once :operand-position :non-tail
-                                                     :payload-evaluation :none :original :unchanged :test :zero-elements
-                                                     :static-length :not-required :flow-refinement :none}
-                                      :storage-policy {:representation :pending-profile-representation :query :stored-emptiness-test
-                                                       :collection-construction :none :copy :none :provider-allocation-bound :not-established}
-                                      :value-origin {:kind :vector-value-query :operation 'empty? :operand-node-id (first args)}
- :profile-validation-work (- reserved base)
-                                      :application :normal :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
-                                      :parameter-types [receiver] :return :gravity.type/bool :result-type :gravity.type/bool
-                                      :profile (get module :profile) :target (get module :target)
-                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]}}
-                        {:status :rejected :reason :vector-empty-source-mismatch :work-count work}))
-                    {:status :rejected :reason :vector-empty-source-mismatch :work-count work})
-                  {:status :rejected :reason :vector-empty-vector-type-required :work-count work})))))
-        {:status :rejected :reason :vector-empty-source-mismatch :work-count base})))
-    {:status :rejected :reason :vector-empty-source-mismatch :work-count 129}))
+    (if (sh08-vemp-ids? node call nodes bindings module)
+      (let [args (get call :argument-node-ids) children (get node :children)
+            operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
+            binding (get bindings bid) receiver (get types (first args))
+            validation (sh08-lc-validate-types [receiver])]
+        (if (= false (= :accepted (get validation :status)))
+          {:status :rejected :reason :vector-empty-vector-type-required}
+          (if (sh08-vemp-type? receiver)
+            (if (if (sh08-nq-ids? node call nodes bindings module)
+                  (if (map? edge)
+                    (if (integer? (get edge :ordinal))
+                      (if (>= (get edge :ordinal) 0)
+                        (sh08-ft-all-true? [(sh08-vemp-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                           (sh08-vemp-optional-id? (get edge :caller-function-syntax-id))
+                                           (sh08-vemp-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
+              (let [caller (loop [remaining (get core :function-records)]
+                             (if (= 0 (count remaining)) nil
+                               (let [record (first remaining)]
+                                 (if (if (map? record)
+                                       (sh08-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
+                                   (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
+                                     record (recur (rest remaining))) :invalid-vector-empty-owner))))
+                    expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                                   :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                                   :evaluation-order :operator-then-arguments :result-policy :call-result}
+                    expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                   :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                                   :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                   :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                                   :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+                (if (sh08-ft-all-true?
+                      [(= false (= :invalid-vector-empty-owner caller))
+                       (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                       (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                       (= expected-call call) (= expected-edge edge) (sh08-lq-binding? binding module)
+                       (= 'empty? (get binding :name))
+                       (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                       (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                           :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                       (contains? '#{empty? gravity.core/empty?} (get (get operator :attributes) :symbol))
+                       (= :operator-then-arguments (get (get node :evaluation) :kind))
+                       (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
+                          (get (get node :evaluation) :order))])
+                  {:status :accepted
+                   :descriptor {:kind :gravity.type/applied-vector-empty :version :sh08-vector-empty-v1
+                                :operation 'empty? :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-vector-empty
+                                :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+                                :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
+                                :query-policy {:input :persistent-vector :operand-evaluation :once :operand-position :non-tail
+                                               :payload-evaluation :none :original :unchanged :test :zero-elements
+                                               :static-length :not-required :flow-refinement :none}
+                                :storage-policy {:representation :pending-profile-representation :query :stored-emptiness-test
+                                                 :collection-construction :none :copy :none :provider-allocation-bound :not-established}
+                                :value-origin {:kind :vector-value-query :operation 'empty? :operand-node-id (first args)}
+                                :application :normal :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+                                :parameter-types [receiver] :return :gravity.type/bool :result-type :gravity.type/bool
+                                :profile (get module :profile) :target (get module :target)
+                                :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                               :callee-body :operand-types :query-policy :storage-policy :value-origin :profile :target :evaluation-order]}}
+                  {:status :rejected :reason :vector-empty-source-mismatch}))
+              {:status :rejected :reason :vector-empty-source-mismatch})
+            {:status :rejected :reason :vector-empty-vector-type-required})))
+      {:status :rejected :reason :vector-empty-source-mismatch})
+    {:status :rejected :reason :vector-empty-source-mismatch}))
 
 (defn sh08-vemp-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-vector-empty-constraint-v1 :application descriptor}
@@ -10901,9 +10880,8 @@
      :profile (get module :profile) :target (get module :target) :effects [] :capabilities [] :status :inferred
      :dispatch :direct-vector-empty :applied-vector-empty descriptor :effect-facts-source :audited-vector-value-query}))
 
-(defn sh08-vemp-derive [core node call edge nodes bindings types forms budget]
-  (let [result (sh08-vemp-header core node call edge nodes bindings types (get core :module) budget)
-        work (get result :work-count)]
+(defn sh08-vemp-derive [core node call edge nodes bindings types forms]
+  (let [result (sh08-vemp-header core node call edge nodes bindings types (get core :module))]
     (if (= :accepted (get result :status))
       (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
         (if (if (sh08-sse-ids? ids 2)
@@ -10918,10 +10896,9 @@
                                                  (= (get form :value) (get (get child :attributes) :symbol)) false) true) false) false)
                           (recur (+ index 1)) false)))) false) false) false)
           (assoc result :type :gravity.type/bool :constraint (sh08-vemp-constraint (get result :descriptor)))
-          (assoc (sh08-sm-failure "C7-VERIFY" :vector-empty-source-mismatch nil :original-unary-vector-empty-call (get node :node-id)) :work-count work)))
-      (assoc (sh08-sm-failure (if (= :vector-empty-work-limit (get result :reason)) "C7-GENERIC"
-                               (if (= :vector-empty-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH"))
-               (get result :reason) nil :independently-established-vector (get call :argument-node-ids)) :work-count work))))
+          (sh08-sm-failure "C7-VERIFY" :vector-empty-source-mismatch nil :original-unary-vector-empty-call (get node :node-id))))
+      (sh08-sm-failure (if (= :vector-empty-source-mismatch (get result :reason)) "C7-VERIFY" "C7-TYPE-MISMATCH")
+        (get result :reason) nil :independently-established-vector (get call :argument-node-ids)))))
 
 (defn sh08-vemp-call? [node call nodes bindings types module]
   (if (sh08-vemp-ids? node call nodes bindings module)
@@ -10948,13 +10925,13 @@
                     (if (map? input) (= false (= :gravity.type/list (get input :kind))) true))) true)) true)
           false)) false) false))
 
-(defn sh08-vemp-inferred-call [core node call edge nodes bindings types budget]
-  (let [result (sh08-vemp-header core node call edge nodes bindings types (get core :module) budget)]
+(defn sh08-vemp-inferred-call [core node call edge nodes bindings types]
+  (let [result (sh08-vemp-header core node call edge nodes bindings types (get core :module))]
     (if (= :accepted (get result :status))
       (if (if (= :gravity.type/bool (get types (get node :node-id)))
               (= (get result :descriptor) (get types (get call :operator-node-id))) false)
-        {:status :accepted :work-count (get result :work-count)}
-        {:status :rejected :reason :vector-empty-source-mismatch :work-count (get result :work-count)})
+        {:status :accepted}
+        {:status :rejected :reason :vector-empty-source-mismatch})
       result)))
 
 (defn sh08-lq-source [core node call edge nodes bindings types module validation]
