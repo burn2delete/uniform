@@ -12456,7 +12456,7 @@
               (if (= :gravity.type/map receiver-type) true
                 (if (map? receiver-type) (= :gravity.type/map (get receiver-type :kind)) false)) false) false) false) false)
       (if (= :reference (get receiver :core-form))
-        (let [records (get core :lexical-bindings) width (if (vector? records) (count records) 0)
+        (let [records (get core :lexical-bindings)
               bid (get (get receiver :attributes) :binding-id)]
           (if (if (sh08-pc-id? bid) (if (vector? records)
                   (map? (sh08-pe-one records :binding-id bid)) false) false)
