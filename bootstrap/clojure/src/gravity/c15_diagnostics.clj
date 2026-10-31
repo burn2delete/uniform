@@ -29,7 +29,7 @@
                      (fn [path values] (validation/validate-source-overrides! (configuration) path values)) source-path overrides))
 (defn c15-diagnostic-record
   [rule severity stage message-key source-path form-index primary-artifact facts remediation
-   & {:keys [related origin-chain redactions lifecycle generated? profile target syntax-id] :as operation-options}]
+   & {:as operation-options}]
   (apply operations/invoke :c15-diagnostic-record records/diagnostic-record
          rule severity stage message-key source-path form-index primary-artifact facts remediation
          (mapcat identity operation-options)))
@@ -61,7 +61,7 @@
    'c15-diagnostics-source-overrides {:arglists '([module])} 'c15-stable-diagnostic-id {:arglists '([diagnostic])}
    'c15-diagnostics-fail! {:arglists '([id source-path subject extra])}
    'c15-diagnostics-validate-source-overrides! {:arglists '([source-path overrides])}
-   'c15-diagnostic-record {:arglists '([rule severity stage message-key source-path form-index primary-artifact facts remediation & {:keys [related origin-chain redactions lifecycle generated? profile target syntax-id] :as operation-options}])}
+   'c15-diagnostic-record {:arglists '([rule severity stage message-key source-path form-index primary-artifact facts remediation & {:as operation-options}])}
    'c15-diagnostic-catalog {:arglists '([])} 'c15-diagnostics-validate! {:arglists '([source-path artifact])}
    'c15-diagnostics-capability-proof {:arglists '([artifact])}
    'compiler-c15-diagnostics-source-artifact {:arglists '([source-path source-text])}

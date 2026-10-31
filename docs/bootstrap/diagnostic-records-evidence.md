@@ -213,3 +213,31 @@ and verification run again confirms both unchanged input hashes, six complete
 context-only data/text changes, both unchanged/recomputed legacy IDs, two real
 semantic-context refusals and two forged-ID refusals. This remains a bounded
 native diagnostic-data slice, not fresh canonical source compilation or proof.
+
+Candidate 198e02f755f11c4e78c0d82da37d25ded7ed067b is superseded after exact
+contextual lint identified eight unused facade bindings on the changed
+keyword-destructuring line. The correction removes the unused `:keys` bindings
+and retains the same optional-map capture/forwarding, with matching public
+arglist metadata. No algorithm, rule, identity protocol, lint configuration or
+warning policy changes. Its obsolete source CI is a separate cancelled run;
+the successor needs its own focused tests, exact lint, independent acceptance
+and CI. The unchanged shared-namespace warning remains a baseline observation.
+
+Independent review also found the compatibility namespace's pinned Bootstrap
+arglist expectation still listed the old option keys. That expectation is
+updated for the three explicit context options; direct and Bootstrap wrapper
+parity tests retain coverage of their forwarding. The earlier candidate is
+not accepted for integration.
+
+The full Bootstrap C15 compatibility launch then stops upstream at C2-HASH /
+exact-regular-pinned-sh03-reader-source: the unchanged Reader pin expects
+231576 bytes and observes 246369. The four initial arglist assertions pass;
+the aggregate with the carrier is 3 tests / 61 assertions with one error, not
+a successful compatibility run. The new artifact-context assertions remain
+unreached on that path. Its log is retained at
+/tmp/uniform-diagnostic-phase-compatibility-correction.log. Both Reader source
+blob b82c17ebb741686bbb9af97aa7dcf79683512da1 and pin-source blob
+4fa1e33f9a03cb2e13c359bfbf43993da91d3b12 match current main exactly. No pin,
+authenticated record, fixture or gate is replaced or overridden, and this
+source path is not retried. The bounded native leaf and carrier regressions
+remain separate from this end-to-end nonpass and any migration authority.
