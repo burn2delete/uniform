@@ -2855,13 +2855,9 @@
                 returns (if (= :accepted (get declared :status))
                           (p15-s23-lr-context core typed binding-index form-index (- 65536 work (get declared :work-count))) declared)
                 joins (if (= :accepted (get returns :status))
-                        (p15-s23-ij-context core typed binding-index form-index
-                          (- 65536 work (get declared :work-count) (get returns :work-count))) returns)]
+                        (p15-s23-ij-context core typed binding-index form-index) returns)]
             (if (= :rejected (get joins :status))
-              (assoc (p15-s23-typed-error (get joins :reason)) :work-count
-                  (+ work (get declared :work-count 0)
-                     (if (= :accepted (get declared :status)) (get returns :work-count) 0)
-                     (if (= :accepted (get returns :status)) (get joins :work-count) 0)))
+              (p15-s23-typed-error (get joins :reason))
             (if (p15-s23-typed-all [(map? node-index) (map? form-index) (map? binding-index)
                                    (map? record-index) (map? function-index) (= (count record-index) (count function-index))
                                    (map? raw-roots)
@@ -2891,7 +2887,7 @@
                 :call-order (loop [remaining calls i 0 out {}]
                               (if (= 0 (count remaining)) out (recur (rest remaining) (+ i 1) (assoc out (get (first remaining) :core-node-id) i))))
                 :if-join-context (get joins :context) :return-context (get returns :context)
-                :budget (- 65536 work (get declared :work-count) (get returns :work-count) (get joins :work-count))})
+                :budget (- 65536 work (get declared :work-count) (get returns :work-count))})
               (p15-s23-typed-error :typed-source-index-census))))
           (p15-s23-typed-error :typed-source-bytes-mismatch))
       (p15-s23-typed-error :typed-input-source-or-verification-mismatch)))))
@@ -3100,80 +3096,81 @@
     (if (p15-s23-ni-atomic? type) {:relation :atomic-alternative :value-type type}
       (if (p15-s23-ni-type? type) {:relation :nil-or-identity :value-type (get type :value-type)} nil))))
 
-(defn p15-s23-ni-type-work [left right budget]
-  (if (< budget 4) {:status :rejected :reason :list-if-join-work-limit :work-count 4}
-    (let [a (p15-s23-ni-branch left) b (p15-s23-ni-branch right)
-          x (get a :value-type) y (get b :value-type) value (if (= x nil) y x)]
-      (if (if (p15-s23-ni-candidate? left right)
-            (if (map? a) (if (map? b)
-              (if (= value nil) false (if (= x nil) true (if (= y nil) true (= x y)))) false) false) false)
-        {:status :accepted :join-family :nil-or :type {:kind :gravity.type/nil-or :value-type value}
-         :branch-types [left right] :branch-compatibility [a b] :nil-type :gravity.type/nil :value-type value :work-count 4}
-        {:status :not-applicable :reason :independent-nil-or-atomic-required :work-count 4}))))
+(defn p15-s23-ni-type-join [left right]
+  (let [a (p15-s23-ni-branch left) b (p15-s23-ni-branch right)
+        x (get a :value-type) y (get b :value-type) value (if (= x nil) y x)]
+    (if (if (p15-s23-ni-candidate? left right)
+          (if (map? a) (if (map? b)
+            (if (= value nil) false (if (= x nil) true (if (= y nil) true (= x y)))) false) false) false)
+      {:status :accepted :join-family :nil-or :type {:kind :gravity.type/nil-or :value-type value}
+       :branch-types [left right] :branch-compatibility [a b] :nil-type :gravity.type/nil :value-type value}
+      {:status :not-applicable :reason :independent-nil-or-atomic-required})))
 
 (defn p15-s23-ij-atomic? [type]
   (if (keyword? type)
     (p15-s23-hl-type? {:kind :gravity.type/list :shape :homogeneous :element-type type}) false))
 
-(defn p15-s23-ij-element [type budget]
+(defn p15-s23-ij-element [type]
   (let [members (if (map? type) (get type :element-types) nil)
         finite? (if (map? type)
                   (if (= 3 (count type))
                     (if (= #{:kind :shape :element-types} (set (keys type)))
                       (= [:gravity.type/list :literal] [(get type :kind) (get type :shape)]) false) false) false)
-        width (if (if finite? (vector? members) false) (count members) 0)
-        work (+ 1 width)]
-    (if (> work budget) {:status :rejected :reason :list-if-join-work-limit :work-count work}
-      (if (if (map? type) (keyword? (get type :element-type)) false)
-        (if (p15-s23-hl-type? type)
-          {:status :accepted :element-type (get type :element-type) :relation :homogeneous-list-identity
-           :checked-member-count nil :work-count work}
-          {:status :not-applicable :reason :independent-list-element-required :work-count work})
-        (if (if finite? (if (vector? members) (<= width 1024) false) false)
-          (if (= width 0)
-            {:status :accepted :element-type nil :relation :empty-positional-list :checked-member-count 0 :work-count work}
-            (let [element (first members)]
-              (if (p15-s23-ij-atomic? element)
-                (if (loop [remaining members]
-                      (if (= 0 (count remaining)) true
-                        (if (= element (first remaining)) (recur (rest remaining)) false)))
-                  {:status :accepted :element-type element :relation :all-positional-elements-match
-                   :checked-member-count width :work-count work}
-                  {:status :not-applicable :reason :incompatible-list-elements :work-count work})
-                {:status :not-applicable :reason :independent-atomic-element-required :work-count work})))
-          {:status :not-applicable :reason :independent-list-element-required :work-count work})))))
+        width (if (if finite? (vector? members) false) (count members) 0)]
+    (if (if (map? type) (keyword? (get type :element-type)) false)
+      (if (p15-s23-hl-type? type)
+        {:status :accepted :element-type (get type :element-type) :relation :homogeneous-list-identity
+         :checked-member-count nil}
+        {:status :not-applicable :reason :independent-list-element-required})
+      (if (if finite? (vector? members) false)
+        (if (= width 0)
+          {:status :accepted :element-type nil :relation :empty-positional-list :checked-member-count 0}
+          (let [element (first members)]
+            (if (p15-s23-ij-atomic? element)
+              (if (loop [remaining members]
+                    (if (= 0 (count remaining)) true
+                      (if (= element (first remaining)) (recur (rest remaining)) false)))
+                {:status :accepted :element-type element :relation :all-positional-elements-match
+                 :checked-member-count width}
+                {:status :not-applicable :reason :incompatible-list-elements})
+              {:status :not-applicable :reason :independent-atomic-element-required})))
+        {:status :not-applicable :reason :independent-list-element-required}))))
 
-(defn p15-s23-ij-type-work [left right budget]
+(defn p15-s23-ij-type-join [left right]
   (if (p15-s23-ni-candidate? left right)
-    (p15-s23-ni-type-work left right budget)
-  (let [a (p15-s23-ij-element left budget)
-        b (if (= :accepted (get a :status))
-            (p15-s23-ij-element right (- budget (get a :work-count))) nil)
-        work (+ (get a :work-count) (get b :work-count 0))]
-    (if (= :rejected (get a :status)) a
-      (if (= :accepted (get a :status))
-        (if (= :rejected (get b :status)) (assoc b :work-count work)
-          (if (= :accepted (get b :status))
-            (let [x (get a :element-type) y (get b :element-type)
-                  element (if (= x nil) y x)]
-              (if (if (= element nil) false (if (= x nil) true (if (= y nil) true (= x y))))
-                {:status :accepted :type {:kind :gravity.type/list :shape :homogeneous :element-type element}
-                 :branch-types [left right]
-                 :branch-compatibility [(p15-s23-typed-project a [:element-type :relation :checked-member-count])
-                                        (p15-s23-typed-project b [:element-type :relation :checked-member-count])]
-                 :element-type element :work-count work}
-                {:status :not-applicable :reason :incompatible-independent-list-elements :work-count work}))
-            {:status :not-applicable :reason (get b :reason) :work-count work}))
-        {:status :not-applicable :reason (get a :reason) :work-count work})))))
+    (p15-s23-ni-type-join left right)
+    (let [a (p15-s23-ij-element left)
+          b (if (= :accepted (get a :status)) (p15-s23-ij-element right) nil)]
+      (if (= :rejected (get a :status))
+        a
+        (if (= :accepted (get a :status))
+          (if (= :rejected (get b :status))
+            b
+            (if (= :accepted (get b :status))
+              (let [x (get a :element-type)
+                    y (get b :element-type)
+                    element (if (= x nil) y x)]
+                (if (if (= element nil)
+                      false
+                      (if (= x nil) true (if (= y nil) true (= x y))))
+                  {:status :accepted
+                   :type {:kind :gravity.type/list :shape :homogeneous :element-type element}
+                   :branch-types [left right]
+                   :branch-compatibility [(p15-s23-typed-project a [:element-type :relation :checked-member-count])
+                                          (p15-s23-typed-project b [:element-type :relation :checked-member-count])]
+                   :element-type element}
+                  {:status :not-applicable :reason :incompatible-independent-list-elements}))
+              {:status :not-applicable :reason (get b :reason)}))
+            {:status :not-applicable :reason (get a :reason)})))))
 
 (defn p15-s23-ij-normal-type [left right]
   (if (if (p15-s23-ni-valid-view? left) (p15-s23-ni-valid-view? right) false)
   (if (= left right) left
     (if (= left :gravity.type/never) right
       (if (= right :gravity.type/never) left
-        (get (p15-s23-ij-type-work left right 65536) :type :gravity.type/unknown)))) :gravity.type/unknown))
+        (get (p15-s23-ij-type-join left right) :type :gravity.type/unknown)))) :gravity.type/unknown))
 
-(defn p15-s23-ij-derive [core node nodes types bindings forms budget]
+(defn p15-s23-ij-derive [core node nodes types bindings forms]
   (let [children (get node :children)]
     (if (if (= :if (get node :core-form)) (if (vector? children) (= 3 (count children)) false) false)
       (let [condition (get types (first children) :gravity.type/unknown)
@@ -3183,11 +3180,8 @@
               (if (p15-s23-ij-unknown? condition) true
                 (if (= left right) true
                   (if (= left :gravity.type/never) true (= right :gravity.type/never)))))
-          {:status :not-applicable :work-count 1}
-          (let [base (+ 64 (count (get core :function-records)) (count (get core :control-flow)))]
-            (if (> base budget) {:status :rejected :reason :list-if-join-work-limit :work-count base}
-              (let [validation (p15-s23-ij-type-work left right (- budget base))
-                    work (+ base (get validation :work-count))]
+          {:status :not-applicable}
+          (let [validation (p15-s23-ij-type-join left right)]
                 (if (= :accepted (get validation :status))
                   (let [owner (get (get node :evaluation) :owner-function-syntax-id)
                         function (loop [remaining (get core :function-records)]
@@ -3212,21 +3206,15 @@
                         branch-nodes (loop [remaining children out []]
                                        (if (= 0 (count remaining)) out
                                          (recur (rest remaining) (conj out (get nodes (first remaining))))))
-                        reference-work (loop [remaining branch-nodes used 0]
-                                         (if (= 0 (count remaining)) used
-                                           (recur (rest remaining)
-                                             (+ used (if (vector? (get (first remaining) :resolved-binding-ids))
-                                                       (* 2 (count (get (first remaining) :resolved-binding-ids))) 0)))))
-                        work (+ work reference-work)
-                        branch-bindings (if (> work budget) [] (loop [remaining branch-nodes out []]
+                        branch-bindings (loop [remaining branch-nodes out []]
                                           (if (= 0 (count remaining)) out
                                             (recur (rest remaining)
                                               (conj out (loop [ids (if (vector? (get (first remaining) :resolved-binding-ids))
                                                                     (get (first remaining) :resolved-binding-ids) []) records []]
                                                           (if (= 0 (count ids)) records
-                                                            (recur (rest ids) (conj records (get bindings (first ids)))))))))))]
+                                                            (recur (rest ids) (conj records (get bindings (first ids))))))))))]
                     (if (p15-s23-typed-all
-                          [(<= work budget) (map? function) (= owner (get function :function-syntax-id))
+                          [(map? function) (= owner (get function :function-syntax-id))
                            (= (get function :definition-binding-id) (get binding :binding-id))
                            (= (get function :definition-name) (get binding :name))
                            (= [:namespace :function (get (get core :module) :namespace)]
@@ -3254,7 +3242,7 @@
                                                                             (if (= 0 (count rows)) out
                                                                               (recur (rest rows) (conj out (get (first rows) :binding-id))))))])
                                    (recur (+ i 1)) false))))])
-                      {:status :accepted :work-count work :type (get validation :type)
+                      {:status :accepted :type (get validation :type)
                        :premise (let [premise {:version :sh08-list-if-join-v1 :relation :independent-homogeneous-list-join
                                  :if-core-node-id (get node :node-id) :source-node node
                                  :function-record function :definition-binding binding
@@ -3274,9 +3262,9 @@
                            (assoc premise :version :sh08-nil-if-join-v1
                              :relation :independent-nil-or-atomic-join :nil-type :gravity.type/nil :value-type (get validation :value-type))
                            (assoc premise :element-type (get validation :element-type))))}
-                      {:status :rejected :reason (if (> work budget) :list-if-join-work-limit :list-if-join-source-mismatch) :work-count work}))
-                  (assoc validation :work-count work :type-work-count (get validation :work-count))))))))
-      {:status :not-applicable :work-count 1})))
+                      {:status :rejected :reason :list-if-join-source-mismatch}))
+                  validation))))
+      {:status :not-applicable})))
 
 (defn p15-s23-ij-row [premise]
   {:constraint-id-request {:domain (if (= :sh08-nil-if-join-v1 (get premise :version))
@@ -3291,43 +3279,40 @@
                   :function-records :definition-binding :profile :target]
    :profile (get premise :profile) :target (get premise :target) :status :solved :diagnostics []})
 
-(defn p15-s23-ij-context [core facts bindings source-forms budget]
+(defn p15-s23-ij-context [core facts bindings source-forms]
   (let [sequence (get core :nodes) ledger (get facts :constraint-ledger []) types (get facts :type-table)
-        base (+ (count sequence) (count ledger) (if (map? source-forms) 0 (count source-forms)))]
-    (if (> base budget) {:status :rejected :reason :list-if-join-work-limit :work-count base}
-      (let [nodes (p15-s23-typed-index sequence :node-id)
-            forms (if (map? source-forms) source-forms (p15-s23-typed-index source-forms :form-id))
-            rows (loop [remaining ledger out []]
-                   (if (= 0 (count remaining)) out
-                     (recur (rest remaining)
-                       (if (if (contains? #{:sh08-list-if-join-v1 :sh08-nil-if-join-v1} (get (first remaining) :producer-rule)) true
-                             (= :join-compatibility (get (first remaining) :kind)))
-                         (conj out (first remaining)) out))))]
-        (loop [remaining sequence used base expected [] premises {}]
-          (if (= 0 (count remaining))
-            (if (= expected rows)
-              {:status :accepted :work-count used :context {:premises premises}}
-              {:status :rejected :reason :list-if-join-constraint-census :work-count used})
-            (let [node (first remaining) id (get node :node-id)]
-              (if (= :if (get node :core-form))
-                (let [checked (p15-s23-ij-derive core node nodes types bindings forms (- budget used))
-                      work (+ used (get checked :work-count)) children (get node :children)
-                      condition (get types (first children) :gravity.type/unknown)
-                      left (get types (get children 1) :gravity.type/unknown)
-                      right (get types (get children 2) :gravity.type/unknown)
-                      result (if (= condition :gravity.type/never) :gravity.type/never
-                               (if (p15-s23-ij-unknown? condition) :gravity.type/unknown
-                                 (if (= :accepted (get checked :status)) (get checked :type)
-                                   (p15-s23-ij-normal-type left right))))]
-                  (if (if (> work budget) true (= :rejected (get checked :status)))
-                    (if (> work budget) {:status :rejected :reason :list-if-join-work-limit :work-count work}
-                      (assoc checked :work-count work))
-                    (if (if (= result :gravity.type/unknown) false (= result (get types id)))
-                      (recur (rest remaining) work
-                        (if (= :accepted (get checked :status)) (conj expected (p15-s23-ij-row (get checked :premise))) expected)
-                        (if (= :accepted (get checked :status)) (assoc premises id (get checked :premise)) premises))
-                      {:status :rejected :reason :list-if-join-result-type-mismatch :work-count work})))
-                (recur (rest remaining) used expected premises)))))))))
+        nodes (p15-s23-typed-index sequence :node-id)
+        forms (if (map? source-forms) source-forms (p15-s23-typed-index source-forms :form-id))
+        rows (loop [remaining ledger out []]
+               (if (= 0 (count remaining)) out
+                 (recur (rest remaining)
+                   (if (if (contains? #{:sh08-list-if-join-v1 :sh08-nil-if-join-v1} (get (first remaining) :producer-rule)) true
+                         (= :join-compatibility (get (first remaining) :kind)))
+                     (conj out (first remaining)) out))))]
+    (loop [remaining sequence expected [] premises {}]
+      (if (= 0 (count remaining))
+        (if (= expected rows)
+          {:status :accepted :context {:premises premises}}
+          {:status :rejected :reason :list-if-join-constraint-census})
+        (let [node (first remaining) id (get node :node-id)]
+          (if (= :if (get node :core-form))
+            (let [checked (p15-s23-ij-derive core node nodes types bindings forms)
+                  children (get node :children)
+                  condition (get types (first children) :gravity.type/unknown)
+                  left (get types (get children 1) :gravity.type/unknown)
+                  right (get types (get children 2) :gravity.type/unknown)
+                  result (if (= condition :gravity.type/never) :gravity.type/never
+                           (if (p15-s23-ij-unknown? condition) :gravity.type/unknown
+                             (if (= :accepted (get checked :status)) (get checked :type)
+                               (p15-s23-ij-normal-type left right))))]
+              (if (= :rejected (get checked :status))
+                checked
+                (if (if (= result :gravity.type/unknown) false (= result (get types id)))
+                  (recur (rest remaining)
+                    (if (= :accepted (get checked :status)) (conj expected (p15-s23-ij-row (get checked :premise))) expected)
+                    (if (= :accepted (get checked :status)) (assoc premises id (get checked :premise)) premises))
+                  {:status :rejected :reason :list-if-join-result-type-mismatch})))
+            (recur (rest remaining) expected premises)))))))
 
 (defn p15-s23-typed-return-declaration? [declaration type context]
   (let [forms (get context :forms) bindings (get context :bindings)
@@ -3606,21 +3591,20 @@
         (if (= :literal (get type :shape))
           (if (vector? (get type :element-types)) (= 0 (count (get type :element-types))) false) false) false) false) false) false))
 
-(defn p15-s23-lsi-index [records field budget]
-  (if (if (vector? records) (<= (count records) 65536) false)
-    (loop [remaining records out {} work 0]
-      (if (= 0 (count remaining)) {:status :accepted :index out :work-count work}
-        (let [record (first remaining) fields (if (map? record) (count record) 0) cost (+ 4 fields)]
-          (if (> (+ work cost) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work cost)}
-            (if (if (map? record)
-                  (loop [keys (keys record)] (if (= 0 (count keys)) true
-                    (if (keyword? (first keys)) (recur (rest keys)) false))) false)
-              (let [id (get record field)]
-                (if (if (p15-s23-lsi-id? id) (= false (contains? out id)) false)
-                  (recur (rest remaining) (assoc out id record) (+ work cost))
-                  {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work cost)}))
-              {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work cost)})))))
-    {:status :rejected :reason :incoherent-loop-member-source :work-count 0}))
+(defn p15-s23-lsi-index [records field]
+  (if (vector? records)
+    (loop [remaining records out {}]
+      (if (= 0 (count remaining)) {:status :accepted :index out}
+        (let [record (first remaining)]
+          (if (if (map? record)
+                (loop [keys (keys record)] (if (= 0 (count keys)) true
+                  (if (keyword? (first keys)) (recur (rest keys)) false))) false)
+            (let [id (get record field)]
+              (if (if (p15-s23-lsi-id? id) (= false (contains? out id)) false)
+                (recur (rest remaining) (assoc out id record))
+                {:status :rejected :reason :incoherent-loop-member-source}))
+            {:status :rejected :reason :incoherent-loop-member-source}))))
+    {:status :rejected :reason :incoherent-loop-member-source}))
 
 (defn p15-s23-lsi-empty-constructor? [node forms]
   (let [source (get node :source) id (get source :form-id)]
@@ -3706,43 +3690,29 @@
    :parent-form-id (get form :parent-form-id) :scope-id (get form :scope-id) :child-form-ids (get form :child-form-ids)
    :source-span (get form :source-span) :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
 
-(defn p15-s23-lsi-first-data-work [value budget]
+(defn p15-s23-lsi-first-data [value]
   ; Only first-order data carriers are traversed; lazy sequences are unsupported.
-  ; Reserve native container visits/comparison candidates before materialization.
-  (loop [pending [[value 0]] used 0]
-    (if (= 0 (count pending)) {:status :accepted :work-count used}
-      (if (>= used budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 1)}
-        (let [frame (get pending (- (count pending) 1)) value (get frame 0) depth (get frame 1)
-              tail (subvec pending 0 (- (count pending) 1))]
-          (if (> depth 128) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
-            (if (if (map? value) true (if (vector? value) true (if (set? value) true (list? value))))
-              (let [size (count value) width (if (map? value) (* 2 size) size)
-                    comparison (if (map? value) (+ (* size size) width)
-                                 (if (set? value) (+ (* size size) width) width))
-                    work (+ used 1 comparison)]
-                (if (> size 1024) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
-                  (if (> (+ work (count tail) width) budget)
-                    {:status :rejected :reason :loop-type-work-limit :work-count (+ work (count tail) width)}
-                    (let [items (if (map? value)
-                                  (loop [entries (vec value) out []]
-                                    (if (= 0 (count entries)) out
-                                      (let [entry (first entries)]
-                                        (recur (rest entries) (conj (conj out (get entry 0)) (get entry 1)))))) (vec value))]
-                      (recur (loop [remaining items out tail]
-                               (if (= 0 (count remaining)) out
-                                 (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))) work)))))
-              (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
-                    (if (symbol? value) true (if (string? value) true (if (number? value) true (char? value)))))))
-                ; Keyword atoms keep two visits without rendering a discarded name.
-                (let [work (+ used 2 (if (string? value) (count value)
-                                      (if (symbol? value) (count (str value)) 0)))]
-                  (if (> work budget) {:status :rejected :reason :loop-type-work-limit :work-count work}
-                    (recur tail work)))
-                {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}))))))))
+  (loop [pending [value]]
+    (if (= 0 (count pending)) {:status :accepted}
+      (let [value (first pending) tail (rest pending)]
+        (if (if (map? value) true (if (vector? value) true (if (set? value) true (list? value))))
+          (let [items (if (map? value)
+                        (loop [entries (vec value) out []]
+                          (if (= 0 (count entries)) out
+                            (let [entry (first entries)]
+                              (recur (rest entries) (conj (conj out (get entry 0)) (get entry 1))))))
+                        (vec value))]
+            (recur (loop [remaining items out tail]
+                     (if (= 0 (count remaining)) out
+                       (recur (rest remaining) (conj out (first remaining)))))))
+          (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
+                (if (symbol? value) true (if (string? value) true (if (number? value) true (char? value)))))))
+            (recur tail)
+            {:status :rejected :reason :unsupported-loop-member-grounding}))))))
 
 (defn p15-s23-lsi-first-ids? [ids]
-  ; Shape only. Reached IDs are checked individually after their visit is paid.
-  (if (vector? ids) (<= (count ids) 1024) false))
+  ; Shape only. Reached IDs are checked individually after their visit.
+  (vector? ids))
 
 (defn p15-s23-lsi-first-form? [form]
   (if (map? form)
@@ -3809,10 +3779,8 @@
                           (if (p15-s23-lsi-id? (get record :initializer-node-id))
                             (p15-s23-lsi-first-node? (get (get env :nodes) (get record :initializer-node-id))) false) false) false) false) false) true) false) false) false)) false)) false))
 
-(defn p15-s23-lsi-first-call-input [node env budget]
-  ; Prepay three fixed node/form projections: 3 * (32 + 24) + 8 units.
-  (if (> 176 budget) {:status :rejected :reason :loop-type-work-limit :work-count 176}
-    (let [result
+(defn p15-s23-lsi-first-call-input [node env]
+  (let [result
   (if (if (p15-s23-lsi-first-node? node)
         (if (keyword? (get (get (get env :core) :module) :profile))
           (keyword? (get (get (get env :core) :module) :target)) false) false)
@@ -3839,11 +3807,11 @@
                         (if (p15-s23-lsi-id? (get (get owner :child-form-ids) 0))
                           (p15-s23-lsi-id? (get (get owner :child-form-ids) 1)) false) false) false)
                   (let [ids (get owner :child-form-ids) op-form (get forms (get ids 0)) arg-form (get forms (get ids 1))
-                        raw (p15-s23-lsi-first-data-work [(p15-s23-lsi-first-node-data node) (p15-s23-lsi-first-node-data operator) (p15-s23-lsi-first-node-data arg)
+                        raw (p15-s23-lsi-first-data [(p15-s23-lsi-first-node-data node) (p15-s23-lsi-first-node-data operator) (p15-s23-lsi-first-node-data arg)
                               call edge binding (p15-s23-lsi-first-form-data owner) (p15-s23-lsi-first-form-data op-form)
                               (p15-s23-lsi-first-form-data arg-form)
                               {:profile (get (get (get env :core) :module) :profile)
-                               :target (get (get (get env :core) :module) :target)}] (- budget 176))]
+                               :target (get (get (get env :core) :module) :target)}])]
                     (if (= :accepted (get raw :status))
                       (if (if (p15-s23-lsi-first-form? op-form) (p15-s23-lsi-first-form? arg-form) false)
                         (if (if (symbol? (get binding :name)) (= 'first (get binding :name)) false)
@@ -3852,371 +3820,435 @@
                             (assoc raw :status :rejected :reason :unsupported-loop-member-grounding))
                           (assoc raw :status :rejected :reason :unsupported-loop-member-grounding))
                         (assoc raw :status :rejected :reason :unsupported-loop-member-grounding)) raw))
-                  {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0})
-                {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
-            {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
-        {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
-    {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0})]
-      (assoc result :work-count (+ 176 (get result :work-count))))))
+                  {:status :rejected :reason :unsupported-loop-member-grounding})
+                {:status :rejected :reason :unsupported-loop-member-grounding}))
+            {:status :rejected :reason :unsupported-loop-member-grounding}))
+        {:status :rejected :reason :unsupported-loop-member-grounding}))
+    {:status :rejected :reason :unsupported-loop-member-grounding})]
+    result))
 
-(defn p15-s23-lsi-first-caller [records owner budget]
-  (if (if (vector? records) (<= (count records) 65536) false)
-    (loop [remaining records used 0]
-      (if (= 0 (count remaining)) {:status :accepted :work-count used}
-        (if (> (+ used 3) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 3)}
-          (let [record (first remaining) syntax (get record :function-syntax-id) core (get record :function-core-node-id)]
-            (if (if (p15-s23-lsi-id? syntax) (p15-s23-lsi-id? core) false)
-              (if (= syntax owner) {:status :accepted :work-count (+ used 3)}
-                (recur (rest remaining) (+ used 3)))
-              {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 3)})))))
-    {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
+(defn p15-s23-lsi-first-caller [records owner]
+  (if (vector? records)
+    (loop [remaining records]
+      (if (= 0 (count remaining)) {:status :accepted}
+        (let [record (first remaining) syntax (get record :function-syntax-id) core (get record :function-core-node-id)]
+          (if (if (p15-s23-lsi-id? syntax) (p15-s23-lsi-id? core) false)
+            (if (= syntax owner) {:status :accepted}
+              (recur (rest remaining)))
+            {:status :rejected :reason :unsupported-loop-member-grounding}))))
+    {:status :rejected :reason :unsupported-loop-member-grounding}))
 
-(defn p15-s23-lsi-vector-first [node binding env seen budget]
-  (let [input (p15-s23-lsi-first-call-input node env budget) base (get input :work-count)]
+(defn p15-s23-lsi-vector-first [node binding env seen]
+  (let [input (p15-s23-lsi-first-call-input node env)]
     (if (= :accepted (get input :status))
-      (let [arg (get input :argument) owner (get input :owner) attrs (get arg :attributes)
-            children (get arg :children) forms (get env :forms) nodes (get env :nodes) types (get env :types)
-            arg-id (get arg :node-id) arg-type (get types arg-id :gravity.type/unknown)]
+      (let [arg (get input :argument)
+            owner (get input :owner)
+            attrs (get arg :attributes)
+            children (get arg :children)
+            forms (get env :forms)
+            nodes (get env :nodes)
+            types (get env :types)
+            arg-id (get arg :node-id)
+            arg-type (get types arg-id :gravity.type/unknown)]
         (if (if (= :collection-literal (get arg :core-form))
-              (if (if (> (count children) 0) (<= (count children) 1024) false)
-                (if (if (= :vector (get owner :kind))
-                      (if (vector? (get owner :value))
-                        (if (vector? (get attrs :source-value))
-                          (if (= (count children) (count (get owner :value)))
-                            (= (count children) (count (get owner :child-form-ids))) false) false) false) false)
-                (if (map? attrs) (if (= 3 (count attrs))
-                  (if (= :vector (get attrs :literal-kind))
-                    (if (integer? (get attrs :element-count)) (= (count children) (get attrs :element-count)) false) false) false) false) false) false) false)
+              (if (> (count children) 0)
+                (if (= :vector (get owner :kind))
+                  (if (vector? (get owner :value))
+                    (if (vector? (get attrs :source-value))
+                      (if (= (count children) (count (get owner :value)))
+                        (= (count children) (count (get owner :child-form-ids)))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
           (let [ids (get owner :child-form-ids)
-                scanned (loop [i 0 out [] used base]
-                  (if (= i (count children)) {:status :accepted :work-count used :types out}
-                    (if (> (+ used 64) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 64)}
-                      (let [child-id (get children i) source-id (if (< i (count ids)) (get ids i) nil)
-                            child (if (p15-s23-lsi-id? child-id) (get nodes child-id) nil)
-                            source (if (p15-s23-lsi-id? source-id) (get forms source-id) nil)
-                            raw (p15-s23-lsi-first-data-work [(p15-s23-lsi-first-node-data child) (p15-s23-lsi-first-form-data source)] (- budget used 64)) total (+ used 64 (get raw :work-count))]
-                        (if (= :accepted (get raw :status))
-                          (if (if (p15-s23-lsi-first-node? child) (p15-s23-lsi-first-form? source) false)
-                            (if (= (get owner :form-id) (get source :parent-form-id))
-                              (if (if (= (get child :source) (p15-s23-ix-form-source source))
-                                    (= (get (get owner :value) i) (get source :value)) false)
-                                (recur (+ i 1) (conj out (get types (get children i) :gravity.type/unknown)) total)
-                                {:status :rejected :reason :unsupported-loop-member-grounding :work-count total})
-                              {:status :rejected :reason :unsupported-loop-member-grounding :work-count total})
-                            {:status :rejected :reason :unsupported-loop-member-grounding :work-count total}) (assoc raw :work-count total))))))
-                used (get scanned :work-count)]
+                scanned
+                (loop [i 0 out []]
+                  (if (= i (count children))
+                    {:status :accepted :types out}
+                    (let [child-id (get children i)
+                          source-id (if (< i (count ids)) (get ids i) nil)
+                          child (if (p15-s23-lsi-id? child-id) (get nodes child-id) nil)
+                          source (if (p15-s23-lsi-id? source-id) (get forms source-id) nil)
+                          raw (p15-s23-lsi-first-data
+                               [(p15-s23-lsi-first-node-data child)
+                                (p15-s23-lsi-first-form-data source)])]
+                      (if (= :accepted (get raw :status))
+                        (if (if (p15-s23-lsi-first-node? child)
+                              (p15-s23-lsi-first-form? source)
+                              false)
+                          (if (= (get owner :form-id) (get source :parent-form-id))
+                            (if (if (= (get child :source) (p15-s23-ma-form-source source))
+                                  (= (get (get owner :value) i) (get source :value))
+                                  false)
+                              (recur (+ i 1)
+                                     (conj out (get types child-id :gravity.type/unknown)))
+                              {:status :rejected :reason :unsupported-loop-member-grounding})
+                            {:status :rejected :reason :unsupported-loop-member-grounding})
+                          {:status :rejected :reason :unsupported-loop-member-grounding})
+                        raw))))
+                cold-type {:kind :gravity.type/vector
+                           :shape :literal
+                           :element-types (get scanned :types)}
+                actual (p15-s23-lc-validate-types [arg-type])
+                cold (p15-s23-lc-validate-types [cold-type])]
             (if (= :accepted (get scanned :status))
-              (let [cold-type {:kind :gravity.type/vector :shape :literal :element-types (get scanned :types)}
-                    actual (p15-s23-lc-validate-types [arg-type])
-                    cold (p15-s23-lc-validate-types [cold-type])]
-                (if (if (= :accepted (get actual :status)) (= :accepted (get cold :status)) false)
-                  (let [raw (p15-s23-lsi-first-data-work [arg-type cold-type] (- budget used)) used (+ used (get raw :work-count))]
-                    (if (= :accepted (get raw :status))
-                      (if (if (= cold-type arg-type)
-                            (if (= :vector (get owner :kind))
-                              (if (= (count children) (count ids))
-                                (if (vector? (get attrs :source-value))
-                                  (if (vector? (get owner :value))
-                                    (if (= (count children) (count (get owner :value)))
-                                      (if (= (get attrs :source-value) (get owner :value))
-                                        (if (= (get arg :source) (p15-s23-ix-form-source owner))
-                                          (if (= [] (get arg :resolved-binding-ids))
-                                            (if (= :left-to-right (get (get arg :evaluation) :kind))
-                                              (= (get (get arg :evaluation) :order)
-                                                 (loop [i 0 out []] (if (= i (count children)) out
-                                                   (recur (+ i 1) (conj out {:index i :core-node-id (get children i)}))))) false) false) false) false) false) false) false) false) false) false)
+              (if (if (= :accepted (get actual :status))
+                    (= :accepted (get cold :status))
+                    false)
+                (let [raw (p15-s23-lsi-first-data [arg-type cold-type])]
+                  (if (= :accepted (get raw :status))
+                    (if (if (= cold-type arg-type)
+                          (if (= :vector (get owner :kind))
+                            (if (= (count children) (count ids))
+                              (if (vector? (get attrs :source-value))
+                                (if (vector? (get owner :value))
+                                  (if (= (count children) (count (get owner :value)))
+                                    (if (= (get attrs :source-value) (get owner :value))
+                                      (if (= (get arg :source) (p15-s23-ma-form-source owner))
+                                        (if (= [] (get arg :resolved-binding-ids))
+                                          (if (= :left-to-right (get (get arg :evaluation) :kind))
+                                            (= (get (get arg :evaluation) :order)
+                                               (loop [i 0 out []]
+                                                 (if (= i (count children))
+                                                   out
+                                                   (recur (+ i 1)
+                                                          (conj out {:index i :core-node-id (get children i)})))))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
                         (if (contains? seen arg-id)
-                          {:status :rejected :reason :circular-loop-member-grounding :work-count used}
-                          (let [head (p15-s23-lsi-path-from-seen (get children 0) :literal-head binding env (conj seen arg-id) (- budget used))
-                                used (+ used (get head :work-count) (count (get head :path [])))]
-                            (if (= :accepted (get head :status))
-                              (let [caller (p15-s23-lsi-first-caller (get (get env :core) :function-records)
-                                             (get (get node :evaluation) :owner-function-syntax-id) (- budget used))
-                                    used (+ used (get caller :work-count))]
-                                (if (= :accepted (get caller :status))
-                                  (let [reserved (+ used 64)
-                                        header (if (<= reserved budget) (p15-s23-lq-source (get env :core) node (get input :call) (get input :edge)
-                                                   nodes (get env :bindings) types (get (get env :core) :module) actual) nil)
-                                        used reserved
-                                        descriptor (if (map? header) (p15-s23-lq-finish header) nil)
-                                        compared (p15-s23-lsi-first-data-work (get types (get (get input :call) :operator-node-id)) (- budget used)) used (+ used (get compared :work-count))]
-                                    (if (= :accepted (get compared :status))
-                                      (if (if (= :sh08-vector-first-v1 (get descriptor :version))
-                                            (if (= :normal (get descriptor :application))
-                                              (if (= :gravity.type/symbol (get descriptor :result-type))
-                                                (if (p15-s23-ix-call-forms? node nodes forms)
-                                                  (= descriptor (get types (get (get input :call) :operator-node-id))) false) false) false) false)
-                                        {:status :accepted :path (p15-s23-lsi-first-append [arg-id] (get head :path)) :leaf (get head :leaf) :work-count used}
-                                        {:status :rejected :reason :unsupported-loop-member-grounding :work-count used})
-                                      (assoc compared :work-count used))) (assoc caller :work-count used))) (assoc head :work-count used))))
-                        {:status :rejected :reason :unsupported-loop-member-grounding :work-count used}) (assoc raw :work-count used)))
-                  {:status :rejected :reason :unsupported-loop-member-grounding :work-count used})) scanned))
-          {:status :rejected :reason :unsupported-loop-member-grounding :work-count base})) input)))
-
-(defn p15-s23-lsi-path-from-seen [start mode binding env initial-seen budget]
-  (loop [id start path [] seen initial-seen work 0]
-    (if (> (+ work 16) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 16)}
-      (if (p15-s23-lsi-id? id)
-        (if (contains? seen id) {:status :rejected :reason :circular-loop-member-grounding :work-count (+ work 16)}
-          (let [node (get (get env :nodes) id) kind (get node :core-form)
-                actual-type (get (get env :types) id :gravity.type/unknown)
-                bid (get (get node :attributes) :binding-id) aliases (get env :aliases)
-                record (if (p15-s23-lsi-id? bid) (get aliases bid) nil)
-                next-path (conj path id) used (+ work 16)]
-            (if (if (if (= mode :member) true (= mode :literal-head)) (= :gravity.type/symbol actual-type)
-                  (if (= mode :result) (p15-s23-syc-type? actual-type)
-                    (if (= mode :initializer) (p15-s23-lsi-empty? actual-type)
-                      (if (p15-s23-lsi-empty? actual-type) true (p15-s23-syc-type? actual-type)))))
-              (if (if (keyword? kind) (if (p15-s23-lsi-id? (get node :node-id)) (= id (get node :node-id)) false) false)
+                          {:status :rejected :reason :circular-loop-member-grounding}
+                          (let [head (p15-s23-lsi-path-from-seen (get children 0) :literal-head
+                                                              binding env (conj seen arg-id))
+                                caller (p15-s23-lsi-first-caller
+                                        (get (get env :core) :function-records)
+                                        (get (get node :evaluation) :owner-function-syntax-id))
+                                header (if (= :accepted (get head :status))
+                                         (if (= :accepted (get caller :status))
+                                           (p15-s23-lq-source (get env :core) node (get input :call)
+                                             (get input :edge) nodes (get env :bindings) types
+                                             (get (get env :core) :module) actual)
+                                           nil)
+                                         nil)
+                                descriptor (if (map? header) (p15-s23-lq-finish header) nil)
+                                compared (p15-s23-lsi-first-data
+                                          (get types (get (get input :call) :operator-node-id)))]
+                            (if (if (if (= :accepted (get head :status))
+                                        (= :accepted (get caller :status))
+                                        false)
+                                  (= :accepted (get compared :status))
+                                  false)
+                              (if (if (= :p15-s23-vector-first-v1 (get descriptor :version))
+                                    (if (= :normal (get descriptor :application))
+                                      (if (= :gravity.type/symbol (get descriptor :result-type))
+                                        (if (p15-s23-si-call-forms? node nodes forms)
+                                          (= descriptor
+                                             (get types (get (get input :call)
+                                                             :operator-node-id)))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                {:status :accepted
+                                 :path (p15-s23-lsi-first-append [arg-id] (get head :path))
+                                 :leaf (get head :leaf)}
+                                {:status :rejected :reason :unsupported-loop-member-grounding})
+                              {:status :rejected :reason :unsupported-loop-member-grounding})))
+                          false)
+                    {:status :rejected :reason :unsupported-loop-member-grounding}))
+                {:status :rejected :reason :unsupported-loop-member-grounding})
+              {:status :rejected :reason :unsupported-loop-member-grounding}))
+          {:status :rejected :reason :unsupported-loop-member-grounding}))
+      {:status :rejected :reason :unsupported-loop-member-grounding})))
+(defn p15-s23-lsi-path-from-seen [start mode binding env initial-seen]
+  (loop [id start path [] seen initial-seen]
+    (if (p15-s23-lsi-id? id)
+      (if (contains? seen id)
+        {:status :rejected :reason :circular-loop-member-grounding}
+        (let [node (get (get env :nodes) id)
+              kind (get node :core-form)
+              actual-type (get (get env :types) id :gravity.type/unknown)
+              bid (get (get node :attributes) :binding-id)
+              aliases (get env :aliases)
+              record (if (p15-s23-lsi-id? bid) (get aliases bid) nil)
+              next-path (conj path id)]
+          (if (if (if (= mode :member) true (= mode :literal-head))
+                (= :gravity.type/symbol actual-type)
+                (if (= mode :result) (p15-s23-syc-type? actual-type)
+                  (if (= mode :initializer) (p15-s23-lsi-empty? actual-type)
+                    (if (p15-s23-lsi-empty? actual-type) true (p15-s23-syc-type? actual-type)))))
+            (if (if (keyword? kind)
+                  (if (p15-s23-lsi-id? (get node :node-id))
+                    (= id (get node :node-id))
+                    false)
+                  false)
               (if (if (= mode :result) (= kind :call) false)
-                {:status :accepted :path next-path :leaf id :work-count used}
+                {:status :accepted :path next-path :leaf id}
                 (if (if (= mode :member) (= :call kind) false)
-                  (let [first (p15-s23-lsi-vector-first node binding env (conj seen id) (- budget used))
-                        total (+ used (get first :work-count) (count (get first :path [])))]
-                    (if (> total budget) {:status :rejected :reason :loop-type-work-limit :work-count total}
+                  (let [first (p15-s23-lsi-vector-first node binding env (conj seen id))]
                     (if (= :accepted (get first :status))
-                      (assoc first :path (p15-s23-lsi-first-append next-path (get first :path)) :work-count total)
-                      (assoc first :work-count total))))
-                (if (= kind :reference)
-                  (if (if (if (if (= mode :member) true (= mode :literal-head))
-                                  (p15-s23-lsi-first-reference? node env) true)
-                        (if (p15-s23-lsi-id? bid)
-                        (if (p15-s23-lsi-id? (get (get node :source) :form-id))
-                          (let [form (get (get env :forms) (get (get node :source) :form-id))
-                                source-binding (get (get env :bindings) bid)]
-                            (if (= [bid] (get node :resolved-binding-ids))
-                              (if (= (get node :binding-context) (get form :scope-id))
-                                (if (symbol? (get form :value))
-                                  (if (symbol? (get source-binding :name)) (= (get form :value) (get source-binding :name)) false) false) false) false)) false) false) false)
-                    (if (if (= mode :receiver) (= bid binding) false)
-                      {:status :accepted :path next-path :leaf id :origin :slot :work-count used}
-                      (if (if (map? record) (if (if (p15-s23-lsi-id? (get record :initializer-node-id))
-                          (if (p15-s23-lsi-id? (get record :definition-syntax-id))
-                            (if (p15-s23-lsi-id? (get record :binding-scope-id)) (= :immutable (get record :mutability)) false) false) false)
-                            (if (= bid (get record :binding-id))
-                              (let [source-binding (get (get env :bindings) bid)
-                                    initializer (get (get env :nodes) (get record :initializer-node-id))]
-                                (if (= (get record :definition-syntax-id) (get source-binding :definition-syntax-id))
-                                  (if (= (get record :binding-scope-id) (get source-binding :scope-id))
-                                    (if (= (get record :initializer-form-id) (get (get initializer :source) :form-id))
-                                      (= (get record :initializer-syntax-id) (get (get initializer :source) :syntax-id)) false) false) false)) false) false) false)
-                        (recur (get record :initializer-node-id) next-path (conj seen id) used)
-                        {:status :rejected :reason :ungrounded-loop-member-reference :work-count used}))
-                    {:status :rejected :reason :incoherent-loop-member-reference :work-count used})
-                  (if (if (= mode :result) false (if (= mode :literal-head) (p15-s23-lsi-first-head? node (get env :forms))
-                                                  (p15-s23-lsi-leaf? node (get env :forms) mode)))
-                    {:status :accepted :path next-path :leaf id :work-count used}
-                    {:status :rejected :reason :unsupported-loop-member-grounding :work-count used}))))
-              {:status :rejected :reason :incoherent-loop-member-source :work-count used})
-              {:status :rejected :reason :unknown-loop-member-grounding :work-count used})))
-        {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work 16)}))))
+                      (assoc first :path (p15-s23-lsi-first-append next-path (get first :path)))
+                      first))
+                  (if (= kind :reference)
+                    (if (if (if (if (= mode :member) true (= mode :literal-head))
+                                  (if (p15-s23-lsi-first-reference? node env) true false)
+                                  true)
+                            (if (p15-s23-lsi-id? bid)
+                              (if (p15-s23-lsi-id? (get (get node :source) :form-id))
+                                (let [form (get (get env :forms) (get (get node :source) :form-id))
+                                      source-binding (get (get env :bindings) bid)]
+                                  (if (= [bid] (get node :resolved-binding-ids))
+                                    (if (= (get node :binding-context) (get form :scope-id))
+                                      (if (symbol? (get form :value))
+                                        (if (symbol? (get source-binding :name))
+                                          (= (get form :value) (get source-binding :name))
+                                          false)
+                                        false)
+                                      false)
+                                    false))
+                                false)
+                              false)
+                            false)
+                      (if (if (= mode :receiver) (= bid binding) false)
+                        {:status :accepted :path next-path :leaf id :origin :slot}
+                        (if (if (map? record)
+                              (if (if (p15-s23-lsi-id? (get record :initializer-node-id))
+                                    (if (p15-s23-lsi-id? (get record :definition-syntax-id))
+                                      (if (p15-s23-lsi-id? (get record :binding-scope-id))
+                                        (= :immutable (get record :mutability))
+                                        false)
+                                      false)
+                                    false)
+                                (if (= bid (get record :binding-id))
+                                  (let [source-binding (get (get env :bindings) bid)
+                                        initializer (get (get env :nodes) (get record :initializer-node-id))]
+                                    (if (= (get record :definition-syntax-id)
+                                           (get source-binding :definition-syntax-id))
+                                      (if (= (get record :binding-scope-id) (get source-binding :scope-id))
+                                        (if (= (get record :initializer-form-id)
+                                               (get (get initializer :source) :form-id))
+                                          (= (get record :initializer-syntax-id)
+                                             (get (get initializer :source) :syntax-id))
+                                          false)
+                                        false)
+                                      false))
+                                  false)
+                                false)
+                              false)
+                          (recur (get record :initializer-node-id) next-path (conj seen id))
+                          {:status :rejected :reason :ungrounded-loop-member-reference}))
+                      {:status :rejected :reason :incoherent-loop-member-reference})
+                    (if (if (= mode :result) false
+                          (if (= mode :literal-head)
+                            (p15-s23-lsi-first-head? node (get env :forms))
+                            (p15-s23-lsi-leaf? node (get env :forms) mode)))
+                      {:status :accepted :path next-path :leaf id}
+                      {:status :rejected :reason :unsupported-loop-member-grounding}))))
+              {:status :rejected :reason :incoherent-loop-member-source})
+            {:status :rejected :reason :unknown-loop-member-grounding})))
+      {:status :rejected :reason :incoherent-loop-member-source})))
 
-(defn p15-s23-lsi-path [start mode binding env budget]
-  (p15-s23-lsi-path-from-seen start mode binding env #{} budget))
+(defn p15-s23-lsi-path [start mode binding env]
+  (p15-s23-lsi-path-from-seen start mode binding env #{}))
 
-(defn p15-s23-lsi-insertion [env node call edge types budget]
-  (let [core (get env :core) args (get call :argument-node-ids) base (+ 66 (count (get core :function-records)))]
-    (if (> base budget) {:status :rejected :reason :loop-type-work-limit :work-count base}
-      (if (if (p15-s23-sse-call-ids? node call)
-            (if (vector? args) (if (= 2 (count args))
-              (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false) false)
-        (let [validation (p15-s23-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
-          (if (= :accepted (get validation :status))
-            (let [header (p15-s23-pl-source core node call edge (get env :nodes) (get env :bindings) types (get core :module) validation)]
-              (if (if (map? header) (if (p15-s23-ksin-call-forms? node (get env :nodes) (get env :forms))
+(defn p15-s23-lsi-insertion [env node call edge types]
+  (let [core (get env :core) args (get call :argument-node-ids)]
+    (if (if (p15-s23-sse-call-ids? node call)
+          (if (vector? args) (if (= 2 (count args))
+            (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false) false)
+      (let [validation (p15-s23-syin-validate-types [(get types (get args 0) :gravity.type/unknown)
+                                                   (get types (get args 1) :gravity.type/unknown)])]
+        (if (= :accepted (get validation :status))
+          (let [header (p15-s23-pl-source core node call edge (get env :nodes) (get env :bindings)
+                                       types (get core :module) validation)]
+            (if (if (map? header)
+                  (if (p15-s23-ksin-call-forms? node (get env :nodes) (get env :forms))
                     (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
-                        :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes)) false) false)
-                (let [descriptor (p15-s23-pl-finish header)]
-                  {:status :accepted :work-count work :type (get descriptor :result-type) :descriptor descriptor})
-                {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
-            {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
-        {:status :rejected :reason :unsupported-loop-member-grounding :work-count base}))))
+                        :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                       (get node :attributes)) false) false)
+              (let [descriptor (p15-s23-pl-finish header)]
+                {:status :accepted :type (get descriptor :result-type) :descriptor descriptor})
+              {:status :rejected :reason :unsupported-loop-member-grounding}))
+          {:status :rejected :reason :unsupported-loop-member-grounding}))
+      {:status :rejected :reason :unsupported-loop-member-grounding})))
 
-(defn p15-s23-lsi-ground [transfer coordinate binding env budget]
+(defn p15-s23-lsi-ground [transfer coordinate binding env]
   (let [argument (get (get transfer :argument-node-ids) coordinate)
-        result (p15-s23-lsi-path argument :result binding env budget)
+        result (p15-s23-lsi-path argument :result binding env)
         node (get (get env :nodes) (get result :leaf))
         call (get (get env :calls) (get result :leaf))
-        edge (get (get env :edges) (get result :leaf)) args (get call :argument-node-ids) work (get result :work-count)]
+        edge (get (get env :edges) (get result :leaf))
+        args (get call :argument-node-ids)]
     (if (= :accepted (get result :status))
       (if (if (vector? args) (= 2 (count args)) false)
-        (let [receiver (p15-s23-lsi-path (get args 0) :receiver binding env (- budget work))
-              used (+ work (get receiver :work-count))]
+        (let [receiver (p15-s23-lsi-path (get args 0) :receiver binding env)]
           (if (= :accepted (get receiver :status))
-            (let [member (p15-s23-lsi-path (get args 1) :member binding env (- budget used))
-                  used (+ used (get member :work-count))]
+            (let [member (p15-s23-lsi-path (get args 1) :member binding env)]
               (if (= :accepted (get member :status))
-                (let [warm (p15-s23-lsi-insertion env node call edge (get env :types) (- budget used))
-                      used (+ used (get warm :work-count 0)) descriptor (get warm :descriptor)
-                      comparison (+ 2 (if (map? descriptor) (count descriptor) 0))]
-                  (if (> (+ used comparison) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used comparison)}
-                    (if (= :accepted (get warm :status))
-                      (let [actual (get (get env :types) (get call :operator-node-id)) used (+ used comparison)
-                            coherent (if (map? actual) (if (= (count descriptor) (count actual))
-                              (if (loop [fields (keys actual)] (if (= 0 (count fields)) true
-                                    (if (keyword? (first fields)) (recur (rest fields)) false)))
-                                (if (= :sh08-symbol-set-insertion-v2 (get actual :version))
-                                  (if (= descriptor actual) (p15-s23-syc-type? (get warm :type)) false) false) false) false) false)]
-                        (if coherent
-                          (let [empty-type {:kind :gravity.type/set :shape :literal :element-types []}
-                                cold-types (assoc (assoc (get env :types) (get args 0) empty-type) (get args 1) :gravity.type/symbol)
-                                cold (p15-s23-lsi-insertion env node call edge cold-types (- budget used))
-                                total (+ used (get cold :work-count 0) 10) cold-descriptor (get cold :descriptor)]
-                            (if (> total budget) {:status :rejected :reason :loop-type-work-limit :work-count total}
-                              (if (if (= :accepted (get cold :status))
-                                    (if (= :sh08-symbol-set-insertion-v2 (get cold-descriptor :version)) (= :normal (get cold-descriptor :application)) false) false)
-                                {:status :accepted :work-count total :grounding
-                                 {:schema :gravity/sh08-loop-symbol-set-grounding-v2
-                                  :transfer-node-id (get transfer :recur-core-node-id) :argument-node-id argument
-                                  :producer-node-id (get node :node-id) :receiver-path (get receiver :path)
-                                  :member-path (get member :path) :result-path (get result :path)
-                                  :receiver-type empty-type :member-type :gravity.type/symbol :result-type (get cold-descriptor :result-type)}}
-                                {:status :rejected :reason :unsupported-loop-member-grounding :work-count total})))
-                          {:status :rejected :reason :unsupported-loop-member-grounding :work-count used}))
-                      {:status :rejected :reason (if (= :loop-type-work-limit (get warm :reason)) :loop-type-work-limit :unsupported-loop-member-grounding) :work-count used})))
-                (assoc member :work-count used)))
-            (assoc receiver :work-count used)))
-        {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}) result)))
+                (let [warm (p15-s23-lsi-insertion env node call edge (get env :types))
+                      descriptor (get warm :descriptor)
+                      actual (get (get env :types) (get call :operator-node-id))
+                      coherent (if (map? actual)
+                                 (if (= (count descriptor) (count actual))
+                                   (if (loop [fields (keys actual)]
+                                         (if (= 0 (count fields)) true
+                                           (if (keyword? (first fields))
+                                             (recur (rest fields)) false)))
+                                     (if (= :p15-s23-symbol-set-insertion-v2 (get actual :version))
+                                       (if (= descriptor actual) (p15-s23-syc-type? (get warm :type)) false)
+                                       false)
+                                     false)
+                                   false)
+                                 false)]
+                  (if (if (= :accepted (get warm :status)) coherent false)
+                    (let [empty-type {:kind :gravity.type/set :shape :literal :element-types []}
+                          cold-types (assoc (assoc (get env :types) (get args 0) empty-type)
+                                            (get args 1) :gravity.type/symbol)
+                          cold (p15-s23-lsi-insertion env node call edge cold-types)
+                          cold-descriptor (get cold :descriptor)]
+                      (if (if (= :accepted (get cold :status))
+                            (if (= :p15-s23-symbol-set-insertion-v2 (get cold-descriptor :version))
+                              (= :normal (get cold-descriptor :application)) false) false)
+                        {:status :accepted :grounding
+                         {:schema :gravity/p15-s23-loop-symbol-set-grounding-v2
+                          :transfer-node-id (get transfer :recur-core-node-id)
+                          :argument-node-id argument :producer-node-id (get node :node-id)
+                          :receiver-path (get receiver :path) :member-path (get member :path)
+                          :result-path (get result :path) :receiver-type empty-type
+                          :member-type :gravity.type/symbol :result-type (get cold-descriptor :result-type)}}
+                        {:status :rejected :reason :unsupported-loop-member-grounding}))
+                    {:status :rejected :reason :unsupported-loop-member-grounding}))
+                member))
+            receiver))
+        {:status :rejected :reason :unsupported-loop-member-grounding})
+      result)))
 
-(defn p15-s23-lsi-entry-index [transfers types budget]
-  (loop [remaining transfers out {} work 0]
-    (if (= 0 (count remaining)) {:status :accepted :index out :work-count work}
-      (let [transfer (first remaining) args (get transfer :argument-node-ids)
-            cost (+ 2 (if (vector? args) (count args) 0)) target (get transfer :target-id)]
-        (if (> (+ work cost) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work cost)}
-          (if (if (vector? args) (p15-s23-lsi-id? target) false)
-            (let [actual (loop [ids args values []]
-                           (if (= 0 (count ids)) values
-                             (recur (rest ids) (conj values (if (p15-s23-lsi-id? (first ids))
-                               (get types (first ids) :gravity.type/unknown) :gravity.type/unknown)))))
-                  normal (loop [values actual] (if (= 0 (count values)) true
-                           (if (= :gravity.type/never (first values)) false (recur (rest values)))))
-                  known (loop [values actual] (if (= 0 (count values)) true
+(defn p15-s23-lsi-entry-index [transfers types]
+  (loop [remaining transfers out {}]
+    (if (= 0 (count remaining)) {:status :accepted :index out}
+      (let [transfer (first remaining) args (get transfer :argument-node-ids) target (get transfer :target-id)]
+        (if (if (vector? args) (p15-s23-lsi-id? target) false)
+          (let [actual (loop [ids args values []]
+                         (if (= 0 (count ids)) values
+                           (recur (rest ids)
+                                  (conj values (if (p15-s23-lsi-id? (first ids))
+                                                 (get types (first ids) :gravity.type/unknown)
+                                                 :gravity.type/unknown)))))
+                normal (loop [values actual]
+                         (if (= 0 (count values)) true
+                           (if (= :gravity.type/never (first values)) false
+                             (recur (rest values)))))
+                known (loop [values actual]
+                        (if (= 0 (count values)) true
                           (if (= :gravity.type/unknown (first values)) false
                             (if (= nil (first values)) false (recur (rest values))))))]
-              (recur (rest remaining) (assoc out target (conj (get out target [])
-                {:transfer transfer :types actual :normal? normal :known? known})) (+ work cost)))
-            {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work cost)}))))))
+            (recur (rest remaining)
+                   (assoc out target
+                     (conj (get out target [])
+                           {:transfer transfer :types actual :normal? normal :known? known}))))
+          {:status :rejected :reason :incoherent-loop-member-source})))))
 
-(defn p15-s23-lsi-slot [record target entries env budget]
+(defn p15-s23-lsi-slot [record target entries env]
   (let [binding (get record :binding-id) coordinate (get record :ordinal)
         empty-type (get (get env :types) (get record :initializer-node-id))
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
-        initializer (p15-s23-lsi-path (get record :initializer-node-id) :initializer binding env budget)]
+        initializer (p15-s23-lsi-path (get record :initializer-node-id) :initializer binding env)]
     (if (if (= :accepted (get initializer :status)) (= false (= :slot (get initializer :origin))) false)
-      (loop [remaining entries witness nil evidence [] pending false conflict nil work (get initializer :work-count)]
-      (if (= 0 (count remaining))
-        (if (if (map? witness) (= false pending) false)
-          (if (= conflict nil)
-            (if (> (+ work 8) budget)
-              {:status :rejected :reason :loop-type-work-limit :work-count (+ work 8)}
-              (let [invariant {:schema :gravity/sh08-loop-symbol-set-invariant-v2 :target-id (get target :target-id)
-              :binding-id binding :initializer-node-id (get record :initializer-node-id)
-              :initializer-type empty-type :invariant-type carrier :grounding witness :entries evidence}
-                    measured (p15-s23-pc-evidence-work invariant (- budget work 8))
-                    total (+ work 8 (* 2 (get measured :work-count)))]
-                (if (if (= :accepted (get measured :status)) (<= total budget) false)
-                  {:status :accepted :work-count total :invariant invariant}
-                  {:status :rejected :reason :loop-type-work-limit :work-count total})))
-            {:status :rejected :reason :loop-recur-slot-type-mismatch :core-node-id (get conflict :argument-node-id)
-             :parameter-binding-id binding :expected carrier :actual (get conflict :argument-type) :work-count work})
-          {:status :accepted :work-count work})
-        (if (> (+ work 2) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 2)}
-          (let [entry (first remaining) transfer (get entry :transfer) actual (get (get entry :types) coordinate)
-                normal (get entry :normal?)
+      (loop [remaining entries witness nil evidence [] pending false conflict nil]
+        (if (= 0 (count remaining))
+          (if (if (map? witness) (= false pending) false)
+            (if (= conflict nil)
+              (let [invariant {:schema :gravity/p15-s23-loop-symbol-set-invariant-v2
+                               :target-id (get target :target-id) :binding-id binding
+                               :initializer-node-id (get record :initializer-node-id)
+                               :initializer-type empty-type :invariant-type carrier
+                               :grounding witness :entries evidence}
+                    measured (p15-s23-pc-evidence-work invariant)]
+                (if (= :accepted (get measured :status))
+                  {:status :accepted :invariant invariant}
+                  measured))
+              {:status :rejected :reason :loop-recur-slot-type-mismatch
+               :core-node-id (get conflict :argument-node-id) :parameter-binding-id binding
+               :expected carrier :actual (get conflict :argument-type)})
+            {:status :accepted})
+          (let [entry (first remaining) transfer (get entry :transfer)
+                actual (get (get entry :types) coordinate) normal (get entry :normal?)
                 compatible (if (= actual :gravity.type/never) true
                              (if (p15-s23-lsi-empty? actual) true (p15-s23-syc-type? actual)))
-                proof (if (if (= witness nil) (if normal (if (get entry :known?) (p15-s23-syc-type? actual) false) false) false)
-                        (p15-s23-lsi-ground transfer coordinate binding env (- budget work 2))
-                        {:status :accepted :work-count 0})
-                used (+ work 2 (get proof :work-count))
+                proof (if (if (= witness nil) (if normal (if (get entry :known?)
+                                                           (p15-s23-syc-type? actual) false) false) false)
+                        (p15-s23-lsi-ground transfer coordinate binding env)
+                        {:status :accepted})
                 row {:transfer-node-id (get transfer :recur-core-node-id)
-                     :argument-node-id (get (get transfer :argument-node-ids) coordinate) :argument-type actual
-                     :normal-transfer? normal :compatibility (if (= false normal) :existing-noninvoked-transfer-rules
+                     :argument-node-id (get (get transfer :argument-node-ids) coordinate)
+                     :argument-type actual :normal-transfer? normal
+                     :compatibility (if (= false normal) :existing-noninvoked-transfer-rules
                        (if (p15-s23-lsi-empty? actual) :empty-set-to-symbol-carrier :exact-carrier))}]
-            (if (if (= :rejected (get proof :status)) (= :loop-type-work-limit (get proof :reason)) false)
-              (assoc proof :work-count used)
-              (recur (rest remaining) (if (map? (get proof :grounding)) (get proof :grounding) witness)
-                (conj evidence row) (if (= false (get entry :known?)) true pending)
-                (if (if normal (if (get entry :known?) (= false compatible) false) false) row conflict) used))))))
-      {:status :accepted :work-count (get initializer :work-count)})))
+            (if (= :accepted (get proof :status))
+              (recur (rest remaining) (if (map? (get proof :grounding))
+                                        (get proof :grounding) witness)
+                     (conj evidence row) (if (= false (get entry :known?)) true pending)
+                     (if (if normal (if (get entry :known?) (= false compatible) false) false)
+                       row conflict))
+              proof))))
+      {:status :accepted})))
 
-(defn p15-s23-lsi-solve [core types source budget]
+(defn p15-s23-lsi-solve [core types source]
   (if (= 0 (count (get core :loop-bindings)))
-    {:status :accepted :invariants {} :work-count 0}
+    {:status :accepted :invariants {}}
     (if (if (map? (get source :forms)) (map? (get source :bindings)) false)
-    (let [aliases (p15-s23-lsi-index (get core :lexical-bindings []) :binding-id budget)
-          calls (p15-s23-lsi-index (get core :calls []) :core-node-id (- budget (get aliases :work-count)))
-          edges (p15-s23-lsi-index (get core :call-edges []) :call-core-node-id (- budget (get aliases :work-count) (get calls :work-count)))
-          targets (p15-s23-lsi-index (get core :recur-targets []) :owner-core-node-id (- budget (get aliases :work-count) (get calls :work-count) (get edges :work-count)))
-          entries (p15-s23-lsi-entry-index (get core :recur-transfers []) types
-                    (- budget (get aliases :work-count) (get calls :work-count) (get edges :work-count) (get targets :work-count)))
-          base (+ (get aliases :work-count) (get calls :work-count) (get edges :work-count) (get targets :work-count) (get entries :work-count))
-          env {:core core :types types :nodes (get source :nodes) :forms (get source :forms) :bindings (get source :bindings)
-               :aliases (get aliases :index) :calls (get calls :index) :edges (get edges :index)}]
-      (if (if (= :accepted (get aliases :status)) (if (= :accepted (get calls :status))
-            (if (= :accepted (get edges :status)) (if (= :accepted (get targets :status)) (= :accepted (get entries :status)) false) false) false) false)
-        (loop [remaining (get core :loop-bindings) out {} work base]
-          (if (= 0 (count remaining))
-            (let [reads (if (if (= true (get source :warm?)) (> (count out) 0) false)
-                          (p15-s23-lsi-reads core types out (- budget work)) {:status :accepted :work-count 0})]
-              (if (= :accepted (get reads :status))
-                {:status :accepted :invariants out :work-count (+ work (get reads :work-count))}
-                (assoc reads :work-count (+ work (get reads :work-count)))))
-            (if (>= work budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 1)}
+      (let [aliases (p15-s23-lsi-index (get core :lexical-bindings []) :binding-id)
+            calls (p15-s23-lsi-index (get core :calls []) :core-node-id)
+            edges (p15-s23-lsi-index (get core :call-edges []) :call-core-node-id)
+            targets (p15-s23-lsi-index (get core :recur-targets []) :owner-core-node-id)
+            entries (p15-s23-lsi-entry-index (get core :recur-transfers []) types)
+            env {:core core :types types :nodes (get source :nodes) :forms (get source :forms)
+                 :bindings (get source :bindings) :aliases aliases :calls calls :edges edges}]
+        (if (if (= :accepted (get aliases :status))
+              (if (= :accepted (get calls :status))
+                (if (= :accepted (get edges :status))
+                  (if (= :accepted (get targets :status)) (= :accepted (get entries :status)) false)
+                  false) false) false)
+          (loop [remaining (get core :loop-bindings) out {}]
+            (if (= 0 (count remaining))
+              (if (if (= true (get source :warm?)) (> (count out) 0) false)
+                (let [reads (p15-s23-lsi-reads core types out)]
+                  (if (= :accepted (get reads :status)) reads reads))
+                {:status :accepted :invariants out})
               (let [record (first remaining) type (get types (get record :initializer-node-id))
                     target (get (get targets :index) (get record :loop-core-node-id))
                     checked (if (p15-s23-lsi-empty? type)
-                              (p15-s23-lsi-slot record target (get (get entries :index) (get target :target-id) []) env (- budget work 1))
-                              {:status :accepted :work-count 0}) total (+ work 1 (get checked :work-count))]
+                              (p15-s23-lsi-slot record target
+                                             (get (get entries :index) (get target :target-id) []) env)
+                              {:status :accepted})]
                 (if (= :accepted (get checked :status))
-                  (recur (rest remaining) (if (map? (get checked :invariant))
-                    (assoc out (get record :binding-id) (get checked :invariant)) out) total)
-                  (assoc checked :work-count total))))))
-        {:status :rejected :reason (if (> base budget) :loop-type-work-limit :incoherent-loop-member-source) :work-count base}))
-    {:status :accepted :invariants {} :work-count 0})))
+                  (recur (rest remaining)
+                         (if (map? (get checked :invariant))
+                           (assoc out (get record :binding-id) (get checked :invariant)) out))
+                  checked))))
+          {:status :rejected :reason :incoherent-loop-member-source}))
+      {:status :accepted :invariants {}})))
 
-(defn p15-s23-lsi-reads [core types invariants budget]
-  (loop [remaining (get core :nodes) work 0]
-    (if (= 0 (count remaining)) {:status :accepted :work-count work}
-      (if (>= work budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 1)}
-        (let [node (first remaining) binding (get (get node :attributes) :binding-id)
-              invariant (if (= :reference (get node :core-form))
-                          (if (p15-s23-lsi-id? binding) (get invariants binding) nil) nil)]
-          (if (if (map? invariant)
-                (= false (p15-s23-syc-type? (get types (get node :node-id)))) false)
-            {:status :rejected :reason :incoherent-loop-member-reference :work-count (+ work 1)}
-            (recur (rest remaining) (+ work 1))))))))
-
-(defn p15-s23-lsi-row-index [rows budget]
-  (loop [remaining rows out {} work 0]
-    (if (= 0 (count remaining)) {:status :accepted :index out :work-count work}
-      (let [row (first remaining) measured (p15-s23-pc-evidence-work row (- budget work))
-            total (+ work (* 2 (get measured :work-count)) 3)]
-        (if (if (= :rejected (get measured :status)) true (> total budget))
-          {:status :rejected :reason (if (> total budget) :loop-type-work-limit :incoherent-loop-member-ledger) :work-count total}
-          (let [premise (get (get row :dependencies) :loop-premise) id (get row :lhs)
-                kind (get premise :kind) key [kind id]]
-            (if (if (p15-s23-lsi-id? id)
-                  (if (if (= :loop-slot-type kind) true (= :loop-recur-type kind))
-                    (= false (contains? out key)) false) false)
-              (recur (rest remaining) (assoc out key row) total)
-              {:status :rejected :reason :incoherent-loop-member-ledger :work-count total})))))))
-
-(defn p15-s23-lsi-target-rows [core target rows budget]
-  (let [cost (+ (count (get target :binding-ids)) (count (get core :recur-transfers)))]
-    (if (> cost budget) {:status :rejected :reason :loop-type-work-limit :work-count cost}
-      (let [slots (loop [ids (get target :binding-ids) out []]
-                    (if (= 0 (count ids)) out
-                      (recur (rest ids) (conj out (get rows [:loop-slot-type (first ids)])))))
-            all (loop [transfers (get core :recur-transfers) out slots]
-                  (if (= 0 (count transfers)) out
-                    (let [transfer (first transfers)]
-                      (recur (rest transfers) (if (= (get target :target-id) (get transfer :target-id))
-                        (conj out (get rows [:loop-recur-type (get transfer :recur-core-node-id)])) out)))))
-            checked (p15-s23-lsi-row-index all (- budget cost))]
-        (assoc checked :work-count (+ cost (get checked :work-count)))))))
+(defn p15-s23-lsi-reads [core types invariants]
+  (loop [remaining (get core :nodes)]
+    (if (= 0 (count remaining)) {:status :accepted}
+      (let [node (first remaining) binding (get (get node :attributes) :binding-id)
+            invariant (if (= :reference (get node :core-form))
+                        (if (p15-s23-lsi-id? binding) (get invariants binding) nil) nil)]
+        (if (if (map? invariant)
+              (= false (p15-s23-syc-type? (get types (get node :node-id)))) false)
+          {:status :rejected :reason :incoherent-loop-member-reference}
+          (recur (rest remaining)))))))
 
 (defn p15-s23-lsi-target-bindings [target invariants]
   (loop [remaining (get target :binding-ids) out []]
@@ -4227,6 +4259,34 @@
   (if (p15-s23-syc-type? expected)
     (if (= :gravity.type/never actual) true
       (if (p15-s23-lsi-empty? actual) true (p15-s23-syc-type? actual))) false))
+
+(defn p15-s23-lsi-row-index [rows]
+  (loop [remaining rows out {}]
+    (if (= 0 (count remaining))
+      {:status :accepted :index out}
+      (let [row (first remaining)
+            premise (get (get row :dependencies) :loop-premise)
+            id (get row :lhs)
+            kind (get premise :kind)
+            key [kind id]]
+        (if (if (p15-s23-lsi-id? id)
+              (if (if (= :loop-slot-type kind) true (= :loop-recur-type kind))
+                (= false (contains? out key)) false)
+              false)
+          (recur (rest remaining) (assoc out key row))
+          {:status :rejected :reason :incoherent-loop-member-ledger})))))
+
+(defn p15-s23-lsi-target-rows [core target rows]
+  (let [slots (loop [ids (get target :binding-ids) out []]
+                (if (= 0 (count ids)) out
+                  (recur (rest ids) (conj out (get rows [:loop-slot-type (first ids)])))))
+        all (loop [transfers (get core :recur-transfers) out slots]
+              (if (= 0 (count transfers)) out
+                (let [transfer (first transfers)]
+                  (recur (rest transfers)
+                    (if (= (get target :target-id) (get transfer :target-id))
+                      (conj out (get rows [:loop-recur-type (get transfer :recur-core-node-id)])) out)))))]
+    (p15-s23-lsi-row-index all)))
 
 (defn p15-s23-typed-loop-row [context premise node]
   (let [module (get (get context :core) :module)]
@@ -4494,22 +4554,20 @@
           (let [controls (p15-s23-lsi-controls context target (- budget fixed))
                 members (if (= :accepted (get controls :status))
                           (p15-s23-lsi-solve (get context :core) (get context :types)
-                            {:nodes (get context :nodes) :forms (get context :forms) :bindings (get context :bindings) :warm? true} (- budget fixed (get controls :work-count))) controls)
+                            {:nodes (get context :nodes) :forms (get context :forms) :bindings (get context :bindings) :warm? true}) controls)
                 checked (if (= :accepted (get members :status))
-                          (if (= 0 (count (get members :invariants))) {:status :accepted :work-count 0}
+                          (if (= 0 (count (get members :invariants))) {:status :accepted}
                             (if (= (count (get context :loop-rows))
                                    (+ (count (get (get context :core) :loop-bindings)) (count (get (get context :core) :recur-transfers))))
-                              (p15-s23-lsi-target-rows (get context :core) target (get context :loop-rows) (- budget fixed (get controls :work-count) (get members :work-count)))
-                              {:status :rejected :reason :incoherent-loop-member-ledger :work-count 1})) members)
-                extra (+ (get controls :work-count) (if (= :accepted (get controls :status)) (get members :work-count) 0)
-                         (if (= :accepted (get members :status)) (get checked :work-count) 0))
+                              (p15-s23-lsi-target-rows (get context :core) target (get context :loop-rows))
+                              {:status :rejected :reason :incoherent-loop-member-ledger})) members)
+                extra (if (= :accepted (get controls :status)) (get controls :work-count) 0)
                 context (assoc context :loop-member-invariants (get members :invariants {}))
                 bindings (if (= :accepted (get checked :status))
                            (p15-s23-typed-bindings context node records vector-form (- budget fixed extra) :loop)
                            (assoc (p15-s23-typed-node-error
                              (if (= :rejected (get controls :status)) (get controls :reason)
-                               (if (if (= :loop-type-work-limit (get checked :reason)) true
-                                   (= :map-get-work-limit (get checked :reason))) :typed-lowering-work-limit :unsupported-typed-loop-member-invariant)) node)
+                               :unsupported-typed-loop-member-invariant) node)
                              :work-count (+ fixed extra)))]
             (if (p15-s23-compiler-complete? bindings)
               (if (= scope (get (get bindings :value) :body-scope))
@@ -7213,8 +7271,8 @@
                                                    (p15-s23-pmk-map-source argument actual nodes forms types (- budget prefix)))
                                           used (+ prefix (get source :work-count))
                                           compatibility (if (= :accepted (get source :status))
-                                                          (p15-s23-mp-compatibility core call edge (get parameter :callee) index actual nodes bindings (- budget used)) source)
-                                          total (+ used (if (= :accepted (get source :status)) (get compatibility :work-count) 0))]
+                                                          (p15-s23-mp-compatibility core call edge (get parameter :callee) index actual nodes bindings) source)
+                                          total used]
                                       (if (if (= :accepted (get source :status)) (= :accepted (get compatibility :status)) false)
                                         (recur (rest remaining)
                                           (conj entries {:call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-source (get argument :source) :call-source call-source
@@ -7228,8 +7286,7 @@
                                                                             :origin-chain (get call-source :origin-chain) :generated-origin (get call-source :generated-origin)
                                                                             :profile (get (get core :module) :profile) :target (get (get core :module) :target)}})
                                           (+ normal-count 1) total (+ domain-work key-work))
-                                        {:status :rejected :reason (if (if (= :private-map-keys-work-limit (get source :reason)) true
-                                                                                                      (= :map-parameter-work-limit (get compatibility :reason)))
+                                        {:status :rejected :reason (if (= :private-map-keys-work-limit (get source :reason))
                                                                  :private-map-keys-work-limit :private-map-keys-source-mismatch) :work-count total}))
                                     {:status :rejected :reason :private-map-keys-entry-domain-required :work-count used})
                                   (recur (rest remaining)
@@ -7334,16 +7391,15 @@
                     (if (= :accepted (get metadata :status))
                       (let [call (get entry :source-call) edge (get entry :source-edge) actual (get entry :argument-type)
                             normal? (= :normal (get entry :entry))
-                            compatibility (if normal? {:status :accepted :work-count 0 :premise (get entry :compatibility)}
+                            compatibility (if normal? {:status :accepted :premise (get entry :compatibility)}
                                             (if (if (map? actual) (= :gravity.type/map (get actual :kind)) false)
-                                              (p15-s23-mp-compatibility core call edge callee index actual nodes bindings (- budget used))
-                                              {:status :not-applicable :work-count 0}))
-                            total (+ used (get compatibility :work-count))
+                                              (p15-s23-mp-compatibility core call edge callee index actual nodes bindings)
+                                              {:status :not-applicable}))
                             pair {:parameter (get params index) :argument actual :chosen :gravity.type/map}
                             pair (if (= :accepted (get compatibility :status)) (assoc pair :compatibility (get compatibility :premise)) pair)
                             call-type (get types id)
                             type-validation (p15-s23-lc-validate-types [call-type])
-                            spent total
+                            spent used
                             expected-fact (assoc (get entry :call-input-facts)
                                             :artifact :gravity/c7-call-type-fact
                                             :fact-id-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id id
@@ -7352,7 +7408,7 @@
                                             :result-type call-type :effects (get (get core :module) :effects)
                                             :capabilities (get (get core :module) :capabilities) :status :inferred)
                             pairs (get row :rhs) kind (get row :kind)]
-                        (if (if (> spent budget) true (= :map-parameter-work-limit (get compatibility :reason)))
+                        (if (> spent budget)
                           {:status :rejected :reason :private-map-keys-work-limit :work-count spent}
                           (if (p15-s23-typed-all
                                 [(= :accepted (get type-validation :status)) (= false (p15-s23-pmk-unknown? call-type))
@@ -18181,11 +18237,21 @@
         (if (= found nil) (recur (rest remaining) (first remaining)) nil)
         (recur (rest remaining) found)))))
 
+(defn p15-s23-si-path-records? [path nodes]
+  (if (if (vector? path) (> (count path) 0) false)
+    (loop [remaining path seen #{}]
+      (if (= 0 (count remaining)) true
+        (let [entry (first remaining) node (get entry :node) id (get node :node-id)]
+          (if (if (map? entry) (if (map? node) (p15-s23-lsi-id? id) false) false)
+            (if (= node (get nodes id))
+              (if (contains? seen id) false
+                (recur (rest remaining) (conj seen id))) false) false)))) false))
+
 (defn p15-s23-si-origin-closed? [origin operand expected core nodes types]
   (let [links (get origin :binding-links) extent (get origin :extent) constructor (get origin :node)]
-    (if (if (vector? links) (<= (count links) 128) false)
+    (if (vector? links)
       (if (p15-s23-typed-all [(= :gravity.type/vector (get expected :kind)) (vector? (get expected :element-types))
-             (= extent (count (get expected :element-types))) (if (integer? extent) (<= 0 extent 1024) false)
+             (= extent (count (get expected :element-types))) (if (integer? extent) (<= 0 extent) false)
              (= expected (get origin :type)) (= constructor (get nodes (get constructor :node-id)))
              (contains? #{:collection-literal :quote} (get constructor :core-form))
              (= (get constructor :source) (p15-s23-typed-source (get origin :source-form)))
@@ -18193,14 +18259,17 @@
                (if (vector? (get (get origin :source-form) :child-form-ids))
                  (= extent (count (get constructor :children)) (get (get constructor :attributes) :element-count)
                     (count (get (get origin :source-form) :child-form-ids))) false) true)])
-        (loop [id operand index (- (count links) 1)]
+        (loop [id operand index (- (count links) 1) seen #{}]
+          (if (= false (p15-s23-lsi-id? id)) false
+          (if (contains? seen id) false
           (if (< index 0) (= id (get constructor :node-id))
             (let [record (get links index) node (get nodes id) bid (get record :binding-id)]
-              (if (p15-s23-typed-all [(= :reference (get node :core-form))
+              (if (p15-s23-typed-all [(map? node) (p15-s23-lsi-id? (get node :node-id)) (= id (get node :node-id))
+                     (= :reference (get node :core-form))
                      (= bid (get (get node :attributes) :binding-id)) (= [bid] (get node :resolved-binding-ids))
                      (= expected (get types id)) (= :immutable (get record :mutability))
                      (= record (p15-s23-si-record (get core :lexical-bindings) :binding-id bid))])
-                (recur (get record :initializer-node-id) (- index 1)) false)))) false) false)))
+                (recur (get record :initializer-node-id) (- index 1) (conj seen id)) false)))))) false) false)))
 
 (defn p15-s23-si-step-source-valid? [record header nodes]
   (if (if (map? record) (map? header) false)
@@ -18297,7 +18366,7 @@
                   header (p15-s23-si-source core increment call (get edges increment-id) nodes bindings types (get core :module))
                   path (get paths index)]
               (if (if (vector? path)
-                    (if (if (> (count path) 0) (<= (count path) 129) false)
+                    (if (p15-s23-si-path-records? path nodes)
                       (p15-s23-typed-all [(map? header) (if extended? (p15-s23-si-step-source-valid? (get steps index) header nodes) true)
                      (= 1 (count (get transfer :argument-node-ids)))
                      (= (get transfer :recur-core-node-id) (get (get (first path) :node) :node-id))
@@ -18319,7 +18388,7 @@
           :numeric-mode :proof-required :integer-type :gravity.type/integer
           :target target :slot slot :initializer initializer :initializer-source initial-source :loop-node owner :guard-node branch
           :condition guard :count-query (p15-s23-cq-finish count-header) :vector-origin origin
-          :vector-extent extent :maximum-vector-extent 1024 :incoming-transfers incoming :backedge-paths paths :transfer-census :complete
+          :vector-extent extent :incoming-transfers incoming :backedge-paths paths :transfer-census :complete
           :slot-binding-id bid :operation-core-node-id (get node :node-id)
           :invariant {:lower 0 :upper extent :relation :zero-le-counter-le-extent}
           :guarded-edge {:relation :zero-le-counter-lt-extent :satisfiable (> extent 0) :consequence :zero-lt-successor-le-extent}
@@ -18336,7 +18405,7 @@
      :count-core-node-id (get (get proof :count-query) :call-core-node-id)
      :count-operand-node-id (first (get (get (get proof :count-query) :source-call) :argument-node-ids))
      :vector-origin-node-id (get (get (get proof :vector-origin) :node) :node-id)
-     :vector-extent (get proof :vector-extent) :maximum-vector-extent 1024 :lower 0 :step 1
+     :vector-extent (get proof :vector-extent) :lower 0 :step 1
      :guard-relation :zero-le-counter-lt-extent :result-relation :zero-lt-successor-le-extent}]
       (if (= :gravity.type/applied-bounded-unit-addition (get descriptor :kind))
         (assoc result :kind :gravity.runtime/bounded-unit-addition
@@ -18592,7 +18661,7 @@
 
 (defn p15-s23-vl-path-valid? [path leaf root nodes]
   (if (vector? path)
-    (if (if (> (count path) 0) (<= (count path) 129) false)
+    (if (p15-s23-si-path-records? path nodes)
       (p15-s23-typed-all [(= leaf (get (get (first path) :node) :node-id))
         (= root (get (get (get path (- (count path) 1)) :node) :node-id))
         (loop [i 0]
@@ -18768,25 +18837,21 @@
              (if (string? (first ids)) (recur (rest ids)) false)))])) false))
 
 ; L5: a Map parameter forgets only independently checked member refinements.
-(defn p15-s23-mp-compatibility [core call edge callee index actual nodes bindings budget]
+(defn p15-s23-mp-compatibility [core call edge callee index actual nodes bindings]
   (let [parameter (get (get callee :parameters) index)]
     (if (if (= :gravity.type/map (get parameter :type))
           (if (map? actual) (= :gravity.type/map (get actual :kind)) false) false)
-      (let [records (get core :function-records) base (+ 32 (count records))
+      (let [records (get core :function-records)
             validation (p15-s23-lc-validate-types [actual])
-            work base
-            record (if (> base budget) nil
-                     (loop [remaining records]
+            record (loop [remaining records]
                        (if (= 0 (count remaining)) nil
                          (if (= (get callee :function-id) (get (first remaining) :function-syntax-id))
-                           (first remaining) (recur (rest remaining))))))
+                           (first remaining) (recur (rest remaining)))))
             declaration (get (get (get record :signature) :parameters) index)
             bid (get parameter :binding-id) binding (get bindings bid)
             type-binding (get bindings (get declaration :type-binding-id))
             argument-id (get (get call :argument-node-ids) index) argument (get nodes argument-id)
             node (get nodes (get call :core-node-id))]
-        (if (if (> base budget) true false)
-          {:status :rejected :reason :map-parameter-work-limit :work-count work}
           (if (p15-s23-typed-all
                 [(= :accepted (get validation :status))
                  (p15-s23-mp-declaration? declaration bindings)
@@ -18803,7 +18868,7 @@
                  (= (get call :core-node-id) (get edge :call-core-node-id) (get node :node-id))
                  (= (get call :argument-node-ids) (get edge :argument-core-node-ids) (vec (rest (get node :children))))
                  (= argument-id (get argument :node-id))])
-            {:status :accepted :work-count work
+            {:status :accepted
              :premise {:version :sh08-bare-map-parameter-v1 :relation :forget-map-member-refinement
                        :call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-index index
                        :actual-type actual :declared-type :gravity.type/map
@@ -18814,12 +18879,10 @@
                        :forgets [:key-value-member-types :static-entry-count]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
-            {:status :rejected :reason :map-parameter-declaration-or-type-required :work-count work})))
-      {:status :not-applicable :work-count 0})))
+            {:status :rejected :reason :map-parameter-declaration-or-type-required}))
+      {:status :not-applicable})))
 
-(defn p15-s23-lp-compatibility [core call edge callee index actual nodes bindings budget]
-  (if (= :gravity.type/map (get (get (get callee :parameters) index) :type))
-    (p15-s23-mp-compatibility core call edge callee index actual nodes bindings budget)
+(defn p15-s23-lp-compatibility [core call edge callee index actual nodes bindings]
   (let [parameter (get (get callee :parameters) index) expected (get parameter :type)
         homogeneous? (p15-s23-hl-type? expected)]
     (if (if (if homogeneous? true (= :gravity.type/list expected))
@@ -18827,20 +18890,16 @@
             (= [:gravity.type/list :literal #{:kind :shape :element-types}]
                [(get actual :kind) (get actual :shape) (set (keys actual))]) false) false)
       (let [records (get core :function-records)
-            base (+ 32 (count records) (if (if homogeneous? (vector? (get actual :element-types)) false) (count (get actual :element-types)) 0))
             validation (p15-s23-lc-validate-types [actual])
-            work base
-            record (if (> base budget) nil (loop [remaining records]
+            record (loop [remaining records]
                      (if (= 0 (count remaining)) nil
                        (if (= (get callee :function-id) (get (first remaining) :function-syntax-id))
-                         (first remaining) (recur (rest remaining))))))
+                         (first remaining) (recur (rest remaining)))))
             declaration (get (get (get record :signature) :parameters) index)
             bid (get parameter :binding-id) binding (get bindings bid)
             type-binding (get bindings (get declaration :type-binding-id))
             argument-id (get (get call :argument-node-ids) index) argument (get nodes argument-id)
             node (get nodes (get call :core-node-id))]
-        (if (if (> base budget) true false)
-          {:status :rejected :reason :list-parameter-work-limit :work-count work}
           (if (p15-s23-typed-all
                 [(= :accepted (get validation :status))
                  (= :local-function (get edge :classification))
@@ -18862,7 +18921,7 @@
                  (= (get call :core-node-id) (get edge :call-core-node-id) (get node :node-id))
                  (= (get call :argument-node-ids) (get edge :argument-core-node-ids) (vec (rest (get node :children))))
                  (= argument-id (get argument :node-id))])
-            {:status :accepted :work-count work
+            {:status :accepted
              :premise (let [premise {:version :sh08-bare-list-parameter-v1 :relation :forget-positional-list-refinement
                        :call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-index index
                        :actual-type actual :declared-type expected
@@ -18877,8 +18936,8 @@
                           (assoc premise :version :sh08-homogeneous-list-parameter-v1 :relation :all-positional-elements-match
                             :forgets [:static-length] :element-binding (get bindings (get declaration :element-binding-id))
                             :checked-element-type (get expected :element-type) :checked-element-count (count (get actual :element-types))) premise))}
-            {:status :rejected :reason (if homogeneous? :homogeneous-list-parameter-incompatible :list-parameter-declaration-required) :work-count work})))
-      {:status :not-applicable :work-count 0}))))
+            {:status :rejected :reason (if homogeneous? :homogeneous-list-parameter-incompatible :list-parameter-declaration-required)}))
+      {:status :not-applicable})))
 
 (defn p15-s23-lp-pairs-adapted? [pairs]
   (loop [remaining pairs]
@@ -19076,19 +19135,21 @@
             result (loop [remaining types]
                      (if (= 0 (count remaining)) (get callee :return)
                        (if (= :gravity.type/never (first remaining)) :gravity.type/never (recur (rest remaining)))))
-            compatibility (loop [i 0 out [] work 0]
-                            (if (= i (count parameters)) {:status :accepted :pairs out :work-count work}
+            compatibility (loop [i 0 out []]
+                            (if (= i (count parameters)) {:status :accepted :pairs out}
                               (let [actual (get types i) chosen (get (get parameters i) :type)
-                                    checked (p15-s23-lp-compatibility (get context :core) call edge callee i actual
-                                              (get context :nodes) (get context :bindings) (- budget 16 (count arguments) work))
-                                    pair {:parameter (get (get parameters i) :binding-id) :argument actual :chosen chosen}
-                                    total (+ work (get checked :work-count))]
+                                    checked (if (= :gravity.type/map (get (get (get callee :parameters) i) :type))
+                                            (p15-s23-mp-compatibility (get context :core) call edge callee i actual
+                                              (get context :nodes) (get context :bindings))
+                                            (p15-s23-lp-compatibility (get context :core) call edge callee i actual
+                                              (get context :nodes) (get context :bindings)))
+                                    pair {:parameter (get (get parameters i) :binding-id) :argument actual :chosen chosen}]
                                 (if (= :accepted (get checked :status))
-                                  (recur (+ i 1) (conj out (assoc pair :compatibility (get checked :premise))) total)
+                                  (recur (+ i 1) (conj out (assoc pair :compatibility (get checked :premise))))
                                   (if (= :not-applicable (get checked :status))
-                                    (recur (+ i 1) (conj out pair) total)
-                                    {:status :rejected :reason (get checked :reason) :work-count total})))))
-            pairs (get compatibility :pairs) charge (+ 16 (count arguments) (get compatibility :work-count))
+                                    (recur (+ i 1) (conj out pair))
+                                    {:status :rejected :reason (get checked :reason)})))))
+            pairs (get compatibility :pairs) charge (+ 16 (count arguments))
             expected-call {:core-node-id id :operator-node-id (first children) :operator-binding-id binding-id
                            :argument-node-ids arguments :ordered-evaluation-node-ids children
                            :evaluation-order :operator-then-arguments :result-policy :call-result}
@@ -19103,7 +19164,7 @@
                  :kind :equality :lhs (get callee-record :function-syntax-id) :rhs pairs :origin (get (get node :source) :origin-chain)
                  :profile :meta :target :jvm :status :solved :diagnostics []})
             view [:function-id :function-core-node-id :body-core-node-id :parameters :return :signature :thrown-error-effects]]
-        (if (if (< budget charge) true (contains? #{:list-parameter-work-limit :map-parameter-work-limit} (get compatibility :reason)))
+        (if (< budget charge)
           (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count charge)
         (if (p15-s23-typed-all
               [(= :accepted (get compatibility :status)) (p15-s23-compiler-complete? joined) (= :named-top-level (get callee-record :definition-kind))
@@ -19932,13 +19993,12 @@
       (p15-s23-typed-node-error :malformed-typed-structural-match node)))))
 
 (defn p15-s23-typed-compile-if [context node budget]
-  (let [children (get node :children) ledger (get context :ledger []) base (+ 1 (count ledger))
+  (let [children (get node :children) ledger (get context :ledger [])
         core (get context :core) types (get context :types) id (get node :node-id)]
-    (if (> base budget) (assoc (p15-s23-typed-node-error :typed-lowering-work-limit node) :work-count base)
-      (if (if (vector? children) (= 3 (count children)) false)
+    (if (if (vector? children) (= 3 (count children)) false)
         (let [checked (p15-s23-ij-derive core node (get context :nodes) types (get context :bindings)
-                        (get context :forms) (- budget base))
-              work (+ base (get checked :work-count)) premise (get checked :premise)
+                        (get context :forms))
+              premise (get checked :premise)
               retained (loop [remaining ledger out []]
                          (if (= 0 (count remaining)) out
                            (let [row (first remaining)]
@@ -19952,14 +20012,13 @@
                          (if (p15-s23-ij-unknown? condition) :gravity.type/unknown
                            (if (= :accepted (get checked :status)) (get checked :type)
                              (p15-s23-ij-normal-type left right))))]
-          (if (if (> work budget) true (= :rejected (get checked :status)))
-            (assoc (p15-s23-typed-node-error (if (> work budget) :typed-lowering-work-limit (get checked :reason)) node)
-              :work-count work)
+          (if (= :rejected (get checked :status))
+            (p15-s23-typed-node-error (get checked :reason) node)
             (if (p15-s23-typed-all
                   [(= expected (get types id)) (= false (= expected :gravity.type/unknown))
                    (= premise (get (get (get context :if-join-context) :premises) id))
                    (= retained (if (= :accepted (get checked :status)) [(p15-s23-ij-row premise)] []))])
-              (loop [index 0 used work values []]
+              (loop [index 0 used 0 values []]
                 (if (= index 3)
                   (assoc (p15-s23-compiler-result {:op :if :test (first values) :then (get values 1) :else (get values 2)})
                     :work-count used)
@@ -19968,8 +20027,8 @@
                     (if (p15-s23-compiler-complete? child)
                       (recur (+ index 1) (+ used (get child :work-count)) (conj values (get child :value)))
                       (assoc child :work-count (+ used (get child :work-count 0)))))))
-              (assoc (p15-s23-typed-node-error :typed-if-join-evidence-mismatch node) :work-count work))))
-        (assoc (p15-s23-typed-node-error :typed-control-shape-mismatch node) :work-count base)))))
+              (p15-s23-typed-node-error :typed-if-join-evidence-mismatch node))))
+        (p15-s23-typed-node-error :typed-control-shape-mismatch node))))
 
 (defn p15-s23-typed-initializer-closure [context id budget]
   (loop [pending [{:id id :depth 0}] work 0]
