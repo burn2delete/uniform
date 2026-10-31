@@ -1681,6 +1681,7 @@
       "direct_source_dependencies": [],
       "direct_test_dependencies": [
         "bootstrap",
+        "c15-diagnostics",
         "diagnostics"
       ],
       "canonical_pass_refs": [],

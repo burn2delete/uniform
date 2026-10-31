@@ -31,7 +31,7 @@
         (let [input-fn (ns-resolve upstream (symbol (str label "-predicate-input")))
               derive (ns-resolve upstream (symbol (str label "-predicate-derived")))
               {:keys [core node nodes forms bindings types module call edge] :as input} (input-fn [:gravity.type/string])
-              result (derive input 65536) descriptor (:descriptor result)
+              result (derive input) descriptor (:descriptor result)
               validation (lower 'p15-s23-lc-validate-types [:gravity.type/string])
               body-validation (body 'body-lc-validate-types [:gravity.type/string])
               args [core node call edge nodes bindings types module]
@@ -47,13 +47,13 @@
                        :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
               context-fn (symbol (str "body-" family "-context"))
               context-key (keyword (str label "-predicate-context"))
-              effect-context (body context-fn request facts bindings 65536)
+              effect-context (body context-fn request facts bindings)
               checked (assoc facts context-key (:context effect-context))
               lower-context {:core core :nodes nodes :forms forms :bindings bindings
                              :types (:type-table facts) :calls {:call call} :edges {:call edge} :call-order {:call 0}
                              :call-facts {:call (fact descriptor)} :ledger (ledger descriptor)
                              :locals {:arg0 'value} :parameter-types types}
-              compile #(lower 'p15-s23-typed-compile-node % :call 65536)
+              compile #(lower 'p15-s23-typed-compile-node % :call)
               lowered (compile lower-context)]
           (is (= :accepted (:status result) (:status effect-context)))
           (is (not (contains? descriptor :operand-type-work)))
@@ -83,7 +83,7 @@
                     changed-facts (assoc-in facts [:type-table :arg0] bad)
                     changed-lowering (-> lower-context (assoc-in [:types :arg0] bad)
                                          (assoc-in [:parameter-types :arg0] bad))]
-                (is (= :rejected (:status (derive changed-input 65536))))
-                (is (= :rejected (:status (body context-fn request changed-facts bindings 65536))))
+                (is (= :rejected (:status (derive changed-input))))
+                (is (= :rejected (:status (body context-fn request changed-facts bindings))))
                 (is (= :rejected (:status (compile changed-lowering))))))
             (is (zero? @callbacks))))))))

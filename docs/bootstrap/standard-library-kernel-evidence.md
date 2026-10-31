@@ -41,8 +41,10 @@ This is an internal seed-stage increment over an experimental meta-profile
 kernel. Full standard-library exports, other profiles/representations, Unicode,
 provider IO/runtime services, unsafe wrappers, proof certificates, authenticated
 SH-13/14/19 integration, full STD/SH-22 conformance, migration, release,
-self-hosting and seed retirement remain open. No pinned Reader/H6 or historical
-authenticated pipeline is used to obtain evidence. Existing Gravity source is
+self-hosting and seed retirement remain open. No historical Reader/H6 or
+authenticated downstream integration path is retried. The existing fixed
+compiler-seed rule reader remains part of ordinary expression-plan compilation;
+it does not renew historical migration authority. Existing Gravity source is
 unchanged; integer representability and index legality checks stay in place.
 
 Acceptance requires focused positive/adversarial tests, body/wrapper/facet
@@ -95,3 +97,34 @@ Compiler plan identities for changed compiler inputs must be retained as new
 observations, rather than normalized into old identity equality. Committed lint,
 independent acceptance, own CI and exact clean current-main preflight remain
 required; all historical Reader/H6/native nonpasses remain separate and unretried.
+
+## Accounting-removal main composition and actual execution inputs
+
+Actual main7019c174703d534e8da0341587a172a9214b9f20, tree
+749fd2729a7c9782c08786c8485f067274f5ecfb, includes private Diagnostics binding
+and external PR725 accounting removal. A normal merge has no conflicts. All
+incoming Diagnostics, compiler, effects/runtime, tests and CI inputs remain
+unchanged. Standard Library still changes only its nine intended paths.
+
+Fresh source/carrier/Lowering regressions pass20/409; native C8/C15 leaves
+15/352, ownership33/1011, language6/11, docs240/19 and roadmap/governance pass.
+The current control still compiles the complete90-function library and both
+31-function fixtures. All six complete/text captures, all three source hashes,
+ten native kind captures, source outputs/refusals and complete component/facet
+conservation remain equal to the originals.
+
+Inspection explains why plan identities remain equal: the development route
+loads the unchanged fixed compiler seed at
+bootstrap/gravity/p15_s23/compiler.gravity, SHA-256
+57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527,
+and uses the unchanged native Clojure invocation layer. Inherited plan compiler
+stamps remain seed metadata. The changed Gravity emitter and runtime files from
+PR725 are retained main inputs, but these kernel tests do not execute those
+modules. No broader compiler, runtime, migration or source-readiness result is
+inferred from equal plans. The actual seed/native file hashes and separate
+changed-file hashes are captured in accounting-main-compiler-provenance.edn and
+verified against both actual files and the frozen source parent.
+
+Exact lint, independent acceptance, own CI and clean actual-main preflight
+remain required for the final committed tuple. No pin or authority record is
+updated, and no historical failed route is retried or replaced.
