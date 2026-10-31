@@ -22,6 +22,47 @@
 
 (def machine-result-schema :gravity/development-test-result-v1)
 
+(defn- machine-result-file-sink
+  "One completion delivery. Request equality is binding data, not source or
+  effective-configuration attestation. Does not own the parent directory."
+  [{:keys [file limit-bytes request] :as delivery} inherited]
+  (when-not (and (= #{:file :limit-bytes :request} (set (keys delivery)))
+                 (string? file) (.isAbsolute (io/file file))
+                 (integer? limit-bytes) (pos? limit-bytes)
+                 (< limit-bytes Integer/MAX_VALUE)
+                 (= #{:id :source :selection} (set (keys request)))
+                 (string? (:id request)) (seq (:id request))
+                 (map? (:source request)) (map? (:selection request)))
+    (throw (ex-info "Invalid development result delivery" {:id "DEV-RESULT-DELIVERY"})))
+  (let [emitted? (atom false)]
+    (fn [result]
+      (when-not (compare-and-set! emitted? false true)
+        (throw (ex-info "Development result was emitted more than once"
+                        {:id "DEV-RESULT-DUPLICATE"})))
+      (when-not (= (:selection request) (:selection result))
+        (throw (ex-info "Development result selection differs from request"
+                        {:id "DEV-RESULT-SELECTION"})))
+      (let [bytes (.getBytes (str (pr-str {:schema :gravity/development-test-result-delivery-v1
+                                          :request request :result result}) "\n") "UTF-8")]
+        (when (> (alength bytes) limit-bytes)
+          (throw (ex-info "Development result exceeds declared capture limit"
+                          {:id "DEV-RESULT-LIMIT" :bytes (alength bytes) :limit limit-bytes})))
+        (java.nio.file.Files/write
+         (.toPath (io/file file)) bytes
+         (into-array java.nio.file.OpenOption
+                     [java.nio.file.StandardOpenOption/CREATE_NEW
+                      java.nio.file.StandardOpenOption/WRITE java.nio.file.LinkOption/NOFOLLOW_LINKS])))
+      (when inherited (inherited result)))))
+
+(defn result-delivery-sink
+  "Construct the existing one-shot normal completion writer in the child JVM.
+  Reuses the closed delivery validator, supplied capture allowance and original
+  IO/error behavior. Calls inherited only after the CREATE_NEW write succeeds.
+  Owns neither the output directory nor semantic/custody admission."
+  [delivery inherited]
+  (machine-result-file-sink delivery inherited))
+
+
 (def namespace-catalog
   [{:namespace 'gravity.bootstrap-test
     :path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}
