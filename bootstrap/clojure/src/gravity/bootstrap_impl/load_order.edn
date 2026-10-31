@@ -29,9 +29,6 @@
  {:resource "gravity/bootstrap_impl/components/compiler/00028-compiler-c3-syntax-source-artifact.clj", :reader-line 781, :owner :compiler, :first-form "compiler-c3-syntax-source-artifact"}
  {:resource "gravity/bootstrap_impl/components/compiler/00029-c4-macro-validate.clj", :reader-line 993, :owner :compiler, :first-form "c4-macro-validate!"}
  {:resource "gravity/bootstrap_impl/components/compiler/00030-c5-param-symbols.clj", :reader-line 1213, :owner :compiler, :first-form "c5-param-symbols"}
- {:resource "gravity/bootstrap_impl/components/foundation/00031-core-forms.clj", :reader-line 1352, :owner :foundation, :first-form "core-forms"}
- {:resource "gravity/bootstrap_impl/components/backends/00032-lowering-gap-forms.clj", :reader-line 1353, :owner :backends, :first-form "lowering-gap-forms"}
- {:resource "gravity/bootstrap_impl/components/foundation/00033-unknown-reserved-core-forms.clj", :reader-line 1354, :owner :foundation, :first-form "unknown-reserved-core-forms"}
  {:resource "gravity/bootstrap_impl/components/backends/00034-core-ast-lowering-ops.clj", :reader-line 1371, :owner :backends, :first-form "core-ast-lowering-ops"}
  {:resource "gravity/bootstrap_impl/components/foundation/00035-form-effect.clj", :reader-line 1406, :owner :foundation, :first-form "form-effect"}
  {:resource "gravity/bootstrap_impl/components/compiler/00036-c6-lowering-diagnostic-ids.clj", :reader-line 1485, :owner :compiler, :first-form "c6-lowering-diagnostic-ids"}
