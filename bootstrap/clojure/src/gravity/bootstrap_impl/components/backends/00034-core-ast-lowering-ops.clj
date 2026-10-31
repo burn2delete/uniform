@@ -1,4 +1,8 @@
 
+(def core-forms core-ast-lowering/core-forms)
+(def lowering-gap-forms core-ast-lowering/lowering-gap-forms)
+(def unknown-reserved-core-forms core-ast-lowering/unknown-reserved-core-forms)
+
 (declare form-effect
          combine-effects
          core-node

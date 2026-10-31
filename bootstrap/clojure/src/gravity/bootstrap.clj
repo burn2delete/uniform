@@ -75,13 +75,6 @@
   (:import [clojure.lang LineNumberingPushbackReader]
            [java.io StringReader]))
 
-;; These compatibility constants are owned by the stage facade.  Keep the
-;; historical bootstrap names without loading separate constant-only
-;; fragments into the shared seed namespace.
-(def core-forms core-ast-lowering/core-forms)
-(def lowering-gap-forms core-ast-lowering/lowering-gap-forms)
-(def unknown-reserved-core-forms core-ast-lowering/unknown-reserved-core-forms)
-
 (clojure.core/require 'gravity.bootstrap-impl.loader)
 (gravity.bootstrap-impl.loader/load-components!
  "gravity/bootstrap_impl/load_order.edn")
