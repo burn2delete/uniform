@@ -8,6 +8,22 @@ This is a work-artifact layer for bounded changes. The 240 contracts under
 [docs](../docs/README.md), their inventory, roadmap, AGENTS.md and the existing
 [development workflow](../docs/development-verification.md) remain canonical.
 
+## Private rename fast path
+
+Spec Kit packages are optional for a mechanically scoped private rename. If a
+change only renames private implementation files, namespaces or helpers and
+updates their callers, tests, load order, documentation and any required
+manifests/digests without changing behavior, public APIs, serialized IDs,
+diagnostic IDs, ownership or evidence scope, use the normal branch and
+pull-request workflow. Include the old/new name map, a complete reference
+search and focused owner checks in the pull request; do not create four
+planning artifacts just to record the rename.
+
+Use `spec.md`, `plan.md`, `tasks.md` and `evidence.md` when the rename also
+changes a public or serialized identity, crosses component ownership, changes
+semantics, or needs new acceptance evidence. Historical four-artifact packages
+remain authoritative for their original scope and are not rewritten.
+
 ## Official version and supported customization
 
 Evaluated 2026-10-25: GitHub Spec Kit v1.2.3, commit

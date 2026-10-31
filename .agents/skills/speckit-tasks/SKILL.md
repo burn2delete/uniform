@@ -24,6 +24,12 @@ selection is missing, ask only for that missing context. Do not change shared
 files owned by another worker. Keep partial work visible in an early draft PR.
 Do not add project quotas, repeated approval gates, hooks, services or schedules.
 
+Do not create a task ledger for a private rename-only change covered by the fast
+path in `.specify/semantic-names.md`. Record the old/new name map, complete
+reference search and focused owner checks, including required manifests/digests,
+in the ordinary pull request. Use this command when the rename also changes public or serialized identity, component
+ownership, semantics or acceptance evidence.
+
 Read the selected `spec.md`, `plan.md` and
 `.specify/templates/overrides/tasks-template.md`. If spec or plan is absent,
 report that missing prerequisite rather than inventing it. Write dependency-ordered

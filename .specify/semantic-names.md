@@ -48,6 +48,22 @@ At tasks: use those names in implementation tasks and keep planning references
 in a separate clause. At analyze/review: inspect new names in the diff and report
 legacy dependencies without blocking unrelated development on all old names.
 
+## Private rename fast path
+
+A private rename-only change does not need a Spec Kit feature directory or a
+separate `spec.md`/`plan.md`/`tasks.md`/`evidence.md` package. Use the ordinary
+branch and pull-request workflow when the change only renames private
+implementation files, namespaces or helpers and updates their private callers,
+tests, load order, documentation and any required manifests/digests. The pull
+request should state the old and new names, show the complete reference search
+and run the focused checks for the affected owner.
+
+Use the full bounded-change workflow when a rename changes a public API,
+serialized identity, protocol/schema/diagnostic ID, component ownership or
+semantic behavior, or when it needs new acceptance evidence. Existing
+four-artifact packages remain valid historical records; this fast path prevents
+new ceremony from being created for a mechanically scoped private cleanup.
+
 A lightweight review check uses the actual base revision of the candidate:
 
 ```bash
