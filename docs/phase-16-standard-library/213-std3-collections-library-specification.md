@@ -354,12 +354,12 @@ no common shape, key presence, extent, cardinality, nonempty, flow or
 specialization facts.
 
 Normal completion permits `:memory/allocate`, including for an empty result.
-The development provider validates the actual Map's complete key/type census
-before temporary enumeration, validates every physical Keyword key before
-fresh output List construction, and performs complete temporary enumeration,
-indexed snapshot and output copying. The returned List owns its copied spine,
-shares stored keys shallowly, has persistent value lifetimes and borrows no Map
-backing storage. This establishes no allocation bound for other providers.
+The development provider checks the actual Map and enumerates its complete
+physical entries, validating every Keyword key before fresh output List
+construction, then performs the indexed snapshot and output copying. The
+returned List owns its copied spine, shares stored keys shallowly, has
+persistent value lifetimes and borrows no Map backing storage. This establishes
+no allocation bound for other providers.
 Conversion of this List follows the separate Set-conversion contract above.
 
 ## Map Lookup With An Explicit Default
