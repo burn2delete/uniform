@@ -2777,9 +2777,12 @@
         (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged))))))))
   (doseq [[value start end] [["abc" -1 1] ["abc" 2 1] ["abc" 0 4]
                             [[65 66 67] -1 1] [[65 66 67] 2 1] [[65 66 67] 0 4]
-                            ["\u0100" 0 1] [(vec (range 1025)) 0 1]]]
+                            ["\u0100" 0 1]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-slice-input value start end)]
       (is (= :rejected (:status (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ]))))))
+  (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-slice-input (vec (range 1025)) 0 1)
+        result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ])]
+    (is (= :accepted (:status result))))
   (let [transfer (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'vector-slice-transfer-input)]
     (doseq [positions [0 1 2 [0 1 2]]]
       (let [{:keys [core node call edge nodes bindings types forms]}
@@ -4009,7 +4012,7 @@
   (let [{:keys [core nodes bindings forms types]}
         (let-vector-slice-first-membership-input (vec (range 1024)) (mapv char (range 1024)) 0 1 nil)
         result (invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms ])]
-    (is (= :rejected (:status result)))
+    (is (= :accepted (:status result)))
     ))
 
 
@@ -11083,10 +11086,12 @@
                     #(assoc-in % [:node :evaluation :order] [])
                     #(assoc-in % [:types :input] :gravity.type/string)
                     #(assoc-in % [:types :value] :gravity.type/unknown)
-                    #(assoc-in % [:types :input :element-types] (vec (repeat 1024 :gravity.type/keyword)))
                     #(-> % (assoc-in [:types :input] :gravity.type/string) (assoc-in [:types :value] :gravity.type/never))
                     #(-> % (assoc-in [:types :input] :gravity.type/never) (assoc-in [:types :value] :gravity.type/unknown))]]
       (is (= :rejected (:status (vector-append-derived (mutate input))))))
+    (is (= :accepted (:status (vector-append-derived
+                                (assoc-in input [:types :input :element-types]
+                                          (vec (repeat 1024 :gravity.type/keyword)))))))
     (is (= :vector-append-arity-mismatch (:reason (vector-append-derived (assoc-in input [:products :calls 0 :argument-node-ids] [:input])))))
     (let [result (vector-append-derived input)]
       (is (= :accepted (:status result)))
@@ -15395,7 +15400,7 @@
         (is (= :sh08-keyword-set-equality-v1 (:equality-version leaf)))
         (is (= :owned-self-equality-before-any-vector-result (:domain-validation leaf)))
         (is (= :validated-before-any-vector-result (:member-uniqueness leaf)))
-        (is (= :owned-pair-equality-with-remaining-vector-allowance (:comparison-validation leaf)))
+        (is (= :owned-pair-equality-after-domain-validation (:comparison-validation leaf)))
 
         (is (= :none (:per-leaf-reset leaf) (:payload-evaluation leaf) (:mutation leaf) (:construction leaf)))
         (is (= :not-established (:provider-cpu-bound leaf)))
