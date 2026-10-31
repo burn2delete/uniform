@@ -15597,7 +15597,8 @@
                             :member-uniqueness :validated-before-any-vector-result
                             :comparison-validation :owned-pair-equality-after-domain-validation
                             :per-leaf-reset :none
-                        :identity :unobserved :payload-evaluation :none :mutation :none :construction :none})
+                        :identity :unobserved :payload-evaluation :none :mutation :none :construction :none
+                            :provider-cpu-bound :not-established})
                         policy (if (get validation :vector-integer-leaves?)
                                  (assoc policy :numeric-equality {:version :sh08-flat-integer-vector-leaf-equality-v1
                           :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
