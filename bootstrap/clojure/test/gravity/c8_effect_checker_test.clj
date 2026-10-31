@@ -1,6 +1,8 @@
 (ns gravity.c8-effect-checker-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.c8-effect-checker :as c8]))
+            [gravity.c8-effect-checker :as c8]
+            [gravity.c8-effect-checker.facts :as compatibility]
+            [gravity.effects :as effects]))
 
 (def module
   {:module 'gravity.c8-test
@@ -43,6 +45,71 @@
     :validate-ns-syntax! (fn [_ _] nil)
     :parse-module (fn [_ _] module-value)
     :compiler-c7-type-source-artifact (fn [_ _] c7-artifact)}))
+
+(deftest effects-stage-contract-preserves-the-native-data-boundary
+  (let [contract (:gravity/namespace-contract (meta #'effects/effect-graph))
+        publics (ns-publics 'gravity.effects)]
+    (is (= :hosted-seed-effect-graph-data (:contract-boundary contract)))
+    (is (= #{'fact-direct-effects 'effectful-facts 'effect-graph} (set (keys publics))))
+    (is (= (set (keys publics)) (set (keys (:public-api contract)))))
+    (doseq [[name api] (:public-api contract)]
+      (is (= (:arglists api) (:arglists (meta (publics name)))))
+      (is (= contract (:gravity/namespace-contract (meta (publics name)))))
+      (is (= :none (:admission api)))
+      (is (true? (:seed-compatibility-data-only? api)))
+      (is (false? (:authenticates-inputs? api)))
+      (is (false? (:proves-effect-legality? api)))
+      (is (false? (:grants-authority? api))))
+    (is (= '[clojure.set] (get-in contract [:dependency-direction :requires])))
+    (is (= '[gravity.c8-effect-checker.facts] (get-in contract [:dependency-direction :consumed-by])))
+    (is (false? (:legacy-status-labels-authoritative? contract)))
+    (is (false? (:legacy-build-grants-prove-performed-effects? contract)))
+    (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest effects-stage-preserves-lazy-classification-and-source-data
+  (doseq [[type expected] [["CheckedCast[String]" :runtime/dynamic-dispatch]
+                          ["ProtocolValue" :runtime/dynamic-dispatch]
+                          ["SchemaDerived" :runtime/dynamic-dispatch]
+                          ["UnsafeIsland[Dynamic]" :memory/raw]
+                          ["Never" :error/throw]]]
+    (is (= #{:io/write expected} (effects/fact-direct-effects {:type type :effects #{:io/write}}))))
+  (is (= #{} (effects/fact-direct-effects {:type "CallerClassification" :effects []})))
+  (let [source {:syntax-id :syntax :origin-chain [:source] :generated-origin [:macro]}
+        facts [{:core-node :pure :effects #{} :source source}
+               {:core-node :effectful :effects #{:time/read} :source source}]
+        calls (atom []) direct (fn [fact] (swap! calls conj fact) (:effects fact))
+        pending (effects/effectful-facts direct facts)]
+    (is (empty? @calls))
+    (is (= [(second facts)] (vec pending)))
+    (is (= facts @calls))
+    (let [graph (effects/effect-graph #(effects/effectful-facts direct %) direct #{:time/read}
+                                     {:module 'test.effects :effects #{:time/read}
+                                      :metadata {:build-grants #{:build/env}}}
+                                     facts {:functions [{:fn-id :function :latent-effects #{:error/throw}
+                                                         :throws #{'CallerError}}]})]
+      (is (= #{:time/read} (get-in graph [:namespace :inferred]) (:replay-required graph)))
+      (is (= :pure (get-in graph [:nodes :pure :ordering])))
+      (is (= :sequence (get-in graph [:nodes :effectful :ordering])))
+      (is (identical? source (get-in graph [:nodes :effectful :source])))
+      (is (= #{:error/throw} (get-in graph [:functions :function :latent])))
+      (is (= #{'CallerError} (get-in graph [:functions :function :throws])))
+      (is (= [:build/env] (:build-effects graph)))
+      (is (= :complete (:status graph))))))
+
+(deftest effects-stage-compatibility-entry-points-remain-interposable
+  (doseq [[name arguments] [['fact-direct-effects [{:effects #{:io/write}}]]
+                            ['effectful-facts [identity []]]
+                            ['effect-graph [identity identity #{} {} [] {}]]]]
+    (let [stage-var (ns-resolve 'gravity.effects name)
+          wrapper (ns-resolve 'gravity.c8-effect-checker.facts name)
+          calls (atom []) marker (Object.)]
+      (with-redefs-fn {stage-var (fn [& values] (swap! calls conj values) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (= [arguments] @calls))))
+  (is (= #{:stage-classification}
+         (with-redefs [effects/fact-direct-effects (constantly #{:stage-classification})]
+           (c8/c8-fact-direct-effects {:effects #{}}))))
+  (is (= #{:io/write} (compatibility/fact-direct-effects {:effects #{:io/write}}))))
 
 (deftest contract-is-hosted-compatible-and-nonauthoritative
   (let [contract (c8/c8-engine-contract)
