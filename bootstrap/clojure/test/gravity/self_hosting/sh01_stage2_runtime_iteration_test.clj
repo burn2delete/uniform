@@ -18738,10 +18738,10 @@
         step-id (renamed :ix-step) access-id (renamed :ix-get)
         compile (fn [ctx id budget] (lower (if (= id step-id) 'p15-s23-typed-compile-successor 'p15-s23-typed-compile-nth)
                                           ctx (nodes id) budget))]
-    (is (= :accepted (:status checked)) (pr-str (select-keys checked [:status :reason :work-count])))
+    (is (= :accepted (:status checked)) (pr-str (select-keys checked [:status :reason])))
     (when-not (= :accepted (:status checked))
-      (throw (ex-info "Indexed emitter context prerequisite rejected" (select-keys checked [:status :reason :work-count]))))
-    (is (= :accepted (:status prior-context)) (pr-str (select-keys prior-context [:status :reason :work-count])))
+      (throw (ex-info "Indexed emitter context prerequisite rejected" (select-keys checked [:status :reason]))))
+    (is (= :accepted (:status prior-context)) (pr-str (select-keys prior-context [:status :reason])))
     (is (= prior-context (lower 'p15-s23-is-context (:core prior) prior-facts (:bindings prior) (:forms prior) (:work-count prior-context))))
     (is (= :rejected (:status (lower 'p15-s23-is-context (:core prior) prior-facts (:bindings prior) (:forms prior) (dec (:work-count prior-context))))))
     (is (= (get-in proof [:parameter-value-premise :source-induction]) range))
@@ -20327,7 +20327,7 @@
                   working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise checked))
                   guard {:core working :recursion-components (:recursion-components core) :declared-self-context checked}]]
       (is (= :accepted (:status proof)))
-      (is (= :accepted (:status checked)) (pr-str (select-keys checked [:status :reason :work-count])))
+      (is (= :accepted (:status checked)) (pr-str (select-keys checked [:status :reason])))
       (is (= (:parameter-value-premise proof) (:parameter-value-premise checked)))
       (is (= checked (check core typed forms (:work-count checked))))
       (is (= :typed-lowering-work-limit (:reason (check core typed forms (dec (:work-count checked))))))

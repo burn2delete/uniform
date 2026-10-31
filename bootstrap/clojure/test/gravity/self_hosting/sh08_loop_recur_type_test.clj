@@ -735,7 +735,7 @@
               :error-transfers (mapv (fn [[n value]] {:core-node-id (id n) :value-core-node-id (id value)}) [[2 1] [6 5] [9 8] [14 13]])}
         direct {:status :accepted :throws {(fid 1) [:gravity.type/string] (fid 4) [:gravity.type/bool]
                                           (fid 5) [:gravity.type/string] (fid 6) [:gravity.type/string]}
-                :constraints [] :diagnostics [] :work-count 0}
+                :constraints [] :diagnostics []}
         bindings (mapv (fn [f] {:name (function-name f) :binding-id (binding f) :definition-syntax-id (name-syntax f)}) (range 1 8))]
     {:core core :types types :functions functions :direct direct :bindings bindings :id id :fid fid}))
 
@@ -1002,7 +1002,7 @@
 
 (deftest atomic-typed-handler-products-development-kernel
   (let [{:keys [core forms bindings types]} (typed-handler-kernel-data)
-        direct {:status :accepted :throws {:function [:gravity.type/string]} :constraints [] :diagnostics [] :work-count 0}
+        direct {:status :accepted :throws {:function [:gravity.type/string]} :constraints [] :diagnostics []}
         products (c7-invoke 'sh08-tc-products [core types {} bindings direct ])
         source (c7-invoke 'sh08-eh-source-products [core forms bindings])
         initial (c7-invoke 'sh08-eh-seed-bindings [{:problem :gravity.type/string} (:seeds source)])
