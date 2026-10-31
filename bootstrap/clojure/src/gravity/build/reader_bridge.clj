@@ -78,10 +78,11 @@
         _ (freeze rows)
         requests (mapv :request rows)
         handler 'gravity.reader/read-input
-        instructions (get-in plan [:functions handler :instructions])]
+        instructions (get-in plan [:functions 'read-input :instructions])]
     (when-not (and (map? runtime-data) (map? plan-data) (vector? rows) (fn? run)
                    (= :gravity/stage2-compiler-artifact-plan (:kind plan-data))
-                   (true? (:compiler-artifact-plan? plan-data)))
+                   (true? (:compiler-artifact-plan? plan-data))
+                   (= 'gravity.reader (get-in plan-data [:module :module])))
       (refuse! :reader-plan))
     (validate-call! (:module plan-data) 1)
     (inputs/preflight! capability requests)
