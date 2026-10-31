@@ -164,39 +164,21 @@
                         reader-path invocation)]
          (sh07-core-from-resolution-artifact resolved invocation))))))
 
-(defn sh07-core-artifact-identity-input
-  [artifact]
-  (get-in artifact
-          [:gravity-core-boundary :canonical-core-artifact
-           :identity-preimage]))
+(defn
+ sh07-core-artifact-identity-input
+ [artifact]
+ (gravity.checked-core/artifact-identity-input
+  artifact
+  (checked-core-stage-operations)))
 
-(defn- sh07-core-verification-report
-  [artifact expected upstream-verification]
-  (let [source-path (or (get-in artifact [:provenance :source-path])
-                        "<sh07-core-verification>")
-        checks
-        (if (nil? expected)
-          {:contained-verification? false}
-          (try
-            (sh07-core-verification-checks
-             artifact expected upstream-verification)
-            (catch InterruptedException interrupted
-              (.interrupt (Thread/currentThread))
-              (throw interrupted))
-            (catch Throwable _
-              {:contained-verification? false})))
-        failed (vec (for [[check passed?] checks
-                          :when (not (true? passed?))]
-                      check))
-        boundary (:gravity-core-boundary artifact)]
-    {:artifact :gravity/sh07-core-artifact-verification
-     :status (if (empty? failed) :passed :failed)
-     :checks checks
-     :failed-checks failed
-     :source-path source-path
-     :template-verification (:template-verification boundary)
-     :resolved-verification (:resolved-verification boundary)
-     :upstream-verification upstream-verification}))
+(defn-
+ sh07-core-verification-report
+ [artifact expected upstream-verification]
+ (#'gravity.checked-core/verification-report
+  artifact
+  expected
+  upstream-verification
+  (checked-core-stage-operations)))
 
 (defn sh07-core-artifact-verification-against-expected
   "Verify an SH-07 candidate against a previously authenticated session.
