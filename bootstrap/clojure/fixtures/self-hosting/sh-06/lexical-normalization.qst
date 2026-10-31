@@ -1,0 +1,15 @@
+(ns gravity.resolution.lexical-fixture
+  (:profile :meta) (:target :jvm)
+  (:exports [nested-pair sequential-values matched-pair])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn nested-pair [items]
+  (let [[left [right _]] items
+        copy left]
+    (+ copy right)))
+(defn sequential-values [value]
+  (let [earlier value later earlier]
+    later))
+(defn matched-pair [items]
+  (match items
+    [left [right _]] (+ left right)
+    _ 0))

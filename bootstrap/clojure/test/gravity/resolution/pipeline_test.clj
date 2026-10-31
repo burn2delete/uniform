@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 24 (count publics)))
+    (is (= 30 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -223,6 +223,100 @@
       (is (not= (:definition-artifact-id local)
                 (:definition-artifact-id
                  (first (resolution/explicit-candidate-records module {:artifact-id "changed-parent"} overrides ops))))))))
+
+(deftest pattern-binding-paths-preserve-order-and-recovery-boundaries
+  (let [ops (operations)
+        pattern '[left [right _]]
+        expected '[{:name left :path [7 0]} {:name right :path [7 1 0]}]]
+    (is (= expected (resolution/match-pattern-binding-paths pattern [7] ops)))
+    (is (= expected (resolution/unique-match-binding-paths pattern [7] ops)))
+    (is (= expected (resolution/let-loop-binding-paths pattern [7])))
+    (is (= '[{:name one :path [1]} {:name two :path [5 0]}]
+           (resolution/match-pattern-binding-paths
+            (array-map :first 'one :when '(predicate one) :last '[two]) [] ops)))
+    (is (= [] (resolution/match-pattern-binding-paths '(quote literal) [] ops)))
+    (is (= [] (resolution/match-pattern-binding-paths '_ [] ops)))
+    (is (nil? (resolution/unique-match-binding-paths '[one [one]] [] ops)))
+    ;; Let/loop recovery enumerates each vector leaf once. This is not L7
+    ;; admission of duplicate bindings or variadic destructuring.
+    (is (= '[{:name one :path [0]} {:name two :path [1 0]} {:name tail :path [4]}]
+           (resolution/let-loop-binding-paths '[one [two one] _ & tail] [])))
+    (is (= '[{:name value :path [3]}] (resolution/let-loop-binding-paths 'value [3])))
+    (doseq [valid ['[one [two _]] '[1 :tag nil true false "text"]
+                   '{:kind :tag :payload [value]} '(quote literal)]]
+      (is (true? (resolution/fixed-vector-pattern? valid ops))))
+    (doseq [unsupported ['[one & tail] '{:when true :value value}
+                         '(Constructor value) '{not-a-keyword value}]]
+      (is (false? (resolution/fixed-vector-pattern? unsupported ops))))))
+
+(deftest lexical-collection-preserves-sequential-visibility-and-context
+  ;; These supplied expanded records test collection, not C4 authentication.
+  (let [ops (operations)
+        syntax {:syntax/id "synthetic-expanded-owner" :span {:source "synthetic" :line-start 4}
+                :form '(fn self [items :- I64]
+                         (let [[left [right _]] items copy left]
+                           (self (+ copy right))))}
+        parent {:expanded-syntax-stream [syntax]}
+        analysis (resolution/analysis-inputs {} parent {:shadow-policy {:forbidden ['left]}} ops)
+        scopes (:lexical-scopes analysis) refs (:references analysis)
+        scopes-by-id (into {} (map (juxt :scope-id identity)) scopes)
+        visible (fn [reference]
+                  (set (mapcat #(map :name (:bindings (scopes-by-id %))) (:scope-chain reference))))
+        left-ref (first (filter #(= 'left (:symbol %)) refs))
+        copy-ref (first (filter #(= 'copy (:symbol %)) refs))
+        self-ref (first (filter #(= 'self (:symbol %)) refs))
+        bindings (mapcat :bindings scopes)]
+    (is (= analysis (resolution/analysis-inputs nil parent {:shadow-policy {:forbidden ['left]}} ops)))
+    (is (= #{'self 'items 'left 'right 'copy} (set (map :name bindings))))
+    (is (not (some #(= '_ (:name %)) bindings)))
+    (is (not (some #(= 'I64 (:name %)) bindings)))
+    (is (= #{'self 'items 'left 'right} (visible left-ref)))
+    (is (= #{'self 'items 'left 'right 'copy} (visible copy-ref)))
+    (is (contains? (visible self-ref) 'self))
+    (is (some #(and (= 'I64 (:symbol %)) (= :type (:position %))) refs))
+    (is (false? (:allow-shadow? (first (filter #(= 'left (:name %)) bindings)))))
+    (is (every? #(= (:span syntax) (:source-span %)) refs))
+    (is (= (range 1 (inc (count refs))) (map #(get-in % [:semantic-span :ordinal]) refs)))
+    (is (= (count refs) (count (set (map :syntax-id refs)))))
+    (is (= (count scopes) (count (set (map :scope-id scopes)))))
+    (doseq [name '[semantic-late-sh06-resolution-analysis-inputs-parameter-names
+                  semantic-late-sh06-resolution-analysis-inputs-make-traversal]]
+      (is (nil? (ns-resolve 'gravity.bootstrap name)))
+      (is (nil? (ns-resolve 'gravity.resolution name))))))
+
+(deftest dependency-edge-normalization-retains-origins-and-order
+  (let [ops (operations) span {:source "dependency" :line-start 2}
+        imports [{:namespace 'library :kind :namespace :boundary :pure-core-api :source-span span}]
+        result (resolution/dependency-edges
+                source {:module 'consumer} imports
+                {:module-graph {:edges [['library 'next]
+                                        {:from 'next :to 'last :kind :generated :boundary :schema}]}} ops)]
+    (is (= [['consumer 'library] ['library 'next] ['next 'last]]
+           (mapv (juxt :from :to) result)))
+    (is (= [:namespace :namespace :generated] (mapv :kind result)))
+    (is (= [:pure-core-api nil :schema] (mapv :boundary result)))
+    (is (= [{:dependency-edge 0} {:explicit-edge 0} {:explicit-edge 1}] (mapv :semantic-span result)))
+    (is (= span (:source-span (first result))))
+    (is (= [] (resolution/dependency-edges source {:module 'consumer} [] {} ops)))))
+
+(deftest actual-nested-bindings-emit-and-out-of-scope-binding-rejects
+  (let [compile-fixture (fn [name]
+                          (let [path (.getCanonicalPath
+                                      (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-06/" name ".gravity")))]
+                            (b/compiler-c5-resolution-source-artifact
+                             path (slurp path :encoding "UTF-8")
+                             {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                             (.getCanonicalPath (io/file b/sh03-reader-source-relative-path)) invocation)))
+        accepted (compile-fixture "lexical-normalization")
+        rejected (caught #(compile-fixture "lexical-leak"))]
+    (is (= :accepted (:status accepted)))
+    (is (= "sha256:0fdf519ad7657aa8b291b7aa46df085324bb1fb6bff3cb290b5ecbaf5c8152f2"
+           (:artifact-id accepted)))
+    (is (= 276 (count (get-in accepted [:binding-table :bindings]))))
+    (is (= 21 (count (:resolution-table accepted))))
+    (is (= :passed (:status (b/sh06-resolution-artifact-verification accepted :gravity.bootstrap/legacy invocation))))
+    (is (= "C5-UNRESOLVED" (:id (ex-data rejected))))
+    (is (= 'right (:symbol (ex-data rejected))))))
 
 (deftest actual-source-emits-bindings-and-rejects-an-unresolved-reference
   (let [artifact @real-artifact binding (real-binding) ops (operations)
