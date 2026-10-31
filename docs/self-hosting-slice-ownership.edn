@@ -98,6 +98,14 @@
   {:namespace gravity.effects :owner :sh-effects :slice "SH-09"
    :consumer-path "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj"
    :test-path "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/js.clj"
+  {:namespace gravity.backend.js :owner :sh-target-js :slice "SH-00"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00767-c-backend-file-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/jvm.clj"
+  {:namespace gravity.backend.jvm :owner :sh-target-jvm :slice "SH-00"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00773-jvm-backend-value-source.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj"}
   "bootstrap/clojure/src/gravity/backend/wasm.clj"
   {:namespace gravity.backend.wasm :owner :sh-target-wasm :slice "SH-00"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00756-p15-s23-b4-wasm-authority-token-002-p15-s23-b4-wasm-operation-bytes-through-p15-s23-b4-wasm-canonical-bounded-octet.clj"
@@ -157,6 +165,8 @@
 
  :module-owners
  {"bootstrap/clojure/src/gravity/effects.clj" :sh-effects
+  "bootstrap/clojure/src/gravity/backend/js.clj" :sh-target-js
+  "bootstrap/clojure/src/gravity/backend/jvm.clj" :sh-target-jvm
   "bootstrap/clojure/src/gravity/backend/wasm.clj" :sh-target-wasm
   "bootstrap/clojure/src/gravity/backend/c.clj" :sh-target-c
   "bootstrap/clojure/src/gravity/backend/llvm.clj" :sh-target-llvm
@@ -378,7 +388,11 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"
+  {:namespace gravity.backend.js.pipeline-test :slice "SH-00" :owner :sh-target-js}
+  "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj"
+  {:namespace gravity.backend.jvm.pipeline-test :slice "SH-00" :owner :sh-target-jvm}
+  "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj"
   {:namespace gravity.backend.wasm.pipeline-test :slice "SH-00" :owner :sh-target-wasm}
   "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj"
   {:namespace gravity.backend.c.pipeline-test :slice "SH-18" :owner :sh-target-c}

@@ -138,3 +138,31 @@ or future results do not prove an old-bound pass, fix its cause or transfer
 earlier checks. Final exact independent acceptance, committed lint, own CI and
 clean current-main integration preflight remain required. No migration, release,
 self-hosting, seed-retirement or full C8 legality credit follows.
+
+## JVM and JS current-main composition
+
+Candidate 071452f23cc10b632d22cebd1fc86570d356e064, tree
+6f5223449a9cb06fc954ec7e77eac55b0a02a67a, received independent acceptance
+and own CI41239956611 passed all ten enabled jobs with two expected skips.
+The tested merge626a455ba87e02b600d805d25270f67e047e086a has exact parents
+c1c994f3b251daf89305d3e2ed24a4af16aeccef and071452f2, with that tree.
+The retained Macro/Resolution/Bootstrap receipt manifests verify. That green
+belongs to the older base and is not transferred to a later composition.
+
+Main is now43c69654b3f2daefa05e3902cbe78b469af47d96, tree
+088aa0c632516704aa552a9fa2a046828661fabc, including integrated JVM and JS
+slices. A normal composition with that actual parent has three metadata
+conflicts. Four complete files are reconstructed from the whole parents,
+preserving every main helper/owner/test and adding the original Effects entry
+and id-indexed negative registration test. All existing C8 algorithms,
+consumer wrappers and focused tests remain unchanged; no CI policy is authored.
+
+Fresh isolated C8 tests pass7/136, ownership30/976 and language6/11. The
+current composed producer and verifier match all22 original complete and
+serialized captures, both original Core/provenance/C5 joins and all six input
+hashes:43 nodes and one function per spelling, unchanged84cbbcc0 graph
+fingerprint and the real C8-UNDECLARED refusal. Conservation verifies the three
+original bodies/arities, three compatibility forwarders and other eight C8
+implementation files. These are retained-input native data observations,
+not fresh frontend or canonical C7/C8 authority. Final exact lint, independent
+acceptance, own CI and clean actual-main preflight remain required.

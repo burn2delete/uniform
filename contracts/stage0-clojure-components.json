@@ -244,6 +244,22 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj", "namespace": "gravity.backend.wasm.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "jvm-source",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-jvm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/jvm.clj", "namespace": "gravity.backend.jvm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00773-jvm-backend-value-source.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-jvm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj", "namespace": "gravity.backend.jvm.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "js-source",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-js",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/js.clj", "namespace": "gravity.backend.js"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00767-c-backend-file-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-js"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj", "namespace": "gravity.backend.js.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "effects-graph-data",
       "kind": "production-stage-helper",
       "owner": "sh-effects",
