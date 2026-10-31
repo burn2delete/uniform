@@ -139,7 +139,9 @@ Fresh current-source checks again pass Package/compatibility/private-binding
 27/479, isolated native C8/C15 leaves15/352, ownership33/1013, language6/11,
 docs240/19 and roadmap/governance. All sixteen complete/text original Package
 captures, both actual source-file hashes, full lock history, native refusals,
-bodies and arglists remain equal. This tests current emitter/runtime composition
-through the private-binding suite without retrying the historical Reader-pin
-path. New committed lint, exact independent acceptance, own CI and clean
+bodies and arglists remain equal. The private-binding suite exercises the fixed
+Stage2 compiler seed and native Clojure invocation layer in this checkout. It
+does not execute the changed Gravity emitter or runtime modules and does not
+retry the historical Reader-pin path. New committed lint, exact independent
+acceptance, own CI and clean
 current-main preflight remain required.
