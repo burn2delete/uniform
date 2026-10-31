@@ -117,19 +117,11 @@
          (filter #(or (str/ends-with? % ".clj") (str/ends-with? % ".edn")))
          vec)))
 
-(defn projection-commands []
-  (let [files (->> (.listFiles (io/file "tools"))
-                   (map #(.getName %)) sort)]
-    (concat
-     [(script "docs" "tools/validate_gravity_docs.clj")
-      (script "roadmap" "tools/validate_full_language_roadmap.clj")
-      (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")
-      (script "dependency-controls" "tools/acceptance_dependencies_test.clj")]
-     (for [file files :when (str/ends-with? file "_task_projection.clj")]
-       (script (str "check-" file) (str "tools/" file) "--check"))
-     (for [file files :when (or (= file "task_projection_test.clj")
-                                (str/ends-with? file "_task_projection_test.clj"))]
-       (script (str "test-" file) (str "tools/" file))))))
+(defn contract-commands []
+  [(script "docs" "tools/validate_gravity_docs.clj")
+   (script "roadmap" "tools/validate_full_language_roadmap.clj")
+   (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")
+   (script "dependency-controls" "tools/acceptance_dependencies_test.clj")])
 
 (defn leaf-selection [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
@@ -159,7 +151,7 @@
                        (when (seq paths)
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
-    "projections" (projection-commands)
+    "contracts" (contract-commands)
     "bootstrap" [["cold-bootstrap-load" 120
                   (command "1g" "-M" "-e"
                            "(assert (nil? (find-ns 'gravity.bootstrap))) (require 'gravity.bootstrap) (println :cold-bootstrap-loaded)")]

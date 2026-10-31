@@ -6,8 +6,6 @@ reassigned here. Coordinator retains integration disposition. Baseline:
 `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
 Implementation task authority: [Spec Kit ledger](../../specs/release-workflow/tasks.md#implementation-tasks).
-Edit the ledger and run `clojure -M tools/release_task_projection.clj --write`;
-the remaining-task table below is generated.
 
 ## Purpose and scope
 
@@ -39,15 +37,7 @@ Packaging and evidence schemas can develop in parallel against pinned fixtures.
 
 ## Remaining tasks and evidence
 
-<!-- release-task-projection:start -->
-| Task (all open) | Evidence baseline | Closing evidence |
-| --- | --- | --- |
-| Bind each claimed component to exact implementation and conformance | [Overall roadmap](../implementation-roadmap.md) | Component outcome receipts, positive/negative programs and explicit unsupported surface |
-| Complete stage compatibility/equivalence across the claimed compiler | [Equivalence contract](../phase-15-bootstrap-and-self-hosting/209-boot7-self-hosting-validation-and-equivalence-plan.md) | Fresh stage-to-stage outputs and diagnostics, residual trusted-code inventory |
-| Produce actual self-hosted compiler/runtime execution | [Binary release status](../phase-18-binary-distribution-and-seedless-release/README.md) | Actually invoke the prior Gravity compiler process on the complete declared next-stage compiler/runtime/library/build closure, retain real outputs and logs/lineage, link/package and execute that next compiler on accepted and rejected compiler inputs without Clojure in candidate compilation/runtime/build; then public check/run/compile and output executable demonstrate absent seed boundaries. SH25 component construction, SH27 equivalence and final release acceptance remain distinct; supplied rebuild records or plans do not prove execution. |
-| Build reproducible signed distributions with provenance/SBOM | [Artifact provenance](../phase-15-bootstrap-and-self-hosting/210-boot8-bootstrap-artifact-provenance-specification.md) | Rebuild identity and signature/provenance verification plus tamper rejection |
-| Obtain independent acceptance for the exact release candidate | [Binary release gates](../phase-18-binary-distribution-and-seedless-release/IMPLEMENTATION-ROADMAP.md) | Coordinator-reviewed candidate receipts and explicit release disposition |
-<!-- release-task-projection:end -->
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/release-workflow/tasks.md#implementation-tasks).
 
 The baseline release index states the current wrapper is bootstrap-hosted and
 final release incomplete. Historical bounded phase completion remains historical
