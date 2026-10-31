@@ -228,6 +228,22 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj", "namespace": "gravity.backend.llvm.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "c-emission",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-c",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/c.clj", "namespace": "gravity.backend.c"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-023-p15-s23-b2-c17-operation-expression-through-p15-s23-b2-c17-discard-cast-records.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-c"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj", "namespace": "gravity.backend.c.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "wasm-codec",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-wasm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/wasm.clj", "namespace": "gravity.backend.wasm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00756-p15-s23-b4-wasm-authority-token-002-p15-s23-b4-wasm-operation-bytes-through-p15-s23-b4-wasm-canonical-bounded-octet.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-wasm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj", "namespace": "gravity.backend.wasm.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "jvm-source",
       "kind": "production-stage-helper",
       "owner": "sh-target-jvm",

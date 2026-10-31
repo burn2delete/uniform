@@ -79,6 +79,34 @@ short forwarding arity; underscore prefixes preserve their positions and all
 expressions, callbacks and wrapper arguments. Fresh captures and whole-source
 reconstruction pass after that explicit fix.
 
+## C and Wasm integration parent
+
+Source successor 086445394c553000a03b4f40c9bd5da3542bf798, tree
+34277b05cfb9aa3b188c0ff67a83ddb89f5c99e0, passed all ten enabled jobs in
+CI 41236332977. Tested merge 9d3628945d0f337334c184f94be8440768730718 has
+exact parents f2bfea387b60077a64e0dcbf2573c6afad0126e9 and 08644539, with
+that same tree. Macro 16/293 and Resolution 54/2307 exited zero under the
+configured 900-second watchdog. Downloaded Macro/Resolution/Bootstrap manifests
+verify, with digests e3e4d3c02d0cbf2cd55d4df5ac5356996717468b4419c2209726215039d35be3,
+c5ea69c3ab37105da3616f9f8983dac3cae58bb6d06f43541689dc494066d2fb and
+563e73b78e68c2ac5fc5767d372ac08c5992ff297fb3b06624a4e22519ad0eb7.
+This remains evidence for that exact source/base, without transferred credit.
+
+Actual main c1c994f3b251daf89305d3e2ed24a4af16aeccef, tree
+491c07061f387fd89f340c1c05a49efe0729ff36, now integrates C and Wasm through
+PRs 715/717. Five shared conflicts are resolved by complete-parent
+reconstruction in /tmp/uniform-jvm-source-compose.clj. Every existing C, LLVM,
+Wasm and JVM helper/ownership/adversarial-test association survives. Backend
+bodies, tests, consumers and incoming evidence are unchanged from their parents.
+
+Fresh combined JVM/C/Wasm/LLVM and normalized C7 tests pass 23/499, ownership
+28/939, language 6/11, docs 240/19 and roadmap/governance. Six original complete
+captures match, digests/source-map/B5 source hashes and fixture data identities
+verify, and all four complete source files reconstruct from actual current
+main. No restricted source composition, Java process or authority gate runs.
+Final exact independent acceptance, committed lint, own full semantic CI and
+clean current-main preflight remain required. Old nonpasses remain unchanged.
+
 ## Unsupported boundaries
 
 This slice emits Java target source; it does not run javac/java, emit or execute

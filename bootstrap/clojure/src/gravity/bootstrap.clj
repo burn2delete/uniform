@@ -8,6 +8,8 @@
             [gravity.mir]
             [gravity.runtime]
             [gravity.backend.jvm]
+            [gravity.backend.wasm]
+            [gravity.backend.c]
             [gravity.backend.llvm]
             [gravity.types]
             [gravity.resolution]
