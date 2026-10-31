@@ -197,7 +197,18 @@
  #'sh07-core-request-preflight!
  #'sh07-core-run-structural-request-for-test
  #'sh07-core-run-request-for-test
- #'checked-core-with-execution-binding]
+ #'checked-core-with-execution-binding
+ #'gravity.checked-core/error-transfers-coherent?
+ #'gravity.checked-core/projection-diagnostic!
+ #'sh07-core-error-transfers-coherent?
+ #'sh07-core-projection-diagnostic!
+ #'gravity.checked-core/descendant-node-ids
+ #'gravity.checked-core/handler-group-coherent?
+ #'gravity.checked-core/error-handlers-coherent?
+ #'sh07-core-descendant-node-ids
+ #'sh07-b9-handler-group-coherent?
+ #'sh07-core-error-handlers-coherent?
+ #'sh07-b9-handler-descriptor-keys]
     (filter var? (vals checked-core-stage-defaults))))
   (mapv
    (fn
