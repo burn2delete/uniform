@@ -17092,10 +17092,25 @@
         {:status :rejected :reason :keyword-set-equality-source-mismatch})
       {:status :rejected :reason :keyword-set-equality-arity-mismatch})))
 
+(defn sh08-le-seen? [seen value]
+  (if (= 0 (count seen)) false
+    (if (bootstrap-native-identical? value (first seen)) true
+      (recur (rest seen) value))))
+
+(defn sh08-le-pair-seen? [seen pair]
+  (if (= 0 (count seen)) false
+    (let [candidate (first seen)]
+      (if (if (vector? candidate) (= 2 (count candidate)) false)
+        (if (bootstrap-native-identical? (get pair 0) (get candidate 0))
+          (if (bootstrap-native-identical? (get pair 1) (get candidate 1)) true
+            (recur (rest seen) pair))
+          (recur (rest seen) pair))
+        (recur (rest seen) pair)))))
+
 (defn sh08-le-domain [arguments]
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [checked
-          (loop [pending [[(get arguments 1) true #{}] [(get arguments 0) true #{}]]]
+          (loop [pending [[(get arguments 1) true []] [(get arguments 0) true []]]]
             (if (= 0 (count pending)) {:status :accepted :argument-types arguments}
               (let [frame (get pending (- (count pending) 1)) type (get frame 0) outer? (get frame 1)
                     seen (get frame 2) tail (subvec pending 0 (- (count pending) 1))]
@@ -17112,7 +17127,7 @@
                             (if (= #{:kind :shape :element-types} (set (keys type)))
                               (if (= :gravity.type/list (get type :kind))
                                 (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false) false) false)
-                    (if (contains? seen type)
+                    (if (sh08-le-seen? seen type)
                       {:status :rejected :reason :list-equality-cyclic-type}
                       (let [members (get type :element-types) next-seen (conj seen type)]
                         (recur (loop [i (- (count members) 1) out tail]
@@ -17122,14 +17137,14 @@
           ]
       (if (= :accepted (get checked :status))
         (if (if (= :gravity.type/never (get arguments 0)) true (= :gravity.type/never (get arguments 1))) checked
-          (loop [pending [[(get arguments 0) (get arguments 1)]] seen #{}]
+          (loop [pending [[(get arguments 0) (get arguments 1)]] seen []]
             (if (= 0 (count pending)) {:status :accepted :argument-types arguments}
               (let [pair (get pending (- (count pending) 1)) left (get pair 0) right (get pair 1)
                     tail (subvec pending 0 (- (count pending) 1))]
                 (if (map? left)
                   (if (map? right)
-                    (if (contains? seen pair)
-                      {:status :rejected :reason :list-equality-cyclic-type}
+                    (if (sh08-le-pair-seen? seen pair)
+                      (recur tail seen)
                       (let [a (get left :element-types) b (get right :element-types)
                             n (if (< (count a) (count b)) (count a) (count b))]
                         (recur (loop [i (- n 1) out tail]

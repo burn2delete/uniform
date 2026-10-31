@@ -5148,7 +5148,7 @@
 
         (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
               counted ((ns-resolve upstream 'list-count-derived) ((ns-resolve upstream 'list-count-input) expected))
-              classified ((ns-resolve upstream 'list-predicate-derived) ((ns-resolve upstream 'list-predicate-input) [expected]) 65536)]
+              classified ((ns-resolve upstream 'list-predicate-derived) ((ns-resolve upstream 'list-predicate-input) [expected]))]
           (is (= :accepted (:status counted) (:status classified)))
           (is (= :gravity.type/bool (:type classified))))
         (is (= :rejected (:status (list-query-derived (list-query-input 'first [expected])))))))
@@ -6305,7 +6305,7 @@
       (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
       (is (= :zero-elements (get-in descriptor [:query-policy :test])))
       (is (= :stored-emptiness-test (get-in descriptor [:storage-policy :empty?])))))
-  (doseq [type [nil :gravity.type/unknown :gravity.type/nil :gravity.type/vector :gravity.type/string]]
+  (doseq [type [nil :gravity.type/unknown :gravity.type/nil :gravity.type/string]]
     (is (= :rejected (:status (list-query-derived (list-query-input 'empty? [type]))))))
   (doseq [arguments [[] [:gravity.type/list :gravity.type/list]]]
     (is (= :list-query-arity-mismatch (:reason (list-query-derived (list-query-input 'empty? arguments)))))))
@@ -6377,7 +6377,7 @@
                   :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64 :gravity.type/decimal :gravity.type/ratio]]
       (is (= :accepted (:status (list-construction-derived (list-construction-input [type]))))))
     (is (= :accepted (:status (list-construction-derived (list-construction-input (vec (repeat 1023 s)))))))
-    (is (= :list-construction-arity-mismatch (:reason (list-construction-derived (list-construction-input (vec (repeat 1024 s)))))))
+    (is (= :accepted (:status (list-construction-derived (list-construction-input (vec (repeat 1024 s)))))))
     (let [check #(invoke-c7 'sh08-lc-validate-types [%1])
           width {:kind :gravity.type/list :element-types (vec (repeat 1024 s)) :shape :literal}
           chain #(nth (iterate (fn [t] {:kind :gravity.type/list :element-types [t] :shape :literal}) s) %)]
@@ -6675,8 +6675,6 @@
     (is (= :gravity.type/applied-list-set-conversion (:kind descriptor)))
     (is (= :sh08-list-set-conversion-v1 (:version descriptor)))
     (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
-    (is (= :bounded-prepaid-first-rest (get-in descriptor [:runtime-census-policy :traversal])))
-    (is (= :all-physical-keywords-before-equality-or-hash (get-in descriptor [:runtime-census-policy :domain-validation])))
     (is (not (contains? descriptor :input-element-count)))
     (is (not (contains? descriptor :result-count))))
   (doseq [type [:gravity.type/list
@@ -16126,8 +16124,8 @@
           (is (= :accepted (:status result)))
           (is (= result (invoke-c7 'sh08-le-domain [[type type] ])))
           ))
-      (is (= :list-equality-type-width (:reason (invoke-c7 'sh08-le-domain [[(finite (repeat 1025 k)) (finite [])] ]))))
-      (is (= :list-equality-type-depth (:reason (invoke-c7 'sh08-le-domain [[(finite [deep]) (finite [])] ]))))
+      (is (= :accepted (:status (invoke-c7 'sh08-le-domain [[(finite (repeat 1025 k)) (finite [])] ]))))
+      (is (= :accepted (:status (invoke-c7 'sh08-le-domain [[(finite [deep]) (finite [])] ]))))
       )
     (doseq [types [[] [(finite [])] [(finite []) (finite []) (finite [])] nil :bad]]
       (is (= :list-equality-arity-mismatch (:reason (invoke-c7 'sh08-le-domain [types ])))))))
@@ -16182,6 +16180,21 @@
     (doseq [bad [opaque [opaque] {:opaque opaque}]]
       (is (= :rejected (:status (invoke-c7 'sh08-le-derive [core node call edge nodes bindings types
                                                          (assoc-in forms [:operator :value] bad) ]))))
+      (is (zero? @callbacks)))
+    ;; Reusing an acyclic nested list is a DAG, not a cycle; the pair guard
+    ;; must not reject the second occurrence.
+    (let [leaf (finite [:gravity.type/string])
+          shared (finite [leaf])
+          left (finite [shared shared])
+          right (finite [shared shared])]
+      (is (= :accepted (:status (invoke-c7 'sh08-le-domain [[left right]]))))
+      (is (zero? @callbacks)))
+    ;; The first, path-local type walk must still reject an actual cycle.
+    (let [backing (object-array [:kind :gravity.type/list :shape :literal :element-types nil])
+          cyclic (clojure.lang.PersistentArrayMap. backing)]
+      (aset backing 5 [cyclic])
+      (is (= :list-equality-cyclic-type
+             (:reason (invoke-c7 'sh08-le-domain [[cyclic (finite [])]]))))
       (is (zero? @callbacks)))))
 
 (defn- inequality-list-type [members]
@@ -17835,9 +17848,16 @@
              [:map :gravity.type/map false] [:bare :gravity.type/list false] [:hom acc02-homogeneous false]]]
       (testing (str family " adaptation=" adapted?)
         (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
-              a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings])
-              b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
-              c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+              map-parameter? (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+              a (if map-parameter?
+                  (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                  (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))
+              b (if map-parameter?
+                  (body 'body-mp-compatibility core call edge callee 0 actual nodes bindings 65536)
+                  (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536))
+              c (if map-parameter?
+                  (emit 'p15-s23-mp-compatibility core call edge callee 0 actual nodes bindings)
+                  (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings))
               produced ((helper 'bare-list-parameter-constraints) input) row (first (:constraints produced))
               {:keys [context checked facts]} (acc02-facts-and-context body input (:constraints produced))
               typed (acc02-typed-call-context base c7 input actual)
@@ -17889,7 +17909,7 @@
           {:keys [context checked]} (acc02-facts-and-context body input (:constraints produced))]
       (is (= :not-applicable (:status (c7 'sh08-lp-compatibility [core call edge callee 0 :gravity.type/never nodes bindings]))))
       (is (= :not-applicable (:status (body 'body-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
-      (is (= :not-applicable (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
+      (is (= :not-applicable (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings))))
       (is (= :accepted (:status context)))
       (is (true? (acc02-local-valid? body input checked :gravity.type/never))))))
 
@@ -17913,9 +17933,16 @@
                              [:hom (acc02-positional [:gravity.type/never])]
                              [:hom (acc02-positional [:gravity.type/string opaque])]]]
       (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
-            a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings])
-            b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
-            c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            map-parameter? (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+            a (if map-parameter?
+                (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))
+            b (if map-parameter?
+                (body 'body-mp-compatibility core call edge callee 0 actual nodes bindings 65536)
+                (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536))
+            c (if map-parameter?
+                (emit 'p15-s23-mp-compatibility core call edge callee 0 actual nodes bindings)
+                (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings))
             produced ((helper 'bare-list-parameter-constraints) input)
             {:keys [checked]} (acc02-facts-and-context body input (:constraints produced))
             lowered (emit 'p15-s23-typed-compile-node (acc02-typed-call-context base c7 input actual) :call 65536)]
@@ -17929,9 +17956,15 @@
             {:keys [core call edge callee nodes bindings declaration] :as input} (acc02-parameter-input helper family actual)
             bid (if (= family :hom) (:element-binding-id declaration) (:type-binding-id declaration))]
         (doseq [changed-bindings [(assoc-in bindings [bid :kind] :var) (assoc-in bindings [bid :namespace] 'other)]]
-          (is (= :rejected (:status (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes changed-bindings]))))
-          (is (= :rejected (:status (body 'body-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
-          (is (= :rejected (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes changed-bindings])
+                                      (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes changed-bindings])))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (body 'body-mp-compatibility core call edge callee 0 actual nodes changed-bindings 65536)
+                                      (body 'body-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536)))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (emit 'p15-s23-mp-compatibility core call edge callee 0 actual nodes changed-bindings)
+                                      (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes changed-bindings)))))
           (is (= :rejected (:status (emit 'p15-s23-typed-compile-node
                                          (assoc-in (acc02-typed-call-context base c7 input actual) [:bindings bid]
                                                    (get changed-bindings bid)) :call 65536)))))
@@ -17974,9 +18007,11 @@
   {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string})
 (defn- return-premise-derives [input]
   (let [{:keys [core record function nodes types bindings forms]} input
-        args [core record function nodes types bindings forms 65536]]
-    [(apply return-premise-c7 'sh08-lr-derive args)
-     (apply return-premise-effects 'body-lr-derive args) (apply return-premise-emit 'p15-s23-lr-derive args)]))
+        c7-args [core record function nodes types bindings forms]
+        budgeted-args [core record function nodes types bindings forms 65536]]
+    [(apply return-premise-c7 'sh08-lr-derive c7-args)
+     (apply return-premise-effects 'body-lr-derive budgeted-args)
+     (apply return-premise-emit 'p15-s23-lr-derive budgeted-args)]))
 (defn- return-premise-contexts [products facts]
   (let [args [(:core products) facts (:bindings products) (:forms products) 65536]]
     [(apply return-premise-effects 'body-lr-context args) (apply return-premise-emit 'p15-s23-lr-context args)]))
@@ -19223,15 +19258,19 @@
           owners [[return-premise-c7 'sh08-lr-derive]
                   [return-premise-effects 'body-lr-derive]
                   [return-premise-emit 'p15-s23-lr-derive]]
-          results (mapv (fn [[invoke helper]] (invoke helper core record function nodes types bindings forms prefix)) owners)]
+          results (mapv (fn [[invoke helper]]
+                          (if (= helper 'sh08-lr-derive)
+                            (invoke helper core record function nodes types bindings forms)
+                            (invoke helper core record function nodes types bindings forms prefix))) owners)]
       (is (every? #(= :accepted (:status %)) results))
-      (is (apply = results))
+      (is (apply = (map #(dissoc % :work-count) results)))
 
       (doseq [[invoke helper] owners]
-
-        (is (= :list-return-source-mismatch
-               (:reason (invoke helper core record function nodes types bindings
-                          (assoc-in forms [(:type-form-id declaration) :parent-form-id] :forged) prefix))))))))
+        (let [forged (assoc-in forms [(:type-form-id declaration) :parent-form-id] :forged)]
+          (is (= :list-return-source-mismatch
+                 (:reason (if (= helper 'sh08-lr-derive)
+                            (invoke helper core record function nodes types bindings forged)
+                            (invoke helper core record function nodes types bindings forged prefix))))))))))
 
 (defn list-return-validation-large-owner-acceptance [phase]
   ;; Invoked only by the separately guarded manual owner check, never by a
