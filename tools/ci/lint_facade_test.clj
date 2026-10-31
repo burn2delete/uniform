@@ -328,5 +328,149 @@
   (compare-private-programs! true "(let [{:keys [value] :or {unused (#'h/hidden x)}} {}] value)" 1
                              [:unused-private-var :unbound-destructuring-default]))
 
+(deftest source-reader-resolves-declared-aliases-without-loading-namespaces
+  (let [before (ns-aliases *ns*)
+        source (str "(ns fixture.reader-unloaded (:require [fixture.never-load :as native]\n"
+                    " [fixture.also-never-load :as-alias only]))\n"
+                    "(def values [::own ::native/value #::only{:key 1}])\n"
+                    "(require '[fixture.later-never-load :as later])\n"
+                    "(def later-value ::later/key)")
+        forms (context/source-forms! "fixture.clj" (utf8 source))]
+    (is (= [:fixture.reader-unloaded/own :fixture.never-load/value
+            {:fixture.also-never-load/key 1}]
+           (nth (nth forms 1) 2)))
+    (is (= :fixture.later-never-load/key (nth (nth forms 3) 2)))
+    (is (= before (ns-aliases *ns*)))
+    (doseq [namespace '[fixture.reader-unloaded fixture.never-load fixture.also-never-load fixture.later-never-load]]
+      (is (nil? (find-ns namespace)))))
+  (doseq [source ["(ns fixture.unknown) ::absent/key"
+                  ;; An ambient tool alias is not a declaration in the subject.
+                  "(ns fixture.unknown) ::context/key"
+                  "(ns fixture.first (:require [fixture.owner :as local])) (ns fixture.second) ::local/key"
+                  "'(ns fixture.quoted (:require [fixture.owner :as local])) ::local/key"]]
+    (is (thrown? Exception (context/source-forms! "unknown.clj" (utf8 source))))))
+
+(deftest source-reader-refuses-tags-and-reader-evaluation-before-side-effects
+  (let [effects (atom [])]
+    (binding [*data-readers* {'fixture/touch #(do (swap! effects conj %) %)}]
+      (doseq [source ["#fixture/touch 1" "#inst \"2026-10-31\""
+                      "#uuid \"00000000-0000-0000-0000-000000000000\""
+                      "#=(spit \"source-reader-must-not-write\" \"forbidden\")"]]
+        (is (thrown? Exception (context/source-forms! "refused.clj" (utf8 source))))))
+    (is (empty? @effects))
+    (is (not (.exists (io/file "source-reader-must-not-write"))))))
+
+(deftest baseline-current-alias-scopes-retain-private-call-provenance
+  (let [program
+        (fn [target alias]
+          {:paths ["owner.clj" "caller.clj"] :entrypoints #{"owner.clj" "caller.clj"}
+           :namespace-by-path {"owner.clj" target "caller.clj" 'fixture.alias-caller}
+           :inputs {"owner.clj" (utf8 (str "(ns " target ")\n(defn- held [x] x)\n(defn- dead [] nil)\n"))
+                    "caller.clj" (utf8 (str "(ns fixture.alias-caller (:require [" target " :as " alias "]))\n"
+                                            "(def fixture-key ::" alias "/once-fixtures)\n"
+                                            "(defn call [x] (#'" alias "/held x))\n"))}})
+        baseline (program 'fixture.baseline 'old)
+        current (program 'fixture.current 'native)]
+    (doseq [[plan target alias] [[baseline 'fixture.baseline 'old] [current 'fixture.current 'native]]]
+      (let [source (context/private-var-usages [plan])
+            resolved (context/resolve-private-usages (observe! plan) source)
+            calls (vec (mapcat :callers source))]
+        (is (= 1 (count calls)))
+        (is (= target (:namespace (first calls))))
+        (is (= alias (:alias (first calls))))
+        (is (= (context/sha256 (get-in plan [:inputs "caller.clj"])) (:sha256 (first calls))))
+        (is (= 1 (count (:resolved resolved))))
+        (is (some #(= :unused-private-var (:type %)) (:findings resolved)))))
+    (is (thrown? Exception
+                 (context/source-forms! "current-with-stale-alias.clj"
+                                        (utf8 "(ns fixture.current (:require [fixture.current :as native])) ::old/key"))))))
+
+(deftest syntax-quote-retains-core-classes-and-source-declaration-scope
+  (let [read-source #(context/source-forms! "syntax.clj" (utf8 %))
+        symbols #(set (filter symbol? (tree-seq coll? seq %)))
+        basic (symbols (read-source "(ns never.syntax) (def v `(map String clojure.core/inc java.lang/String))"))]
+    (is (contains? basic 'clojure.core/map))
+    (is (contains? basic 'java.lang.String))
+    (is (contains? basic 'clojure.core/inc))
+    (is (contains? basic 'java.lang/String))
+    (is (not (contains? basic 'never.syntax/map)))
+    (is (not (contains? basic 'never.syntax/String)))
+    (let [scoped (symbols
+                  (read-source (str "(ns never.scoped (:refer-clojure :exclude [map] :rename {inc increment})"
+                                    " (:require [never.library :refer [foreign] :rename {foreign renamed} :as n])"
+                                    " (:import (java.util Date)))\n"
+                                    "(def local 1) (clojure.core/defn str [] nil)\n"
+                                    "(def v `(map increment renamed n/qualified Date Date. local str))")))]
+      (doseq [name '[never.scoped/map clojure.core/inc never.library/foreign never.library/qualified
+                     java.util.Date java.util.Date. never.scoped/local never.scoped/str]]
+        (is (contains? scoped name) (str name))))
+    (let [only (symbols (read-source "(ns never.only (:refer-clojure :only [map])) (def v `(map inc))"))]
+      (is (contains? only 'clojure.core/map))
+      (is (contains? only 'never.only/inc)))
+    (is (nil? (find-ns 'never.syntax)))
+    (is (nil? (find-ns 'never.scoped)))
+    (is (nil? (find-ns 'never.library)))
+    (let [imported (symbols (read-source "(ns never.import (:import never.init.MustNotLoad)) (def v `MustNotLoad)"))]
+      (is (contains? imported 'never.init.MustNotLoad)))
+    (doseq [source ["(ns never.all (:require [never.library :refer :all]))"
+                    "(ns never.use (:use never.library))"
+                    "(ns never.refer) (refer 'never.library)"
+                    "(ns never.switch) (in-ns 'never.other)"
+                    "(ns never.shadow) (def String nil)"
+                    "(ns never.shadow (:require [never.lib :refer [String]]))"]]
+      (is (thrown? Exception (read-source source))))))
+
+(deftest prefix-libspec-aliases-are-expanded-only-in-reader-scope
+  (doseq [source ["(ns never.prefix (:require (clojure [set :as s]))) (def k ::s/value)"
+                  "(ns never.prefix) (require '(clojure [set :as s])) (def k ::s/value)"
+                  "(ns never.prefix (:require (never (nested [library :as s])))) (def k ::s/value)"
+                  "(ns never.prefix) (require '(never (nested [library :as s]))) (def k ::s/value)"]]
+    (let [before (set (map ns-name (all-ns)))
+          forms (context/source-forms! "prefix.clj" (utf8 source))
+          target (if (str/includes? source "clojure") :clojure.set/value :never.nested.library/value)]
+      (is (= target (nth (last forms) 2)))
+      (is (= before (set (map ns-name (all-ns)))))
+      (is (= 'never.prefix (second (first forms)))))))
+
+(deftest declaration-heads-respect-prior-source-bindings
+  (let [parse #(context/source-forms! "head-scope.clj" (utf8 %))
+        shadow-require (str "(ns never.shadow (:refer-clojure :exclude [require]))\n"
+                            "(defn require [& xs] nil)\n"
+                            "(require '[foreign.library :refer [map]])\n(def v `map)")
+        shadow-import (str "(ns never.shadow (:refer-clojure :exclude [import]))\n"
+                           "(defn import [& xs] nil)\n"
+                           "(import 'foreign.init.MustNotLoad)\n(def v `MustNotLoad)")
+        before (set (map ns-name (all-ns)))]
+    (is (= '(def v (quote clojure.core/map)) (last (parse shadow-require))))
+    (is (= '(def v (quote never.shadow/MustNotLoad)) (last (parse shadow-import))))
+    (is (= '(def v (quote clojure.core/map))
+           (last (parse (str "(ns never.bound (:refer-clojure :exclude [require])) (def require identity)\n"
+                             "(require '[foreign.library :refer [map]]) (def v `map)")))))
+    (is (= '(def v (quote never.bound/MustNotLoad))
+           (last (parse (str "(ns never.bound (:refer-clojure :exclude [import])) (def import identity)\n"
+                             "(import 'foreign.init.MustNotLoad) (def v `MustNotLoad)")))))
+    (is (= '(def v (quote clojure.core/map))
+           (last (parse (str "(ns never.referred (:refer-clojure :exclude [require])"
+                             " (:require [foreign.api :refer [require]]))\n"
+                             "(require '[foreign.library :refer [map]]) (def v `map)")))))
+    (is (= '(def v (quote never.referred/MustNotLoad))
+           (last (parse (str "(ns never.referred (:refer-clojure :exclude [import])"
+                             " (:require [foreign.api :refer [import]]))\n"
+                             "(import 'foreign.init.MustNotLoad) (def v `MustNotLoad)")))))
+    ;; Explicit core declarations work even when their bare names are local.
+    (is (= :clojure.set/value
+           (last (parse (str shadow-require "\n(clojure.core/require '(clojure [set :as s])) ::s/value")))))
+    (is (= '(def q (quote foreign.init.MustNotLoad))
+           (last (parse (str shadow-import "\n(clojure.core/import 'foreign.init.MustNotLoad) (def q `MustNotLoad)")))))
+    (is (= :clojure.set/value
+           (last (parse (str "(ns never.renamed (:refer-clojure :rename {require need}))\n"
+                             "(need '(clojure [set :as s])) ::s/value")))))
+    (is (= :clojure.set/value
+           (last (parse (str "(ns never.core-alias (:require [clojure.core :as c]))\n"
+                             "(c/require '(clojure [set :as s])) ::s/value")))))
+    (is (thrown? Exception
+                 (parse (str shadow-require "\n(require '[foreign.library :as invented]) ::invented/value"))))
+    (is (= before (set (map ns-name (all-ns)))))))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
