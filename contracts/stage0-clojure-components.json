@@ -242,6 +242,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/backend/wasm.clj", "namespace": "gravity.backend.wasm"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00756-p15-s23-b4-wasm-authority-token-002-p15-s23-b4-wasm-operation-bytes-through-p15-s23-b4-wasm-canonical-bounded-octet.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-wasm"},
       "test": {"path": "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj", "namespace": "gravity.backend.wasm.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "jvm-source",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-jvm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/jvm.clj", "namespace": "gravity.backend.jvm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00773-jvm-backend-value-source.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-jvm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj", "namespace": "gravity.backend.jvm.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
