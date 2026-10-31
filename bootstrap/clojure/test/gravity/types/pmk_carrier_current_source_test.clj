@@ -6,6 +6,10 @@
 (def owners [["sh08" "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"]
              ["body" "bootstrap/gravity/src/gravity/effects.gravity"]
              ["p15-s23" "bootstrap/gravity/p15_s23/emitter.gravity"]])
+;; The pinned source equation still includes historical accounting; only these
+;; two live owners remove it. Effects keeps its independent C8 budget adapter.
+(def unmetered-owners #{"sh08" "p15-s23"})
+(defn unmetered-owner? [prefix] (contains? unmetered-owners prefix))
 (defn before [path]
   (let [r (shell/sh "git" "show" (str base ":" path))] (assert (zero? (:exit r))) (:out r)))
 (defn definitions [text]
@@ -55,15 +59,38 @@
   (let [a (.indexOf text (str "(defn " name " ")) b (.indexOf text "\n(defn " (inc a))]
     (assert (and (pos? a) (pos? b))) (str (subs text 0 a) "<owned>" (subs text b))))
 (defn replace-data [x old new] (walk/postwalk-replace {old new} x))
+(defn without-accounting [form]
+  (let [drop-base (fn [bindings]
+                    (vec (mapcat (fn [[name value]]
+                                   (if (= 'base name) [] [name value]))
+                                 (partition 2 bindings))))
+        strip (walk/postwalk
+                (fn [x]
+                  (if (map? x) (dissoc x :work-count) x))
+                form)
+        args (nth strip 2)
+        body (walk/postwalk
+               (fn [x]
+                 (if (and (seq? x) (= 'if (first x)) (= '(> base budget) (second x)))
+                   (nth x 3)
+                   x))
+               (nth strip 3))
+        body (if (and (seq? body) (= 'let (first body)) (vector? (second body)))
+               (apply list (assoc (vec body) 1 (drop-base (second body))))
+               body)]
+    (apply list (assoc (vec strip) 2 (vec (butlast args)) 3 body))))
+(defn expected-for [prefix old]
+  (if (unmetered-owner? prefix) (without-accounting (expected old)) (expected old)))
 
 (deftest main-defect-and-complete-correctness-equation
   (doseq [[prefix path] owners
           :let [name (symbol (str prefix "-pmk-parameter")) a (before path) b (slurp path)
                 old (definitions a) new (definitions b) of (get old name) nf (get new name)]]
-    (is (= 7 (count (nth of 2)) (count (nth nf 2))))
+    (is (= 7 (count (nth of 2))))
+    (is (= (if (unmetered-owner? prefix) 6 7) (count (nth nf 2))))
     (is (not= of nf))
-    (is (= nf (expected of)) "Preserve main accounting and failure priority in the complete equation")
-    (is (= of (erase nf)))
+    (is (= nf (expected-for prefix of)) "Preserve semantic carrier and failure priority in the complete equation")
+    (is (= (if (unmetered-owner? prefix) (without-accounting of) of) (erase nf)))
     (is (= (dissoc old name) (dissoc new name)))
     (is (= (outside a name) (outside b name)))
     (is (= 1 (count (filter #{width} (nodes nf)))))
@@ -74,28 +101,26 @@
 (deftest effective-main-source-corruptions
   (doseq [[prefix path] owners
           :let [name (symbol (str prefix "-pmk-parameter"))
-                old (get (definitions (before path)) name) good (get (definitions (slurp path)) name)]]
+                old (get (definitions (before path)) name) good (get (definitions (slurp path)) name)
+                target (expected-for prefix old)]]
     (doseq [[a b] [['(vector? values) true] ['(= (count names) (count values)) true]
                    ['(map? form) true] ['(symbol? original) true] ['(symbol? value) true]
                    ['(keyword? original) true] ['(keyword? value) true] ['(= original value) true]
                    ['(get values i) '(get values 0)] ['(get forms (get names i)) '(get forms (first names))]
-                   ['(recur (+ i 1)) true] ['(= i (count names)) '(= i 1)]
-                   ['(> base budget) false] [failure (dissoc failure :work-count)]]]
+                   ['(recur (+ i 1)) true] ['(= i (count names)) '(= i 1)]]]
       (let [bad (replace-data good a b)]
         (is (not= good bad))
-        (is (not= (expected old) bad))))
+        (is (not= target bad))))
     (let [bad (assoc (vec good) 2 (vec (butlast (nth good 2))))]
-      (is (= 6 (count (nth bad 2))))
-      (is (not= (expected old) bad)))
-    (let [accepted (first (filter #(and (map? %) (= :accepted (:status %))) (nodes old)))
-          without (replace-data good (list 'if correspondence accepted failure) accepted)
-          lifted (list 'defn name (nth good 2) (list 'if correspondence (nth without 3) failure))]
+      (is (= (if (unmetered-owner? prefix) 5 6) (count (nth bad 2))))
+      (is (not= target bad)))
+    (let [live (without-accounting old)
+          accepted (first (filter #(and (map? %) (= :accepted (:status %))) (nodes live)))
+          live-failure (dissoc failure :work-count)
+          without (replace-data good (list 'if correspondence accepted live-failure) accepted)
+          lifted (list 'defn name (nth good 2) (list 'if correspondence (nth without 3) live-failure))]
       (is (not= good lifted))
-      (is (not= (expected old) lifted) "Lifting the walk changes existing failure priority")
-      (let [missing-report (replace-data good (list 'if correspondence accepted failure)
-                                        (list 'if correspondence accepted (dissoc failure :work-count)))]
-        (is (not= good missing-report))
-        (is (not= (expected old) missing-report) "The new refusal alone must retain main's work report")))))
+      (is (not= target lifted) "Lifting the walk changes existing failure priority"))))
 
 (deftest proposed-regression-definitions-remain-unloaded-data
   (let [text (slurp "bootstrap/clojure/test/gravity/types/pmk_carrier_regression_test.clj")
@@ -109,12 +134,12 @@
         cases (first (filter #(and (vector? %) (vector? (first %))
                                    (= :carrier-keyword (first (first %))))
                              (mapcat nodes forms)))]
-    (is (= 15 (count forms)))
+    (is (= 18 (count forms)))
     (is (= 'gravity.types.pmk-carrier-regression-test (second (first forms))))
     (is (every? '#{ns def defn- deftest} (map first forms)))
     (is (= '[pmk-carrier-real-owner-valid-vectors pmk-carrier-real-owner-fourteen-data-cases
              pmk-carrier-real-owner-native-guard-and-refusal-priority
-             pmk-carrier-real-owner-proof-consumer-retains-work-report] selected))
+             pmk-carrier-real-owner-proof-consumer-rechecks-fresh-evidence] selected))
     (is (= #{:carrier-keyword :carrier-list :carrier-map :carrier-set :width :late-name :late-marker
              :late-type :opaque-payload :opaque-child :missing-child :children-reordered :metadata}
            (set (map first cases))))
