@@ -2,6 +2,7 @@
   "Compiler-free composition checks of exact named source bodies and admission
   predicates. Ports use synthetic DATA; no Bootstrap or gravity.syntax load."
   (:require [clojure.java.io :as io]
+            [gravity.reader.pure-text :as reader-pure-text]
             [clojure.test :refer [deftest is]]))
 
 (def ^:private component-root
@@ -94,7 +95,8 @@
 (deftest removing-view-guard-demonstrates-silent-drop-regression
   (let [guard (nth view-body 3)
         _ (is (some #{:pure-extension-results} (tree-seq coll? seq guard)))
-        mutant (eval (list* 'fn (nth view-body 2) (drop 4 view-body)))
+        mutant (binding [*ns* (the-ns 'gravity.reader.composition-test)]
+                 (eval (list* 'fn (nth view-body 2) (drop 4 view-body))))
         calls (atom [])
         result (mutant (assoc artifact :pure-extension-results [:unsealed]) nil (ports calls))]
     ;; Without the guard the inherited whitelist drops the field. The real

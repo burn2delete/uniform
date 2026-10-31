@@ -11,6 +11,26 @@
     (c2-reader-fail!
      "C2-HASH" source-path {:stage :read-source}
      {:missing-fields [:authenticated-pure-extension-results]}))
+  (when (reader-pure-text/admission-required? c2-artifact)
+    (when-not (and (identical? candidate sh03-reader-internal-product-authority)
+                   (some? invocation)
+                   (= :passed (:status (p15-s23-trusted-carrier-validation c2-artifact :default-only))))
+      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                       {:missing-fields [:pure-text-fresh-reader-reconstruction]}))
+    (sh03-reader-authenticated-envelope-options source-path invocation)
+    (let [input (get-in c2-artifact [:gravity-reader-boundary :pure-text-reconstruction-input])]
+      (when-not (and (= #{:source-text :project-context} (set (keys input)))
+                     (string? (:source-text input)))
+        (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                         {:missing-fields [:pure-text-original-source-input]}))
+      ;; Re-enter the real producer and raw verifier on all original bytes.
+      ;; Neither the submitted envelope nor caller-recomputed hashes suffice.
+      (let [fresh (reader-pure-source-artifact
+                   source-path (:source-text input) (:project-context input)
+                   (:reader-source-path invocation))]
+        (when-not (= fresh c2-artifact)
+          (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                           {:missing-fields [:pure-text-fresh-reader-product-equality]})))))
   (let [context (sh03-reader-verification-invocation! source-path invocation)
         boundary (:gravity-reader-boundary c2-artifact)
         envelope (:authenticated-envelope boundary)

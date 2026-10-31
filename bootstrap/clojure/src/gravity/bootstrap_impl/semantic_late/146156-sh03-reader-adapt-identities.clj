@@ -63,7 +63,8 @@
      semantic-index
      source-unit
      (select-keys (:plan-binding resolved)
-                  [:source-content-hash :plan-semantic-hash :functions-semantic-hash]))
+                  [:source-content-hash :plan-semantic-hash :functions-semantic-hash])
+     result)
     (catch
      InterruptedException
      interrupted

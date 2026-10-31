@@ -5,6 +5,7 @@
   retain their authority. Supplied operations are trusted seed composition,
   not user-provided proof of reader or syntax authenticity."
   (:require [clojure.string :as str]
+            [gravity.reader.pure-text :as reader-pure-text]
             [gravity.c3-reader-expansions :as c3-reader-expansions]
             [gravity.c3-syntax-verification :as verification]))
 
@@ -543,6 +544,7 @@
  {:requires
   [clojure.core
    clojure.string
+   gravity.reader.pure-text
    gravity.c3-reader-expansions
    gravity.c3-syntax-verification],
   :forbids [gravity.bootstrap gravity.cli gravity.release]},
@@ -2387,7 +2389,7 @@
                    {:id "C2-HASH"
                     :missing-fields [:authenticated-pure-extension-results]})))
  (when
-  invocation
+  (or invocation (reader-pure-text/admission-required? c2-artifact))
   (sh03-c3-precomputed-c2-verify!
    sh03-reader-internal-product-authority
    (get-in c2-artifact [:source-unit-record :path])

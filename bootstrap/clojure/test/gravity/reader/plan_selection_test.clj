@@ -86,3 +86,13 @@
     (is (not (contains? selected dropped)))
     (is (= #{['sh03-reader-policy-valid? dropped]}
            (missing-selected-edges table selected 'sh03-reader-policy-valid?)))))
+
+(deftest sealed-producer-and-fresh-verifier-closures-are-selected
+  (let [{:keys [select prefix]} (selector)
+        table (function-table)
+        selected (select table prefix)]
+    (doseq [name '[sh03-reader-read-text sh03-reader-sealed-text-record
+                  sh03-reader-sealed-text-forms-valid?]]
+      (is (contains? selected name)))
+    (doseq [root '[sh03-read-source-unit sh03-verify-reader-result]]
+      (is (empty? (missing-selected-edges table selected root))))))

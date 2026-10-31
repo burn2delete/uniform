@@ -8,6 +8,7 @@
             [gravity.c2-artifact-identity.canonical :as canonical]
             [gravity.digest :as digest]
             [gravity.source-unit :as source-unit]
+            [gravity.reader.pure-text :as reader-pure-text]
             [gravity.reader.dispatch :as reader-dispatch]))
 
 (def ^:private component-root

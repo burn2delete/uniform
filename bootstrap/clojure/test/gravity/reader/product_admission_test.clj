@@ -94,9 +94,10 @@
   (let [constructor (source-definition
                      (str components "compiler/00829-compiler-c2-reader-source-artifact.clj")
                      'compiler-c2-reader-source-artifact)]
-    (is (some #{'[reader-options standard-reader-options]}
-              (map #(when (vector? %) (vec (take 2 %)))
-                   (tree-seq coll? seq constructor))))))
+    (is (some #{'(compiler-c2-reader-source-artifact
+                  source-path source-text project-context precomputed-products candidate
+                  reader-source-path invocation standard-reader-options)}
+              (tree-seq coll? seq constructor)))))
 
 (deftest paired-definitions-are-source-only
   (let [packet (edn/read-string
