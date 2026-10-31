@@ -12101,7 +12101,7 @@
                      (assoc types :nth-index :gravity.type/keyword)]]
       (let [prior (invoke-c7 'sh08-mg-present-derive
                     [(nodes :read) nodes changed {} {} (:lexical-bindings core) bindings forms {}
-                     (assoc shape :source-core core :budget-left 65536) ])]
+                     (assoc shape :source-core core) ])]
         (is (= prior (step changed)))
         (is (= :rejected (:status prior)))
         (is (nil? (:descriptor prior))))))
@@ -15594,7 +15594,7 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types
                         context])
-            shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
+            shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
         (is (= :gravity.type/applied-string-set-insertion (:kind descriptor)))
@@ -16379,7 +16379,7 @@
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types
                         context])
-            shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
+            shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
         (is (= :gravity.type/applied-keyword-set-insertion (:kind descriptor)))
@@ -16739,7 +16739,7 @@
                        [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types
                         {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
                          :lookup-bindings (vec (vals bindings)) :shape-call-products products}])
-            shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
+            shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
         (is (= :gravity.type/applied-symbol-set-insertion (:kind descriptor)))
