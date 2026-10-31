@@ -66,15 +66,12 @@
         :resolved-digests (:resolved-digests boundary) :definitions (:definitions request)}))
    (:module-artifacts inputs)))
 
-(defn- resolution-module-request-from-base
-  [source-path sh05-artifact inputs base]
-  (let [views (sh06-resolution-module-input-views! source-path inputs)
-        header (first (:expanded-syntax-stream sh05-artifact))
-        imports (mapv #(-> % (assoc :source-span (:span header))
-                            (assoc-in [:semantic-span :namespace-syntax-id] (:syntax/id header))) (:imports base))]
-    (assoc base :artifact :gravity/sh06-ordinary-module-resolution-request :schema-version 2
-           :namespace-source {:semantic-span {:namespace-syntax-id (:syntax/id header)} :source-span (:span header)}
-           :module-premises views :imports imports)))
+(defn-
+ resolution-module-request-from-base
+ [source-path sh05-artifact inputs base]
+ (let
+  [views (sh06-resolution-module-input-views! source-path inputs)]
+  (gravity.resolution/module-request sh05-artifact base views)))
 
 (defn sh06-resolution-module-request
   [source-path sh05-artifact inputs]

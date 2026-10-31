@@ -123,6 +123,15 @@
          #'sh06-resolution-source-relative-path
          #'gravity.resolution/boundary-keys-for
          #'gravity.resolution/envelope-descriptor
+         #'c5-resolution-diagnostic-ids
+         #'c5-resolution-governing-document
+         #'sh06-resolution-adapter-contract
+         #'sh06-resolution-product-projections
+         #'sh06-resolution-sh02-descriptor
+         #'gravity.resolution/assemble-candidate
+         #'gravity.resolution/base-request
+         #'gravity.resolution/diagnostic-origin
+         #'gravity.resolution/module-request
          #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
          #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*
