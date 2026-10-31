@@ -200,7 +200,11 @@
  #'sh07-core-proof-from-checks
  #'sh07-core-exact-comparison-value
  #'sh07-core-artifact-identity-input
- #'sh07-core-verification-report]))]
+ #'sh07-core-verification-report
+ #'gravity.checked-core/artifact-base
+ #'sh07-core-artifact-base
+ #'sh07-core-adapter-contract
+ #'sh07-core-governing-document]))]
  (defn
   sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))

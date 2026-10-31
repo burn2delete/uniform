@@ -35,12 +35,12 @@
     sh07-b11-match-pattern-graph-complete? sh07-b11-match-pattern-record-coherent? sh07-b11-match-group-coherent?
     sh07-core-match-products-coherent?
     sh07-core-verification-checks sh07-core-proof-from-checks sh07-core-exact-comparison-value
-    sh07-core-artifact-identity-input sh07-core-verification-report])
+    sh07-core-artifact-identity-input sh07-core-verification-report sh07-core-artifact-base])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 71 (count publics)))
+    (is (= 72 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -657,11 +657,12 @@
         (assert-interposition-misses #(with-redefs-fn {v (fn [& args] (apply original args))} %))))))
 
 (deftest configuration-cache-and-thread-binding-roots-invalidate-receipts
-  (doseq [name '[checked-core-stage-defaults sh07-b9-handler-descriptor-keys sh07-b11-match-clause-keys sh07-b11-match-pattern-record-keys sh07-core-public-function-shapes sh07-core-source-relative-path
+  (doseq [name '[checked-core-stage-defaults sh07-b9-handler-descriptor-keys sh07-b11-match-clause-keys sh07-b11-match-pattern-record-keys sh07-core-public-function-shapes sh07-core-source-relative-path sh07-core-adapter-contract sh07-core-governing-document
                 sh07-core-development-binding sh07-core-cached-binding]]
     (let [v (seed-var name) original @v
           replacement (cond (map? original) (reduce-kv assoc {} original)
                             (string? original) (String. ^String original)
+                            (keyword? original) (keyword "changed" (clojure.core/name original))
                             (instance? clojure.lang.Atom original) (atom @original)
                             :else (reify clojure.lang.IDeref (deref [_] @original)))]
       (is (not (identical? original replacement)))
@@ -700,7 +701,7 @@
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input
                                               sh07-core-source-path sh07-core-plan-identities sh07-core-build-binding!
                                               sh07-core-current-source-key sh07-core-current-binding! sh07-core-execute!
-                                              sh07-core-source-relative-path sh07-core-public-function-shapes sh07-b9-handler-descriptor-keys sh07-b11-match-clause-keys sh07-b11-match-pattern-record-keys
+                                              sh07-core-source-relative-path sh07-core-public-function-shapes sh07-core-adapter-contract sh07-core-governing-document sh07-b9-handler-descriptor-keys sh07-b11-match-clause-keys sh07-b11-match-pattern-record-keys
                                               sh07-core-development-binding sh07-core-cached-binding *sh07-core-execution-binding*])))
         downstream (atom 0)]
     ;; Isolated bookend only; the owning admission operations are not executed.
@@ -715,6 +716,7 @@
             (let [original @v
                   replacement (cond (map? original) (reduce-kv assoc {} original)
                                     (string? original) (String. ^String original)
+                            (keyword? original) (keyword "changed" (clojure.core/name original))
                                     (instance? clojure.lang.Atom original) (atom @original)
                                     (instance? clojure.lang.IDeref original) (reify clojure.lang.IDeref (deref [_] @original))
                                     (nil? original) :unit-binding
@@ -1217,3 +1219,73 @@
                      (finally (Thread/interrupted)))]
       (is (identical? interrupted (first observed)))
       (is (true? (second observed))))))
+
+(deftest artifact-base-assembly-preserves-products-and-explicit-boundaries
+  (let [fixture (verification-data-fixture)
+        run (assoc (:gravity-core-boundary fixture) :capability-based-proof :caller-forgery)
+        parent {:artifact-id :parent :provenance {:source-path source}}
+        request (:authenticated-core-request run)
+        captured {:plan :private-plan :source-path :private-compiler-path
+                  :source-content-hash :source-hash :revision-status :development-unadmitted
+                  :self-hosted? false}
+        config {:adapter-contract b/sh07-core-adapter-contract :governing-document b/sh07-core-governing-document}
+        assembled (core/artifact-base parent request run captured source config)
+        boundary (:gravity-core-boundary assembled)
+        contract (:gravity/namespace-contract (meta #'core/artifact-base))]
+    (is (= assembled ((seed-var 'sh07-core-artifact-base) parent request run captured source)))
+    (is (= :gravity/sh07-core-artifact (:kind assembled)))
+    (is (= :accepted (:status assembled)))
+    (is (nil? (:capability-based-proof assembled)))
+    (is (= [] (:diagnostics assembled)))
+    (is (= {:source-path source} (:provenance assembled)))
+    (is (= (:artifact-id (:canonical-core-artifact run)) (:artifact-id assembled)))
+    (is (identical? parent (:sh06-resolution-artifact assembled)))
+    (is (identical? parent (:authenticated-sh06-resolution-artifact boundary)))
+    (is (identical? request (:authenticated-core-request boundary)))
+    (is (= (dissoc captured :plan :source-path) (:plan-binding boundary)))
+    (doseq [field [:raw-template-result :canonical-core-artifact :digest-requests :resolved-digests
+                  :template-verification :resolved-verification]]
+      (is (identical? (get run field) (get boundary field))))
+    (is (= {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
+           (get-in assembled [:execution-boundary :downstream-fact-statuses])))
+    (is (false? (get-in assembled [:execution-boundary :sh07-complete?])))
+    (is (false? (:self-hosted? boundary)))
+    (is (false? (get-in assembled [:execution-boundary :self-hosted?])))
+    (is (false? (:target-source-reread? boundary)))
+    (is (true? (:clojure-adapter-residual? boundary)))
+    (is (= b/sh07-core-adapter-contract (:adapter-contract boundary)))
+    (is (= b/sh07-core-governing-document (:governing-document assembled)))
+    (is (= :none (get-in contract [:public-api 'artifact-base :admission])))
+    (is (false? (get-in contract [:public-api 'artifact-base :authenticates-premises?])))
+    (is (false? (get-in contract [:public-api 'artifact-base :grants-authority?])))
+    (is (true? (get-in contract [:public-api 'artifact-base :legacy-status-data-only?])))
+    (is (= [] (get-in contract [:public-api 'artifact-base :operation-inputs])))
+    (is (= [:adapter-contract :governing-document]
+           (get-in contract [:public-api 'artifact-base :configuration-inputs])))))
+
+(deftest artifact-base-assembly-does-not-authenticate-caller-data-or-run-authority
+  (let [parent {:artifact-id :caller-parent} request {:lineage {:source-revision-id :revision
+                                      :authenticated-sh06-artifact-id :caller-parent
+                                      :sh06-semantic-projection-id :projection}}
+        run {:canonical-core-artifact {:artifact-id :caller-core}
+             :template-verification {:status :passed :caller-claim true}
+             :resolved-verification {:status :passed :caller-claim true}}
+        config {:adapter-contract :caller-adapter :governing-document "caller-document"}
+        artifact (core/artifact-base parent request run {} "<unread-caller-path>" config)
+        descriptor (get-in artifact [:gravity-core-boundary :authenticated-envelope-descriptor])
+        envelope (get-in artifact [:gravity-core-boundary :authenticated-envelope])]
+    ;; Legacy labels and copied reports are data, never authentication or publication.
+    (is (= :caller-core (:artifact-id artifact) (:semantic-artifact-id descriptor) (:semantic-artifact-id envelope)))
+    (is (= :revision (:source-revision-id descriptor)))
+    (is (= :caller-parent (:authenticated-sh06-artifact-id descriptor) (:authenticated-sh06-artifact-id envelope)))
+    (is (= :projection (:sh06-semantic-projection-id descriptor)))
+    (is (= "<unread-caller-path>" (:actual-source-path envelope)))
+    (is (= :caller-adapter (get-in artifact [:gravity-core-boundary :adapter-contract])))
+    (is (= "caller-document" (:governing-document artifact)))
+    (is (nil? (:capability-based-proof artifact)))
+    (let [observed (atom []) marker (Object.)]
+      (with-redefs [core/artifact-base (fn [& args] (swap! observed conj args) marker)]
+        (is (identical? marker ((seed-var 'sh07-core-artifact-base) parent request run {} source))))
+      (is (= [[parent request run {} source
+               {:adapter-contract b/sh07-core-adapter-contract :governing-document b/sh07-core-governing-document}]]
+             @observed)))))

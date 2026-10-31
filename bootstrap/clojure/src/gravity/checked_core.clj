@@ -382,6 +382,21 @@
     {:arglists [[parameters parameter-path _operations]],
      :operation-inputs [],
      :admission :none},
+    artifact-base
+    {:arglists
+     ([resolution-artifact
+       authenticated-request
+       run
+       captured
+       source-path
+       configuration]),
+     :operation-inputs [],
+     :configuration-inputs [:adapter-contract :governing-document],
+     :admission :none,
+     :input-boundary :owner-validated-native-data,
+     :authenticates-premises? false,
+     :grants-authority? false,
+     :legacy-status-data-only? true},
     neutral-value
     {:arglists
      [[source-path
@@ -706,7 +721,11 @@
     :verification-data-premise-authentication
     :verification-data-fresh-expected-reconstruction
     :legacy-proof-data-authority
-    :verification-report-safe-public-diagnostic-projection],
+    :verification-report-safe-public-diagnostic-projection
+    :assembly-data-premise-authentication
+    :assembly-data-fresh-construction
+    :assembly-data-proof-lifetime
+    :legacy-accepted-status-authority],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -739,7 +758,10 @@
     :match-descriptor-key-configuration
     :native-candidate-expected-and-upstream-verification-data
     :exact-decimal-and-native-collection-data
-    :caller-supplied-check-maps],
+    :caller-supplied-check-maps
+    :native-core-run-and-captured-binding-data
+    :actual-source-path
+    :adapter-and-document-configuration],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -807,7 +829,8 @@
     :exact-comparison-data
     :core-check-catalog-map
     :legacy-capability-proof-data
-    :private-verification-report-data],
+    :private-verification-report-data
+    :unproved-core-artifact-base-data],
    :clojure-seed-boundary? true,
    :contract-boundary
    :checked-core-supported-data-runtime-and-test-execution})
@@ -5153,6 +5176,157 @@
    :resolved-verification (:resolved-verification boundary),
    :upstream-verification upstream-verification}))
 
+(defn
+ artifact-base
+ [resolution-artifact
+  authenticated-request
+  run
+  captured
+  source-path
+  configuration]
+ (let
+  [sh07-core-adapter-contract
+   (:adapter-contract configuration)
+   sh07-core-governing-document
+   (:governing-document configuration)
+   core
+   (:canonical-core-artifact run)
+   boundary
+   {:plan-binding (dissoc captured :plan :source-path),
+    :template-verification (:template-verification run),
+    :canonical-core-artifact core,
+    :authenticated-sh06-resolution-artifact resolution-artifact,
+    :authenticated-core-request authenticated-request,
+    :raw-template-result (:raw-template-result run),
+    :clojure-adapter-residual? true,
+    :digest-requests (:digest-requests run),
+    :resolved-digests (:resolved-digests run),
+    :authenticated-envelope-descriptor
+    {:artifact :gravity/sh07-authenticated-envelope-descriptor,
+     :semantic-artifact-id (:artifact-id core),
+     :source-revision-id
+     (get-in authenticated-request [:lineage :source-revision-id]),
+     :authenticated-sh06-artifact-id
+     (get-in
+      authenticated-request
+      [:lineage :authenticated-sh06-artifact-id]),
+     :sh06-semantic-projection-id
+     (get-in
+      authenticated-request
+      [:lineage :sh06-semantic-projection-id])},
+    :self-hosted? false,
+    :slice :SH-07,
+    :resolved-verification (:resolved-verification run),
+    :adapter-contract sh07-core-adapter-contract,
+    :target-source-reread? false,
+    :owner :gravity-source,
+    :authenticated-envelope
+    {:artifact :gravity/sh07-authenticated-envelope,
+     :semantic-artifact-id (:artifact-id core),
+     :authenticated-sh06-artifact-id
+     (get-in
+      authenticated-request
+      [:lineage :authenticated-sh06-artifact-id]),
+     :actual-source-path source-path}}]
+  {:capability-based-proof nil,
+   :diagnostics [],
+   :task "SH-07-B47",
+   :sh06-resolution-artifact resolution-artifact,
+   :artifact-id (:artifact-id core),
+   :gravity-core-boundary boundary,
+   :document-set ["L2" "L3" "L6" "L7" "L9" "C5" "C6"],
+   :governing-document sh07-core-governing-document,
+   :execution-boundary
+   {:gravity-owned
+    [:core-template-construction
+     :template-verification
+     :control-flow-construction
+     :control-flow-verification
+     :reference-construction
+     :reference-verification
+     :var-reference-construction
+     :var-reference-verification
+     :call-construction
+     :call-verification
+     :function-record-construction
+     :function-record-verification
+     :call-edge-construction
+     :call-edge-verification
+     :recursion-component-construction
+     :recursion-component-verification
+     :keyword-map-lookup-construction
+     :keyword-map-lookup-verification
+     :lexical-binding-construction
+     :lexical-binding-verification
+     :loop-binding-construction
+     :loop-binding-verification
+     :recur-target-construction
+     :recur-target-verification
+     :recur-transfer-construction
+     :recur-transfer-verification
+     :mutation-construction
+     :mutation-verification
+     :error-transfer-construction
+     :error-transfer-verification
+     :error-handler-construction
+     :error-handler-verification
+     :match-branch-construction
+     :match-branch-verification
+     :match-decision-skeleton-construction
+     :match-decision-skeleton-verification
+     :match-pattern-record-construction
+     :match-pattern-record-verification
+     :fragment-partition-validation
+     :fragment-ordered-lowering
+     :module-assembly-validation
+     :resolved-verification],
+    :clojure-seed-owned
+    [:plan-execution
+     :sh06-projection-authentication
+     :digest-resolution
+     :envelope-binding
+     :compatibility-routing
+     :fragment-envelope-construction
+     :final-artifact-binding],
+    :downstream-fact-statuses
+    {:C7 :pending, :C8 :pending, :C9 :pending, :C10 :pending},
+    :pending-lowering-families
+    [:cross-file-module-linking
+     :incremental-fragment-cache
+     :parallel-fragment-lowering
+     :whole-program-execution
+     :alias-qualified-type-references
+     :alias-qualified-var-references
+     :alias-qualified-set-mutations
+     :external-qualified-var-references
+     :var-profile-legality-sh09
+     :keyword-default-value-lookup
+     :general-callable-keywords
+     :destructuring-bindings
+     :variadic-function-recur
+     :recur-type-compatibility
+     :higher-order-and-cross-module-recursion
+     :try-finally
+     :try-protected-sequencing
+     :try-handler-sequencing
+     :non-keyword-map-list-set-record-constructor-patterns
+     :variable-width-vector-patterns
+     :duplicate-pattern-binding-policy
+     :guard-patterns
+     :match-exhaustiveness
+     :match-result-type-join],
+    :sh07-complete? false,
+    :self-hosted? false},
+   :status :accepted,
+   :slice :SH-07,
+   :kind :gravity/sh07-core-artifact,
+   :provenance {:source-path source-path},
+   :pass
+   {:name :c6-gravity-core-lowering-b47,
+    :input :authenticated-sh06-resolution,
+    :output :canonical-core,
+    :owner :gravity.checked-core}}))
+
 (doseq
  [operation
   [#'build-plan-binding!
@@ -5230,7 +5404,8 @@
    #'proof-from-checks
    #'exact-comparison-value
    #'artifact-identity-input
-   #'verification-report]]
+   #'verification-report
+   #'artifact-base]]
  (alter-meta!
   operation
   assoc
