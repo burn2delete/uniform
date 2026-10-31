@@ -148,7 +148,7 @@
                       (run "lint-context-base-archive"
                            ["git" "archive" "--format=zip" (str "--output=" archive)
                             base "--" context/source-root] #{0})
-                      (context/archived-plan! archive inventory paths)))
+                      (context/archived-plan! archive inventory present)))
         contextual (fn [id plan selected]
                      (if-not plan []
                              (let [view (context/assemble! (io/file output id) plan)
