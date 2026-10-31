@@ -9,6 +9,7 @@
 (def source-root "bootstrap/clojure/src/")
 (def bootstrap (str source-root "gravity/bootstrap.clj"))
 (def manifest (str source-root "gravity/bootstrap_impl/load_order.edn"))
+(def semantic-late-manifest (str source-root "gravity/bootstrap_impl/semantic_late_order.edn"))
 (def loader (str source-root "gravity/bootstrap_impl/loader.clj"))
 (def loader-sha "ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7")
 (def facade (str source-root "gravity/authenticated_artifact_pipeline.clj"))
@@ -21,7 +22,7 @@
   (or (= bootstrap path) (str/starts-with? path (str source-root "gravity/bootstrap_impl/"))
       (= facade path) (str/starts-with? path facade-prefix)))
 
-(defn whole-context-path? [path] (contains? #{bootstrap manifest loader facade} path))
+(defn whole-context-path? [path] (contains? #{bootstrap manifest semantic-late-manifest loader facade} path))
 
 (defn source-text! [path bytes]
   (let [text (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)]
@@ -120,7 +121,8 @@
                   :inputs (apply merge (map :inputs plans))
                   :namespace-by-path (apply merge (map :namespace-by-path plans))
                   :entrypoints (into #{bootstrap} (mapcat :entrypoints plans))}]
-    (doseq [path selected :when (and (context-path? path) (not (#{loader manifest} path)))]
+    ;; The companion manifest is EDN data, linted separately from source forms.
+    (doseq [path selected :when (and (context-path? path) (not (#{loader manifest semantic-late-manifest} path)))]
       (when-not (some #{path} (:paths combined))
         (throw (ex-info "Changed fragment is absent from lint context" {:path path}))))
     combined))
