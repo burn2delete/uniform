@@ -1,4 +1,4 @@
-(ns gravity.self-hosting.sh08-function-call-kernels-test
+(ns gravity.types.quotient-kernels-test
   "Cheap normalized SH-08 function/call kernels.
 
   These checks deliberately construct normalized Gravity data and invoke the

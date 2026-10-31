@@ -5,7 +5,7 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]
-            [gravity.self-hosting.sh08-function-call-kernels-test :as kernels]))
+            [gravity.types.quotient-kernels-test :as kernels]))
 
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-08")
