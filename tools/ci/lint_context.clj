@@ -191,14 +191,12 @@
 
 (declare ^:private call-references)
 
-(defn- binding-names [pattern]
-  ;; Use Clojure's data-only destructuring expansion for Clojure tooling scopes.
-  (set (filter symbol? (take-nth 2 (clojure.core/destructure [pattern nil])))))
-
 (defn- binding-references [bindings locals aliases]
-  (loop [pairs (partition 2 bindings) locals locals calls []]
-    (if-let [[pattern expression] (first pairs)]
-      (recur (next pairs) (into locals (binding-names pattern))
+  ;; The compiler's data-only expansion puts used :or defaults in executable
+  ;; initializers and leaves unused defaults/binding syntax out of the walk.
+  (loop [pairs (partition 2 (clojure.core/destructure bindings)) locals locals calls []]
+    (if-let [[name expression] (first pairs)]
+      (recur (next pairs) (conj locals name)
              (into calls (call-references expression locals aliases)))
       {:locals locals :calls calls})))
 
@@ -208,7 +206,12 @@
         arities (if (vector? (first tail)) [tail] tail)]
     (mapcat (fn [[parameters & body]]
               (when (vector? parameters)
-                (mapcat #(call-references % (into locals (binding-names parameters)) aliases) body))) arities)))
+                ;; Simple parameters are all bound before the function's
+                ;; sequential destructuring let, including later parameters.
+                (let [locals (into locals (remove #{'&} (filter symbol? parameters)))
+                      patterns (remove symbol? parameters)
+                      {:keys [locals calls]} (binding-references (vec (mapcat #(vector % nil) patterns)) locals aliases)]
+                  (concat calls (mapcat #(call-references % locals aliases) body))))) arities)))
 
 (defn- call-references
   ([form] (call-references form #{} {}))
@@ -238,9 +241,9 @@
          (concat (mapcat #(function-references (rest %) locals aliases) functions)
                  (mapcat #(call-references % locals aliases) (drop 2 form))))
        (#{'if-let 'if-some 'when-let 'when-some} operation)
-       (let [[pattern expression] (second form) body (drop 2 form)
-             bound (into locals (binding-names pattern))]
-         (concat (walk expression)
+       (let [body (drop 2 form)
+             {bound :locals calls :calls} (binding-references (second form) locals aliases)]
+         (concat calls
                  (if (#{'if-let 'if-some} operation)
                    (concat (call-references (first body) bound aliases) (walk (second body)))
                    (mapcat #(call-references % bound aliases) body))))

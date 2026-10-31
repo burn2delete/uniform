@@ -241,7 +241,36 @@
           result (context/resolve-private-usages (observe! plan) (context/private-var-usages [plan]))]
       (is (empty? (:resolved result)) call))))
 
-(defn compare-private-programs! [private-before? body expected]
+(deftest destructuring-defaults-use-executable-initializers-and-their-binding-scopes
+  (doseq [call ["(defn f [] (let [{:keys [value] :or {value (#'local/held 1)}} {}] value))"
+                "(defn f [] (let [[{:keys [value] :or {value (#'local/held 1)}}] [{}]] value))"
+                "(defn f [] (let [comment identity {:keys [value] :or {value (comment (#'local/held 1))}} {}] value))"
+                "(defn f [] (let [case identity {:keys [value] :or {value (case (#'local/held 1))}} {}] value))"
+                "(defn f [{:keys [value] :or {value (#'local/held 1)}}] value)"
+                "(defn f [[{:keys [value] :or {value (#'local/held 1)}}]] value)"
+                "(defn f [{:keys [value] :or {value (comment (#'local/held 1))}} comment] value)"
+                "(defn f [] (if-let [{:keys [value] :or {value (#'local/held 1)}} {}] value :miss))"
+                "(defn f [] (when-let [{:keys [value] :or {value (#'local/held 1)}} {}] value))"]]
+    (let [plan (private-call-plan call)
+          result (context/resolve-private-usages (observe! plan) (context/private-var-usages [plan]))]
+      (is (= ['held] (mapv #(get-in % [:definition :name]) (:resolved result))) call)))
+  (doseq [call ["(defn f [] (let [{:keys [value] :or {value '(#'local/held 1)}} {}] value))"
+                "(defn f [] (let [{:keys [value] :or {unused (#'local/held 1)}} {}] value))"
+                "(defn f [] (let [{value '(#'local/held 1)} {}] value))"
+                "(defn f [] (let [{:keys [value] :or {value (#'wrong/held 1)}} {}] value))"
+                "(defn f [] (let [{:keys [value] :or {value (#'local/other 1)}} {}] value))"
+                "(defn f [] (let [{:keys [comment] :or {comment (comment (#'local/held 1))}} {}] comment))"
+                "(defn f [{:keys [comment] :or {comment (comment (#'local/held 1))}}] comment)"
+                "(defn f [] (let [{:keys [comment] :or {comment identity}} {}] (comment 1)) (comment (#'local/held 1)))"
+                "(defn f [] (let [{:keys [comment] :or {comment identity}} (comment (#'local/held 1))] comment))"
+                "(defn f [x] (let [{:keys [value] :or {value (case x (#'local/held) :hit :miss)}} {}] value))"]]
+    (let [plan (private-call-plan call)
+          result (context/resolve-private-usages (observe! plan) (context/private-var-usages [plan]))]
+      (is (empty? (:resolved result)) call)
+      (is (some #(= "Unused private var fixture.private-owner/held" (:message %))
+                (:blocking (lint/classify [] (:findings result) {}))) call))))
+
+(defn compare-private-programs! [private-before? body expected & [expected-types]]
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "uniform-private-scope-" (make-array java.nio.file.attribute.FileAttribute 0)))
         owner-path (io/file directory "fixture/owner.clj")
@@ -280,7 +309,8 @@
           (when (.isFile report-path)
             (let [report (lint/read-one! report-path)]
               (is (= (if (zero? expected) 1 0) (count (get-in report [:resolved-private-usages :current]))))
-              (is (= (if (zero? expected) [] [:unused-private-var]) (mapv :type (:blocking report))))))))
+              (is (= (or expected-types (if (zero? expected) [] [:unused-private-var]))
+                     (mapv :type (:blocking report))))))))
       (finally (doseq [file (reverse (file-seq directory))] (.delete file))))))
 
 (deftest case-data-and-shadowed-comment-run-through-the-complete-lint-pipeline
@@ -290,6 +320,13 @@
   ;; The previously public owner supplies no baseline unused-warning allowance.
   (compare-private-programs! false "(let [comment identity] (comment (#'h/hidden x)))" 0)
   (compare-private-programs! false "(case x :hit (#'h/hidden x) :miss)" 0))
+
+(deftest destructuring-defaults-run-through-the-complete-lint-pipeline
+  (compare-private-programs! true "(let [{:keys [value] :or {value (#'h/hidden x)}} {}] value)" 0)
+  (compare-private-programs! true "(let [{:keys [value] :or {value '(#'h/hidden x)}} {}] value)" 1
+                             [:unused-private-var :unused-binding])
+  (compare-private-programs! true "(let [{:keys [value] :or {unused (#'h/hidden x)}} {}] value)" 1
+                             [:unused-private-var :unbound-destructuring-default]))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
