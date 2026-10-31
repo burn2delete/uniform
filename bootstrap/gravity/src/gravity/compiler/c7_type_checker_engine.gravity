@@ -13365,36 +13365,26 @@
                               (if (= :keyword (get form :kind)) (= (get header :key) (get form :value)) false)) true)])
                     (recur (+ i 1)) false))))]) false)))
 
-(defn sh08-mg-present-finite-derive [node nodes types binding-types functions lexical bindings forms binding-shapes context budget]
+(defn sh08-mg-present-finite-derive [node nodes types binding-types functions lexical bindings forms binding-shapes context]
   (let [core (get context :source-core) id (get node :node-id)
         call (get (get context :calls) id) args (get call :argument-node-ids)
-        work (+ 64 (count args) (count (get core :function-records)) (sh08-mg-member-count (get types (first args))))]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-mg-source core node call (get (get context :edges) id) nodes bindings types (get core :module))]
-        (if (= nil header)
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :map-get-operand-type-required nil
-                   :map-and-literal-keyword-or-typed-nonreturning-operands (sh08-ft-ordered-child-types args types)) :work-count work)
-          (if (sh08-mg-present-forms? node nodes forms header)
-            (let [normal? (= :normal (get header :application))
-                  input (if normal? (sh08-sm-shape-with-bindings (get args 0) nodes types binding-types functions lexical bindings forms
-                                      #{id} 0 binding-shapes (assoc context :budget-left (- budget work))) nil)
-                  parts (get input :parts)
-                  total (+ work (get input :call-join-work 0) (get input :shape-size 0)
-                           1 (* 4 (if (vector? parts) (count parts) 0)))]
-              (if (> total budget)
-                (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count total)
-                (if (if normal? (= :rejected (get input :status)) false)
-                  (assoc input :work-count total)
-                  (let [descriptor (sh08-mg-present-finish header input)]
-                    (if (map? descriptor)
-                      (if true
-                        {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-                         :constraint (sh08-mg-constraint descriptor) :work-count total}
-                        (assoc (sh08-sm-failure "C7-GENERIC" :map-get-evidence-limit nil :bounded-lookup-evidence nil) :work-count total))
-                      (assoc (sh08-sm-failure "C7-ANNOTATION" :map-get-presence-required nil
-                               :independently-established-finite-keyword-map-and-present-key (get header :key)) :work-count total))))))
-            (assoc (sh08-sm-failure "C7-VERIFY" :map-get-source-mismatch nil :exact-operator-map-key-source id) :work-count work)))))))
+        header (sh08-mg-source core node call (get (get context :edges) id) nodes bindings types (get core :module))]
+    (if (= nil header)
+      (sh08-sm-failure "C7-TYPE-MISMATCH" :map-get-operand-type-required nil
+        :map-and-literal-keyword-or-typed-nonreturning-operands (sh08-ft-ordered-child-types args types))
+      (if (sh08-mg-present-forms? node nodes forms header)
+        (let [normal? (= :normal (get header :application))
+              input (if normal? (sh08-sm-shape-with-bindings (get args 0) nodes types binding-types functions lexical bindings forms
+                                  #{id} 0 binding-shapes context) nil)]
+          (if (if normal? (= :rejected (get input :status)) false)
+            input
+            (let [descriptor (sh08-mg-present-finish header input)]
+              (if (map? descriptor)
+                {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
+                 :constraint (sh08-mg-constraint descriptor)}
+                (sh08-sm-failure "C7-ANNOTATION" :map-get-presence-required nil
+                  :independently-established-finite-keyword-map-and-present-key (get header :key)))))
+        (sh08-sm-failure "C7-VERIFY" :map-get-source-mismatch nil :exact-operator-map-key-source id))))))
 
 (defn sh08-pe-type-view [types prior]
   (loop [ids (keys prior) out types]
@@ -13403,43 +13393,34 @@
         (recur (rest ids) (if (sh08-ft-unknown? (get out id :gravity.type/unknown))
                            (assoc out id (get prior id)) out))))))
 
-(defn sh08-pe-derive [header census node nodes types binding-types functions lexical bindings forms binding-shapes context work budget]
+(defn sh08-pe-derive [header census node nodes types binding-types functions lexical bindings forms binding-shapes context]
   (let [core (get context :source-core)]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (loop [remaining (get census :calls) shapes [] used work]
+      (loop [remaining (get census :calls) shapes []]
         (if (= 0 (count remaining))
-          (let [selected-work (sh08-pe-validate-selected header census shapes types true)
-                total used
-                descriptor (if (= :accepted (get selected-work :status)) (sh08-pe-finish header census shapes core nodes types) nil)]
-            (if (= :rejected (get selected-work :status))
-              (assoc (sh08-sm-failure "C7-ANNOTATION"
-                       (get selected-work :reason) nil :complete-established-private-entry-selected-type (get header :key)) :work-count total)
+          (let [selected (sh08-pe-validate-selected header census shapes types true)
+                descriptor (if (= :accepted (get selected :status)) (sh08-pe-finish header census shapes core nodes types) nil)]
+            (if (= :rejected (get selected :status))
+              (sh08-sm-failure "C7-ANNOTATION"
+                (get selected :reason) nil :complete-established-private-entry-selected-type (get header :key))
             (if (map? descriptor)
-              (if true
-                {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-                 :constraint (sh08-mg-constraint descriptor) :work-count total}
-                (assoc (sh08-sm-failure "C7-GENERIC" :map-get-evidence-limit nil :bounded-lookup-evidence nil) :work-count total))
-              (assoc (sh08-sm-failure "C7-ANNOTATION" :map-get-private-entry-presence-required nil
-                       :every-normal-private-entry-proves-literal-key (get header :key)) :work-count total))))
+              {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
+               :constraint (sh08-mg-constraint descriptor)}
+              (sh08-sm-failure "C7-ANNOTATION" :map-get-private-entry-presence-required nil
+                :every-normal-private-entry-proves-literal-key (get header :key))))
           (let [call (first remaining) args (get call :argument-node-ids)
                 complete? (loop [ids args]
                             (if (= 0 (count ids)) true
                               (if (sh08-ft-unknown? (get types (first ids) :gravity.type/unknown)) false (recur (rest ids)))))
                 invoked? (sh08-pe-invoked? types args)]
-            (if (= false complete?) {:status :deferred :type :gravity.type/unknown :work-count used}
+            (if (= false complete?) {:status :deferred :type :gravity.type/unknown}
               (let [shape (if invoked?
                             (sh08-sm-shape-with-bindings (get args (get census :parameter-index)) nodes types binding-types functions
-                              lexical bindings forms #{(get node :node-id)} 0 binding-shapes (assoc context :budget-left (- budget used))) nil)
-                    total (+ used (get shape :call-join-work 0) (get shape :shape-size 0)
-                             1 (* 4 (count (get shape :parts))))]
-                (if (> total budget)
-                  (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count total)
-                  (if (if invoked? (= :rejected (get shape :status)) false)
-                    (assoc shape :work-count total)
-                    (recur (rest remaining) (conj shapes shape) total)))))))))))
+                              lexical bindings forms #{(get node :node-id)} 0 binding-shapes context) nil)]
+                (if (if invoked? (= :rejected (get shape :status)) false)
+                  shape
+                  (recur (rest remaining) (conj shapes shape)))))))))))
 
-(defn sh08-mg-present-derive [node nodes types binding-types functions lexical bindings forms binding-shapes context budget]
+(defn sh08-mg-present-derive [node nodes types binding-types functions lexical bindings forms binding-shapes context]
   (let [core (get context :source-core) id (get node :node-id)
         receiver (get nodes (get (get (get (get context :calls) id) :argument-node-ids) 0))
         lexical? (if (= :reference (get receiver :core-form))
@@ -13447,56 +13428,42 @@
         record (if lexical? (get (get context :function-records)
                             (get (get receiver :evaluation) :owner-function-syntax-id)) nil)
         parameters (get record :parameter-binding-ids)
-        gate (if lexical? (+ 2 (count parameters)) 0)]
-    (if (> gate budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count gate)
-      (let [parameter? (if lexical?
-                         (loop [ids parameters]
-                           (if (= 0 (count ids)) false
-                             (if (= (get (get receiver :attributes) :binding-id) (first ids)) true (recur (rest ids))))) false)]
-        (if (= false parameter?)
-          (let [candidate (sh08-pc-candidate core node (get (get context :calls) id) nodes types (- budget gate))
-                route (if (= :accepted (get candidate :status))
-                        (let [r (sh08-pc-route core node (get (get context :calls) id) nodes bindings (- budget gate (get candidate :work-count)))]
-                          (assoc r :work-count (+ (get candidate :work-count) (get r :work-count)))) candidate)
-                used (+ gate (get route :work-count))
-                selected (if (= :accepted (get route :status))
-                           (sh08-pc-derive route node nodes types binding-types functions lexical bindings forms binding-shapes context (- budget used))
-                           (if (= :not-applicable (get route :status))
-                             (sh08-mg-present-finite-derive node nodes types binding-types functions lexical bindings forms binding-shapes context (- budget used)) route))]
-            (assoc selected :work-count (+ used (if (= :rejected (get route :status)) 0 (get selected :work-count 0)))))
-          (let [prefix (+ gate (count types) (count (get context :prior-types {})))
-                reserved (sh08-pe-reserve core receiver nodes bindings (- budget prefix))
-                work (+ prefix (get reserved :work-count))]
-            (if (= :rejected (get reserved :status))
-              (assoc (sh08-sm-failure (if (= :map-get-work-limit (get reserved :reason)) "C7-GENERIC" "C7-VERIFY")
-                       (get reserved :reason) nil :bounded-canonical-private-entry-families budget) :work-count work)
-              (let [header (sh08-mg-source core node (get (get context :calls) id) (get (get context :edges) id)
-                             nodes bindings types (get core :module))
-                    census (if (if (map? header) (sh08-mg-present-forms? node nodes forms header) false)
-                             (sh08-pe-census header core nodes bindings forms) nil)]
-                (if (map? census)
-                  (let [view (sh08-pe-type-view types (get context :prior-types {}))]
-                    (sh08-pe-derive header census node nodes view binding-types functions lexical bindings forms binding-shapes context work budget))
-                  (let [finite (sh08-mg-present-finite-derive node nodes types binding-types functions lexical bindings forms binding-shapes context (- budget work))]
-                    (assoc finite :work-count (+ work (get finite :work-count 0)))))))))))))
+        parameter? (if lexical?
+                     (loop [ids parameters]
+                       (if (= 0 (count ids)) false
+                         (if (= (get (get receiver :attributes) :binding-id) (first ids)) true (recur (rest ids))))) false)]
+    (if (= false parameter?)
+      (let [candidate (sh08-pc-candidate core node (get (get context :calls) id) nodes types)
+            route (if (= :accepted (get candidate :status))
+                    (sh08-pc-route core node (get (get context :calls) id) nodes bindings) candidate)]
+        (if (= :accepted (get route :status))
+          (sh08-pc-derive route node nodes types binding-types functions lexical bindings forms binding-shapes context)
+          (if (= :not-applicable (get route :status))
+            (sh08-mg-present-finite-derive node nodes types binding-types functions lexical bindings forms binding-shapes context)
+            route)))
+      (let [header (sh08-mg-source core node (get (get context :calls) id) (get (get context :edges) id)
+                     nodes bindings types (get core :module))
+            census (if (if (map? header) (sh08-mg-present-forms? node nodes forms header) false)
+                     (sh08-pe-census header core nodes bindings forms) nil)]
+        (if (map? census)
+          (let [view (sh08-pe-type-view types (get context :prior-types {}))]
+            (sh08-pe-derive header census node nodes view binding-types functions lexical bindings forms binding-shapes context))
+          (sh08-mg-present-finite-derive node nodes types binding-types functions lexical bindings forms binding-shapes context))))))
 
-(defn sh08-mg-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-mg-derive [core node call edge nodes bindings types forms]
   (if (= 2 (count (get call :argument-node-ids)))
     (sh08-mg-present-derive node nodes types {} {} (get core :lexical-bindings) bindings forms {}
       {:source-core core :module (get core :module) :calls {(get node :node-id) call}
-       :edges {(get node :node-id) edge} :budget-left budget} budget)
+       :edges {(get node :node-id) edge}})
   ; STD3 explicit-default lookup evaluates all operands eagerly. Its normal
   ; result joins every possibly matching key-family value with the default.
-  (let [args (get call :argument-node-ids) work (+ 64 (count args) (count (get core :function-records)) (sh08-mg-member-count (get types (first args))))
+  (let [args (get call :argument-node-ids)
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-mg-source core node call edge nodes bindings types (get core :module))]
+    (let [header (sh08-mg-source core node call edge nodes bindings types (get core :module))]
         (if (= header nil)
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
+          (sh08-sm-failure "C7-TYPE-MISMATCH"
                    (if (= 3 (count args)) :map-get-operand-type-required :map-get-arity-mismatch)
-                   nil :member-map-key-and-one-result-type (sh08-ft-ordered-child-types args types)) :work-count work)
+                   nil :member-map-key-and-one-result-type (sh08-ft-ordered-child-types args types))
           (if (sh08-ft-all-true?
                 [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 4 (if (vector? ids) (count ids) 0))
                  (= {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
@@ -13510,9 +13477,9 @@
                          (recur (+ i 1)) false))))])
             (let [descriptor (sh08-mg-finish header)]
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-mg-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :map-get-source-mismatch nil :exact-operator-map-key-default-source (get node :node-id)) :work-count work)))))))
-)
+               :constraint (sh08-mg-constraint descriptor)})
+            (sh08-sm-failure "C7-VERIFY" :map-get-source-mismatch nil :exact-operator-map-key-default-source (get node :node-id))))))
+))
 
 (defn sh08-mg-node? [node context]
   (if (= :call (get node :core-form))
@@ -13594,25 +13561,23 @@
            (sh08-mg-finish header))) false)))
 
 ))
-(defn sh08-mg-step [node types binding-types functions context budget]
+(defn sh08-mg-step [node types binding-types functions context]
   (let [core (get context :ordering-core)
         call (get (get context :ordering-operators) (first (get node :children)))
         args (get call :argument-node-ids)]
     (if (= 2 (count args))
       (if (if (sh08-ft-unknown? (get types (get args 0))) true (sh08-ft-unknown? (get types (get args 1))))
-        (if (< budget 2)
-          (assoc (sh08-sm-failure "C7-GENERIC" :map-get-work-limit nil :remaining-type-join-units budget) :work-count 2)
-          {:status :deferred :type :gravity.type/unknown :work-count 2})
+        {:status :deferred :type :gravity.type/unknown}
         (if (if (= :gravity.type/vector (get (get types (get args 0)) :kind))
               (if (= :gravity.type/integer (get types (get args 1)))
                 (sh08-vl-index? node (get context :lookup-nodes) types) false) false)
           (sh08-vl-step node types binding-types functions context)
         (sh08-mg-present-derive node (get context :lookup-nodes) types binding-types functions (get core :lexical-bindings)
           (get context :ordering-bindings) (get context :association-forms) (get context :prior-binding-shapes {})
-          (assoc (get context :shape-call-context) :source-core core :module (get core :module) :budget-left budget
-            :private-first-entry-products (get context :private-first-entry-products)) budget)))
+          (assoc (get context :shape-call-context) :source-core core :module (get core :module)
+            :private-first-entry-products (get context :private-first-entry-products)))))
       (sh08-mg-derive core node call (get (get context :ordering-edges) (get node :node-id))
-        (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))))
+        (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))))
 
 (defn sh08-mc-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
