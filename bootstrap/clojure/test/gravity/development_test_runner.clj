@@ -104,13 +104,20 @@
        (= "gravity.self-hosting.sh06-unmetered-resolution-test/digest-count-quota-is-gone-but-complete-ordered-requests-remain-required"
           test-var)))
 
+(defn- resolution-current-artifact-test? [namespace test-var]
+  (and (= "gravity.self-hosting.sh06-unmetered-resolution-test" namespace)
+       (= "gravity.self-hosting.sh06-unmetered-resolution-test/actual-current-source-artifact-retains-authentication-and-roundtrip"
+          test-var)))
+
 (defn- observe-progress! [phase namespace test-var body]
   (emit-progress! phase :enter namespace test-var nil)
-  (let [outcome (try {:value (if (and (= :test-var phase) (resolution-digest-test? namespace test-var))
-                              (binding [*progress-test-context* {:state *progress-state*
-                                                                :namespace namespace :test-var test-var}]
-                                (body))
-                              (body))}
+  (let [outcome (try {:value (if (and (= :test-var phase)
+                                      (or (resolution-digest-test? namespace test-var)
+                                          (resolution-current-artifact-test? namespace test-var)))
+                               (binding [*progress-test-context* {:state *progress-state*
+                                                                  :namespace namespace :test-var test-var}]
+                                 (body))
+                               (body))}
                      (catch Throwable error
                        (note-progress-interrupt! *progress-state* error)
                        {:error error}))]
@@ -131,6 +138,19 @@
                   :shape-negative :resolution-digest-shape-negative} interval))]
     (if (and *progress-state* (identical? *progress-state* (:state context)) phase
              (resolution-digest-test? (:namespace context) (:test-var context)))
+      (observe-progress! phase (:namespace context) (:test-var context) body)
+      (body))))
+
+(defn observe-resolution-current-artifact-interval!
+  "Three fixed initial RHS intervals in one test; never execution authority."
+  [interval body]
+  (let [context *progress-test-context*
+        phase (when (keyword? interval)
+                ({:construction :resolution-current-artifact-construction
+                  :verification :resolution-current-artifact-verification
+                  :serialization :resolution-current-artifact-serialization} interval))]
+    (if (and *progress-state* (identical? *progress-state* (:state context)) phase
+             (resolution-current-artifact-test? (:namespace context) (:test-var context)))
       (observe-progress! phase (:namespace context) (:test-var context) body)
       (body))))
 

@@ -195,11 +195,16 @@
         reader (.getCanonicalPath (io/file "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
         invocation {:reader-source-path b/sh03-reader-source-relative-path
                     :authenticated-envelope-options {:source :development-current}}
-        artifact (b/compiler-c5-resolution-source-artifact
-                   fixture (slurp fixture :encoding "UTF-8")
-                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader invocation)
-        report (b/sh06-resolution-artifact-verification artifact :gravity.bootstrap/legacy invocation)
-        serialized (b/sh06-resolution-serialize artifact invocation)
+        artifact (development/observe-resolution-current-artifact-interval!
+                  :construction
+                  #(b/compiler-c5-resolution-source-artifact
+                    fixture (slurp fixture :encoding "UTF-8")
+                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader invocation))
+        report (development/observe-resolution-current-artifact-interval!
+                :verification
+                #(b/sh06-resolution-artifact-verification artifact :gravity.bootstrap/legacy invocation))
+        serialized (development/observe-resolution-current-artifact-interval!
+                    :serialization #(b/sh06-resolution-serialize artifact invocation))
         changed (update-in artifact [:binding-table :bindings 0 :name] (constantly 'forged))]
     (is (= (slurp fixture :encoding "UTF-8") (slurp paired :encoding "UTF-8")))
     (is (= :accepted (:status artifact)))

@@ -9,6 +9,7 @@
 (def reporting-forms
   '#{*progress-state* *progress-test-context* progress-state retain-progress-error!
      inspect-progress-error note-progress-interrupt! emit-progress! resolution-digest-test?
+     resolution-current-artifact-test? observe-resolution-current-artifact-interval!
      observe-progress! observe-resolution-digest-interval! require-progress-success! run-with-progress!})
 (binding [*ns* fixture-ns *read-eval* false]
   (with-open [r (clojure.lang.LineNumberingPushbackReader.
@@ -28,11 +29,13 @@
 (def phases #{:resolution-digest-positive-resolve :resolution-digest-count-and-hash-shape
               :resolution-digest-ordinal-negative :resolution-digest-count-negative :resolution-digest-shape-negative})
 (defn caught [body] (try {:value (body)} (catch Throwable error {:error error})))
-(defn exercise [{:keys [enabled? timing? fault-stage fault-edge diagnostic original swallow?]
-                 :or {enabled? true}}]
+(defn exercise [{:keys [enabled? timing? fault-stage fault-edge diagnostic original swallow?
+                        selected-var selected-intervals selected-phases selected-helper]
+                 :or {enabled? true selected-var target-var selected-intervals intervals
+                      selected-phases phases selected-helper 'observe-resolution-digest-interval!}}]
   (let [state ((function 'progress-state)) events (atom []) timings (atom 0) sinks (atom 0)
         text (StringBuilder.) raw-pr pr-str
-        fail-row? #(and (contains? phases (:phase %)) (= fault-edge (:edge %)))
+        fail-row? #(and (contains? selected-phases (:phase %)) (= fault-edge (:edge %)))
         accept! (fn [s]
                   (let [row (edn/read-string s)]
                     (.append text s)
@@ -49,16 +52,16 @@
                      (throw diagnostic)))
                  (close []))
         body (fn []
-               (doseq [interval intervals]
+               (doseq [interval selected-intervals]
                  (let [call #(do (swap! events conj interval)
                                  (try (when original (throw original))
                                       :original-value
                                       (finally (swap! events conj :finally) (Thread/interrupted))))]
                    (if swallow?
-                     (try ((function 'observe-resolution-digest-interval!) interval call) (catch Throwable _ nil))
-                     ((function 'observe-resolution-digest-interval!) interval call))))
+                     (try ((function selected-helper) interval call) (catch Throwable _ nil))
+                     ((function selected-helper) interval call))))
                :original-value)
-        run #(let [v ((function 'observe-progress!) :test-var target-ns target-var body)]
+        run #(let [v ((function 'observe-progress!) :test-var target-ns selected-var body)]
                ((function 'require-progress-success!))
                (when timing? (swap! timings inc)) (swap! sinks inc) v)
         result (binding [*err* writer]
@@ -148,3 +151,73 @@
   (let [error (LinkageError.) r (exercise {:original error :diagnostic error :fault-stage :write :fault-edge :enter})]
     (is (identical? error (get-in r [:result :error])))
     (is (not-any? #(identical? error %) (.getSuppressed error)))))
+
+(def artifact-var (str target-ns "/actual-current-source-artifact-retains-authentication-and-roundtrip"))
+(def artifact-intervals [:construction :verification :serialization])
+(def artifact-phases #{:resolution-current-artifact-construction
+                       :resolution-current-artifact-verification
+                       :resolution-current-artifact-serialization})
+(def artifact-options {:selected-var artifact-var :selected-intervals artifact-intervals
+                       :selected-phases artifact-phases
+                       :selected-helper 'observe-resolution-current-artifact-interval!})
+
+(deftest current-artifact-three-fixed-RHS-order-and-disabled-path
+  (let [r (exercise artifact-options)]
+    (is (= :original-value (get-in r [:result :value])))
+    (is (= [:construction :finally :verification :finally :serialization :finally] (:events r)))
+    (is (= 8 (count (:rows r))))
+    (is (= artifact-phases (set (map :phase (filter #(contains? artifact-phases (:phase %)) (:rows r))))))
+    (is (every? #(= :non-authoritative (:authority %)) (:rows r)))
+    (is (every? #(= #{:schema :authority :phase :edge :namespace :test-var} (set (keys %))) (:rows r))))
+  (let [r (exercise (assoc artifact-options :enabled? false))]
+    (is (= :original-value (get-in r [:result :value])))
+    (is (= 6 (count (:events r)))) (is (empty? (:rows r)))))
+
+(deftest current-artifact-diagnostics-preserve-body-and-sticky-failure
+  (doseq [stage [:format :write :flush] edge [:enter :return]]
+    (let [error (java.io.IOException.)
+          r (exercise (assoc artifact-options :fault-stage stage :fault-edge edge :diagnostic error
+                             :swallow? true :timing? true))]
+      (is (identical? error (get-in r [:result :error])))
+      (is (= 6 (count (:events r))))
+      (is (zero? (:timings r))) (is (zero? (:sinks r)))))
+  (doseq [original [(Exception.) (LinkageError.) (InterruptedException.)]]
+    (let [diagnostic (InterruptedException.)
+          r (exercise (assoc artifact-options :fault-stage :flush :fault-edge :enter
+                             :diagnostic diagnostic :original original))]
+      (is (identical? original (get-in r [:result :error])))
+      (is (some #(identical? diagnostic %) (.getSuppressed ^Throwable original)))
+      (is (:interrupted? r))
+      (is (= [:construction :finally] (:events r))))))
+
+(deftest current-artifact-scope-is-closed-and-digest-helper-is-conserved
+  (let [state ((function 'progress-state)) other ((function 'progress-state))
+        output (java.io.StringWriter.) calls (atom 0)
+        invoke #((function 'observe-resolution-current-artifact-interval!) :construction (fn [] (swap! calls inc)))]
+    (binding [*err* output]
+      (with-bindings {(port '*progress-state*) state}
+        (invoke)
+        ((function 'observe-progress!) :test-var target-ns target-var invoke)
+        ((function 'observe-progress!) :test-var target-ns artifact-var
+                                       #(do ((function 'observe-resolution-digest-interval!) :positive-resolve (fn [] (swap! calls inc)))
+                                            ((function 'observe-resolution-current-artifact-interval!) :unknown (fn [] (swap! calls inc)))
+                                            (with-bindings {(port '*progress-state*) other} (invoke))
+                                            (with-bindings {(port '*progress-state*) nil} (invoke))))))
+    (is (= 6 @calls))
+    (is (not-any? #(or (contains? artifact-phases (:phase %)) (contains? phases (:phase %)))
+                  (map edn/read-string (str/split-lines (str output)))))))
+
+(deftest current-artifact-keeps-live-callbacks-at-original-positions
+  (let [state ((function 'progress-state)) output (java.io.StringWriter.)
+        callback (atom (fn [] :first)) events (atom []) value (Object.)
+        observe (function 'observe-resolution-current-artifact-interval!)]
+    (binding [*err* output]
+      ((function 'run-with-progress!) state
+                                      #((function 'observe-progress!) :test-var target-ns artifact-var
+                                                                      (fn []
+                                                                        (is (identical? value (observe :construction
+                                                                                                       (fn [] (swap! events conj (@callback))
+                                                                                                         (reset! callback (fn [] :second)) value))))
+                                                                        (observe :verification (fn [] (swap! events conj (@callback))))
+                                                                        (observe :serialization (fn [] (swap! events conj (@callback))))))))
+    (is (= [:first :second :second] @events))))
