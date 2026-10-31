@@ -53,7 +53,7 @@
                  {:form '(defn 17 [] nil) :span span :syntax/id "syntax-invalid-name"}
                  {:form '(println public-value) :span span :syntax/id "syntax-expression"}]}
         records (resolution/definition-records module parent ops)
-        [public private qualified constant] records]
+        [_public _private qualified constant] records]
     (is (= ['public-value 'private-value 'qualified 'answer] (mapv :name records)))
     (is (= [:public :private :public :private] (mapv :visibility records)))
     (is (= [:var :function :function :compile-time-constant] (mapv :kind records)))
