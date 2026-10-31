@@ -19174,12 +19174,15 @@ true
       {:status :accepted :bank bank}
       (let [entry (first remaining)
             key (get entry :module-key)
-            analyzed (body-analyze-module (get entry :request) (get entry :facts) {})]
-        (if (= :accepted (get analyzed :status))
-          (recur (rest remaining)
-                 (assoc bank key (assoc entry :graph (get analyzed :graph))))
-          (assoc analyzed :producer-module key
-                 :producer-facts (get entry :facts)))))))
+            checked (body-lsi-first-data-valid? key)]
+        (if (= :accepted (get checked :status))
+          (let [analyzed (body-analyze-module (get entry :request) (get entry :facts) {})]
+            (if (= :accepted (get analyzed :status))
+              (recur (rest remaining)
+                     (assoc bank key (assoc entry :graph (get analyzed :graph))))
+              (assoc analyzed :producer-module key
+                     :producer-facts (get entry :facts))))
+          {:status :rejected :reason :untrusted-or-transitive-body-producer})))))
 
 (defn body-foreign-bindings [request facts bank]
   (let [bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)]
