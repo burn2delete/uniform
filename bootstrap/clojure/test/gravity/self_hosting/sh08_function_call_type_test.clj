@@ -8334,7 +8334,6 @@
           sequence (conj (mapv #(if (= :call (:node-id %)) call-node %) (:nodes core))
                          function-node entry-operator argument entry-node)
           table (into {} (map (juxt :node-id identity) sequence))
-          core (assoc core :nodes sequence :function-records [record] :call-edges [edge entry-edge])
           definitions [{:binding-id :callee-binding :value-node-id :callee-fn}]
           run (fn [cs es] (invoke-c7 'sh08-ft-infer-acyclic-with-context
                             [sequence table [] definitions cs es {:callee function} {:arg1 :gravity.type/integer} {}]))
@@ -10759,7 +10758,7 @@
                (positional (vec (repeat 1024 :gravity.type/string)))
                (positional (vec (repeat 8192 :gravity.type/unknown))) (positional [opaque])]]
     (doseq [type types]
-      (let [{:keys [core node call edge nodes bindings forms] :as input} (list-count-input type)
+      (let [{:keys [core node call edge nodes bindings] :as input} (list-count-input type)
             types (:types input) result (list-count-derived input) descriptor (:descriptor result)]
         (is (= :accepted (:status result)) (pr-str (dissoc result :descriptor :constraint)))
         (is (= :gravity.type/integer (:type result) (:return descriptor) (:result-type descriptor)))
@@ -10927,7 +10926,7 @@
              [(positional [homogeneous]) b (positional [b homogeneous])]
              [(positional (vec (repeat 1023 s))) s (positional (vec (repeat 1024 s)))]
              [(positional (vec (repeat 1030 s))) s (positional (vec (repeat 1031 s)))]]]
-      (let [{:keys [core node call edge nodes bindings types forms] :as input} (list-prepend-input receiver value)
+      (let [{:keys [core node call edge nodes bindings types] :as input} (list-prepend-input receiver value)
             result (list-prepend-derived input) descriptor (:descriptor result)
             facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes (assoc types :operator descriptor :call expected) {} (:module core) {}])]
         (is (= :accepted (:status result)) (pr-str result))
@@ -12388,21 +12387,9 @@
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
                             [(:nodes shape) (:node-table products) (:lexical-bindings products) (:definitions products)
                              (:calls products) (:call-edges products) functions seeds context])
-        types (:type-table inference) nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        types (:type-table inference)
         binding-index (into {} (map (juxt :binding-id identity) bindings))
-        form-index (into {} (map (juxt :form-id identity) forms))
-        selected (filter #(contains? '#{+ inc get} (:name (binding-index (:operator-binding-id %)))) (:calls core))
-        observations
-        (mapv (fn [call]
-                (let [descriptor (types (:operator-node-id call))]
-                  {:call call :binding (select-keys (binding-index (:operator-binding-id call))
-                                                   [:binding-id :name :kind :namespace :package :binding-class :type-ref :effects :capabilities :safety :profile-set :target-set])
-                   :arguments (mapv (fn [id] {:node (select-keys (nodes id) [:node-id :core-form :attributes :source])
-                                             :form (form-index (get-in nodes [id :source :form-id])) :type (types id)})
-                                    (:argument-node-ids call))
-                   :operator-type (if (map? descriptor) (select-keys descriptor [:kind :version :operation :result-type]) descriptor)
-                   :result-type (types (:core-node-id call))}))
-              selected)]
+        selected (filter #(contains? '#{+ inc get} (:name (binding-index (:operator-binding-id %)))) (:calls core))]
     (is (= :accepted (:status products)))
     (is (= :converged (:convergence-status inference)))
     (is (= [] (:diagnostics inference)))

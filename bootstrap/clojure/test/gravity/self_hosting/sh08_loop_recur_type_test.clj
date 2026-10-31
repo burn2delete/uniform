@@ -2181,7 +2181,7 @@
     (assoc data :core core :working working :nodes nodes :forms forms :checked checked :rows rows :quotes quotes :context context)))
 
 (deftest unquoted-empty-symbol-set-loop-development-kernel
-  (let [{:keys [core nodes forms types bindings checked rows empty-type carrier]} (unquoted-symbol-set-loop-data)
+  (let [{:keys [nodes forms checked rows empty-type carrier]} (unquoted-symbol-set-loop-data)
         node (nodes :value-init)]
     (is (= empty-type (c7-invoke 'sh08-ft-infer-node-nominal [node {} {} {} [] {}])))
     (is (true? (c7-invoke 'sh08-lsi-leaf? [node forms :initializer])))
