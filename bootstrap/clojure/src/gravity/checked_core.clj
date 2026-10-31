@@ -23,6 +23,10 @@
      :operation-inputs
      [:reader-canonical-hash :sh05-path-neutral-semantic-value],
      :admission :none},
+    canonical-artifact
+    {:arglists ([resolved-template operations]),
+     :operation-inputs [:sh07-core-semantic-identity-preimage],
+     :admission :none},
     execute!
     {:arglists ([source-path function arguments operations]),
      :operation-inputs
@@ -95,6 +99,10 @@
      [[source-path value evidence projection-form-id operations]],
      :operation-inputs [:reader-canonical-hash],
      :admission :none},
+    request-diagnostic!
+    {:arglists ([request rule-specific operations]),
+     :operation-inputs [:reader-canonical-hash],
+     :admission :none},
     plan-identities
     {:arglists ([plan operations]),
      :operation-inputs
@@ -164,6 +172,10 @@
       :sh07-core-semantic-projection-id
       :sh07-core-semantic-resolution
       :sh07-core-semantic-var-reference],
+     :admission :none},
+    public-decimal-presentation
+    {:arglists ([core _operations]),
+     :operation-inputs [],
      :admission :none},
     value-kind
     {:arglists [[value _operations]],
@@ -297,6 +309,10 @@
       :sh07-core-plan-identities
       :sh07-core-source-path
       :sha256-bytes-hex],
+     :admission :none},
+    raise-diagnostic!
+    {:arglists ([_source-path template operations]),
+     :operation-inputs [:reader-canonical-hash],
      :admission :none}},
    :operation-inputs
    [:c-backend-resolve-p15-s23-compiler-source-path
@@ -433,7 +449,9 @@
     :performance
     :self-hosting
     :seed-retirement
-    :backend-artifact-manifest-completion],
+    :backend-artifact-manifest-completion
+    :diagnostic-safe-public-projection
+    :diagnostic-publication],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -450,7 +468,11 @@
     :digest-reference-table
     :core-template-and-preimage-records
     :ordered-declared-digest-requests
-    :resolved-digest-identities],
+    :resolved-digest-identities
+    :verified-resolved-template-data
+    :explicit-decimal-descriptors
+    :rejected-gravity-result
+    :request-rule-specific-failure-data],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -466,7 +488,9 @@
      :fresh-upstream-premises
      :unresolved-digest-reference
      :digest-purpose-and-ordinal-legality
-     :failed-gravity-digest-or-result-resolution],
+     :failed-gravity-digest-or-result-resolution
+     :core-lowering-rejection-carrier
+     :core-request-failure-carrier],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -489,10 +513,13 @@
     :semantic-node-mutation-and-error-records
     :normalized-core-identity-preimages
     :declared-digest-identities
-    :materialized-core-template-data],
+    :materialized-core-template-data
+    :canonical-core-candidate-data
+    :explicit-host-decimal-presentation
+    :c6-diagnostic-construction-records],
    :clojure-seed-boundary? true,
    :contract-boundary
-   :checked-core-runtime-projection-requests-and-semantic-products})
+   :checked-core-supported-data-and-runtime-boundaries})
 
 (defn
  source-path
@@ -3155,6 +3182,129 @@
       :resolution resolution})))
   (:value resolution)))
 
+(defn
+ public-decimal-presentation
+ "Return an explicit host presentation view. Do not use this view as an\n  authenticated canonical core: its decimal values differ from the preimage."
+ [core _operations]
+ (update
+  core
+  :nodes
+  (fn
+   [nodes]
+   (mapv
+    (fn
+     [node]
+     (let
+      [descriptor (get-in node [:attributes :value])]
+      (if
+       (and
+        (= :decimal (get-in node [:attributes :literal-kind]))
+        (map? descriptor)
+        (= :gravity/arbitrary-decimal-literal (:kind descriptor)))
+       (assoc-in
+        node
+        [:attributes :value]
+        (java.math.BigDecimal.
+         (java.math.BigInteger. (:unscaled-value descriptor))
+         (int (:scale descriptor))))
+       node)))
+    nodes))))
+
+(defn
+ canonical-artifact
+ [resolved-template operations]
+ (let
+  [sh07-core-semantic-identity-preimage
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-identity-preimage)]
+  (->
+   resolved-template
+   (assoc
+    :artifact
+    :gravity/sh07-canonical-core-artifact
+    :artifact-id
+    (:artifact-id-request resolved-template)
+    :provenance-binding-id
+    (:provenance-binding-id-request resolved-template)
+    :identity-preimage
+    (sh07-core-semantic-identity-preimage
+     (:identity-preimage resolved-template)))
+   (dissoc :artifact-id-request :provenance-binding-id-request))))
+
+(defn
+ raise-diagnostic!
+ [_source-path template operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   diagnostic
+   (first (:diagnostics template))
+   request
+   (first (:digest-requests template))
+   diagnostic-id
+   (reader-canonical-hash
+    {:domain :gravity/sh07-declared-digest-v1,
+     :purpose (:purpose request),
+     :preimage (:preimage request)})
+   resolved
+   (assoc diagnostic :diagnostic-id-request diagnostic-id)]
+  (throw
+   (ex-info
+    "Gravity checked-core lowering rejected the source"
+    resolved))))
+
+(defn
+ request-diagnostic!
+ [request rule-specific operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   source-path
+   (get-in request [:provenance :actual-source-path])
+   lineage
+   (:lineage request)
+   module
+   (:module request)
+   reason
+   (or (:reason rule-specific) :authenticated-core-request)
+   remediation
+   "Replay the Gravity template and bind every digest ordinal exactly once."
+   diagnostic
+   {:lowering-rule :sh07-b47-function-call-recursion-products,
+    :remediation remediation,
+    :source-span {:source source-path},
+    :stage :core-lowering,
+    :rule "C6-VERIFY",
+    :diagnostic-id-request
+    (reader-canonical-hash
+     {:domain :gravity/sh07-request-diagnostic-v16,
+      :source-revision-id (:source-revision-id lineage),
+      :rule-specific rule-specific}),
+    :generated-origin-chain [],
+    :syntax-id nil,
+    :severity :error,
+    :core-node-id nil,
+    :artifact :gravity/sh07-core-diagnostic,
+    :form-id nil,
+    :target (:target module),
+    :facts
+    {:reason reason,
+     :rule-specific rule-specific,
+     :source-revision-id (:source-revision-id lineage),
+     :sh06-artifact-id (:sh06-artifact-id lineage),
+     :authenticated-sh06-artifact-id
+     (:authenticated-sh06-artifact-id lineage),
+     :sh06-semantic-projection-id
+     (:sh06-semantic-projection-id lineage),
+     :fail-closed true},
+    :namespace (:namespace module),
+    :profile (:profile module)}]
+  (throw
+   (ex-info
+    "SH-07 authenticated request failed validation"
+    diagnostic))))
+
 (doseq
  [operation
   [#'build-plan-binding!
@@ -3206,7 +3356,11 @@
    #'semantic-error-transfer
    #'semantic-identity-preimage
    #'semantic-mutation
-   #'semantic-node]]
+   #'semantic-node
+   #'canonical-artifact
+   #'public-decimal-presentation
+   #'raise-diagnostic!
+   #'request-diagnostic!]]
  (alter-meta!
   operation
   assoc

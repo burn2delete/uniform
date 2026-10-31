@@ -182,7 +182,15 @@
  #'sh07-core-semantic-error-transfer
  #'sh07-core-semantic-identity-preimage
  #'sh07-core-semantic-mutation
- #'sh07-core-semantic-node]
+ #'sh07-core-semantic-node
+ #'gravity.checked-core/canonical-artifact
+ #'gravity.checked-core/public-decimal-presentation
+ #'gravity.checked-core/raise-diagnostic!
+ #'gravity.checked-core/request-diagnostic!
+ #'sh07-core-canonical-artifact
+ #'sh07-core-public-decimal-presentation
+ #'sh07-core-raise-diagnostic!
+ #'sh07-core-request-diagnostic!]
     (filter var? (vals checked-core-stage-defaults))))
   (mapv
    (fn
