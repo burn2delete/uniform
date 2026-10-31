@@ -69,7 +69,7 @@
         envelope-descriptor
         envelope]}
       state-6]
-     {:root-form-ids root-form-ids,
+     (cond-> {:root-form-ids root-form-ids,
       ;; Observations remain outside the authenticated SH03 product contract.
       :extension-dispatch-observations (:extension-dispatch-observations state-6),
       :sh03-reader-raw-result (:raw-result resolved),
@@ -89,4 +89,6 @@
       :sh02-reader-envelope-descriptor envelope-descriptor,
       :sh03-reader-result result,
       :parsed-values (mapv :form parsed-records),
-      :deferred-literal-records (:deferred-literal-records adapted-evidence)}))))
+      :deferred-literal-records (:deferred-literal-records adapted-evidence)}
+       (some? (:pure-extension-results state-6))
+       (assoc :pure-extension-results (:pure-extension-results state-6)))))))

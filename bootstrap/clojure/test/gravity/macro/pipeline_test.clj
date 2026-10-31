@@ -3,6 +3,7 @@
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.macro-run-storage :as macro-run-storage]
+            [gravity.reader.identity-expectations :as expected]
             [gravity.macro :as macro]))
 
 (defn- operations [] ((ns-resolve 'gravity.bootstrap 'macro-stage-operations)))
@@ -30,6 +31,32 @@
 (def ^:private gravity-context (delay (context ".gravity")))
 (def ^:private qst-context (delay (context ".qst")))
 
+(defn- assert-parent-lineage [artifact c3 binding]
+  ;; The explicit current Reader implementation is an input, so a whole-artifact
+  ;; digest is not a golden for fixture text alone. Keep the actual parent joins
+  ;; and prove that neither upstream identity can disappear from the digest.
+  (is (= (expected/macro-preimage artifact)
+         (macro/artifact-identity-input artifact (operations))))
+  (is (= (expected/macro-id artifact) (:artifact-id artifact)))
+  (is (= {:kind :gravity/sh05-macro-expansion-artifact :slice :SH-05 :task "SH-05"
+          :status :accepted :document-set ["L4" "C4"] :diagnostics []}
+         (select-keys artifact [:kind :slice :task :status :document-set :diagnostics])))
+  (is (= (select-keys binding expected/macro-plan-fields)
+         (:plan-binding (expected/macro-preimage artifact))))
+  (is (= ((:input (operations)) :c4-macro-governing-document) (:governing-document artifact)))
+  (is (= {:artifact :gravity/sh05-macro-environment
+          :macros [{:name 'defn :version ((:input (operations)) :sh05-macro-version) :phase :macro-expansion}]
+          :status :complete}
+         (:macro-environment artifact)))
+  (is (= (:artifact-id c3)
+         (get-in artifact [:sh04-syntax-artifact :artifact-id])))
+  (is (= (get-in c3 [:gravity-syntax-boundary :resolved-syntax-result :artifact-id])
+         (get-in artifact [:sh04-syntax-artifact :syntax-stream-id])))
+  (doseq [field [:artifact-id :syntax-stream-id]]
+    (let [changed (assoc-in artifact [:sh04-syntax-artifact field] "changed-parent")]
+      (is (not= (:artifact-id artifact) (macro/artifact-id changed (operations)))
+          (str "upstream " field " remains identity-bearing")))))
+
 (deftest macro-stage-contract-and-seed-operation-inventories-agree
   (let [contract (:gravity/namespace-contract (meta #'macro/expand))
         ops (operations)]
@@ -54,10 +81,9 @@
                   (is (= source (get-in artifact [:provenance :source-path])))
                   (is (seq (get-in artifact [:macro-expansion-trace 0 :generated-origin])))
                   (is (= :passed (:status (bootstrap/sh05-macro-artifact-verification artifact invocation))))
+                  (assert-parent-lineage artifact c3 binding)
                   artifact))
               [gravity-context qst-context])]
-    (is (= (mapv :artifact-id artifacts)
-           (repeat 2 "sha256:f47b8ed8b4f008970ba41a8e06e37f6cfc6f2899179ba8676f3c53dd7836788a")))
     (is (= (select-keys (first artifacts) [:artifact-id :expanded-syntax-stream-id :macro-expansion-trace-id :expanded-forms])
            (select-keys (second artifacts) [:artifact-id :expanded-syntax-stream-id :macro-expansion-trace-id :expanded-forms])))))
 
@@ -146,7 +172,7 @@
 
 (deftest multi-artifact-construction-and-verification-are-co-canonical
   (doseq [ctx [multi-gravity multi-qst]]
-    (let [{:keys [source c3 invocation artifact]} @ctx
+    (let [{:keys [source c3 invocation artifact binding]} @ctx
           ops (operations)
           report (macro/verify artifact false invocation ops)]
       (is (= :passed (:status report)))
@@ -155,8 +181,7 @@
       (is (= 2 (:expanded-defn-count artifact)))
       (is (= '[(def add-one (fn [x] (+ x 1))) (def double-value (fn [x] (+ x x)))]
              (:expanded-forms artifact)))
-      (is (= "sha256:aa7c78fa3b2fbd8568f6b1baf92f224876d2452ae20e107b48614aba13039901"
-             (:artifact-id artifact)))
+      (assert-parent-lineage artifact c3 binding)
       (is (= (:artifact-id artifact) (macro/artifact-id artifact ops)))
       (is (= source (get-in artifact [:provenance :source-path])))
       (is (= (mapv :syntax/id (subvec (bootstrap/sh05-source-syntax-stream c3) 1))

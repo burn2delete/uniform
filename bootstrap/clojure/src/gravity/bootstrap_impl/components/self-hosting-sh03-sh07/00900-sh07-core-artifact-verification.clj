@@ -92,7 +92,67 @@
  #'sh07-core-source-map-order
  #'sh07-core-source-occurrence-context
  #'sh07-core-source-path-from-resolution
- #'sh07-core-value-kind]))]
+ #'sh07-core-value-kind
+ #'gravity.checked-core/alias-name
+ #'gravity.checked-core/binding-order
+ #'gravity.checked-core/fragment-coverage
+ #'gravity.checked-core/fragment-manifest
+ #'gravity.checked-core/fragment-record
+ #'gravity.checked-core/module-assembly-manifest
+ #'gravity.checked-core/lineage
+ #'gravity.checked-core/lineage-with-semantic-trace
+ #'gravity.checked-core/projection-binding-input
+ #'sh07-b13-alias-name
+ #'sh07-b13-binding-order
+ #'sh07-b13-fragment-coverage
+ #'sh07-b13-fragment-manifest
+ #'sh07-b13-fragment-record
+ #'sh07-b13-module-assembly-manifest
+ #'sh07-core-lineage
+ #'sh07-core-lineage-with-semantic-trace
+ #'sh07-core-projection-binding-input
+ #'gravity.checked-core/authenticated-request
+ #'gravity.checked-core/digest-reference-ordinal
+ #'gravity.checked-core/request-from-verified-upstream
+ #'gravity.checked-core/resolve-reference!
+ #'gravity.checked-core/resolve-reference-vector!
+ #'gravity.checked-core/semantic-binding
+ #'gravity.checked-core/semantic-projection-id
+ #'gravity.checked-core/semantic-resolution
+ #'gravity.checked-core/semantic-var-reference
+ #'sh07-core-authenticated-request
+ #'sh07-core-digest-reference-ordinal
+ #'sh07-core-request-from-verified-upstream
+ #'sh07-core-resolve-reference!
+ #'sh07-core-resolve-reference-vector!
+ #'sh07-core-semantic-binding
+ #'sh07-core-semantic-projection-id
+ #'sh07-core-semantic-resolution
+ #'sh07-core-semantic-var-reference
+ #'gravity.checked-core/digest-requests
+ #'gravity.checked-core/resolve-digest-preimage!
+ #'gravity.checked-core/resolve-result
+ #'gravity.checked-core/semantic-error-handler
+ #'gravity.checked-core/semantic-error-transfer
+ #'gravity.checked-core/semantic-identity-preimage
+ #'gravity.checked-core/semantic-mutation
+ #'gravity.checked-core/semantic-node
+ #'sh07-core-digest-requests
+ #'sh07-core-resolve-digest-preimage!
+ #'sh07-core-resolve-result
+ #'sh07-core-semantic-error-handler
+ #'sh07-core-semantic-error-transfer
+ #'sh07-core-semantic-identity-preimage
+ #'sh07-core-semantic-mutation
+ #'sh07-core-semantic-node
+ #'gravity.checked-core/canonical-artifact
+ #'gravity.checked-core/public-decimal-presentation
+ #'gravity.checked-core/raise-diagnostic!
+ #'gravity.checked-core/request-diagnostic!
+ #'sh07-core-canonical-artifact
+ #'sh07-core-public-decimal-presentation
+ #'sh07-core-raise-diagnostic!
+ #'sh07-core-request-diagnostic!]))]
  (defn
   sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))
