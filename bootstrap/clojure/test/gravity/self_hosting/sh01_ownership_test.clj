@@ -1142,6 +1142,28 @@
                  (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
       (is (not (production-helper-registration-valid? record bad))))))
 
+(deftest diagnostic-stage-dependencies-match-the-declared-api-and-real-test-imports
+  (let [contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        components (get contract "components")
+        by-id (into {} (map (juxt #(get % "id") identity)) components)
+        component (get by-id "c15-diagnostics")
+        stage-contract ((requiring-resolve 'gravity.c15-diagnostics/c15-engine-contract))
+        source-namespaces (set (filter #(str/starts-with? (str %) "gravity.")
+                                      (get-in stage-contract [:dependency-direction :requires])))
+        test-ns (with-open [reader (java.io.PushbackReader.
+                                    (io/reader (path (get-in component ["test" "path"]))))]
+                  (edn/read reader))
+        test-namespaces (->> (drop 2 test-ns)
+                             (filter #(and (seq? %) (= :require (first %))))
+                             (mapcat rest) (map first)
+                             (filter #(str/starts-with? (str %) "gravity.")) set)
+        resolve-dependencies (fn [field]
+                               (set (map #(some-> (get-in by-id [% "source" "namespace"]) symbol)
+                                         (get component field))))]
+    (is (= source-namespaces (resolve-dependencies "direct_source_dependencies")))
+    (is (= test-namespaces (resolve-dependencies "direct_test_dependencies")))
+    (is (contains? source-namespaces 'gravity.diagnostics))))
+
 (deftest effects-graph-helper-joins-existing-bootstrap-free-test
   (require 'gravity.bootstrap-free-leaf-test-runner)
   (let [record (ownership-record)

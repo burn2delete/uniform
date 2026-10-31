@@ -166,3 +166,32 @@ original bodies/arities, three compatibility forwarders and other eight C8
 implementation files. These are retained-input native data observations,
 not fresh frontend or canonical C7/C8 authority. Final exact lint, independent
 acceptance, own CI and clean actual-main preflight remain required.
+
+## Diagnostics main composition
+
+Run41244260141 for11d142cf85c03a9ff96390c3d9286dc179c8041b is now terminal
+success: ten enabled jobs succeeded and two were skipped. Its tested merge
+23191cb0d86532a54c73bd1afc24b90bd22302a5 has exact parents
+43c69654b3f2daefa05e3902cbe78b469af47d96 and11d142cf8, tree
+3d7c8b9374207c54006ca5626325f9648eec45d4. This older-base result remains
+historical, with no transfer of acceptance to a different composed tuple.
+
+Main subsequently integrated Diagnostics PR702 as
+f337751c6f0c56fa8a3e0a59d636b15ec068ba78, tree
+6137edf7b5793ad055a180f26a6cacbb82cc2efb. Normal composition has one actual
+ownership-test conflict. Four complete files are reconstructed against that
+actual parent, preserving the C15 dependency regression, new phase-availability
+behavior, component dependencies, all existing helpers and all unrelated main
+files. The Effects implementation, native consumer and focused tests stay exact.
+
+Fresh C8 and C15 tests pass15/352 in their separate leaf JVMs; ownership31/979
+and language6/11 pass. All22 original C8 complete/text captures, imported hashes,
+Core/provenance/C5 joins and real C8-UNDECLARED refusals still match. The new
+native C8 rejection files are then consumed by the C15 record constructor:
+both fresh input hashes verify and ten complete/text C15 record/refusal pairs
+match. Their actual effect-check stage, spans, facts and legacy identities
+survive. Missing semantic context correctly rejects C15-SCHEMA; forged identity
+separately rejects C15-ID. No context is invented or semantic stage retagged.
+This is a native data handoff, not canonical source authentication or a fresh
+frontend/C7/C8 bridge. All observations above describe working composition;
+the later committed head needs exact lint, independent review and its own CI.
