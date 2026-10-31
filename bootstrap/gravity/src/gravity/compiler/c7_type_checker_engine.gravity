@@ -9225,7 +9225,7 @@
                        :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
     (if (sh08-ft-all-true?
           [(= :call (get node :core-form)) (= :reference (get operator :core-form))
-           (<= (count args) 1023) (= expected-call call) (= expected-edge edge) (sh08-lc-binding? binding module)
+           (= expected-call call) (= expected-edge edge) (sh08-lc-binding? binding module)
            (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
            (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
                :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
@@ -9277,20 +9277,17 @@
                {:kind :gravity.type/list :element-types (get header :argument-types) :shape :literal} :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-lc-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-lc-derive [core node call edge nodes bindings types forms]
   ; Evaluated persistent List construction has no quote or syntax authority.
   ; Every operand must remain established even when another transfers control.
-  (let [args (get call :argument-node-ids) base (+ 64 (count args) (count (get core :function-records)))
+  (let [args (get call :argument-node-ids)
         validation (sh08-lc-validate-types (sh08-ft-ordered-child-types args types))
-        work base
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-    (if (if (> base budget) true false)
-      (assoc (sh08-sm-failure "C7-GENERIC" :list-construction-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-lc-source core node call edge nodes bindings types (get core :module) validation)]
+    (let [header (sh08-lc-source core node call edge nodes bindings types (get core :module) validation)]
         (if (= header nil)
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
-                   (if (<= (count args) 1023) :list-construction-operand-type-required :list-construction-arity-mismatch)
-                   nil :bounded-established-first-order-values (sh08-ft-ordered-child-types args types)) :work-count work)
+          (sh08-sm-failure "C7-TYPE-MISMATCH"
+                   (if (vector? args) :list-construction-operand-type-required :list-construction-arity-mismatch)
+                   nil :established-first-order-values (sh08-ft-ordered-child-types args types))
           (if (sh08-ft-all-true?
                 [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= (+ 1 (count args)) (if (vector? ids) (count ids) 0))
                  (= {:operator-child-index 0 :argument-count (count args) :argument-child-indexes (sh08-ft-loop-kernel-indexes 1 (+ 1 (count args)))
@@ -9304,8 +9301,8 @@
                          (recur (+ i 1)) false))))])
             (let [descriptor (sh08-lc-finish header)]
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-lc-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :list-construction-source-mismatch nil :exact-operator-and-ordered-operand-source (get node :node-id)) :work-count work)))))))
+               :constraint (sh08-lc-constraint descriptor)})
+            (sh08-sm-failure "C7-VERIFY" :list-construction-source-mismatch nil :exact-operator-and-ordered-operand-source (get node :node-id)))))))
 
 (defn sh08-lc-node? [node context]
   (if (= :call (get node :core-form))
@@ -9317,11 +9314,11 @@
         header (sh08-lc-source core node call edge nodes bindings types (get core :module) validation)]
     (if (map? header) (= (get types (get call :operator-node-id)) (sh08-lc-finish header)) false)))
 
-(defn sh08-lc-step [node types binding-types functions context budget]
+(defn sh08-lc-step [node types binding-types functions context]
   (sh08-lc-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
-    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
+    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))
 
 (defn sh08-lq-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -13736,34 +13733,28 @@
                 (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle)) false))) false)))
         false)) false))
 
-(defn sh08-sysm-domain [arguments budget]
+(defn sh08-sysm-domain [arguments]
   ; STD3 membership: Symbol spelling is inert DATA, never binding authority.
-  (let [limit (if (< budget 65536) budget 65536)]
-    (if (< limit 2) {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
-      (if (if (vector? arguments) (= 2 (count arguments)) false)
+  (if (if (vector? arguments) (= 2 (count arguments)) false)
         (let [items (get arguments 0) needle (get arguments 1)]
           (if (if (= :gravity.type/symbol needle) true (= :gravity.type/never needle))
             (if (= :gravity.type/never items)
-              {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :symbol}
+              {:status :accepted :argument-types arguments :set-member-count nil :membership-family :symbol}
               (if (sh08-syc-type? items)
-                (if (< limit 3)
-                  {:status :rejected :reason :symbol-set-contains-work-limit :work-count 3}
-                  {:status :accepted :work-count 3 :argument-types arguments :set-member-count nil :membership-family :symbol})
+                {:status :accepted :argument-types arguments :set-member-count nil :membership-family :symbol}
               (if (if (map? items) (if (= 3 (count items))
                     (if (loop [fields (keys items)] (if (= 0 (count fields)) true
                           (if (keyword? (first fields)) (recur (rest fields)) false)))
                       (if (= :gravity.type/set (get items :kind))
                         (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false) false)
                 (let [members (get items :element-types) n (count members)]
-                  (if (> n 1024) {:status :rejected :reason :symbol-set-contains-type-width :work-count 2}
-                    (if (> n (- limit 2)) {:status :rejected :reason :symbol-set-contains-work-limit :work-count (+ 2 n)}
                       (if (loop [i 0] (if (= i n) true
                             (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
-                        {:status :accepted :work-count (+ 2 n) :argument-types arguments :set-member-count n :membership-family :symbol}
-                        {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count (+ 2 n)}))))
-                {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count 2})))
-            {:status :rejected :reason :symbol-set-contains-operand-type-required :work-count 2}))
-        {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
+                        {:status :accepted :argument-types arguments :set-member-count n :membership-family :symbol}
+                        {:status :rejected :reason :symbol-set-contains-operand-type-required})))
+                {:status :rejected :reason :symbol-set-contains-operand-type-required})))
+            {:status :rejected :reason :symbol-set-contains-operand-type-required}))
+    {:status :rejected :reason :keyword-set-contains-arity-mismatch})
 
 (defn sh08-ism-selected? [arguments]
   (if (if (vector? arguments) (= 2 (count arguments)) false)
@@ -13777,95 +13768,81 @@
               (let [members (get items :element-types)]
                 (if (vector? members) (= :gravity.type/integer (get members 0)) false)) false) false) false))) false))
 
-(defn sh08-ism-domain [arguments budget]
+(defn sh08-ism-domain [arguments]
   ; L5/STD5: exact generic Integer equality performs no arithmetic or conversion.
-  (let [limit (if (< budget 65536) budget 65536) items (get arguments 0) needle (get arguments 1)]
-    (if (< limit 2) {:status :rejected :reason :integer-set-contains-work-limit :work-count 2}
-      (if (if (= :gravity.type/integer needle) true (= :gravity.type/never needle))
+  (let [items (get arguments 0) needle (get arguments 1)]
+    (if (if (= :gravity.type/integer needle) true (= :gravity.type/never needle))
         (if (= :gravity.type/never items)
-          {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :integer}
+          {:status :accepted :argument-types arguments :set-member-count nil :membership-family :integer}
           (if (if (map? items) (if (= 3 (count items))
                 (if (loop [fields (keys items)] (if (= 0 (count fields)) true
                       (if (keyword? (first fields)) (recur (rest fields)) false)))
                   (if (= :gravity.type/set (get items :kind))
                     (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false) false)
             (let [members (get items :element-types) n (count members)]
-              (if (> n 1024) {:status :rejected :reason :integer-set-contains-type-width :work-count 2}
-                (if (> n (- limit 2)) {:status :rejected :reason :integer-set-contains-work-limit :work-count (+ 2 n)}
                   (if (loop [i 0] (if (= i n) true
                         (let [member (get members i)]
                           (if (keyword? member) (if (= :gravity.type/integer member) (recur (+ i 1)) false) false))))
-                    {:status :accepted :work-count (+ 2 n) :argument-types arguments :set-member-count n :membership-family :integer}
-                    {:status :rejected :reason :integer-set-contains-operand-type-required :work-count (+ 2 n)}))))
-            {:status :rejected :reason :integer-set-contains-operand-type-required :work-count 2}))
-        {:status :rejected :reason :integer-set-contains-operand-type-required :work-count 2}))))
+                    {:status :accepted :argument-types arguments :set-member-count n :membership-family :integer}
+                    {:status :rejected :reason :integer-set-contains-operand-type-required})))
+            {:status :rejected :reason :integer-set-contains-operand-type-required}))
+        {:status :rejected :reason :integer-set-contains-operand-type-required}))
 
-(defn sh08-ksm-domain [arguments budget]
+(defn sh08-ksm-domain [arguments]
   ; Supported membership entry: validate the entire original type graph
-  ; before internal selectors can read a carrier. This adds no work debit.
+  ; before internal selectors can read a carrier.
   (let [ingress (sh08-lc-validate-types arguments)]
     (if (= :accepted (get ingress :status))
-
-  (if (if (>= budget 2) (sh08-ism-selected? arguments) false)
-    (sh08-ism-domain arguments budget)
-  (if (if (>= budget 2) (sh08-sysm-selected? arguments) false)
-    (sh08-sysm-domain arguments budget)
-    (let [limit (if (< budget 65536) budget 65536)]
-    (if (if (vector? arguments) (= 2 (count arguments)) false)
-      (if (< limit 2) {:status :rejected :reason :keyword-set-contains-work-limit :work-count 2}
-        (let [items (get arguments 0) needle (get arguments 1)
-              character? (= :gravity.type/character needle) strings? (= :gravity.type/string needle)
-              width-reason (if character? :character-set-contains-type-width
-                             (if strings? :string-set-contains-type-width :keyword-set-contains-type-width))
-              work-reason (if character? :character-set-contains-work-limit
-                             (if strings? :string-set-contains-work-limit :keyword-set-contains-work-limit))
-              type-reason (if character? :character-set-contains-operand-type-required
-                             (if strings? :string-set-contains-operand-type-required :keyword-set-contains-operand-type-required))]
-          (if (if character? true (if strings? true (if (= :gravity.type/keyword needle) true (= :gravity.type/never needle))))
-            (if (= :gravity.type/never items)
-              (if character?
-                {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :character}
-                (if strings?
-                  {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil :membership-family :string}
-                  {:status :accepted :work-count 2 :argument-types arguments :set-member-count nil}))
-              (if (if (if (map? items) (if (= 3 (count items))
-                    (loop [fields (keys items)]
-                      (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false) (= :homogeneous (get items :shape)) false)
-                (if (< limit 3)
-                  {:status :rejected :reason work-reason :work-count 3}
-                  (if (if (sh08-ss-type? items) (if strings? true (= :gravity.type/never needle)) false)
-                    {:status :accepted :work-count 3 :argument-types arguments :set-member-count nil :membership-family :string}
-                    {:status :rejected :reason type-reason :work-count 3}))
-              (if (if (if (map? items) (if (= 3 (count items))
-                    (loop [fields (keys items)]
-                      (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false) (if (= 3 (count items))
-                    (if (= :gravity.type/set (get items :kind))
-                      (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false) false)
-                (let [members (get items :element-types) n (count members)]
-                  (if (> n 1024) {:status :rejected :reason width-reason :work-count 2}
-                    (if (> n (- limit 2))
-                      {:status :rejected :reason work-reason :work-count (+ 2 n)}
-                      (loop [i 0 family (if character? :character (if strings? :string :keyword))]
-                        (if (= i n)
-                          (if (= :character family)
-                            {:status :accepted :work-count (+ 2 n) :argument-types arguments :set-member-count n :membership-family :character}
-                            (if (= :string family)
-                              {:status :accepted :work-count (+ 2 n) :argument-types arguments :set-member-count n :membership-family :string}
-                              {:status :accepted :work-count (+ 2 n) :argument-types arguments :set-member-count n}))
-                          (let [member (get members i)]
-                            (if (= (if (= :character family) :gravity.type/character (if (= :string family) :gravity.type/string :gravity.type/keyword)) member)
-                              (recur (+ i 1) family)
-                              (if (if (= i 0) (if (= :gravity.type/never needle)
-                                  (if (= :gravity.type/character member) true (= :gravity.type/string member)) false) false)
-                                (recur 1 (if (= :gravity.type/character member) :character :string))
-                                {:status :rejected :reason (if (= :character family) :character-set-contains-operand-type-required
-                                                          (if (= :string family) :string-set-contains-operand-type-required type-reason))
-                                 :work-count (+ 2 n)}))))))))
-                {:status :rejected :reason type-reason :work-count 2})))
-            {:status :rejected :reason :keyword-set-contains-operand-type-required :work-count 2})))
-      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
+      (if (sh08-ism-selected? arguments)
+        (sh08-ism-domain arguments)
+        (if (sh08-sysm-selected? arguments)
+          (sh08-sysm-domain arguments)
+          (if (if (vector? arguments) (= 2 (count arguments)) false)
+            (let [items (get arguments 0) needle (get arguments 1)
+                  character? (= :gravity.type/character needle) strings? (= :gravity.type/string needle)
+                  type-reason (if character? :character-set-contains-operand-type-required
+                                (if strings? :string-set-contains-operand-type-required :keyword-set-contains-operand-type-required))
+                  allowed-needle? (if character? true (if strings? true
+                                   (if (= :gravity.type/keyword needle) true (= :gravity.type/never needle))))]
+              (if allowed-needle?
+                (if (= :gravity.type/never items)
+                  (if character?
+                    {:status :accepted :argument-types arguments :set-member-count nil :membership-family :character}
+                    (if strings?
+                      {:status :accepted :argument-types arguments :set-member-count nil :membership-family :string}
+                      {:status :accepted :argument-types arguments :set-member-count nil}))
+                  (if (if (if (map? items) (if (= 3 (count items))
+                        (loop [fields (keys items)]
+                          (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)
+                        (= :homogeneous (get items :shape)) false)
+                    (if (if (sh08-ss-type? items) (if strings? true (= :gravity.type/never needle)) false)
+                      {:status :accepted :argument-types arguments :set-member-count nil :membership-family :string}
+                      {:status :rejected :reason type-reason})
+                    (if (if (if (map? items) (if (= 3 (count items))
+                          (loop [fields (keys items)]
+                            (if (= 0 (count fields)) true (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)
+                          (if (= :gravity.type/set (get items :kind))
+                            (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false)
+                      (let [members (get items :element-types) n (count members)]
+                        (loop [i 0 family (if character? :character (if strings? :string :keyword))]
+                          (if (= i n)
+                            (let [accepted {:status :accepted :argument-types arguments :set-member-count n}]
+                              (if (= :keyword family) accepted (assoc accepted :membership-family family)))
+                            (let [member (get members i)
+                                  expected (if (= :character family) :gravity.type/character
+                                             (if (= :string family) :gravity.type/string :gravity.type/keyword))]
+                              (if (= expected member)
+                                (recur (+ i 1) family)
+                                (if (if (= i 0) (if (= :gravity.type/never needle)
+                                      (if (= :gravity.type/character member) true (= :gravity.type/string member)) false) false)
+                                  (recur 1 (if (= :gravity.type/character member) :character :string))
+                                  {:status :rejected :reason (if (= :character family) :character-set-contains-operand-type-required
+                                                               (if (= :string family) :string-set-contains-operand-type-required type-reason))})))))
+                      {:status :rejected :reason type-reason})))
+                {:status :rejected :reason :keyword-set-contains-operand-type-required}))
+            {:status :rejected :reason :keyword-set-contains-arity-mismatch})))))
       {:status :rejected :reason :keyword-set-contains-operand-type-required
-       :type-check-reason (get ingress :reason) :work-count 2})))
+       :type-check-reason (get ingress :reason)}))
 
 (defn sh08-sysm-source-ids? [node call nodes bindings module]
   (if (sh08-sse-call-ids? node call)
@@ -13938,14 +13915,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-integer-set :members :generic-integer-only :needle :generic-integer-only
                            :comparison :original-integer-values :conversion :none :arithmetic :none :overflow :impossible :rounding :none
                            :cross-type :unsupported :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/integer-set-membership-logical-leaf-work-v1
-                           :representation-unit-policy :one-per-validated-integer-leaf
                            :precision-bound :not-established :provider-cpu-bound :not-established :provider-heap-bound :not-established
                            :payload-evaluation :none :mutation :none :construction :none :refinement :none
                            :cardinality-facts :none :enumeration-order :unobserved}
@@ -13962,13 +13936,10 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:carrier-schema :gravity/homogeneous-symbol-set-type-v1 :input :finite-persistent-symbol-set :members :symbol-only :needle :symbol-only
                            :comparison :guarded-atomic-symbol-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/symbol-set-membership-logical-content-work-v1
-                           :representation-unit-policy :jvm-utf16-symbol-display-for-work-only
                            :symbol-equality :original-namespace-and-name :normalization :none :coercion :none
                            :resolution-authority :none :operand-position :non-tail :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
@@ -13984,11 +13955,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
                            :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -14000,9 +13971,7 @@
           :intrinsic :gravity.collections/character-set-membership :membership-policy {:input :finite-persistent-character-set :members :character-only :needle :character-only
                            :comparison :guarded-atomic-character-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/character-set-membership-logical-content-work-v1
-                           :representation-unit-policy :boxed-one-carrier-two :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :character-premise :existing-atomic-character-ir-values :source-decoding :c2-owned
                            :host-surrogate-rejection :not-established :carrier-text-codepoint-consistency :not-established
@@ -14013,11 +13982,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
                            :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -14032,9 +14001,6 @@
             :membership-policy {:carrier-schema :gravity/homogeneous-string-set-type-v1 :input :finite-persistent-string-set :members :string-only :needle :string-only
                            :comparison :guarded-atomic-string-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/string-set-membership-logical-content-work-v1
-                           :representation-unit-policy :jvm-utf16-code-units
                            :payload-evaluation :none :mutation :none :construction :none :refinement :none
                            :cardinality-facts :none :enumeration-order :unobserved :provider-cpu-bound :not-established})
           {:kind :gravity.type/applied-keyword-set-contains :version :sh08-keyword-set-contains-v1
@@ -14042,11 +14008,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
                            :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -14141,20 +14107,15 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-ksm-derive [core node call edge nodes bindings types forms budget]
-  (let [limit (if (< budget 65536) budget 65536)]
+(defn sh08-ksm-derive [core node call edge nodes bindings types forms]
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
-  (let [args (get call :argument-node-ids) base (+ 64 (count args) (count (get core :function-records)))]
-    (if (> base limit)
-      (assoc (sh08-sm-failure "C7-GENERIC" :keyword-set-contains-work-limit nil :remaining-type-join-units limit) :work-count base)
-      (if (sh08-sse-call-ids? node call)
-      (let [domain (sh08-ksm-domain (sh08-ft-ordered-child-types args types) (- limit base))
-            work (+ base (get domain :work-count))]
+    (if (sh08-sse-call-ids? node call)
+      (let [args (get call :argument-node-ids) arguments (sh08-ft-ordered-child-types args types)
+            domain (sh08-ksm-domain arguments) owner-id (get (get node :source) :form-id)
+            owner (if (if (keyword? owner-id) true (if (string? owner-id) (= 71 (count owner-id)) false)) (get forms owner-id) nil)
+            ids (get owner :child-form-ids)]
         (if (= :accepted (get domain :status))
-          (let [owner-id (get (get node :source) :form-id)
-                owner (if (if (keyword? owner-id) true (if (string? owner-id) (= 71 (count owner-id)) false)) (get forms owner-id) nil)
-                ids (get owner :child-form-ids)
-                header (sh08-ksm-source core node call edge nodes bindings types (get core :module) domain)]
+          (let [header (sh08-ksm-source core node call edge nodes bindings types (get core :module) domain)]
             (if (if (if (map? header) (if (contains? #{:symbol :integer} (get domain :membership-family)) (sh08-ksin-call-forms? node nodes forms) true) false)
                   (sh08-ft-all-true?
                     [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner))
@@ -14170,44 +14131,36 @@
                              (recur (+ i 1)) false))))]) false)
               (let [descriptor (sh08-ksm-finish header)]
                 {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-                 :constraint (sh08-ksm-constraint descriptor) :work-count work})
-              (assoc (sh08-sm-failure "C7-VERIFY" (if (= :integer (get domain :membership-family)) :integer-set-contains-source-mismatch
+                 :constraint (sh08-ksm-constraint descriptor)})
+              (sh08-sm-failure "C7-VERIFY" (if (= :integer (get domain :membership-family)) :integer-set-contains-source-mismatch
                      (if (= :symbol (get domain :membership-family)) :symbol-set-contains-source-mismatch
                          (if (= :character (get domain :membership-family)) :character-set-contains-source-mismatch
                            (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch)))) nil :exact-operator-set-needle-source
-                       (get node :node-id)) :work-count work)))
-          (assoc (sh08-sm-failure
-                   (if (contains? #{:keyword-set-contains-work-limit :character-set-contains-work-limit :string-set-contains-work-limit :symbol-set-contains-work-limit :integer-set-contains-work-limit} (get domain :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                   (get domain :reason) nil (if (contains? #{:integer-set-contains-work-limit :integer-set-contains-type-width :integer-set-contains-operand-type-required} (get domain :reason)) :established-finite-integer-set-and-integer
-                     (if (contains? #{:symbol-set-contains-work-limit :integer-set-contains-work-limit :symbol-set-contains-type-width :integer-set-contains-type-width :symbol-set-contains-operand-type-required :integer-set-contains-operand-type-required} (get domain :reason))
-                     :established-finite-symbol-set-and-symbol
-                     (if (contains? #{:character-set-contains-work-limit :character-set-contains-type-width :character-set-contains-operand-type-required} (get domain :reason))
-                     :established-finite-character-set-and-character
-                     (if (contains? #{:string-set-contains-work-limit :string-set-contains-type-width :string-set-contains-operand-type-required} (get domain :reason))
-                       :established-finite-string-set-and-string :established-finite-keyword-set-and-keyword)))) (sh08-ft-ordered-child-types args types))
-                 :work-count work)))
-      (assoc (sh08-sm-failure "C7-VERIFY" :keyword-set-contains-source-mismatch nil :closed-membership-source-identities nil) :work-count base))))
-    (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :keyword-set-contains-arity-mismatch nil :binary-membership-call nil) :work-count 64))))
+                       (get node :node-id))))
+          (sh08-sm-failure "C7-TYPE-MISMATCH" (get domain :reason) nil
+            (if (= :integer (get domain :membership-family)) :established-finite-integer-set-and-integer
+              (if (= :symbol (get domain :membership-family)) :established-finite-symbol-set-and-symbol
+                (if (= :character (get domain :membership-family)) :established-finite-character-set-and-character
+                  (if (= :string (get domain :membership-family)) :established-finite-string-set-and-string
+                    :established-finite-keyword-set-and-keyword)))) arguments)))
+      (sh08-sm-failure "C7-VERIFY" :keyword-set-contains-source-mismatch nil :closed-membership-source-identities nil))
+    (sh08-sm-failure "C7-TYPE-MISMATCH" :keyword-set-contains-arity-mismatch nil :binary-membership-call nil)))
 
-(defn sh08-ksm-inferred-call [core node call edge nodes bindings types budget]
-  (let [limit (if (< budget 65536) budget 65536)]
+(defn sh08-ksm-inferred-call [core node call edge nodes bindings types]
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
-  (let [base (+ 64 (count (get call :argument-node-ids)) (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :keyword-set-contains-work-limit :work-count base}
-      (if (sh08-sse-call-ids? node call)
-      (let [domain (sh08-ksm-domain (sh08-ft-ordered-child-types (get call :argument-node-ids) types) (- limit base))
-            work (+ base (get domain :work-count))]
+    (if (sh08-sse-call-ids? node call)
+      (let [domain (sh08-ksm-domain (sh08-ft-ordered-child-types (get call :argument-node-ids) types))]
         (if (= :accepted (get domain :status))
           (let [header (sh08-ksm-source core node call edge nodes bindings types (get core :module) domain)]
             (if (if (map? header) (= (get types (get call :operator-node-id)) (sh08-ksm-finish header)) false)
-              {:status :accepted :work-count work}
+              {:status :accepted}
               {:status :rejected :reason (if (= :integer (get domain :membership-family)) :integer-set-contains-source-mismatch
                      (if (= :symbol (get domain :membership-family)) :symbol-set-contains-source-mismatch
-                         (if (= :character (get domain :membership-family)) :character-set-contains-source-mismatch
-                           (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch)))) :work-count work}))
-          (assoc domain :work-count work)))
-      {:status :rejected :reason :keyword-set-contains-source-mismatch :work-count base})))
-    {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 64})))
+                       (if (= :character (get domain :membership-family)) :character-set-contains-source-mismatch
+                         (if (= :string (get domain :membership-family)) :string-set-contains-source-mismatch :keyword-set-contains-source-mismatch))))}))
+          domain))
+      {:status :rejected :reason :keyword-set-contains-source-mismatch})
+    {:status :rejected :reason :keyword-set-contains-arity-mismatch}))
 
 (defn sh08-mc-source [core node call edge nodes bindings types module]
   (if (if (vector? (get call :argument-node-ids)) (vector? (get node :children)) false)
@@ -14285,18 +14238,16 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-mc-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-mc-derive [core node call edge nodes bindings types forms]
   ; STD3 membership queries a known Map with an independently established
   ; String or Keyword key, without inspecting stored values or map shape.
-  (let [args (get call :argument-node-ids) work (+ 64 (count args) (count (get core :function-records)))
+  (let [args (get call :argument-node-ids)
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :map-contains-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-mc-source core node call edge nodes bindings types (get core :module))]
+    (let [header (sh08-mc-source core node call edge nodes bindings types (get core :module))]
         (if (= header nil)
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
+          (sh08-sm-failure "C7-TYPE-MISMATCH"
                    (if (= 2 (count args)) :map-contains-operand-type-required :map-contains-arity-mismatch)
-                   nil :established-map-and-string-or-keyword-key (sh08-ft-ordered-child-types args types)) :work-count work)
+                   nil :established-map-and-string-or-keyword-key (sh08-ft-ordered-child-types args types))
           (if (sh08-ft-all-true?
                 [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
                  (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
@@ -14310,8 +14261,8 @@
                          (recur (+ i 1)) false))))])
             (let [descriptor (sh08-mc-finish header)]
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-mc-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :exact-operator-map-key-source (get node :node-id)) :work-count work)))))))
+               :constraint (sh08-mc-constraint descriptor)})
+            (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :exact-operator-map-key-source (get node :node-id)))))))
 
 (defn sh08-mc-node? [node context]
   (if (= :call (get node :core-form))
@@ -14320,19 +14271,16 @@
 
 (defn sh08-mc-inferred-call-valid? [core node call edge nodes bindings types]
   (if (contains? #{:gravity.type/applied-keyword-set-contains :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains} (get (get types (get call :operator-node-id)) :kind))
-    (= :accepted (get (sh08-ksm-inferred-call core node call edge nodes bindings types 65536) :status))
+    (= :accepted (get (sh08-ksm-inferred-call core node call edge nodes bindings types) :status))
       (let [header (sh08-mc-source core node call edge nodes bindings types (get core :module))]
     (if (map? header) (= (get types (get call :operator-node-id)) (sh08-mc-finish header)) false))))
 
-(defn sh08-mc-step [node types binding-types functions context budget]
+(defn sh08-mc-step [node types binding-types functions context]
   (let [core (get context :ordering-core) operator-id (first (get node :children)) id (get node :node-id)]
     (if (sh08-sse-ids? [operator-id id] 2)
       (let [call (get (get context :ordering-operators) operator-id)
-            edge (get (get context :ordering-edges) id) args (get call :argument-node-ids)
-            work (+ 64 (count args) (count (get core :function-records)))]
-        (if (> work budget)
-          (assoc (sh08-sm-failure "C7-GENERIC" :map-contains-work-limit nil :remaining-type-join-units budget) :work-count work)
-          (if (if (vector? args) (= 2 (count args)) false)
+            edge (get (get context :ordering-edges) id) args (get call :argument-node-ids)]
+        (if (if (vector? args) (= 2 (count args)) false)
             (if (sh08-sse-ids? args 2)
               (let [receiver (get types (get args 0)) needle (get types (get args 1))
                     set? (if (if (= :gravity.type/set receiver) true
@@ -14343,18 +14291,13 @@
                                  (if (= :gravity.type/character needle) true (= :gravity.type/string needle))) true) false))]
                 (if set?
                   (sh08-ksm-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
-                    types (get context :association-forms) budget)
+                    types (get context :association-forms))
                   (sh08-mc-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
-                    types (get context :association-forms) budget)))
-              (assoc (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil) :work-count work))
+                    types (get context :association-forms))))
+              (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil))
             (sh08-mc-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
-              types (get context :association-forms) budget))))
-      (let [children (get node :children)
-            work (+ 64 (if (vector? children) (if (> (count children) 0) (- (count children) 1) 0) 0)
-                    (count (get core :function-records)))]
-        (if (> work budget)
-          (assoc (sh08-sm-failure "C7-GENERIC" :map-contains-work-limit nil :remaining-type-join-units budget) :work-count work)
-          (assoc (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil) :work-count work))))))
+              types (get context :association-forms)))
+      (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil)))))
 
 ; STD3/L2: classify independently established closed values. A Bool result
 ; supplies no occurrence, member, length, bounds, or range refinement.
