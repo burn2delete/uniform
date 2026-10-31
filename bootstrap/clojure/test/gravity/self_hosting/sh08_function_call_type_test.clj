@@ -2624,8 +2624,7 @@
         (is (= :rejected (:status (check (assoc established :slice-operator changed))))))))
   (doseq [[values start end reason] [[[1 2 3] 0 4 :vector-slice-bounds-required]
                                     [[1 2 3] 2 1 :vector-slice-bounds-required]
-                                    [[1 2 3] -1 2 :vector-slice-bounds-required]
-                                    [(vec (range 1025)) 0 1 :vector-slice-receiver-proof-required]]]
+                                    [[1 2 3] -1 2 :vector-slice-bounds-required]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-input values start end)
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ])]
       (is (= :rejected (:status result)))
@@ -2634,6 +2633,9 @@
         (is (= "STD3002" (:rule result)))
         (is (= [:authenticated-string-character-vector :original-integer-vector-literal :immutable-let-vector]
                (get-in result [:expected :receiver]))))))
+  (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-input (vec (range 1025)) 0 1)
+        result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms])]
+    (is (= :accepted (:status result))))
   (doseq [positions [[0] [1] [2] [0 1 2]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-transfer-input [65 66 67] 20 1 positions)
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ])
@@ -2907,7 +2909,7 @@
         calls (:calls core) edges (:call-edges core)
         derive (fn [name index types]
                  (let [call (get calls index)]
-                   (invoke-c7 name [core (nodes (:core-node-id call)) call (get edges index) nodes bindings types forms 65536])))
+                   (invoke-c7 name [core (nodes (:core-node-id call)) call (get edges index) nodes bindings types forms])))
         retain (fn [types index result] (let [call (get calls index)]
                                          (assoc types (:operator-node-id call) (:descriptor result)
                                                       (:core-node-id call) (:type result :gravity.type/unknown))))
@@ -3273,8 +3275,9 @@
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ])]
       (is (= :rejected (:status result)))
       (is (= "STD3002" (:rule result)))))
-  (let [{:keys [core node call edge nodes bindings types forms]} (parameter-vector-count-slice-input (apply str (repeat 1025 "a")) 0)]
-    (is (= :rejected (:status (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ]))))))
+  (let [{:keys [core node call edge nodes bindings types forms]} (parameter-vector-count-slice-input (apply str (repeat 1025 "a")) 0)
+        result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ])]
+    (is (= :accepted (:status result)))))
 
 (deftest sh08-parameter-vector-count-slice-caller-development-kernel
   (let [input (parameter-vector-count-slice-caller-input "0af" 1)
@@ -3736,11 +3739,14 @@
   (let [result (let-vector-slice-first-established (let-vector-count-slice-first-input "f" 2 nil))]
     (is (= :rejected (get-in result [:slice :status])))
     (is (= "STD3002" (get-in result [:slice :rule]))))
-  (doseq [value ["\u0100" (apply str (repeat 1025 "a")) [1 2 3]]]
+  (doseq [value ["\u0100" [1 2 3]]]
     (let [input (let-vector-count-slice-first-input value 0 nil)
           result (let-vector-slice-first-established input)]
       (when (vector? value) (is (= :accepted (get-in input [:count-result :status]))))
-      (is (= :rejected (get-in result [:slice :status]))))))
+      (is (= :rejected (get-in result [:slice :status])))))
+  (let [input (let-vector-count-slice-first-input (apply str (repeat 1025 "a")) 0 nil)
+        result (let-vector-slice-first-established input)]
+    (is (= :accepted (get-in result [:slice :status])))))
 
 (deftest sh08-let-vector-slice-first-development-kernel
   (doseq [value ["abc" [65 66 67]]]
@@ -3887,7 +3893,7 @@
   (let [{:keys [core nodes bindings forms types]} input
         derive (fn [name id types] (let [call (first (filter #(= id (:core-node-id %)) (:calls core)))
                                          edge (first (filter #(= id (:call-core-node-id %)) (:call-edges core)))]
-                                     (invoke-c7 name [core (nodes id) call edge nodes bindings types forms 65536])))
+                                     (invoke-c7 name [core (nodes id) call edge nodes bindings types forms])))
         slice (derive 'sh08-vsl-derive :slice-call types)
         types (assoc types :slice-operator (:descriptor slice) :slice-call (:type slice))
         query (derive 'sh08-lq-derive :let-first-call types)
@@ -4129,7 +4135,7 @@
       (is (= :accepted (:status slice)))
       (is (= 1039 (count (get-in slice [:descriptor :bounds-proof :source-forms]))))
       (is (= :accepted (:status (invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings types ]))))
-      (is (= :rejected (:status (derive (let-vector-slice-equality-input "sha256:abcd" (apply str (repeat 1025 \s)) nil))))))))
+      (is (= :accepted (:status (derive (let-vector-slice-equality-input "sha256:abcd" (apply str (repeat 1025 \s)) nil))))))))
 
 (defn- let-prefix-gate-input [value expected then-value else-value positions]
   ;; One canonical conditional over the existing normalized equality composition.
@@ -4564,7 +4570,7 @@
       (is (= :accepted (:status slice)))
       (is (= 1043 (count (get-in slice [:descriptor :bounds-proof :source-forms]))))
       (is (= :accepted (:status (invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings types ]))))
-      (is (= :rejected (:status (derive (let-prefix-gate-input "sha256:abcd" (apply str (repeat 1025 \s)) true false nil))))))))
+      (is (= :accepted (:status (derive (let-prefix-gate-input "sha256:abcd" (apply str (repeat 1025 \s)) true false nil))))))))
 
 (deftest sh08-sha-prefix-comparison-development-kernel
   (let [text "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"]
@@ -4696,8 +4702,7 @@
     (is (= :rejected (:status (vector-slice-derived (vector-slice-transfer-input "sha256:abcd" start end positions)))))))
 
 (deftest sh08-vector-slice-child-priority-development-kernel
-  (doseq [[text expected] [["\u0100" :string-character-vector-unsupported-text]
-                           [(apply str (repeat 1025 \a)) :string-character-vector-width]]]
+  (doseq [[text expected] [["\u0100" :string-character-vector-unsupported-text]]]
     (let [{:keys [core nodes forms bindings products binding-types]} (vector-slice-input text 0 1)
           context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
                    :lookup-bindings (vec (vals bindings)) :shape-call-products products}
@@ -4813,8 +4818,9 @@
   (doseq [value ["\u0100" "\u00ffe\u0301" "\uD83D\uDE00" "\uD800" "\uDC00"]]
     (is (= :string-character-vector-unsupported-text
            (:reason (literal-string-vector-derived (literal-string-vector-input value))))))
-  (is (= :string-character-vector-width
-         (:reason (literal-string-vector-derived (literal-string-vector-input (apply str (repeat 1025 \ÿ))))))))
+  (let [result (literal-string-vector-derived (literal-string-vector-input (apply str (repeat 1025 \ÿ))))]
+    (is (= :accepted (:status result)))
+    (is (= 1025 (count (:element-types (:type result)))))))
 
 (deftest sh08-latin1-string-vector-current-source-composition
   ;; Distinct genuine G input; Q parity is only file parity, not source authority.
@@ -4880,8 +4886,9 @@
       (is (= :rejected (:status result)))
       (is (= ["C7-ANNOTATION" :string-character-vector-unsupported-text]
              ((juxt :rule :reason) result)))))
-  (is (= :string-character-vector-width
-         (:reason (literal-string-vector-derived (literal-string-vector-input (apply str (repeat 1025 \a)))))))
+  (let [result (literal-string-vector-derived (literal-string-vector-input (apply str (repeat 1025 \a))))]
+    (is (= :accepted (:status result)))
+    (is (= 1025 (count (:element-types (:type result))))))
   (let [base (literal-string-vector-input "sha256:")]
     (doseq [mutate [#(assoc-in % [:forms :arg0 :value] "sha257:")
                     #(assoc-in % [:forms :arg0 :kind] :keyword)
