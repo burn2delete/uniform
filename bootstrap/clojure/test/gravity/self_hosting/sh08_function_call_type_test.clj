@@ -5765,7 +5765,7 @@
                   :definition {:binding-id :definition :name 'consume :kind :function :binding-class :namespace :namespace 'example.list-parameter}}
         core {:module module :function-records [record] :nodes (vec (vals nodes)) :calls [call] :call-edges [edge]}
         types {:argument actual :call :gravity.type/string :operator callee}
-        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings)) :loop-work-left 65536}]
+        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))}]
     {:core core :node node :call call :edge edge :callee callee :nodes nodes :bindings bindings :types types
      :functions {:callee callee} :seeds {:parameter :gravity.type/list} :context context :declaration declaration :signature signature}))
 
@@ -5834,7 +5834,7 @@
         core (assoc (:core base) :function-records [record] :nodes (vec (vals nodes)) :calls [call] :call-edges [edge])
         types (merge {:operator callee :call :gravity.type/string} (zipmap args (mapv actuals order)))
         seeds (into {} (map (juxt :binding-id :type) parameters))
-        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings)) :loop-work-left 65536}]
+        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))}]
     (assoc base :core core :node node :nodes nodes :call call :edge edge :callee callee :types types :bindings bindings
                 :functions {:callee callee} :seeds seeds :context context :signature signature :actuals actuals :order order)))
 
@@ -9283,7 +9283,7 @@
         check #(invoke-c7 'sh08-pmk-inferred-call [core node call edge nodes bindings % forms])
         checked (check table)
         context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
-                 :lookup-forms (vec (vals forms)) :association-forms forms :loop-work-left 65536}
+                 :lookup-forms (vec (vals forms)) :association-forms forms}
         joined (invoke-c7 'sh08-ft-call-constraints-with-context [(:calls core) (:call-edges core) nodes table binding-types {:helper-form callee} context])
         facts (invoke-c7 'sh08-ft-call-facts-with-context [(:calls core) (:call-edges core) nodes table {:helper-form callee} (:module core) {}])]
     (is (= :accepted (:status result) (:status checked)))
@@ -9319,7 +9319,7 @@
         table (reduce (fn [out entry] (assoc out (:operator-node-id entry) callee (:core-node-id entry) expected))
                       (assoc types :operator descriptor :present-get expected :helper-fn callee) (rest (:calls core)))
         context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
-                 :lookup-forms (vec (vals forms)) :association-forms forms :loop-work-left 65536}
+                 :lookup-forms (vec (vals forms)) :association-forms forms}
         joined (invoke-c7 'sh08-ft-call-constraints-with-context [(:calls core) (:call-edges core) nodes table binding-types {:helper-form callee} context])
         facts (invoke-c7 'sh08-ft-call-facts-with-context [(:calls core) (:call-edges core) nodes table {:helper-form callee} (:module core) {}])]
     (assoc input :types table :type-result result :descriptor descriptor :functions {:helper-form callee}
@@ -9376,7 +9376,7 @@
   (let [{:keys [core node call edge nodes bindings types forms facts functions descriptor]} (private-map-keys-typed-input)
         check #(invoke-c7 'sh08-pmk-inferred-call [core node call edge nodes bindings % forms])
         context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
-                 :lookup-forms (vec (vals forms)) :association-forms forms :loop-work-left 65536}
+                 :lookup-forms (vec (vals forms)) :association-forms forms}
         join #(invoke-c7 'sh08-ft-call-constraints-with-context [(:calls core) (:call-edges core) nodes %
                                                               {:span-binding :gravity.type/map} functions context])
         cold (assoc types :operator :gravity.type/core-var :present-get :gravity.type/unknown)]
@@ -9499,12 +9499,11 @@
         products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core) :definitions (:definitions core)
                   :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core)))}
         context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings))
-                 :boolean-matches [] :shape-call-products products :loop-work-left 65536}
+                 :boolean-matches [] :shape-call-products products}
         first-pass (invoke-c7 'sh08-ft-infer-pass-with-context
                               [(:nodes core) [] (:definitions core) (:calls core) (:call-edges core) skeletons seeds context])
-        infer #(invoke-c7 'sh08-ft-infer-acyclic-with-context
-                         [(:nodes core) nodes [] (:definitions core) (:calls core) (:call-edges core) skeletons seeds (assoc context :loop-work-left %)])
-        inferred (infer 65536)
+        inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                            [(:nodes core) nodes [] (:definitions core) (:calls core) (:call-edges core) skeletons seeds context])
         order (zipmap (map :node-id (:nodes core)) (range))
         expected {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}]
     (is (every? #(< (:present-get order) (order %)) [:input-0 :input-1 :input-0-keys-copy]))
@@ -9512,7 +9511,7 @@
     (is (= :gravity.type/map (get-in first-pass [:type-table :input])))
     (is (= [:gravity.type/map :gravity.type/map :gravity.type/map]
            (mapv #(get-in first-pass [:type-table % :kind]) [:input-0 :input-1 :input-0-keys-copy])))
-    (is (= :converged (:convergence-status inferred)) (pr-str (select-keys inferred [:diagnostics :type-join-work-left])))
+    (is (= :converged (:convergence-status inferred)) (pr-str (:diagnostics inferred)))
     (is (= [] (:diagnostics inferred)))
     (is (= expected (get-in inferred [:type-table :present-get])))
     (is (= :gravity.type/integer (get-in inferred [:type-table :count-query])))
@@ -9524,7 +9523,7 @@
         skeletons (invoke-c7 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
         seeds (invoke-c7 'sh08-ft-declaration-seeds [skeletons {}])
         context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms)) :lookup-bindings (vec (vals bindings))
-                 :boolean-matches [] :loop-work-left 65536}
+                 :boolean-matches []}
         first-pass (invoke-c7 'sh08-ft-infer-pass-with-context
                               [(:nodes core) [] (:definitions core) (:calls core) (:call-edges core) skeletons seeds context])
         prepared (invoke-c7 'sh08-ft-source-join-context [context])
@@ -11595,7 +11594,7 @@
                            [(:nodes core) (:lexical-bindings core) [] (:calls core) (:call-edges core) {}
                             {:slot :gravity.type/integer :values-binding (types :values)}
                             {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
-                             :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}])]
+                             :loop-core (assoc core :binding-table (vec (vals bindings)))}])]
       (is (= :gravity.type/integer (get-in result [:type-table :increment])) (pr-str (:diagnostics result)))
       (is (= :gravity.type/applied-bounded-successor (get-in result [:type-table :inc-op :kind])))
       (is (= 1 (count (filter #(= :sh08-bounded-successor-v1 (:producer-rule %)) (:constraints result))))))
@@ -11675,7 +11674,7 @@
         (is (= 2 (count (:incoming-transfers proof)) (count (:backedge-paths proof))))
         (is (true? (invoke-c7 'sh08-si-proof-closed? [proof core (nodes id) nodes bindings types])))))
     (let [context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
-                   :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}
+                   :loop-core (assoc core :binding-table (vec (vals bindings)))}
           inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
                                [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {}
                                 {:choice-binding :gravity.type/bool} context])]
@@ -11868,7 +11867,7 @@
     (let [{:keys [core nodes forms bindings products]} (keyword-loop-match-input normal?)
           joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
           context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
-                   :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536
+                   :loop-core (assoc core :binding-table (vec (vals bindings)))
                    :boolean-matches (:boolean-matches joined)}
           result (invoke-c7 'sh08-ft-infer-acyclic-with-context
                            [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} context])
@@ -11903,7 +11902,7 @@
   (doseq [reverse? [false true]]
     (let [{:keys [core nodes bindings forms]} (vector-loop-nth-input 3 reverse?)
           context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
-                   :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}
+                   :loop-core (assoc core :binding-table (vec (vals bindings)))}
           result (invoke-c7 'sh08-ft-infer-acyclic-with-context
                            [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {} {} context])
           types (:type-table result) descriptor (get types :nth-op)]
@@ -12190,7 +12189,7 @@
                          (assoc-in descriptor [:range-proof :check-elision] :authorized)]]
           (is (false? (valid changed))))))
     (let [context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
-                   :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}
+                   :loop-core (assoc core :binding-table (vec (vals bindings)))}
           inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                              [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {}
                               {:choice-binding :gravity.type/bool} context])]
@@ -12298,16 +12297,13 @@
 (deftest sh08-bounded-unit-addition-cold-two-loop-development-kernel
   (let [{:keys [core nodes bindings forms]} (bounded-unit-addition-cold-two-loops)
         context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
-                 :loop-core (assoc core :binding-table (vec (vals bindings))) :loop-work-left 65536}
+                 :loop-core (assoc core :binding-table (vec (vals bindings)))}
         inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
                            [(:nodes core) nodes (:lexical-bindings core) [] (:calls core) (:call-edges core) {}
                             {:mixed/choice-binding :gravity.type/bool} context])
         types (:type-table inferred)]
-    (println (pr-str {:av-cold-two-loop (select-keys inferred [:convergence-status :type-join-work-left])
-                      :diagnostics (:diagnostics inferred)}))
     (is (= :converged (:convergence-status inferred)))
     (is (= [] (:diagnostics inferred)))
-    (is (<= 0 (:type-join-work-left inferred) 65536))
     (is (= :gravity.type/keyword (types :mixed/read) (types :mixed/stored-ref)
            (get-in inferred [:binding-types :mixed/stored])) )
     (is (= :gravity.type/never (types :mixed/stored-throw)))
@@ -12407,11 +12403,6 @@
                    :operator-type (if (map? descriptor) (select-keys descriptor [:kind :version :operation :result-type]) descriptor)
                    :result-type (types (:core-node-id call))}))
               selected)]
-    (println (pr-str {:av-cold-source (select-keys inference [:convergence-status :type-join-work-left :loop-work-count])
-                      :source-counts {:nodes (count (:nodes core)) :forms (count forms) :calls (count (:calls core))
-                                      :functions (count (:function-records core)) :transfers (count (:recur-transfers core))}
-                      :diagnostics (mapv #(select-keys % [:rule :reason :expected :actual]) (:diagnostics inference))
-                      :operations observations}))
     (is (= :accepted (:status products)))
     (is (= :converged (:convergence-status inference)))
     (is (= [] (:diagnostics inference)))
@@ -15148,7 +15139,7 @@
         (is (zero? @callbacks))))
     (let [core {:calls [] :call-edges [] :nodes [] :function-records [] :module (:module input)}
           context {:ordering-core core :lookup-bindings [] :lookup-forms [] :boolean-matches []
-                   :shape-call-products {:calls [] :call-edges [] :function-index {} :definitions []} :loop-work-left 65536}
+                   :shape-call-products {:calls [] :call-edges [] :function-index {} :definitions []}}
           infer (fn [ctx] (invoke-c7 'sh08-ft-infer-acyclic-with-context [[] {} [] [] [] [] {} {} ctx]))
           clean (infer context) poisoned (infer (assoc context :private-first-entry-products table))]
       (is (= clean poisoned))
@@ -19567,7 +19558,7 @@
       (is (= checked (pr359-descriptor-c7 'sh08-kse-inferred-call core node call edge nodes bindings established)))
       (let [constraints (pr359-descriptor-c7 'sh08-ft-call-constraints-with-context
                                             [call] [edge] nodes established {} {}
-                                            {:ordering-core core :ordering-bindings bindings :loop-work-left 0})]
+                                            {:ordering-core core :ordering-bindings bindings})]
         (is (= [] (:diagnostics constraints)))
         (is (= 0 (:compatibility-work-count constraints))))
       (doseq [evidence [(apply pr359-descriptor-body 'body-bka-evidence evidence-args)
