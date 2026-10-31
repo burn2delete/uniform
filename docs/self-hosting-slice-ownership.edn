@@ -98,6 +98,10 @@
   {:namespace gravity.backend.wasm :owner :sh-target-wasm :slice "SH-00"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00756-p15-s23-b4-wasm-authority-token-002-p15-s23-b4-wasm-operation-bytes-through-p15-s23-b4-wasm-canonical-bounded-octet.clj"
    :test-path "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/llvm.clj"
+  {:namespace gravity.backend.llvm :owner :sh-target-llvm :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"}
   "bootstrap/clojure/src/gravity/optimization.clj"
   {:namespace gravity.optimization :owner :sh-optimization :slice "SH-16"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj"
@@ -145,6 +149,7 @@
 
  :module-owners
  {"bootstrap/clojure/src/gravity/backend/wasm.clj" :sh-target-wasm
+  "bootstrap/clojure/src/gravity/backend/llvm.clj" :sh-target-llvm
   "bootstrap/clojure/src/gravity/optimization.clj" :sh-optimization
   "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
   "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity" :sh-target-query
@@ -365,6 +370,8 @@
  :standalone-test-owners
  {"bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj"
   {:namespace gravity.backend.wasm.pipeline-test :slice "SH-00" :owner :sh-target-wasm}
+  "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"
+  {:namespace gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
   "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"
   {:namespace gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
   "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"

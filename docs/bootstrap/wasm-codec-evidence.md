@@ -67,9 +67,13 @@ preserves input data and operation/order references; it does not invent a new
 source/debug map or claim full proof/safety/capability admission.
 
 Focused regressions pass 6/151, ownership 25/888 and the language gate 6/11.
-Documentation, roadmap/governance, committed contextual lint, independent
-exact acceptance, final CI and clean current-main preflight remain required
-before integration. Registration uses the existing SH-00 Wasm owner without
+Documentation validates 240 documents and 19 phase indexes; roadmap/governance
+pass. Initial exact committed lint covers all eight changed Clojure/EDN paths:
+3490 unchanged baseline warnings and zero blockers. Both independent reviewers
+accept source d2ed7eb0105c735d378183ddd19bfeaa568fc54f, tree
+f52e4200ee57b497199d4eeba0eaebd4cc22affe, conditionally. Final exact acceptance,
+CI and clean current-main preflight remain required. Registration uses the
+existing SH-00 Wasm owner without
 renewing its historical evidence or awarding new milestone/release credit.
 Primary inventory counts remain unchanged. The direct-child inventory counts
 direct helpers separately from complete nested module ownership.
@@ -99,6 +103,33 @@ captures are in `/tmp/uniform-wasm-codec-evidence/`. The verifier captures
 reconstructed writes in memory and compares complete source without rewriting
 the checkout. The forwarding correction was reconstructed from immutable main,
 never by rerunning extraction on compatibility wrappers.
+
+## Main composition
+
+Main advanced to c4bf8f55629855720d58c33a02cb405053c4f2e1 through the normal
+LLVM data integration. Its tree is 35c7bff6b268f8a9ea6a76e4f7a57889a42a7ff5.
+The composition uses the complete source and main parents. Five actual
+conflicts are resolved in the Bootstrap require list, ownership test, component
+inventory, namespace map and ownership EDN. Both helper registrations and both
+adversarial ownership tests survive; LLVM retains index 10 and Wasm follows at
+index 11. The original primary inventory counts do not change.
+
+Wasm stage, test and all three consumer bodies remain byte-identical to the
+source candidate. LLVM stage, test, four consumers and evidence remain
+byte-identical to main. Combined focused tests pass 12/217, composed ownership
+26/905, language 6/11, documentation 240/19 and roadmap/governance. A fresh
+composed producer matches all three original EDN/text captures and both binary
+modules; source hashes, plan IDs and B4 data identities recompute. Whole-source
+reconstruction against the current main parent passes all five files. These
+are working composition checks, not committed-head authority bookends.
+
+The temporary composition script initially parsed only a prefix due to an
+extra delimiter; its mutation section did not execute. A whole-file reader
+then caught the unmatched delimiter. The corrected command parses all forms
+before execution and constructs the five paths from complete parents. The
+script is `/tmp/uniform-wasm-codec-compose.clj`. This real composition makes no
+causal-remedy claim about any earlier CI result. Final checks and independent
+acceptance must bind the final exact commit and current integration base.
 
 ## Unsupported boundaries
 
