@@ -116,6 +116,13 @@
          #'gravity.resolution/identity-chunks
          #'gravity.resolution/product-identity-chunks
          #'gravity.resolution/product-projections
+         #'resolution-stage-system-property
+         #'sh06-resolution-boundary-keys
+         #'sh06-resolution-envelope-stage
+         #'sh06-resolution-sealed-artifact-kind
+         #'sh06-resolution-source-relative-path
+         #'gravity.resolution/boundary-keys-for
+         #'gravity.resolution/envelope-descriptor
          #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
          #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*
