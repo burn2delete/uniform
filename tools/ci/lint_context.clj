@@ -189,15 +189,75 @@
         (when-not (contains? options :as-alias)
           {:namespace (first spec) :alias (:as options)})))))
 
-(defn- call-references [form]
-  (when-not (and (seq? form) (#{'quote 'comment} (core-operation (first form))))
-    (concat
-     (when (and (seq? form) (seq? (first form))
-                (= 'var (core-operation (ffirst form))) (= 2 (count (first form))))
-       (let [reference (second (first form))]
-         (when (and (symbol? reference) (namespace reference))
-           [{:reference reference :row (:line (meta form)) :col (:column (meta form))}])))
-     (when (coll? form) (mapcat call-references form)))))
+(declare ^:private call-references)
+
+(defn- binding-names [pattern]
+  ;; Use Clojure's data-only destructuring expansion for Clojure tooling scopes.
+  (set (filter symbol? (take-nth 2 (clojure.core/destructure [pattern nil])))))
+
+(defn- binding-references [bindings locals aliases]
+  (loop [pairs (partition 2 bindings) locals locals calls []]
+    (if-let [[pattern expression] (first pairs)]
+      (recur (next pairs) (into locals (binding-names pattern))
+             (into calls (call-references expression locals aliases)))
+      {:locals locals :calls calls})))
+
+(defn- function-references [tail locals aliases]
+  (let [[locals tail] (if (symbol? (first tail)) [(conj locals (first tail)) (rest tail)] [locals tail])
+        tail (drop-while #(or (string? %) (map? %)) tail)
+        arities (if (vector? (first tail)) [tail] tail)]
+    (mapcat (fn [[parameters & body]]
+              (when (vector? parameters)
+                (mapcat #(call-references % (into locals (binding-names parameters)) aliases) body))) arities)))
+
+(defn- call-references
+  ([form] (call-references form #{} {}))
+  ([form locals aliases]
+   (let [head (when (seq? form) (first form))
+         qualified-head (if (and (symbol? head) (namespace head)
+                                 (= 'clojure.core (get aliases (symbol (namespace head)))))
+                          (symbol "clojure.core" (name head)) head)
+         core (core-operation qualified-head)
+         operation (when-not (and (symbol? head) (nil? (namespace head))
+                                  (contains? locals head) (not (#{'quote 'var} core))) core)
+         walk #(call-references % locals aliases)]
+     (cond
+       (#{'quote 'var 'comment} operation) []
+       (= 'case operation)
+       (let [clauses (drop 2 form)]
+         (concat (walk (second form))
+                 (mapcat walk (map second (partition 2 clauses)))
+                 (when (odd? (count clauses)) (walk (last clauses)))))
+       (#{'let 'let* 'loop 'loop* 'with-open 'with-local-vars} operation)
+       (let [{:keys [locals calls]} (binding-references (second form) locals aliases)]
+         (concat calls (mapcat #(call-references % locals aliases) (drop 2 form))))
+       (#{'fn 'fn*} operation) (function-references (rest form) locals aliases)
+       (#{'defn 'defn- 'defmacro} operation) (function-references (drop 2 form) locals aliases)
+       (= 'letfn operation)
+       (let [functions (second form) locals (into locals (map first functions))]
+         (concat (mapcat #(function-references (rest %) locals aliases) functions)
+                 (mapcat #(call-references % locals aliases) (drop 2 form))))
+       (#{'if-let 'if-some 'when-let 'when-some} operation)
+       (let [[pattern expression] (second form) body (drop 2 form)
+             bound (into locals (binding-names pattern))]
+         (concat (walk expression)
+                 (if (#{'if-let 'if-some} operation)
+                   (concat (call-references (first body) bound aliases) (walk (second body)))
+                   (mapcat #(call-references % bound aliases) body))))
+       (= 'catch operation)
+       (mapcat #(call-references % (conj locals (nth form 2)) aliases) (drop 3 form))
+       ;; Unknown core macros may contain data/bindings. Retain warnings rather
+       ;; than invent executable positions for an unsupported expansion.
+       (and operation (:macro (meta (ns-resolve 'clojure.core operation)))
+            (not (#{'when 'when-not 'if-not 'and 'or 'cond 'condp 'assert 'lazy-seq
+                    'binding 'dosync 'locking 'with-redefs 'with-local-vars} operation))) []
+       :else
+       (concat
+        (when (and (seq? form) (seq? head) (= 'var (core-operation (first head))) (= 2 (count head)))
+          (let [reference (second head)]
+            (when (and (symbol? reference) (namespace reference))
+              [{:reference reference :row (:line (meta form)) :col (:column (meta form))}])))
+        (when (coll? form) (mapcat walk form)))))))
 
 (defn private-var-usages
   "Non-evaluating, source-backed direct Var call edges in the actual lint inputs.
@@ -215,17 +275,19 @@
                     current-ns (if (= 'ns operation) (second form) current-ns)
                     specs (cond (= 'ns operation) (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
                                 (= 'require operation) (rest form))]
-                (when (= 'ns operation) (swap! scopes assoc current-ns {:aliases {} :required {}}))
+                (when (= 'ns operation) (swap! scopes assoc current-ns {:aliases {} :required {} :defined #{}}))
                 (doseq [{target :namespace alias :alias} (keep require-spec specs)]
                   (swap! scopes assoc-in [current-ns :required target]
                          {:namespace target :alias alias :path path :row (:line (meta form)) :sha256 digest})
                   (when alias (swap! scopes assoc-in [current-ns :aliases alias] target)))
-                (let [{:keys [aliases required]} (get @scopes current-ns)]
+                (when (and (#{'def 'defonce 'defn 'defn- 'defmacro} operation) (symbol? (second form)))
+                  (swap! scopes update-in [current-ns :defined] (fnil conj #{}) (second form)))
+                (let [{:keys [aliases required defined]} (get @scopes current-ns)]
                   (when (and (#{'defn 'defn-} operation) (symbol? (second form))
                              (or (= 'defn- operation) (:private (meta (second form)))))
                     (swap! definitions conj {:namespace current-ns :name (second form)
                                              :path path :row (:line (meta form)) :sha256 digest}))
-                  (doseq [{:keys [reference row col]} (call-references form)
+                  (doseq [{:keys [reference row col]} (call-references form (or defined #{}) aliases)
                           :let [prefix (symbol (namespace reference)) target (get aliases prefix prefix)]
                           :when (and (contains? required target) (not= current-ns target)
                                      (every? pos-int? [row col]))]

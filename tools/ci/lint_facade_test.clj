@@ -217,5 +217,79 @@
            (mapv :message (filter #(= :unused-private-var (:type %)) blocking))))
     (is (some #(= :unused-namespace (:type %)) blocking))))
 
+(deftest executable-case-positions-and-lexical-comment-bindings
+  (doseq [call ["(defn f [x] (case (#'local/held x) :hit :yes :no))"
+                "(defn f [x] (case x :hit (#'local/held x) :no))"
+                "(defn f [x] (case x :hit :yes (#'local/held x)))"
+                "(defn f [] (let [comment identity] (comment (#'local/held 1))))"
+                "(defn f [comment] (comment (#'local/held 1)))"
+                "(defn f [] ((fn [comment] (comment (#'local/held 1))) identity))"
+                "(defn f [] (let [{:keys [comment]} {:comment identity}] (comment (#'local/held 1))))"
+                "(defn f [] (let [[comment] [identity]] (comment (#'local/held 1))))"
+                "(defn f [] (letfn [(comment [x] x)] (comment (#'local/held 1))))"
+                "(defn f [] (let [case identity] (case (#'local/held 1))))"]]
+    (let [plan (private-call-plan call)
+          result (context/resolve-private-usages (observe! plan) (context/private-var-usages [plan]))]
+      (is (= ['held] (mapv #(get-in % [:definition :name]) (:resolved result))) call)))
+  (doseq [call ["(defn f [x] (case x (#'local/held) :hit :miss))"
+                "(defn f [] (comment (#'local/held 1)))"
+                "(defn f [] (let [comment identity] (clojure.core/comment (#'local/held 1))))"
+                "(defn f [] (let [comment identity] (comment 1)) (comment (#'local/held 1)))"
+                "(defn f [] (let [comment (comment (#'local/held 1))] comment))"
+                "(defn f [] (if-let [comment identity] (comment 1) (comment (#'local/held 1))))"]]
+    (let [plan (private-call-plan call)
+          result (context/resolve-private-usages (observe! plan) (context/private-var-usages [plan]))]
+      (is (empty? (:resolved result)) call))))
+
+(defn compare-private-programs! [private-before? body expected]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-private-scope-" (make-array java.nio.file.attribute.FileAttribute 0)))
+        owner-path (io/file directory "fixture/owner.clj")
+        caller-path (io/file directory "fixture/caller.clj")
+        owner #(str "(ns fixture.owner)\n(defn" (when % "-") " hidden [x] x)\n(def public-value :present)\n")
+        caller #(str "(ns fixture.caller (:require [fixture.owner :as h]))\n"
+                     "(def public h/public-value)\n(defn use-hidden [x] " % ")\n")]
+    (try
+      (doseq [file (file-seq (io/file "tools/ci")) :when (.isFile file)]
+        (let [target (io/file directory (.getPath file))]
+          (io/make-parents target)
+          (io/copy file target)))
+      (let [target (io/file directory macros/source)]
+        (io/make-parents target)
+        (io/copy (io/file macros/source) target))
+      (io/make-parents owner-path)
+      (spit owner-path (owner private-before?))
+      (spit caller-path (caller "(#'h/hidden x)"))
+      (fixture-git! directory "init" "--quiet")
+      (fixture-git! directory "add" ".")
+      (fixture-git! directory "-c" "user.name=Lint fixture" "-c" "user.email=lint@example.invalid"
+                    "commit" "--quiet" "-m" "Live baseline")
+      (let [base (fixture-git! directory "rev-parse" "HEAD")]
+        (spit owner-path (owner true))
+        (spit caller-path (caller body))
+        (fixture-git! directory "add" ".")
+        (fixture-git! directory "-c" "user.name=Lint fixture" "-c" "user.email=lint@example.invalid"
+                      "commit" "--quiet" "-m" "Current executable positions")
+        (let [result (sh/sh "clojure" "-J-Xmx256m" "-Srepro" "-Sdeps"
+                            "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}"
+                            "-M" "tools/ci/lint.clj" base "fixture/owner.clj" "fixture/caller.clj"
+                            :dir (str directory))
+              report-path (io/file directory "target/ci/changed-lint-report.edn")]
+          (is (= expected (:exit result)) (pr-str result))
+          (is (.isFile report-path))
+          (when (.isFile report-path)
+            (let [report (lint/read-one! report-path)]
+              (is (= (if (zero? expected) 1 0) (count (get-in report [:resolved-private-usages :current]))))
+              (is (= (if (zero? expected) [] [:unused-private-var]) (mapv :type (:blocking report))))))))
+      (finally (doseq [file (reverse (file-seq directory))] (.delete file))))))
+
+(deftest case-data-and-shadowed-comment-run-through-the-complete-lint-pipeline
+  ;; The live baseline has no unused allowance after source-backed resolution.
+  (compare-private-programs! true "(case x (#'h/hidden) :hit :miss)" 1)
+  (compare-private-programs! true "(comment (#'h/hidden x))" 1)
+  ;; The previously public owner supplies no baseline unused-warning allowance.
+  (compare-private-programs! false "(let [comment identity] (comment (#'h/hidden x)))" 0)
+  (compare-private-programs! false "(case x :hit (#'h/hidden x) :miss)" 0))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
