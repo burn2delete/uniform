@@ -19985,7 +19985,14 @@
         accepted (check types)
         scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) types])
         owners (invoke-c7 'sh08-th-owners [core])]
-    (is (= :accepted (:status derived) (:status measured) (:status accepted)))
+    (is
+      (= :accepted
+         (:status derived)
+         (:status measured)
+         (:status accepted)
+         (:status scoped)
+         (:status owners)))
+    (is (= [] (get-in accepted [:throws :vec-function])))
     (doseq [candidate [(update-in types [:operator] dissoc :kind)
                        (assoc-in types [:operator :kind] nil)
                        (assoc-in types [:operator :kind] (Object.))
@@ -20193,7 +20200,15 @@
         prior (invoke-c7
                 'sh08-scv-inferred-call
                 [core (nodes :call) child-call child-edge nodes (:bindings input) types])]
-    (is (= :accepted (:status derived) (:status measured) (:status accepted) (:status prior)))
+    (is
+      (= :accepted
+         (:status derived)
+         (:status measured)
+         (:status accepted)
+         (:status prior)
+         (:status scoped)
+         (:status owners)))
+    (is (= [] (get-in accepted [:throws :slice-function])))
     (doseq [candidate [(update-in types [:slice-operator] dissoc :kind)
                        (assoc-in types [:slice-operator :kind] nil)
                        (assoc-in types [:slice-operator :kind] (Object.))
@@ -21092,7 +21107,11 @@
                  {:kind :gravity.type/nil-or, :value-type :gravity.type/string}]]
       (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad])))))
       (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]))))))
-    (is (= :accepted (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])]]))))))
+    (is (= :accepted (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])]]))))
+    (let [arguments [(finite [k k]) k] late-invalid [(finite [k :gravity.type/unknown]) k]]
+      (is (= :accepted (:status (invoke-c7 'sh08-ksm-domain [arguments]))))
+      (is (= :accepted (:status (invoke-c7 'sh08-lc-validate-types [arguments]))))
+      (is (= :rejected (:status (invoke-c7 'sh08-lc-validate-types [late-invalid])))))))
 (deftest
   sh08-string-predicate-throw-consumer-development-kernel
   (let [nested {:kind :gravity.type/nil-or, :value-type :gravity.type/string}
@@ -21407,7 +21426,42 @@
     (is (= :accepted (:status result) (:status scoped) (:status owners)))
     (is (true? (:active? scoped)))
     (is (= :accepted (:status accepted)) (pr-str (select-keys accepted [:status :diagnostics])))
-    (is (= [] (get-in accepted [:throws :helper-form])))))
+    (is (= [] (get-in accepted [:throws :helper-form])))
+    (doseq [candidate [nil
+                       (apply list source-forms)
+                       (conj source-forms (first source-forms))
+                       (mapv
+                         (fn [form]
+                           (if (= :helper-parameters (:form-id form))
+                             (assoc form :parent-form-id :forged)
+                             form))
+                         source-forms)]]
+      (let [rejected (invoke-c7
+                       'sh08-tc-products-with-source-forms
+                       [core types functions bindings direct candidate])]
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+    (let [callbacks (atom 0)
+          opaque (proxy
+                   [Object]
+                   []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "source-index hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "source-index equality")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "source-index formatting"))))]
+      (doseq [candidate [(mapv
+                           (fn [form]
+                             (if (= :helper-parameters (:form-id form)) (assoc form :value opaque) form))
+                           source-forms)
+                         (mapv
+                           (fn [form]
+                             (if (= :helper-parameters (:form-id form)) (assoc form :metadata opaque) form))
+                           source-forms)]]
+        (let [rejected (invoke-c7
+                         'sh08-tc-products-with-source-forms
+                         [core types functions bindings direct candidate])]
+          (is (= :rejected (:status rejected)))
+          (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+          (is (zero? @callbacks)))))))
 (deftest
   sh08-private-entry-vector-get-scoped-consumer-development-kernel
   (let [base (private-entry-vector-get-input [[\a] [\b]])
@@ -23115,7 +23169,7 @@
                   (hashCode
                     []
                     (swap! calls inc)
-                    (throw (AssertionError. "operand ID hashed before dispatch precharge"))))
+                    (throw (AssertionError. "operand ID hashed before source validation"))))
         finite {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/character]}
         base (map-contains-input [finite :gravity.type/character])
         context (fn [arguments]
@@ -23127,7 +23181,10 @@
                    :association-forms (:forms base)})]
     (doseq [arguments [[hostile hostile] {:bad hostile}]]
       (let [result (invoke-c7 'sh08-mc-step [(:node base) {} {} {} (context arguments)])]
-        (is (= :rejected (:status result)))))
+        (is (= :rejected (:status result)))
+        (is
+          (= (if (vector? arguments) :map-contains-source-mismatch :map-contains-arity-mismatch)
+             (:reason result)))))
     (is (= 0 @calls))))
 (deftest
   sh08-character-set-contains-throw-consumer-development-kernel
