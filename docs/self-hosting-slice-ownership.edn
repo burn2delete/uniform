@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/optimization.clj"
+ {"bootstrap/clojure/src/gravity/backend/llvm.clj"
+  {:namespace gravity.backend.llvm :owner :sh-target-llvm :slice "SH-18"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj"
+   :test-path "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/optimization.clj"
   {:namespace gravity.optimization :owner :sh-optimization :slice "SH-16"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj"
    :test-path "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"}
@@ -140,7 +144,8 @@
  {"bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj" {:owner :sh-reader, :source-path "bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj", :source-namespace gravity.c2-reader-product-projection.scalar-spans}, "bootstrap/clojure/test/gravity/c3_literal_indexes_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj", :source-namespace gravity.c3-literal-projection.indexes}, "bootstrap/clojure/test/gravity/c3_reader_expansions_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_reader_expansions.clj", :source-namespace gravity.c3-reader-expansions}, "bootstrap/clojure/test/gravity/c3_reader_lossless_span_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj", :source-namespace gravity.c3-literal-projection.spans}}
 
  :module-owners
- {"bootstrap/clojure/src/gravity/optimization.clj" :sh-optimization
+ {"bootstrap/clojure/src/gravity/backend/llvm.clj" :sh-target-llvm
+  "bootstrap/clojure/src/gravity/optimization.clj" :sh-optimization
   "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
   "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity" :sh-target-query
   "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity" :sh-target-mobile
@@ -358,7 +363,9 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj"
+  {:namespace gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
+  "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj"
   {:namespace gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
   "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"
   {:namespace gravity.runtime.pipeline-test :slice "SH-19" :owner :sh-runtime}
