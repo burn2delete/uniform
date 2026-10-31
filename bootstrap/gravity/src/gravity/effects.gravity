@@ -5086,7 +5086,8 @@
                (vector? (get attrs :parameters)) (= (count params) (count (get attrs :parameters)))
                (contains? #{nil :immutable} (get parameter :mutability))
                (= :list (get fn-form :kind)) (= :vector (get parameter-form :kind))
-               (vector? (get parameter-form :value)) (= (count names) (count (get parameter-form :value)))
+               (let [values (get parameter-form :value)]
+                 (if (vector? values) (= (count names) (count values)) false))
                (= (get parameter-form :syntax-id) (get attrs :parameter-syntax-id))
                (body-sse-ids? (get fn-form :child-form-ids) 3)])
           (let [fn-ids (get fn-form :child-form-ids) operator (get forms (get fn-ids 0))
@@ -5101,10 +5102,22 @@
                 (if (= i (count params))
                   (if (= coordinate (count names))
                     (if (= signature (get attrs :signature))
+                      (if (let [values (get parameter-form :value)]
+                          (loop [i 0]
+                            (if (= i (count names)) true
+                              (let [form (get forms (get names i)) value (get values i)]
+                                (if (map? form)
+                                  (let [kind (get form :kind) original (get form :value)]
+                                    (if (if (= :symbol kind)
+                                          (if (symbol? original) (if (symbol? value) (= original value) false) false)
+                                          (if (= :keyword kind)
+                                            (if (keyword? original) (if (keyword? value) (= original value) false) false) false))
+                                      (recur (+ i 1)) false)) false)))))
                       {:status :accepted :work-count base
                        :callee {:function-id (get record :function-syntax-id) :signature signature :parameters slots}
                        :source {:function-node fn-node :function-form fn-form :parameter-form parameter-form
                                 :declaration (get declarations index) :parameter-index index :parameter-binding parameter}}
+                        {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})
                       {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})
                     {:status :rejected :reason :private-map-keys-source-mismatch :work-count base})
                   (let [binding (get bindings (get params i)) name-form (get forms (get names coordinate))
