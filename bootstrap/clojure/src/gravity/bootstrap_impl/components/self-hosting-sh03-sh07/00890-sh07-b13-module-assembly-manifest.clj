@@ -1,17 +1,10 @@
-(defn sh07-b13-module-assembly-manifest
-  [lineage fragment-manifest]
-  (let [content
-        {:ordered-fragment-ids (mapv :fragment-id fragment-manifest)
-         :root-form-ids (vec (mapcat :root-form-ids fragment-manifest))
-         :source-revision-id (:source-revision-id lineage)
-         :sh06-semantic-projection-id
-         (:sh06-semantic-projection-id lineage)
-         :alias-table-id (:alias-table-id lineage)}
-        content-id (:source-revision-id lineage)]
-    (assoc content
-           :content-id content-id
-           :module-id
-           (:sh06-semantic-projection-id lineage))))
+(defn
+ sh07-b13-module-assembly-manifest
+ [lineage fragment-manifest]
+ (gravity.checked-core/module-assembly-manifest
+  lineage
+  fragment-manifest
+  (checked-core-stage-operations)))
 
 (defn- sh07-core-request-from-verified-upstream
   [resolution-artifact upstream-verification]

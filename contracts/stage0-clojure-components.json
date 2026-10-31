@@ -178,6 +178,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/macro.clj", "namespace": "gravity.macro"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj", "namespace": "gravity.bootstrap", "owner": "sh-macro"},
       "test": {"path": "bootstrap/clojure/test/gravity/macro/pipeline_test.clj", "namespace": "gravity.macro.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "checked-core-plan-runtime",
+      "kind": "production-stage-helper",
+      "owner": "sh-core",
+      "source": {"path": "bootstrap/clojure/src/gravity/checked_core.clj", "namespace": "gravity.checked-core"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj", "namespace": "gravity.bootstrap", "owner": "sh-core"},
+      "test": {"path": "bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj", "namespace": "gravity.checked-core.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [

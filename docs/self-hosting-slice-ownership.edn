@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/resolution.clj"
+ {"bootstrap/clojure/src/gravity/checked_core.clj"
+  {:namespace gravity.checked-core :owner :sh-core :slice "SH-07"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj"
+   :test-path "bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/resolution.clj"
   {:namespace gravity.resolution :owner :sh-resolution :slice "SH-06"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj"
    :test-path "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj"}
@@ -232,6 +236,7 @@
   "bootstrap/clojure/src/gravity/digest.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
   "bootstrap/clojure/src/gravity/resolution.clj" :sh-resolution
+  "bootstrap/clojure/src/gravity/checked_core.clj" :sh-core
   "bootstrap/clojure/src/gravity/macro.clj" :sh-macro
   "bootstrap/clojure/src/gravity/macro_run_storage.clj" :sh-macro
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
@@ -333,7 +338,9 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/resolution/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj"
+  {:namespace gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
+  "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj"
   {:namespace gravity.resolution.pipeline-test :slice "SH-06" :owner :sh-resolution}
   "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"
   {:namespace gravity.macro.pipeline-test :slice "SH-05" :owner :sh-macro}
