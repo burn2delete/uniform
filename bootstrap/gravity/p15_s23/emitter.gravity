@@ -1678,41 +1678,38 @@
        :calls calls :edges edges :component component}
       nil) nil)))
 
-(defn p15-s23-is-cold-cut [core record nodes mode budget]
+(defn p15-s23-is-cold-cut [core record nodes mode]
   (if (contains? #{:entries :body} mode)
   (let [sequence (get core :nodes) calls (get core :calls) edges (get core :call-edges)
         id (get record :function-syntax-id)
-        base (+ (* 2 (count sequence)) (count calls) (count edges)
-                (count (get core :definitions)) (count (get core :lexical-bindings)) (count (get core :function-records)))]
-    (if (> base budget) {:status :rejected :reason :private-self-work-limit :work-count base}
-      (let [definitions (p15-s23-typed-index (get core :definitions) :binding-id)
-            lexical (p15-s23-typed-index (get core :lexical-bindings) :binding-id)
-            functions (p15-s23-is-function-index (get core :function-records))
-            edge-index (p15-s23-typed-index edges :call-core-node-id)
-            initial (loop [remaining sequence out (set [(get record :function-core-node-id) (get record :definition-core-node-id)])]
-                      (if (= 0 (count remaining)) out
-                        (let [node (first remaining)]
-                          (recur (rest remaining)
-                            (if (if (= mode :entries) (= id (get (get node :evaluation) :owner-function-syntax-id)) false)
-                              (conj out (get node :node-id)) out)))))
-            initial (loop [remaining calls out initial]
-                      (if (= 0 (count remaining)) out
-                        (let [call (first remaining) edge (get edge-index (get call :core-node-id))]
-                          (recur (rest remaining)
-                            (if (= id (get edge :callee-function-syntax-id))
-                              (conj (conj out (get call :core-node-id)) (get call :operator-node-id)) out)))))]
-        (loop [remaining sequence excluded initial next initial work base rounds 0]
+        definitions (p15-s23-typed-index (get core :definitions) :binding-id)
+        lexical (p15-s23-typed-index (get core :lexical-bindings) :binding-id)
+        functions (p15-s23-is-function-index (get core :function-records))
+        edge-index (p15-s23-typed-index edges :call-core-node-id)
+        initial (loop [remaining sequence out (set [(get record :function-core-node-id) (get record :definition-core-node-id)])]
+                  (if (= 0 (count remaining)) out
+                    (let [node (first remaining)]
+                      (recur (rest remaining)
+                        (if (if (= mode :entries) (= id (get (get node :evaluation) :owner-function-syntax-id)) false)
+                          (conj out (get node :node-id)) out)))))
+        initial (loop [remaining calls out initial]
+                  (if (= 0 (count remaining)) out
+                    (let [call (first remaining) edge (get edge-index (get call :core-node-id))]
+                      (recur (rest remaining)
+                        (if (= id (get edge :callee-function-syntax-id))
+                          (conj (conj out (get call :core-node-id)) (get call :operator-node-id)) out)))))]
+    (loop [remaining sequence excluded initial next initial seen #{initial}]
           (if (= 0 (count remaining))
             (if (= excluded next)
-              {:status :accepted :mode mode :work-count work
+              {:status :accepted :mode mode
                :excluded-node-ids
                (loop [remaining sequence out []]
                  (if (= 0 (count remaining)) out
                    (recur (rest remaining)
                      (if (contains? next (get (first remaining) :node-id)) (conj out (get (first remaining) :node-id)) out))))}
-              (if (< rounds (count sequence))
-                (recur sequence next next work (+ rounds 1))
-                {:status :rejected :reason :private-self-cold-cut-nonconvergence :work-count work}))
+              (if (contains? seen next)
+                {:status :rejected :reason :private-self-cold-cut-nonconvergence}
+                (recur sequence next next (conj seen next))))
             (let [node (first remaining) node-id (get node :node-id) kind (get node :core-form)
                   bid (get (get node :attributes) :binding-id)
                   initializer (if (= kind :reference)
@@ -1721,43 +1718,33 @@
                            (get (get functions (get (get edge-index node-id) :callee-function-syntax-id)) :body-core-node-id) nil)
                   children (if (contains? #{:fn :quote :throw :recur} kind) [] (get node :children))
                   deps (if (= initializer nil) children (conj children initializer))
-                  deps (if (= target nil) deps (conj deps target))
-                  used (+ work 1 (count deps))]
-              (if (> used budget)
-                {:status :rejected :reason :private-self-work-limit :work-count used}
-                (recur (rest remaining) excluded
-                  (if (if (contains? next node-id) true
-                        (loop [remaining deps]
-                          (if (= 0 (count remaining)) false
-                            (if (contains? next (first remaining)) true (recur (rest remaining))))))
-                    (conj next node-id) next)
-                  used rounds))))))))
-    {:status :rejected :reason :private-self-cold-mode-required :work-count 0}))
+                  deps (if (= target nil) deps (conj deps target))]
+              (recur (rest remaining) excluded
+                (if (if (contains? next node-id) true
+                      (loop [remaining deps]
+                        (if (= 0 (count remaining)) false
+                          (if (contains? next (first remaining)) true (recur (rest remaining)))))
+                  (conj next node-id) next)))))))
+    {:status :rejected :reason :private-self-cold-mode-required}))
 
-(defn p15-s23-is-entry-values [census nodes types budget]
+(defn p15-s23-is-entry-values [census nodes types]
   (let [record (get census :function-record) id (get record :function-syntax-id)
         arity (get record :fixed-arity) calls (get census :calls) edges (get census :edges)]
     (if (if (if (vector? calls) (vector? edges) false)
           (if (= (count calls) (count edges)) (if (integer? arity) (> arity 0) false) false) false)
-      (loop [remaining calls remaining-edges edges entries [] selected nil normal-count 0 work 3]
-        (if (> work budget)
-          {:status :rejected :reason :private-self-work-limit :work-count work}
-          (if (= 0 (count remaining))
+      (loop [remaining calls remaining-edges edges entries [] selected nil normal-count 0]
+        (if (= 0 (count remaining))
             (if (> normal-count 0)
-              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count :work-count work}
-              {:status :rejected :reason :private-self-normal-entry-required :work-count work})
+              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count}
+              {:status :rejected :reason :private-self-normal-entry-required})
             (let [call (first remaining) edge (first remaining-edges) args (get call :argument-node-ids)
-                  self? (= id (get edge :caller-function-syntax-id))
-                  charge (if self? 1 (+ 8 (* 4 (count args))))
-                  used (+ work charge)]
-              (if (> used budget)
-                {:status :rejected :reason :private-self-work-limit :work-count used}
-                (if (if (= (get call :core-node-id) (get edge :call-core-node-id))
+                  self? (= id (get edge :caller-function-syntax-id))]
+              (if (if (= (get call :core-node-id) (get edge :call-core-node-id))
                       (if (= id (get edge :callee-function-syntax-id))
                         (if (= :local-function (get edge :classification))
                           (if (vector? args) (= arity (count args)) false) false) false) false)
                   (if self?
-                    (recur (rest remaining) (rest remaining-edges) entries selected normal-count used)
+                    (recur (rest remaining) (rest remaining-edges) entries selected normal-count)
                     (let [arguments (p15-s23-io-child-types args types)
                           invoked? (p15-s23-pe-invoked? types args)
                           complete? (loop [values arguments]
@@ -1771,14 +1758,14 @@
                                  :callee-result-is-not-invocation-guard true}]
                       (if (if invoked? (= false complete?) false)
                         {:status :rejected :reason :private-self-independent-entry-types-required
-                         :entry entry :work-count used}
+                         :entry entry}
                         (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
                           {:status :rejected :reason :private-self-entry-type-conflict
-                           :expected selected :actual arguments :entry entry :work-count used}
+                           :expected selected :actual arguments :entry entry}
                           (recur (rest remaining) (rest remaining-edges) (conj entries entry)
-                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count) used)))))
-                  {:status :rejected :reason :private-self-entry-census-mismatch :work-count used}))))))
-      {:status :rejected :reason :private-self-entry-families-required :work-count 0})))
+                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))
+                  {:status :rejected :reason :private-self-entry-census-mismatch}))))
+      {:status :rejected :reason :private-self-entry-families-required}))))
 
 (defn p15-s23-is-parameter-record [core parameter index binding type]
   (let [premise (get core :sh08-private-self-parameter-premise)
@@ -1800,34 +1787,31 @@
        :parameter-value-premise premise}
       nil)))
 
-(defn p15-s23-is-return-witness [record nodes types budget]
+(defn p15-s23-is-return-witness [record nodes types]
   ; Each active return path carries its own canonical-ID ancestors. Shared
   ; acyclic leaves remain independent witnesses; path length is not admission.
   (let [body (get record :body-core-node-id)]
     (loop [queue [{:node-id body :path [body] :control-records [] :ancestors #{}}] offset 0
-           witnesses [] pending [] selected nil work 0]
+           witnesses [] pending [] selected nil]
       (if (= offset (count queue))
         (if (> (count witnesses) 0)
           {:status :accepted :return-type selected :witnesses witnesses
-           :pending-return-node-ids pending :work-count work}
+           :pending-return-node-ids pending}
           {:status :rejected :reason :private-self-independent-return-required
-           :pending-return-node-ids pending :work-count work})
+           :pending-return-node-ids pending})
         (let [frame (get queue offset) id (get frame :node-id)
               valid-id? (if (keyword? id) true (if (string? id) (> (count id) 0) false))
               node (if valid-id? (get nodes id) nil)
               kind (get node :core-form) children (get node :children)
               path (get frame :path) controls (get frame :control-records) ancestors (get frame :ancestors)
-              type (if valid-id? (get types id :gravity.type/unknown) :gravity.type/unknown)
-              used (+ work 1 (* (+ 3 (count path) (count controls)) (+ 1 (count children))))]
-          (if (> used budget)
-            {:status :rejected :reason :private-self-work-limit :work-count used}
-            (if (if valid-id? (contains? ancestors id) false)
-              {:status :rejected :reason :private-self-return-cycle :work-count used}
+              type (if valid-id? (get types id :gravity.type/unknown) :gravity.type/unknown)]
+          (if (if valid-id? (contains? ancestors id) false)
+            {:status :rejected :reason :private-self-return-cycle}
               (if (= false (if (map? node)
                                (let [stored-id (get node :node-id)]
                                  (if (if (keyword? stored-id) true (if (string? stored-id) (> (count stored-id) 0) false))
                                    (= id stored-id) false)) false))
-                {:status :rejected :reason :private-self-return-source-required :work-count used}
+                {:status :rejected :reason :private-self-return-source-required}
                 (if (= kind :if)
                   (if (= 3 (count children))
                     (let [condition-id (first children) condition (get nodes condition-id)
@@ -1843,7 +1827,7 @@
                                    :condition-type condition-type :condition-source (get condition :source)
                                    :selected-branch-indexes branches :rule :independent-normal-condition}]
                       (if (= condition-type :gravity.type/never)
-                        (recur queue (+ offset 1) witnesses pending selected used)
+                        (recur queue (+ offset 1) witnesses pending selected)
                         (if (p15-s23-is-known? condition-type)
                           (recur
                             (loop [remaining branches out queue]
@@ -1852,9 +1836,9 @@
                                   (recur (rest remaining)
                                     (conj out {:node-id child :path (conj path child) :ancestors (conj ancestors id)
                                                :control-records (conj controls control)})))))
-                            (+ offset 1) witnesses pending selected used)
-                          (recur queue (+ offset 1) witnesses (conj pending id) selected used))))
-                    {:status :rejected :reason :private-self-return-source-required :work-count used})
+                            (+ offset 1) witnesses pending selected)
+                          (recur queue (+ offset 1) witnesses (conj pending id) selected))))
+                    {:status :rejected :reason :private-self-return-source-required})
                   (if (contains? #{:do :let} kind)
                     (if (> (count children) 0)
                       (let [prefix (loop [i 0 out [] normal? true abort? false]
@@ -1866,32 +1850,32 @@
                                            (if (= child-type :gravity.type/never) true abort?)))))
                             last-id (get children (- (count children) 1))]
                         (if (get prefix :abort?)
-                          (recur queue (+ offset 1) witnesses pending selected used)
+                          (recur queue (+ offset 1) witnesses pending selected)
                           (if (get prefix :normal?)
                             (recur (conj queue {:node-id last-id :path (conj path last-id) :ancestors (conj ancestors id)
                                                 :control-records (conj controls {:owner-core-node-id id
                                                                                  :rule :independent-normal-prefix
                                                                                  :prefix (get prefix :rows)})})
-                              (+ offset 1) witnesses pending selected used)
-                            (recur queue (+ offset 1) witnesses (conj pending id) selected used))))
-                      {:status :rejected :reason :private-self-independent-return-required :work-count used})
+                              (+ offset 1) witnesses pending selected)
+                            (recur queue (+ offset 1) witnesses (conj pending id) selected))))
+                      {:status :rejected :reason :private-self-independent-return-required})
                     (if (if (contains? #{:throw :recur} kind) true (= type :gravity.type/never))
-                      (recur queue (+ offset 1) witnesses pending selected used)
+                      (recur queue (+ offset 1) witnesses pending selected)
                       (if (contains? #{:try :alternatives :loop :match} kind)
-                        {:status :rejected :reason :private-self-return-shape-required :work-count used}
+                        {:status :rejected :reason :private-self-return-shape-required}
                         (if (p15-s23-is-value-type? type)
                           (if (if (= selected nil) false (= false (= selected type)))
                             {:status :rejected :reason :private-self-return-type-conflict
-                             :expected selected :actual type :node-id id :work-count used}
+                             :expected selected :actual type :node-id id}
                             (recur queue (+ offset 1)
                               (conj witnesses {:node-id id :source (get node :source) :type type
                                                :path path :control-records controls
                                                :rule :independent-normal-return-value})
-                              pending type used))
+                              pending type))
                           (if (p15-s23-ij-unknown? type)
-                            (recur queue (+ offset 1) witnesses (conj pending id) selected used)
+                            (recur queue (+ offset 1) witnesses (conj pending id) selected)
                             {:status :rejected :reason :private-self-return-value-type-required
-                             :actual type :node-id id :work-count used}))))))))))))))
+                             :actual type :node-id id})))))))))))))
 
 (defn p15-s23-is-cold-call-ids [core record cut]
   (let [id (get record :function-syntax-id) excluded (set (get cut :excluded-node-ids))]
@@ -1905,56 +1889,11 @@
           (recur (rest calls) (rest edges) (if keep? (conj out (get call :core-node-id)) out)))))))
 
 (defn p15-s23-is-cold-metadata-valid? [core facts record bindings forms cold cut]
-  (let [records (get core :function-records) calls (get core :calls) sequence (get core :nodes)
-        locals (get core :lexical-bindings) definitions (get core :definitions)
-        excluded (set (get cut :excluded-node-ids))
-        slots (loop [remaining records total 0]
-                (if (= 0 (count remaining)) total
-                  (recur (rest remaining) (+ total (count (get (first remaining) :parameter-binding-ids))))))
-        arguments (loop [remaining calls total 0]
-                    (if (= 0 (count remaining)) total
-                      (recur (rest remaining) (+ total (count (get (first remaining) :argument-node-ids))))))
-        selected-nodes (loop [remaining sequence total 0]
-                         (if (= 0 (count remaining)) total
-                           (recur (rest remaining) (+ total (if (contains? excluded (get (first remaining) :node-id)) 0 1)))))
-        selected-locals (loop [remaining locals total 0]
-                          (if (= 0 (count remaining)) total
-                            (recur (rest remaining) (+ total (if (contains? excluded (get (first remaining) :initializer-node-id)) 0 1)))))
-        ids (p15-s23-is-cold-call-ids core record cut)
-        preparation (+ (get cut :work-count) (* 4 (count sequence)) (* 4 (count records)) (* 2 slots)
-                       (* 4 (count calls)) (count (get core :call-edges)) arguments (* 2 (count locals))
-                       (* 2 (count definitions)) (count forms) (count bindings) (count (get facts :imported-function-types)))
-        round-work (+ (* 6 (count sequence)) (* 3 (count locals)) (* 3 (count definitions)) (* 7 (count records))
-                      (* 5 slots) (* 5 (count calls)) (* 3 arguments) (* 3 (count bindings)) (* 2 (count forms)))
-        bound (+ 2 selected-nodes (- (count records) 1) (- slots (count (get record :parameter-binding-ids))) (count ids) selected-locals)]
+  (let [ids (p15-s23-is-cold-call-ids core record cut)]
     (if (p15-s23-typed-all
-          [(p15-s23-is-exact-keys? cold #{:mode :cut :source-argument-call-node-ids :source-preparation-work-count
-                                   :round-count :round-bound :work-count})
+          [(p15-s23-is-exact-keys? cold #{:mode :cut :source-argument-call-node-ids})
            (= cut (get cold :cut)) (= (get cut :mode) (get cold :mode))
-           (= ids (get cold :source-argument-call-node-ids)) (= preparation (get cold :source-preparation-work-count))
-           (= bound (get cold :round-bound))
-           (loop [remaining [(get cold :round-count) (get cold :work-count)]]
-             (if (= 0 (count remaining)) true
-               (if (integer? (first remaining)) (if (>= (first remaining) 0) (recur (rest remaining)) false) false)))])
-      (p15-s23-typed-all [(> (get cold :round-count) 0) (<= (get cold :round-count) bound)
-                  (<= (+ preparation (* round-work (get cold :round-count))) (get cold :work-count))
-                  (<= (get cold :work-count) 65536)]) false)))
-
-(defn p15-s23-is-source-cost [core bindings forms record arguments target-slots]
-  (let [nodes (count (get core :nodes)) calls (count (get core :calls)) edges (count (get core :call-edges))
-        records (count (get core :function-records)) locals (count (get core :lexical-bindings))
-        arity (count (get record :parameter-binding-ids))
-        prior (+ 32 (* 8 nodes) (* 8 calls) (* 4 edges) (* 4 (count bindings)) (* 4 records) (* 4 locals)
-                 (* 2 arguments) (* calls (count bindings)))
-        reservation (+ prior (if (= 3 arity) (* 4 calls) 0) 16 records calls (count (get core :recur-targets))
-                       (* 8 nodes) (* 4 (count bindings)) (* 2 (count forms)) (* 4 (count (get core :definitions)))
-                       (* 4 locals) (* 3 (count (get core :mutations))) (count (get core :var-references))
-                       (* 2 (count (get core :reference-uses))) (* 2 (count (get (get core :preserved-resolution) :resolution-table)))
-                       (count (get (get core :module) :exports)) (* 4 records) (* 4 arguments) (* 4 arity)
-                       (count (get core :recur-transfers))
-                       (* (count (get core :recur-transfers)) (+ (count (get core :recur-targets)) target-slots))
-                       (* calls (+ 32 (* 3 calls) records (* 4 arity))))]
-    {:prior-attempt-work prior :source-reservation-work reservation}))
+           (= ids (get cold :source-argument-call-node-ids))]) true false)))
 
 (defn p15-s23-ix-form-source [form]
   (p15-s23-typed-source form))
@@ -1990,28 +1929,23 @@
        (= (get node :source) (p15-s23-ix-form-source form))])))
 
 
-(defn p15-s23-ix-entry-values [census nodes types forms budget]
+(defn p15-s23-ix-entry-values [census nodes types forms]
   (let [record (get census :function-record) id (get record :function-syntax-id)
         calls (get census :calls) edges (get census :edges)]
     (if (if (vector? calls) (if (vector? edges) (= (count calls) (count edges)) false) false)
-      (loop [remaining calls rows edges entries [] selected nil normal-count 0 work 3]
-        (if (> work budget)
-          {:status :rejected :reason :indexed-self-work-limit :work-count work}
-          (if (= 0 (count remaining))
+      (loop [remaining calls rows edges entries [] selected nil normal-count 0]
+        (if (= 0 (count remaining))
             (if (> normal-count 0)
-              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count :work-count work}
-              {:status :rejected :reason :indexed-self-normal-entry-required :work-count work})
+              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count}
+              {:status :rejected :reason :indexed-self-normal-entry-required})
             (let [call (first remaining) edge (first rows) args (get call :argument-node-ids)
-                  self? (= id (get edge :caller-function-syntax-id))
-                  used (+ work (if self? 1 (+ 16 (* 4 (count args)))))]
-              (if (> used budget)
-                {:status :rejected :reason :indexed-self-work-limit :work-count used}
-                (if (p15-s23-typed-all
+                  self? (= id (get edge :caller-function-syntax-id))]
+              (if (p15-s23-typed-all
                       [(= (get call :core-node-id) (get edge :call-core-node-id))
                        (= id (get edge :callee-function-syntax-id)) (= :local-function (get edge :classification))
                        (vector? args) (= 3 (count args)) (= 3 (get record :fixed-arity))])
                   (if self?
-                    (recur (rest remaining) (rest rows) entries selected normal-count used)
+                    (recur (rest remaining) (rest rows) entries selected normal-count)
                     (let [arguments (p15-s23-io-child-types args types)
                           invoked? (p15-s23-pe-invoked? types args)
                           index (get nodes (get args 2))
@@ -2024,16 +1958,16 @@
                                  :callee-result-is-not-invocation-guard true
                                  :index-entry-source (if invoked? {:node index :form (get forms (get (get index :source) :form-id))} nil)}]
                       (if (if invoked? (= false (p15-s23-ix-types? arguments)) false)
-                        {:status :rejected :reason :indexed-self-independent-entry-types-required :entry entry :work-count used}
+                        {:status :rejected :reason :indexed-self-independent-entry-types-required :entry entry}
                         (if (if invoked? (= false zero?) false)
-                          {:status :rejected :reason :indexed-self-zero-source-entry-required :entry entry :work-count used}
+                          {:status :rejected :reason :indexed-self-zero-source-entry-required :entry entry}
                           (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
                             {:status :rejected :reason :indexed-self-entry-type-conflict
-                             :expected selected :actual arguments :entry entry :work-count used}
+                             :expected selected :actual arguments :entry entry}
                             (recur (rest remaining) (rest rows) (conj entries entry)
-                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count) used))))))
-                  {:status :rejected :reason :indexed-self-entry-census-mismatch :work-count used}))))))
-      {:status :rejected :reason :indexed-self-entry-families-required :work-count 0})))
+                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
+                  {:status :rejected :reason :indexed-self-entry-census-mismatch}))))))
+      {:status :rejected :reason :indexed-self-entry-families-required}))
 
 
 (defn p15-s23-ix-if-source? [core node nodes forms]
@@ -2272,8 +2206,7 @@
                   :value-inference (if indexed? :closed-private-indexed-normal-entries-and-source-induction
                                       :closed-private-monomorphic-normal-entries-and-return-witness)
                   :value-check :complete-body-and-all-incoming-arguments :effect-error-status :pending-sh09-recursive-body
-                  :captures :own-parameters-and-lexical-locals-only :prior-attempt-work (get proof :prior-attempt-work)
-                  :source-reservation-work (get proof :source-reservation-work) :work-count (get proof :work-count)}]
+                  :captures :own-parameters-and-lexical-locals-only}]
     (p15-s23-typed-all
       [(= expected proof) (= [component] (get core :recursion-components))
        (= {:ordinal 0 :kind :self-recursive :function-syntax-ids [id]
@@ -2281,7 +2214,7 @@
            :internal-call-edge-ordinals [(get edge :ordinal)]} component)
        (= :named-top-level (get record :definition-kind))
        (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
-       (> (count parameters) 0) (<= (count parameters) 1024)
+       (> (count parameters) 0)
        (if indexed?
          (if (p15-s23-ix-types? parameters) (= :gravity.type/bool (get function :return)) false)
        (loop [remaining (conj parameters (get function :return))]
@@ -2293,12 +2226,7 @@
           (get (get (get nodes (get call :core-node-id)) :evaluation) :owner-function-syntax-id))
        (= :local-function (get edge :classification))
        (= (get function :return) (get (get proof :return-witness) :return-type))
-       (loop [remaining [(get proof :work-count) (get proof :source-reservation-work) (get proof :prior-attempt-work)
-                         (get (get (get proof :parameter-value-premise) :cold-entry-derivation) :work-count)
-                         (get (get proof :cold-body-derivation) :work-count) (get (get proof :return-witness) :work-count)]]
-         (if (= 0 (count remaining)) true
-           (if (integer? (first remaining)) (if (if (>= (first remaining) 0) (<= (first remaining) 65536) false)
-                                              (recur (rest remaining)) false) false))) ])))
+       ])))
 
 
 (defn p15-s23-ix-context [core facts bindings source-forms budget]
@@ -2332,7 +2260,7 @@
                   premise (get proof :parameter-value-premise)
                   cold-entry (get premise :cold-entry-derivation)
                   entries (get premise :entry-values)
-                  cut (p15-s23-is-cold-cut core record nodes :entries (- budget work))
+                  cut (p15-s23-is-cold-cut core record nodes :entries)
                   after-cut (+ work (get cut :work-count 0))]
               (if (if (= :accepted (get cut :status)) (map? census) false)
                 (let [cold-types (p15-s23-is-entry-types census entries (get facts :type-table)
@@ -2340,8 +2268,8 @@
                       after-types (+ after-cut (get cold-types :work-count 0))
                       derived (if (= :accepted (get cold-types :status))
                                 (if indexed?
-                                  (p15-s23-ix-entry-values census nodes (get cold-types :types) forms (- budget after-types))
-                                  (p15-s23-is-entry-values census nodes (get cold-types :types) (- budget after-types))) cold-types)
+                                  (p15-s23-ix-entry-values census nodes (get cold-types :types) forms)
+                                  (p15-s23-is-entry-values census nodes (get cold-types :types))) cold-types)
                       after-entries (+ after-types (if (= :accepted (get cold-types :status)) (get derived :work-count 0) 0))
                       induction (if (if indexed? (= :accepted (get derived :status)) false)
                                   (p15-s23-ix-source core census derived nodes bindings forms (- budget after-entries))
@@ -2349,7 +2277,7 @@
                       after-induction (+ after-entries (get induction :work-count 0))
                       body-cut (if (= :rejected (get induction :status)) induction
                                  (if (= :accepted (get derived :status))
-                                   (p15-s23-is-cold-cut core record nodes :body (- budget after-induction)) derived))
+                                   (p15-s23-is-cold-cut core record nodes :body) derived))
                       after-body (+ after-induction (if (= :rejected (get induction :status)) 0
                                                      (if (= :accepted (get derived :status)) (get body-cut :work-count 0) 0)))
                       excluded (set (get body-cut :excluded-node-ids))
@@ -2360,7 +2288,7 @@
                                           (if (contains? excluded id) out (assoc out id (get (get facts :type-table) id :gravity.type/unknown)))))))
                       witness (if indexed? (get induction :return-witness induction)
                                 (if (= :accepted (get body-cut :status))
-                                  (p15-s23-is-return-witness record nodes independent (- budget after-body)) body-cut))
+                                  (p15-s23-is-return-witness record nodes independent) body-cut))
                       total (+ after-body (if indexed? 0
                                             (if (= :accepted (get body-cut :status)) (get witness :work-count 0) 0)))
                       expected (if indexed?
@@ -2387,8 +2315,6 @@
                          (p15-s23-is-proof-valid? core facts) (= expected premise)
                          (p15-s23-is-cold-metadata-valid? core facts record bindings source-forms cold-entry cut)
                          (p15-s23-is-cold-metadata-valid? core facts record bindings source-forms (get proof :cold-body-derivation) body-cut)
-                         (= (p15-s23-is-source-cost core bindings source-forms record args slots)
-                            {:prior-attempt-work (get proof :prior-attempt-work) :source-reservation-work (get proof :source-reservation-work)})
                          (= cut (get cold-entry :cut)) (= :entries (get cold-entry :mode))
                          (= body-cut (get (get proof :cold-body-derivation) :cut))
                          (= :body (get (get proof :cold-body-derivation) :mode))
@@ -2396,8 +2322,7 @@
                          (= (get derived :parameter-types) (get proof :parameter-types))
                          (= [row] (p15-s23-pe-select (get facts :constraint-ledger) :producer-rule
                                     (if indexed? :sh08-indexed-private-self-value-v1 :sh08-private-self-value-v1)))
-                         (= (+ (get proof :source-reservation-work) (get cold-entry :work-count) (get derived :work-count)
-                               (get (get proof :cold-body-derivation) :work-count) (get witness :work-count)) (get proof :work-count))])
+                         ])
                     {:status :accepted :parameter-value-premise expected :proof proof :component (get proof :component) :work-count total}
                     {:status :rejected :reason :private-self-source-value-premise-mismatch :work-count total})))
                 {:status :rejected :reason (if (= :rejected (get cut :status)) :typed-lowering-work-limit
@@ -2508,8 +2433,7 @@
                   :cold-body-derivation (get proof :cold-body-derivation) :return-witness (get proof :return-witness)
                   :value-inference :closed-private-monomorphic-normal-entries-and-return-witness
                   :value-check :complete-body-and-all-incoming-arguments :effect-error-status :pending-sh09-recursive-body
-                  :captures :own-parameters-and-lexical-locals-only :prior-attempt-work (get proof :prior-attempt-work)
-                  :source-reservation-work (get proof :source-reservation-work) :work-count (get proof :work-count)}]
+                  :captures :own-parameters-and-lexical-locals-only}]
     (p15-s23-typed-all
       [(= expected proof) (= [component] (get core :recursion-components))
        (= {:ordinal 0 :kind :self-recursive :function-syntax-ids [id]
@@ -2517,7 +2441,7 @@
            :internal-call-edge-ordinals [(get edge :ordinal)]} component)
        (= :named-top-level (get record :definition-kind))
        (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
-       (> (count parameters) 0) (<= (count parameters) 1024)
+       (> (count parameters) 0)
        (loop [remaining (conj parameters (get function :return))]
          (if (= 0 (count remaining)) true
            (if (p15-s23-is-value-type? (first remaining)) (recur (rest remaining)) false)))
@@ -2527,12 +2451,7 @@
           (get (get (get nodes (get call :core-node-id)) :evaluation) :owner-function-syntax-id))
        (= :local-function (get edge :classification))
        (= (get function :return) (get (get proof :return-witness) :return-type))
-       (loop [remaining [(get proof :work-count) (get proof :source-reservation-work) (get proof :prior-attempt-work)
-                         (get (get (get proof :parameter-value-premise) :cold-entry-derivation) :work-count)
-                         (get (get proof :cold-body-derivation) :work-count) (get (get proof :return-witness) :work-count)]]
-         (if (= 0 (count remaining)) true
-           (if (integer? (first remaining)) (if (if (>= (first remaining) 0) (<= (first remaining) 65536) false)
-                                              (recur (rest remaining)) false) false))) ]))))
+       ]))))
 
 ; Match the finite cold entry projection to current C7-verified VALUE facts.
 ; An aborting entry never supplies a parameter seed; Unknown is retained there.
@@ -2601,17 +2520,17 @@
                   premise (get proof :parameter-value-premise)
                   cold-entry (get premise :cold-entry-derivation)
                   entries (get premise :entry-values)
-                  cut (p15-s23-is-cold-cut core record nodes :entries (- budget work))
+                  cut (p15-s23-is-cold-cut core record nodes :entries)
                   after-cut (+ work (get cut :work-count 0))]
               (if (if (= :accepted (get cut :status)) (map? census) false)
                 (let [cold-types (p15-s23-is-entry-types census entries (get facts :type-table)
                                    (set (get cut :excluded-node-ids)) (- budget after-cut))
                       after-types (+ after-cut (get cold-types :work-count 0))
                       derived (if (= :accepted (get cold-types :status))
-                                (p15-s23-is-entry-values census nodes (get cold-types :types) (- budget after-types)) cold-types)
+                                (p15-s23-is-entry-values census nodes (get cold-types :types)) cold-types)
                       after-entries (+ after-types (if (= :accepted (get cold-types :status)) (get derived :work-count 0) 0))
                       body-cut (if (= :accepted (get derived :status))
-                                 (p15-s23-is-cold-cut core record nodes :body (- budget after-entries)) derived)
+                                 (p15-s23-is-cold-cut core record nodes :body) derived)
                       after-body (+ after-entries (if (= :accepted (get derived :status)) (get body-cut :work-count 0) 0))
                       excluded (set (get body-cut :excluded-node-ids))
                       independent (loop [remaining (get core :nodes) out {}]
@@ -2620,7 +2539,7 @@
                                         (recur (rest remaining)
                                           (if (contains? excluded id) out (assoc out id (get (get facts :type-table) id :gravity.type/unknown)))))))
                       witness (if (= :accepted (get body-cut :status))
-                                (p15-s23-is-return-witness record nodes independent (- budget after-body)) body-cut)
+                                (p15-s23-is-return-witness record nodes independent) body-cut)
                       total (+ after-body (if (= :accepted (get body-cut :status)) (get witness :work-count 0) 0))
                       expected {:domain :gravity/sh08-private-self-entry-parameter-premise-v1
                                 :source-census census :entry-values derived :cold-entry-derivation cold-entry
@@ -2638,16 +2557,13 @@
                          (p15-s23-is-proof-valid? core facts) (= expected premise)
                          (p15-s23-is-cold-metadata-valid? core facts record bindings source-forms cold-entry cut)
                          (p15-s23-is-cold-metadata-valid? core facts record bindings source-forms (get proof :cold-body-derivation) body-cut)
-                         (= (p15-s23-is-source-cost core bindings source-forms record args slots)
-                            {:prior-attempt-work (get proof :prior-attempt-work) :source-reservation-work (get proof :source-reservation-work)})
                          (= cut (get cold-entry :cut)) (= :entries (get cold-entry :mode))
                          (= body-cut (get (get proof :cold-body-derivation) :cut))
                          (= :body (get (get proof :cold-body-derivation) :mode))
                          (= witness (get proof :return-witness))
                          (= (get derived :parameter-types) (get proof :parameter-types))
                          (= [row] (p15-s23-pe-select (get facts :constraint-ledger) :producer-rule :sh08-private-self-value-v1))
-                         (= (+ (get proof :source-reservation-work) (get cold-entry :work-count) (get derived :work-count)
-                               (get (get proof :cold-body-derivation) :work-count) (get witness :work-count)) (get proof :work-count))])
+                         ])
                     {:status :accepted :parameter-value-premise expected :proof proof :component (get proof :component) :work-count total}
                     {:status :rejected :reason :private-self-source-value-premise-mismatch :work-count total})))
                 {:status :rejected :reason (if (= :rejected (get cut :status)) :typed-lowering-work-limit
@@ -2693,12 +2609,6 @@
                                 (recur (rest remaining)
                                   (if (= id (get (get (get nodes (get local :let-core-node-id)) :evaluation) :owner-function-syntax-id))
                                     (conj out (get local :binding-id)) out)))))
-                argument-work (loop [remaining calls total 0]
-                                (if (= 0 (count remaining)) total
-                                  (recur (rest remaining) (+ total (* 2 (count (get (first remaining) :argument-node-ids)))))))
-                c7-work (+ 32 (* 8 (count nodes)) (* 8 (count calls)) (* 4 (count edges))
-                           (* 4 (count bindings)) (* 4 (count records)) (* 4 (count lexical))
-                           argument-work (* (count calls) (count bindings)))
                 expected {:domain :gravity/sh08-declared-self-value-proof-v1
                           :function-syntax-id id :function-core-node-id (get record :function-core-node-id)
                           :definition-binding-id (get record :definition-binding-id) :definition-syntax-id (get definition :syntax-id)
@@ -2708,8 +2618,7 @@
                           :self-call call :self-edge edge :self-call-source (get self :source)
                           :owned-node-ids owned :incoming-call-node-ids incoming
                           :value-check :complete-body-and-all-incoming-arguments
-                          :effect-error-status :pending-sh09-recursive-body :captures :own-parameters-and-lexical-locals-only
-                          :work-count c7-work}
+                          :effect-error-status :pending-sh09-recursive-body :captures :own-parameters-and-lexical-locals-only}
                 captures? (loop [remaining (get core :nodes)]
                             (if (= 0 (count remaining)) true
                               (let [node (first remaining) bid (get (get node :attributes) :binding-id) binding (get bindings bid)]
@@ -2729,7 +2638,7 @@
                    (= {:ordinal 0 :kind :self-recursive :function-syntax-ids [id]
                        :function-core-node-ids [(get record :function-core-node-id)] :internal-call-edge-ordinals [ordinal]} component)
                    (= :named-top-level (get record :definition-kind))
-                   (if (integer? (get record :fixed-arity)) (if (> (get record :fixed-arity) 0) (<= (get record :fixed-arity) 1024) false) false)
+                   (if (integer? (get record :fixed-arity)) (> (get record :fixed-arity) 0) false)
                    (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
                    (p15-s23-ds-type? (get (get signature :return) :type-id))
                    (loop [remaining parameters]
