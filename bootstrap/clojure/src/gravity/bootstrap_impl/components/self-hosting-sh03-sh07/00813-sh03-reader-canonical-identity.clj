@@ -241,7 +241,7 @@
 ;; Trusted HOST connection only; none of these functions are Gravity builtins.
 ;; The source sandbox cannot manufacture the original issuer or scope objects.
 (require '[gravity.build.declared-inputs])
-(declare compiler-c2-reader-source-artifact sh03-reader-codepoints-text!)
+(declare compiler-c2-reader-source-artifact sh03-reader-codepoints-text! standard-reader-options)
 (declare ^:private sh03-c3-precomputed-c2-verify! sh03-reader-internal-product-authority)
 (def ^:private ^:dynamic *reader-resource-invocation* nil)
 

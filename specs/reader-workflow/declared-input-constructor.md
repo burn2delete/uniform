@@ -108,7 +108,7 @@ that hold is not used as a prerequisite for the source implementation above.
 
 ## Local evidence
 
-Affected isolated source/model controls passed 35 tests / 398 assertions.
+Affected isolated source/model controls passed 36 tests / 400 assertions.
 The language-boundary gate passed 6 tests / 11 assertions. Focused test-source
 lint reports zero errors and warnings. Contextual component lint reports zero
 blocking findings and three unchanged baseline warnings. The document and
@@ -117,3 +117,7 @@ These checks do not compile or execute an actual Gravity plan or establish the
 normal command result. Independent acceptance of this constructor is pending.
 The original ingress-load failures and the initial contextual-lint findings
 are retained as local historical evidence rather than retroactively relabeled.
+The successor to the first `9c782d4b` freeze also declares the later-defined
+standard Reader options before compiling resource helper bodies. A minimal
+namespace model exercises the actual component declaration and helper in load
+order, then installs those options; no Bootstrap load is used as evidence.

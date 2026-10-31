@@ -30,6 +30,24 @@
 (defn- hash-value [value]
   (letfn [(normalize [v] (canonical/reader-canonical-value normalize v))]
     (canonical/reader-canonical-hash digest/sha256-hex normalize value)))
+
+(deftest resource-options-compile-before-the-later-standard-options-definition
+  ;; Actual load_order.edn installs this component before foundation/00826.
+  ;; Exercise that order without importing Bootstrap or declaring every port.
+  (let [n (create-ns (gensym "resource-options-load-order-"))
+        forward (first (filter #(and (seq? %) (= 'declare (first %))
+                                    (some #{'compiler-c2-reader-source-artifact} (rest %))) host-forms))]
+    (try
+      (binding [*ns* n]
+        (clojure.core/refer 'clojure.core)
+        (intern n 'reader-resource-policy-id (constantly "modeled-policy"))
+        (eval forward)
+        (eval (get definitions 'reader-resource-options?))
+        (intern n 'standard-reader-options {:retain-comments true}))
+      (let [select (ns-resolve n 'reader-resource-options?)]
+        (is (true? (select {:retain-comments true :extension-policy "modeled-policy"})))
+        (is (false? (select {:retain-comments true :extension-policy "other"}))))
+      (finally (remove-ns (ns-name n))))))
 (defn- hash-bytes [bytes]
   (apply str (map #(format "%02x" (bit-and 255 %))
                   (.digest (java.security.MessageDigest/getInstance "SHA-256") bytes))))
