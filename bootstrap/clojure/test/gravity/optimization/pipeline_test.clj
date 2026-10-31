@@ -6,6 +6,8 @@
             [gravity.optimization :as optimization]
             [gravity.self-hosting.sh17-c13-optimized-mir-carrier-test]))
 
+(alias 'comparison 'gravity.bootstrap-c13-comparison)
+
 (defn- helper [name]
   (var-get (ns-resolve 'gravity.self-hosting.sh17-c13-optimized-mir-carrier-test name)))
 
@@ -45,12 +47,12 @@
       (is (= actual (b/p15-s23-c13-expected-record mir evidence)))
       (is (= output (:optimized-mir actual)))
       (is (= mir (optimization/restore output (:delta selected))))
-      (is (= selected (gravity.bootstrap-c13-comparison/selection mir)))
+      (is (= selected (comparison/selection mir)))
       (is (= {:present? true :value expected}
              (get-in output [:data-flow-graph :values "comparison" :constant-payload])))
       (is (= (:source-map mir) (:source-map output)))
       (is (= (:runtime-check-table mir) (:runtime-check-table output)))
-      (is (= (gravity.bootstrap-c13-comparison/output-id output)
+      (is (= (comparison/output-id output)
              (b/p15-s23-c11-mir-digest
                {:domain :gravity/c13-equality-fold-output-v1
                 :mir (b/p15-s23-c11-mir-path-neutral-value output)})))
@@ -123,14 +125,14 @@
         (is (= (:source-map candidate) (:source-map output)))))))
 
 (deftest compatibility-ports-preserve-late-var-interposition
-  (let [original-extend gravity.bootstrap-c13-comparison/extend-evidence
-        original-record gravity.bootstrap-c13-comparison/translated-record
+  (let [original-extend comparison/extend-evidence
+        original-record comparison/translated-record
         base {:unchanged :base}]
-    (with-redefs [gravity.bootstrap-c13-comparison/selection (constantly nil)]
+    (with-redefs [comparison/selection (constantly nil)]
       (is (identical? base (original-extend :input base)))
       (is (identical? base (original-record :input :evidence base)))))
   (let [seen (atom nil)]
     (with-redefs [b/p15-s23-c11-mir-path-neutral-value (constantly :neutral-port)
                   b/p15-s23-c11-mir-digest (fn [input] (reset! seen input) :digest-port)]
-      (is (= :digest-port (gravity.bootstrap-c13-comparison/output-id :input)))
+      (is (= :digest-port (comparison/output-id :input)))
       (is (= {:domain :gravity/c13-equality-fold-output-v1 :mir :neutral-port} @seen)))))

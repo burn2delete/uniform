@@ -2,6 +2,8 @@
   "Compatibility ports for native C13 reconstruction data; no compiler authority."
   (:require [gravity.optimization :as optimization]))
 
+(alias 'bootstrap 'gravity.bootstrap)
+
 (defn selection [mir]
   (optimization/selection mir))
 
@@ -13,8 +15,8 @@
 
 (defn output-id [output]
   (optimization/output-id
-   #'gravity.bootstrap/p15-s23-c11-mir-digest
-   #'gravity.bootstrap/p15-s23-c11-mir-path-neutral-value output))
+   #'bootstrap/p15-s23-c11-mir-digest
+   #'bootstrap/p15-s23-c11-mir-path-neutral-value output))
 
 (defn extend-evidence [mir base]
   (optimization/extend-evidence #'selection #'rewrite #'restore #'output-id mir base))

@@ -97,6 +97,13 @@ An adapted registration edit initially gave the retained runtime row a duplicate
 mir-stage-path key, so the ownership test namespace could not load. The key is
 corrected to runtime-stage-path; the actual registration data is unchanged.
 The initial load/parse nonpass logs are retained separately.
+Initial contextual lint reports two unresolved-namespace warnings at the
+literal compatibility Var references and test calls. Explicit namespace aliases
+name the already loaded compatibility/Bootstrap namespaces, preserving the
+same Vars without importing Bootstrap from the stage or creating a require
+cycle. No warning configuration is changed. A direct standalone lint probe
+reports the pre-existing component filename/namespace mismatch; the repository
+contextual checker remains the governing lint route.
 No denied/restricted source, native, Maven, CI job or authority operation is
 retried, and no source-authority fingerprints are renewed.
 
@@ -104,6 +111,35 @@ Focused regressions, contextual lint, language/ownership registration,
 docs/roadmap/governance, independent exact-head review, successful candidate CI
 and clean current-main integration preflight remain required. Failed effects
 and diagnostics candidates and separate main-CI nonpasses receive no waiver.
+
+## Source checks and static correction
+
+Initial source 1fad85bcb8cd2cb545ffdbca722f2c3062d66d3e, tree
+aa2d328ef8bde0c44abd694b79718234a999c097, changes eight paths. Its CI run
+41222039868 static job reports the same two unresolved namespace warnings as
+the local checker. Tested merge 3b6d3a992937d4aef30e36ba7ec4818e236ca4af
+has verified parents main 6d1ed9e5 plus source 1fad, with that exact source tree.
+All retained static manifest entries verify; SHA256SUMS digest is
+eb1f8dba63568fa7684afac7f4d2003f4174442be85779642cf63e1850a9b953.
+That static nonpass is preserved, not waived or rerun.
+
+The source correction adds explicit aliases only in the compatibility component
+and test. The optimization stage body, schema, rule and identity protocol remain
+unchanged. Corrected focused tests pass 5 / 110 and language passes 6 / 11.
+The existing exact normalized C13/C14 equality kernel passes 1 / 332; the C13
+leaf regression passes 4 / 71 with catalog count 53 and hash
+c29a49033c0514f4e84d5de019939a519b456134a7623b4b25404ec8274fada7 unchanged.
+Registration passes 24 / 871. Docs validate 240 / 19; roadmap and governance
+pass. Initial corrected four-source-path contextual lint reports zero baseline
+warnings and zero blockers, without configuration or waiver changes.
+
+An actual producer with the working alias correction over 1fad again executes
+all four current Gravity cases and their real C13-VERIFY refusals. This is a
+working-tree observation, not clean or committed-head execution. All 37
+complete/text pairs, source hash and declared plan ID verify again. The exact
+immutable-base transformation check includes the literal aliases and verifies
+both complete stage source and compatibility wrappers. Final source still
+requires independent acceptance, its own CI and clean current-main preflight.
 
 ## Unsupported boundaries
 
