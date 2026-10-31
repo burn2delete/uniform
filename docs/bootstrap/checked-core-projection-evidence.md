@@ -73,3 +73,18 @@ The language boundary passes 6 tests / 11 assertions; cljfmt accepts tools/ci.
 The CI runtime mode includes the three existing projection kernels in a fresh
 process. Full runtime regression, contextual lint, independent acceptance and
 exact-head CI remain required before integration.
+
+The actual CI runtime mode passes in three fresh processes: stage suite
+12 tests / 966 assertions, current-binding/kernel 4 / 57, and the three existing
+projection kernels 3 / 286, all with zero failures and errors. Contextual
+changed-file lint reports one unchanged baseline warning and zero blockers;
+no warning baseline or lint policy changed. Structural docs validation passes
+240 documents / 19 phase indexes, and the roadmap validator passes. The first
+CI-harness invocation lacked clj-kondo on PATH and reported two launch errors;
+with the pinned existing tool on PATH the harness passes 11 tests / 106
+assertions. These were tooling launch failures, not a compiler refusal retry.
+
+Independent adversarial review accepts source prefix f938930e conditionally
+with no source or contract findings. Generated CI output is relocated outside
+the worktree before final qualification. Evidence-only review, current-main
+composition, exact-head CI and clean integration preflight remain required.
