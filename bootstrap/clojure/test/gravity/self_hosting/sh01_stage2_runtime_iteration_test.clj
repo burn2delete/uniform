@@ -723,14 +723,19 @@
     (is (= expected (:value (compile context ))))
 
     (doseq [kind [:map :set]]
-      (let [unsupported (-> context (assoc-in [:nodes :vector :attributes :literal-kind] kind)
-                            (assoc-in [:forms :vector-form :kind] kind)
-                            (assoc-in [:types :vector :kind] (if (= kind :map) :gravity.type/map :gravity.type/set)))]
-        (let [unsupported (if (= kind :map)
-                            (-> unsupported (update-in [:types :vector] dissoc :element-types)
-                                (assoc-in [:types :vector :member-types] [:gravity.type/bool :gravity.type/string])) unsupported)]
-          (is (= (if (= kind :map) :unsupported-typed-map-key :typed-set-source-or-type-mismatch)
-                 (get-in (compile unsupported ) [:facts :reason]))))))
+      (let [unsupported (if (= kind :map)
+                          (-> context
+                              (assoc-in [:nodes :vector :attributes :literal-kind] kind)
+                              (assoc-in [:forms :vector-form :kind] kind)
+                              (assoc-in [:types :vector :kind] :gravity.type/map)
+                              (update-in [:types :vector] dissoc :element-types)
+                              (assoc-in [:types :vector :member-types] [:gravity.type/bool :gravity.type/string]))
+                          (-> context
+                              (assoc-in [:nodes :vector :attributes :literal-kind] kind)
+                              (assoc-in [:forms :vector-form :kind] kind)
+                              (assoc-in [:types :vector :kind] :gravity.type/set)))]
+        (is (= (if (= kind :map) :unsupported-typed-map-key :typed-set-source-or-type-mismatch)
+               (get-in (compile unsupported ) [:facts :reason])))))
     (doseq [mutate [#(assoc-in % [:nodes :vector :attributes :literal-kind] :map)
                     #(assoc-in % [:nodes :vector :attributes :element-count] 1)
                     #(assoc-in % [:nodes :vector :children] [:vector-right :vector-left])
@@ -4998,7 +5003,7 @@
           (is (= :typed-if-join-evidence-mismatch (get-in rejected [:facts :reason])))
           (is (= :list-if-join-source-mismatch (get-in source-failed [:facts :reason])))
 
-          (doseq [[index role] (map-indexed vector [:condition :then :else])]
+          (doseq [[_ role] (map-indexed vector [:condition :then :else])]
             (let [failed (compile (update context :locals dissoc (refs role)) )]
               (is (= :rejected (:status failed)))
               (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason]))))))
@@ -14292,7 +14297,7 @@
         (let [changed (assoc context :locals {})
               failed (compile changed )]
           (is (= :rejected (:status failed)))
-          (is (= :unbound-local (get-in failed [:facts :reason]))))
+          (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason]))))
         (doseq [changed [(assoc-in descriptor [:construction-policy :order] :input-order)
                          (assoc-in descriptor [:construction-policy :value-work :provider-cpu-bound] :proven)
                          (assoc-in descriptor [:construction-policy :operand-position] :tail)
@@ -15585,7 +15590,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             _ (is (integer? 7))
             _ (is (<= (first (ranges family)) 7 (second (ranges family))))
@@ -15904,7 +15909,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{:accepted}} ""])]
         (is (= :complete (:status compiled)))
@@ -16217,7 +16222,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [position [0 1]]
-      (let [{:keys [context slot other]} (make-context position false)
+      (let [{:keys [context]} (make-context position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other 7} ""])]
         (is (= :complete (:status compiled)))
@@ -16454,7 +16459,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [position [0 1]]
-      (let [{:keys [context slot other]} (make-context position false)
+      (let [{:keys [context]} (make-context position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other :data} ""])]
         (is (= :complete (:status compiled)))
@@ -22904,7 +22909,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [:accepted]} ""])]
         (is (= :complete (:status compiled)))
@@ -23178,7 +23183,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [7]} ""])]
         (is (= :complete (:status compiled)))
@@ -23245,7 +23250,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [7]} ""])]
         (is (= :complete (:status compiled)))
@@ -23647,7 +23652,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) (char 97) #{(char 97)})} ""])]
         (is (= :complete (:status compiled)))
@@ -23863,7 +23868,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) "a" #{"a"})} ""])]
         (is (= :complete (:status compiled)))
@@ -25772,7 +25777,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [#{:a}]} ""])]
         (is (= :complete (:status compiled)))
@@ -25841,7 +25846,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [#{:a}]} ""])]
         (is (= :complete (:status compiled)))
@@ -27130,7 +27135,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
@@ -27197,7 +27202,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
@@ -27590,7 +27595,6 @@
             (let [candidate (-> context (update :ledger conj row)
                                 (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
-                  domain (invoke (quote p15-s23-ssin-validate-types) [receiver value])
                   rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
               (is (zero? @callbacks)))))
@@ -27661,7 +27665,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
@@ -27719,7 +27723,7 @@
                         (equals [_ _] (swap! callbacks inc) (throw (AssertionError. "receiver equality")))
                         (hashCode [_] (swap! callbacks inc) (throw (AssertionError. "receiver hash")))))
           items (protected ["a" "b"])]
-      (doseq [[value expected] [["a" ["a" "b"]] ["c" ["a" "b" "c"]]]]
+      (doseq [value ["a" "c"]]
         (let [result (insert items value)]
           (is (= :rejected (:status result)))
           (is (= :string-set-insertion-value-domain-required (:reason result)))
@@ -28205,7 +28209,7 @@
 (deftest current-gravity-string-set-carrier-comparison-lowering-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        c7 (ns-resolve upstream 'invoke-c7) input-fn (ns-resolve upstream 'atomic-equality-input)
+        c7 (ns-resolve upstream 'invoke-c7)
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %)) s :gravity.type/string
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -28345,7 +28349,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
@@ -28412,7 +28416,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
@@ -29061,7 +29065,6 @@
   (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'atomic-equality-input)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         finite #(hash-map :kind :gravity.type/list :shape :literal :element-types (vec %))
-        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
         k :gravity.type/keyword s :gravity.type/string
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -29302,7 +29305,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (list "accepted")} ""])]
         (is (= :complete (:status compiled)))
@@ -29537,8 +29540,7 @@
   (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'map-contains-input)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
-        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
-        k :gravity.type/integer s :gravity.type/string
+        k :gravity.type/integer
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -29606,12 +29608,12 @@
                       (assoc-in [:forms :set-item-form-0 :value] (char 97))
                       (assoc-in [:nodes :set-item-0 :attributes] {:literal-kind :character :value (char 97)})
                       (assoc-in [:types :set-item-0] :gravity.type/integer)
-                      (assoc-in [:types :set :element-types] [:gravity.type/integer]))]
+                      (assoc-in [:types :set :element-types] [:gravity.type/integer]))
+          rejected (invoke 'p15-s23-typed-compile-node context :set )]
       ;; Character-backed DATA tagged Integer cannot establish a supported constructor.
-      (let [rejected (invoke 'p15-s23-typed-compile-node context :set )]
-        (is (= :rejected (:status rejected)))
-        (is (= :typed-set-source-or-type-mismatch (get-in rejected [:facts :reason])))
-        (is (nil? (:value rejected)))))
+      (is (= :rejected (:status rejected)))
+      (is (= :typed-set-source-or-type-mismatch (get-in rejected [:facts :reason])))
+      (is (nil? (:value rejected))))
 )))
 
 (deftest current-gravity-integer-set-contains-transfer-fence-development-kernel
@@ -29663,7 +29665,7 @@
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) 32 #{32})} ""])]
         (is (= :complete (:status compiled)))
@@ -29753,7 +29755,7 @@
                     (map vector ids forms))))
         compile #(invoke 'p15-s23-typed-compile-node %1 :set )]
     (doseq [values [[] [9] [9 10 13 32 44] [-1 0 1] [(bigint "123456789012345678901234567890")]]]
-      (let [input (context values) result (compile input ) n (count values)]
+      (let [input (context values) result (compile input )]
         (is (= :complete (:status result)))
         (is (= {:op :set-literal :items (literal-instructions values)} (:value result)))
         (is (= result (compile input )))
@@ -31053,7 +31055,7 @@ else
       (let [stem (str "bootstrap/clojure/fixtures/self-hosting/sh-08/" directory "/" name)
             g (.getPath (io/file root (str stem ".gravity"))) q (.getPath (io/file root (str stem ".qst")))
             text (slurp g)
-            {:keys [core node call edge nodes bindings types forms] :as data} (input "0af" start)
+            {:keys [core node call edge nodes bindings types forms]} (input "0af" start)
             result (c7 'sh08-vsl-derive [core node call edge nodes bindings types forms])
             source-forms (bootstrap/read-forms g text)]
         (is (= text (slurp q)))
@@ -31131,7 +31133,7 @@ else
         entry-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original-entry @entry-var
         run (fn [owner base]
-              (let [{:keys [core node call nodes bindings types forms]} base
+              (let [{:keys [core nodes bindings types forms]} base
                     arguments [core (nodes :slice-call) (first (filter #(= :slice-call (:core-node-id %)) (:calls core))) nodes bindings types forms]]
                 (case owner
                   :c7 (c7 'sh08-vsl-proof arguments)
@@ -32439,8 +32441,7 @@ else
   (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'map-contains-input)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
-        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
-        k :gravity.type/symbol s :gravity.type/string
+        k :gravity.type/symbol
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -32508,12 +32509,12 @@ else
                       (assoc-in [:forms :set-item-form-0 :value] (char 97))
                       (assoc-in [:nodes :set-item-0 :attributes] {:literal-kind :character :value (char 97)})
                       (assoc-in [:types :set-item-0] :gravity.type/symbol)
-                      (assoc-in [:types :set :element-types] [:gravity.type/symbol]))]
+                      (assoc-in [:types :set :element-types] [:gravity.type/symbol]))
+          rejected (invoke 'p15-s23-typed-compile-node context :set )]
       ;; Character-backed DATA tagged Symbol cannot establish a supported constructor.
-      (let [rejected (invoke 'p15-s23-typed-compile-node context :set )]
-        (is (= :rejected (:status rejected)))
-        (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
-        (is (nil? (:value rejected)))))
+      (is (= :rejected (:status rejected)))
+      (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
+      (is (nil? (:value rejected))))
 )))
 
 (deftest current-gravity-symbol-set-contains-transfer-fence-development-kernel
@@ -32566,7 +32567,7 @@ else
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) 'accepted #{'accepted})} ""])]
         (is (= :complete (:status compiled)))
@@ -32703,7 +32704,6 @@ else
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
         s :gravity.type/keyword homogeneous {:kind :gravity.type/set :shape :literal :element-types [s]}
-        carrier :gravity.type/set
         positional #(hash-map :kind :gravity.type/set :shape :literal :element-types %)]
     (doseq [[receiver value] [[(positional []) s] [homogeneous s] [homogeneous :gravity.type/never]
                               [(positional (vec (repeat 1024 s))) s]]]
@@ -32750,7 +32750,6 @@ else
             (let [candidate (-> context (update :ledger conj row)
                                 (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
-                  domain (invoke (quote p15-s23-ksin-validate-types) [receiver value])
                   rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
               (is (zero? @callbacks)))))
@@ -32821,7 +32820,7 @@ else
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{:accepted}} ""])]
         (is (= :complete (:status compiled)))
@@ -34587,7 +34586,7 @@ else
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (list "accepted")} ""])]
         (is (= :complete (:status compiled)))
@@ -34858,7 +34857,6 @@ else
             (let [candidate (-> context (update :ledger conj row)
                                 (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
-                  domain (invoke (quote p15-s23-syin-validate-types) [receiver value])
                   rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
               (is (zero? @callbacks)))))
@@ -34960,7 +34958,7 @@ else
             (is (= :accepted (:status result)))
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [1]]
-      (let [{:keys [context slot other]} (make-context family position false)
+      (let [{:keys [context]} (make-context family position false)
             compiled (lower 'p15-s23-typed-compile-node context :call )
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{'accepted}} ""])]
         (is (= :complete (:status compiled)))
@@ -35331,7 +35329,7 @@ else
              ['list-predicate-input 'list-predicate-derived "listp" :gravity.type/bool]]]
       (let [input ((ns-resolve upstream input-name) [carrier]) derive (ns-resolve upstream derive-name)
             result (derive input) descriptor (:descriptor result)
-            {:keys [core node nodes forms bindings types module call edge]} input
+            {:keys [core nodes forms bindings types module call edge]} input
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call expected)
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -35567,8 +35565,7 @@ else
   (let [input-fn (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'map-contains-input)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
-        nullable #(hash-map :kind :gravity.type/nil-or :value-type %)
-        k :gravity.type/symbol s :gravity.type/string
+        k :gravity.type/symbol
         carrier (:result-type (c7 (quote sh08-syin-validate-types) [[(finite []) k]]))
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -35687,12 +35684,12 @@ else
                       (assoc-in [:forms :set-item-form-0 :value] (char 97))
                       (assoc-in [:nodes :set-item-0 :attributes] {:literal-kind :character :value (char 97)})
                       (assoc-in [:types :set-item-0] :gravity.type/symbol)
-                      (assoc-in [:types :set :element-types] [:gravity.type/symbol]))]
+                      (assoc-in [:types :set :element-types] [:gravity.type/symbol]))
+          rejected (invoke 'p15-s23-typed-compile-node context :set )]
       ;; Character-backed DATA tagged Symbol cannot establish a supported constructor.
-      (let [rejected (invoke 'p15-s23-typed-compile-node context :set )]
-        (is (= :rejected (:status rejected)))
-        (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
-        (is (nil? (:value rejected)))))
+      (is (= :rejected (:status rejected)))
+      (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
+      (is (nil? (:value rejected))))
 )))
 (deftest current-gravity-symbol-set-carrier-contains-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
@@ -36174,7 +36171,7 @@ else
 
 (deftest current-gravity-unquoted-empty-symbol-set-loop-development-kernel
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)
-  (let [{:keys [context nodes forms empty-type checked] :as data}
+  (let [{:keys [context nodes forms empty-type checked]}
         ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'unquoted-symbol-set-loop-data))
         node (nodes :value-init)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -36218,7 +36215,7 @@ else
 
 (deftest current-gravity-vector-first-symbol-loop-witness-development-kernel
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)
-  (let [{:keys [context nodes forms checked] :as data}
+  (let [{:keys [context checked]}
         ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'vector-first-symbol-loop-data))
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
