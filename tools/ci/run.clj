@@ -180,11 +180,15 @@
               (command "2g" "-M:dev-test"
                        "--namespace" "gravity.macro.pipeline-test"
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
-    "resolution" [["resolution-regression" 600
-                   (command "2g" "-M:dev-test"
-                            "--namespace" "gravity.resolution.pipeline-test"
-                            "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
-                            "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
+    "resolution-pipeline" [["resolution-pipeline" 600
+                            (command "2g" "-M:dev-test"
+                                     "--namespace" "gravity.resolution.pipeline-test")]]
+    "resolution-unmetered" [["resolution-unmetered" 600
+                             (command "2g" "-M:dev-test"
+                                      "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test")]]
+    "resolution-invocation-selection" [["resolution-invocation-selection" 600
+                                        (command "2g" "-M:dev-test"
+                                                 "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "checked-core-runtime" [["checked-core-runtime-regression" 180
                              (command "2g" "-M:dev-test"
                                       "--namespace" "gravity.checked-core.pipeline-test")]

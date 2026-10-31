@@ -32,7 +32,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]
+        mode: [static, contracts, bootstrap, macro, checked-core-runtime]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -49,6 +49,53 @@ jobs:
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint/archive.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint/archive.tar.gz" -C "$RUNNER_TEMP/actionlint" actionlint
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
+      - name: Run checks in fresh child processes
+        env:
+          CI_MODE: ${{ matrix.mode }}
+          CI_BASE_SHA: ${{ github.event.before }}
+          CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: clojure -Srepro -M tools/ci/run.clj "$CI_MODE"
+      - name: Reject tracked source mutation
+        if: always()
+        run: git diff --exit-code HEAD
+      - name: Preserve logs, command receipts and provenance
+        if: always()
+        run: |
+          mkdir -p target/ci
+          git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
+          git status --porcelain > target/ci/worktree.txt
+          java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
+          clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
+          printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
+          ci_sum="$(mktemp "$RUNNER_TEMP/ci-checksums.XXXXXX")"
+          (cd target/ci && find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + | sort) > "$ci_sum"
+          mv "$ci_sum" target/ci/SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: target/ci/
+          retention-days: 14
+          if-no-files-found: error
+
+  # Resolution: 3 fresh children, 1800s summed watchdogs, 45min summed job ceilings.
+  # Serialization covers this matrix only. Other checks retain their cap of 2;
+  # combined pools can reach 3. Initialization repeats; cost equivalence is not claimed.
+  resolution:
+    name: ${{ matrix.mode }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/clojure
       - name: Run checks in fresh child processes
         env:
           CI_MODE: ${{ matrix.mode }}
@@ -235,8 +282,8 @@ jobs:
 
   publish:
     name: experimental-prerelease
-    needs: [checks, leaves, snapshot]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [checks, resolution, leaves, snapshot]
+    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
