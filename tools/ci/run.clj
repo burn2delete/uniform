@@ -187,8 +187,8 @@
                              (command "2g" "-M:dev-test"
                                       "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test")]]
     "resolution-invocation-selection" [["resolution-invocation-selection" 600
-                                       (command "2g" "-M:dev-test"
-                                                "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
+                                        (command "2g" "-M:dev-test"
+                                                 "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "checked-core-runtime" [["checked-core-runtime-regression" 180
                              (command "2g" "-M:dev-test"
                                       "--namespace" "gravity.checked-core.pipeline-test")]
