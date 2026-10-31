@@ -14,7 +14,6 @@ clojure -M tools/validate_architecture_authority.clj --report REPORT
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref main
 # Add --worktree-scan all (or --full-inventory) for an explicit peer inventory.
 clojure -M tools/verify_integration_candidate.clj --help
-# Add --validate-governance only when lifecycle metadata is part of the candidate.
 ```
 
 The document and roadmap validators are non-authoritative repository gates.
@@ -39,12 +38,9 @@ and decodes the full record before checking exact report/base identities.
 
 The integration-candidate verifier applies exact-identity preflight, exports a
 new candidate tree, runs the unchanged full suite and standard gates with a
-fresh Clojure basis, and emits a candidate-bound receipt. Its default source
-candidate plan does not re-run the workstream ledger validator: ordinary source
-work has no separate lifecycle metadata to validate. Add
-`--validate-governance` when the candidate changes or claims workstream
-lifecycle metadata. The option does not replace exact integration preflight,
-independent review, Stage3, SH-07, or release proof.
+fresh Clojure basis, and emits a candidate-bound receipt. It grants only
+candidate integration evidence and does not replace lifecycle admission,
+Stage3, SH-07, or release proof.
 
 The fresh verifier's full-suite process has bounded diagnostic observability:
 the child runner reports its latest namespace/test-var progress in the

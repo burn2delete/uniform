@@ -39,39 +39,15 @@
   ["clojure" "-Srepro" "-Sforce" "-M:test"])
 
 (def verification-commands
-  "Checks for an ordinary source candidate.
-
-  Workstream governance is deliberately not part of this default list.  The
-  governance ledger describes lifecycle metadata, while this verifier checks
-  the candidate source in a fresh export.  Running the whole ledger validator
-  for every source candidate duplicated the lifecycle check without adding
-  evidence about the candidate itself.  Call `commands-for` with true when a
-  candidate changes or claims workstream lifecycle metadata."
   [full-suite-command
    ["clojure" "-Srepro" "-Sforce" "-M"
     "tools/validate_gravity_docs.clj"]
    ["clojure" "-Srepro" "-Sforce" "-M"
     "tools/validate_full_language_roadmap.clj"]
+   ["clojure" "-Srepro" "-Sforce" "-M"
+    "tools/validate_workstream_governance.clj"]
    ["clojure" "-Srepro" "-Sforce" "-M:test" "--namespace"
     "gravity.self-hosting.sh01-language-boundary-test"]])
-
-(def governance-command
-  ["clojure" "-Srepro" "-Sforce" "-M"
-   "tools/validate_workstream_governance.clj"])
-
-(defn commands-for
-  "Return source checks, optionally including the lifecycle ledger check.
-
-  `include-governance?` is an explicit switch because lifecycle metadata is a
-  separate integration concern.  The default keeps ordinary candidate
-  verification proportional while preserving the exact governance check for
-  candidates that actually change that metadata."
-  [include-governance?]
-  (if include-governance?
-    (vec (concat (take 3 verification-commands)
-                 [governance-command]
-                 (drop 3 verification-commands)))
-    verification-commands))
 
 (defn failure
   ([code message] (failure code message {}))
@@ -93,14 +69,8 @@
   evidence)
 
 (defn verification-plan
-  "Return the fixed, non-authoritative fresh verification plan.
-
-  The one-argument form is the ordinary source-candidate plan.  Pass
-  `{:include-governance? true}` only when the candidate also changes or claims
-  workstream lifecycle metadata."
-  ([identities] (verification-plan identities {}))
-  ([identities {:keys [include-governance?]
-                :or {include-governance? false}}]
+  "Return the fixed, non-authoritative fresh verification plan."
+  [identities]
   (doseq [[label value] identities]
     (when-not (and (string? value) (re-matches oid-pattern value))
       (throw (failure "INTEGRATION-FRESH-IDENTITY"
@@ -111,8 +81,7 @@
    :evidence (validate-publishable-evidence!
               {:mode :fresh :new-export true :resume false
                :repository-cache false})
-   :commands (commands-for include-governance?)
-   :governance-validation? (boolean include-governance?)
+   :commands verification-commands
    :command-policy {:full-suite-preserved true
                     :fresh-basis true
                     :candidate-diff-check true}
@@ -123,7 +92,7 @@
    :external-proof-lanes
    {:stage3 :not-substituted
     :sh07 :not-substituted}
-   :residual-host-boundaries [:clojure-jvm :git :dependency-cache-tool-resolution]}))
+   :residual-host-boundaries [:clojure-jvm :git :dependency-cache-tool-resolution]})
 
 (defn- safe-progress-path?
   [^Path root ^Path candidate]
@@ -500,13 +469,11 @@
     (str path)))
 
 (defn run-verification!
-  [{:keys [base-ref candidate-base candidate-commit candidate-tree
-           include-governance?]}]
+  [{:keys [base-ref candidate-base candidate-commit candidate-tree]}]
   (let [root (.normalize (repository-root))
         identities {:base candidate-base :commit candidate-commit
                     :tree candidate-tree}
-        plan (verification-plan identities
-                                {:include-governance? include-governance?})
+        plan (verification-plan identities)
         receipt-path (default-receipt candidate-commit)
         absolute-receipt (.normalize (.resolve ^Path root receipt-path))
         _ (when (Files/exists absolute-receipt
@@ -554,7 +521,7 @@
                           index-environment)
              "INTEGRATION-FRESH-ARCHIVE")
             _ (validate-export-boundary! export)
-            results (loop [commands (:commands plan) completed []]
+            results (loop [commands verification-commands completed []]
                       (if-let [command (first commands)]
                         (let [result (run-process export command)
                               completed (conj completed result)]
@@ -623,8 +590,6 @@
           "--candidate-base" (recur (next rest-args) (assoc options :candidate-base (value)))
           "--candidate-commit" (recur (next rest-args) (assoc options :candidate-commit (value)))
           "--candidate-tree" (recur (next rest-args) (assoc options :candidate-tree (value)))
-          "--validate-governance"
-          (recur rest-args (assoc options :include-governance? true))
           "--help" (assoc options :help true)
           (throw (failure "INTEGRATION-FRESH-USAGE"
                           (str "unknown option: " option))))))))
@@ -636,7 +601,6 @@
         (do
           (println "Usage: clojure -M tools/verify_integration_candidate.clj")
           (println "  --base-ref REF --candidate-base OID --candidate-commit OID --candidate-tree OID")
-          (println "  --validate-governance  include the workstream lifecycle validator")
           0)
         (let [required [:base-ref :candidate-base :candidate-commit :candidate-tree]
               missing (filterv #(str/blank? (get options %)) required)]

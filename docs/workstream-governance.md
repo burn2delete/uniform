@@ -205,15 +205,6 @@ Registered worktrees are inventory, not integration authority. Dirty state in
 another worktree is reported so the coordinator can avoid destructive cleanup,
 but only the exact candidate worktree and identities can satisfy admission.
 
-The fresh integration candidate verifier keeps source verification and
-workstream lifecycle validation separate. Its ordinary mode runs the source,
-document, roadmap and language-boundary checks once; it does not re-read the
-full lifecycle ledger for every source candidate. Pass
-`--validate-governance` when a candidate changes or claims lifecycle metadata.
-This reduces routine metadata work without weakening the exact integration
-preflight or the ledger's independent review, evidence, ownership and
-nonclaim requirements.
-
 ## Acceptance Criteria
 
 The coordination layer conforms when:
