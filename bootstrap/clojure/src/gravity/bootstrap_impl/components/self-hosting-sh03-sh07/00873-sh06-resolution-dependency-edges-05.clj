@@ -151,28 +151,45 @@
  sha256-hex
  source-span)
 
+(declare sh06-resolution-artifact-identity-input
+         sh06-resolution-identity-chunks
+         sh06-resolution-order-compatibility
+         ^:private sh06-resolution-product-identity-chunks
+         ^:private sh06-resolution-artifact-identity-input-with-chunks
+         ^:private sh06-resolution-envelope-summary-with-chunks)
+
 (def
  ^{:private true} resolution-stage-defaults
  {:c5-resolution-fail! #'c5-resolution-fail!,
   :p15-s23-stage2-compiler-artifact-plan
   #'p15-s23-stage2-compiler-artifact-plan,
   :source-span #'source-span,
+  :sh06-resolution-envelope-summary-with-chunks
+  #'sh06-resolution-envelope-summary-with-chunks,
+  :sh06-resolution-order-compatibility
+  #'sh06-resolution-order-compatibility,
   :p15-s23-stage2-runtime-execute-function
   #'p15-s23-stage2-runtime-execute-function,
   :sh06-resolution-resolve-source-path
   #'sh06-resolution-resolve-source-path,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh06-resolution-artifact-identity-input-with-chunks
+  #'sh06-resolution-artifact-identity-input-with-chunks,
   :sh06-fixed-vector-pattern? #'sh06-fixed-vector-pattern?,
   :sh06-resolution-definition-kind #'sh06-resolution-definition-kind,
   :sha256-hex #'sha256-hex,
   :sh06-resolution-core-record #'sh06-resolution-core-record,
   :c-backend-canonical-value #'c-backend-canonical-value,
   :reader-canonical-hash #'reader-canonical-hash,
+  :sh06-resolution-artifact-identity-input
+  #'sh06-resolution-artifact-identity-input,
   :sh06-resolution-read-current-source!
   #'sh06-resolution-read-current-source!,
   :c-backend-resolve-p15-s23-compiler-source-path
   #'c-backend-resolve-p15-s23-compiler-source-path,
+  :sh06-resolution-product-identity-chunks
+  #'sh06-resolution-product-identity-chunks,
   :sh06-resolution-binding-current! #'sh06-resolution-binding-current!,
   :sh06-resolution-package #'sh06-resolution-package,
   :sh06-resolution-current-source-key
@@ -181,6 +198,7 @@
   :input #'resolution-stage-input,
   :sh06-resolution-plan-identities #'sh06-resolution-plan-identities,
   :sh06-let-loop-binding-paths #'sh06-let-loop-binding-paths,
+  :sh06-resolution-identity-chunks #'sh06-resolution-identity-chunks,
   :sh06-resolution-build-binding! #'sh06-resolution-build-binding!,
   :sh06-resolution-boundary-fail! #'sh06-resolution-boundary-fail!,
   :sh06-unique-match-binding-paths #'sh06-unique-match-binding-paths,
