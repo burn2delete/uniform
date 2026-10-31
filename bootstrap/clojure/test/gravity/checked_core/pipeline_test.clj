@@ -30,12 +30,15 @@
     sh07-core-request-diagnostic! sh07-core-request-preflight!
     sh07-core-run-structural-request-for-test sh07-core-run-request-for-test
     sh07-core-projection-diagnostic! sh07-core-error-transfers-coherent?
-    sh07-core-descendant-node-ids sh07-b9-handler-group-coherent? sh07-core-error-handlers-coherent?])
+    sh07-core-descendant-node-ids sh07-b9-handler-group-coherent? sh07-core-error-handlers-coherent?
+    sh07-b11-guard-source sh07-b11-guard-source-valid? sh07-b11-guard-valid? sh07-b11-branch-tree sh07-b11-clause
+    sh07-b11-match-pattern-graph-complete? sh07-b11-match-pattern-record-coherent? sh07-b11-match-group-coherent?
+    sh07-core-match-products-coherent?])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 58 (count publics)))
+    (is (= 67 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -652,7 +655,7 @@
         (assert-interposition-misses #(with-redefs-fn {v (fn [& args] (apply original args))} %))))))
 
 (deftest configuration-cache-and-thread-binding-roots-invalidate-receipts
-  (doseq [name '[checked-core-stage-defaults sh07-b9-handler-descriptor-keys sh07-core-public-function-shapes sh07-core-source-relative-path
+  (doseq [name '[checked-core-stage-defaults sh07-b9-handler-descriptor-keys sh07-b11-match-clause-keys sh07-b11-match-pattern-record-keys sh07-core-public-function-shapes sh07-core-source-relative-path
                 sh07-core-development-binding sh07-core-cached-binding]]
     (let [v (seed-var name) original @v
           replacement (cond (map? original) (reduce-kv assoc {} original)
@@ -695,7 +698,7 @@
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input
                                               sh07-core-source-path sh07-core-plan-identities sh07-core-build-binding!
                                               sh07-core-current-source-key sh07-core-current-binding! sh07-core-execute!
-                                              sh07-core-source-relative-path sh07-core-public-function-shapes sh07-b9-handler-descriptor-keys
+                                              sh07-core-source-relative-path sh07-core-public-function-shapes sh07-b9-handler-descriptor-keys sh07-b11-match-clause-keys sh07-b11-match-pattern-record-keys
                                               sh07-core-development-binding sh07-core-cached-binding *sh07-core-execution-binding*])))
         downstream (atom 0)]
     ;; Isolated bookend only; the owning admission operations are not executed.
@@ -917,3 +920,162 @@
                   (assoc ops :input (fn [field]
                                       (if (= field :sh07-b9-handler-descriptor-keys)
                                         (vec (rest ((:input ops) field))) ((:input ops) field)))))))))
+
+(defn- match-unit-id [value] (b/reader-canonical-hash {:match-structure-unit value}))
+(defn- match-unit-guard []
+  {:rule-version :sh07-root-map-guard-v1 :source-child-index 3
+   :form-id (match-unit-id :guard-form) :syntax-id (match-unit-id :guard-syntax)
+   :child-index 3 :conditional-region {:kind :match-guard :match-syntax-id (match-unit-id :match-syntax) :clause-ordinal 0}
+   :evaluation :once-after-structural-success :on-pattern-failure :next-candidate
+   :on-true :branch-body :on-false :next-candidate :non-boolean-type-effect-legality :pending-later-legality})
+
+(defn- match-unit-core []
+  (let [id match-unit-id owner (id :owner) semantic (id :semantic) guard (match-unit-guard)
+        common {:authenticated-sh06-artifact-id owner :sh06-semantic-projection-id semantic}
+        pattern-base (merge common {:core-node-id (id :match) :local-ordinal 0 :root-local-ordinal 0
+                                    :parent-local-ordinal nil :parent-ordinal nil :depth 0 :path []
+                                    :vector-width nil :pattern-binding-id nil :pattern-binding-scope-id nil
+                                    :pattern-binding-use-syntax-ids []})
+        patterns [(merge pattern-base {:ordinal 0 :clause-ordinal 0 :root-ordinal 0 :pattern-kind :map
+                                       :pattern-form-id (id :map-form) :pattern-syntax-id (id :map-syntax)
+                                       :pattern-value {:value 'item :when true} :guard (core/match-guard-source guard (operations))})
+                  (merge pattern-base {:ordinal 1 :clause-ordinal 0 :local-ordinal 1 :root-ordinal 0
+                                       :parent-ordinal 0 :parent-local-ordinal 0 :depth 1 :path [1]
+                                       :pattern-kind :binding :pattern-value 'item
+                                       :pattern-form-id (id :binding-form) :pattern-syntax-id (id :binding-syntax)
+                                       :pattern-binding-id (id :binding) :pattern-binding-scope-id (id :binding-scope)
+                                       :pattern-binding-use-syntax-ids [(id :body-use-syntax) (id :guard-use-syntax)]})
+                  (merge pattern-base {:ordinal 2 :clause-ordinal 1 :root-ordinal 2 :pattern-kind :wildcard
+                                       :pattern-value '_ :pattern-form-id (id :wildcard-form) :pattern-syntax-id (id :wildcard-syntax)})]
+        records (mapv (fn [i pattern]
+                        (merge common (select-keys pattern [:pattern-kind :pattern-value :pattern-form-id :pattern-syntax-id
+                                                           :pattern-binding-id :pattern-binding-scope-id])
+                               {:ordinal i :clause-ordinal i :clause-count 2 :branch-child-index (inc i)
+                                :core-node-id (id :match) :scrutinee-core-node-id (id :scrutinee)
+                                :branch-core-node-id (id [:branch i]) :branch-form-id (id [:branch-form i])
+                                :branch-syntax-id (id [:branch-syntax i])
+                                :pattern-binding-ids (if (zero? i) [(id :binding)] []) :pattern-binding-use-syntax-ids []
+                                :scrutinee-evaluation :evaluate-scrutinee-once
+                                :branch-evaluation :conditionally-evaluate-selected-branch
+                                :conditional-region {:kind :match-branch :match-syntax-id (id :match-syntax) :clause-ordinal i}}
+                               (when (zero? i) {:guard (assoc guard :node-id (id :guard))})))
+                      (range 2) [(first patterns) (last patterns)])
+        attrs (merge common {:scrutinee-child-index 0 :branch-count 2 :branch-child-indexes [1 2]
+                             :branch-clauses (mapv #(core/match-clause % (operations)) records)
+                             :guard-child-indexes [3] :guard-rule-version :sh07-root-map-guard-v1
+                             :evaluation-order :scrutinee-then-source-ordered-pattern-candidates
+                             :runtime-reachability :not-asserted-by-sh07-b11 :selection-policy :source-ordered-pattern-candidates
+                             :result-type-join :pending-sh08 :exhaustiveness :pending-sh08})
+        leaf (fn [name children] {:node-id (id name) :core-form :literal :children (mapv id children)})]
+    {:nodes [{:node-id (id :match) :core-form :match :children (mapv id [:scrutinee [:branch 0] [:branch 1] :guard])
+              :resolved-binding-ids [(id :binding)] :attributes attrs :lowering-rule-version :sh07-root-map-guard-v1
+              :evaluation {:kind :scrutinee-then-source-ordered-pattern-candidates
+                           :order [{:index 0 :core-node-id (id :scrutinee)}]}}
+             (leaf :scrutinee []) (leaf [:branch 0] [:body-use]) (leaf [:branch 1] [])
+             (assoc (leaf :guard [:guard-use]) :source (select-keys guard [:form-id :syntax-id])
+                    :evaluation {:region (:conditional-region guard)})
+             (leaf :body-use []) (leaf :guard-use [])]
+     :match-branch-records records :match-pattern-records patterns
+     :match-decision-skeletons [(merge common {:core-node-id (id :match) :scrutinee-core-node-id (id :scrutinee)
+                                             :branch-core-node-ids (mapv #(id [:branch %]) (range 2))
+                                             :selection-policy :source-ordered-pattern-candidates
+                                             :runtime-reachability :not-asserted-by-sh07-b11
+                                             :result-type-join :pending-sh08 :exhaustiveness :pending-sh08})]
+     :reference-uses [{:core-node-id (id :body-use) :binding-id (id :binding) :syntax-id (id :body-use-syntax)}
+                      {:core-node-id (id :guard-use) :binding-id (id :binding) :syntax-id (id :guard-use-syntax)}]}))
+
+(deftest match-guard-projections-preserve-exact-source-and-control-fields
+  (let [ops (operations) guard (match-unit-guard) source (core/match-guard-source guard ops)]
+    (is (= source (b/sh07-b11-guard-source guard)))
+    (is (= #{:rule-version :source-child-index :form-id :syntax-id} (set (keys source))))
+    (is (nil? (core/match-guard-source nil ops)))
+    (is (true? (core/match-guard-source-valid? source ops)))
+    (is (true? (core/match-guard-valid? guard 0 ops)))
+    (doseq [bad [(assoc source :extra true) (dissoc source :form-id)
+                 (assoc source :source-child-index 0) (assoc source :source-child-index 2)
+                 (assoc source :source-child-index -1) (assoc source :source-child-index 1.5)
+                 (assoc source :rule-version :other) (assoc source :syntax-id :not-a-sha256)]]
+      (is (false? (core/match-guard-source-valid? bad ops)))
+      (is (= (core/match-guard-source-valid? bad ops) (b/sh07-b11-guard-source-valid? bad))))
+    (doseq [bad [(assoc guard :child-index 0) (assoc guard :on-false :branch-body)
+                 (assoc guard :on-true :next-candidate) (assoc guard :evaluation :before-pattern)
+                 (assoc guard :on-pattern-failure :branch-body) (assoc guard :extra true)
+                 (assoc guard :non-boolean-type-effect-legality :proven)
+                 (assoc-in guard [:conditional-region :clause-ordinal] 1)
+                 (assoc-in guard [:conditional-region :match-syntax-id] :bad)]]
+      (is (false? (core/match-guard-valid? bad 0 ops)))
+      (is (= (core/match-guard-valid? bad 0 ops) (b/sh07-b11-guard-valid? bad 0))))
+    (is (false? (core/match-guard-source-valid? source (assoc ops :p15-s23-sh02-sha256-id? (constantly false)))))))
+
+(deftest match-branch-clause-and-pattern-graph-preserve-guard-slot-boundaries
+  (let [ops (operations) data (match-unit-core) record (first (:match-branch-records data))
+        nodes (into {} (map (juxt :node-id identity)) (:nodes data))
+        patterns (:match-pattern-records data) clause (core/match-clause record ops)]
+    (is (= (set (map match-unit-id [[:branch 0] :body-use :guard :guard-use])) (core/match-branch-tree nodes record ops)))
+    (is (= (core/match-branch-tree nodes record ops) (b/sh07-b11-branch-tree nodes record)))
+    (is (= (set (map match-unit-id [[:branch 0] :body-use])) (core/match-branch-tree nodes (dissoc record :guard) ops)))
+    (is (= clause (b/sh07-b11-clause record)))
+    (is (= (dissoc (:guard record) :node-id) (:guard clause)))
+    (is (nil? (:guard (core/match-clause (assoc record :guard nil) ops))))
+    (is (true? (core/match-pattern-graph-complete? patterns ops)))
+    (is (true? (core/match-pattern-graph-complete? [] ops)))
+    (doseq [bad [(vec (remove #(= 1 (:ordinal %)) patterns))
+                 (conj patterns (second patterns))
+                 (assoc-in patterns [1 :path] [0]) (assoc-in patterns [1 :path] [3])
+                 (assoc-in patterns [1 :path] [5]) (assoc-in patterns [0 :pattern-value] nil)
+                 (conj patterns (assoc (last patterns) :ordinal 3))]]
+      (is (false? (core/match-pattern-graph-complete? bad ops)))
+      (is (= (core/match-pattern-graph-complete? bad ops) (b/sh07-b11-match-pattern-graph-complete? bad))))
+    ;; Child-slot coverage alone does not establish record shape or graph legality.
+    (is (true? (core/match-pattern-graph-complete? [{:pattern-kind :literal}] ops)))
+    (is (not= clause (core/match-clause record
+                         (assoc ops :input (fn [field] (if (= field :sh07-b11-match-clause-keys)
+                                                         [] ((:input ops) field)))))))))
+
+(deftest match-structural-coherence-preserves-guard-region-bindings-and-order
+  (let [ops (operations) data (match-unit-core)]
+    (is (true? (core/match-products-coherent? data ops)))
+    (is (= (core/match-products-coherent? data ops) (b/sh07-core-match-products-coherent? data)))
+    (doseq [bad (concat
+                 [(assoc data :nodes nil) (update data :nodes seq)
+                  (update data :nodes conj (first (:nodes data)))
+                  (assoc data :match-branch-records []) (update data :match-branch-records seq)
+                  (assoc data :match-pattern-records []) (assoc data :match-decision-skeletons [])
+                  (assoc data :reference-uses nil)
+                  (assoc-in data [:match-branch-records 0 :ordinal] 1)
+                  (assoc-in data [:match-branch-records 0 :clause-count] 1)
+                  (assoc-in data [:match-branch-records 0 :guard :on-false] :branch-body)
+                  (assoc-in data [:match-branch-records 0 :guard :child-index] 2)
+                  (assoc-in data [:match-branch-records 0 :guard :node-id] (match-unit-id :absent))
+                  (assoc-in data [:match-branch-records 0 :pattern-binding-ids] [])
+                  (assoc-in data [:match-branch-records 0 :branch-evaluation] :always)
+                  (assoc-in data [:match-branch-records 0 :scrutinee-evaluation] :twice)
+                  (assoc-in data [:match-branch-records 0 :authenticated-sh06-artifact-id] (match-unit-id :other))
+                  (assoc-in data [:match-branch-records 0 :conditional-region :clause-ordinal] 1)
+                  (assoc-in data [:nodes 0 :children] [])
+                  (assoc-in data [:nodes 0 :resolved-binding-ids] [])
+                  (assoc-in data [:nodes 0 :attributes :guard-child-indexes] [2])
+                  (assoc-in data [:nodes 0 :attributes :exhaustiveness] :proven)
+                  (assoc-in data [:nodes 0 :attributes :runtime-reachability] :executed)
+                  (assoc-in data [:nodes 0 :evaluation :order] [])
+                  (assoc-in data [:nodes 4 :evaluation :region :clause-ordinal] 1)
+                  (assoc-in data [:nodes 4 :source :form-id] (match-unit-id :different))
+                  (assoc-in data [:reference-uses 1 :binding-id] (match-unit-id :different))
+                  (assoc-in data [:match-decision-skeletons 0 :branch-core-node-ids] [])]
+                 (for [[field value] [[:ordinal 2] [:local-ordinal 0] [:root-ordinal 1] [:depth 2]
+                                      [:path [3]] [:pattern-form-id :bad] [:pattern-kind :unknown]
+                                      [:pattern-binding-id nil] [:pattern-binding-scope-id nil]
+                                      [:pattern-binding-use-syntax-ids []] [:extra :forbidden]]]
+                   (assoc-in data [:match-pattern-records 1 field] value)))]
+      (is (false? (core/match-products-coherent? bad ops)))
+      (is (= (core/match-products-coherent? bad ops) (b/sh07-core-match-products-coherent? bad))))
+    (let [calls (atom 0)]
+      (is (false? (core/match-products-coherent? data
+                         (assoc ops :sh07-b11-match-group-coherent? (fn [& _] (swap! calls inc) false)))))
+      (is (= 1 @calls)))
+    (let [nodes (into {} (map (juxt :node-id identity)) (:nodes data))
+          args [nodes (:reference-uses data) (first (:nodes data)) (:match-branch-records data)
+                (first (:match-decision-skeletons data)) (:match-pattern-records data)]]
+      (is (true? (apply core/match-group-coherent? (conj args ops))))
+      (doseq [operation [:sh07-b11-guard-valid? :sh07-b11-match-pattern-graph-complete? :sh07-b11-match-pattern-record-coherent?]]
+        (is (false? (apply core/match-group-coherent? (conj args (assoc ops operation (constantly false))))))))))

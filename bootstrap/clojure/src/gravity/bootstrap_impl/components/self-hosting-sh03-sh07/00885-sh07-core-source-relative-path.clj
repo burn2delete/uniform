@@ -46,7 +46,18 @@
  sh07-core-build-binding!
  ^{:private true} sh07-core-current-source-key
  sh07-core-plan-identities
- sh07-core-source-path)
+ sh07-core-source-path
+ sh07-b11-branch-tree
+ sh07-core-match-products-coherent?
+ sh07-b11-guard-source
+ sh07-b11-guard-valid?
+ sh07-b11-match-pattern-graph-complete?
+ sh07-b11-match-pattern-record-coherent?
+ sh07-b11-clause
+ sh07-b11-guard-source-valid?
+ sh07-b11-match-group-coherent?
+ ^{:private true} sh07-b11-match-clause-keys
+ ^{:private true} sh07-b11-match-pattern-record-keys)
 
 (declare
  sh07-core-build-form-tree
@@ -112,7 +123,8 @@
 
 (def
  ^{:private true} checked-core-stage-defaults
- {:p15-s23-stage2-compiler-artifact-plan
+ {:sh07-b11-guard-valid? #'sh07-b11-guard-valid?,
+  :p15-s23-stage2-compiler-artifact-plan
   #'p15-s23-stage2-compiler-artifact-plan,
   :sh07-core-source-path #'sh07-core-source-path,
   :sh07-core-semantic-span #'sh07-core-semantic-span,
@@ -126,6 +138,8 @@
   #'sh07-core-source-path-from-resolution,
   :sh07-core-semantic-error-handler #'sh07-core-semantic-error-handler,
   :sh07-core-semantic-var-reference #'sh07-core-semantic-var-reference,
+  :sh07-b11-match-pattern-graph-complete?
+  #'sh07-b11-match-pattern-graph-complete?,
   :sh07-b13-fragment-record #'sh07-b13-fragment-record,
   :p15-s23-stage2-runtime-execute-function
   #'p15-s23-stage2-runtime-execute-function,
@@ -144,6 +158,8 @@
   :sh07-core-resolve-reference-vector!
   #'sh07-core-resolve-reference-vector!,
   :sh07-core-descendant-node-ids #'sh07-core-descendant-node-ids,
+  :sh07-b11-match-pattern-record-coherent?
+  #'sh07-b11-match-pattern-record-coherent?,
   :sh07-core-children #'sh07-core-children,
   :read-forms #'read-forms,
   :sh07-core-projected-form-id #'sh07-core-projected-form-id,
@@ -155,6 +171,7 @@
   #'p15-s23-c6c10-literal-scalar-descriptor,
   :c-backend-resolve-p15-s23-compiler-source-path
   #'c-backend-resolve-p15-s23-compiler-source-path,
+  :sh07-b11-clause #'sh07-b11-clause,
   :sh07-b13-alias-name #'sh07-b13-alias-name,
   :sh07-core-run-structural-request-for-test
   #'sh07-core-run-structural-request-for-test,
@@ -162,6 +179,7 @@
   #'sh07-core-projection-binding-input,
   :sh07-core-source-occurrence-context
   #'sh07-core-source-occurrence-context,
+  :sh07-b11-guard-source-valid? #'sh07-b11-guard-source-valid?,
   :sh07-core-neutral-value #'sh07-core-neutral-value,
   :with-execution-binding #'checked-core-with-execution-binding,
   :sh03-reader-host-character-value!
@@ -171,6 +189,7 @@
   :sh07-core-projected-source-mismatch
   #'sh07-core-projected-source-mismatch,
   :sh07-core-resolution-projection! #'sh07-core-resolution-projection!,
+  :sh07-b11-match-group-coherent? #'sh07-b11-match-group-coherent?,
   :sh07-core-semantic-mutation #'sh07-core-semantic-mutation,
   :sh07-core-digest-reference-ordinal
   #'sh07-core-digest-reference-ordinal,
@@ -196,9 +215,11 @@
   :sh07-core-build-binding! #'sh07-core-build-binding!,
   :sh07-core-semantic-error-transfer
   #'sh07-core-semantic-error-transfer,
+  :sh07-b11-branch-tree #'sh07-b11-branch-tree,
   :c-backend-stage2-plan-emitter-source-rule!
   #'c-backend-stage2-plan-emitter-source-rule!,
   :sh07-b13-fragment-manifest #'sh07-b13-fragment-manifest,
+  :sh07-b11-guard-source #'sh07-b11-guard-source,
   :p15-s23-stage2-compiler-artifact-source-path
   #'p15-s23-stage2-compiler-artifact-source-path,
   :sh07-core-authenticated-request #'sh07-core-authenticated-request,
@@ -232,6 +253,10 @@
   sh07-core-source-relative-path
   :sh07-b9-handler-descriptor-keys
   sh07-b9-handler-descriptor-keys
+  :sh07-b11-match-clause-keys
+  sh07-b11-match-clause-keys
+  :sh07-b11-match-pattern-record-keys
+  sh07-b11-match-pattern-record-keys
   (throw (ex-info "Unknown checked-core stage input" {:input field}))))
 
 (defn
