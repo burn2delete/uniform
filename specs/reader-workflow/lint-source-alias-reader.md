@@ -62,3 +62,50 @@ This is a finite tooling source candidate for OWN to route for independent
 review. No actual Reader, Bootstrap, Gravity, provider, CLI, selector, lease,
 6343 operation, review dispatch, publication, CI rerun or integration occurred.
 The separate normal-entry acceptance definitions remain frozen and unrun.
+
+## Independent review and source-reader correction
+
+The original `4c031d7349f7b00c0e7de196fc455bf95ac923a6` candidate received
+changes requested, not acceptance. Independent receipt SHA256
+`f4b863efea114b4c3933c99b541a5a6a2e92b50ec100c16ca028bcc19b86bd44`
+records 47 checks and two P2 findings. Its source pins and original CI failure
+remain historical evidence. This successor starts from that exact candidate.
+
+F1: the resolver returned nil for core Vars and classes. A syntax quote of
+`(map String)` in `never.syntax` silently qualified both names into that
+namespace. The correction resolves core Var names and default class names
+from the already initialized Clojure core/default-import tables. Explicit
+`:refer-clojure` exclusions/only/renames, explicit library refers/renames,
+imports and prior local declarations update an isolated data scope. Import
+class names come from declarations as symbols; no Class.forName, class
+initialization, library loading, source evaluation or namespace creation occurs.
+Qualified symbols retain their source identities.
+
+F2: prefix libspecs such as `(clojure [set :as s])` were ignored. The scope
+collector now expands their prefixes as data, including nested prefixes and
+standalone quoted `require` forms. It does not rewrite the returned source
+forms. Aliases remain local to one input, and unknown aliases still refuse.
+
+This reader does not emulate namespace execution. Unsupported use/refer-all,
+standalone refer/alias/namespace-switch declarations and class-shadowing
+conflicts refuse explicitly instead of inventing resolution. Existing
+reader-evaluation and tag refusals remain. Ordinary definitions and declaration
+data do not grant permission to run code.
+
+The successor facade/private-usage suite passed 15 tests / 339 assertions,
+including both review reproductions, declaration scopes, core/classes,
+qualified symbols, prefix forms, no namespace creation, explicit unsupported
+refusals and the unchanged private-call/dead-helper/current-error/mapping
+controls. Static lint has zero errors/warnings and the boundary gate passed
+6 / 11. Both actual runner byte pins, form counts, rows and fixture keywords
+remain verified by inert source reads. The original failing and corrected
+reproduction forms are retained together in the local source-check artifact.
+
+The first successor test attempt refused an existing vector import group;
+supporting both list and vector import declarations corrected that local
+nonpass. It is retained separately from the passing final run. Everything
+from `manifest!` through EOF remains byte-identical to the reviewed parent,
+including archived selection, private-call analysis, provenance hashes and
+warning mapping. No original CI rerun, independent rereview, publication,
+actual Bootstrap/Reader/Gravity/CLI execution or session/Accounting change is
+part of this successor. OWN routes the affected rereview after source freeze.

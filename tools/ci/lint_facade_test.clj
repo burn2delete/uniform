@@ -385,5 +385,52 @@
                  (context/source-forms! "current-with-stale-alias.clj"
                                         (utf8 "(ns fixture.current (:require [fixture.current :as native])) ::old/key"))))))
 
+(deftest syntax-quote-retains-core-classes-and-source-declaration-scope
+  (let [read-source #(context/source-forms! "syntax.clj" (utf8 %))
+        symbols #(set (filter symbol? (tree-seq coll? seq %)))
+        basic (symbols (read-source "(ns never.syntax) (def v `(map String clojure.core/inc java.lang/String))"))]
+    (is (contains? basic 'clojure.core/map))
+    (is (contains? basic 'java.lang.String))
+    (is (contains? basic 'clojure.core/inc))
+    (is (contains? basic 'java.lang/String))
+    (is (not (contains? basic 'never.syntax/map)))
+    (is (not (contains? basic 'never.syntax/String)))
+    (let [scoped (symbols
+                  (read-source (str "(ns never.scoped (:refer-clojure :exclude [map] :rename {inc increment})"
+                                    " (:require [never.library :refer [foreign] :rename {foreign renamed} :as n])"
+                                    " (:import (java.util Date)))\n"
+                                    "(def local 1) (clojure.core/defn str [] nil)\n"
+                                    "(def v `(map increment renamed n/qualified Date Date. local str))")))]
+      (doseq [name '[never.scoped/map clojure.core/inc never.library/foreign never.library/qualified
+                     java.util.Date java.util.Date. never.scoped/local never.scoped/str]]
+        (is (contains? scoped name) (str name))))
+    (let [only (symbols (read-source "(ns never.only (:refer-clojure :only [map])) (def v `(map inc))"))]
+      (is (contains? only 'clojure.core/map))
+      (is (contains? only 'never.only/inc)))
+    (is (nil? (find-ns 'never.syntax)))
+    (is (nil? (find-ns 'never.scoped)))
+    (is (nil? (find-ns 'never.library)))
+    (let [imported (symbols (read-source "(ns never.import (:import never.init.MustNotLoad)) (def v `MustNotLoad)"))]
+      (is (contains? imported 'never.init.MustNotLoad)))
+    (doseq [source ["(ns never.all (:require [never.library :refer :all]))"
+                    "(ns never.use (:use never.library))"
+                    "(ns never.refer) (refer 'never.library)"
+                    "(ns never.switch) (in-ns 'never.other)"
+                    "(ns never.shadow) (def String nil)"
+                    "(ns never.shadow (:require [never.lib :refer [String]]))"]]
+      (is (thrown? Exception (read-source source))))))
+
+(deftest prefix-libspec-aliases-are-expanded-only-in-reader-scope
+  (doseq [source ["(ns never.prefix (:require (clojure [set :as s]))) (def k ::s/value)"
+                  "(ns never.prefix) (require '(clojure [set :as s])) (def k ::s/value)"
+                  "(ns never.prefix (:require (never (nested [library :as s])))) (def k ::s/value)"
+                  "(ns never.prefix) (require '(never (nested [library :as s]))) (def k ::s/value)"]]
+    (let [before (set (map ns-name (all-ns)))
+          forms (context/source-forms! "prefix.clj" (utf8 source))
+          target (if (str/includes? source "clojure") :clojure.set/value :never.nested.library/value)]
+      (is (= target (nth (last forms) 2)))
+      (is (= before (set (map ns-name (all-ns)))))
+      (is (= 'never.prefix (second (first forms)))))))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
