@@ -14280,7 +14280,6 @@
                              :payload-evaluation :none,
                              :bare-domain :not-refined,
                              :operand-order :left-then-right,
-                             :budget :full-worst-case-reservation,
                              :order :unobserved,
                              :domain :bare-set-against-independent-nonempty-keyword-anchor,
                              :operand-position :non-tail,
@@ -14314,10 +14313,7 @@
                             :runtime-policy
                             {:guard :existing-complete-both-set-census,
                              :selector-premise :type-conforming-nonempty-keyword-anchor,
-                             :maximum-input-elements 1024,
-                             :logical-work-limit 65536,
                              :member-uniqueness :before-cardinality,
-                             :reservation :full-worst-case,
                              :certificate :not-established},
                             :value-origin
                             {:kind :bare-keyword-anchor-set-value-equality,
