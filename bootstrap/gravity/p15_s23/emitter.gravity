@@ -2697,7 +2697,12 @@
                       (get (get self :evaluation) :owner-function-syntax-id))
         (= :local-function (get edge :classification))
         captures?
-        true])
+        (= 1 (loop [remaining edges total 0]
+               (if (= 0 (count remaining)) total
+                 (recur (rest remaining)
+                   (if (= id (get (first remaining) :caller-function-syntax-id)
+                           (get (first remaining) :callee-function-syntax-id))
+                     (+ total 1) total)))))])
       {:status :accepted, :proof proof, :component component}
       {:status :rejected, :reason :declared-self-source-join-mismatch}))))))
 
@@ -10107,7 +10112,7 @@
         {:status :rejected :reason :map-get-source-mismatch}))))
     {:status :rejected :reason :map-get-source-mismatch})
    (if
-    (if (= :vector family) (if (= 0 key) (if (vector? value) true false) false) false)
+    (if (= :vector family) (if (= 0 key) (if (vector? value) (if (< 0 width) true false) false) false) false)
     {:status :accepted, :value (get value 0), :vector-length width}
     {:status :rejected :reason :map-get-source-mismatch}))))
 
@@ -10349,20 +10354,20 @@
     [kind (p15-s23-pc-value-kind value) type (p15-s23-pc-literal-type kind)
             domain (get shape :domain) values (get domain :values)
             fields (if (= :core mode)
-                     #{:node-id :type :source :binding-links :shape-size :status :shape-kind :domain}
-                     #{:status :type :data-origin :source :binding-links :shape-size :shape-kind :domain})]
+                     #{:node-id :type :source :binding-links :status :shape-kind :domain}
+                     #{:status :type :data-origin :source :binding-links :shape-kind :domain})]
     (if
      (if (= :core mode)
               (if (map? node) (if (= :literal (get node :core-form)) (= kind (get (get node :attributes) :literal-kind)) false) false)
               (= :quoted-data mode))
      (if
-      (if (map? shape) (if (= 8 (count shape))
+      (if (map? shape) (if (= 7 (count shape))
                 (loop [keys (keys shape)] (if (= 0 (count keys)) true
                   (if (keyword? (first keys)) (recur (rest keys)) false))) false) false)
       (if
        (p15-s23-typed-all
                   [(= fields (set (keys shape))) (keyword? type) (= type (get shape :type))
-                   (= :accepted (get shape :status)) (= :scalar (get shape :shape-kind)) (= 1 (get shape :shape-size))
+                   (= :accepted (get shape :status)) (= :scalar (get shape :shape-kind))
                    (if (vector? (get shape :binding-links)) (= 0 (count (get shape :binding-links))) false)
                    (if (= :core mode) (if (= id (get shape :node-id)) (= (get node :source) (get shape :source)) false)
                      (if (if (= (get (get shape :source) :form-id) (get (get shape :data-origin) :form-id))
@@ -16548,7 +16553,7 @@
   (if
   (if (vector? arguments) (= 2 (count arguments)) false)
   (loop
-   [pending [[(get arguments 1) 0 true] [(get arguments 0) 0 true]] integers? false nested? false sets? false]
+   [pending [[(get arguments 1) 0 true #{}] [(get arguments 0) 0 true #{}]] integers? false nested? false sets? false]
    (if
     (= 0 (count pending))
     (if
@@ -16588,7 +16593,7 @@
      {:status :accepted})
     (let
      [frame (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
-                type (get frame 0) depth (get frame 1) outer? (get frame 2)]
+                type (get frame 0) depth (get frame 1) outer? (get frame 2) seen (get frame 3)]
      (if
       (if
        outer?
@@ -16597,7 +16602,7 @@
         (keyword? type)
         (if
          (= :gravity.type/integer type)
-         true
+         (= depth 1)
          (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string
                                        :gravity.type/symbol :gravity.type/keyword} type))
         (if (map? type)
@@ -16622,13 +16627,19 @@
         (if (map? type) (if (= 3 (count type))
                   (if (= :gravity.type/vector (get type :kind))
                     (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
-        (let
-         [members (get type :element-types)]
+        (if
+         (loop [ancestors seen]
+           (if (= 0 (count ancestors)) false
+             (if (bootstrap-native-identical? type (first ancestors)) true
+               (recur (rest ancestors)))))
+         {:status :rejected, :reason :vector-equality-cyclic-type}
          (let
-          [children (loop [i (- (count members) 1) out tail]
-                                        (if (< i 0) out
-                                          (recur (- i 1) (conj out [(get members i) (+ depth 1) false]))))]
-          (recur children integers? true sets?)))
+          [members (get type :element-types) next-seen (conj seen type)]
+          (let
+           [children (loop [i (- (count members) 1) out tail]
+                                         (if (< i 0) out
+                                           (recur (- i 1) (conj out [(get members i) (+ depth 1) false next-seen]))))]
+           (recur children integers? (if (> depth 0) true nested?) sets?))))
        {:status :rejected, :reason :vector-equality-operand-type-required}))))))
   {:status :rejected, :reason :vector-equality-arity-mismatch}))
 
@@ -17614,12 +17625,12 @@
                                             (get (get prefix-ref :attributes) :binding-id) (get (get tail-ref :attributes) :binding-id)] 4)
                             (symbol? (get (get prefix-op :attributes) :symbol)) false)
                         (if (p15-s23-typed-all
-                              [true
-              true
+                              [(= :call (get prefix :core-form))
+              (= false (= (get prefix :node-id) (get slice-node :node-id)))
               (= (get slice-node :node-id) (get (get (get (get (get container :proof) :then-call) :call) :argument-node-ids) 0))
               (contains? '#{subvec gravity.core/subvec} (get (get prefix-op :attributes) :symbol))
-              true
-              true])
+              (= (get (get prefix-op :attributes) :binding-id) (get (get tail-op :attributes) :binding-id))
+              (= (get local-ids 0) (get (get prefix-ref :attributes) :binding-id) (get (get tail-ref :attributes) :binding-id))])
                           (let [comparison (p15-s23-vsl-let-equality-body core let-node prefix nodes bindings types forms )]
                             (if (= :accepted (get comparison :status))
                               {:status :accepted :node root :form (get container :form)
@@ -21533,7 +21544,7 @@
          false)
        (if
         (contains? #{:literal :quote} kind)
-        true
+        (= 0 (count children))
         (if (= :collection-literal kind) (if set-root? true (contains? #{:vector :map} (get (get node :attributes) :literal-kind))) false)))
       (recur
        (loop [remaining children out (subvec pending 0 (- (count pending) 1))]
