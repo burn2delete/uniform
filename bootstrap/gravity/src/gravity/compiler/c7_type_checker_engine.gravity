@@ -5234,14 +5234,11 @@
 ; Cut value results before ordinary cold inference. Calls to acyclic
 ; functions retain separate argument constraints; their tainted results do not
 ; become entry evidence. Transfers keep their genuine non-normal VALUE type.
-(defn sh08-is-cold-cut [core record nodes mode budget]
+(defn sh08-is-cold-cut [core record nodes mode]
   (if (contains? #{:entries :body} mode)
   (let [sequence (get core :nodes) calls (get core :calls) edges (get core :call-edges)
         id (get record :function-syntax-id)
-        base (+ (* 2 (count sequence)) (count calls) (count edges)
-                (count (get core :definitions)) (count (get core :lexical-bindings)) (count (get core :function-records)))]
-    (if (> base budget) {:status :rejected :reason :private-self-work-limit :work-count base}
-      (let [definitions (sh08-ft-index (get core :definitions) :binding-id)
+        definitions (sh08-ft-index (get core :definitions) :binding-id)
             lexical (sh08-ft-index (get core :lexical-bindings) :binding-id)
             functions (sh08-ft-function-record-index (get core :function-records))
             edge-index (sh08-ft-index edges :call-core-node-id)
@@ -5257,18 +5254,16 @@
                           (recur (rest remaining)
                             (if (= id (get edge :callee-function-syntax-id))
                               (conj (conj out (get call :core-node-id)) (get call :operator-node-id)) out)))))]
-        (loop [remaining sequence excluded initial next initial work base rounds 0]
+        (loop [remaining sequence excluded initial next initial]
           (if (= 0 (count remaining))
             (if (= excluded next)
-              {:status :accepted :mode mode :work-count work
+              {:status :accepted :mode mode
                :excluded-node-ids
                (loop [remaining sequence out []]
                  (if (= 0 (count remaining)) out
                    (recur (rest remaining)
                      (if (contains? next (get (first remaining) :node-id)) (conj out (get (first remaining) :node-id)) out))))}
-              (if (< rounds (count sequence))
-                (recur sequence next next work (+ rounds 1))
-                {:status :rejected :reason :private-self-cold-cut-nonconvergence :work-count work}))
+              (recur sequence next next))
             (let [node (first remaining) node-id (get node :node-id) kind (get node :core-form)
                   bid (get (get node :attributes) :binding-id)
                   initializer (if (= kind :reference)
@@ -5277,43 +5272,33 @@
                            (get (get functions (get (get edge-index node-id) :callee-function-syntax-id)) :body-core-node-id) nil)
                   children (if (contains? #{:fn :quote :throw :recur} kind) [] (get node :children))
                   deps (if (= initializer nil) children (conj children initializer))
-                  deps (if (= target nil) deps (conj deps target))
-                  used (+ work 1 (count deps))]
-              (if (> used budget)
-                {:status :rejected :reason :private-self-work-limit :work-count used}
-                (recur (rest remaining) excluded
-                  (if (if (contains? next node-id) true
-                        (loop [remaining deps]
-                          (if (= 0 (count remaining)) false
-                            (if (contains? next (first remaining)) true (recur (rest remaining))))))
-                    (conj next node-id) next)
-                  used rounds))))))))
-    {:status :rejected :reason :private-self-cold-mode-required :work-count 0}))
+                  deps (if (= target nil) deps (conj deps target))]
+              (recur (rest remaining) excluded
+                (if (if (contains? next node-id) true
+                      (loop [remaining deps]
+                        (if (= 0 (count remaining)) false
+                          (if (contains? next (first remaining)) true (recur (rest remaining))))))
+                  (conj next node-id) next))))))
+    {:status :rejected :reason :private-self-cold-mode-required}))
 
-(defn sh08-is-entry-values [census nodes types budget]
+(defn sh08-is-entry-values [census nodes types]
   (let [record (get census :function-record) id (get record :function-syntax-id)
         arity (get record :fixed-arity) calls (get census :calls) edges (get census :edges)]
     (if (if (if (vector? calls) (vector? edges) false)
           (if (= (count calls) (count edges)) (if (integer? arity) (> arity 0) false) false) false)
-      (loop [remaining calls remaining-edges edges entries [] selected nil normal-count 0 work 3]
-        (if (> work budget)
-          {:status :rejected :reason :private-self-work-limit :work-count work}
-          (if (= 0 (count remaining))
+      (loop [remaining calls remaining-edges edges entries [] selected nil normal-count 0]
+        (if (= 0 (count remaining))
             (if (> normal-count 0)
-              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count :work-count work}
-              {:status :rejected :reason :private-self-normal-entry-required :work-count work})
+              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count}
+              {:status :rejected :reason :private-self-normal-entry-required})
             (let [call (first remaining) edge (first remaining-edges) args (get call :argument-node-ids)
-                  self? (= id (get edge :caller-function-syntax-id))
-                  charge (if self? 1 (+ 8 (* 4 (count args))))
-                  used (+ work charge)]
-              (if (> used budget)
-                {:status :rejected :reason :private-self-work-limit :work-count used}
-                (if (if (= (get call :core-node-id) (get edge :call-core-node-id))
+                  self? (= id (get edge :caller-function-syntax-id))]
+              (if (if (= (get call :core-node-id) (get edge :call-core-node-id))
                       (if (= id (get edge :callee-function-syntax-id))
                         (if (= :local-function (get edge :classification))
                           (if (vector? args) (= arity (count args)) false) false) false) false)
                   (if self?
-                    (recur (rest remaining) (rest remaining-edges) entries selected normal-count used)
+                    (recur (rest remaining) (rest remaining-edges) entries selected normal-count)
                     (let [arguments (sh08-ft-ordered-child-types args types)
                           invoked? (sh08-pe-invoked? types args)
                           complete? (loop [values arguments]
@@ -5328,25 +5313,21 @@
                                  :callee-result-is-not-invocation-guard true}]
                       (if (if invoked? (= false complete?) false)
                         {:status :rejected :reason :private-self-independent-entry-types-required
-                         :node entry-node :entry entry :work-count used}
+                         :node entry-node :entry entry}
                         (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
                           {:status :rejected :reason :private-self-entry-type-conflict
-                           :expected selected :actual arguments :node entry-node :entry entry :work-count used}
+                           :expected selected :actual arguments :node entry-node :entry entry}
                           (recur (rest remaining) (rest remaining-edges) (conj entries entry)
-                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count) used)))))
-                  {:status :rejected :reason :private-self-entry-census-mismatch :work-count used}))))))
-      {:status :rejected :reason :private-self-entry-families-required :work-count 0})))
+                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))
+                  {:status :rejected :reason :private-self-entry-census-mismatch}))))
+      {:status :rejected :reason :private-self-entry-families-required}))))
 
 (defn sh08-ds? [proof]
   (= :sh08-declared-self-value-v1 (get proof :rule-version)))
 
 (defn sh08-is-cold-evidence [cold]
   {:mode (get cold :mode) :cut (get cold :cut)
-   :source-argument-call-node-ids (get cold :source-argument-call-node-ids)
-   :source-preparation-work-count (get cold :source-preparation-work-count)
-   :round-count (get (get cold :inference) :round-count)
-   :round-bound (get (get cold :inference) :round-bound)
-   :work-count (get cold :work-count)})
+   :source-argument-call-node-ids (get cold :source-argument-call-node-ids)})
 
 (defn sh08-is-parameter-premise [census entries cold]
   {:domain :gravity/sh08-private-self-entry-parameter-premise-v1
@@ -5410,28 +5391,23 @@
                   (sh08-ix-types? [(get types (first args)) (get types (get args 1)) (get types (get args 2))]) false))
             true (recur (rest calls) (rest edges)))))) false))
 
-(defn sh08-ix-entry-values [census nodes types forms budget]
+(defn sh08-ix-entry-values [census nodes types forms]
   (let [record (get census :function-record) id (get record :function-syntax-id)
         calls (get census :calls) edges (get census :edges)]
     (if (if (vector? calls) (if (vector? edges) (= (count calls) (count edges)) false) false)
-      (loop [remaining calls rows edges entries [] selected nil normal-count 0 work 3]
-        (if (> work budget)
-          {:status :rejected :reason :indexed-self-work-limit :work-count work}
-          (if (= 0 (count remaining))
+      (loop [remaining calls rows edges entries [] selected nil normal-count 0]
+        (if (= 0 (count remaining))
             (if (> normal-count 0)
-              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count :work-count work}
-              {:status :rejected :reason :indexed-self-normal-entry-required :work-count work})
+              {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count}
+              {:status :rejected :reason :indexed-self-normal-entry-required})
             (let [call (first remaining) edge (first rows) args (get call :argument-node-ids)
-                  self? (= id (get edge :caller-function-syntax-id))
-                  used (+ work (if self? 1 (+ 16 (* 4 (count args)))))]
-              (if (> used budget)
-                {:status :rejected :reason :indexed-self-work-limit :work-count used}
-                (if (sh08-ft-all-true?
+                  self? (= id (get edge :caller-function-syntax-id))]
+              (if (sh08-ft-all-true?
                       [(= (get call :core-node-id) (get edge :call-core-node-id))
                        (= id (get edge :callee-function-syntax-id)) (= :local-function (get edge :classification))
                        (vector? args) (= 3 (count args)) (= 3 (get record :fixed-arity))])
                   (if self?
-                    (recur (rest remaining) (rest rows) entries selected normal-count used)
+                    (recur (rest remaining) (rest rows) entries selected normal-count)
                     (let [arguments (sh08-ft-ordered-child-types args types)
                           invoked? (sh08-pe-invoked? types args)
                           index (get nodes (get args 2))
@@ -5444,16 +5420,16 @@
                                  :callee-result-is-not-invocation-guard true
                                  :index-entry-source (if invoked? {:node index :form (get forms (get (get index :source) :form-id))} nil)}]
                       (if (if invoked? (= false (sh08-ix-types? arguments)) false)
-                        {:status :rejected :reason :indexed-self-independent-entry-types-required :entry entry :work-count used}
+                        {:status :rejected :reason :indexed-self-independent-entry-types-required :entry entry}
                         (if (if invoked? (= false zero?) false)
-                          {:status :rejected :reason :indexed-self-zero-source-entry-required :entry entry :work-count used}
+                          {:status :rejected :reason :indexed-self-zero-source-entry-required :entry entry}
                           (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
                             {:status :rejected :reason :indexed-self-entry-type-conflict
-                             :expected selected :actual arguments :entry entry :work-count used}
+                             :expected selected :actual arguments :entry entry}
                             (recur (rest remaining) (rest rows) (conj entries entry)
-                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count) used))))))
-                  {:status :rejected :reason :indexed-self-entry-census-mismatch :work-count used}))))))
-      {:status :rejected :reason :indexed-self-entry-families-required :work-count 0})))
+                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
+                  {:status :rejected :reason :indexed-self-entry-census-mismatch}))))
+      {:status :rejected :reason :indexed-self-entry-families-required}))))
 
 (defn sh08-ix-if-source? [core node nodes forms]
   (let [children (get node :children) form (get forms (get (get node :source) :form-id))
@@ -6334,18 +6310,17 @@
     (if (= :accepted (get indexed :status))
       (sh08-pmk-inferred-call core node call edge nodes bindings types (get indexed :forms)) indexed)))
 
-(defn sh08-tc-scope-with-types [core thrown budget types]
+(defn sh08-tc-scope-with-types [core thrown types]
   (let [nodes (sh08-ft-node-index (get core :nodes))
         handler-owners (loop [remaining (get core :error-handlers) out #{}]
                          (if (= 0 (count remaining)) out
                            (recur (rest remaining) (conj out (get (first remaining) :evaluation-owner-function-syntax-id)))))
         initial (sh08-ft-add-values-to-set handler-owners (set (keys thrown)))]
-  (loop [scope initial remaining (get core :call-edges) next initial work (count (get core :error-handlers)) touched handler-owners]
-    (if (>= work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-call-visits work)
-      (if (= 0 (count remaining))
-        (if (= scope next) {:status :accepted :scope touched :active? (> (count touched) 0) :work-count work}
-          (recur next (get core :call-edges) next work touched))
-        (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
+(loop [scope initial remaining (get core :call-edges) next initial touched handler-owners]
+    (if (= 0 (count remaining))
+      (if (= scope next) {:status :accepted :scope touched :active? (> (count touched) 0)}
+        (recur next (get core :call-edges) next touched))
+      (let [edge (first remaining) caller (get edge :caller-function-syntax-id) callee (get edge :callee-function-syntax-id)
               local? (= :local-function (get edge :classification))
               intrinsic? (if (keyword? (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind)) (contains? #{:gravity.type/applied-integral-ordering :gravity.type/applied-map-association :gravity.type/applied-map-removal :gravity.type/applied-collection-count :gravity.type/applied-vector-nth :gravity.type/applied-vector-get :gravity.type/applied-bounded-successor :gravity.type/applied-bounded-unit-addition :gravity.type/applied-vector-append :gravity.type/applied-list-prepend :gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion :gravity.type/applied-atomic-equality :gravity.type/applied-vector-equality :gravity.type/applied-list-equality :gravity.type/applied-integral-equality :gravity.type/applied-not :gravity.type/applied-vector-predicate :gravity.type/applied-integer-predicate :gravity.type/applied-set-conversion :gravity.type/applied-list-set-conversion :gravity.type/applied-map-contains :gravity.type/applied-map-get :gravity.type/applied-string-concat :gravity.type/applied-nonnegative-integer-quotient :gravity.type/applied-vector-slice :gravity.type/applied-string-character-vector :gravity.type/applied-count-quotient-scaling :gravity.type/applied-list-construction :gravity.type/applied-list-query :gravity.type/applied-map-predicate  :gravity.type/applied-keyword-predicate :gravity.type/applied-string-predicate :gravity.type/applied-keyword-set-equality :gravity.type/applied-bare-keyword-anchor-set-equality :gravity.type/applied-string-set-equality  :gravity.type/applied-keyword-set-contains  :gravity.type/applied-set-predicate :gravity.type/applied-list-predicate :gravity.type/applied-symbol-predicate :gravity.type/applied-boolean-predicate :gravity.type/applied-nil-predicate :gravity.type/applied-character-predicate :gravity.type/applied-atomic-inequality :gravity.type/applied-character-set-contains :gravity.type/applied-string-set-contains :gravity.type/applied-symbol-set-contains :gravity.type/applied-integer-set-contains :gravity.type/applied-vector-first :gravity.type/applied-vector-empty :gravity.type/applied-vector-rest :gravity.type/applied-map-keys :gravity.type/applied-private-map-keys}
                             (get (get types (first (get (get nodes (get edge :call-core-node-id)) :children))) :kind)) false)
@@ -6353,16 +6328,15 @@
           (if (if touches? (if local? false (= false intrinsic?)) false)
             (sh08-th-error "C7-ANNOTATION" :unsupported-throwing-call-component {} :direct-local-call edge)
             (recur scope (rest remaining) (if touches? (if local? (conj (conj next caller) callee) (conj next caller)) next)
-                   (+ work 1) (if touches? (if local? (conj (conj touched caller) callee) (conj touched caller)) touched)))))))))
+                   (if touches? (if local? (conj (conj touched caller) callee) (conj touched caller)) touched))))))))
 
-(defn sh08-tc-scope [core thrown budget]
-  (sh08-tc-scope-with-types core thrown budget {}))
+(defn sh08-tc-scope [core thrown]
+  (sh08-tc-scope-with-types core thrown {}))
 
-(defn sh08-eh-source-products [core source-forms bindings budget]
+(defn sh08-eh-source-products [core source-forms bindings]
   (let [sequence (get core :nodes) records (get core :error-handlers)]
     (if (sh08-ft-all-true? [(vector? sequence) (vector? source-forms) (vector? bindings)
                             (if (= records nil) true (vector? records))])
-    (if (> (count sequence) budget) (sh08-th-error "C7-GENERIC" :typed-handler-work-limit {} :bounded-handler-visits (count sequence))
   (let [tries (sh08-bm-select sequence :core-form :try)
         records (get core :error-handlers) count-records (if (vector? records) (count records) 0)
         shapes? (loop [remaining tries]
@@ -6371,16 +6345,14 @@
                       (if (if (vector? (get node :children))
                             (if (map? attrs) (vector? (get attrs :handler-clauses)) false) false)
                         (recur (rest remaining)) false))))
-        work (+ (* 8 (count sequence)) (count source-forms) (count bindings)
-                (* count-records (+ 100 (* 4 (count sequence)) (* 4 (count (get core :error-transfers))))))]
+        ]
     (if (= 0 (count tries))
       (if (if (= records nil) true (= [] records))
-        {:status :accepted :groups {} :seeds {} :work-count (count sequence) :diagnostics []}
+        {:status :accepted :groups {} :seeds {} :diagnostics []}
         (sh08-th-error "C7-VERIFY" :unexpected-error-handlers {} :no-handler-records records))
       (if (= false shapes?) (sh08-th-error "C7-VERIFY" :malformed-typed-handler-family {} :canonical-handler-vectors nil)
-      (if (> work budget) (sh08-th-error "C7-GENERIC" :typed-handler-work-limit {} :bounded-handler-visits work)
       (let [nodes (sh08-ft-node-index sequence) forms (sh08-ft-index source-forms :form-id)
-            binding-index (sh08-ft-binding-index bindings) owners (sh08-th-owners core (- budget work))]
+            binding-index (sh08-ft-binding-index bindings) owners (sh08-th-owners core)]
         (if (= :accepted (get owners :status))
         (loop [remaining tries ordinal 0 groups {} seeds {}]
           (if (= 0 (count remaining))
@@ -6390,7 +6362,7 @@
                          (recur (rest remaining) (conj out (sh08-ft-semantic-authenticated-record
                            (get (get (get core :identity-preimage) :lineage) :sh06-semantic-projection-id) (first remaining))))))
                      (get (get core :identity-preimage) :error-handlers)) false)
-              {:status :accepted :groups groups :seeds seeds :work-count (+ work (get owners :work-count)) :diagnostics []}
+              {:status :accepted :groups groups :seeds seeds :diagnostics []}
               (sh08-th-error "C7-VERIFY" :error-handler-census {} :exact-handler-records records))
             (let [node (first remaining) id (get node :node-id) source (get node :source)
                   form (get forms (get source :form-id)) ids (get form :child-form-ids)
@@ -6496,7 +6468,7 @@
                          (get attrs :ownership-legality) (get attrs :safety-classification)])])
                 (if (= :accepted (get result :status))
                   (recur (rest remaining) (+ ordinal (count clauses)) (assoc groups id (get result :clauses)) (get result :seeds)) result)
-                (sh08-th-error "C7-VERIFY" :typed-try-source-join node :exact-canonical-try attrs))))) owners)))))))
+                (sh08-th-error "C7-VERIFY" :typed-try-source-join node :exact-canonical-try attrs))))) owners)))))
       (sh08-th-error "C7-VERIFY" :malformed-typed-handler-family {} :canonical-handler-input-vectors nil))))
 
 ; L5/L9: exact canonical atomic matches classify SOURCE error potential.
@@ -6598,20 +6570,19 @@
         (if (if (= kind :throw) (= false (= payload :gravity.type/never)) false)
           (sh08-tc-union called [payload]) called))))))
 
-(defn sh08-tc-graph [core types owners scope budget handlers]
+(defn sh08-tc-graph [core types owners scope handlers]
   (let [nodes (sh08-ft-node-index (get core :nodes)) records (sh08-ft-function-record-index (get core :function-records))
         edges (sh08-ft-index (get core :call-edges) :call-core-node-id)
         selected (loop [remaining (get core :nodes) out []]
                    (if (= 0 (count remaining)) out
                      (recur (rest remaining) (if (contains? scope (get owners (get (first remaining) :node-id)))
                                               (conj out (first remaining)) out))))]
-    (loop [pending selected deferred [] graph {} work 0 progress 0]
-      (if (>= work budget) (sh08-th-error "C7-GENERIC" :typed-throw-call-work-limit {} :bounded-body-visits work)
-        (if (= 0 (count pending))
-          (if (= 0 (count deferred)) {:status :accepted :nodes graph :work-count work}
-            (if (> progress 0) (recur deferred [] graph work 0)
-              (sh08-th-error "C7-ANNOTATION" :throwing-call-cycle-or-missing-body {} :acyclic-complete-bodies deferred)))
-          (let [node (first pending) kind (get node :core-form) id (get node :node-id) edge (get edges id)
+    (loop [pending selected deferred [] graph {} progress 0]
+      (if (= 0 (count pending))
+        (if (= 0 (count deferred)) {:status :accepted :nodes graph}
+          (if (> progress 0) (recur deferred [] graph 0)
+            (sh08-th-error "C7-ANNOTATION" :throwing-call-cycle-or-missing-body {} :acyclic-complete-bodies deferred)))
+        (let [node (first pending) kind (get node :core-form) id (get node :node-id) edge (get edges id)
                 target (if (if (= kind :call) (sh08-tc-invokes? node types) false)
                          (get (get records (get edge :callee-function-syntax-id)) :body-core-node-id) nil)
                 deps (if (= kind :fn) [] (get node :children)) deps (if (= target nil) deps (conj deps target))
@@ -6623,9 +6594,9 @@
             ; this finite conservative union establishes no termination or effect legality.
             (if (contains? #{:literal :quote :reference :fn :def :do :if :let :match :loop :recur :collection-literal :keyword-map-lookup :throw :call :try} kind)
               (if ready? (recur (rest pending) deferred (assoc graph id (sh08-tc-node-errors node graph target types handlers))
-                               (+ work (sh08-tc-error-work node graph target)) (+ progress 1))
-                (recur (rest pending) (conj deferred node) graph (+ work 1 (count deps)) progress))
-              (sh08-th-error "C7-ANNOTATION" :unsupported-throwing-body-operation node :acyclic-direct-local-body kind))))))))
+                               (+ progress 1))
+                (recur (rest pending) (conj deferred node) graph progress))
+              (sh08-th-error "C7-ANNOTATION" :unsupported-throwing-body-operation node :acyclic-direct-local-body kind)))))))
 
 (defn sh08-tc-constraint [core edge calls nodes records bindings types functions graph]
   (let [id (get edge :call-core-node-id) node (get nodes id)
@@ -6735,13 +6706,10 @@
                                           (if vector?
                                             (if (contains? #{:gravity.type/applied-string-set-insertion :gravity.type/applied-keyword-set-insertion :gravity.type/applied-symbol-set-insertion} (get (get types (first (get node :children))) :kind))
                                               (if (= :gravity.type/applied-symbol-set-insertion (get (get types (first (get node :children))) :kind))
-            (sh08-syin-inferred-call core node call edge nodes binding-index types
-                                                (- budget initial (get owners :work-count) work))
+            (sh08-syin-inferred-call core node call edge nodes binding-index types)
             (if (= :gravity.type/applied-keyword-set-insertion (get (get types (first (get node :children))) :kind))
-                                                (sh08-ksin-inferred-call core node call edge nodes binding-index types
-                                                (- budget initial (get owners :work-count) work))
-                                                (sh08-ssin-inferred-call core node call edge nodes binding-index types
-                                                (- budget initial (get owners :work-count) work))))
+                                                (sh08-ksin-inferred-call core node call edge nodes binding-index types)
+                                                (sh08-ssin-inferred-call core node call edge nodes binding-index types)))
                                               (if (contains? #{:gravity.type/applied-keyword-set-equality :gravity.type/applied-bare-keyword-anchor-set-equality :gravity.type/applied-string-set-equality} (get (get types (first (get node :children))) :kind))
                                               (sh08-kse-inferred-call core node call edge nodes binding-index types
                                                 (- budget initial (get owners :work-count) work))
@@ -9036,65 +9004,56 @@
                          :work-count work)))
               (assoc (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-source-identities nil) :work-count base)))))))))
 
-(defn sh08-syin-inferred-call [core node call edge nodes bindings types budget]
-  (let [limit (if (< budget 65536) budget 65536) args (get call :argument-node-ids)
-        base (+ 64 (if (vector? args) (count args) 0) (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count base}
+(defn sh08-syin-inferred-call [core node call edge nodes bindings types]
+  (let [args (get call :argument-node-ids)]
       (if (if (vector? args) (if (= 2 (count args))
             (if (vector? (get node :children)) (if (= 3 (count (get node :children)))
               (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))) false) false) false) false)
-        (let [validation (sh08-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
+        (let [validation (sh08-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])]
           (if (= :accepted (get validation :status))
             (let [header (sh08-pl-source core node call edge nodes bindings types (get core :module) validation)
                   descriptor (if (map? header) (sh08-pl-finish header) nil)]
               (if (if (map? descriptor)
                     (if (= descriptor (get types (get call :operator-node-id)))
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
-                {:status :accepted :work-count work}
-                {:status :rejected :reason :symbol-set-insertion-source-mismatch :work-count work}))
-            (assoc validation :work-count work)))
-        {:status :rejected :reason :symbol-set-insertion-arity-mismatch :work-count base}))))
+                {:status :accepted}
+                {:status :rejected :reason :symbol-set-insertion-source-mismatch}))
+            validation))
+        {:status :rejected :reason :symbol-set-insertion-arity-mismatch})))
 
-(defn sh08-ksin-inferred-call [core node call edge nodes bindings types budget]
-  (let [limit (if (< budget 65536) budget 65536) args (get call :argument-node-ids)
-        base (+ 64 (if (vector? args) (count args) 0) (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count base}
+(defn sh08-ksin-inferred-call [core node call edge nodes bindings types]
+  (let [args (get call :argument-node-ids)]
       (if (if (vector? args) (if (= 2 (count args))
             (if (vector? (get node :children)) (if (= 3 (count (get node :children)))
               (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))) false) false) false) false)
-        (let [validation (sh08-ksin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
+        (let [validation (sh08-ksin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])]
           (if (= :accepted (get validation :status))
             (let [header (sh08-pl-source core node call edge nodes bindings types (get core :module) validation)
                   descriptor (if (map? header) (sh08-pl-finish header) nil)]
               (if (if (map? descriptor)
                     (if (= descriptor (get types (get call :operator-node-id)))
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
-                {:status :accepted :work-count work}
-                {:status :rejected :reason :keyword-set-insertion-source-mismatch :work-count work}))
-            (assoc validation :work-count work)))
-        {:status :rejected :reason :keyword-set-insertion-arity-mismatch :work-count base}))))
+                {:status :accepted}
+                {:status :rejected :reason :keyword-set-insertion-source-mismatch}))
+            validation))
+        {:status :rejected :reason :keyword-set-insertion-arity-mismatch})))
 
-(defn sh08-ssin-inferred-call [core node call edge nodes bindings types budget]
-  (let [limit (if (< budget 65536) budget 65536) args (get call :argument-node-ids)
-        base (+ 64 (if (vector? args) (count args) 0) (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :string-set-insertion-work-limit :work-count base}
+(defn sh08-ssin-inferred-call [core node call edge nodes bindings types]
+  (let [args (get call :argument-node-ids)]
       (if (if (vector? args) (if (= 2 (count args))
             (if (vector? (get node :children)) (if (= 3 (count (get node :children)))
               (let [children (get node :children)] (loop [remaining (conj (conj (conj (conj (conj (conj (conj args (get children 0)) (get children 1)) (get children 2)) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id))] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false)))) false) false) false) false)
-        (let [validation (sh08-ssin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
+        (let [validation (sh08-ssin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])]
           (if (= :accepted (get validation :status))
             (let [header (sh08-pl-source core node call edge nodes bindings types (get core :module) validation)
                   descriptor (if (map? header) (sh08-pl-finish header) nil)]
               (if (if (map? descriptor)
                     (if (= descriptor (get types (get call :operator-node-id)))
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
-                {:status :accepted :work-count work}
-                {:status :rejected :reason :string-set-insertion-source-mismatch :work-count work}))
-            (assoc validation :work-count work)))
-        {:status :rejected :reason :string-set-insertion-arity-mismatch :work-count base}))))
+                {:status :accepted}
+                {:status :rejected :reason :string-set-insertion-source-mismatch}))
+            validation))
+        {:status :rejected :reason :string-set-insertion-arity-mismatch})))
 
 (defn sh08-pl-inferred-call-valid? [core node call edge nodes bindings types]
   (let [args (get call :argument-node-ids)]
@@ -24327,8 +24286,8 @@
                   (if (= :accepted (get cold :status))
                     (let [indexed? (sh08-ix-candidate? record nodes census (get (get cold :inference) :type-table))
                           entries (if indexed?
-                                    (sh08-ix-entry-values census nodes (get (get cold :inference) :type-table) forms (- 65536 after-cold))
-                                    (sh08-is-entry-values census nodes (get (get cold :inference) :type-table) (- 65536 after-cold)))
+                                    (sh08-ix-entry-values census nodes (get (get cold :inference) :type-table) forms)
+                                    (sh08-is-entry-values census nodes (get (get cold :inference) :type-table)))
                           after-entries (+ after-cold (get entries :work-count 0))
                           declarations (get (get record :signature) :parameters)
                           declared? (loop [types (get entries :parameter-types) declarations declarations]
