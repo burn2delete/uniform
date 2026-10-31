@@ -27,3 +27,22 @@ review and exact clean integration preflight after successful CI. This early
 boundary document grants no acceptance. Complete resolution, current Reader
 migration, release, performance, self-hosting and seed retirement remain
 unclaimed.
+
+The nine public APIs are require-carrier!, digest-reference,
+resolve-declared-id!, resolve-record-binding-id!, resolve-analysis!,
+resolve-digest-requests!, raise-rejection!, run-request! and order-compatibility.
+Their exact arities and operation inputs are recorded in the namespace contract.
+The stage cold-loads 55 public APIs without Bootstrap. Direct source/test lint
+passes with zero errors or warnings. Existing Bootstrap wrappers retain their
+arities and explicit operation interposition. The ten added operation ports are
+bound before the existing late verifier snapshot; construction drift roots
+include the new stage and operation Vars. Existing diagnostic catalog input and
+all source/profile/effect/capability metadata stay unchanged.
+
+Outputs are materialized analysis, declared identities, the existing verified
+run record and exact C5 rejection diagnostics. Native carrier validation,
+plan execution, hashing and catalog access are explicit seed dependencies.
+The pending-artifact-id flag is only an intermediate digest-construction mode;
+it does not publish an artifact or supply proof authority. Every new API is
+marked admission:none. Focused tests, full regression, real paired artifact and
+rejection parity, contextual lint and independent review remain pending.

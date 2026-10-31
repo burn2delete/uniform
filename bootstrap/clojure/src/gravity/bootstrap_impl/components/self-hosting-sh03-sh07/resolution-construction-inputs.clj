@@ -151,6 +151,26 @@
          #'gravity.resolution/verify-contained*
          #'gravity.resolution/verify-current*
          #'gravity.resolution/verify
+         #'c5-resolution-fail!
+         #'p15-s23-sh02-sha256-id?
+         #'sh06-resolution-boundary-fail!
+         #'sh06-resolution-digest-reference
+         #'sh06-resolution-execute!
+         #'sh06-resolution-raise-rejection!
+         #'sh06-resolution-require-carrier!
+         #'sh06-resolution-resolve-analysis!
+         #'sh06-resolution-resolve-declared-id!
+         #'sh06-resolution-resolve-digest-requests!
+         #'sh06-resolution-resolve-record-binding-id!
+         #'gravity.resolution/digest-reference
+         #'gravity.resolution/order-compatibility
+         #'gravity.resolution/raise-rejection!
+         #'gravity.resolution/require-carrier!
+         #'gravity.resolution/resolve-analysis!
+         #'gravity.resolution/resolve-declared-id!
+         #'gravity.resolution/resolve-digest-requests!
+         #'gravity.resolution/resolve-record-binding-id!
+         #'gravity.resolution/run-request!
          #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
          #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*

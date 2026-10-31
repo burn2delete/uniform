@@ -6,14 +6,37 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {diagnostic-origin
+   {order-compatibility
+    {:arglists ([order]), :operation-inputs [], :admission :none},
+    run-request!
+    {:arglists ([source-path binding request operations]),
+     :operation-inputs
+     [:sh06-resolution-boundary-fail!
+      :sh06-resolution-execute!
+      :sh06-resolution-raise-rejection!
+      :sh06-resolution-require-carrier!
+      :sh06-resolution-resolve-analysis!
+      :sh06-resolution-resolve-digest-requests!],
+     :admission :none},
+    diagnostic-origin
     {:arglists
      ([source-path sh05-artifact request diagnostic operations]),
      :operation-inputs
      [:reader-canonical-hash :sh06-resolution-source-revision-id]},
+    resolve-digest-requests!
+    {:arglists ([source-path raw-analysis digest-requests operations]),
+     :operation-inputs
+     [:reader-canonical-hash
+      :sh06-resolution-boundary-fail!
+      :sh06-resolution-resolve-analysis!],
+     :admission :none},
     match-pattern-binding-paths
     {:arglists ([pattern path operations]),
      :operation-inputs [:sh06-match-pattern-binding-paths]},
+    resolve-record-binding-id!
+    {:arglists ([source-path record resolved-digests slot operations]),
+     :operation-inputs [:sh06-resolution-resolve-declared-id!],
+     :admission :none},
     definition-records
     {:arglists ([module sh05-artifact operations]),
      :operation-inputs
@@ -38,6 +61,20 @@
       :sh06-let-loop-binding-paths
       :sh06-resolution-semantic-span
       :sh06-unique-match-binding-paths]},
+    resolve-analysis!
+    {:arglists
+     ([source-path raw-analysis resolved-digests operations]
+      [source-path
+       raw-analysis
+       resolved-digests
+       allow-pending-artifact-id?
+       operations]),
+     :operation-inputs
+     [:sh06-resolution-digest-reference
+      :sh06-resolution-resolve-analysis!
+      :sh06-resolution-resolve-declared-id!
+      :sh06-resolution-resolve-record-binding-id!],
+     :admission :none},
     dependency-record
     {:arglists
      ([source-path module dependency overrides ordinal operations]),
@@ -86,6 +123,16 @@
     {:arglists ([analysis operations]),
      :operation-inputs
      [:reader-canonical-hash :sh06-resolution-order-compatibility]},
+    raise-rejection!
+    {:arglists ([source-path template operations]),
+     :operation-inputs
+     [:input
+      :c5-resolution-fail!
+      :p15-s23-sh02-sha256-id?
+      :reader-canonical-hash
+      :sh06-resolution-boundary-fail!
+      :source-span],
+     :admission :none},
     plan-identities
     {:arglists ([plan operations]),
      :operation-inputs
@@ -124,12 +171,20 @@
       :p15-s23-stage2-compiler-artifact-source-path
       :sh06-resolution-resolve-source-path
       :sha256-bytes-hex]},
+    digest-reference
+    {:arglists ([value]), :operation-inputs [], :admission :none},
     core-records
     {:arglists ([operations]),
      :operation-inputs [:input :sh06-resolution-core-record]},
     artifact-identity-input-with-chunks
     {:arglists ([artifact chunks operations]),
      :operation-inputs [:reader-canonical-hash]},
+    require-carrier!
+    {:arglists ([source-path carrier value operations]),
+     :operation-inputs
+     [:p15-s23-trusted-carrier-validation
+      :sh06-resolution-boundary-fail!],
+     :admission :none},
     unique-match-binding-paths
     {:arglists ([pattern path operations]),
      :operation-inputs [:sh06-match-pattern-binding-paths]},
@@ -155,6 +210,13 @@
      :operation-inputs
      [:sh06-resolution-artifact-identity-input-with-chunks
       :sh06-resolution-product-identity-chunks]},
+    resolve-declared-id!
+    {:arglists ([source-path value resolved-digests slot operations]),
+     :operation-inputs
+     [:p15-s23-sh02-sha256-id?
+      :sh06-resolution-boundary-fail!
+      :sh06-resolution-digest-reference],
+     :admission :none},
     product-identity-chunks
     {:arglists ([artifact operations]),
      :operation-inputs [:sh06-resolution-identity-chunks]},
@@ -222,11 +284,13 @@
     :input
     :p15-s23-c11-mir-digest
     :p15-s23-c6c10-canonical-digest
+    :p15-s23-sh02-sha256-id?
     :p15-s23-stage2-compiler-artifact-plan
     :p15-s23-stage2-compiler-artifact-semantic-input
     :p15-s23-stage2-compiler-artifact-source-path
     :p15-s23-stage2-runtime-execute-function
     :p15-s23-stage2-sh02-descriptor-envelope-verify!
+    :p15-s23-trusted-carrier-validation
     :parse-module
     :reader-canonical-hash
     :sh04-syntax-strip-host-metadata
@@ -254,9 +318,11 @@
     :sh06-resolution-definition-records
     :sh06-resolution-dependency-edges
     :sh06-resolution-dependency-record
+    :sh06-resolution-digest-reference
     :sh06-resolution-envelope-id
     :sh06-resolution-envelope-source-options
     :sh06-resolution-envelope-summary-with-chunks
+    :sh06-resolution-execute!
     :sh06-resolution-explicit-candidate-records
     :sh06-resolution-identity-chunks
     :sh06-resolution-import-binding-records
@@ -267,8 +333,14 @@
     :sh06-resolution-plan-identities
     :sh06-resolution-product-identity-chunks
     :sh06-resolution-product-projections
+    :sh06-resolution-raise-rejection!
     :sh06-resolution-read-current-source!
     :sh06-resolution-request
+    :sh06-resolution-require-carrier!
+    :sh06-resolution-resolve-analysis!
+    :sh06-resolution-resolve-declared-id!
+    :sh06-resolution-resolve-digest-requests!
+    :sh06-resolution-resolve-record-binding-id!
     :sh06-resolution-resolve-source-path
     :sh06-resolution-run-request!
     :sh06-resolution-semantic-span
@@ -346,14 +418,18 @@
     :resolution-boundary
     :verified-module-views
     :resolver-run
-    :candidate-or-published-artifact],
+    :candidate-or-published-artifact
+    :raw-resolution-analysis
+    :ordered-declared-digests
+    :resolution-template],
    :namespace gravity.resolution,
    :diagnostic-ownership
    {:stage
     [:source-plan-boundary
      :host-containment
      :generated-origin-recovery
-     :artifact-verification-failure],
+     :artifact-verification-failure
+     :exact-gravity-rejection],
     :catalog :existing-c5-catalog,
     :envelope-admission :existing-authenticated-envelope-owner,
     :resolution-semantics :gravity-source},
@@ -382,7 +458,10 @@
     :ordinary-module-request
     :private-candidate-products
     :generated-diagnostic-origin
-    :resolution-verification-report],
+    :resolution-verification-report
+    :verified-resolution-run
+    :resolved-declared-identities
+    :materialized-analysis],
    :clojure-seed-boundary? true,
    :contract-boundary
    :gravity-resolution-normalization-and-plan-runtime})
@@ -3234,6 +3313,453 @@
  [artifact context operations]
  (verify-contained* artifact false context operations))
 
+
+(defn
+ require-carrier!
+ [source-path carrier value operations]
+ (let
+  [p15-s23-trusted-carrier-validation
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :p15-s23-trusted-carrier-validation)
+   sh06-resolution-boundary-fail!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-boundary-fail!)
+   validation
+   (p15-s23-trusted-carrier-validation value :default-only)]
+  (when-not
+   (= :passed (:status validation))
+   (sh06-resolution-boundary-fail!
+    "C5-UNRESOLVED"
+    source-path
+    :untrusted-sh06-resolution-carrier
+    (select-keys validation [:reason :class])
+    {:carrier carrier}))
+  validation))
+
+(defn
+ digest-reference
+ [value]
+ (when
+  (and
+   (map? value)
+   (= #{:digest-ref} (set (keys value)))
+   (integer? (:digest-ref value))
+   (not (neg? (:digest-ref value))))
+  (:digest-ref value)))
+
+(defn
+ resolve-declared-id!
+ [source-path value resolved-digests slot operations]
+ (let
+  [p15-s23-sh02-sha256-id?
+   (.valAt ^clojure.lang.ILookup operations :p15-s23-sh02-sha256-id?)
+   sh06-resolution-boundary-fail!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-boundary-fail!)
+   sh06-resolution-digest-reference
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-digest-reference)
+   ordinal
+   (sh06-resolution-digest-reference value)
+   resolved
+   (when (some? ordinal) (get resolved-digests ordinal))]
+  (when-not
+   (and (some? ordinal) (p15-s23-sh02-sha256-id? resolved))
+   (sh06-resolution-boundary-fail!
+    "C5-UNRESOLVED"
+    source-path
+    slot
+    value
+    {:resolved-digest resolved, :digest-ordinal ordinal}))
+  resolved))
+
+(defn
+ resolve-record-binding-id!
+ [source-path record resolved-digests slot operations]
+ (let
+  [sh06-resolution-resolve-declared-id!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-resolve-declared-id!)]
+  (assoc
+   record
+   :binding-id
+   (sh06-resolution-resolve-declared-id!
+    source-path
+    (:binding-id record)
+    resolved-digests
+    slot))))
+
+(defn
+ resolve-analysis!
+ ([source-path raw-analysis resolved-digests operations]
+  (let
+   [sh06-resolution-resolve-analysis!
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh06-resolution-resolve-analysis!)]
+   (sh06-resolution-resolve-analysis!
+    source-path
+    raw-analysis
+    resolved-digests
+    false)))
+ ([source-path
+   raw-analysis
+   resolved-digests
+   allow-pending-artifact-id?
+   operations]
+  (let
+   [sh06-resolution-digest-reference
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh06-resolution-digest-reference)
+    sh06-resolution-resolve-declared-id!
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh06-resolution-resolve-declared-id!)
+    sh06-resolution-resolve-record-binding-id!
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh06-resolution-resolve-record-binding-id!)
+    bindings
+    (mapv
+     (fn*
+      [p1__152#]
+      (sh06-resolution-resolve-record-binding-id!
+       source-path
+       p1__152#
+       resolved-digests
+       :binding-table-binding-id))
+     (:binding-table raw-analysis))
+    resolutions
+    (mapv
+     (fn*
+      [p1__153#]
+      (sh06-resolution-resolve-record-binding-id!
+       source-path
+       p1__153#
+       resolved-digests
+       :resolution-table-binding-id))
+     (:resolution-table raw-analysis))
+    binding-identities
+    (mapv
+     (fn*
+      [p1__154#]
+      (sh06-resolution-resolve-declared-id!
+       source-path
+       p1__154#
+       resolved-digests
+       :identity-preimage-binding-identity))
+     (get-in raw-analysis [:identity-preimage :binding-identities]))
+    invalidation-binding-ids
+    (mapv
+     (fn*
+      [p1__155#]
+      (sh06-resolution-resolve-declared-id!
+       source-path
+       p1__155#
+       resolved-digests
+       :incremental-invalidation-binding-id))
+     (get-in
+      raw-analysis
+      [:incremental-invalidation-inputs :binding-ids]))
+    identity-preimage
+    (->
+     (:identity-preimage raw-analysis)
+     (assoc :binding-identities binding-identities)
+     (assoc
+      :resolutions
+      (mapv
+       (fn* [p1__156#] (dissoc p1__156# :source-span))
+       resolutions)))
+    artifact-ordinal
+    (sh06-resolution-digest-reference (:artifact-id raw-analysis))
+    artifact-id
+    (if
+     (and
+      allow-pending-artifact-id?
+      (= artifact-ordinal (count resolved-digests)))
+     (:artifact-id raw-analysis)
+     (sh06-resolution-resolve-declared-id!
+      source-path
+      (:artifact-id raw-analysis)
+      resolved-digests
+      :namespace-analysis-artifact-id))]
+   (->
+    raw-analysis
+    (assoc :artifact-id artifact-id)
+    (assoc :binding-table bindings)
+    (assoc :resolution-table resolutions)
+    (assoc :identity-preimage identity-preimage)
+    (assoc-in
+     [:incremental-invalidation-inputs :binding-ids]
+     invalidation-binding-ids)))))
+
+(defn
+ resolve-digest-requests!
+ [source-path raw-analysis digest-requests operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-boundary-fail!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-boundary-fail!)
+   sh06-resolution-resolve-analysis!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-resolve-analysis!)]
+  (when-not
+   (and (vector? digest-requests) (seq digest-requests))
+   (sh06-resolution-boundary-fail!
+    "C5-UNRESOLVED"
+    source-path
+    :resolution-digest-requests
+    digest-requests
+    {}))
+  (let
+   [binding-count (count (:binding-table raw-analysis))]
+   (when-not
+    (= (inc binding-count) (count digest-requests))
+    (sh06-resolution-boundary-fail!
+     "C5-UNRESOLVED"
+     source-path
+     :complete-resolution-digest-requests
+     digest-requests
+     {:binding-count binding-count}))
+   (loop
+    [remaining digest-requests resolved []]
+    (if
+     (empty? remaining)
+     resolved
+     (let
+      [request
+       (first remaining)
+       ordinal
+       (:ordinal request)
+       purpose
+       (:purpose request)
+       preimage
+       (if
+        (= purpose :sh06-namespace-analysis-id)
+        (:identity-preimage
+         (sh06-resolution-resolve-analysis!
+          source-path
+          raw-analysis
+          resolved
+          true))
+        (:preimage request))]
+      (when-not
+       (= ordinal (count resolved))
+       (sh06-resolution-boundary-fail!
+        "C5-UNRESOLVED"
+        source-path
+        :ordered-resolution-digest-requests
+        request
+        {:resolved-count (count resolved)}))
+      (recur
+       (rest remaining)
+       (conj
+        resolved
+        (reader-canonical-hash
+         {:domain :gravity/sh06-declared-digest-v1,
+          :purpose purpose,
+          :preimage preimage})))))))))
+
+(defn
+ raise-rejection!
+ [source-path template operations]
+ (let
+  [input
+   (.valAt ^clojure.lang.ILookup operations :input)
+   c5-resolution-fail!
+   (.valAt ^clojure.lang.ILookup operations :c5-resolution-fail!)
+   p15-s23-sh02-sha256-id?
+   (.valAt ^clojure.lang.ILookup operations :p15-s23-sh02-sha256-id?)
+   reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-boundary-fail!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-boundary-fail!)
+   source-span
+   (.valAt ^clojure.lang.ILookup operations :source-span)
+   diagnostic
+   (first (:diagnostics template))
+   requests
+   (:digest-requests template)
+   request
+   (first requests)
+   diagnostic-id
+   (reader-canonical-hash
+    {:domain :gravity/sh06-declared-digest-v1,
+     :purpose (:purpose request),
+     :preimage (:preimage request)})
+   rule
+   (:rule diagnostic)]
+  (when-not
+   (and
+    (= :rejected (:status template))
+    (= 1 (count (:diagnostics template)))
+    (= 1 (count requests))
+    (contains? (set (input :c5-resolution-diagnostic-ids)) rule)
+    (= 0 (:ordinal request))
+    (= :sh06-resolution-diagnostic-id (:purpose request))
+    (= {:digest-ref 0} (:diagnostic-id-request diagnostic))
+    (p15-s23-sh02-sha256-id? diagnostic-id))
+   (sh06-resolution-boundary-fail!
+    "C5-UNRESOLVED"
+    source-path
+    :exact-gravity-resolution-rejection
+    template
+    {}))
+  (c5-resolution-fail!
+   rule
+   source-path
+   (assoc
+    diagnostic
+    :source-span
+    (assoc
+     (or (:source-span diagnostic) (source-span source-path 0))
+     :source
+     source-path))
+   {:severity :error,
+    :profile (:profile diagnostic),
+    :diagnostic-id diagnostic-id,
+    :facts (:facts diagnostic),
+    :remediation (:remediation diagnostic)})))
+
+(defn
+ run-request!
+ [source-path binding request operations]
+ (let
+  [sh06-resolution-boundary-fail!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-boundary-fail!)
+   sh06-resolution-execute!
+   (.valAt ^clojure.lang.ILookup operations :sh06-resolution-execute!)
+   sh06-resolution-raise-rejection!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-raise-rejection!)
+   sh06-resolution-require-carrier!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-require-carrier!)
+   sh06-resolution-resolve-analysis!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-resolve-analysis!)
+   sh06-resolution-resolve-digest-requests!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-resolve-digest-requests!)]
+  (sh06-resolution-require-carrier!
+   source-path
+   :authenticated-sh06-resolution-request
+   request)
+  (let
+   [template
+    (sh06-resolution-execute!
+     source-path
+     binding
+     'sh06-build-resolution-template
+     [request])]
+   (sh06-resolution-require-carrier!
+    source-path
+    :gravity-resolution-template
+    template)
+   (case
+    (:status template)
+    :rejected
+    (sh06-resolution-raise-rejection! source-path template)
+    :accepted
+    (let
+     [raw-analysis
+      (:namespace-analysis-template template)
+      digest-requests
+      (:digest-requests template)
+      template-verification
+      (sh06-resolution-execute!
+       source-path
+       binding
+       'sh06-verify-resolution-template
+       [raw-analysis digest-requests])
+      _
+      (when-not
+       (= :passed (:status template-verification))
+       (sh06-resolution-boundary-fail!
+        "C5-UNRESOLVED"
+        source-path
+        :fresh-gravity-resolution-template-verification
+        template-verification
+        {}))
+      resolved-digests
+      (sh06-resolution-resolve-digest-requests!
+       source-path
+       raw-analysis
+       digest-requests)
+      resolved-analysis
+      (sh06-resolution-resolve-analysis!
+       source-path
+       raw-analysis
+       resolved-digests)
+      resolved-verification
+      (sh06-resolution-execute!
+       source-path
+       binding
+       'sh06-verify-resolution-resolved
+       [resolved-analysis digest-requests resolved-digests])]
+     (sh06-resolution-require-carrier!
+      source-path
+      :resolved-gravity-resolution-analysis
+      resolved-analysis)
+     (when-not
+      (= :passed (:status resolved-verification))
+      (sh06-resolution-boundary-fail!
+       "C5-UNRESOLVED"
+       source-path
+       :fresh-gravity-resolution-resolved-verification
+       resolved-verification
+       {}))
+     {:raw-template-result template,
+      :raw-analysis raw-analysis,
+      :resolved-analysis resolved-analysis,
+      :digest-requests digest-requests,
+      :resolved-digests resolved-digests,
+      :template-verification template-verification,
+      :resolved-verification resolved-verification})
+    (sh06-resolution-boundary-fail!
+     "C5-UNRESOLVED"
+     source-path
+     :gravity-resolution-result-status
+     template
+     {})))))
+
+(defn
+ order-compatibility
+ [order]
+ (case
+  order
+  :local-lexical-binding
+  :local
+  :current-namespace-binding
+  :namespace
+  :alias-qualified-required-binding
+  :alias-qualified
+  :fully-qualified-namespace-binding
+  :fully-qualified
+  :profile-allowed-core-binding
+  :core-auto-import
+  :explicit-foreign-import-binding
+  :foreign
+  order))
+
 (doseq
  [operation
   [#'analysis-inputs
@@ -3255,6 +3781,7 @@
    #'dependency-edges
    #'dependency-record
    #'diagnostic-origin
+   #'digest-reference
    #'envelope-descriptor
    #'envelope-id
    #'envelope-summary
@@ -3268,23 +3795,31 @@
    #'let-loop-binding-paths
    #'match-pattern-binding-paths
    #'module-request
+   #'order-compatibility
    #'package-record
    #'plan-identities
    #'product-identity-chunks
    #'product-projections
+   #'raise-rejection!
    #'read-current-source!
    #'read-pinned-source!
    #'request-overrides
+   #'require-carrier!
+   #'resolve-analysis!
+   #'resolve-declared-id!
+   #'resolve-digest-requests!
+   #'resolve-record-binding-id!
    #'resolve-source-path
+   #'run-request!
    #'semantic-span
    #'source-key
    #'source-revision-id
    #'unique-match-binding-paths
    #'verification-failure
    #'verify
-   #'verify-current*
    #'verify*
-   #'verify-contained*]]
+   #'verify-contained*
+   #'verify-current*]]
  (alter-meta!
   operation
   assoc
