@@ -36,3 +36,14 @@ Lexical traversal, dependency/import normalization, request assembly, artifact
 assembly, verification and the legacy C5 engine remain outside this increment.
 It grants no complete resolution, authoritative migration, self-hosting,
 seed-retirement, release or performance claim.
+
+The namespace cold-loads twenty public APIs without Bootstrap. The language
+boundary passed 6 tests / 11 assertions; the three new normalization tests
+passed 3 / 62. Direct stage lint reports zero errors or warnings. Pure
+normalizers retain pure arities; only algorithms with seed dependencies take
+the explicit operation map. The contract metadata records that distinction.
+
+An initial local regression process ended with signal 143 and no test result.
+It is not passing evidence. The complete final regression selection, full
+module-product comparison, independent acceptance and exact-head CI remain
+pending.
