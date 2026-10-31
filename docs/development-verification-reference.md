@@ -8382,6 +8382,24 @@ restores the interrupted flag with
 `SH01-BROKER-INTERRUPTED`; locks carry no poisoned state, so every acquisition
 revalidates the fixed policy and direct-child shapes before admission.
 
+Within the explicit resource-owned four/five-argument `with-lease` path,
+the normal runner's `process-result` retains its actual
+owned-process token until its root, tracked handles and both captures report
+terminal observations. Complete or EOF-drained truncated captures permit
+release, including after a nonzero exit. A live or unknown root, nonterminal
+tracked handles, capture timeout/error/forced close, or a thrown process result
+quarantines the lease in the supervisor JVM instead of releasing its slots.
+The broker retains strong references to the lease, process token and result
+or original error, and reports `:quarantined` disposition to the observer.
+No automatic retry, termination or quarantine
+clearance is performed. Thunks that do not use this process API retain their
+existing release behavior; direct `acquire!`/`release!` callers are unchanged.
+Legacy three-argument `with-lease` still releases in `finally`; the ordinary
+resource-owned runner uses the observed four-argument path.
+This is failure custody while that JVM lives, not startup supervision,
+cross-session containment, complete descendant discovery or genuine test
+acceptance. It does not change the process-death limitation below.
+
 The broker does not launch or execute tests, persist test results, or run a
 daemon. The incremental runner holds its lease only across one child process
 launch and completion; direct callers hold it around their thunk. A parent
