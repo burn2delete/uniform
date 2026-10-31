@@ -164,6 +164,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj", "namespace": "gravity.syntax.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "resolution-plan-runtime",
+      "kind": "production-stage-helper",
+      "owner": "sh-resolution",
+      "source": {"path": "bootstrap/clojure/src/gravity/resolution.clj", "namespace": "gravity.resolution"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj", "namespace": "gravity.bootstrap", "owner": "sh-resolution"},
+      "test": {"path": "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj", "namespace": "gravity.resolution.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "macro-plan-runtime",
       "kind": "production-stage-helper",
       "owner": "sh-macro",

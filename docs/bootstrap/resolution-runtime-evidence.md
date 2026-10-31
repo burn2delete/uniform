@@ -35,5 +35,27 @@ The request builder, artifact assembly, authenticated parent transport,
 verification, legacy hosted C5 engine and remaining resolution helpers remain
 outside this increment. Do not infer complete resolution, self-hosting,
 seed retirement, performance, authoritative migration or release support from
-this extraction. The draft PR will record actual checks and immutable evidence
-as implementation progresses.
+this extraction.
+
+The current-cohort-unmetered fixtures emitted accepted artifacts with 265
+bindings and three resolutions in both .gravity and .qst. Their identity is
+sha256:49d37a2f0d79fb8902e3be9928cab495e734997f5e3e15bfee186ae5b9ed8bc1.
+Complete before/after artifact values compare equal for each spelling.
+
+The receipt guard tracks stage, factory, operation, static configuration and
+cache Var roots without executing replaceable stage code. The legitimate
+dynamic operation binding keeps its original scope; its raw Var root is
+tracked, and its complete value is an epoch input so actual plan changes cannot
+hide behind unchanged advertised hashes. Cheap receipt qualification tests
+isolate the contained verifier and contextual admission. They do not establish
+semantic or source authority. Separate real source execution and verification
+supply that evidence. Interrupted lifetime tests isolate the Core prelude and
+exercise the production cleanup path without Core admission.
+
+The older bootstrap-compatibility.c5-test selection stopped at its frozen
+Reader source guard: C2-HASH, expected 231576 bytes and observed 231666. That
+nonpass remains recorded; no Reader pin or guard was changed. Current-source
+SH-06 tests use the existing explicit development invocation. The initial
+extraction also exposed an incorrectly auto-resolved legacy context keyword;
+its original gravity.bootstrap identity is restored before the passing paired
+artifact comparison. Final exact checks and review remain pending in the PR.
