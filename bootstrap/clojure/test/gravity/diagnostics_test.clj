@@ -73,7 +73,7 @@
     (is (empty? (ns-aliases 'gravity.diagnostics)))
     (is (= '([id message data]) (:arglists (meta #'diagnostics/diagnostic))))
     (is (= '([id message data]) (:arglists (meta #'diagnostics/fail!))))
-    (is (= #{'diagnostic 'fail!}
+    (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record}
            (set (keys (ns-publics 'gravity.diagnostics))))))
   (testing "the namespace contract states its API and ownership boundary"
     (let [contract-var
@@ -81,16 +81,17 @@
           contract (var-get contract-var)]
       (is (true? (:private (meta contract-var))))
       (is (= 'gravity.diagnostics (:namespace contract)))
-      (is (= :stage0-base-exception-info-carrier
+      (is (= :stage0-diagnostic-carriers-and-record-data
              (:contract-boundary contract)))
-      (is (= #{'diagnostic 'fail!} (set (keys (:public-api contract)))))
-      (is (= [:rule-id :human-message :structured-data]
+      (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record} (set (keys (:public-api contract)))))
+      (is (= [:rule-id :human-message :structured-data :explicit-span-and-identity-operations
+              :native-seed-diagnostic-fields]
              (:artifact-inputs contract)))
-      (is (= [:stage0-exception-info-carrier]
+      (is (= [:stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id]
              (:artifact-outputs contract)))
       (is (= ['clojure.core]
              (get-in contract [:dependency-direction :requires])))
-      (is (= ['gravity.bootstrap]
+      (is (= ['gravity.bootstrap 'gravity.c15-diagnostics 'gravity.cli 'gravity.release]
              (get-in contract [:dependency-direction :forbids])))
       (is (some #{:c15-schema}
                 (get-in contract [:diagnostic-ownership :does-not-own])))
