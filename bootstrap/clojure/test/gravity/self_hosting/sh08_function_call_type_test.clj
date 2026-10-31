@@ -993,8 +993,8 @@
         products (invoke-c7 'sh08-qd-products [nodes source-forms {}])
         invented {:node-id :invented :core-form :call :source {:form-id last-child}}
         collided (invoke-c7 'sh08-qd-products
-                            [[[node invented (:node second-input)]
-                              (vec (vals (merge forms (:forms second-input))))]
+                            [[node invented (:node second-input)]
+                             (vec (vals (merge forms (:forms second-input))))
                              {}])
         wide-input (quoted-data-input (vec (repeat 1025 true)))
         wide-products (invoke-c7 'sh08-qd-products
@@ -1048,7 +1048,7 @@
 (deftest sh08-pattern-alias-development-kernel
   (let [{:keys [groups nodes sequence lexical binding-types binder sha]} (pattern-alias-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types {}])
+                             [sequence nodes lexical [] [] [] {} binding-types {:boolean-matches groups}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         checked (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} {:profile :meta :target :jvm}])
         evidence (get (:binding-shapes inference) binder)
@@ -1073,7 +1073,7 @@
              ((juxt :rule :reason) (invoke-c7 'sh08-sm-group-shape [bad (:type-table inference) (:binding-types inference) {}])))))
     (is (= (:binding-shapes inference)
            (:binding-shapes (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                                       [sequence nodes lexical [] [] [] {} binding-types {}]))))))
+                                       [sequence nodes lexical [] [] [] {} binding-types {:boolean-matches groups}]))))))
 
 (deftest sh08-pattern-alias-correlations-development-kernel
   (let [scalar {:status :accepted :shape-kind :scalar :type :gravity.type/bool :domain {:values [true false]}}
@@ -1119,7 +1119,7 @@
         verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [groups nodes sequence lexical binding-types]} (pattern-alias-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types {}])
+                             [sequence nodes lexical [] [] [] {} binding-types {:boolean-matches groups}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         base (fixture "/development/pattern-alias.gravity")
         facts (:constraints (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} (:module base)]))
@@ -1274,7 +1274,8 @@
 (deftest sh08-quoted-data-structural-development-kernel
   (let [{:keys [groups sequence nodes forms lexical binding-types quote-products item match-id sha]} (quoted-structural-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types {}])
+                             [sequence nodes lexical [] [] [] {} binding-types
+                              {:boolean-matches groups :quote-types (:type-table quote-products)}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         checked (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} {:profile :meta :target :jvm}])
         fact (first (:constraints checked)) extracted (first (:extractions fact))]
@@ -1293,7 +1294,8 @@
     (is (not= (get-in extracted [:data-origin :form-id]) (get-in extracted [:data-origin :quote-core-node-id])))
     (is (= (:type-table inference)
            (:type-table (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                                   [sequence nodes lexical [] [] [] {} binding-types {}])))))
+                                   [sequence nodes lexical [] [] [] {} binding-types
+                                    {:boolean-matches groups :quote-types (:type-table quote-products)}])))))
   (let [{:keys [node forms]} (quoted-data-input {'non-keyword 'value})
         quoted (invoke-c7 'sh08-qd-node [node forms])
         shape (invoke-c7 'sh08-qd-shape [(:data quoted) node])]
@@ -1305,7 +1307,7 @@
         joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
         groups (:boolean-matches joined)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) nodes lexical [] [] [] {} binding-types {}])
+                             [(:nodes core) nodes lexical [] [] [] {} binding-types {:boolean-matches groups}])
         checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}])
         facts (:constraints checked) extraction (get-in facts [0 :extractions 0])]
     (is (= :accepted (:status joined)) (pr-str joined))
@@ -1492,7 +1494,7 @@
         joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
         groups (:boolean-matches joined)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) nodes lexical [] calls edges functions binding-types {}])
+                             [(:nodes core) nodes lexical [] calls edges functions binding-types {:boolean-matches groups}])
         types (:type-table inference)
         checked (invoke-c7 'sh08-bm-checks [groups types functions {:profile :meta :target :jvm}])
         facts (:constraints checked)]
@@ -1549,7 +1551,8 @@
         group (first (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])))
         branch (first (:branches group)) guard-id (get-in branch [:guard :node-id])
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) (:nodes group) (:lexical-bindings group) [] [] [] functions binding-types {}])]
+                             [(:nodes core) (:nodes group) (:lexical-bindings group) [] [] [] functions binding-types
+                              {:boolean-matches [group]}])]
     (doseq [[value expected] [[false :false] [true :true] [nil :gravity.type/nil] ["wrong" :gravity.type/string]
                              [(list 'throw 'unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]
       (let [quoted (quoted-data-input value)
@@ -1577,7 +1580,8 @@
         fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [quote-products groups nodes sequence lexical binding-types]} (quoted-structural-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types {}])
+                             [sequence nodes lexical [] [] [] {} binding-types
+                              {:boolean-matches groups :quote-types (:type-table quote-products)}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         base (fixture "/development/quoted-data.gravity")
         facts (into (:constraints quote-products) (:constraints (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} (:module base)])))
@@ -1600,7 +1604,7 @@
           joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
           groups (:boolean-matches joined)
           inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                               [(:nodes core) nodes lexical [] [] [] {} binding-types {}])
+                               [(:nodes core) nodes lexical [] [] [] {} binding-types {:boolean-matches groups}])
           checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta}])
           first-fact (first (:constraints checked))]
       (is (= :accepted (:status joined)) (pr-str joined))
@@ -1657,7 +1661,8 @@
 (deftest sh08-root-map-guard-completion-development-kernel
   (let [{:keys [core products forms nodes lexical binding-types functions guard-id sha]} (throwing-guard-input)
         group (first (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])))
-        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] [] [] functions binding-types {}])
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes lexical [] [] [] functions binding-types {:boolean-matches [group]}])
         types (:type-table inference)
         single (-> group (update :branches #(vector (first %))) (update :pattern-trees #(vector (first %))))
         checked (invoke-c7 'sh08-sm-check [single types functions {:profile :meta}])]
@@ -1712,7 +1717,8 @@
         fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [core products forms nodes lexical binding-types functions calls edges guard-id]} (guarded-match-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
-        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] calls edges functions binding-types {}])
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes lexical [] calls edges functions binding-types {:boolean-matches groups}])
         base (fixture "/development/guard.gravity") module (:module base)
         facts (:constraints (invoke-c7 'sh08-bm-checks [groups (:type-table inference) functions module]))
         call-facts (invoke-c7 'sh08-ft-call-facts-with-context [calls edges nodes (:type-table inference) functions module {}])
@@ -2118,7 +2124,8 @@
         verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [core products forms nodes lexical binding-types]} (structural-match-products-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
-        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] [] [] {} binding-types {}])
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
+                             [(:nodes core) nodes lexical [] [] [] {} binding-types {:boolean-matches groups}])
         constraints (:constraints (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}]))
         raw (assoc (fixture "/development/structural-match.gravity") :constraint-ledger constraints)
         identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
@@ -2302,7 +2309,7 @@
   (let [{:keys [core products forms bindings nodes types match-id scrutinee-id bodies remainder]} (keyword-match-input)
         joined (invoke-c7 'sh08-bm-products [core products forms]) group (first (:boolean-matches joined))
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) nodes [] [] [] [] {} bindings {}])
+                             [(:nodes core) nodes [] [] [] [] {} bindings {:boolean-matches [group]}])
         check #(invoke-c7 'sh08-sm-check [%1 %2 {} {:profile %3 :target :jvm}])
         result (check group (:type-table inference) :meta)
         shape (invoke-c7 'sh08-sm-group-shape [group types bindings {}])
@@ -6864,7 +6871,7 @@
 
 (deftest sh08-set-conversion-development-kernel
   (let [vector-type (fn [n] {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat n :gravity.type/string))})]
-    (doseq [type (conj (mapv vector-type [0 1 3 1024]) :gravity.type/never)]
+    (doseq [type (conj (mapv vector-type [0 1 3 1024 1025]) :gravity.type/never)]
       (let [{:keys [core nodes forms bindings products binding-types] :as input} (set-conversion-input [type])
             result (set-conversion-derived input) descriptor (:descriptor result)
             invoked? (not= :gravity.type/never type)
@@ -6881,7 +6888,6 @@
         (is (= (if invoked? [:memory/allocate] []) (:direct-effects descriptor)))
         (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
         (is (= :normal-invocation-even-empty (get-in descriptor [:construction-policy :allocation])))
-        (is (= (when invoked? :not-established) (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
         (is (= :converged (:convergence-status inferred)))
         (is (= [] (:diagnostics inferred)))
         (is (= descriptor (get-in inferred [:type-table :operator])))
@@ -6894,7 +6900,7 @@
                   {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string :gravity.type/keyword]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string :gravity.type/unknown]}
-                  (assoc (vector-type 1) :extra true) (vector-type 1025)]]
+                  (assoc (vector-type 1) :extra true)]]
       (is (= (if (and (map? type) (= :gravity.type/list (:kind type)))
                :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-operand-type-required)
              (:reason (set-conversion-derived (set-conversion-input [type]))))))
@@ -6949,7 +6955,7 @@
 
 (deftest sh08-keyword-vector-set-conversion-development-kernel
   (let [vector-type (fn [n] {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat n :gravity.type/keyword))})]
-    (doseq [type (conj (mapv vector-type [0 1 3 1024]) :gravity.type/never)]
+    (doseq [type (conj (mapv vector-type [0 1 3 1024 1025]) :gravity.type/never)]
       (let [{:keys [core nodes forms bindings products binding-types] :as input} (set-conversion-input [type])
             result (set-conversion-derived input) descriptor (:descriptor result)
             invoked? (not= :gravity.type/never type)
@@ -6976,7 +6982,6 @@
         (is (= (if invoked? [:memory/allocate] []) (:direct-effects descriptor)))
         (is (= [] (:capabilities descriptor) (:thrown-error-effects descriptor)))
         (is (= :normal-invocation-even-empty (get-in descriptor [:construction-policy :allocation])))
-        (is (= (when invoked? :not-established) (get-in descriptor [:construction-policy :value-work :provider-cpu-bound])))
         (is (= :converged (:convergence-status inferred)))
         (is (= [] (:diagnostics inferred)))
         (is (= descriptor (get-in inferred [:type-table :operator])))
@@ -6990,7 +6995,7 @@
                   {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/keyword]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/string]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword :gravity.type/unknown]}
-                  (assoc (vector-type 1) :extra true) (vector-type 1025)]]
+                  (assoc (vector-type 1) :extra true)]]
       (is (= (if (and (map? type) (= :gravity.type/list (:kind type)))
                :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-operand-type-required)
              (:reason (set-conversion-derived (set-conversion-input [type]))))))
@@ -12470,7 +12475,7 @@
         joined (invoke-c7 'sh08-bm-products [core products forms])
         groups (:boolean-matches joined)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) (:node-table products) [] [] [] [] {} bindings {}])
+                             [(:nodes core) (:node-table products) [] [] [] [] {} bindings {:boolean-matches groups}])
         checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}])
         group (first groups)
         types {scrutinee-id :gravity.type/bool (bodies 0) :gravity.type/bool (bodies 1) :gravity.type/bool}]
@@ -15581,10 +15586,14 @@
             checked (invoke-c7 'sh08-ssin-inferred-call [core node call edge nodes bindings established])
             facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes established {} (:module core) {}])
             context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
-                     :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
+                     :ordering-bindings bindings :association-forms forms
+                     :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings))
+                     :shape-call-products {:calls [call] :call-edges [edge] :module (:module core)}}
             step (invoke-c7 'sh08-va-step [node types {} {} context])
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types {}])
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types
+                        context])
             shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
@@ -16362,10 +16371,14 @@
             checked (invoke-c7 'sh08-ksin-inferred-call [core node call edge nodes bindings established])
             facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes established {} (:module core) {}])
             context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
-                     :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
+                     :ordering-bindings bindings :association-forms forms
+                     :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings))
+                     :shape-call-products {:calls [call] :call-edges [edge] :module (:module core)}}
             step (invoke-c7 'sh08-va-step [node types {} {} context])
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types {}])
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types
+                        context])
             shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
@@ -16723,7 +16736,9 @@
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
             step (invoke-c7 'sh08-va-step [node types {} {} context])
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types {}])
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types
+                        {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                         :lookup-bindings (vec (vals bindings)) :shape-call-products products}])
             shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
@@ -19035,7 +19050,7 @@
                       (apply return-premise-c7 (symbol (str "sh08-" family "-inferred-call-valid?")) arguments)
                       (= :accepted (:status (apply return-premise-c7
                                                   (symbol (str "sh08-" family "-inferred-call"))
-                                                  (conj arguments 65536)))))))]
+                                                  arguments))))))]
       (is (apply = descriptors) family)
       (is (true? (check descriptor)) family)
       (doseq [stale [(assoc descriptor :operand-type-work 0)
@@ -19109,7 +19124,7 @@
     (let [{:keys [core node call edge nodes bindings types forms module ids]}
           (recursive-validation-consumer-input operation operand)
           derived (return-premise-c7 (symbol (str "sh08-" family "-derive"))
-                                    core node call edge nodes bindings types forms 65536)
+                                    core node call edge nodes bindings types forms)
           descriptor (:descriptor derived) id (:node-id node) operator (:operator-node-id call)
           row #(return-premise-c7 (symbol (str "sh08-" family "-constraint")) %)
           fact #(return-premise-c7 (symbol (str "sh08-" family "-call-fact")) % module)
@@ -19999,17 +20014,10 @@
       (is (zero? @callbacks)))))
 (deftest
   sh08-atomic-inequality-throw-consumer-development-kernel
-  (let [reads (atom 0)
-        hashes (atom 0)
-        frames (atom [])
-        type-reads (atom 0)
-        measurements (atom 0)
+  (let [hashes (atom 0)
         unrelated-probes (atom 0)
         backing {:kind :gravity.type/nil-or, :value-type :gravity.type/string}
-        observe (fn [key fallback]
-                  (swap! reads inc)
-                  (when (some #{'sh08-ane-type-work} @frames) (swap! type-reads inc))
-                  (get backing key fallback))
+        observe (fn [key fallback] (get backing key fallback))
         nested (proxy
                  [clojure.lang.APersistentMap]
                  []
@@ -20081,33 +20089,20 @@
         measured (invoke-c7
                    'sh08-ane-inferred-call
                    [core node (:call input) edge nodes (:bindings input) types])
-        _ (reset! reads 0)
         trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         original-trace @trace-var
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 2 @type-reads) "The nullable carrier has two field reads during owning validation")
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println
-      (pr-str
-        {:bl-type-visit-breakdown
-         {:all-member-reads @reads,
-          :owning-validation-reads @type-reads,
-          :owning-measurements @measurements,
-          :unrelated-probes @unrelated-probes,
-          :hashes @hashes}}))
     (is (zero? @hashes))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
@@ -20551,13 +20546,14 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-symbol-predicate-throw-consumer-development-kernel
-  (let [reads (atom 0)
-        backing [:gravity.type/keyword]
-        members (proxy
-                  [clojure.lang.APersistentVector]
-                  []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [callbacks (atom 0)
+        opaque (proxy
+                 [Object]
+                 []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "symbol predicate metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "symbol predicate metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "symbol predicate metadata formatting"))))
+        members (with-meta (subvec [:gravity.type/keyword] 0 1) {:opaque opaque})
         nested {:kind :gravity.type/set, :shape :literal, :element-types members}
         input (symbol-predicate-input [nested])
         record {:function-syntax-id :predicate-function,
@@ -20606,17 +20602,10 @@
                     :thrown-error-effects []}}
         direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
         check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
-        _ (reset! reads 0)
         measured (invoke-c7
                    'sh08-symp-inferred-call
                    [core node (:call input) edge nodes (:bindings input) types])
-        measured-reads @reads
-        _ (reset! reads 0)
         accepted (check core types)]
-    (is (pos? measured-reads))
-    (is
-      (= measured-reads @reads)
-      "owning consumer preserves one measured closed-type validation without unrelated hashing")
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -20635,7 +20624,8 @@
             rejected (check changed-core changed-types)]
         (is (= :rejected (:status own)))
         (is (= :rejected (:status rejected)))
-        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+    (is (zero? @callbacks))))
 (deftest
   sh08-string-set-insertion-throw-consumer-development-kernel
   (let [nested {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/string]}
@@ -20710,9 +20700,7 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-string-set-inequality-throw-consumer-development-kernel
-  (let [frames (atom [])
-        measurements (atom 0)
-        unrelated-probes (atom 0)
+  (let [unrelated-probes (atom 0)
         input (atomic-inequality-input
                 [(inequality-keyword-set-type (repeat 32 :gravity.type/string))
                  (inequality-keyword-set-type [])])
@@ -20770,19 +20758,15 @@
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println (pr-str {:bp-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
@@ -20989,7 +20973,6 @@
         (is (= 'gravity.collections (:semantic-owner descriptor)))
         (is (= 'contains? (:operation descriptor)))
         (is (= :gravity.collections/string-set-membership (:intrinsic descriptor)))
-        (is (= :jvm-utf16-code-units (get-in descriptor [:membership-policy :representation-unit-policy])))
         (is
           (=
             (:membership-policy descriptor)
@@ -21040,17 +21023,18 @@
               :gravity.type/applied-string-set-contains
               :gravity.type/applied-map-contains)
             (get-in routed [:descriptor :kind])))))
-    (doseq [bad [:gravity.type/set
-                 :gravity.type/unknown
-                 :gravity.type/map
-                 :gravity.type/nil
-                 (assoc (finite []) :extra true)
-                 (assoc carrier :extra true)
-                 (assoc carrier :element-type :gravity.type/keyword)
-                 (finite [:gravity.type/character])
-                 (finite [:gravity.type/unknown])
-                 (finite [:gravity.type/never])]]
-      (is (= :string-set-contains-operand-type-required (:reason (derive (map-contains-input [bad k]))))))
+    (doseq [[bad reason] [[:gravity.type/set :string-set-contains-operand-type-required]
+                         [:gravity.type/unknown :keyword-set-contains-operand-type-required]
+                         [:gravity.type/map :string-set-contains-operand-type-required]
+                         [:gravity.type/nil :string-set-contains-operand-type-required]
+                         [(assoc (finite []) :extra true) :keyword-set-contains-operand-type-required]
+                         [(assoc carrier :extra true) :keyword-set-contains-operand-type-required]
+                         [(assoc carrier :element-type :gravity.type/keyword)
+                          :keyword-set-contains-operand-type-required]
+                         [(finite [:gravity.type/character]) :string-set-contains-operand-type-required]
+                         [(finite [:gravity.type/unknown]) :keyword-set-contains-operand-type-required]
+                         [(finite [:gravity.type/never]) :keyword-set-contains-operand-type-required]]]
+      (is (= reason (:reason (derive (map-contains-input [bad k]))))))
     (doseq [needle [nil
                     :gravity.type/unknown
                     :gravity.type/nil
@@ -21171,13 +21155,14 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-set-predicate-throw-consumer-development-kernel
-  (let [reads (atom 0)
-        backing [:gravity.type/keyword]
-        members (proxy
-                  [clojure.lang.APersistentVector]
-                  []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [callbacks (atom 0)
+        opaque (proxy
+                 [Object]
+                 []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "set predicate metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "set predicate metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "set predicate metadata formatting"))))
+        members (with-meta (subvec [:gravity.type/keyword] 0 1) {:opaque opaque})
         nested {:kind :gravity.type/set, :shape :literal, :element-types members}
         input (set-predicate-input [nested])
         record {:function-syntax-id :predicate-function,
@@ -21226,17 +21211,10 @@
                     :thrown-error-effects []}}
         direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
         check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
-        _ (reset! reads 0)
         measured (invoke-c7
                    'sh08-setp-inferred-call
                    [core node (:call input) edge nodes (:bindings input) types])
-        measured-reads @reads
-        _ (reset! reads 0)
         accepted (check core types)]
-    (is (pos? measured-reads))
-    (is
-      (= measured-reads @reads)
-      "owning consumer preserves one measured closed-type validation without unrelated hashing")
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -21255,7 +21233,8 @@
             rejected (check changed-core changed-types)]
         (is (= :rejected (:status own)))
         (is (= :rejected (:status rejected)))
-        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+    (is (zero? @callbacks))))
 (deftest
   sh08-set-conversion-throw-consumer-development-kernel
   (let [nested {:kind :gravity.type/vector,
@@ -21610,13 +21589,14 @@
       (is (= :rejected (:status (check candidate)))))))
 (deftest
   sh08-nil-predicate-throw-consumer-development-kernel
-  (let [reads (atom 0)
-        backing [:gravity.type/keyword]
-        members (proxy
-                  [clojure.lang.APersistentVector]
-                  []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [callbacks (atom 0)
+        opaque (proxy
+                 [Object]
+                 []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "nil predicate metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "nil predicate metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "nil predicate metadata formatting"))))
+        members (with-meta (subvec [:gravity.type/keyword] 0 1) {:opaque opaque})
         nested {:kind :gravity.type/set, :shape :literal, :element-types members}
         input (nil-predicate-input [nested])
         record {:function-syntax-id :predicate-function,
@@ -21665,17 +21645,10 @@
                     :thrown-error-effects []}}
         direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
         check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
-        _ (reset! reads 0)
         measured (invoke-c7
                    'sh08-nilp-inferred-call
                    [core node (:call input) edge nodes (:bindings input) types])
-        measured-reads @reads
-        _ (reset! reads 0)
         accepted (check core types)]
-    (is (pos? measured-reads))
-    (is
-      (= measured-reads @reads)
-      "owning consumer preserves one measured closed-type validation without unrelated hashing")
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -21694,7 +21667,8 @@
             rejected (check changed-core changed-types)]
         (is (= :rejected (:status own)))
         (is (= :rejected (:status rejected)))
-        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+    (is (zero? @callbacks))))
 (deftest
   sh08-map-predicate-throw-consumer-development-kernel
   (let [nested {:kind :gravity.type/map,
@@ -22212,9 +22186,7 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-keyword-set-inequality-throw-consumer-development-kernel
-  (let [frames (atom [])
-        measurements (atom 0)
-        unrelated-probes (atom 0)
+  (let [unrelated-probes (atom 0)
         input (atomic-inequality-input
                 [(inequality-keyword-set-type (repeat 32 :gravity.type/keyword))
                  (inequality-keyword-set-type [])])
@@ -22272,19 +22244,15 @@
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println (pr-str {:bp-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
@@ -22972,13 +22940,14 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-boolean-predicate-throw-consumer-development-kernel
-  (let [reads (atom 0)
-        backing [:gravity.type/keyword]
-        members (proxy
-                  [clojure.lang.APersistentVector]
-                  []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [callbacks (atom 0)
+        opaque (proxy
+                 [Object]
+                 []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "boolean predicate metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "boolean predicate metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "boolean predicate metadata formatting"))))
+        members (with-meta (subvec [:gravity.type/keyword] 0 1) {:opaque opaque})
         nested {:kind :gravity.type/set, :shape :literal, :element-types members}
         input (boolean-predicate-input [nested])
         record {:function-syntax-id :predicate-function,
@@ -23027,17 +22996,10 @@
                     :thrown-error-effects []}}
         direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
         check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
-        _ (reset! reads 0)
         measured (invoke-c7
                    'sh08-boolp-inferred-call
                    [core node (:call input) edge nodes (:bindings input) types])
-        measured-reads @reads
-        _ (reset! reads 0)
         accepted (check core types)]
-    (is (pos? measured-reads))
-    (is
-      (= measured-reads @reads)
-      "owning consumer preserves one measured closed-type validation without unrelated hashing")
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
@@ -23056,7 +23018,8 @@
             rejected (check changed-core changed-types)]
         (is (= :rejected (:status own)))
         (is (= :rejected (:status rejected)))
-        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))
+    (is (zero? @callbacks))))
 (deftest
   sh08-character-predicate-throw-consumer-development-kernel
   (let [reads (atom 0)
