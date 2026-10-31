@@ -995,7 +995,7 @@
               :fresh-gravity-request-replay?]
              [:p15-s23-stage2-sh02-descriptor-envelope-verify! (fn [& _] (throw (ex-info "unit envelope refusal" {})))
               :fresh-sh02-envelope-verified?]]]
-      (let [report (verify artifact false (assoc ops key replacement))]
+      (let [report (with-redefs-fn {(get ops key) replacement} #(verify artifact false ops))]
         (is (= :failed (:status report)))
         (is (some #{expected} (:failed-checks report)))))))
 
