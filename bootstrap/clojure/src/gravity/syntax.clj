@@ -5,6 +5,7 @@
   retain their authority. Supplied operations are trusted seed composition,
   not user-provided proof of reader or syntax authenticity."
   (:require [clojure.string :as str]
+            [gravity.reader.pure-text :as reader-pure-text]
             [gravity.c3-reader-expansions :as c3-reader-expansions]
             [gravity.c3-syntax-verification :as verification]))
 
@@ -171,6 +172,7 @@
   {:arglists ([c2-artifact invocation operations]),
    :operation-inputs
    [:p15-s23-c6c10-canonical-digest
+    :p15-s23-trusted-carrier-validation
     :sh03-c3-precomputed-c2-verify!
     :sh03-reader-internal-product-authority
     :sh04-syntax-current-sh03-product-binding
@@ -543,6 +545,7 @@
  {:requires
   [clojure.core
    clojure.string
+   gravity.reader.pure-text
    gravity.c3-reader-expansions
    gravity.c3-syntax-verification],
   :forbids [gravity.bootstrap gravity.cli gravity.release]},
@@ -2375,6 +2378,7 @@
   invocation
   {:keys
    [p15-s23-c6c10-canonical-digest
+    p15-s23-trusted-carrier-validation
     sh03-c3-precomputed-c2-verify!
     sh03-reader-internal-product-authority
     sh04-syntax-current-sh03-product-binding
@@ -2382,8 +2386,16 @@
     sh04-syntax-reader-binding
     sh04-syntax-registered-literal-registry
     sh04-syntax-semantic-source-id]}]
+ (when (reader-pure-text/admission-required? c2-artifact)
+   (when-not (= :passed (:status (p15-s23-trusted-carrier-validation c2-artifact :default-only)))
+     (throw (ex-info "Reader admission requires native pure-text data"
+                     {:id "C2-HASH" :missing-fields [:native-pure-text-admission-input]}))))
+ (when (contains? c2-artifact :pure-extension-results)
+   (throw (ex-info "Unsealed pure Reader results require their owning verification path"
+                   {:id "C2-HASH"
+                    :missing-fields [:authenticated-pure-extension-results]})))
  (when
-  invocation
+  (or invocation (reader-pure-text/admission-required? c2-artifact))
   (sh03-c3-precomputed-c2-verify!
    sh03-reader-internal-product-authority
    (get-in c2-artifact [:source-unit-record :path])

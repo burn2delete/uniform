@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
+            [gravity.reader.identity-expectations :as expected]
             [gravity.resolution :as resolution]))
 
 (defn- seed-var [name]
@@ -585,8 +586,9 @@
         accepted (compile-fixture "lexical-normalization")
         rejected (caught #(compile-fixture "lexical-leak"))]
     (is (= :accepted (:status accepted)))
-    (is (= "sha256:0fdf519ad7657aa8b291b7aa46df085324bb1fb6bff3cb290b5ecbaf5c8152f2"
-           (:artifact-id accepted)))
+    (is (= (expected/resolution-preimage accepted)
+           (resolution/artifact-identity-input accepted (operations))))
+    (is (= (expected/resolution-id accepted) (:artifact-id accepted)))
     (is (= 276 (count (get-in accepted [:binding-table :bindings]))))
     (is (= 21 (count (:resolution-table accepted))))
     (is (= :passed (:status (b/sh06-resolution-artifact-verification accepted :gravity.bootstrap/legacy invocation))))
@@ -604,8 +606,24 @@
         rejected (resolution/execute! source binding 'sh06-build-resolution-template [invalid] ops)]
     (is (= :accepted (:status artifact)))
     (is (= :accepted (:status accepted)))
-    (is (= "sha256:49d37a2f0d79fb8902e3be9928cab495e734997f5e3e15bfee186ae5b9ed8bc1"
-           (:artifact-id artifact)))
+    ;; A current-source Reader changes upstream provenance even when resolution
+    ;; semantics stay the same. Assert the complete identity joins rather than
+    ;; pinning an artifact digest whose Reader implementation is not fixed.
+    (let [identity ((seed-var 'sh06-resolution-artifact-identity-input) artifact)]
+      (is (= (expected/resolution-preimage artifact) identity))
+      (is (= (expected/resolution-id artifact) (:artifact-id artifact)))
+      (is (= [:gravity/sh06-resolution-artifact :SH-06 "SH-06"]
+             ((juxt :kind :slice :task) artifact)))
+      (is (= :gravity/sh06-resolution-artifact-v1 (:domain identity)))
+      (is (= (get-in request [:module :source-revision-id]) (:source-revision-id identity)))
+      (doseq [[field parent-field] [[:upstream-artifact-id :artifact-id]
+                                   [:upstream-syntax-stream-id :expanded-syntax-stream-id]
+                                   [:upstream-trace-id :macro-expansion-trace-id]]]
+        (is (= (get-in artifact [:sh05-macro-artifact parent-field]) (field identity)))
+        (is (some? (field identity)))
+        (is (not= (:artifact-id artifact)
+                  (b/sh06-resolution-artifact-id
+                   (assoc-in artifact [:sh05-macro-artifact parent-field] "changed-parent"))))))
     (is (some #(and (= 'value (:symbol %)) (= :local (:resolution-kind %)))
               (:resolution-table artifact)))
     (is (some #(and (= 'identity-value (:name %)) (= :public (:visibility %)))
