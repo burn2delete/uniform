@@ -236,3 +236,90 @@
     (is (= 4 (:cli-exit-code
                (failure #(invocation/success-json (assoc build-result :source-unit-record foreign))))))
     (is (zero? @callbacks))))
+
+(defn- failing-cli-model [exception stage command]
+  (let [statuses (atom []) stderr (java.io.StringWriter.) escaped (atom nil)
+        interrupted-on-escape? (atom false)
+        stdout (binding [*err* stderr]
+                 (with-out-str
+                   (with-redefs [clojure.core/requiring-resolve
+                                 (fn [_]
+                                   (if (= :resolver stage) (throw exception)
+                                     (fn [& _]
+                                       (when (= :constructor-interrupted stage)
+                                         (.interrupt (Thread/currentThread)))
+                                       (throw exception))))]
+                     (try
+                       (entrypoint/run! command
+                                        {:resolve-operation (fn [_] (throw exception))
+                                         :print-diagnostic! (fn [_] (throw (AssertionError. "unexpected printer")))
+                                         :exit! #(swap! statuses conj %)})
+                       (catch Throwable error
+                         ;; Capture at the boundary, before test reporting/STM
+                         ;; may consume an interrupt while recording assertions.
+                         (reset! interrupted-on-escape? (.isInterrupted (Thread/currentThread)))
+                         (reset! escaped error))))))]
+    {:exits @statuses :stderr (str stderr) :stdout stdout :escaped @escaped
+     :interrupted-on-escape? @interrupted-on-escape?}))
+
+(deftest ordinary-constructor-and-resolver-failures-have-redacted-cli-exit-four
+  (doseq [stage [:constructor :resolver]
+          exception [(java.io.IOException. "private contents /private/path"
+                                           (IllegalArgumentException. "private cause"))
+                     (IllegalStateException. "private state /private/path")
+                     (java.net.SocketTimeoutException. "private timeout /private/path")]]
+    ;; The host API still preserves the SAME error; only CLI presentation changes.
+    (with-redefs [clojure.core/requiring-resolve
+                  (fn [_] (if (= :resolver stage) (throw exception)
+                            (fn [& _] (throw exception))))]
+      (is (identical? exception
+                     (try (invocation/run-declared-input-build! arguments)
+                          (catch Exception error error)))))
+    (let [{:keys [exits stderr stdout escaped]} (failing-cli-model exception stage arguments)
+          report (json/read-strict-json stderr)]
+      (is (= [4] exits))
+      (is (nil? escaped))
+      (is (empty? stdout))
+      (is (= "T1004" (get report "code")))
+      (is (= 4 (get report "exitCode")))
+      (is (= "rejected" (get report "status")))
+      (is (not (.contains stderr "private")))
+      (is (not (.contains stderr "Exception")))))
+  (let [exception (java.io.IOException. "ordinary non-build failure")
+        result (failing-cli-model exception :constructor ["read" "unused.gravity"])]
+    (is (identical? exception (:escaped result)))
+    (is (empty? (:exits result)))
+    (is (empty? (:stderr result)))))
+
+(deftest build-control-flow-and-interrupts-are-never-converted-to-json
+  (doseq [stage [:constructor :resolver]
+          exception [(AssertionError. "injected Error")
+                     (IllegalStateException. "wrapped Error" (LinkageError. "injected link"))
+                     (java.util.concurrent.CancellationException. "cancel")
+                     (java.io.InterruptedIOException. "interrupted I/O")
+                     (java.nio.channels.ClosedByInterruptException.)]]
+    (let [result (failing-cli-model exception stage arguments)]
+      (is (identical? exception (:escaped result)))
+      (is (empty? (:exits result)))
+      (is (empty? (:stdout result)))
+      (is (empty? (:stderr result)))))
+  (doseq [exception [(InterruptedException. "injected interrupt")
+                     (IllegalStateException. "wrapped interrupt" (InterruptedException.))]]
+    (let [was-interrupted? (.isInterrupted (Thread/currentThread))]
+      (try
+        (let [result (failing-cli-model exception :constructor arguments)]
+          (is (identical? exception (:escaped result)))
+          (is (:interrupted-on-escape? result))
+          (is (empty? (:exits result)))
+          (is (empty? (:stderr result))))
+        ;; Restore only the flag this injected model set; production never clears it.
+        (finally (when-not was-interrupted? (Thread/interrupted))))))
+  (let [was-interrupted? (.isInterrupted (Thread/currentThread))
+        exception (java.io.IOException. "failure while already interrupted")]
+    (try
+      (let [result (failing-cli-model exception :constructor-interrupted arguments)]
+        (is (identical? exception (:escaped result)))
+        (is (:interrupted-on-escape? result))
+        (is (empty? (:exits result)))
+        (is (empty? (:stderr result))))
+      (finally (when-not was-interrupted? (Thread/interrupted))))))
