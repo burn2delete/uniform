@@ -110,7 +110,25 @@
  #'sh07-b13-module-assembly-manifest
  #'sh07-core-lineage
  #'sh07-core-lineage-with-semantic-trace
- #'sh07-core-projection-binding-input]))]
+ #'sh07-core-projection-binding-input
+ #'gravity.checked-core/authenticated-request
+ #'gravity.checked-core/digest-reference-ordinal
+ #'gravity.checked-core/request-from-verified-upstream
+ #'gravity.checked-core/resolve-reference!
+ #'gravity.checked-core/resolve-reference-vector!
+ #'gravity.checked-core/semantic-binding
+ #'gravity.checked-core/semantic-projection-id
+ #'gravity.checked-core/semantic-resolution
+ #'gravity.checked-core/semantic-var-reference
+ #'sh07-core-authenticated-request
+ #'sh07-core-digest-reference-ordinal
+ #'sh07-core-request-from-verified-upstream
+ #'sh07-core-resolve-reference!
+ #'sh07-core-resolve-reference-vector!
+ #'sh07-core-semantic-binding
+ #'sh07-core-semantic-projection-id
+ #'sh07-core-semantic-resolution
+ #'sh07-core-semantic-var-reference]))]
  (defn
   sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))
