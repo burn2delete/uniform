@@ -1,0 +1,3449 @@
+{:normative-source
+ {:path
+  "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+  :file-sha256
+  "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+  :coverage
+  :full-document-all34-semantic-paragraph-conjunctions-and16-contexts},
+ :findings [],
+ :facet-verdicts
+ [{:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "8a0beb75fe708f8da5334ac139ed1d5b059b74ee83489b51404feaad2b50c2b3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 0,
+    :end-byte 31,
+    :raw-sha256
+    "8a0beb75fe708f8da5334ac139ed1d5b059b74ee83489b51404feaad2b50c2b3"},
+   :source-occurrence-id
+   "C12/source/e1a1b9fb77e30ba806eb6f940efba00b51e51129d2b0169362ea850de4db3b22",
+   :id "C12/normalized-facet/0-31/8a0beb75fe708f8d",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "0db33c18d4541ff62c62563ecd49d0503383b1a55ef8c579284bdb01172800a4",
+   :prior-provenance-overlap true,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 32,
+    :end-byte 308,
+    :raw-sha256
+    "0db33c18d4541ff62c62563ecd49d0503383b1a55ef8c579284bdb01172800a4"},
+   :source-occurrence-id
+   "C12/source/3b0915dcbe8a446e7f7b3502b5b1ae6de3f11b89f2d3d6959c95b415e912ed36",
+   :id "C12/normalized-facet/32-308/0db33c18d4541ff6",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 309,
+    :end-byte 320,
+    :raw-sha256
+    "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+   :source-occurrence-id
+   "C12/source/e4a712d64f8476a6d3284b69f2d8ad109f21da1417b12361078771119a3e0bd4",
+   :id "C12/normalized-facet/309-320/994413297a3e95a9",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "522135dc992d4e63c7e1f6b915dca46517e900359459bf845be245e138466479",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 321,
+    :end-byte 638,
+    :raw-sha256
+    "522135dc992d4e63c7e1f6b915dca46517e900359459bf845be245e138466479"},
+   :source-occurrence-id
+   "C12/source/bdbacc516499fd7e0bc5c894187084a666d4ae974dceaecddde28cf48e5d3628",
+   :id "C12/facet/321-638",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "b556e9c07afccee1299e392b66c6f24eb8f1ddd9622b20fe78be84a3b2926f78",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 639,
+    :end-byte 809,
+    :raw-sha256
+    "b556e9c07afccee1299e392b66c6f24eb8f1ddd9622b20fe78be84a3b2926f78"},
+   :source-occurrence-id
+   "C12/source/4453542dffe4df04461f001b2414701c80e665343362e8ccb3cca0e0ba4b452e",
+   :id "C12/facet/639-809",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 810,
+    :end-byte 826,
+    :raw-sha256
+    "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+   :source-occurrence-id
+   "C12/source/2ea17339a745b7d601f59596e9c993efb5ce920643c8948592cb51987e068d18",
+   :id "C12/normalized-facet/810-826/d8416f1863ce5290",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "8c6390c01b9a876ceed29ebea0117706161e826ff9256fb62e39d49d215f0791",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 827,
+    :end-byte 1020,
+    :raw-sha256
+    "8c6390c01b9a876ceed29ebea0117706161e826ff9256fb62e39d49d215f0791"},
+   :source-occurrence-id
+   "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814",
+   :id "C12/facet/827-1020",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "5225cff49afaed2c30bd537b79095b59eb3465a39a2532ea1d9302b7d5db9fd3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1020,
+    :end-byte 1100,
+    :raw-sha256
+    "5225cff49afaed2c30bd537b79095b59eb3465a39a2532ea1d9302b7d5db9fd3"},
+   :source-occurrence-id
+   "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814",
+   :id "C12/facet/1020-1100",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "fcdd527bd3ad1295792da2b02162a1bdbcd4191f10dbba0638cee825ef0c7b61",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1100,
+    :end-byte 1238,
+    :raw-sha256
+    "fcdd527bd3ad1295792da2b02162a1bdbcd4191f10dbba0638cee825ef0c7b61"},
+   :source-occurrence-id
+   "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814",
+   :id "C12/facet/1100-1238",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "aed92e9f75f2aabb24e9b4a9074304f14ce41dc2f3e5eb4d73faa15a0ed433e7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1238,
+    :end-byte 1376,
+    :raw-sha256
+    "aed92e9f75f2aabb24e9b4a9074304f14ce41dc2f3e5eb4d73faa15a0ed433e7"},
+   :source-occurrence-id
+   "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814",
+   :id "C12/facet/1238-1376",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "1568eadfa8bd8697a04e75daafe144d108be983c386cc41f1f0d300177a2360a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1376,
+    :end-byte 1449,
+    :raw-sha256
+    "1568eadfa8bd8697a04e75daafe144d108be983c386cc41f1f0d300177a2360a"},
+   :source-occurrence-id
+   "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814",
+   :id "C12/facet/1376-1449",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "3d9b12175fe45064663f4e99fc2253f408376dec2d5651b1ab1bb19560a0c5c2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1449,
+    :end-byte 1552,
+    :raw-sha256
+    "3d9b12175fe45064663f4e99fc2253f408376dec2d5651b1ab1bb19560a0c5c2"},
+   :source-occurrence-id
+   "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814",
+   :id "C12/facet/1449-1552",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "0e32f150e5e041f20ee9b441f99e0c3f59da90169155b6083db2fc847d3961c7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1552,
+    :end-byte 1629,
+    :raw-sha256
+    "0e32f150e5e041f20ee9b441f99e0c3f59da90169155b6083db2fc847d3961c7"},
+   :source-occurrence-id
+   "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814",
+   :id "C12/facet/1552-1629",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1630,
+    :end-byte 1646,
+    :raw-sha256
+    "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+   :source-occurrence-id
+   "C12/source/ca63eb0c94ad23c82fff908e953e3b087385d0d1f9ea81bf3434df905d706c93",
+   :id "C12/normalized-facet/1630-1646/21d1931a332d9b7f",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "273cdf8b85b585ddcf58ec4afef4a6dca7ac54dd01537247db960bb03d2d524c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1647,
+    :end-byte 1687,
+    :raw-sha256
+    "273cdf8b85b585ddcf58ec4afef4a6dca7ac54dd01537247db960bb03d2d524c"},
+   :source-occurrence-id
+   "C12/source/4f4ae54eb072652f92d9999cfe535e0e2e78fb19fd90d3b5f1e41841891ad73e",
+   :id "C12/facet/1647-1687",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "9ea667bfce154c3f47be890d73a2a807abcf474bb6ba2ac9f0bfe9d6f36ff4fd",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1687,
+    :end-byte 1775,
+    :raw-sha256
+    "9ea667bfce154c3f47be890d73a2a807abcf474bb6ba2ac9f0bfe9d6f36ff4fd"},
+   :source-occurrence-id
+   "C12/source/4f4ae54eb072652f92d9999cfe535e0e2e78fb19fd90d3b5f1e41841891ad73e",
+   :id "C12/facet/1687-1775",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "02fcd22fa3de9f4f6ffcff1159a1c163fe162b9b011a31b34b3a2ef826ae7e9d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1775,
+    :end-byte 1888,
+    :raw-sha256
+    "02fcd22fa3de9f4f6ffcff1159a1c163fe162b9b011a31b34b3a2ef826ae7e9d"},
+   :source-occurrence-id
+   "C12/source/4f4ae54eb072652f92d9999cfe535e0e2e78fb19fd90d3b5f1e41841891ad73e",
+   :id "C12/facet/1775-1888",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "8954e962e6830c250e61081052f9becbd330b8ac90f4f3654f12fac89651f4d1",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1888,
+    :end-byte 1936,
+    :raw-sha256
+    "8954e962e6830c250e61081052f9becbd330b8ac90f4f3654f12fac89651f4d1"},
+   :source-occurrence-id
+   "C12/source/4f4ae54eb072652f92d9999cfe535e0e2e78fb19fd90d3b5f1e41841891ad73e",
+   :id "C12/facet/1888-1936",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "1a6201f197cee2eb1696c82182794a8c8f4fb62278f2ab803f08c4373568d112",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 1936,
+    :end-byte 2013,
+    :raw-sha256
+    "1a6201f197cee2eb1696c82182794a8c8f4fb62278f2ab803f08c4373568d112"},
+   :source-occurrence-id
+   "C12/source/4f4ae54eb072652f92d9999cfe535e0e2e78fb19fd90d3b5f1e41841891ad73e",
+   :id "C12/facet/1936-2013",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "4df77737d0fb5f4c818a1aa4c2cf56ce2d00b7bfdfcd288b3dbbd285d6bb77e3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2013,
+    :end-byte 2070,
+    :raw-sha256
+    "4df77737d0fb5f4c818a1aa4c2cf56ce2d00b7bfdfcd288b3dbbd285d6bb77e3"},
+   :source-occurrence-id
+   "C12/source/4f4ae54eb072652f92d9999cfe535e0e2e78fb19fd90d3b5f1e41841891ad73e",
+   :id "C12/facet/2013-2070",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2071,
+    :end-byte 2096,
+    :raw-sha256
+    "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+   :source-occurrence-id
+   "C12/source/2998b2da47507277174f32b4ed9d668e1bb509b7feb8bfdf17d26689820d1e11",
+   :id "C12/normalized-facet/2071-2096/f4280a4d61a89adc",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "3d7934421828b2ec1c6556f6bc320dc71ad55517f7ba1e5d79b726e34aaaf800",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2097,
+    :end-byte 2119,
+    :raw-sha256
+    "3d7934421828b2ec1c6556f6bc320dc71ad55517f7ba1e5d79b726e34aaaf800"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2097-2119",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1bd28db262c40e6ff01c887cf826fd6f511e077e6468a3c3dcb52ca7562d7403",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2119,
+    :end-byte 2148,
+    :raw-sha256
+    "1bd28db262c40e6ff01c887cf826fd6f511e077e6468a3c3dcb52ca7562d7403"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2119-2148",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "9c243acd81bf12fe4ab3ec1acb042cf344e7d71e2ca891b4dec9d65680940be8",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2148,
+    :end-byte 2171,
+    :raw-sha256
+    "9c243acd81bf12fe4ab3ec1acb042cf344e7d71e2ca891b4dec9d65680940be8"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2148-2171",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "f2f757479e3a5bb38cc5f2721fe4fedcf11eb70667c29986d500cfb797fd2463",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2171,
+    :end-byte 2202,
+    :raw-sha256
+    "f2f757479e3a5bb38cc5f2721fe4fedcf11eb70667c29986d500cfb797fd2463"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2171-2202",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "38596d78736b30aa0a77907671c1f35d068081d3b9ba66fde456df5413c1c420",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2202,
+    :end-byte 2228,
+    :raw-sha256
+    "38596d78736b30aa0a77907671c1f35d068081d3b9ba66fde456df5413c1c420"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2202-2228",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "fb1ebb8940f291cc0535cde32f5864dccdf504abb8244de4c719b7915f5e482a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2228,
+    :end-byte 2264,
+    :raw-sha256
+    "fb1ebb8940f291cc0535cde32f5864dccdf504abb8244de4c719b7915f5e482a"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2228-2264",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "52da79669f5761b3d6e489a961cb277d5d2117051ca11d3c39988908add1065e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2264,
+    :end-byte 2295,
+    :raw-sha256
+    "52da79669f5761b3d6e489a961cb277d5d2117051ca11d3c39988908add1065e"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2264-2295",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c84c2e41a000ae4164bd8ae5d7d8c8f6b8156c6e1337184b9d69de51509bedb4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2295,
+    :end-byte 2328,
+    :raw-sha256
+    "c84c2e41a000ae4164bd8ae5d7d8c8f6b8156c6e1337184b9d69de51509bedb4"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2295-2328",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "d99b023b4fccda57a85bd3ce87888363750652fa0b01b9849b5a12967bf78113",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2328,
+    :end-byte 2350,
+    :raw-sha256
+    "d99b023b4fccda57a85bd3ce87888363750652fa0b01b9849b5a12967bf78113"},
+   :source-occurrence-id
+   "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036",
+   :id "C12/facet/2328-2350",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "58d29d549fa3e1a376cc95e4742669f646b047190762162f408a33156f8f0172",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2351,
+    :end-byte 2374,
+    :raw-sha256
+    "58d29d549fa3e1a376cc95e4742669f646b047190762162f408a33156f8f0172"},
+   :source-occurrence-id
+   "C12/source/da2453e6cb3872f01a239cad1dcddf93fec93bf7b5ea29b7ecc0ac21ba6356f8",
+   :id "C12/normalized-facet/2351-2374/58d29d549fa3e1a3",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "e68b42077286fbd798a1b3ca5e9662ef4d9c5e488056093981325b66d8315b57",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2375,
+    :end-byte 2864,
+    :raw-sha256
+    "e68b42077286fbd798a1b3ca5e9662ef4d9c5e488056093981325b66d8315b57"},
+   :source-occurrence-id
+   "C12/source/f487f88924793dd989eaac85436c5c7c7d8b3842c987c7f5f038836f5bdc5ef3",
+   :id "C12/facet/2375-2864",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "0544577caa09fe0a9480c3ddf8e5c75fe916267b314027bbc4fcd725aa6a9913",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2865,
+    :end-byte 2961,
+    :raw-sha256
+    "0544577caa09fe0a9480c3ddf8e5c75fe916267b314027bbc4fcd725aa6a9913"},
+   :source-occurrence-id
+   "C12/source/d10904523542231b4d8d5c47027933424a125dc516eaba1fbdb11901780c374a",
+   :id "C12/facet/2865-2961",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "4a084d88a99be6664f8ac05ab752063ecf69c5c05e0a49f74ae9ed8340e95469",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2962,
+    :end-byte 2987,
+    :raw-sha256
+    "4a084d88a99be6664f8ac05ab752063ecf69c5c05e0a49f74ae9ed8340e95469"},
+   :source-occurrence-id
+   "C12/source/99d7911eb85cf1dfceac7083f12735ac995697dec6712ff28699ceabb209548f",
+   :id "C12/normalized-facet/2962-2987/4a084d88a99be666",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1ef1a1b01dd14f601978dcf011d705277d2959e4473bafbdadea1981f89c27d7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 2988,
+    :end-byte 3577,
+    :raw-sha256
+    "1ef1a1b01dd14f601978dcf011d705277d2959e4473bafbdadea1981f89c27d7"},
+   :source-occurrence-id
+   "C12/source/8d3c037c507cf7a9ccd29b078eb46c46611ef198700df225eca3dab7fceb6593",
+   :id "C12/facet/2988-3577",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4fc0b69e349826100bd7f3237070100ea24560f6b231601d8c114afb2d6e33ff",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3578,
+    :end-byte 3657,
+    :raw-sha256
+    "4fc0b69e349826100bd7f3237070100ea24560f6b231601d8c114afb2d6e33ff"},
+   :source-occurrence-id
+   "C12/source/3052324b33e8f4113680fb64e5caeadaae68fb8f8b9577abf012fea066f9579b",
+   :id "C12/facet/3578-3657",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "562c40166d66771054ac0716f8ed1a792a35a53dc5692660e97b50bf56d4cb3f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3658,
+    :end-byte 3674,
+    :raw-sha256
+    "562c40166d66771054ac0716f8ed1a792a35a53dc5692660e97b50bf56d4cb3f"},
+   :source-occurrence-id
+   "C12/source/6ad5e6781315c66d8dafe7f10470d77efcc1a2c28181297576d1c51a481b7e70",
+   :id "C12/normalized-facet/3658-3674/562c40166d667710",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ea1899f1ac32b4fef94bf0b8a93589ff4387b61150944d3df117934637a65019",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3675,
+    :end-byte 3725,
+    :raw-sha256
+    "ea1899f1ac32b4fef94bf0b8a93589ff4387b61150944d3df117934637a65019"},
+   :source-occurrence-id
+   "C12/source/a8d1becd85d52e27738f39f055914eb86d71e5d166ab81775902bad1cb008fcb",
+   :id "C12/facet/3675-3725",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4902270f7cd999898955d934d79f5cdb6479d16d93a1abc38478a42f24d0dc28",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3726,
+    :end-byte 3764,
+    :raw-sha256
+    "4902270f7cd999898955d934d79f5cdb6479d16d93a1abc38478a42f24d0dc28"},
+   :source-occurrence-id
+   "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f",
+   :id "C12/facet/3726-3764",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "09e1dd2dc08fc713b3b1667edc35cd9a510439ac517661647cc52c9e93dc58fc",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3764,
+    :end-byte 3788,
+    :raw-sha256
+    "09e1dd2dc08fc713b3b1667edc35cd9a510439ac517661647cc52c9e93dc58fc"},
+   :source-occurrence-id
+   "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f",
+   :id "C12/facet/3764-3788",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "768b57e9a6f549de41a9dc39a176a03199efb9275cec3c76436dc52306c4a6f9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3788,
+    :end-byte 3805,
+    :raw-sha256
+    "768b57e9a6f549de41a9dc39a176a03199efb9275cec3c76436dc52306c4a6f9"},
+   :source-occurrence-id
+   "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f",
+   :id "C12/facet/3788-3805",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "d3cd7b0f96fc1513402aeecd04e11f9c63bc1817c1e3c0b5e6a012fe9f13bd04",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3805,
+    :end-byte 3830,
+    :raw-sha256
+    "d3cd7b0f96fc1513402aeecd04e11f9c63bc1817c1e3c0b5e6a012fe9f13bd04"},
+   :source-occurrence-id
+   "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f",
+   :id "C12/facet/3805-3830",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "cdb1f9e613a38160e09547d7f05f0c6cb64360bd97a89cc475a84ff4dfac95f6",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3830,
+    :end-byte 3851,
+    :raw-sha256
+    "cdb1f9e613a38160e09547d7f05f0c6cb64360bd97a89cc475a84ff4dfac95f6"},
+   :source-occurrence-id
+   "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f",
+   :id "C12/facet/3830-3851",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "99ffdca4bd43b540b97851f68482c93f5d439c57862e80dff49b9f58d234503f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3851,
+    :end-byte 3874,
+    :raw-sha256
+    "99ffdca4bd43b540b97851f68482c93f5d439c57862e80dff49b9f58d234503f"},
+   :source-occurrence-id
+   "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f",
+   :id "C12/facet/3851-3874",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "9ce6c374d01d7f11d32a5dec6711d0361f1b7e60d549276b51aacae06cf820c9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3874,
+    :end-byte 3900,
+    :raw-sha256
+    "9ce6c374d01d7f11d32a5dec6711d0361f1b7e60d549276b51aacae06cf820c9"},
+   :source-occurrence-id
+   "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f",
+   :id "C12/facet/3874-3900",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "751740d3d9b45ca5385ecc7ddd74c31dc79f3b974f5a7c16004110560141251e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 3901,
+    :end-byte 4024,
+    :raw-sha256
+    "751740d3d9b45ca5385ecc7ddd74c31dc79f3b974f5a7c16004110560141251e"},
+   :source-occurrence-id
+   "C12/source/1f9f640093d664f591ac4864047ad4950b1a51b3bda0194b7304928d71fc04e9",
+   :id "C12/facet/3901-4024",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "81176b6f1975c477cb8b44dbc347d7ede32b63e1f4f028baafc3458f9d34806c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4025,
+    :end-byte 4040,
+    :raw-sha256
+    "81176b6f1975c477cb8b44dbc347d7ede32b63e1f4f028baafc3458f9d34806c"},
+   :source-occurrence-id
+   "C12/source/087cdbf2117c81d0d341c471a32d7693366506f968f86f931677d5464b4164f7",
+   :id "C12/normalized-facet/4025-4040/81176b6f1975c477",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1eebcead6db8eed2022abf8b0425db490cf899b5dbfe7803377c1b134c0d9134",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4041,
+    :end-byte 4079,
+    :raw-sha256
+    "1eebcead6db8eed2022abf8b0425db490cf899b5dbfe7803377c1b134c0d9134"},
+   :source-occurrence-id
+   "C12/source/f56c32e66777d2998448bf168af5684dee3d8d0dbec01f798440030b0dbab7fd",
+   :id "C12/facet/4041-4079",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "768b57e9a6f549de41a9dc39a176a03199efb9275cec3c76436dc52306c4a6f9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4080,
+    :end-byte 4097,
+    :raw-sha256
+    "768b57e9a6f549de41a9dc39a176a03199efb9275cec3c76436dc52306c4a6f9"},
+   :source-occurrence-id
+   "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e",
+   :id "C12/facet/4080-4097",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "cf02bfef80e5c0272a572067006a6c9f6151d076109030091a24c8e7ff3f4c5d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4097,
+    :end-byte 4122,
+    :raw-sha256
+    "cf02bfef80e5c0272a572067006a6c9f6151d076109030091a24c8e7ff3f4c5d"},
+   :source-occurrence-id
+   "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e",
+   :id "C12/facet/4097-4122",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ab73e8ce8acccb8f44dd1438791aa3f134371e8c348081a6cbbfebd0c1bfa525",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4122,
+    :end-byte 4145,
+    :raw-sha256
+    "ab73e8ce8acccb8f44dd1438791aa3f134371e8c348081a6cbbfebd0c1bfa525"},
+   :source-occurrence-id
+   "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e",
+   :id "C12/facet/4122-4145",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "ccb240dbbc99b5084d8237835ffd204e87de25a1d7a02773c6cc9628f6efe34b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4145,
+    :end-byte 4166,
+    :raw-sha256
+    "ccb240dbbc99b5084d8237835ffd204e87de25a1d7a02773c6cc9628f6efe34b"},
+   :source-occurrence-id
+   "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e",
+   :id "C12/facet/4145-4166",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "9b76238d8cb2dfc5a8e7b069764f2a534227e8f16f215fe2e4672ddd4a49c6f2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4166,
+    :end-byte 4184,
+    :raw-sha256
+    "9b76238d8cb2dfc5a8e7b069764f2a534227e8f16f215fe2e4672ddd4a49c6f2"},
+   :source-occurrence-id
+   "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e",
+   :id "C12/facet/4166-4184",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "7d70598061988491d0b02a019c3bf576aa431a2ee80ce163cb1d39f4d04614be",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4184,
+    :end-byte 4205,
+    :raw-sha256
+    "7d70598061988491d0b02a019c3bf576aa431a2ee80ce163cb1d39f4d04614be"},
+   :source-occurrence-id
+   "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e",
+   :id "C12/facet/4184-4205",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "97769cdbbc4c73791e280c5d0b15963f1ceea453db3c2aa3baa99342b7eeea04",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4205,
+    :end-byte 4231,
+    :raw-sha256
+    "97769cdbbc4c73791e280c5d0b15963f1ceea453db3c2aa3baa99342b7eeea04"},
+   :source-occurrence-id
+   "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e",
+   :id "C12/facet/4205-4231",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "547be1d1681668fe5c1fbf38079ac478278e77d8e44ba7f8df32ed4888d387fa",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4232,
+    :end-byte 4389,
+    :raw-sha256
+    "547be1d1681668fe5c1fbf38079ac478278e77d8e44ba7f8df32ed4888d387fa"},
+   :source-occurrence-id
+   "C12/source/9c1329a62b01cfd5faf925624c8b582e5b6505585c3dfb24d1740a1951089069",
+   :id "C12/facet/4232-4389",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "4cb41973be3518fe15920876e6f87e0ca7a1717f489a0ebf13f5718cf0794ffc",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4390,
+    :end-byte 4409,
+    :raw-sha256
+    "4cb41973be3518fe15920876e6f87e0ca7a1717f489a0ebf13f5718cf0794ffc"},
+   :source-occurrence-id
+   "C12/source/ce7e6eebda7d49dcf83a7dec31a50d7ca9a86ac278ddf9820e0cc3160ffc55e6",
+   :id "C12/normalized-facet/4390-4409/4cb41973be3518fe",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "dbb81ad4218041211c2eb9894f365d1bb3684951c8fb13b4c66fb190f4d4ec2d",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4410,
+    :end-byte 4436,
+    :raw-sha256
+    "dbb81ad4218041211c2eb9894f365d1bb3684951c8fb13b4c66fb190f4d4ec2d"},
+   :source-occurrence-id
+   "C12/source/aa59323559f1932a15b1f919baee1be2375d4eaf41f9b24f3d9a645dec2d1e7e",
+   :id "C12/facet/4410-4436",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "a44ddb9e6226a09acfe70a91c067bf056835ef57146b19640034193d0e6774fc",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4437,
+    :end-byte 4456,
+    :raw-sha256
+    "a44ddb9e6226a09acfe70a91c067bf056835ef57146b19640034193d0e6774fc"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4437-4456",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "f05bde590f579c6a76db2acdad721c9043fe69ccd49d6a54cbd09a311bb9f25c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4456,
+    :end-byte 4484,
+    :raw-sha256
+    "f05bde590f579c6a76db2acdad721c9043fe69ccd49d6a54cbd09a311bb9f25c"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4456-4484",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "93a14b44a9445b3c6d41930f559bd724de103826d46fe5f39c9e13e39351b3cc",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4484,
+    :end-byte 4505,
+    :raw-sha256
+    "93a14b44a9445b3c6d41930f559bd724de103826d46fe5f39c9e13e39351b3cc"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4484-4505",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "bc4e57985d6ec4ffcd32c55c081ed18f3342ffc6477b47cb80ba39f24e066ec3",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4505,
+    :end-byte 4553,
+    :raw-sha256
+    "bc4e57985d6ec4ffcd32c55c081ed18f3342ffc6477b47cb80ba39f24e066ec3"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4505-4553",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "be14496e703db220cd4da13fbdc14376f113ebeddaea7be0eba86f545f6ebddb",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4553,
+    :end-byte 4583,
+    :raw-sha256
+    "be14496e703db220cd4da13fbdc14376f113ebeddaea7be0eba86f545f6ebddb"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4553-4583",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "661339ef65870e76d08eb773bd628ba1cfdf7570037732b02446d0cc5c21edbb",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4583,
+    :end-byte 4615,
+    :raw-sha256
+    "661339ef65870e76d08eb773bd628ba1cfdf7570037732b02446d0cc5c21edbb"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4583-4615",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "739ba143237ed1fb73b27841b139004766ca2490e413b47ba6c601ff5af116a2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4615,
+    :end-byte 4648,
+    :raw-sha256
+    "739ba143237ed1fb73b27841b139004766ca2490e413b47ba6c601ff5af116a2"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4615-4648",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "47b8de1e7292e4cd3593f80ebccf695b78a2a0c35564025e33e8e7a6dd58a65e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4648,
+    :end-byte 4669,
+    :raw-sha256
+    "47b8de1e7292e4cd3593f80ebccf695b78a2a0c35564025e33e8e7a6dd58a65e"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4648-4669",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "7131a58b73214cc6ddf8992ff4bdffe51bcf7d3737656460a5b7506f811df2c8",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4669,
+    :end-byte 4696,
+    :raw-sha256
+    "7131a58b73214cc6ddf8992ff4bdffe51bcf7d3737656460a5b7506f811df2c8"},
+   :source-occurrence-id
+   "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0",
+   :id "C12/facet/4669-4696",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "db434f2f817a911a02aed2019d51db6b1d31429962be3958e72cfb33740a37ef",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4697,
+    :end-byte 4765,
+    :raw-sha256
+    "db434f2f817a911a02aed2019d51db6b1d31429962be3958e72cfb33740a37ef"},
+   :source-occurrence-id
+   "C12/source/204aa24e4ff26cc2c8a0a092d0bfd613d99e2661c4a065715cd12ba6789c0cc5",
+   :id "C12/facet/4697-4765",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "231fcbaf0b57965babffccae9d71b9e3e593ed8c25e38c2f9a0a4b6cf6a9ee29",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4766,
+    :end-byte 4791,
+    :raw-sha256
+    "231fcbaf0b57965babffccae9d71b9e3e593ed8c25e38c2f9a0a4b6cf6a9ee29"},
+   :source-occurrence-id
+   "C12/source/8b53d5197904c622e73bea95b439bfdd3ba029530b9cb7284f45e31f33d5caf6",
+   :id "C12/normalized-facet/4766-4791/231fcbaf0b57965b",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "ab4e0ac2f5bb67afe9243cb209313b7e97c66f6096eb5b2e1402cc393900eeae",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4792,
+    :end-byte 4914,
+    :raw-sha256
+    "ab4e0ac2f5bb67afe9243cb209313b7e97c66f6096eb5b2e1402cc393900eeae"},
+   :source-occurrence-id
+   "C12/source/fad8cdf0372bfee7558993d6bd2b2b2c37de5b86dd9621745fc886a995d46a41",
+   :id "C12/facet/4792-4914",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "342967eed1663140e44374835af45c51e6fd429fa8351b02921bce7c7ad6495a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4915,
+    :end-byte 4931,
+    :raw-sha256
+    "342967eed1663140e44374835af45c51e6fd429fa8351b02921bce7c7ad6495a"},
+   :source-occurrence-id
+   "C12/source/de6696717ec3cc29dcb50fd22649616b89e4e2f818306f18f53a0a78c8a25104",
+   :id "C12/facet/4915-4931",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "89e7a425fe75797b99bcff29892e791beffc6a5f2848b2eaba316f1bf3d2c999",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4931,
+    :end-byte 4957,
+    :raw-sha256
+    "89e7a425fe75797b99bcff29892e791beffc6a5f2848b2eaba316f1bf3d2c999"},
+   :source-occurrence-id
+   "C12/source/de6696717ec3cc29dcb50fd22649616b89e4e2f818306f18f53a0a78c8a25104",
+   :id "C12/facet/4931-4957",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "76d54cd83f9fc39e3e4a96f9cf225e412d1ac62e23e43cf4a3ec45b299b4ff46",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 4957,
+    :end-byte 5009,
+    :raw-sha256
+    "76d54cd83f9fc39e3e4a96f9cf225e412d1ac62e23e43cf4a3ec45b299b4ff46"},
+   :source-occurrence-id
+   "C12/source/de6696717ec3cc29dcb50fd22649616b89e4e2f818306f18f53a0a78c8a25104",
+   :id "C12/facet/4957-5009",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "f7ef282839245d14f0a2fcbf4abb6b5b4e465765ee0fca48f552387b91ede679",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5009,
+    :end-byte 5067,
+    :raw-sha256
+    "f7ef282839245d14f0a2fcbf4abb6b5b4e465765ee0fca48f552387b91ede679"},
+   :source-occurrence-id
+   "C12/source/de6696717ec3cc29dcb50fd22649616b89e4e2f818306f18f53a0a78c8a25104",
+   :id "C12/facet/5009-5067",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "2b2b407df8ef7922ed08a79ae26cf2aaf463f0b82e45e80577a4073fb27e4c89",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5067,
+    :end-byte 5106,
+    :raw-sha256
+    "2b2b407df8ef7922ed08a79ae26cf2aaf463f0b82e45e80577a4073fb27e4c89"},
+   :source-occurrence-id
+   "C12/source/de6696717ec3cc29dcb50fd22649616b89e4e2f818306f18f53a0a78c8a25104",
+   :id "C12/facet/5067-5106",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "7890141c4e5fcfa6b94680a93737ffa2f19693e9d8e8843d222cc0481375f320",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5107,
+    :end-byte 5190,
+    :raw-sha256
+    "7890141c4e5fcfa6b94680a93737ffa2f19693e9d8e8843d222cc0481375f320"},
+   :source-occurrence-id
+   "C12/source/2a1b71608bbed1c5ac8b14271e671986fa7d2c3de6bbd391e30e0a952fb1de2f",
+   :id "C12/facet/5107-5190",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "87ab6f92210e75a3fdfb15cb6e62b650aab258c5278c90a1318b6534d4864acf",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5191,
+    :end-byte 5222,
+    :raw-sha256
+    "87ab6f92210e75a3fdfb15cb6e62b650aab258c5278c90a1318b6534d4864acf"},
+   :source-occurrence-id
+   "C12/source/5c1ae85da1e549828a405d1d48a239db53425fc38d848e102505d7ce2ef07f83",
+   :id "C12/normalized-facet/5191-5222/87ab6f92210e75a3",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "d9f2a9af5497981763f14a25ca879b3272625aa9f1ec8d136a11215be6b31135",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5223,
+    :end-byte 5260,
+    :raw-sha256
+    "d9f2a9af5497981763f14a25ca879b3272625aa9f1ec8d136a11215be6b31135"},
+   :source-occurrence-id
+   "C12/source/faa861228e8355e7e3a5a615bdd1b7a1315d8a5d8c7b6e847f7da0b7450bfab0",
+   :id "C12/facet/5223-5260",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "bb06187cfe7892e483d4acb5c5088d8b3f21a69c984b0d97e79ef0bf27270d8c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5261,
+    :end-byte 5334,
+    :raw-sha256
+    "bb06187cfe7892e483d4acb5c5088d8b3f21a69c984b0d97e79ef0bf27270d8c"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5261-5334",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "1e355f369e1075cd2e50dd4c85f7703c10494f154a1267c87bdbe05a2c86cc7f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5334,
+    :end-byte 5381,
+    :raw-sha256
+    "1e355f369e1075cd2e50dd4c85f7703c10494f154a1267c87bdbe05a2c86cc7f"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5334-5381",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "36a097c11b0963444236c2a2db9dda085765e8ce4c623cbec3cf820c484c3e27",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5381,
+    :end-byte 5436,
+    :raw-sha256
+    "36a097c11b0963444236c2a2db9dda085765e8ce4c623cbec3cf820c484c3e27"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5381-5436",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "dd3ab989a82a229d15de6f6313279b20ac0d5fc27c28b0f42f1896ac0a6dd20e",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5436,
+    :end-byte 5498,
+    :raw-sha256
+    "dd3ab989a82a229d15de6f6313279b20ac0d5fc27c28b0f42f1896ac0a6dd20e"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5436-5498",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4cfae2d87ee24be016983868169586222a3c6e32f2f64a4dc93f4e309b520476",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5498,
+    :end-byte 5535,
+    :raw-sha256
+    "4cfae2d87ee24be016983868169586222a3c6e32f2f64a4dc93f4e309b520476"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5498-5535",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "f8eb03baccb0c62f3afa2c241c867802bf0abcd6cee4d67629d10931358a27e2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5535,
+    :end-byte 5573,
+    :raw-sha256
+    "f8eb03baccb0c62f3afa2c241c867802bf0abcd6cee4d67629d10931358a27e2"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5535-5573",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "78b82510f5f6e0536eb871a1d704d1cca1053e31f5ae635fc344458caf493553",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5573,
+    :end-byte 5614,
+    :raw-sha256
+    "78b82510f5f6e0536eb871a1d704d1cca1053e31f5ae635fc344458caf493553"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5573-5614",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "0996052df4e2b7a889e57d6e3e20e37ff8d5bfcfdc562ab93f74041fe2892f7f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5614,
+    :end-byte 5656,
+    :raw-sha256
+    "0996052df4e2b7a889e57d6e3e20e37ff8d5bfcfdc562ab93f74041fe2892f7f"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5614-5656",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "e93ba610895d8821c2a00c0fdb2d7ae22a6b9907341121d46fa6f5b3265069fd",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5656,
+    :end-byte 5716,
+    :raw-sha256
+    "e93ba610895d8821c2a00c0fdb2d7ae22a6b9907341121d46fa6f5b3265069fd"},
+   :source-occurrence-id
+   "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6",
+   :id "C12/facet/5656-5716",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "4e3c76eccbbb17687277dc9e400339245bd29b8ead9dc9764037d94ba3381859",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5717,
+    :end-byte 5777,
+    :raw-sha256
+    "4e3c76eccbbb17687277dc9e400339245bd29b8ead9dc9764037d94ba3381859"},
+   :source-occurrence-id
+   "C12/source/a0ad5e01766a0dc71bee4e0c727ca0d7cf332e29eedea5c9bcbaae4075393999",
+   :id "C12/facet/5717-5777",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5778,
+    :end-byte 5793,
+    :raw-sha256
+    "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+   :source-occurrence-id
+   "C12/source/8ff813cfb2814df13cfc3be969f6b68cf7c76c42761a6272ef627365ae254e04",
+   :id "C12/normalized-facet/5778-5793/84b964dab09b580d",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "a1bca522bc8363e6d275e55fe299281470246fec95b70c9b796849c8e608b6ed",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5794,
+    :end-byte 5839,
+    :raw-sha256
+    "a1bca522bc8363e6d275e55fe299281470246fec95b70c9b796849c8e608b6ed"},
+   :source-occurrence-id
+   "C12/source/3578bda7859e3ef564427cd8919107d95c17a5615217281b8b5c84e9afe0d806",
+   :id "C12/facet/5794-5839",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "93e8f31663961d544af2de21a4bc7b57c94281b162a94f7c142a05a169ee8111",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5840,
+    :end-byte 5896,
+    :raw-sha256
+    "93e8f31663961d544af2de21a4bc7b57c94281b162a94f7c142a05a169ee8111"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/5840-5896",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "f00032dc5bd008e5f0c510683eb94dbda337af6def48872d5a91bdcd707b836c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5896,
+    :end-byte 5952,
+    :raw-sha256
+    "f00032dc5bd008e5f0c510683eb94dbda337af6def48872d5a91bdcd707b836c"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/5896-5952",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "3368f42f1cfb46e1d2d2aba17239cbf60f0be9472a6047192cc150f02c21b05f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 5952,
+    :end-byte 6002,
+    :raw-sha256
+    "3368f42f1cfb46e1d2d2aba17239cbf60f0be9472a6047192cc150f02c21b05f"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/5952-6002",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "2e483254ba3476d0792fbef701522b5b2df07b0453cfd800cb35eb49326d5fe4",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6002,
+    :end-byte 6062,
+    :raw-sha256
+    "2e483254ba3476d0792fbef701522b5b2df07b0453cfd800cb35eb49326d5fe4"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/6002-6062",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "c6efaf51baf16822594cca847addfb087addf7c87c5c4efcdc22993bbc744da2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6062,
+    :end-byte 6106,
+    :raw-sha256
+    "c6efaf51baf16822594cca847addfb087addf7c87c5c4efcdc22993bbc744da2"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/6062-6106",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "35835b2fdc4d77d03c705219a1ab37b683fcd926112858697d5e1736ebafb7be",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6106,
+    :end-byte 6164,
+    :raw-sha256
+    "35835b2fdc4d77d03c705219a1ab37b683fcd926112858697d5e1736ebafb7be"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/6106-6164",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "0475c5ce2a5fd840c41d412bcb97fbd0b7975560893f7f93854404ca0c9d3beb",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6164,
+    :end-byte 6214,
+    :raw-sha256
+    "0475c5ce2a5fd840c41d412bcb97fbd0b7975560893f7f93854404ca0c9d3beb"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/6164-6214",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "9e2da9cd4b31c9971e551c2540871cb169afc8595a3cd205945897470ff53aa9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6214,
+    :end-byte 6273,
+    :raw-sha256
+    "9e2da9cd4b31c9971e551c2540871cb169afc8595a3cd205945897470ff53aa9"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/6214-6273",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "74ceb708c5b75b3462649d51853be52cfd9c53ca04e481c9cbed0660f13aa97f",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6273,
+    :end-byte 6334,
+    :raw-sha256
+    "74ceb708c5b75b3462649d51853be52cfd9c53ca04e481c9cbed0660f13aa97f"},
+   :source-occurrence-id
+   "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636",
+   :id "C12/facet/6273-6334",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :raw-sha256
+   "7a3064c6ee70cd52bb7f5e1fbb1e72ab7c53e1e251e2fe846a427b6bd53b811b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6335,
+    :end-byte 6485,
+    :raw-sha256
+    "7a3064c6ee70cd52bb7f5e1fbb1e72ab7c53e1e251e2fe846a427b6bd53b811b"},
+   :source-occurrence-id
+   "C12/source/05bbc980f33c711f8552fba6bb8f19f5e4fe8e5593be7bf6ab49f658ec41c3e5",
+   :id "C12/facet/6335-6485",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6486,
+    :end-byte 6506,
+    :raw-sha256
+    "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+   :source-occurrence-id
+   "C12/source/ba183c0c1b2fe6444346ded1b8638c8ec559a057ca2121aecf446bdcb03e57b4",
+   :id "C12/normalized-facet/6486-6506/81a99744c82b0f20",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "7ec31e79ef8c729d684b6824fb0729e08e6ff125d7f121abe2d5f6dc4dc88e4a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6507,
+    :end-byte 6565,
+    :raw-sha256
+    "7ec31e79ef8c729d684b6824fb0729e08e6ff125d7f121abe2d5f6dc4dc88e4a"},
+   :source-occurrence-id
+   "C12/source/c57f4570bbed164a7b39e87de80eaedf5c56ba723fa15e3d6a49a47c996839a6",
+   :id "C12/facet/6507-6565",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "004dfde2252c59a4b1549af403d38cb21578250862187d74f1f20fddf3ba972b",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6566,
+    :end-byte 6634,
+    :raw-sha256
+    "004dfde2252c59a4b1549af403d38cb21578250862187d74f1f20fddf3ba972b"},
+   :source-occurrence-id
+   "C12/source/78d0695cffd707b5f3cfdff623b5cb028bba132bdf8953fc650048211203ba8e",
+   :id "C12/facet/6566-6634",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "e04571f95c5a5981cf8f39e87155c74639c303f2439757122846901eaa6244c9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6635,
+    :end-byte 6696,
+    :raw-sha256
+    "e04571f95c5a5981cf8f39e87155c74639c303f2439757122846901eaa6244c9"},
+   :source-occurrence-id
+   "C12/source/463fde56d955dd37b6a385b8056799d888b0606738a729bb09c9f96dd383227a",
+   :id "C12/facet/6635-6696",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "44e85d0e7edfd8c30f8b563c00e8fbe20bd3edc090d493b6955d7bbcdcbaa04c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6697,
+    :end-byte 6797,
+    :raw-sha256
+    "44e85d0e7edfd8c30f8b563c00e8fbe20bd3edc090d493b6955d7bbcdcbaa04c"},
+   :source-occurrence-id
+   "C12/source/488117b922b7512eeb99d0e9c0f5fe04acbceaf44d1e14640b50d2855eacd3d6",
+   :id "C12/facet/6697-6797",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :raw-sha256
+   "9f05af9d5c3ffe2aa6d6c78778d2b59fda305f4ce99408d726f24f808c41b7c9",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6798,
+    :end-byte 6878,
+    :raw-sha256
+    "9f05af9d5c3ffe2aa6d6c78778d2b59fda305f4ce99408d726f24f808c41b7c9"},
+   :source-occurrence-id
+   "C12/source/2175b6af2ed24ffb4b6b4a82cb8fa088849c1229565b09e8a99ad0134949ed85",
+   :id "C12/facet/6798-6878",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :raw-sha256
+   "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6879,
+    :end-byte 6903,
+    :raw-sha256
+    "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+   :source-occurrence-id
+   "C12/source/ae6c7bd3acc1b5cb14a41f57df20d037db5ad0893a9ece589f7d2d48b89fc621",
+   :id "C12/normalized-facet/6879-6903/4cea7efb2bd3a140",
+   :verdict :context-preserved-no-semantic-credit,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "c8dff6ef2fa470344fac47f86fd58896a78026c49699282096834d1873b1d833",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6904,
+    :end-byte 6952,
+    :raw-sha256
+    "c8dff6ef2fa470344fac47f86fd58896a78026c49699282096834d1873b1d833"},
+   :source-occurrence-id
+   "C12/source/06aa1bdec4b1fd3e89b3c9e7a5a2e5ffa79dc75cb5a63ac1422606b149b834b6",
+   :id "C12/facet/6904-6952",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "73f2cc82059780cbe6126ea8041cc228c46c291fd8d1ef70827269b8e2379d4a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 6953,
+    :end-byte 7065,
+    :raw-sha256
+    "73f2cc82059780cbe6126ea8041cc228c46c291fd8d1ef70827269b8e2379d4a"},
+   :source-occurrence-id
+   "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc",
+   :id "C12/facet/6953-7065",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "c6bb73fe45ed137aa15a322c8230504b4c53ed7a17ff4a5c1be1b05b4d1c2813",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 7065,
+    :end-byte 7109,
+    :raw-sha256
+    "c6bb73fe45ed137aa15a322c8230504b4c53ed7a17ff4a5c1be1b05b4d1c2813"},
+   :source-occurrence-id
+   "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc",
+   :id "C12/facet/7065-7109",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "11f0af048f1bddedeaea77d0517973982d3a523ebbcfd37a17b9b4edc873016a",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 7109,
+    :end-byte 7167,
+    :raw-sha256
+    "11f0af048f1bddedeaea77d0517973982d3a523ebbcfd37a17b9b4edc873016a"},
+   :source-occurrence-id
+   "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc",
+   :id "C12/facet/7109-7167",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "61ed44c1450187244fc2aa42f42dc5677780e4605f43a77ee70f3b42a4c0041c",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 7167,
+    :end-byte 7216,
+    :raw-sha256
+    "61ed44c1450187244fc2aa42f42dc5677780e4605f43a77ee70f3b42a4c0041c"},
+   :source-occurrence-id
+   "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc",
+   :id "C12/facet/7167-7216",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "423506723b18d199ffe2af8e05223dbd6643aabdd3a70be548813efbcfb4f8d7",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 7216,
+    :end-byte 7268,
+    :raw-sha256
+    "423506723b18d199ffe2af8e05223dbd6643aabdd3a70be548813efbcfb4f8d7"},
+   :source-occurrence-id
+   "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc",
+   :id "C12/facet/7216-7268",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "eb74e0fa38b67df6636a4ec719a82050ddfcefad48db523a75e8e77b9d661592",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 7268,
+    :end-byte 7305,
+    :raw-sha256
+    "eb74e0fa38b67df6636a4ec719a82050ddfcefad48db523a75e8e77b9d661592"},
+   :source-occurrence-id
+   "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc",
+   :id "C12/facet/7268-7305",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}
+  {:role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :raw-sha256
+   "389bede363f8801f776318449a112151d2176c2ad22ce5ecdc6edb7b92cbff18",
+   :prior-provenance-overlap false,
+   :implementation-credit :none,
+   :source-witness
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :start-byte 7305,
+    :end-byte 7399,
+    :raw-sha256
+    "389bede363f8801f776318449a112151d2176c2ad22ce5ecdc6edb7b92cbff18"},
+   :source-occurrence-id
+   "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc",
+   :id "C12/facet/7305-7399",
+   :verdict :source-conjunction-scoped-pass,
+   :candidate-disposition
+   :proposal-pending-canonical-qualified-adoption}],
+ :canonical-writes :none,
+ :schema-version 1,
+ :exclusions
+ [:implementation
+  :domainentry-verifier-exit-callback-execution
+  :optimizer
+  :compiler
+  :proofchecker
+  :Bootstrap
+  :runtimeprovider
+  :target
+  :publication
+  :readiness
+  :migration
+  :release
+  :integration
+  :final-count-denominator
+  :entire-PR-approval
+  :full-L2-L7-domain-package-backend-proof-or-dependency-implementations
+  :C18-source-semantics
+  :pipeline-order-adjudication
+  :later-C17-adoption
+  :later-main70dcb222
+  :later-composition
+  :held-scope-acceptance
+  :outbound-delivery],
+ :source-entailment
+ {:proof-freshness
+  :wrong-checker-substituted-claim-domain-assumptions-subject-missing-stale-tampered-or-relabelled-evidence-refuses-with-historical-and-failed-attempts-retained,
+  :verifier
+  :full9-part-schema-anchor-provenance-typeeffectcapabilityprofile-domaininvariant-safetyproof-targetprecondition-fallbacklegality-diagnosticcompleteness-checklist-failure-prevents-affected-emission,
+  :diagnostics
+  :all9-C12-meanings-and-domain-artifact-span-anchor-owner-profile-target-verifier-missingfact-remediation-context,
+  :refused-evidence
+  :search-benchmark-providerclaims-or-supplied-success-flags-not-correctness-proof,
+  :exit
+  :all7-MIR-targetprovider-backendIR-runtimemanifest-generatedcode-package-verification-products-only-on-registered-path-after-actual-verifier-acceptance-and-accepted-equivalence-proof-certificate-lowering-evidence,
+  :semantics
+  :domain-IR-is-anchored-typed-Core-or-MIR-refinement-under-owning-domain-schema-no-separate-untyped-language,
+  :pipeline-order
+  :unchanged-unresolved-governing-source-question-not-chosen-or-accepted,
+  :products
+  :registry-schema-anchor-map-entryexit-records-verifier-report-proofcertificate-references-loweringeligibility-fallbackrejection-diagnostics,
+  :fallback
+  :unsupported-target-must-have-semantic-legal-fallback-residual-MIR-or-explicit-rejection-never-fabricated-executable-success,
+  :optimization
+  :proofreplay-certificatevalidation-MIR-or-Core-translationvalidation-nonsemantic-conformance-or-explicit-diagnostic-rejection-nonsemantic-evidence-never-authorizes-semantic-change,
+  :proof-producer
+  :unchanged-pass-evidence-task-requires-actual-declared-checker-invocation-on-exact-claim-inputs-proof-certificate-and-checker-version-verdict-before-consumption,
+  :scope-limit
+  :source-entailment-only-no-entry-verifier-exit-optimizer-proofchecker-compiler-or-target-execution,
+  :entry
+  :all7-expanded-source-typedcore-MIR-provider-package-schema-plugin-input-families-consumed-preserved-invalidated-translated-fact-edges-recorded,
+  :artifact
+  :actual-domain-artifact-ID-source-syntax-span-origins-Core-or-MIR-anchors-profile-target-required-type-effect-ownership-capability-profile-target-safety-provenance-facts-verifier-result-proofreferences-loweringstatus,
+  :future-conformance
+  :actual-EFIR-schema-workflow-and-identified-HDL-targetfamily-registration-verification-source-through-MIR-anchors-accepted-proof-or-certificate-and-refusal-without-evidence-target-fallback-plugin-policy-and-required-diagnostics,
+  :registration
+  :domain-owner-schema-anchors-entry-exit-verifier-profiles-targetlowerings-optimizationrules-proofobligations-fallback-diagnostics-stable-packagevisible-plugin-library-selfhosting-identities,
+  :dependencies
+  :authentic-C11-MATH3-MATH4-owningdomain-SAFE15-PERF1-PERF10-backend-producer-checker-consumer-interfaces-retain-independent-scopes,
+  :example-values
+  :EFIR-workflow-pass-target-profile-fallback-values-and-emptyproof-acceptedeligible-labels-prove-neither-support-nor-checking,
+  :families
+  :all9-EFIR-with-adjacent-EML-schema-workflow-AIagenttool-HDL-GPU-query-FFI-packageartifactgraph-owning-phase-payloads-no-enumeration-as-implementation},
+ :conservation
+ {:domain-five-rows-statuses-and-original-bodies :unchanged-Open,
+  :inventory-inverse
+  {:path "/tmp/c12-independent-bec12ac1/inventory-inverse.edn",
+   :sha256
+   "cb28b890d4a909d40b77d79ccda464c7eb793b29132faf67beea758a4fc6fc33",
+   :checker-sha256
+   "7ef077b1b77825badd8692a4057dc1df6b59c9c3e7a700ddc20508442a076b76"},
+  :task-baseline :identity-status-routing-conserved,
+  :all833
+  :full-record-hashes-and-Open-statuses-unchanged-931-current-witnesses-authenticated,
+  :overlap
+  {:ids ["C12/normalized-facet/32-308/0db33c18d4541ff6"],
+   :count 1,
+   :state :retained-pending-provenance-context,
+   :promotion :none,
+   :unique-proposal-delta 114},
+  :owners
+  :all1188-identities-original-obligations-and-resolution-states-conserved,
+  :report-successor
+  :inert-form-and-serialized-report-checks-only-CompilerAPI-sourcepins-digests-taskspans-and-pendingC12-metadata,
+  :unselected
+  :foundation-retirement-metadata-policy-fixedwidth-OWN-ACC08-held-and-other-dispositions-unchanged,
+  :original-corpus
+  :all240-document-identities-bytes-hashes-and-modeblob-objects-preserved,
+  :all561
+  :historical-ID-order-and4819-raw-spans-preserved-40-CompilerAPI-filepins-only-unchanged-predicates,
+  :mode-and-blob-pins
+  {"specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn"
+   "100644 blob c0ad84397da214ff354d1948383c3a2b46e6abd9\tspecs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn",
+   "specs/sh-family-crosswalk/crosswalk.edn"
+   "100644 blob 7f8e05228a6fc08085a9a8c8be44aaadcd04df9c\tspecs/sh-family-crosswalk/crosswalk.edn",
+   "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn"
+   "100644 blob 717f9a07bdcd859e8cdb9517942092d53a915764\tspecs/requirement-reconciliation/domain-complete-current-facet-trace.edn",
+   "specs/requirement-reconciliation/domain-owner-current-witness-applicability.edn"
+   "100644 blob df233e445ad8a0dcaa215d28e70499399ebc3a82\tspecs/requirement-reconciliation/domain-owner-current-witness-applicability.edn",
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"
+   "100644 blob 635b5deda6920cd66f905680de82f74e852a723e\tspecs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
+   "specs/requirement-reconciliation/domain-owner-source-refinement.edn"
+   "100644 blob 780ae19227310f92ce103000167f4a3f05219db3\tspecs/requirement-reconciliation/domain-owner-source-refinement.edn",
+   "specs/requirement-reconciliation/spec.md"
+   "100644 blob 8d251606c4aa374ba604102bc4e4fb7a1566e6a8\tspecs/requirement-reconciliation/spec.md",
+   "docs/component-roadmaps/compiler-api.md"
+   "100644 blob fe1eaf59fd86a965fbe94e765aca10b1297bb1b4\tdocs/component-roadmaps/compiler-api.md",
+   "tools/sh_crosswalk.clj"
+   "100644 blob 79a82a2d58a6484aadaf37aec9b5a01444c98704\ttools/sh_crosswalk.clj",
+   "specs/compiler-api-workflow/tasks.md"
+   "100644 blob f320b803ae659206ed727ae0706da6cd67b5c3a5\tspecs/compiler-api-workflow/tasks.md",
+   "specs/requirement-reconciliation/domain-captured-review-byte-continuity.edn"
+   "100644 blob 3392c67a9fa11206c365a750ecaeea42eb51669b\tspecs/requirement-reconciliation/domain-captured-review-byte-continuity.edn",
+   "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn"
+   "100644 blob 2990a13c7e968d142449aba5292f9476c351ea08\tspecs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+   "specs/requirement-reconciliation/task-baseline.edn"
+   "100644 blob 917fcb158c53c4352c25a12fcabac34770c754d5\tspecs/requirement-reconciliation/task-baseline.edn",
+   "specs/requirement-reconciliation/explicit-extension-source-trace.edn"
+   "100644 blob de0e893c19a1459e7eff729a3798e004d2591262\tspecs/requirement-reconciliation/explicit-extension-source-trace.edn",
+   "specs/requirement-reconciliation/evidence.md"
+   "100644 blob b7c97c747d0e87e665b58d126669c2191bad7ccf\tspecs/requirement-reconciliation/evidence.md",
+   "specs/requirement-reconciliation/source-dispositions.edn"
+   "100644 blob 057468fcbec818a14e16e195fcdefe94e7cb45b8\tspecs/requirement-reconciliation/source-dispositions.edn"},
+  :occurrences :all9945-identities-and-source-facet-lineage-preserved,
+  :domain-applicability-SHA256
+  "b873d2d1d5cdf8b20e77a6b04f79f302275f214288f24cd6d67422cefdd18e49",
+  :older-qualified
+  {:count 1362,
+   :includes-superseded-history 2,
+   :exact-IDs-dispositions-subjects-scopes-exclusions-and-artifact-bytes
+   :unchanged,
+   :ids-sha256
+   "7d4da052b96e526305392695c1f372c5c448c2c430a7fe0da00a3d729e9d3500"},
+  :all833-proof-SHA256
+  "31638a67d5e7d6acad9b1b9fc1285b76f933f016fc9ab18cc2ceba4d24cf4ee5",
+  :extensions
+  :byte-provenance-only-source-pointer-successor-no-semantic-promotion,
+  :all115C12-candidate-states
+  :proposal-only-no-canonical-acceptance-mutation,
+  :literal-outcomes
+  ["pipeline"
+   "plugins"
+   "pass-evidence"
+   "domain-ir-boundaries"
+   "development-boundaries"],
+  :facets
+  :all28785-full-records-restorable-by-removing-selected-proposal-delta-and-restoring-authenticated-reference-successor-pointers,
+  :task-and-roadmap-inverse
+  :exact-declared-single-insertion-removal-restores-whole-predecessor-files,
+  :pass-evidence-producer :unchanged-raw-bytes,
+  :global-domain-binding-SHA256
+  "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122"},
+ :controls
+ {:result :pass,
+  :negative-count 52,
+  :semantic-mutation-count 36,
+  :results
+  {:verifier-missing-fallback true,
+   :missing-HDL-fixture true,
+   :proof-missing-subject true,
+   :exit-before-verifier true,
+   :private-plugin-registration true,
+   :lowering-claims-without-receipts true,
+   :entry-data-is-execution true,
+   :unregistered-exit true,
+   :missing-proof-owner-role true,
+   :forged-source-pin true,
+   :old-scope-renewal true,
+   :new-clause-inherits true,
+   :invalid-fallback true,
+   :benchmark-proof true,
+   :registration-missing-proof true,
+   :foreign-payload-schema true,
+   :owner-promoted true,
+   :proof-checker-label true,
+   :proof-production-is-checking true,
+   :artifact-missing-ownership true,
+   :failed-verifier-emits true,
+   :registration-missing-owner true,
+   :missing-dependency true,
+   :enumeration-is-support true,
+   :EML-extra-language true,
+   :missing-owner-witness true,
+   :artifact-missing-origin true,
+   :domain-semantics-overridden true,
+   :captured-predicate-omitted true,
+   :no-transition-conformance true,
+   :context-promoted true,
+   :stale-tampered-evidence true,
+   :stale-task true,
+   :verifier-missing-provenance true,
+   :source-conjunction-shortened true,
+   :flag-only-dependency true,
+   :missing-plugin-entry true,
+   :duplicate-append true,
+   :capture-subject-promoted true,
+   :example-support true,
+   :baseline-missing-FFI true,
+   :entry-lost-invalidation true,
+   :diagnostic-lost-owner true,
+   :accepted-label-proof true,
+   :registration-missing-exit true,
+   :missing-verification-exit true,
+   :untyped-language true,
+   :forged-captured-pin true,
+   :one-family-enough true,
+   :nonsemantic-proves-semantic true,
+   :forged-current-span true,
+   :diagnostic-lost-plugin true},
+  :method
+  :private-mutated-contract-document-rehashed-with-consistent-filehash-bytebounds-rawhashes-ownerwitnesses-and-payloaddigest-before-semanticvalidation-plus-rehashed-continuity-scope-mutations-and-pin-routing-staleappend-controls,
+  :qualification
+  :source-DATA-contract-checks-not-domain-execution-or-complete-regenerated-Git-candidates,
+  :artifact
+  {:path "/tmp/c12-independent-bec12ac1/controls.edn",
+   :sha256
+   "47fb2f7963b0d1c5ff370809e4f06ae4015d04471fef18dcf1c04695bb5a67de"},
+  :checker
+  {:path "/tmp/c12-independent-bec12ac1/check.clj",
+   :sha256
+   "0328ed9c3d4534701fab55d3ff9cb620bc96eb4de8d85f7ab0b38c56f80cb442",
+   :command
+   "clojure -J-Xmx1400m -M /tmp/c12-independent-bec12ac1/check.clj"}},
+ :eligibility
+ {:author-publication-turn "01a18beb-b978-7352-9812-b5317aedbcb9",
+  :fresh-author-activity :separate-C17-qualified-applicability,
+  :orchestrator-thread "01a18b65-91fa-740a-b712-8a22b3cd000c",
+  :reviewer-thread "01a18528-d38b-71b3-a24c-2d440396fb28",
+  :holds
+  :Metadata372-Policy14-fixedwidth-OWN-ACC08-DSE-unknownops-ACC09v4delivery-531merge-e7UNKNOWN-and-all-other-exact-holds-still-excluded,
+  :author-current-turn "01a18bf8-e130-7350-b7ff-22e3169c30f7",
+  :intake
+  {:path "/tmp/c12-independent-bec12ac1/goal-intake.json",
+   :sha256
+   "2593ee4a4c4ead135eed7a33fb8494641a06f82b1b86f9d45553e9e66c6898d5"},
+  :previously-authored-predicates-and-completed-review-scopes
+  :conservation-only-no-renewal,
+  :competing-exact-C12-review :none-in-checked-readbacks,
+  :selected-semantic-selfauthorship :none,
+  :canonical-author-thread "01a18424-d867-7c12-8a04-07484900100c"},
+ :scope
+ {:historical-spans 4819,
+  :task-ids 5,
+  :current-witnesses 931,
+  :overlapping-context-facets 1,
+  :semantic-conjunctions 34,
+  :owner-joins 6,
+  :history 561,
+  :833-records 833,
+  :occurrences 50,
+  :captured-filepin-refreshes 2,
+  :historical-filepin-refreshes 40,
+  :captured-byte-continuity 65,
+  :task-appends 1,
+  :facets 115,
+  :prior-qualified-scopes 1362,
+  :contexts 16,
+  :preserved-C17-criteria 3,
+  :criterion-spans 3},
+ :inputs
+ {"specs/requirement-reconciliation/all833-domain-owner-current-criterion-conservation.edn"
+  {:sha256
+   "31638a67d5e7d6acad9b1b9fc1285b76f933f016fc9ab18cc2ceba4d24cf4ee5",
+   :blob "c0ad84397da214ff354d1948383c3a2b46e6abd9"},
+  "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn"
+  {:sha256
+   "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122",
+   :blob "2990a13c7e968d142449aba5292f9476c351ea08"},
+  "specs/requirement-reconciliation/domain-captured-review-byte-continuity.edn"
+  {:sha256
+   "07af96cc22d0b15fbc9481439d01a281f5439fa66fa37f7d2bac65e160ef52c1",
+   :blob "3392c67a9fa11206c365a750ecaeea42eb51669b"},
+  "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn"
+  {:sha256
+   "cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff",
+   :blob "717f9a07bdcd859e8cdb9517942092d53a915764"},
+  "specs/requirement-reconciliation/domain-owner-current-witness-applicability.edn"
+  {:sha256
+   "b873d2d1d5cdf8b20e77a6b04f79f302275f214288f24cd6d67422cefdd18e49",
+   :blob "df233e445ad8a0dcaa215d28e70499399ebc3a82"},
+  "specs/requirement-reconciliation/domain-owner-source-refinement.edn"
+  {:sha256
+   "f684657133b78d630b2cfbb58132842175092b4acc596e58aad5d9367e9c3678",
+   :blob "780ae19227310f92ce103000167f4a3f05219db3"}},
+ :kind :independent-C12-source-entailment-review,
+ :private-writes :review-artifacts-only,
+ :verdict :scoped-pass,
+ :earlier-subject-continuity
+ {:captured-older-reviews
+  {:path
+   "specs/requirement-reconciliation/domain-captured-review-byte-continuity.edn",
+   :source-set-sha256
+   "494e26d8a4c1aaaa32024fe7f149555b9a32039bd787c72f1a6fc1b4aff073e3",
+   :changed-path "specs/compiler-api-workflow/tasks.md",
+   :joins 65,
+   :authentication
+   :captured-filehashes-rawspans-and-unique-current-filehashes-rawspans,
+   :changed-filepins 2,
+   :verdict :exact-byte-continuity-only,
+   :sha256
+   "07af96cc22d0b15fbc9481439d01a281f5439fa66fa37f7d2bac65e160ef52c1",
+   :source-set
+   :exact-multiset-from-five-unchanged-BOOT15-batch-C11-compiler-C16-adoption-artifacts},
+  :C17
+  {:frozen-subject "45fa1763f939bdad59a9ee78401223a957382454",
+   :trace :unchanged-exact-frozen-bytes,
+   :criterion-bodies :all3-exact-unique-current-task-spans,
+   :refreshed-witnesses
+   :three-raw-identical-filepin-refreshes-in-domain-bindings,
+   :adoption :not-conferred},
+  :review-subjects-scopes-receipt-hashes-and-exclusions :unchanged,
+  :new-C12-or-C17-clause-inheritance :none,
+  :old-review-renewal :none,
+  :whole-current-head :not-accepted,
+  :implementation-credit :none},
+ :owner-verdicts
+ {"compiler/c12/domain-entry"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Build domain IR through declared entry passes recording consumed, preserved, invalidated and translated source/IR facts.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 41767,
+     :end-byte 47262,
+     :raw-sha256
+     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 47264,
+     :end-byte 51509,
+     :raw-sha256
+     "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c12/domain-fallback"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "For unsupported targets expose semantically legal fallback, residual MIR or explicit rejection with diagnostic and eligibility records.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 41767,
+     :end-byte 47262,
+     :raw-sha256
+     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 47264,
+     :end-byte 51509,
+     :raw-sha256
+     "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c12/domain-proof-boundary"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Expose optimized domain results only with proof/certificate/translation-validation or accepted nonsemantic evidence; reject benchmark/search/provider claims as sole correctness evidence.",
+   :criterion-keys [:existing :records :proof],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 41767,
+     :end-byte 47262,
+     :raw-sha256
+     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 47264,
+     :end-byte 51509,
+     :raw-sha256
+     "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c12/domain-registration"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Register stable package-visible domain interfaces with owning schema/verifier/passes/profiles/lowerings/proof/fallback/diagnostic contracts, including plugin-provided domains.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 41767,
+     :end-byte 47262,
+     :raw-sha256
+     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 47264,
+     :end-byte 51509,
+     :raw-sha256
+     "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c12/domain-semantic-anchor"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Anchor domain artifacts to source syntax and typed core or MIR while preserving all downstream semantic/authority/safety/provenance facts under the owning payload schema.",
+   :criterion-keys [:existing :records],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 41767,
+     :end-byte 47262,
+     :raw-sha256
+     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 47264,
+     :end-byte 51509,
+     :raw-sha256
+     "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none},
+  "compiler/c12/registered-domain-exit"
+  {:verdict :complete-source-conjunction-scoped-pass,
+   :original-obligation
+   "Permit domain exit/target consumption only via registered paths after verifier acceptance and accepted lowering/equivalence evidence.",
+   :criterion-keys [:existing :records :proof],
+   :criterion-witnesses
+   [{:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 41767,
+     :end-byte 47262,
+     :raw-sha256
+     "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "domain-ir-boundaries",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 47264,
+     :end-byte 51509,
+     :raw-sha256
+     "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}
+    {:path "specs/compiler-api-workflow/tasks.md",
+     :marker "compiler-api-implementation-tasks",
+     :task-id "pass-evidence",
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :file-sha256
+     "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+     :start-byte 29748,
+     :end-byte 41650,
+     :raw-sha256
+     "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}],
+   :previous-candidate-state-preserved true,
+   :implementation-credit :none}},
+ :criterion-verdicts
+ {:existing
+  {:verdict :source-conjunction-scoped-pass,
+   :witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 41767,
+    :end-byte 47262,
+    :raw-sha256
+    "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+   :earlier-body :unchanged-byte-predicate},
+  :records
+  {:verdict :source-conjunction-scoped-pass,
+   :witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "domain-ir-boundaries",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 47264,
+    :end-byte 51509,
+    :raw-sha256
+    "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
+   :earlier-body :new-Open-future-criterion},
+  :proof
+  {:verdict :source-conjunction-scoped-pass,
+   :witness
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :task-id "pass-evidence",
+    :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :file-sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :start-byte 29748,
+    :end-byte 41650,
+    :raw-sha256
+    "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+   :earlier-body :unchanged-byte-predicate}},
+ :occurrence-verdicts
+ {"C12/source/05bbc980f33c711f8552fba6bb8f19f5e4fe8e5593be7bf6ab49f658ec41c3e5"
+  {:index 40,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Diagnostics bind domain/artifact/span/anchor/owner/profile/target/verifier/missing-fact/remediation context.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/06aa1bdec4b1fd3e89b3c9e7a5a2e5ffa79dc75cb5a63ac1422606b149b834b6"
+  {:index 48,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Actual conformance must demonstrate the complete following family/anchor/proof/lowering/plugin/diagnostic matrix.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/070e5e42fce5497f2315c906d52b98a080666f57ec8e19c016f616127daaddf0"
+  {:index 27,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Verify schema, anchors, provenance, type/effect/capability/profile compatibility, owning invariants, safety/proofs, target preconditions, fallback legality and diagnostic completeness.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/087cdbf2117c81d0d341c471a32d7693366506f968f86f931677d5464b4164f7"
+  {:index 21,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/1c8d9d873bbf988723ceb9ef1d2d0403043a0e7f68f814b13312cc384a5e0b8e"
+  {:index 23,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Exit through registered MIR/provider/backend IR/runtime manifest/generated code/package/verification paths.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/1f9f640093d664f591ac4864047ad4950b1a51b3bda0194b7304928d71fc04e9"
+  {:index 20,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Record consumed, preserved, invalidated and translated source/IR facts; missing facts or anchors reject or regenerate before consumption.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/204aa24e4ff26cc2c8a0a092d0bfd613d99e2661c4a065715cd12ba6789c0cc5"
+  {:index 28,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Failed domain verification prevents emission for that domain artifact.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/2175b6af2ed24ffb4b6b4a82cb8fa088849c1229565b09e8a99ad0134949ed85"
+  {:index 46,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject opaque plugin domain payloads with no verifier.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/2998b2da47507277174f32b4ed9d668e1bb509b7feb8bfdf17d26689820d1e11"
+  {:index 9,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/2a1b71608bbed1c5ac8b14271e671986fa7d2c3de6bbd391e30e0a952fb1de2f"
+  {:index 32,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Search output, benchmarks and provider assertions alone never prove correctness.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/2ea17339a745b7d601f59596e9c993efb5ce920643c8948592cb51987e068d18"
+  {:index 5,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/3052324b33e8f4113680fb64e5caeadaae68fb8f8b9577abf012fea066f9579b"
+  {:index 16,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Domain owner schema governs payload, preserving distinct family semantics.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/3578bda7859e3ef564427cd8919107d95c17a5615217281b8b5c84e9afe0d806"
+  {:index 38,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Retain C12 identifier family and the complete following diagnostic meanings.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/3b0915dcbe8a446e7f7b3502b5b1ae6de3f11b89f2d3d6959c95b415e912ed36"
+  {:index 1,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/4453542dffe4df04461f001b2414701c80e665343362e8ccb3cca0e0ba4b452e"
+  {:index 4,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Typed Core/MIR refinement retains source semantics and requires accepted proof/certification before semantic transformation reaches target emission.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/463fde56d955dd37b6a385b8056799d888b0606738a729bb09c9f96dd383227a"
+  {:index 44,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject unverified backend consumption.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/488117b922b7512eeb99d0e9c0f5fe04acbceaf44d1e14640b50d2855eacd3d6"
+  {:index 45,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Reject domain semantic optimization without accepted proof/certificate/translation evidence.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/4f4ae54eb072652f92d9999cfe535e0e2e78fb19fd90d3b5f1e41841891ad73e"
+  {:index 8,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Authentic C11 anchors, MATH3 EFIR/MATH4 EML, owning schema/workflow/AI/hardware/GPU/query/interop contracts, SAFE15 proofs, PERF1/PERF10 optimization/elision and backend capabilities remain separate producer/checker dependencies, without accepting full implementations.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/5c1ae85da1e549828a405d1d48a239db53425fc38d848e102505d7ce2ef07f83"
+  {:index 33,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/6ad5e6781315c66d8dafe7f10470d77efcc1a2c28181297576d1c51a481b7e70"
+  {:index 17,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/78d0695cffd707b5f3cfdff623b5cb028bba132bdf8953fc650048211203ba8e"
+  {:index 43,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Reject domain artifacts missing typed-core/MIR anchors.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/80bcd007bb03288fa007f5d072d4d1bf5f338c26a1cdb4fb8d0c78b62890e7b6"
+  {:index 35,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "EFIR with adjacent EML proof/search, schema, workflow, AI agent/tool, HDL/state-machine, GPU, query, FFI and package/artifact graph families retain their proper purposes and owning contracts.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/8701173c97abc19eea1a9aef76797f80eb8528b8ea249f308121aa630207997f"
+  {:index 19,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Construct through expanded source, typed core, MIR, provider declarations, package manifests, schema declarations and plugin output with declared entry passes.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/89d19386d446e140e0b08ee005683d88ab70f93d359d70076a34988b0b1bbfdc"
+  {:index 49,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Require actual registration/verification for EFIR/schema/workflow and the identified HDL target-oriented family, source-through-MIR anchors, proved/certified optimization and evidence-free refusal, eligibility/fallback, plugin policy and required failure diagnostics; source record presence proves no execution.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/8b53d5197904c622e73bea95b439bfdd3ba029530b9cb7284f45e31f33d5caf6"
+  {:index 29,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/8d3c037c507cf7a9ccd29b078eb46c46611ef198700df225eca3dab7fceb6593"
+  {:index 15,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Artifact carries actual domain/artifact identity, source syntax/span/origins, typed-core/MIR anchors, profile/target request, required facts, verifier identity/result, proofs and lowering status. Example workflow facts and accepted/eligible/empty-proof values do not prove actual verification or legal lowering.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/8ff813cfb2814df13cfc3be969f6b68cf7c76c42761a6272ef627365ae254e04"
+  {:index 37,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/92eb8b44f27e159335634dadd417bf48b2b041e14c84db16baff51b5114da814"
+  {:index 6,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "All seven requirements conjoin: full registration, source/core/MIR anchors, accepted transformation evidence, downstream semantic/authority/safety/provenance facts, registered backend paths, meaningful fallback/residual/rejection and stable plugin/self-hosting interfaces.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/953d6718c80f593e9ee2dc71ee34cc8e0cf7b707153499dca3124d1e0e11d036"
+  {:index 10,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Emit every registry/schema/anchor-map/entry-exit/verifier/proof-certificate/eligibility/fallback-rejection/diagnostic product family.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/99d7911eb85cf1dfceac7083f12735ac995697dec6712ff28699ceabb209548f"
+  {:index 14,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/9c1329a62b01cfd5faf925624c8b582e5b6505585c3dfb24d1740a1951089069"
+  {:index 24,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Legal exit requires actual verifier acceptance and emitted equivalence/proof/certificate/accepted-lowering evidence before target consumption.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/a0ad5e01766a0dc71bee4e0c727ca0d7cf332e29eedea5c9bcbaae4075393999"
+  {:index 36,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Each owning phase document retains detailed family payload schema authority.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/a8d1becd85d52e27738f39f055914eb86d71e5d166ab81775902bad1cb008fcb"
+  {:index 18,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Preserve the complete following allowed entry family set.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/aa59323559f1932a15b1f919baee1be2375d4eaf41f9b24f3d9a645dec2d1e7e"
+  {:index 26,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Preserve the complete following verifier conjunction.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/ae6c7bd3acc1b5cb14a41f57df20d037db5ad0893a9ece589f7d2d48b89fc621"
+  {:index 47,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/ba183c0c1b2fe6444346ded1b8638c8ec559a057ca2121aecf446bdcb03e57b4"
+  {:index 41,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/bdbacc516499fd7e0bc5c894187084a666d4ae974dceaecddde28cf48e5d3628"
+  {:index 3,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "All named domain families remain anchored compiler artifacts with verifiers, pass contracts and target rules rather than independent languages.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/c57f4570bbed164a7b39e87de80eaedf5c56ba723fa15e3d6a49a47c996839a6"
+  {:index 42,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate "Reject domain IR as separate untyped language.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/ca63eb0c94ad23c82fff908e953e3b087385d0d1f9ea81bf3434df905d706c93"
+  {:index 7,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/ce7e6eebda7d49dcf83a7dec31a50d7ca9a86ac278ddf9820e0cc3160ffc55e6"
+  {:index 25,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/d10904523542231b4d8d5c47027933424a125dc516eaba1fbdb11901780c374a"
+  {:index 13,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Plugin/library domain registrations have stable package-visible artifact identities.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/da2453e6cb3872f01a239cad1dcddf93fec93bf7b5ea29b7ecc0ac21ba6356f8"
+  {:index 11,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/de6696717ec3cc29dcb50fd22649616b89e4e2f818306f18f53a0a78c8a25104"
+  {:index 31,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Admit proof replay, validated certificates, MIR/Core translation validation, conformance for nonsemantic choices or explicit diagnostic rejection; nonsemantic evidence cannot authorize semantic change.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/e1a1b9fb77e30ba806eb6f940efba00b51e51129d2b0169362ea850de4db3b22"
+  {:index 0,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/e4a712d64f8476a6d3284b69f2d8ad109f21da1417b12361078771119a3e0bd4"
+  {:index 2,
+   :role :retained-hierarchy-or-provenance-context,
+   :criterion-keys [],
+   :predicate
+   "Retain original heading/sequence/phase/draft/attribution source scope without semantic implementation credit.",
+   :verdict :context-preserved-no-semantic-credit},
+  "C12/source/eb4fc2f360285d8b16c68eba32a98d08e7c0b846a7ebd6c553b82707f773c636"
+  {:index 39,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "All nine registration/anchor/schema/fact/verifier/proof/lowering/fallback/plugin-policy failures retain stable C12 diagnostic meanings and actual refusal products.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/f487f88924793dd989eaac85436c5c7c7d8b3842c987c7f5f038836f5bdc5ef3"
+  {:index 12,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Registration binds actual artifact/domain/owner/schema/anchors/entry-exit/verifier/profiles/target lowerings/proof/fallback data; EFIR/pass/profile/target/provider sample values confer no universal defaults or support.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/f56c32e66777d2998448bf168af5684dee3d8d0dbec01f798440030b0dbab7fd"
+  {:index 22,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records],
+   :predicate
+   "Preserve the complete following exit product family set.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/faa861228e8355e7e3a5a615bdd1b7a1315d8a5d8c7b6e847f7da0b7450bfab0"
+  {:index 34,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:records],
+   :predicate
+   "Preserve the complete following baseline domain family set without claiming implementation support.",
+   :verdict :complete-source-conjunction-scoped-pass},
+  "C12/source/fad8cdf0372bfee7558993d6bd2b2b2c37de5b86dd9621745fc886a995d46a41"
+  {:index 30,
+   :role :complete-source-predicate-conjunction,
+   :criterion-keys [:existing :records :proof],
+   :predicate
+   "Specialized representation/search remains behind the complete following compiler-visible correctness boundary.",
+   :verdict :complete-source-conjunction-scoped-pass}},
+ :subject
+ {:tree "e08666f8a5c736ec70bb2eed8f286b52dabb4f26",
+  :repository "burn2delete/uniform",
+  :base-qualification
+  :task-refinement-predecessor-not-main-integration-base,
+  :subject-parent "09bc34ddf34c91facec6fe9c77b03c64746ed81d",
+  :task-source "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+  :tree-qualification
+  :actual-Git-object-corrects-owner-final-text-typo,
+  :commit "bec12ac1d543353325030f40db37490c5407d8d5",
+  :predecessor-tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+  :refinement-predecessor "45fa1763f939bdad59a9ee78401223a957382454",
+  :pr 554},
+ :completion :sealed-frozen-source-review-native-goal-readback-separate}

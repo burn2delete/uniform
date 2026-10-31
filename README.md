@@ -19,6 +19,8 @@ Python source, bytecode, and executable shebangs are prohibited. See
 - [docs/roadmap-capability-audit.md](docs/roadmap-capability-audit.md) records the capability-gated correction to roadmap status.
 - [docs/phase-18-binary-distribution-and-seedless-release/README.md](docs/phase-18-binary-distribution-and-seedless-release/README.md) owns the open product release roadmap for a user-facing seedless `gravity` executable.
 - [docs/bootstrap/clojure-bootstrap.md](docs/bootstrap/clojure-bootstrap.md) describes the active Clojure stage0 bootstrap.
+- [Stage-owned namespaces](docs/bootstrap/stage-owned-namespaces.md) assigns
+  incremental extraction boundaries, APIs, artifact flow and test ownership.
 - [Development workflow](docs/development-verification.md) is the default for
   small compiler edits: focused semantic tests, affected composition checks,
   then authoritative migration only for an explicit stable-revision decision.
