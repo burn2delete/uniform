@@ -7151,10 +7151,10 @@
                             parameter)
                     work (+ used (if (= :accepted (get parameter :status)) (get graph :work-count) 0))]
                 (if (if (= :accepted (get parameter :status)) (= :accepted (get graph :status)) false)
-                  (loop [remaining (get census :calls) entries [] normal-count 0 used work domain-work 0]
+                  (loop [remaining (get census :calls) entries [] normal-count 0 used work]
                     (if (= 0 (count remaining))
                       (if (< 0 normal-count)
-                        {:status :accepted :work-count used :key-domain-work domain-work
+                        {:status :accepted :work-count used
                          :proof {:kind :complete-private-call-entry-key-domain :version :sh08-private-map-keys-entry-domain-v1
                                  :domain :keyword :parameter-type :gravity.type/map :result-refinement :none
                                  :parameter-binding-id (get (get census :parameter-binding) :binding-id)
@@ -7205,7 +7205,7 @@
                                                                             :source-span (get call-source :semantic-span) :syntax-id (get call-source :syntax-id)
                                                                             :origin-chain (get call-source :origin-chain) :generated-origin (get call-source :generated-origin)
                                                                             :profile (get (get core :module) :profile) :target (get (get core :module) :target)}})
-                                          (+ normal-count 1) total (+ domain-work key-work))
+                                          (+ normal-count 1) total)
                                         {:status :rejected :reason (if (= :private-map-keys-work-limit (get source :reason))
                                                                  :private-map-keys-work-limit :private-map-keys-source-mismatch) :work-count total}))
                                     {:status :rejected :reason :private-map-keys-entry-domain-required :work-count used})
@@ -7218,7 +7218,7 @@
                                                                             :source-span (get call-source :semantic-span) :syntax-id (get call-source :syntax-id)
                                                                             :origin-chain (get call-source :origin-chain) :generated-origin (get call-source :generated-origin)
                                                                             :profile (get (get core :module) :profile) :target (get (get core :module) :target)}})
-                                    normal-count used domain-work))
+                                    normal-count used))
                                   {:status :rejected :reason :private-map-keys-source-mismatch :work-count used})
                                 {:status :rejected :reason :private-map-keys-entry-domain-required :work-count used})))))))
                   {:status :rejected :reason (get graph :reason) :work-count work}))
