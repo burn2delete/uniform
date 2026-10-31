@@ -92,6 +92,16 @@
          #'gravity.resolution/import-records
          #'sh06-resolution-dependency-record
          #'source-span
+         #'gravity.resolution/analysis-inputs
+         #'gravity.resolution/dependency-edges
+         #'gravity.resolution/fixed-vector-pattern?
+         #'gravity.resolution/let-loop-binding-paths
+         #'gravity.resolution/match-pattern-binding-paths
+         #'gravity.resolution/unique-match-binding-paths
+         #'sh06-fixed-vector-pattern?
+         #'sh06-let-loop-binding-paths
+         #'sh06-match-pattern-binding-paths
+         #'sh06-unique-match-binding-paths
          #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
          #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*

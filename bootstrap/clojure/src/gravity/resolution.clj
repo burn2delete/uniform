@@ -6,7 +6,10 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {definition-records
+   {match-pattern-binding-paths
+    {:arglists ([pattern path operations]),
+     :operation-inputs [:sh06-match-pattern-binding-paths]},
+    definition-records
     {:arglists ([module sh05-artifact operations]),
      :operation-inputs
      [:sh06-resolution-definition-kind
@@ -22,6 +25,14 @@
       :sh06-resolution-boundary-fail!
       :sh06-resolution-build-binding!
       :sh06-resolution-current-source-key]},
+    analysis-inputs
+    {:arglists ([_module sh05-artifact overrides operations]),
+     :operation-inputs
+     [:reader-canonical-hash
+      :sh06-fixed-vector-pattern?
+      :sh06-let-loop-binding-paths
+      :sh06-resolution-semantic-span
+      :sh06-unique-match-binding-paths]},
     dependency-record
     {:arglists
      ([source-path module dependency overrides ordinal operations]),
@@ -42,6 +53,8 @@
      ([rule source-path missing-field observed facts operations]),
      :operation-inputs [:c5-resolution-fail! :source-span]},
     request-overrides {:arglists ([module]), :operation-inputs []},
+    let-loop-binding-paths
+    {:arglists ([pattern path]), :operation-inputs []},
     plan-identities
     {:arglists ([plan operations]),
      :operation-inputs
@@ -69,6 +82,9 @@
     core-records
     {:arglists ([operations]),
      :operation-inputs [:input :sh06-resolution-core-record]},
+    unique-match-binding-paths
+    {:arglists ([pattern path operations]),
+     :operation-inputs [:sh06-match-pattern-binding-paths]},
     definition-kind {:arglists ([form]), :operation-inputs []},
     source-revision-id
     {:arglists ([sh05-artifact operations]),
@@ -88,6 +104,9 @@
      [:sh06-resolution-boundary-fail!
       :sh06-resolution-resolve-source-path
       :sha256-bytes-hex]},
+    dependency-edges
+    {:arglists ([source-path module imports overrides operations]),
+     :operation-inputs [:source-span]},
     envelope-id
     {:arglists ([sh05-artifact operations]),
      :operation-inputs [:reader-canonical-hash]},
@@ -107,7 +126,10 @@
      :operation-inputs [:sh06-resolution-dependency-record]},
     core-record
     {:arglists ([symbol kind ordinal operations]),
-     :operation-inputs [:input :reader-canonical-hash]}},
+     :operation-inputs [:input :reader-canonical-hash]},
+    fixed-vector-pattern?
+    {:arglists ([pattern operations]),
+     :operation-inputs [:sh06-fixed-vector-pattern?]}},
    :operation-inputs
    [:c-backend-canonical-value
     :c-backend-resolve-p15-s23-compiler-source-path
@@ -121,6 +143,9 @@
     :p15-s23-stage2-runtime-execute-function
     :reader-canonical-hash
     :sh04-syntax-strip-host-metadata
+    :sh06-fixed-vector-pattern?
+    :sh06-let-loop-binding-paths
+    :sh06-match-pattern-binding-paths
     :sh06-resolution-binding-current!
     :sh06-resolution-boundary-fail!
     :sh06-resolution-build-binding!
@@ -133,6 +158,7 @@
     :sh06-resolution-read-current-source!
     :sh06-resolution-resolve-source-path
     :sh06-resolution-semantic-span
+    :sh06-unique-match-binding-paths
     :sha256-bytes-hex
     :sha256-hex
     :source-span],
@@ -144,7 +170,7 @@
     :configuration
     :host-operations],
    :self-hosted? false,
-   :governing-contracts [D1 D2 D3 D9 L3 C1 C3 C4 C5 C15 TEST2 L2],
+   :governing-contracts [D1 D2 D3 D9 L3 C1 C3 C4 C5 C15 TEST2 L2 L7],
    :seed-inputs
    [:*sh06-resolution-operation-binding*
     :known-source-profiles
@@ -166,7 +192,12 @@
     :seed-retirement
     :migration
     :release
-    :performance],
+    :performance
+    :pattern-typing
+    :guard-legality
+    :exhaustiveness
+    :ownership-moves
+    :match-lowering],
    :artifact-inputs
    [:current-source
     :compiler-and-emitter-snapshots
@@ -176,7 +207,9 @@
     :module-declarations
     :core-catalog
     :module-dependencies
-    :candidate-bindings],
+    :candidate-bindings
+    :patterns
+    :shadow-policy],
    :namespace gravity.resolution,
    :diagnostic-ownership
    {:stage [:source-plan-boundary :host-containment],
@@ -193,7 +226,11 @@
     :upstream-references
     :dependency-records
     :import-binding-records
-    :explicit-declaration-records],
+    :explicit-declaration-records
+    :lexical-scopes
+    :references
+    :pattern-binding-paths
+    :dependency-edges],
    :clojure-seed-boundary? true,
    :contract-boundary
    :gravity-resolution-normalization-and-plan-runtime})
@@ -1150,9 +1187,650 @@
       :binding-class :namespace}))
    vec)))
 
+
+(defn
+ match-pattern-binding-paths
+ [pattern path operations]
+ (let
+  [sh06-match-pattern-binding-paths
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-match-pattern-binding-paths)]
+  (cond
+   (and (symbol? pattern) (not= '_ pattern) (not= '& pattern))
+   [{:name pattern, :path path}]
+   (vector? pattern)
+   (vec
+    (mapcat
+     (fn
+      [index item]
+      (sh06-match-pattern-binding-paths item (conj path index)))
+     (range)
+     pattern))
+   (map? pattern)
+   (vec
+    (mapcat
+     (fn
+      [index [key child]]
+      (if
+       (= :when key)
+       []
+       (sh06-match-pattern-binding-paths
+        child
+        (conj path (inc (* 2 index))))))
+     (range)
+     pattern))
+   :else
+   [])))
+
+(defn
+ fixed-vector-pattern?
+ [pattern operations]
+ (let
+  [sh06-fixed-vector-pattern?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-fixed-vector-pattern?)]
+  (cond
+   (vector? pattern)
+   (every? sh06-fixed-vector-pattern? pattern)
+   (map? pattern)
+   (and
+    (not (contains? pattern :when))
+    (every? keyword? (keys pattern))
+    (every? sh06-fixed-vector-pattern? (vals pattern)))
+   (symbol? pattern)
+   (not= '& pattern)
+   :else
+   (or
+    (nil? pattern)
+    (true? pattern)
+    (false? pattern)
+    (number? pattern)
+    (char? pattern)
+    (string? pattern)
+    (keyword? pattern)
+    (and
+     (seq? pattern)
+     (= 2 (count pattern))
+     (= 'quote (first pattern))
+     (symbol? (second pattern)))))))
+
+(defn
+ unique-match-binding-paths
+ [pattern path operations]
+ (let
+  [sh06-match-pattern-binding-paths
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-match-pattern-binding-paths)
+   binding-paths
+   (sh06-match-pattern-binding-paths pattern path)
+   names
+   (mapv :name binding-paths)]
+  (when (= (count names) (count (set names))) binding-paths)))
+
+(defn
+ let-loop-binding-paths
+ [pattern path]
+ (if
+  (vector? pattern)
+  (:bindings
+   (letfn
+    [(walk
+      [value current-path state]
+      (cond
+       (vector? value)
+       (reduce-kv
+        (fn
+         [next-state index item]
+         (walk item (conj current-path index) next-state))
+        state
+        value)
+       (and
+        (symbol? value)
+        (not= '_ value)
+        (not= '& value)
+        (not (contains? (:seen state) value)))
+       (->
+        state
+        (update :seen conj value)
+        (update :bindings conj {:name value, :path current-path}))
+       :else
+       state))]
+    (walk pattern path {:seen #{}, :bindings []})))
+  (if (symbol? pattern) [{:name pattern, :path path}] [])))
+
+(defn
+ dependency-edges
+ [source-path module imports overrides operations]
+ (let
+  [source-span
+   (.valAt ^clojure.lang.ILookup operations :source-span)
+   base
+   (mapv
+    (fn
+     [ordinal dependency]
+     {:from (:module module),
+      :to (:namespace dependency),
+      :kind (:kind dependency),
+      :boundary (:boundary dependency),
+      :semantic-span {:dependency-edge ordinal},
+      :source-span (:source-span dependency)})
+    (range)
+    imports)
+   explicit
+   (get-in overrides [:module-graph :edges])]
+  (vec
+   (distinct
+    (concat
+     base
+     (map-indexed
+      (fn
+       [ordinal edge]
+       (let
+        [[from to] (when (vector? edge) edge)]
+        {:from (or (:from edge) from),
+         :to (or (:to edge) to),
+         :kind (or (:kind edge) :namespace),
+         :boundary (:boundary edge),
+         :semantic-span {:explicit-edge ordinal},
+         :source-span (source-span source-path 0)}))
+      explicit))))))
+
+(let
+ [semantic-late-sh06-resolution-analysis-inputs-parameter-names
+  (fn
+   [parameters]
+   (loop
+    [remaining
+     (seq (if (sequential? parameters) parameters []))
+     names
+     []]
+    (if
+     (empty? remaining)
+     names
+     (let
+      [item (first remaining)]
+      (cond
+       (= item ':-)
+       (recur (nnext remaining) names)
+       (= item '&)
+       (recur (next remaining) names)
+       (symbol? item)
+       (recur (next remaining) (conj names item))
+       :else
+       (recur (next remaining) names))))))
+  semantic-late-sh06-resolution-analysis-inputs-make-traversal
+  (fn
+   [parameter-names add-reference! add-scope! operations]
+   (let
+    [sh06-fixed-vector-pattern?
+     (.valAt
+      ^clojure.lang.ILookup operations
+      :sh06-fixed-vector-pattern?)
+     sh06-let-loop-binding-paths
+     (.valAt
+      ^clojure.lang.ILookup operations
+      :sh06-let-loop-binding-paths)
+     sh06-unique-match-binding-paths
+     (.valAt
+      ^clojure.lang.ILookup operations
+      :sh06-unique-match-binding-paths)]
+    (clojure.core/letfn
+     [(walk-types
+       [parameters scope-chain syntax]
+       (loop
+        [remaining (seq parameters)]
+        (when
+         (seq remaining)
+         (if
+          (= ':- (first remaining))
+          (do
+           (let
+            [type (second remaining)]
+            (if
+             (symbol? type)
+             (walk-form type scope-chain syntax :type)
+             (when
+              (and
+               (seq? type)
+               (= 2 (count type))
+               (every? symbol? type))
+              (doseq
+               [item type]
+               (walk-form item scope-chain syntax :type)))))
+           (recur (nnext remaining)))
+          (recur (next remaining))))))
+      (walk-function-body
+       [body scope-chain syntax]
+       (let
+        [annotated? (= ':- (first body))]
+        (when
+         annotated?
+         (let
+          [type (second body)]
+          (if
+           (and (symbol? type) (not= ':- type))
+           (walk-form type scope-chain syntax :type)
+           (when
+            (and (seq? type) (= 2 (count type)) (every? symbol? type))
+            (doseq
+             [item type]
+             (walk-form item scope-chain syntax :type))))))
+        (doseq
+         [item (if annotated? (drop 2 body) body)]
+         (walk-form item scope-chain syntax :expression))))
+      (walk-form
+       [value scope-chain syntax position]
+       (cond
+        (symbol? value)
+        (add-reference!
+         value
+         scope-chain
+         syntax
+         position
+         (:span syntax))
+        (seq? value)
+        (let
+         [operator (first value)]
+         (cond
+          (= operator 'quote)
+          (add-reference!
+           'quote
+           scope-chain
+           syntax
+           :operator
+           (:span syntax))
+          (contains? '#{syntax-quote} operator)
+          (add-reference!
+           operator
+           scope-chain
+           syntax
+           :operator
+           (:span syntax))
+          (contains? '#{defconst def} operator)
+          (do
+           (add-reference!
+            operator
+            scope-chain
+            syntax
+            :operator
+            (:span syntax))
+           (doseq
+            [item (drop 2 value)]
+            (walk-form item scope-chain syntax :expression)))
+          (= operator 'defn)
+          (let
+           [parameters
+            (nth value 2 [])
+            names
+            (parameter-names parameters)
+            scope-id
+            (add-scope!
+             (:syntax/id syntax)
+             (first scope-chain)
+             names
+             (:span syntax))]
+           (add-reference!
+            'defn
+            scope-chain
+            syntax
+            :operator
+            (:span syntax))
+           (walk-types parameters (cons scope-id scope-chain) syntax)
+           (walk-function-body
+            (drop 3 value)
+            (cons scope-id scope-chain)
+            syntax))
+          (= operator 'fn)
+          (let
+           [named?
+            (symbol? (second value))
+            parameters
+            (if named? (nth value 2 []) (second value))
+            body
+            (if named? (drop 3 value) (drop 2 value))
+            names
+            (cond->
+             (parameter-names parameters)
+             named?
+             (conj (second value)))
+            scope-id
+            (add-scope!
+             (:syntax/id syntax)
+             (first scope-chain)
+             names
+             (:span syntax))]
+           (add-reference!
+            'fn
+            scope-chain
+            syntax
+            :operator
+            (:span syntax))
+           (walk-types parameters (cons scope-id scope-chain) syntax)
+           (walk-function-body
+            body
+            (cons scope-id scope-chain)
+            syntax))
+          (= operator 'match)
+          (do
+           (add-reference!
+            'match
+            scope-chain
+            syntax
+            :operator
+            (:span syntax))
+           (when-let
+            [scrutinee (second value)]
+            (walk-form scrutinee scope-chain syntax :expression))
+           (doseq
+            [[pattern branch] (partition 2 (drop 2 value))]
+            (cond
+             (and (symbol? pattern) (not= '_ pattern))
+             (let
+              [scope-id
+               (add-scope!
+                (:syntax/id syntax)
+                (first scope-chain)
+                [pattern]
+                (:span syntax))]
+              (walk-form
+               branch
+               (cons scope-id scope-chain)
+               syntax
+               :expression))
+             (and
+              (or (vector? pattern) (map? pattern))
+              (sh06-fixed-vector-pattern?
+               (if (map? pattern) (dissoc pattern :when) pattern)))
+             (when-let
+              [binding-paths
+               (sh06-unique-match-binding-paths pattern [])]
+              (if
+               (empty? binding-paths)
+               (do
+                (when
+                 (and (map? pattern) (contains? pattern :when))
+                 (walk-form
+                  (:when pattern)
+                  scope-chain
+                  syntax
+                  :expression))
+                (walk-form branch scope-chain syntax :expression))
+               (let
+                [scope-id
+                 (add-scope!
+                  (:syntax/id syntax)
+                  (first scope-chain)
+                  (mapv :name binding-paths)
+                  (:span syntax))]
+                (when
+                 (and (map? pattern) (contains? pattern :when))
+                 (walk-form
+                  (:when pattern)
+                  (cons scope-id scope-chain)
+                  syntax
+                  :expression))
+                (walk-form
+                 branch
+                 (cons scope-id scope-chain)
+                 syntax
+                 :expression))))
+             (or
+              (= '_ pattern)
+              (nil? pattern)
+              (true? pattern)
+              (false? pattern)
+              (number? pattern)
+              (char? pattern)
+              (string? pattern)
+              (keyword? pattern)
+              (and
+               (seq? pattern)
+               (= 2 (count pattern))
+               (= 'quote (first pattern))
+               (symbol? (second pattern))))
+             (walk-form branch scope-chain syntax :expression)
+             :else
+             nil)))
+          (= operator 'try)
+          (do
+           (add-reference!
+            'try
+            scope-chain
+            syntax
+            :operator
+            (:span syntax))
+           (doseq
+            [item (rest value)]
+            (cond
+             (and (seq? item) (= 'catch (first item)))
+             (do
+              (add-reference!
+               'catch
+               scope-chain
+               syntax
+               :operator
+               (:span syntax))
+              (when-let
+               [error-type (second item)]
+               (walk-form error-type scope-chain syntax :type))
+              (let
+               [binding-name (nth item 2 nil)]
+               (when
+                (symbol? binding-name)
+                (let
+                 [scope-id
+                  (add-scope!
+                   (:syntax/id syntax)
+                   (first scope-chain)
+                   [binding-name]
+                   (:span syntax))
+                  nested
+                  (cons scope-id scope-chain)]
+                 (doseq
+                  [handler-form (drop 3 item)]
+                  (walk-form
+                   handler-form
+                   nested
+                   syntax
+                   :expression))))))
+             (and (seq? item) (= 'finally (first item)))
+             (do
+              (add-reference!
+               'finally
+               scope-chain
+               syntax
+               :operator
+               (:span syntax))
+              (doseq
+               [cleanup-form (rest item)]
+               (walk-form
+                cleanup-form
+                scope-chain
+                syntax
+                :expression)))
+             :else
+             (walk-form item scope-chain syntax :expression))))
+          (contains? '#{let loop} operator)
+          (let
+           [binding-vector
+            (second value)
+            pairs
+            (if
+             (vector? binding-vector)
+             (partition 2 binding-vector)
+             [])
+            _
+            (add-reference!
+             operator
+             scope-chain
+             syntax
+             :operator
+             (:span syntax))
+            nested
+            (loop
+             [remaining pairs active-scope-chain scope-chain]
+             (if
+              (empty? remaining)
+              active-scope-chain
+              (let
+               [[binding-pattern initializer]
+                (first remaining)
+                _
+                (walk-form
+                 initializer
+                 active-scope-chain
+                 syntax
+                 :expression)
+                binding-paths
+                (sh06-let-loop-binding-paths binding-pattern [])
+                next-scope-chain
+                (if
+                 (or
+                  (symbol? binding-pattern)
+                  (vector? binding-pattern))
+                 (let
+                  [scope-id
+                   (add-scope!
+                    (:syntax/id syntax)
+                    (first active-scope-chain)
+                    (mapv :name binding-paths)
+                    (:span syntax))]
+                  (cons scope-id active-scope-chain))
+                 active-scope-chain)]
+               (recur (next remaining) next-scope-chain))))]
+           (doseq
+            [item (drop 2 value)]
+            (walk-form item nested syntax :expression)))
+          :else
+          (doseq
+           [[index item] (map-indexed vector value)]
+           (walk-form
+            item
+            scope-chain
+            syntax
+            (if (zero? index) :operator position)))))
+        (map? value)
+        (doseq
+         [[key item] value]
+         (walk-form key scope-chain syntax :expression)
+         (walk-form item scope-chain syntax :expression))
+        (coll? value)
+        (doseq
+         [item value]
+         (walk-form item scope-chain syntax position))
+        :else
+        nil))]
+     walk-form)))]
+ (defn
+  analysis-inputs
+  [_module sh05-artifact overrides operations]
+  (let
+   [reader-canonical-hash
+    (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+    sh06-resolution-semantic-span
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh06-resolution-semantic-span)
+    scopes
+    (atom [])
+    references
+    (atom [])
+    next-scope
+    (atom 0)
+    next-reference
+    (atom 0)
+    shadow-forbidden
+    (set (get-in overrides [:shadow-policy :forbidden]))
+    add-reference!
+    (fn
+     [symbol scope-chain syntax position span]
+     (when
+      (symbol? symbol)
+      (let
+       [ordinal
+        (swap! next-reference inc)
+        namespace-part
+        (namespace symbol)
+        simple-name
+        (clojure.core/symbol (name symbol))]
+       (swap!
+        references
+        conj
+        {:syntax-id
+         (reader-canonical-hash
+          {:domain :gravity/sh06-reference-syntax-v1,
+           :owner-syntax-id (:syntax/id syntax),
+           :ordinal ordinal,
+           :symbol symbol,
+           :position position}),
+         :symbol symbol,
+         :qualifier
+         (when namespace-part (clojure.core/symbol namespace-part)),
+         :name simple-name,
+         :position position,
+         :scope-chain (vec scope-chain),
+         :semantic-span (sh06-resolution-semantic-span span ordinal),
+         :source-span span}))))
+    add-scope!
+    (fn
+     [owner-syntax-id parent-scope-id local-names span]
+     (let
+      [ordinal
+       (swap! next-scope inc)
+       scope-id
+       (reader-canonical-hash
+        {:domain :gravity/sh06-lexical-scope-v1,
+         :owner-syntax-id owner-syntax-id,
+         :ordinal ordinal,
+         :parent-scope-id parent-scope-id})
+       bindings
+       (mapv
+        (fn
+         [binding-ordinal name]
+         {:name name,
+          :kind :local,
+          :semantic-span
+          {:scope-ordinal ordinal, :binding-ordinal binding-ordinal},
+          :source-span span,
+          :binding-syntax-id
+          (reader-canonical-hash
+           {:domain :gravity/sh06-local-binding-v1,
+            :scope-id scope-id,
+            :ordinal binding-ordinal,
+            :name name}),
+          :allow-shadow? (not (contains? shadow-forbidden name))})
+        (range)
+        local-names)]
+      (swap!
+       scopes
+       conj
+       {:scope-id scope-id,
+        :parent-scope-id parent-scope-id,
+        :owner-syntax-id owner-syntax-id,
+        :bindings bindings})
+      scope-id))
+    walk-form
+    (semantic-late-sh06-resolution-analysis-inputs-make-traversal
+     semantic-late-sh06-resolution-analysis-inputs-parameter-names
+     add-reference!
+     add-scope!
+     operations)]
+   (doseq
+    [syntax (:expanded-syntax-stream sh05-artifact)]
+    (let
+     [form (:form syntax)]
+     (when-not
+      (and (seq? form) (= 'ns (first form)))
+      (walk-form form [] syntax :expression))))
+   {:lexical-scopes @scopes, :references @references})))
+
 (doseq
  [operation
-  [#'binding-current!
+  [#'analysis-inputs
+   #'binding-current!
    #'boundary-fail!
    #'build-plan-binding!
    #'candidate-for
@@ -1161,12 +1839,16 @@
    #'current-plan-binding!
    #'definition-kind
    #'definition-records
+   #'dependency-edges
    #'dependency-record
    #'envelope-id
    #'execute!
    #'explicit-candidate-records
+   #'fixed-vector-pattern?
    #'import-binding-records
    #'import-records
+   #'let-loop-binding-paths
+   #'match-pattern-binding-paths
    #'package-record
    #'plan-identities
    #'read-current-source!
@@ -1175,7 +1857,8 @@
    #'resolve-source-path
    #'semantic-span
    #'source-key
-   #'source-revision-id]]
+   #'source-revision-id
+   #'unique-match-binding-paths]]
  (alter-meta!
   operation
   assoc
