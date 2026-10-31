@@ -67,7 +67,6 @@
 (def p15-s23-c11-mir-max-carrier-nodes 16384)
 (def p15-s23-c11-mir-max-final-artifact-carrier-nodes 32768)
 (def p15-s23-c11-mir-max-carrier-depth 256)
-(def p15-s23-c11-mir-max-blocks 4)
 
 (def p15-s23-c11-mir-allowed-opcodes
   #{:constant :local :local-binding :truthiness :sequence
