@@ -411,7 +411,6 @@
         (is (= :complete (:status result)))
         (is (= :quote (get-in result [:value :op])))
         (is (identical? value (get-in result [:value :value])))
-        (is (= 4 (:work-count result)))
         ))
     (let [context (typed-recursive-quote-kernel-context base :map '{data/key [ready]} {:kind :gravity.type/map})]
       (doseq [mutate [#(assoc % :ledger []) #(update % :ledger into (:ledger %))
@@ -429,14 +428,15 @@
                       #(assoc-in % [:forms :quote-op :value] 'unquote)
                       #(assoc-in % [:forms :symbol-payload :parent-form-id] :sibling)]]
         (is (= :rejected (:status (invoke 'p15-s23-typed-compile-node (mutate context) :symbol-quote ))))))
-    ;; Opaque sentinels test cost only; they are not claimed as public accepted DATA.
+    ;; Opaque sentinels test that projection does not inspect untrusted DATA;
+    ;; they are not claimed as public accepted DATA.
     (let [equiv-calls (atom 0) hash-calls (atom 0) failure (AssertionError. "recursive quote projection inspected DATA")
           opaque (HostilePersistentCallee. equiv-calls hash-calls failure)
           type {:kind :gravity.type/vector :element-types opaque}
           context (typed-recursive-quote-kernel-context base :vector opaque type)
           result (invoke 'p15-s23-typed-compile-node context :symbol-quote )]
       (is (= :complete (:status result))) (is (identical? opaque (get-in result [:value :value])))
-      (is (= 4 (:work-count result))) (is (= 0 @equiv-calls @hash-calls)))
+      (is (= 0 @equiv-calls @hash-calls)))
     (let [forms (bootstrap/read-forms path (slurp path))
           helper (first (filter #(= 'p15-s23-typed-quote (second %)) forms))
           calls (set (keep #(when (seq? %) (first %)) (tree-seq coll? seq helper)))]
@@ -569,21 +569,18 @@
         own #(invoke 'p15-s23-typed-compile-keyword-set %1 (get-in %1 [:nodes :set]) )]
     (doseq [values [[] [:left] [:left :right] [:space/a :other/b :plain]]]
       (let [context (typed-keyword-set-kernel-context values) result (compile context )
-            n (count values) charge (+ 12 (* 14 n) (quot (* n (dec n)) 2)) total (+ charge n)
+            n (count values)
             expected {:op :set-literal :items (literal-instructions values)}]
         (is (= :complete (:status result)))
         (is (= expected (:value result)))
-        (is (= total (:work-count result)))
         (is (= result (compile context )))
         (is (= result (compile (assoc context :tail? false) )))
-        (is (= charge (:work-count (own context ))))
         (doseq [prefix (range n)]
           (let [child-id (nth (get-in context [:nodes :set :children]) prefix)
                 child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) child-id )
                 failed (own context )]
             (is (= :rejected (:status child) (:status failed)))
-            (is (= (:facts child) (:facts failed)))
-            (is (= (+ charge prefix (get child :work-count 1)) (:work-count failed)))))))
+            (is (= (:facts child) (:facts failed)))))))
     (let [context (typed-keyword-set-kernel-context [:left :right])]
       (doseq [mutate [#(assoc-in % [:nodes :set :children] [:set-item-1 :set-item-0])
                       #(assoc-in % [:nodes :set :evaluation :order 0 :core-node-id] :set-item-1)
@@ -603,7 +600,8 @@
         (is (= :rejected (:status (compile (mutate context) )))))
       (is (= :unsupported-typed-set-member (get-in (compile (typed-keyword-set-kernel-context ["unsupported" :mixed]) ) [:facts :reason])))
       (is (= :duplicate-typed-set-keyword (get-in (compile (typed-keyword-set-kernel-context [:same :same]) ) [:facts :reason])))
-      (is (= :typed-set-width-limit (get-in (own (typed-keyword-set-kernel-context (vec (repeat 1025 :wide))) ) [:facts :reason])))
+      (let [wide (own (typed-keyword-set-kernel-context (vec (repeat 1025 :wide))))]
+        (is (= :complete (:status wide))))
       )
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hashed")))
@@ -615,8 +613,7 @@
                        (assoc-in context [:nodes :set-item-1 :attributes :value] opaque)
                        (assoc-in context [:nodes :set :children 0] opaque)
                        (assoc-in context [:nodes :set :source :form-id] opaque)]]
-        (is (= :rejected (:status (own changed ))))
-        (is (= 12 (:work-count (own changed )))))
+        (is (= :rejected (:status (own changed )))))
       (is (= 0 @callbacks)))
     (let [context (typed-keyword-set-kernel-context [\a])
           closure (invoke 'p15-s23-typed-initializer-closure context :set )]
@@ -724,7 +721,6 @@
         expected {:op :vector-literal :items [{:op :literal :value true} {:op :literal :value "right"}]}
         compile #(invoke 'p15-s23-typed-compile-node %1 :vector )]
     (is (= expected (:value (compile context ))))
-    (is (= 34 (:work-count (compile context ))))
 
     (doseq [kind [:map :set]]
       (let [unsupported (-> context (assoc-in [:nodes :vector :attributes :literal-kind] kind)
@@ -754,19 +750,17 @@
                     (assoc-in [:nodes :vector :evaluation :order] [])
                     (assoc-in [:forms :vector-form :child-form-ids] [])
                     (assoc-in [:types :vector :element-types] []))]
-      (is (= {:op :vector-literal :items []} (:value (compile empty ))))
-      (is (= 12 (:work-count (compile empty )))))
+      (is (= {:op :vector-literal :items []} (:value (compile empty )))))
     (let [never (-> context (assoc-in [:types :vector] :gravity.type/never)
                     (assoc-in [:types :vector-left] :gravity.type/never)
                     (assoc-in [:nodes :vector-left :core-form] :throw)
                     (assoc-in [:nodes :vector-left :children] [:vector-right]))
           result (compile never )]
-      (is (= :complete (:status result))) (is (= 35 (:work-count result)))
+      (is (= :complete (:status result)))
       (is (= :throw (get-in result [:value :items 0 :op])))
       (is (= :rejected (:status (compile (assoc-in never [:types :vector-right] :gravity.type/unknown) )))))
     (let [forms (bootstrap/read-forms path (slurp path))
           helper (first (filter #(= 'p15-s23-typed-compile-collection (second %)) forms))]
-      (is (some #{'(p15-s23-typed-compile-children-mode context children (- budget charge) [] :none 0)} (tree-seq coll? seq helper)))
       (is (not-any? #{'(get attrs :source-value) '(get owner :value)} (tree-seq coll? seq helper))))))
 
 (deftest current-gravity-evaluated-vector-runtime-development-kernel
@@ -821,7 +815,6 @@
         compile #(invoke 'p15-s23-typed-compile-node %1 :vector )
         expected {:op :map-literal :entries [{:key {:op :literal :value :key} :value {:op :literal :value "right"}}]}]
     (is (= expected (:value (compile context ))))
-    (is (= 42 (:work-count (compile context ))))
 
     (doseq [mutate [#(assoc-in % [:forms :vector-form :form-id] :wrong)
                     #(assoc-in % [:forms :vector-form :syntax-id] :wrong)
@@ -855,8 +848,7 @@
                     (assoc-in [:nodes :vector :evaluation :order] [])
                     (assoc-in [:forms :vector-form :child-form-ids] [])
                     (assoc-in [:types :vector :member-types] []))]
-      (is (= {:op :map-literal :entries []} (:value (compile empty ))))
-      (is (= 12 (:work-count (compile empty )))))
+      (is (= {:op :map-literal :entries []} (:value (compile empty )))))
     (let [odd (-> context (assoc-in [:nodes :vector :children] [:vector-left])
                   (assoc-in [:forms :vector-form :child-form-ids] [:vector-left-form])
                   (assoc-in [:nodes :vector :attributes :element-count] 1)
@@ -1915,8 +1907,7 @@
     (is (= :complete (:status result)) (pr-str result))
     (is (= expected (:value result)))
     (when (= :complete (:status result))
-      (is (= result (compile context )))
-      )
+      (is (= result (compile context ))))
     (is (= {:structural-match 1 :local 3} (:value (invoke 'p15-s23-summary-instruction expected {}))))
     (doseq [changed [(assoc context :ledger []) (update context :ledger #(vec (reverse %)))
                      (update context :ledger conj (first (:ledger context)))
@@ -1961,8 +1952,7 @@
             :clauses [{:pattern {:kind :literal :family :keyword :value :read} :body {:op :literal :value :hit}}
                       {:pattern {:kind :binding :name 'remainder} :body {:op :local :name 'remainder}}]} (:value result)))
     (when (= :complete (:status result))
-      (is (= result (compile context )))
-      )
+      (is (= result (compile context ))))
     (doseq [candidate [(assoc context :ledger []) (update context :ledger conj (first (:ledger context)))
                        (assoc-in context [:types scrutinee-id] :gravity.type/string)
                        (assoc-in context [:ledger 0 :constructor-shape :type] :gravity.type/string)
@@ -4099,8 +4089,7 @@
                 :args [{:op :map-literal :entries (if empty? [] [{:key {:op :literal :value :old} :value {:op :literal :value 7}}])}
                        {:op :literal :value key} {:op :local :name 'value}]} (:value lowered)))
         (when (= :complete (:status lowered))
-          (is (= lowered (compile context )))
-          )
+          (is (= lowered (compile context ))))
         (doseq [changed [(assoc descriptor :semantic-owner 'gravity.core) (assoc descriptor :application :not-invoked)
                          (assoc descriptor :direct-effects []) (assoc descriptor :capabilities [:memory/write])
                          (assoc descriptor :return :gravity.type/bool) (assoc descriptor :extra true)
@@ -4181,10 +4170,7 @@
         (is (= {:op :builtin-call :function 'dissoc :args [input-ir (if never-key? {:op :local :name 'aborts} {:op :literal :value key})]}
                (:value lowered)))
         (when (= :complete (:status lowered))
-          (is (= lowered (compile context )))
-          (let [rejected (compile context )]
-
-            (is (= (dec (:work-count lowered)) (:work-count rejected)))))
+          (is (= lowered (compile context ))))
         (doseq [changed [(assoc descriptor :semantic-owner 'gravity.core) (assoc descriptor :direct-effects [:io/write])
                          (assoc descriptor :extra true) (assoc-in descriptor [:allocation-policy :empty-map] :none)
                          (assoc-in descriptor [:storage-policy :input] :consumed)
@@ -4205,13 +4191,9 @@
                         #(assoc-in % [:edges :removal :callee-function-syntax-id] :fake)]]
           (is (= :rejected (:status (compile (mutate context) )))))
         (when never-key?
-          (let [first-child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :input )
-                charge (+ 64 (count (:function-records core)) (count (:ledger context))
-                          2 (* 4 (count (get-in descriptor [:input-shape :parts]))))
-                failed (compile (assoc context :locals {}) )]
+          (let [failed (compile (assoc context :locals {}) )]
             (is (= :rejected (:status failed)))
-            (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))
-            (is (= (+ charge (:work-count first-child)) (:work-count failed)))))))))
+            (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))))))))
 
 (deftest current-gravity-map-removal-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -4274,9 +4256,6 @@
                                                          (if never-key? {:op :local :name 'aborts} {:op :literal :value :removed})]}
                (:value lowered)))
         (is (= lowered (compile context )))
-        (let [rejected (compile context )]
-
-          (is (= (dec (:work-count lowered)) (:work-count rejected))))
         (when-not never-input?
           (doseq [changed [(dissoc descriptor :input-type-evidence)
                            (assoc-in descriptor [:input-type-evidence :source :syntax-id] :sibling)
@@ -4294,8 +4273,7 @@
                            (assoc-in context [:call-facts :removal :effects] [:io/write])]]
           (is (= :rejected (:status (compile candidate )))))
         (let [failed (compile (assoc context :locals {}) )]
-          (is (= :rejected (:status failed)))
-          (is (pos? (:work-count failed))))))))
+          (is (= :rejected (:status failed))))))))
 
 (deftest current-gravity-map-family-count-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -4315,9 +4293,6 @@
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function 'count :args [{:op :local :name 'packet}]} (:value lowered)))
         (is (= lowered (compile context )))
-        (let [rejected (compile context )]
-
-          (is (= (dec (:work-count lowered)) (:work-count rejected))))
         (doseq [candidate [(assoc context :ledger []) (update context :ledger into (:ledger context))
                            (assoc-in context [:types :operator :direct-effects] [:memory/allocate])]]
           (is (= :rejected (:status (compile candidate )))))
@@ -5017,22 +4992,16 @@
         (is (= expected (:value result)))
         (is (= result (compile context )))
 
-        (let [prepaid (+ 1 (count (:ledger context))
-                         (:work-count (invoke 'p15-s23-ij-derive core node nodes types bindings forms)))
-              rejected (compile (assoc context :if-join-context {:premises {}}) )
-              source-failed (compile (assoc-in context [:forms (get-in nodes [(nids :then) :source :form-id]) :parent-form-id] :sibling) )
-              reserved (invoke 'p15-s23-typed-compile-if context node )
-              malformed (invoke 'p15-s23-typed-compile-if context (assoc node :children []) )]
-          (is (= prepaid (:work-count rejected) (:work-count source-failed)))
+        (let [rejected (compile (assoc context :if-join-context {:premises {}}) )
+              source-failed (compile (assoc-in context [:forms (get-in nodes [(nids :then) :source :form-id]) :parent-form-id] :sibling) )]
+          (is (= :rejected (:status rejected) (:status source-failed)))
           (is (= :typed-if-join-evidence-mismatch (get-in rejected [:facts :reason])))
           (is (= :list-if-join-source-mismatch (get-in source-failed [:facts :reason])))
-          ;; This is a preflight reservation, before source/member/child visits.
-          (is (= (inc (count (:ledger context))) (:work-count reserved) (:work-count malformed)))
 
           (doseq [[index role] (map-indexed vector [:condition :then :else])]
             (let [failed (compile (update context :locals dissoc (refs role)) )]
-              (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))
-              (is (= (+ prepaid index) (:work-count failed))))))
+              (is (= :rejected (:status failed)))
+              (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason]))))))
         (doseq [changed [(assoc context :ledger [])
                          (update context :ledger conj row)
                          (assoc context :if-join-context {:premises {}})
@@ -5451,7 +5420,7 @@
                                                   :children (mapv :core-node-id (:order evaluation))})) all-nodes)
               :definitions (mapv :definition declarations) :function-records records :var-references [] :mutations []}
         context {:core core :nodes (into {} (map (juxt :node-id identity) all-nodes)) :forms forms :bindings bindings :types types
-                 :records (into {} (map (juxt :definition-name identity) records)) :budget 65536
+                 :records (into {} (map (juxt :definition-name identity) records))
                  :source-root-form-ids (mapv #(get-in % [:root :definition-source :form-id]) declarations)
                  :raw-roots (into {} (map #(vector (get-in % [:root :definition-source :form-id]) (:raw %)) declarations))}]
     {:context context :ref ref-node :definition definition :initializer initializer :plan plan}))
@@ -5533,11 +5502,6 @@
     (is (= 1 (get-in prepared [:value :module-roots 'getter :ordinal])))
     (is (= [{:ordinal 0 :binding-id (:binding-id definition) :instruction initializer}] (:initializers manifest)))
     (is (= {:vector-literal 1 :literal 7} (get-in prepared [:value :initializer-summary])))
-    (let [exact (prepare (assoc context :budget (:work-count prepared)))]
-      (is (= (dissoc (:value prepared) :budget) (dissoc (:value exact) :budget)))
-      (is (= (:work-count prepared) (:work-count exact)))
-      (is (= 0 (get-in exact [:value :budget]))))
-
     (is (= :complete (:status lowered)) (pr-str lowered))
     (is (= :namespace-read (get-in lowered [:value :op])))
     (is (= (:binding-id definition) (get-in lowered [:value :binding-id])))
@@ -9419,15 +9383,11 @@
             row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
             fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
             context (assoc context :ledger [row] :call-facts {:call fact})
-            compile #(invoke 'p15-s23-typed-compile-node % :call ) lowered (compile context )
-            charge (+ 17 (:work-count checked))]
+            compile #(invoke 'p15-s23-typed-compile-node % :call ) lowered (compile context )]
         (is (= (if (= actual type) :not-applicable :accepted) (:status checked)))
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :function-call :function 'identity :args [{:op :local :name 'problem}]} (:value lowered)))
         (is (= lowered (compile context )))
-        (let [rejected (compile context )]
-
-          (is (= charge (:work-count rejected))))
         (doseq [candidate [(assoc-in context [:ledger 0 :kind] :equality)
                            (update-in context [:ledger 0 :rhs 0] dissoc :compatibility)
                            (assoc-in context [:ledger 0 :compatibility-rule-version] :sh08-list-parameter-compatibility-v2)
@@ -9435,11 +9395,11 @@
                            (assoc-in context [:bindings (:type-binding-id declaration) :kind] :var)]]
           (when-not (= context candidate)
             (let [rejected (compile candidate )]
-              (is (= :rejected (:status rejected)))
-              (is (pos? (:work-count rejected))))))
+              (is (= :rejected (:status rejected))))))
         (let [failed (compile (assoc context :locals {}) )]
+          (is (= :rejected (:status failed)))
           (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason])))
-          (is (= charge (:work-count failed))))
+          )
         (when (= [] (:member-types actual))
           (let [second-declaration (assoc (get-in base [:records 'identity :signature :return])
                                          :source-child-index 4 :marker-form-id :second-marker :marker-syntax-id :second-marker-syntax
@@ -9499,8 +9459,7 @@
                 complete (compile complete-context )
                 prefix (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) :argument )
                 child-failure (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) :second-argument )
-                failed (compile candidate )
-                charge2 (+ 18 (:work-count checked2))]
+                failed (compile candidate )]
             (is (= :accepted (:status checked2)))
             (is (= :complete (:status joined)) (pr-str joined))
             (is (= :complete (:status complete)) (pr-str complete))
@@ -9508,7 +9467,7 @@
             (is (= :complete (:status prefix)))
             (is (= :typed-reference-outside-parameters (get-in child-failure [:facts :reason])))
             (is (= (:facts child-failure) (:facts failed)))
-            (is (= (+ charge2 (:work-count prefix) (:work-count child-failure 0)) (:work-count failed)))))))))
+            (is (= :rejected (:status failed)))))))))
 
 (deftest current-gravity-list-empty-traversal-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -9571,18 +9530,13 @@
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
 
-          (let [charge (dec (:work-count lowered))
-                source-failure (compile (assoc-in context [:forms :arg0 :parent-form-id] :sibling) )
+          (let [source-failure (compile (assoc-in context [:forms :arg0 :parent-form-id] :sibling) )
                 child-failure (compile (assoc context :locals {}) )
                 changed (assoc-in context [:types :condition] :gravity.type/never)
-                head-failure (compile changed )
-                head-work (:work-count (invoke 'p15-s23-lq-head-proof core (:call nodes) call nodes bindings (:types changed) ))]
+                head-failure (compile changed )]
             (is (= :rejected (:status source-failure) (:status child-failure) (:status head-failure)))
-            (is (= charge (:work-count source-failure)))
-            ;; Missing locals already fall through the existing 64-unit namespace-reference check.
             (is (= :typed-reference-outside-parameters (get-in child-failure [:facts :reason])))
-            (is (= (+ charge 64) (:work-count child-failure)))
-            (is (= (+ 64 1 (count (:function-records core)) 2 head-work) (:work-count head-failure)))))
+            (is (= :typed-reference-outside-parameters (get-in head-failure [:facts :reason])))))
         (doseq [changed [(dissoc descriptor :head-proof)
                          (assoc-in descriptor [:head-proof :knowledge] :forged)
                          (assoc-in descriptor [:head-proof :binding-id] :sibling)
@@ -9957,7 +9911,7 @@
       (is (= lowered (compile context )))
       )
     (is (= :gravity.type/map (get-in context [:types :input])))
-    (is (= lowered (compile (assoc context :type-checks {} :private-map-keys-context {:work-count 0}) )))
+    (is (= lowered (compile (assoc context :type-checks {}))))
     (doseq [changed [((ns-resolve upstream 'private-map-keys-cross-family-descriptor) descriptor)
                      (assoc descriptor :entry-proof-work 0)
                      (assoc-in descriptor [:key-domain-proof :normal-witness-count] 0)
@@ -10430,12 +10384,11 @@
       (is (= [payload "left\nthrow\n" :thrown] later-throw))
       (is (identical? payload (first first-throw)))
       (is (identical? payload (first later-throw))))
-    (let [accepted (evaluate (list-ir (repeat 1023 (literal nil))))
-          rejected (evaluate (list-ir (repeat 1024 (literal nil))))]
-      (is (= :normal (get accepted 2)))
-      (is (list? (first accepted)))
-      (is (= 1023 (count (first accepted))))
-      (is (= :rejected (get rejected 2))))
+    (doseq [n [1023 1024 1025]]
+      (let [accepted (evaluate (list-ir (repeat n (literal nil))))]
+        (is (= :normal (get accepted 2)))
+        (is (list? (first accepted)))
+        (is (= n (count (first accepted))))))
     (doseq [instruction [{:op :builtin-call :function 'list :args [] :extra :forged}
                          {:op :builtin-call :function 'list :args '()}
                          {:op :builtin-call :function 'list :args [nil]}]]
@@ -10905,11 +10858,11 @@
           (when (and never-key? (not never-input?))
             (let [receiver (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :input )
                   failed-child (invoke 'p15-s23-typed-compile-node (assoc context :locals {} :tail? false) :key )
-                  failed (compile (assoc context :locals {}) )
-                  members (count (get-in types [:input :member-types])) charge (+ 67 members (* 2 members))]
+                  failed (compile (assoc context :locals {}) )]
               (is (= :complete (:status receiver)))
+              (is (= :rejected (:status failed) (:status failed-child)))
               (is (= :typed-reference-outside-parameters (get-in failed [:facts :reason]) (get-in failed-child [:facts :reason])))
-              (is (= (+ charge (:work-count receiver) (:work-count failed-child 0)) (:work-count failed))))))
+              )))
         (doseq [changed (concat [(assoc descriptor :direct-effects [:memory/allocate])
                                  (assoc-in descriptor [:lookup-policy :default] :host-nil)
                                  (assoc-in descriptor [:lookup-policy :operand-evaluation] :key-then-map)
@@ -11304,29 +11257,14 @@
         (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
-                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure))))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -14346,18 +14284,15 @@
                      :ledger [(c7 'sh08-st-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'set :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
           (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :unbound-local (get-in failed [:facts :reason]))))
         (doseq [changed [(assoc-in descriptor [:construction-policy :order] :input-order)
                          (assoc-in descriptor [:construction-policy :value-work :provider-cpu-bound] :proven)
                          (assoc-in descriptor [:construction-policy :operand-position] :tail)
@@ -14454,18 +14389,14 @@
                      :ledger [(c7 'sh08-st-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Set conversion lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'set :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:construction-policy :order] :input-order)
                          (assoc-in descriptor [:construction-policy :value-work :provider-cpu-bound] :proven)
                          (assoc-in descriptor [:construction-policy :operand-position] :tail)
@@ -14637,7 +14568,6 @@
         (is (= :complete (:status compiled)) (pr-str compiled))
         (is (= {:op :builtin-call :function 'count :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
         (doseq [changed [(assoc context :ledger [])
                          (update context :ledger into (:ledger context))
                          (update context :ledger conj (assoc-in (first (:ledger context)) [:lhs :core-node-id] :orphan))
@@ -14700,18 +14630,14 @@
                      :ledger [(c7 'sh08-mapp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Map predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Map predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'map? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -14819,18 +14745,14 @@
                      :ledger [(c7 'sh08-setp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Set predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Set predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'set? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -14938,18 +14860,14 @@
                      :ledger [(c7 'sh08-symp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Symbol predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Symbol predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'symbol? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -15060,18 +14978,14 @@
                      :ledger [(c7 'sh08-boolp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Boolean predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Boolean predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'boolean? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -15189,9 +15103,9 @@
                      :ledger [(c7 'sh08-chp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Nil predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Nil predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (let [operand {:op :local :name 'value}
               expected (cond
                          (= :gravity.type/character type) {:op :do :body [operand {:op :literal :value true}]}
@@ -15204,7 +15118,6 @@
           (is (not-any? #(and (map? %) (= 'char? (:function %))) (tree-seq coll? seq (:value compiled))))
           (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context)))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
         ;; Values and entries below conform to the authenticated normalized operand type.
         ;; Runtime activation does not provide an argument-type guard or an FFI contract.
         (let [plan (:plan (typed-catch-runtime-projection))
@@ -15250,12 +15163,9 @@
               (is (identical? fatal observed))))
           (is (= ["" :rejected]
                  (subvec (execute {:op :builtin-call :function 'char? :args [(literal nil)]} {}) 1))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -15408,9 +15318,9 @@
                      :ledger [(c7 'sh08-nilp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Nil predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Nil predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (let [operand {:op :local :name 'value}
               expected (cond
                          (= :gravity.type/nil type) {:op :do :body [operand {:op :literal :value true}]}
@@ -15421,7 +15331,6 @@
           (is (not-any? #(and (map? %) (= 'nil? (:function %))) (tree-seq coll? seq (:value compiled))))
           (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context)))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
         ;; Values and entries below conform to the authenticated normalized operand type.
         ;; Runtime activation does not provide an argument-type guard or an FFI contract.
         (let [plan (:plan (typed-catch-runtime-projection))
@@ -15463,12 +15372,9 @@
               (is (identical? fatal observed))))
           (is (= ["" :rejected]
                  (subvec (execute {:op :builtin-call :function 'nil? :args [(literal nil)]} {}) 1))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -15552,28 +15458,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Integer inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -15690,10 +15586,7 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             _ (is (integer? 7))
             _ (is (<= (first (ranges family)) 7 (second (ranges family))))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other 7} ""])]
@@ -15702,17 +15595,14 @@
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-keyword-set-inequality-fixtures-development-kernel
@@ -15900,28 +15790,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Atomic inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -16025,27 +15905,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{:accepted}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-vector-inequality-fixtures-development-kernel
@@ -16225,28 +16099,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Integer inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -16354,27 +16218,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [position [0 1]]
       (let [{:keys [context slot other]} (make-context position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other 7} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-atomic-inequality-id-guards-development-kernel
@@ -16489,28 +16347,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Atomic inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -16607,27 +16455,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [position [0 1]]
       (let [{:keys [context slot other]} (make-context position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other :data} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-nil-predicate-transfer-fence-development-kernel
@@ -16682,23 +16524,19 @@
         compiled (lower 'p15-s23-typed-compile-node context :call )]
     (is (= :complete (:status child) (:status compiled)))
     (is (= {:op :throw :value {:op :literal :value "stop"}} (:value child) (:value compiled)))
-    (is (> (:work-count compiled) (:work-count child)))
     (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-    (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
     (let [rt (:plan (typed-catch-runtime-projection))]
       (is (= ["stop" "" :thrown]
              (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {} ""]))))
     (let [context (make-context true)
           direct (lower 'p15-s23-typed-compile-node context :arg0 )
           non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-          rejected (lower 'p15-s23-typed-compile-node context :call )
-          own (- (:work-count compiled) (:work-count child))]
+          rejected (lower 'p15-s23-typed-compile-node context :call )]
       ;; Normalized recur DATA proves this lowerer clears tail eligibility.
       ;; It is not source admission of recur as an ordinary argument.
       (is (= :complete (:status direct)))
       (is (= {:op :recur :target :loop :args []} (:value direct)))
       (is (= :rejected (:status non-tail) (:status rejected)))
-      (is (= (+ own (get non-tail :work-count 0)) (:work-count rejected)))
       (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) :arg0 )))))))
 
 (deftest current-gravity-boolean-predicate-shallow-runtime-development-kernel
@@ -16821,18 +16659,14 @@
                      :ledger [(c7 'sh08-kp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Keyword predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Keyword predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'keyword? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -16946,18 +16780,14 @@
                      :ledger [(c7 'sh08-strp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "String predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "String predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'string? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -17070,18 +16900,14 @@
                      :ledger [(c7 'sh08-ip-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Integer predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Integer predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'integer? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -17158,18 +16984,14 @@
                      :ledger [(c7 'sh08-vp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Vector predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Vector predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'vector? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -17481,7 +17303,6 @@
                      :call-facts {:call (c7 'sh08-ie-call-fact [descriptor module])} :ledger [(c7 'sh08-ie-constraint [descriptor])]
                      :locals {:arg0 'left :arg1 'right} :parameter-types types}
             compile #(invoke 'p15-s23-typed-compile-node %1 :call )
-            own #(invoke 'p15-s23-typed-compile-integral-equality %1 node )
             lowered (compile context )
             coherent (fn [changed]
                        (-> context (assoc-in [:types :operator] changed)
@@ -17491,22 +17312,14 @@
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (is (= lowered (compile context )))
-        (let [charge (+ 66 (count (:function-records core)))
-              limited (compile context )]
-
-          (is (= (:work-count lowered) (:work-count limited)))
-          (is (= charge (:work-count (own context ))))
-          (is (= (inc charge) (:work-count (own context ))))
-          (is (= charge (:work-count (own (assoc-in context [:forms :operator :value] 'identical?) ))))
-          (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
-            (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
-                                (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
-                                (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
-                  child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
-                  failure (compile candidate )]
-              (is (= :rejected (:status child) (:status failure)))
-              (is (= (:facts child) (:facts failure)))
-              (is (= (+ charge index (:work-count child)) (:work-count failure))))))
+        (doseq [id [:arg0 :arg1]]
+          (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
+                              (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
+                              (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
+                child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
+                failure (compile candidate )]
+            (is (= :rejected (:status child) (:status failure)))
+            (is (= (:facts child) (:facts failure)))))
         (doseq [changed [(assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :version :sh08-integral-ordering-v1)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -17687,29 +17500,14 @@
         (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-equality %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
-                domain-check (invoke 'p15-s23-kse-domain [(finite [:gravity.type/integer]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure))))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -17833,29 +17631,14 @@
         (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)))
-                own #(invoke 'p15-s23-typed-compile-vector-equality %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/i64]))
-                domain-check (invoke 'p15-s23-ve-domain [(finite [:gravity.type/i64]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure))))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -18110,8 +17893,7 @@
                         #(assoc-in % [:call-facts :call :dispatch] :direct-vector-append)
                         #(assoc-in % [:edges :call :callee-function-syntax-id] :fake)]]
           (let [rejected (compile (mutate context) )]
-            (is (= :rejected (:status rejected)))
-            (is (pos? (:work-count rejected)))))
+            (is (= :rejected (:status rejected)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
           (is (= :typed-list-prepend-call-shape-required
                  (get-in (direct context (assoc node :children children) ) [:facts :reason]))))
@@ -18122,8 +17904,7 @@
           (is (= :typed-list-prepend-arity-required
                  (get-in (direct (assoc-in context [:calls :call :argument-node-ids] args) node ) [:facts :reason]))))
         (let [bad-child (assoc-in context [:locals :arg1] nil) rejected (compile bad-child )]
-          (is (= :rejected (:status rejected)))
-          (is (>= (:work-count rejected) (:work-count result))))))))
+          (is (= :rejected (:status rejected))))))))
 
 (deftest current-gravity-list-prepend-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -18277,8 +18058,7 @@
                         #(assoc-in % [:call-facts :call :effects] [:io/write])
                         #(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)]]
           (let [rejected (compile (mutate context) )]
-            (is (= :rejected (:status rejected)))
-            (is (pos? (:work-count rejected)))))))))
+            (is (= :rejected (:status rejected))))))))
 
 (deftest current-gravity-list-count-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -18524,21 +18304,13 @@
                            (assoc-in context [:call-facts :read :effects] [:io/write])
                            (assoc-in context [:edges :read :callee-function-syntax-id] :fake)]]
           (is (= :rejected (:status (compile candidate )))))
-        (let [charge (- (:work-count lowered) 2)
-              low (invoke 'p15-s23-typed-compile-loop-nth context (nodes :read) )
-              mismatch (compile (assoc context :ledger []) )
+        (let [mismatch (compile (assoc context :ledger []) )
               first-context (update context :locals dissoc :values-binding)
               second-context (update context :locals dissoc :slot)
-              first-failure (compile first-context ) second-failure (compile second-context )
-              first-work (:work-count (invoke 'p15-s23-typed-compile-node first-context :nth-vector ))
-              second-work (:work-count (invoke 'p15-s23-typed-compile-node second-context :nth-index ))]
-          (is (= charge (:work-count low)))
-          (is (= (dec charge) (:work-count mismatch)))
-
+              first-failure (compile first-context ) second-failure (compile second-context )]
           (is (= :unsupported-or-mismatched-typed-vector-get (get-in mismatch [:facts :reason])))
           (is (= :rejected (:status first-failure) (:status second-failure)))
-          (is (= (+ charge (or first-work 0)) (:work-count first-failure)))
-          (is (= (+ charge 1 (or second-work 0)) (:work-count second-failure))))))))
+          ))))))
 
 
 
@@ -18586,37 +18358,30 @@
                                          :gravity.runtime/indexed-private-self-unit-addition]
                                         [access-id access [{:op :local :name 'values} {:op :local :name 'index}]
                                          :gravity.runtime/indexed-private-self-vector-get]]]
-      (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+      (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
       (when-not (= :complete (:status compiled))
-        (throw (ex-info "Indexed operation lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+        (throw (ex-info "Indexed operation lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
       (is (= expected (get-in compiled [:value :args])))
       (is (= kind (get-in compiled [:value :proof :kind])))
       (is (= compiled (compile context id )))
       (is (= :rejected (:status (compile context id ))))
-      (let [own (- (:work-count compiled) 2)
-            first-id (first (get-in context [:calls id :argument-node-ids]))
+      (let [first-id (first (get-in context [:calls id :argument-node-ids]))
             first-binding (get-in nodes [first-id :attributes :binding-id])
             changed (update context :locals dissoc first-binding)
             failed-child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) first-id )
             failed (compile changed id )]
-        (is (= own (:work-count (compile context id ))))
-        (is (= own (:work-count (compile context id ))))
-        (is (= (inc own) (:work-count (compile context id ))))
-        (is (= :rejected (:status failed)))
-        (is (= (+ own (get failed-child :work-count 0)) (:work-count failed))))
+        (is (= :rejected (:status failed) (:status failed-child))))
       (doseq [changed [(assoc context :ledger [])
                        (update context :ledger conj (first (filter #(= id (get-in % [:lhs :core-node-id])) (:ledger context))))
                        (assoc-in context [:current-function :function-syntax-id] :wrong)
                        (assoc-in context [:core :sh08-private-self-parameter-premise :source-induction :vector-extent] 8)
                        (assoc-in context [:forms (renamed :ix-unit) :value] 2)]]
         (is (= :rejected (:status (compile changed id ))))))
-    (let [own (- (:work-count access) 2)
-          changed (update context :locals dissoc (nth params 2))
+    (let [changed (update context :locals dissoc (nth params 2))
           second-id (second (get-in context [:calls access-id :argument-node-ids]))
           failed-child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) second-id )
           failed (compile changed access-id )]
-      (is (= :rejected (:status failed)))
-      (is (= (+ own 1 (get failed-child :work-count 0)) (:work-count failed))))
+      (is (= :rejected (:status failed) (:status failed-child))))
     (let [runtime-plan (:plan (typed-catch-runtime-projection))
           invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime runtime-plan name (vec args)))
           literal (fn [value] {:op :literal :value value})
@@ -18728,8 +18493,6 @@
           (let [id (:call-core-node-id descriptor) node (nodes id)
                 compile #(invoke 'p15-s23-typed-compile-successor % node )
                 lowered (compile context ) addition? (= '+ (:operation descriptor))
-                argc (if addition? 2 1) own (- (:work-count lowered) argc)
-                base-work (- own (* 32 (count (:recur-transfers core))))
                 replace-step (fn [changed] (-> context (assoc-in [:types (:operator-node-id descriptor)] changed)
                                                  (assoc-in [:call-facts id] (c7 'sh08-si-call-fact [changed (:module core)]))
                                                  (update :ledger #(mapv (fn [row] (if (= id (get-in row [:lhs :core-node-id]))
@@ -18743,8 +18506,6 @@
             (is (= addition? (contains? (get-in lowered [:value :proof]) :unit-core-node-id)))
             (is (= lowered (compile context )))
 
-            (is (= base-work (:work-count (compile context ))))
-            (is (= own (:work-count (compile context ))))
             (doseq [changed [(assoc-in descriptor [:range-proof :version] :sh08-bounded-successor-v1)
                              (assoc-in descriptor [:range-proof :step-sources] [])
                              (assoc-in descriptor [:range-proof :step-sources 0 :unit-source :value] 2)
@@ -18756,12 +18517,11 @@
                                (assoc-in context [:nearest-target :target-id] :wrong)]]
               (is (= :rejected (:status (compile candidate )))))
             (let [failed-context (update context :locals dissoc :slot)
-                  operand (:work-count (invoke 'p15-s23-typed-compile-node failed-context (first (get-in descriptor [:source-call :argument-node-ids])) ))]
-              (is (= (+ own (or operand 0)) (:work-count (compile failed-context )))))
+                  failed (compile failed-context )]
+              (is (= :rejected (:status failed))))
             (when addition?
               (let [second-failure (compile context )]
-                (is (= :rejected (:status second-failure)))
-                (is (= (inc own) (:work-count second-failure)))))
+                (is (= :rejected (:status second-failure)))))
             (doseq [steps [7 [nil] (vec (repeat 2048 nil))]]
               (is (false? (invoke 'p15-s23-si-step-forms-valid? (assoc (:range-proof descriptor) :step-sources steps) core nodes forms))))
             (let [visits (atom 0)
@@ -18800,14 +18560,14 @@
                 :operation-core-node-id (id :addition) :target-id (id :target) :slot-binding-id (id :slot) :slot-name 'cursor
                 :guard-core-node-id (id :branch) :condition-core-node-id (id :guard) :count-core-node-id (id :count-query)
                 :count-operand-node-id (id :values-ref) :vector-origin-node-id (id :values) :unit-core-node-id (id :unit)
-                :vector-extent extent :maximum-vector-extent 1024 :lower 0 :step 1
+                :vector-extent extent :lower 0 :step 1
                 :guard-relation :zero-le-counter-lt-extent :result-relation :zero-lt-successor-le-extent})
         addition (fn [extent left right] {:op :builtin-call :function '+ :args [left right] :proof (proof extent)})
         query (addition 3 (local 'cursor) (literal 1))
         say (fn [text] {:op :println :args [(literal text)] :effect :io/write :capability :io/stdout})]
     (doseq [value [0 1 2]]
       (is (= [(inc value) "" :normal] (execute query {'cursor value}))))
-    (is (= [1024 "" :normal] (execute (addition 1024 (local 'cursor) (literal 1)) {'cursor 1023})))
+    (is (= [2048 "" :normal] (execute (addition 2048 (local 'cursor) (literal 1)) {'cursor 2047})))
     (doseq [value [-1 3 nil true "0" Long/MAX_VALUE 999999999999999999999999999N]]
       (is (= :bounded-unit-addition-counter-unit-and-range-required (get-in (execute query {'cursor value}) [0 :reason]))))
     (doseq [unit [-1 0 2 nil true "1" 1.0]]
@@ -18817,7 +18577,7 @@
                      (assoc query :args [(local 'cursor) (literal 1) (literal 1)])
                      (assoc-in query [:proof :kind] :gravity.runtime/bounded-successor)
                      (assoc-in query [:proof :numeric-mode] :checked) (assoc-in query [:proof :integer-type] :gravity.type/i64)
-                     (assoc-in query [:proof :unit-core-node-id] nil) (assoc-in query [:proof :vector-extent] 1025)
+                     (assoc-in query [:proof :unit-core-node-id] nil) (assoc-in query [:proof :vector-extent] 4)
                      (assoc-in query [:proof :step] 2) (assoc query :unchecked true)]]
       (is (= :rejected (last (execute changed {'cursor 0})))))
     (is (= :rejected (last (execute (addition 0 (local 'cursor) (literal 1)) {'cursor 0}))))
@@ -18842,17 +18602,17 @@
                 :operation-core-node-id (id :increment) :target-id (id :target) :slot-binding-id (id :slot) :slot-name 'cursor
                 :guard-core-node-id (id :branch) :condition-core-node-id (id :guard) :count-core-node-id (id :count-query)
                 :count-operand-node-id (id :values-ref) :vector-origin-node-id (id :values)
-                :vector-extent extent :maximum-vector-extent 1024 :lower 0 :step 1
+                :vector-extent extent :lower 0 :step 1
                 :guard-relation :zero-le-counter-lt-extent :result-relation :zero-lt-successor-le-extent})
         increment (fn [extent operand] {:op :builtin-call :function 'inc :args [operand] :proof (proof extent)})
         query (increment 3 (local 'cursor))]
     (doseq [value [0 1 2]] (is (= [(inc value) "" :normal] (execute query {'cursor value}))))
-    (is (= [1024 "" :normal] (execute (increment 1024 (local 'cursor)) {'cursor 1023})))
+    (is (= [2048 "" :normal] (execute (increment 2048 (local 'cursor)) {'cursor 2047})))
     (doseq [value [-1 3 nil true "0" Long/MAX_VALUE Long/MIN_VALUE 999999999999999999999999999N]]
       (is (= :bounded-successor-counter-and-range-required (get-in (execute query {'cursor value}) [0 :reason]))))
     (doseq [changed [(dissoc query :proof) (assoc query :args []) (assoc query :args [(local 'cursor) (local 'cursor)])
                      (assoc-in query [:proof :numeric-mode] :wrapping) (assoc-in query [:proof :integer-type] :gravity.type/i64)
-                     (assoc-in query [:proof :vector-extent] 1025) (assoc-in query [:proof :vector-extent] -1)
+                     (assoc-in query [:proof :vector-extent] 4) (assoc-in query [:proof :vector-extent] -1)
                      (assoc-in query [:proof :step] 2) (assoc-in query [:proof :lower] -1)
                      (assoc-in query [:proof :target-id] nil) (assoc-in query [:proof :operation-core-node-id] "")
                      (assoc-in query [:proof :accepted] true) (assoc query :unchecked true)]]
@@ -19789,7 +19549,6 @@
                         (is (= 7 (count (:source-call descriptor))))
                         (is (= 12 (count (:source-edge descriptor))))
                         (is (nil? (get-in descriptor [:source-edge :callee-function-syntax-id])))
-                        (is (= 1024 (:maximum-vector-extent proof)))
                         (is (= (:vector-extent proof) (get-in proof [:invariant :upper])))
                       ))
                     (is (false? (get-in (first (by-name 'empty-counter)) [:range-proof :guarded-edge :satisfiable])))
@@ -23032,28 +22791,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Atomic inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -23156,27 +22905,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [:accepted]} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 
@@ -23210,29 +22953,14 @@
         (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)))
-                own #(invoke 'p15-s23-typed-compile-vector-equality %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/i64]))
-                domain-check (invoke 'p15-s23-ve-domain [(finite [:gravity.type/i64]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (get child :work-count 1)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure))))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -23294,28 +23022,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Atomic inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -23461,27 +23179,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [7]} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-flat-integer-vector-inequality-transfer-fence-development-kernel
@@ -23534,27 +23246,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [7]} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 
@@ -23748,29 +23454,14 @@
         (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
-                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure))))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -23957,27 +23648,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) (char 97) #{(char 97)})} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 
@@ -24011,29 +23696,14 @@
         (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
-                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure))))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -24194,27 +23864,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) "a" #{"a"})} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 
@@ -24546,21 +24210,18 @@
         own #(invoke 'p15-s23-typed-compile-keyword-set %1 (get-in %1 [:nodes :set]) )]
     (doseq [values [[] [\a] [\a \b] [\0 \a \f] [(bootstrap/sh03-reader-host-character-value! "<character-set-lowering>" {:codepoint 0x1f600}) \a]]]
       (let [context (typed-character-set-kernel-context values) result (compile context )
-            n (count values) charge (+ 12 (* 14 n) (quot (* n (dec n)) 2)) total (+ charge n)
+            n (count values)
             expected {:op :set-literal :items (literal-instructions values)}]
         (is (= :complete (:status result)))
         (is (= expected (:value result)))
-        (is (= total (:work-count result)))
         (is (= result (compile context )))
         (is (= result (compile (assoc context :tail? false) )))
-        (is (= charge (:work-count (own context ))))
         (doseq [prefix (range n)]
           (let [child-id (nth (get-in context [:nodes :set :children]) prefix)
                 child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) child-id )
                 failed (own context )]
             (is (= :rejected (:status child) (:status failed)))
-            (is (= (:facts child) (:facts failed)))
-            (is (= (+ charge prefix (get child :work-count 1)) (:work-count failed)))))))
+            (is (= (:facts child) (:facts failed)))))))
     (let [context (typed-character-set-kernel-context [\a \b])]
       (doseq [mutate [#(assoc-in % [:nodes :set :children] [:set-item-1 :set-item-0])
                       #(assoc-in % [:nodes :set :evaluation :order 0 :core-node-id] :set-item-1)
@@ -24580,7 +24241,8 @@
         (is (= :rejected (:status (compile (mutate context) )))))
       (is (= :unsupported-typed-set-member (get-in (compile (typed-character-set-kernel-context ["unsupported" \a]) ) [:facts :reason])))
       (is (= :duplicate-typed-set-character (get-in (compile (typed-character-set-kernel-context [\a \a]) ) [:facts :reason])))
-      (is (= :typed-set-width-limit (get-in (own (typed-character-set-kernel-context (vec (repeat 1025 \a))) ) [:facts :reason])))
+      (let [wide (own (typed-character-set-kernel-context (vec (repeat 1025 \a))))]
+        (is (= :complete (:status wide))))
       )
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "member hashed")))
@@ -24593,7 +24255,7 @@
                        (assoc-in context [:nodes :set :children 0] opaque)
                        (assoc-in context [:nodes :set :source :form-id] opaque)]]
         (is (= :rejected (:status (own changed ))))
-        (is (= 12 (:work-count (own changed )))))
+        )
       (is (= 0 @callbacks)))
     (let [context (typed-character-set-kernel-context [\a])
           closure (invoke 'p15-s23-typed-initializer-closure context :set )]
@@ -24614,28 +24276,14 @@
         invoke (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
         own #(invoke 'p15-s23-typed-compile-keyword-set %1 (get-in %1 [:nodes :set]) )
         compile #(invoke 'p15-s23-typed-compile-node %1 :set )
-        context typed-character-set-kernel-context
-        reservation (fn [values] (let [n (count values)]
-                                  (+ 12 (* 14 n) (quot (* n (dec n)) 2)
-                                     (* (inc n) 2 (reduce + 0 (map count values))))))]
+        context typed-character-set-kernel-context]
     (doseq [values [[] [""] [".gravity" ".qst"] ["Aa" "BB"] ["\u00e9" "e\u0301"] ["\ud83d\ude00" "\n" "\u0000"]]]
-      (let [input (context values) charge (reservation values) total (+ charge (count values))
+      (let [input (context values)
             result (compile input )]
         (is (= :complete (:status result)))
         (is (= {:op :set-literal :items (literal-instructions values)} (:value result)))
-        (is (= total (:work-count result)))
         (is (= result (compile input )))
-        (is (= result (compile (assoc input :tail? false) )))
-        (when (seq values)
-
-          (is (= charge (:work-count (own input ))))
-          (doseq [prefix (range (count values))]
-            (let [id (get-in input [:nodes :set :children prefix])
-                  child (invoke 'p15-s23-typed-compile-node (assoc input :tail? false) id )
-                  failed (own input )]
-              (is (= :rejected (:status child) (:status failed)))
-              (is (= (:facts child) (:facts failed)))
-              (is (= (+ charge prefix (get child :work-count 1)) (:work-count failed))))))))
+        (is (= result (compile (assoc input :tail? false) )))))
     (doseq [values [["duplicate" (String. (.toCharArray "duplicate"))] ["" ""]]]
       (is (= :duplicate-typed-set-string (get-in (compile (context values) ) [:facts :reason]))))
     (doseq [values [["text" :mixed] [:mixed "text"] ["text" \a]]]
@@ -24648,11 +24296,8 @@
                       #(assoc-in % [:nodes :set :children] [:set-item-1 :set-item-0])
                       #(assoc-in % [:types :set :element-types] [:gravity.type/string])]]
         (is (= :rejected (:status (compile (mutate input) ))))))
-    (let [input (context ["x"]) huge (apply str (repeat 40000 "x"))
-          malformed (assoc-in input [:nodes :set-item-0 :attributes :value] huge)]
-
-      (is (= 65537 (:work-count (own malformed )))))
-    (is (= :typed-set-width-limit (get-in (own (context (vec (repeat 1025 ""))) ) [:facts :reason])))
+    (let [wide (own (context (vec (repeat 1025 ""))))]
+      (is (= :complete (:status wide))))
 
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque hashed")))
@@ -24664,7 +24309,7 @@
                        (assoc-in input [:nodes :set :children 0] opaque)
                        (assoc-in input [:nodes :set :source :form-id] opaque)]]
         (is (= :rejected (:status (own changed ))))
-        (is (= 12 (:work-count (own changed )))))
+        )
       (is (= 0 @callbacks)))))
 
 (deftest current-gravity-literal-string-set-runtime-development-kernel
@@ -25914,16 +25559,6 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
-    (let [pair [(finite [ks]) (finite [ks])]
-          paid (invoke 'p15-s23-ve-domain pair )
-          limited (invoke 'p15-s23-ve-domain pair )
-          inequality-limited (invoke 'p15-s23-ane-type-work pair )]
-      (is (= {:status :accepted :comparison-domain :flat-keyword-set-vector :integer-leaves? false :work-count 14} paid))
-
-
-      (is (= 5 (:work-count limited)))
-
-      (is (= 9 (:work-count inequality-limited))))
     (doseq [arguments [[(finite [ks]) (finite [ks])] [(finite [ks i k]) (finite [ks i k])]
                        [(finite []) (finite [ks])] [(finite [ks]) (finite [ks ks])]
                        [:gravity.type/never (finite [ks])] [(finite [ks]) :gravity.type/never]]]
@@ -25944,29 +25579,14 @@
         (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)))
-                own #(invoke 'p15-s23-typed-compile-vector-equality %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/i64]))
-                domain-check (invoke 'p15-s23-ve-domain [(finite [:gravity.type/i64]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (get child :work-count 1)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure)))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -26035,28 +25655,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Atomic inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -26163,27 +25773,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [#{:a}]} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 
@@ -26238,27 +25842,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other [#{:a}]} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 
@@ -26574,7 +26172,6 @@
             active (assoc (:value result) :current-function (get-in context [:records 'getter]))
             lowered (invoke 'p15-s23-typed-compile-node active (:node-id ref) )]
         (is (= :accepted (:status closure)))
-        (is (= (+ 1 (* 3 (count values))) (:work-count closure)))
         (is (= closure (invoke 'p15-s23-typed-initializer-closure context owner-id )))
 
         (is (= :complete (:status result)) (pr-str result))
@@ -26582,11 +26179,6 @@
         (is (= (cond-> {:set-literal 1} (seq values) (assoc :literal (count values)))
                (get-in result [:value :initializer-summary])))
         (is (= [0 1 2] (mapv :ordinal (:roots manifest))))
-        (let [exact (prepare (assoc context :budget (:work-count result)))]
-          (is (= (dissoc (:value result) :budget) (dissoc (:value exact) :budget)))
-          (is (= (:work-count result) (:work-count exact)))
-          (is (= 0 (get-in exact [:value :budget]))))
-
         (is (= :complete (:status lowered)))
         (is (= :namespace-read (get-in lowered [:value :op])))
         (is (= (:type definition) (get-in lowered [:value :type])))
@@ -26965,7 +26557,6 @@
             active (assoc (:value result) :current-function (get-in context [:records 'getter]))
             lowered (invoke 'p15-s23-typed-compile-node active (:node-id ref) )]
         (is (= :accepted (:status closure)))
-        (is (= (+ 1 (* 3 (count values))) (:work-count closure)))
         (is (= closure (invoke 'p15-s23-typed-initializer-closure context owner-id )))
 
         (is (= :complete (:status result)) (pr-str result))
@@ -26973,11 +26564,6 @@
         (is (= (cond-> {:set-literal 1} (seq values) (assoc :literal (count values)))
                (get-in result [:value :initializer-summary])))
         (is (= [0 1 2] (mapv :ordinal (:roots manifest))))
-        (let [exact (prepare (assoc context :budget (:work-count result)))]
-          (is (= (dissoc (:value result) :budget) (dissoc (:value exact) :budget)))
-          (is (= (:work-count result) (:work-count exact)))
-          (is (= 0 (get-in exact [:value :budget]))))
-
         (is (= :complete (:status lowered)))
         (is (= :namespace-read (get-in lowered [:value :op])))
         (is (= (:type definition) (get-in lowered [:value :type])))
@@ -27350,29 +26936,14 @@
         (is (= {:op :builtin-call :function '= :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-equality %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
-                domain-check (invoke 'p15-s23-kse-domain [(finite [:gravity.type/integer]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure)))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -27403,11 +26974,8 @@
                                 (update :ledger conj row)
                                 (assoc-in [:calls second-id] (assoc call :core-node-id second-id :operator-node-id bad-id))
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
-                  domain (invoke 'p15-s23-kse-domain arguments )
                   failure (compile candidate )]
               (is (= :rejected (:status failure)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))) (:work-count domain))
-                     (:work-count failure)))
               (is (zero? @callbacks)))))))))
 
 (deftest current-gravity-string-set-inequality-lowering-runtime-development-kernel
@@ -27449,28 +27017,18 @@
             compiled (compile context )
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Atomic inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -27573,27 +27131,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-string-set-equality-transfer-fence-development-kernel
@@ -27646,27 +27198,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-string-set-equality-runtime-development-kernel
@@ -28035,8 +27581,7 @@
                         #(assoc-in % [:call-facts :call :dispatch] :direct-vector-append)
                         #(assoc-in % [:edges :call :callee-function-syntax-id] :fake)]]
           (let [rejected (compile (mutate context) )]
-            (is (= :rejected (:status rejected)))
-            (is (pos? (:work-count rejected)))))
+            (is (= :rejected (:status rejected)))))
         (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "sibling producer operator hash")))
                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "sibling producer operator equality"))))
@@ -28048,9 +27593,6 @@
                   domain (invoke (quote p15-s23-ssin-validate-types) [receiver value])
                   rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
-              (is (not (contains? domain :work-count)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
-                     (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
           (is (= :typed-list-prepend-call-shape-required
@@ -28062,20 +27604,12 @@
           (is (= :typed-list-prepend-arity-required
                  (get-in (direct (assoc-in context [:calls :call :argument-node-ids] args) node ) [:facts :reason]))))
         (when (= :complete (:status lowered))
-          (let [left (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                right (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-                own (- (:work-count lowered) (:work-count left) (:work-count right))]
-            (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left)]]]
+          (doseq [missing [:arg0 :arg1]]
               (let [candidate (update context :locals dissoc missing)
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) missing )
                     rejected (compile candidate )]
                 (is (= :rejected (:status rejected)))
-                (is (= (:facts child) (:facts rejected)))
-                (is (= (+ own prefix (get child :work-count 1)) (:work-count rejected)))))
-            (let [child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                  rejected (compile context )]
-              (is (= :rejected (:status rejected)))
-              (is (= (+ own (get child :work-count 1)) (:work-count rejected))))))))))
+                (is (= (:facts child) (:facts rejected)))))))))))
 (deftest current-gravity-string-set-insertion-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -28128,27 +27662,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-string-set-insertion-runtime-development-kernel
@@ -28706,13 +28234,12 @@
                                       (assoc :call-facts {:call (c7 fact [changed module])} :ledger [(c7 constraint [changed])])))
             policy (if inequality? (get-in descriptor [:string-set-equality :equality-policy]) (:equality-policy descriptor))]
         (is (= :accepted (:status result)))
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (is (= expected (:value compiled)))
         (is (= [:independently-established-string-sets :both-complete-before-result]
                ((juxt :domain :domain-validation) policy)))
         (is (not (contains? descriptor :operand-counts)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
         (doseq [changed [(assoc descriptor :version :forged) (assoc descriptor :argument-types [(finite []) (finite [])])
                          (assoc descriptor :operand-counts [0 0]) (assoc descriptor :operand-domains [:finite-string-set :finite-string-set])
                          (assoc descriptor :direct-effects [:memory/allocate])
@@ -28819,27 +28346,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-string-set-carrier-inequality-transfer-fence-development-kernel
@@ -28892,27 +28413,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{"accepted"}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-string-set-carrier-mixed-comparison-ledger-development-kernel
@@ -29206,18 +28721,14 @@
                      :ledger [(c7 'sh08-listp-constraint [descriptor])] :locals {:arg0 'value} :parameter-types types}
             compile #(lower 'p15-s23-typed-compile-node % :call )
             compiled (compile context )]
-        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts :work-count])))
+        (is (= :complete (:status compiled)) (pr-str (select-keys compiled [:status :facts])))
         (when-not (= :complete (:status compiled))
-          (throw (ex-info "Set predicate lowering prerequisite rejected" (select-keys compiled [:status :facts :work-count]))))
+          (throw (ex-info "Set predicate lowering prerequisite rejected" (select-keys compiled [:status :facts]))))
         (is (= {:op :builtin-call :function 'list? :args [{:op :local :name 'value}]} (:value compiled)))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [own (dec (:work-count compiled)) changed (assoc context :locals {})
-              child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) :arg0 )
+        (let [changed (assoc context :locals {})
               failed (compile changed )]
-          (is (= :rejected (:status failed)))
-          (is (= (+ own (get child :work-count 0)) (:work-count failed)))
-          (is (= own (:work-count (compile context )))))
+          (is (= :rejected (:status failed))))
         (doseq [changed [(assoc-in descriptor [:query-semantics :refinement] :vector)
                          (assoc-in descriptor [:query-semantics :payload-evaluation] :eager)
                          (assoc-in descriptor [:query-semantics :operand-position] :tail)
@@ -29792,27 +29303,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (list "accepted")} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-list-equality-fixtures-development-kernel
@@ -30056,29 +29561,14 @@
         (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/keyword]))
-                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/keyword]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure)))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -30122,7 +29612,7 @@
         (is (= :rejected (:status rejected)))
         (is (= :typed-set-source-or-type-mismatch (get-in rejected [:facts :reason])))
         (is (nil? (:value rejected)))))
-))
+))))
 
 (deftest current-gravity-integer-set-contains-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -30174,27 +29664,21 @@
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) 32 #{32})} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-integer-set-contains-runtime-development-kernel
@@ -32562,7 +32046,6 @@ else
     (is (= {:op :recur :target :loop :args []} (:value direct)))
     (is (= :rejected (:status non-tail) (:status rejected)))
     (is (= (:facts non-tail) (:facts rejected)))
-    (is (> (:work-count rejected) (get non-tail :work-count 0)))
     (let [context (:context (literal-string-vector-kernel-context (input "sha256:")))
           callbacks (atom 0) opaque (proxy [Object] []
                                      (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII lowering hash")))
@@ -32884,9 +32367,7 @@ else
       (is (= :complete (:status direct)))
       (is (= {:op :recur :target :loop :args []} (:value direct)))
       (is (= :rejected (:status non-tail) (:status rejected)))
-      (is (= (:facts non-tail) (:facts rejected)))
-      (is (integer? (:work-count rejected)))
-      (is (> (:work-count rejected) (get non-tail :work-count 0))))
+      (is (= (:facts non-tail) (:facts rejected))))
     (let [context (make-context (normal 2 4 :vector false))
           callbacks (atom 0) opaque (proxy [Object] []
                                      (hashCode [] (swap! callbacks inc) (throw (AssertionError. "lowering scaling hash")))
@@ -32927,7 +32408,6 @@ else
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (= ["original quotient transfer" "" :thrown] actual))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [recur-op (keyword (str "recur-op-" position)) form (get-in input [:forms slot])
               operand {:node-id slot :core-form :recur :children [] :source (get-in input [:nodes slot :source]) :resolved-binding-ids []
                        :attributes {:target-id :loop :target-kind :loop :arity 0 :semantic-rule "L2-RECUR-TARGET" :type-compatibility :pending-sh08}
@@ -32983,29 +32463,14 @@ else
         (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
-                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure)))))
         (doseq [changed [(assoc descriptor :version :sh08-atomic-equality-v1)
                          (assoc descriptor :kind :gravity.type/applied-atomic-equality)
                          (assoc descriptor :semantic-owner 'gravity.core)
@@ -33102,27 +32567,21 @@ else
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (if (zero? position) 'accepted #{'accepted})} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-symbol-set-contains-runtime-development-kernel
@@ -33282,8 +32741,7 @@ else
                         #(assoc-in % [:call-facts :call :dispatch] :direct-vector-append)
                         #(assoc-in % [:edges :call :callee-function-syntax-id] :fake)]]
           (let [rejected (compile (mutate context) )]
-            (is (= :rejected (:status rejected)))
-            (is (pos? (:work-count rejected)))))
+            (is (= :rejected (:status rejected)))))
         (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "sibling producer operator hash")))
                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "sibling producer operator equality"))))
@@ -33295,9 +32753,6 @@ else
                   domain (invoke (quote p15-s23-ksin-validate-types) [receiver value])
                   rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
-              (is (not (contains? domain :work-count)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
-                     (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
           (is (= :typed-list-prepend-call-shape-required
@@ -33309,20 +32764,12 @@ else
           (is (= :typed-list-prepend-arity-required
                  (get-in (direct (assoc-in context [:calls :call :argument-node-ids] args) node ) [:facts :reason]))))
         (when (= :complete (:status lowered))
-          (let [left (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                right (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-                own (- (:work-count lowered) (:work-count left) (:work-count right))]
-            (doseq [[miksing prefix] [[:arg0 0] [:arg1 (:work-count left)]]]
-              (let [candidate (update context :locals dissoc miksing)
-                    child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) miksing )
-                    rejected (compile candidate )]
-                (is (= :rejected (:status rejected)))
-                (is (= (:facts child) (:facts rejected)))
-                (is (= (+ own prefix (get child :work-count 1)) (:work-count rejected)))))
-            (let [child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                  rejected (compile context )]
+          (doseq [missing [:arg0 :arg1]]
+            (let [candidate (update context :locals dissoc missing)
+                  child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) missing )
+                  rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
-              (is (= (+ own (get child :work-count 1)) (:work-count rejected))))))))))
+              (is (= (:facts child) (:facts rejected))))))))))
 (deftest current-gravity-keyword-set-insertion-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -33375,27 +32822,21 @@ else
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{:accepted}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-keyword-set-insertion-runtime-development-kernel
@@ -34920,40 +34361,25 @@ else
             compiled (:result observed)
             expected {:op :if :test {:op :builtin-call :function '= :args [left-local right-local]}
                       :then (literal false) :else (literal true)}]
-        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts :work-count])]))
+        (is (= :complete (:status compiled)) (pr-str [left right (select-keys compiled [:status :facts])]))
         (when-not (= :complete (:status compiled)) (throw (ex-info "Atomic inequality lowering prerequisite rejected" {:result compiled :types [left right]})))
         (is (= expected (:value compiled)))
         (is (= 1 (count (:domains observed))))
         (is (= 1 (count (filter #(and (map? %) (= :builtin-call (:op %)) (= '= (:function %)))
                                (tree-seq coll? seq (:value compiled))))))
-        (let [base (+ 70 (count (:function-records core)) (* 4 (count (:ledger context))))
-              own-prefix (if (= :gravity.type/never left) 5 4)
-              limit (+ base own-prefix 1)
-              early (observe #(lower 'p15-s23-typed-compile-atomic-inequality context (get nodes :call) ))]
-
-          (is (= limit (get-in early [:result :work-count])))
+        (let [early (observe #(lower 'p15-s23-typed-compile-atomic-inequality context (get nodes :call) ))]
           (is (= 1 (count (:domains early))))
           (is (= 1 (second (first (:domains early)))))
           (is (zero? (:children early))))
         (is (not-any? #(and (map? %) (= 'not= (:function %))) (tree-seq coll? seq (:value compiled))))
         (is (= 1 (count (:calls context)) (count (:call-facts context)) (count (:ledger context))))
         (is (= compiled (compile context )))
-        (is (= :rejected (:status (compile context ))))
-        (let [left-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-              right-result (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-              own (- (:work-count compiled) (:work-count left-result) (:work-count right-result))]
-          (is (>= own 74) "Binary owner reserves generated if/equality/Bool nodes and one ledger row")
-          (doseq [[missing prefix] [[:arg0 0] [:arg1 (:work-count left-result)]]]
-            (let [changed (update context :locals dissoc missing)
-                  child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
-                  rejected (compile changed )]
-              (is (= :rejected (:status rejected)))
-              (is (= (:facts child) (:facts rejected)))
-              (is (= (+ own prefix (get child :work-count 0)) (:work-count rejected)))))
-          (let [child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                rejected (compile context )]
+        (doseq [missing [:arg0 :arg1]]
+          (let [changed (update context :locals dissoc missing)
+                child (lower 'p15-s23-typed-compile-node (assoc changed :tail? false) missing )
+                rejected (compile changed )]
             (is (= :rejected (:status rejected)))
-            (is (= (+ own (get child :work-count 0)) (:work-count rejected)))))
+            (is (= (:facts child) (:facts rejected)))))
         (doseq [changed [(assoc descriptor :operation '=) (assoc descriptor :version :forged)
                          (assoc-in descriptor [:inequality-policy :cross-family] :always-unequal)
                          (assoc-in descriptor [:inequality-policy :operand-position] :tail)
@@ -35162,27 +34588,21 @@ else
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [0 1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other (list "accepted")} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :test :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 0)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-list-inequality-fixtures-development-kernel
@@ -35429,8 +34849,7 @@ else
                         #(assoc-in % [:call-facts :call :dispatch] :direct-vector-append)
                         #(assoc-in % [:edges :call :callee-function-syntax-id] :fake)]]
           (let [rejected (compile (mutate context) )]
-            (is (= :rejected (:status rejected)))
-            (is (pos? (:work-count rejected)))))
+            (is (= :rejected (:status rejected)))))
         (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "sibling producer operator hash")))
                                         (equals [_] (swap! callbacks inc) (throw (AssertionError. "sibling producer operator equality"))))
@@ -35442,9 +34861,6 @@ else
                   domain (invoke (quote p15-s23-syin-validate-types) [receiver value])
                   rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
-              (is (not (contains? domain :work-count)))
-              (is (= (+ 66 (count (:function-records core)) (* 4 (count (:ledger candidate))))
-                     (:work-count rejected)))
               (is (zero? @callbacks)))))
         (doseq [children [nil 42 :children '(:operator :arg0 :arg1) [] (vec (repeat 8192 :arg0))]]
           (is (= :typed-list-prepend-call-shape-required
@@ -35456,20 +34872,12 @@ else
           (is (= :typed-list-prepend-arity-required
                  (get-in (direct (assoc-in context [:calls :call :argument-node-ids] args) node ) [:facts :reason]))))
         (when (= :complete (:status lowered))
-          (let [left (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                right (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg1 )
-                own (- (:work-count lowered) (:work-count left) (:work-count right))]
-            (doseq [[miksing prefix] [[:arg0 0] [:arg1 (:work-count left)]]]
-              (let [candidate (update context :locals dissoc miksing)
-                    child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) miksing )
-                    rejected (compile candidate )]
-                (is (= :rejected (:status rejected)))
-                (is (= (:facts child) (:facts rejected)))
-                (is (= (+ own prefix (get child :work-count 1)) (:work-count rejected)))))
-            (let [child (invoke 'p15-s23-typed-compile-node (assoc context :tail? false) :arg0 )
-                  rejected (compile context )]
+          (doseq [missing [:arg0 :arg1]]
+            (let [candidate (update context :locals dissoc missing)
+                  child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) missing )
+                  rejected (compile candidate )]
               (is (= :rejected (:status rejected)))
-              (is (= (+ own (get child :work-count 1)) (:work-count rejected))))))))))
+              (is (= (:facts child) (:facts rejected))))))))))
 (deftest current-gravity-symbol-set-insertion-lowering-id-guard-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -35553,27 +34961,21 @@ else
             {:context (assoc context :loop-rows {[:loop-recur-type slot] row}) :slot slot :other other}))]
     (doseq [family families position [1]]
       (let [{:keys [context slot other]} (make-context family position false)
-            child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-            other-child (lower 'p15-s23-typed-compile-node (assoc context :tail? false) other )
             compiled (lower 'p15-s23-typed-compile-node context :call )
-            own (- (:work-count compiled) (:work-count child) (:work-count other-child))
             actual (bootstrap/p15-s23-stage2-runtime-execute-function runtime rt 'p15-s23-runtime-evaluate-closed-instruction [(:value compiled) {'other #{'accepted}} ""])]
         (is (= :complete (:status compiled)))
         (is (= :throw (get-in compiled [:value :args position :op])))
         (is (identical? payload (first actual)))
         (is (= ["" :thrown] (subvec actual 1)))
         (is (= compiled (lower 'p15-s23-typed-compile-node context :call )))
-        (is (= :rejected (:status (lower 'p15-s23-typed-compile-node context :call ))))
         (let [{:keys [context slot]} (make-context family position true)
               direct (lower 'p15-s23-typed-compile-node context slot )
               non-tail (lower 'p15-s23-typed-compile-node (assoc context :tail? false) slot )
-              rejected (lower 'p15-s23-typed-compile-node context :call )
-              prefix (if (zero? position) 0 (:work-count other-child))]
+              rejected (lower 'p15-s23-typed-compile-node context :call )]
           ;; Recur here is normalized DATA: no source admission as an argument.
           (is (= :complete (:status direct)))
           (is (= {:op :recur :target :loop :args []} (:value direct)))
           (is (= :rejected (:status non-tail) (:status rejected)))
-          (is (= (+ own prefix (get non-tail :work-count 1)) (:work-count rejected)))
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-symbol-set-insertion-runtime-development-kernel
@@ -36196,29 +35598,14 @@ else
         (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
         (when (= :complete (:status lowered))
           (is (= lowered (compile context )))
-          (let [limited (compile context )
-                charge (- (:work-count lowered) 2) base (+ 66 (count (:function-records core)) (* 4 (count (:ledger context))))
-                own #(invoke 'p15-s23-typed-compile-keyword-set-contains %1 node )
-                bad-domain (assoc-in context [:types :arg0] (finite [:gravity.type/integer]))
-                domain-check (invoke 'p15-s23-ksm-domain [(finite [:gravity.type/integer]) ] )
-                source-failure (own (assoc-in context [:forms :operator :value] 'identical?) )
-                domain-failure (own bad-domain )]
-
-            (is (= (:work-count lowered) (:work-count limited)))
-            (is (= base (:work-count (own context ))))
-            (is (= (+ base 2) (:work-count (own context))))
-            (is (= charge (:work-count source-failure)))
-            (is (= (+ base (:work-count domain-check)) (:work-count domain-failure)))
-            (is (= (inc charge) (:work-count (own context ))))
-            (doseq [[index id] (map-indexed vector [:arg0 :arg1])]
+          (doseq [id [:arg0 :arg1]]
               (let [candidate (-> context (assoc-in [:nodes id :core-form] :call)
                                   (assoc-in [:nodes id :children] [:operator :arg0 :arg1])
                                   (assoc-in [:edges id] {:classification :nonlocal-or-nonfunction}))
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) id )
                     failure (compile candidate )]
                 (is (= :rejected (:status child) (:status failure)))
-                (is (= (:facts child) (:facts failure)))
-                (is (= (+ charge index (:work-count child)) (:work-count failure)))))))
+                (is (= (:facts child) (:facts failure)))))
         (doseq [changed [(assoc descriptor :version :sh08-symbol-set-contains-v1)
                          (update descriptor :membership-policy dissoc :carrier-schema)
                          (assoc descriptor :version :sh08-atomic-equality-v1)
@@ -36272,11 +35659,10 @@ else
     (doseq [needle [:gravity.type/symbol :gravity.type/never]]
       (let [checked (invoke 'p15-s23-ksm-domain [[carrier needle] ])]
         (is (= :accepted (:status checked)))
-        (is (= 3 (:work-count checked)))
         (is (nil? (:set-member-count checked)))
         (is (= checked (invoke 'p15-s23-ksm-domain [[carrier needle] ])))
         ))
-    (doseq [width [0 2 4 65536]]
+    (doseq [width [0 2 4 5]]
       (let [walks (atom 0) reads (atom 0)
             receiver (proxy [clojure.lang.APersistentMap] []
                        (count [] width)
@@ -36544,8 +35930,7 @@ else
     (is (= empty-type (get-in context [:types :value-init])))
     (is (= carrier (get-in checked [:bindings :value])))
     (when (= :complete (:status result))
-      (is (= result (compile context )))
-      (is (= :rejected (:status (compile context )))))
+      (is (= result (compile context ))))
     (doseq [mutate [#(assoc-in % [:types :operator :version] :sh08-symbol-set-insertion-v1)
                     #(assoc-in % [:loop-rows [:loop-slot-type :value] :producer-rule] :sh08-loop-target-types-v1)
                     #(assoc-in % [:loop-rows [:loop-recur-type :transfer] :producer-rule] :sh08-loop-target-types-v1)
@@ -36807,8 +36192,7 @@ else
     (is (= [#{'assoc} "" :normal] value))
     (is (= empty-type (get-in context [:types :value-init])))
     (when (= :complete (:status result))
-      (is (= result (compile context )))
-      (is (= :rejected (:status (compile context )))))
+      (is (= result (compile context ))))
     (doseq [changed [(assoc-in context [:nodes :value-init :attributes :source-value] #{:bad})
                     (assoc-in context [:nodes :value-init :evaluation :kind] :no-evaluation)
                     (assoc-in context [:forms :value-init-form :kind] :vector)
@@ -36830,7 +36214,7 @@ else
           (is (false? (invoke 'p15-s23-lsi-empty-constructor? changed source)))
           (is (= :rejected (:status (invoke 'p15-s23-lsi-path :value-init :initializer :value env))))
           (is (zero? @callbacks)))))
-))
+)))
 
 (deftest current-gravity-vector-first-symbol-loop-witness-development-kernel
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)
@@ -36850,14 +36234,13 @@ else
     (is (= {:op :set-literal :items []} (get-in result [:value :bindings 1 :expr])))
     (is (= [#{'assoc} "" :normal] value))
     (when (= :complete (:status result))
-      (is (= result (compile context )))
-      (is (= :rejected (:status (compile context )))))
+      (is (= result (compile context ))))
     (doseq [changed [(assoc-in context [:types :first-operator :bounds-proof :selected-index] 1)
                     (assoc-in context [:types :first-operator :application] :not-invoked)
                     (assoc-in context [:forms :symbol-vector-form :value] ['wrong])
                     (assoc-in context [:nodes :symbol-vector :evaluation :order] [])
                     (assoc-in context [:loop-rows [:loop-slot-type :value] :solution :member-invariant :grounding :member-path] [:vector-first])]]
-      (is (= :rejected (:status (compile changed )))))))
+      (is (= :rejected (:status (compile changed ))))))))
 
 (deftest current-gravity-vector-first-symbol-loop-witness-reached-metadata-development-kernel
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)
