@@ -136,6 +136,98 @@ Accounting/Reader interface agreement before implementation or composition.
 The above is an exact proposed input/output/failure/replay contract, not an
 installed builtin or normal Reader integration claim.
 
+## Actual scoped ABI decision after Accounting handoff
+
+Consumed `/tmp/acc09-stage2-ownership-abi-handoff.edn`, SHA256
+`47caeed296174de3ee68492bff7bb13b6b4576c6fd25a68ccf78b6a2713c937a`.
+Its immutable subject is `9e733a377e67faba184171b817b809ef8087b3ff`, tree
+`1425714ec50aa4bb7624e3630e7b9718b3ea2d02`. The handoff does not establish
+a currently usable/clean ACC09 checkout or exclusive ownership of `00590`.
+
+Reading those Git objects confirms the following current behavior:
+
+- `00588` has legacy `[plan callee args]` and `[runtime plan callee args]`
+  arities. Neither receives instruction identity or invocation scope.
+- `00590`'s scoped generic call receives
+  `[runtime plan env instruction function public-invocation-scope]`. It
+  evaluates arguments left-to-right once, rejects non-tail recur, and passes
+  scope to compiler-internal calls. Its ordinary route passes only four
+  arguments to `00588`, dropping scope.
+- `00593`'s scoped function entry passes every non-module, non-nil scope to
+  `p15-s23-sh07-b51-assert-scoped-function-entry!`. In `00945c`, that check
+  requires the actual issued B51 context/receipt/scope identities. An arbitrary
+  new Reader Object scope will fail it. A module scope is a different contract
+  and must not be used to conceal a Reader grant.
+
+**Select one dedicated Reader build scope, one fixed operation.** The source
+builtin name is `build-read-declared-input`; its operation identity is
+`:build/read-declared-input`, source arity exactly one native String, result
+exactly String. The future trusted host producer registers a fresh opaque scope
+in a private identity registry for the existing lexical issuer invocation.
+Its retained association binds the live capability, original runtime and plan
+identities, source/handler implementation identities, approved handler's actual
+builtin instruction identity, original request/form and result sidecar. A
+scope-looking map, `:compiler-internal-caller`, metadata or a copied grant has
+no registry membership and cannot authorize it.
+
+Minimum proposed owner delta, NOT edits in this candidate:
+
+1. `00590`: preserve argument evaluation and both existing special routes.
+   On the ordinary route, forward the original instruction and exact original
+   scope with the already evaluated arguments:
+   `(p15-s23-stage2-runtime-invoke-builtin runtime plan function args
+   instruction public-invocation-scope)`. Do not copy/reconstruct scope or
+   reevaluate arguments.
+2. `00588`: add this six-argument host arity. The three-argument compatibility
+   wrapper keeps forwarding to four; four forwards to six with nil instruction
+   and nil scope. Existing cases and exception containment remain unchanged.
+   Only the new fixed case consumes instruction/scope. It checks exact source
+   arity with existing `L2-BUILTIN-ARITY` diagnostics, native String/carriers,
+   then private registry membership, liveness/thread, original runtime/plan,
+   actual approved handler occurrence, grant and exact current form/input joins.
+   Only then may it call the issuer's fixed read or original-result lookup.
+   Nil legacy scope refuses this operation; it must not fall back to ambient
+   issuer context. Carrying instruction as well as scope is necessary because
+   scope alone cannot authenticate the handler's original builtin occurrence.
+3. `00593` scoped entry also needs an owning agreement: privately recognized
+   Reader scope must go through its own authenticated plan/function-entry
+   check. All other non-module scopes continue through the unchanged B51
+   check. Recognition is private identity membership after native guards, not
+   a caller field or boolean. No new Reader scope is sent through the B51
+   receipt issuer or given its authority. Public nil-scope entry behavior and
+   module handling stay unchanged. This means a two-file forwarding patch
+   alone is NOT a complete scoped entry implementation.
+
+The trusted invocation producer enters the existing scoped function evaluator
+with that original registered scope, keeps original construction and fresh
+verification inside the issuer lifetime, and unregisters scope on return or
+throw. It must not use the ordinary public function wrapper that supplies nil.
+For construction, the fixed bridge captures the original record/opaque receipt
+in its private sidecar and returns text. For verification, the host-owned
+verification context selects original lookup for that same operation and exact
+original request; source code cannot select mode or supply a receipt as proof.
+There is no provider IO on verification. Wrong mode/join, missing or stale
+receipt, changed implementation/result and expired scope refuse, with original
+`ExceptionInfo` preserved. Other host exceptions retain existing builtin error
+containment; no successful event is fabricated after a failure.
+
+The source/compiler registration also remains an explicit owning dependency:
+the current builtin set is in `foundation/00516-defn-form.clj`. Merely adding a
+runtime case does not admit a source builtin or establish its type/effect
+contract. The approved fixed handler occurrence must carry the real
+`:filesystem/read` / `:build/read-file` and `:fs/read` legality through compilation.
+It cannot enter the compiler-internal empty-effect/empty-capability route or
+be labeled pure to pass it. No existing internal provenance/version/caller or
+native representation check is weakened; Native preflight is not authority.
+
+Before implementation, Accounting must coordinate `00588` with its frozen
+Native/Set candidate and establish the `00590`/`00593` writer agreement with
+Reader. The proposed scope-entry and fixed compiler registration must be
+agreed together, rather than pretending the original ABI already transports
+authority. This document supplies the closed proposal for that agreement; no
+scope registry, new runtime arity, function-entry routing or builtin admission
+was implemented, evaluated or accepted here.
+
 ## Validation and limits
 
 Model tests inject the private trusted-host entry with immutable in-memory
