@@ -265,12 +265,19 @@
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
 (def ^:private safety-stage-test "bootstrap/clojure/test/gravity/safety/pipeline_test.clj")
 
+(def ^:private optimization-stage-path "bootstrap/clojure/src/gravity/optimization.clj")
+(def ^:private optimization-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj")
+(def ^:private optimization-stage-test "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj")
+
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
     (and (= {safety-stage-path
              {:namespace 'gravity.safety :owner :sh-safety :slice "SH-11"
               :consumer-path safety-stage-consumer :test-path safety-stage-test}
+             optimization-stage-path
+             {:namespace 'gravity.optimization :owner :sh-optimization :slice "SH-16"
+              :consumer-path optimization-stage-consumer :test-path optimization-stage-test}
              runtime-stage-path
              {:namespace 'gravity.runtime :owner :sh-runtime :slice "SH-19"
               :consumer-path runtime-stage-consumer :test-path runtime-stage-test}
@@ -319,6 +326,9 @@
          (= :sh-safety (get-in record [:module-owners safety-stage-path]))
          (= {:namespace 'gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
             (get-in record [:standalone-test-owners safety-stage-test]))
+         (= :sh-optimization (get-in record [:module-owners optimization-stage-path]))
+         (= {:namespace 'gravity.optimization.pipeline-test :slice "SH-16" :owner :sh-optimization}
+            (get-in record [:standalone-test-owners optimization-stage-test]))
          (= :sh-mir (get-in record [:module-owners mir-stage-path]))
          (= :sh-runtime (get-in record [:module-owners runtime-stage-path]))
          (= {:namespace 'gravity.runtime.pipeline-test :slice "SH-19" :owner :sh-runtime}
@@ -371,6 +381,11 @@
               "source" {"path" runtime-stage-path "namespace" "gravity.runtime"}
               "consumer" {"path" runtime-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-runtime"}
               "test" {"path" runtime-stage-test "namespace" "gravity.runtime.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "optimization-reconstruction" "kind" "production-stage-helper" "owner" "sh-optimization"
+              "source" {"path" optimization-stage-path "namespace" "gravity.optimization"}
+              "consumer" {"path" optimization-stage-consumer "namespace" "gravity.bootstrap-c13-comparison" "owner" "sh-optimization"}
+              "test" {"path" optimization-stage-test "namespace" "gravity.optimization.pipeline-test"
                       "registration" "standalone"}}
              {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
               "source" {"path" safety-stage-path "namespace" "gravity.safety"}
@@ -906,6 +921,30 @@
     (is (contains?
          (:collisions (ex-data exception))
          'gravity.self-hosting.sh01-ownership-test))))
+
+(deftest optimization-reconstruction-helper-has-a-real-consumer-and-standalone-test
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        helper-index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "optimization-reconstruction")]
+    (is (not (neg? helper-index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [optimization-stage-path optimization-stage-consumer optimization-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path optimization-stage-path)))]
+        (is (= 'gravity.optimization (second (read reader))))))
+    (doseq [bad [(update record :module-owners dissoc optimization-stage-path)
+                 (assoc-in record [:module-owners optimization-stage-path] :master-coordinator)
+                 (assoc-in record [:standalone-test-owners optimization-stage-test :owner] :sh-core)
+                 (assoc-in record [:production-helper-associations optimization-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations optimization-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations optimization-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" helper-index "test" "registration"] "bootstrap-free")
+                 (assoc-in contract ["production_helpers" helper-index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
 
 (deftest safety-records-helper-has-a-real-consumer-and-standalone-test
   (let [record (ownership-record)

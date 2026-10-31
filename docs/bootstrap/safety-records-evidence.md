@@ -92,9 +92,38 @@ Registration/language, affected ordinary C10 regressions, contextual lint,
 docs/roadmap/governance, independent exact-head review, own successful CI and
 clean current-main integration preflight remain required before integration.
 Unmerged failed effects, diagnostics and ownership candidates are excluded and
-receive no waiver. Optimization is a separate reviewed draft until integrated.
+receive no waiver. The initial source was prepared before optimization's
+separate integration; the actual current-main composition is recorded below.
 No denied source/native action, Maven operation, failed CI job or authority pin
 is retried, renewed or bypassed for this slice.
+
+## Current-main composition and checks
+
+Source 43c7b502ed9ef07a8989ef33d2c2b8c73ed5afaa, tree
+f80d42977ecf47d086122226eed133353d1348c1, passes focused 5 / 129,
+registration 24 / 871, language 6 / 11 and C10 leaf 4 / 87. Catalog count 53
+and hash c29a49033c0514f4e84d5de019939a519b456134a7623b4b25404ec8274fada7
+remain unchanged. All seven actual changed Clojure/EDN paths pass contextual
+lint against base 6d1ed9e5: 3492 unchanged baseline warnings, zero blockers.
+Docs validate 240 / 19; roadmap and governance pass. The initial draft is
+merge-conflicting after main advances; no initial candidate CI is observed.
+
+Main advances to the normally integrated optimization merge
+41ab1c357e4d96a510fae4cf5a46e903fe340510, tree
+aa81df24465dc67e9d6d7863bc50bdeb886a6742. A normal merge composes that actual
+revision. Three genuine shared-registration conflicts are resolved by retaining
+both stages, preserving optimization helper index 9 and appending safety at
+index 10. Both complete adversarial association tests are retained from their
+actual parents. No CI configuration, timeout, cache, authority pin or diagnostic
+policy changes. Safety stage/component/test source stays identical to 43c;
+optimization stage/component/test/evidence stays identical to main 41ab.
+
+Fresh working-composition tests pass both suites together, 10 / 239.
+Registration passes 25 / 888 and language 6 / 11. The exact immutable-base
+conservation check also passes on this composition. Original paired source and
+record evidence keeps its earlier production context. Final composition still
+requires contextual lint against actual main, independent exact-head acceptance,
+its own successful CI and a clean current-main integration preflight.
 
 ## Unsupported boundaries
 
