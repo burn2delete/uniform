@@ -88,3 +88,53 @@ inference, handler/continuation analysis, complete legality intersection,
 package/deployment/provider authority, source admission, native ingress,
 performance, migration, release, self-hosting and seed retirement are outside
 this slice. No failed historical execution, pin or CI gate is retried or changed.
+
+## Current compiler and backend composition
+
+Old candidate 300241ae64690efe4f8e110f59d8734ffa581fcb, tree
+738a1c62a9750d468daf231d43259368285ddbbb, remains failed historical evidence.
+Run 41210114690 timed out Resolution at 600 seconds/exit124; the exact tested
+merge d1ea657f56b52e62ffa56b8464752e803ee383a6 has parents 58196ba5 and
+300241ae, with that tree. The retained receipt manifest at
+/tmp/uniform-effects-graph-ci-resolution-41210114690-nonpass has digest
+a73a0fddf5c8981e73157a120c018163b800cfc17673f4c6f488eae8a04db383.
+Cause, active test and cleanup remain unknown. The earlier control455 run's
+exit1/approximately600s and missing ECONNRESET artifact remain distinct; no
+exit124 or repaired failure is inferred. Neither failed head is rerun.
+
+The actual new main parent is c1c994f3b251daf89305d3e2ed24a4af16aeccef,
+tree 491c07061f387fd89f340c1c05a49efe0729ff36. It now contains current Core,
+MIR, runtime, optimization, C7 quotient and LLVM/C/Wasm changes. Three shared
+metadata conflicts are resolved by reconstructing four complete parent files
+with /tmp/uniform-effects-graph-data-compose.clj. All existing helpers and
+adversarial tests survive. The Effects negative-registration test now locates
+its actual helper id instead of historical index7; the primary leaf catalog,
+hash, component pairs and main's direct-child count formula remain unchanged.
+Effects bodies, native consumer and C8 test are exact300; backend sources,
+tests, consumers and evidence are exactmain.
+
+A fresh precomposition control ran at C source684c62f97, tree42d5bb60,
+which is tree-equivalent to integrated mainbe67f820c. Original C8 tests pass
+4/82. Current-control and composed producers both match all22 original complete
+and serialized captures, including43 nodes/one function per spelling, the same
+84cbbcc0 graph fingerprint and actual C8-UNDECLARED refusal. Original Core and
+provenance hashes, C5 joins, source/function data and all six imported-file
+hashes verify. The three original bodies/arities, exact wrappers and remaining
+eight C8 implementation files are conserved. These remain retained-input data
+observations, not a fresh frontend compilation or authenticated C7/C8 bridge.
+
+Fresh C8 tests pass7/136 in a separate Bootstrap-free JVM; C/LLVM/Wasm/C7 tests
+pass19/446 in their Bootstrap-loading JVM. The initial combined launch failed
+two cold-load guards because it preloaded Bootstrap; its log is retained at
+/tmp/uniform-effects-graph-data-c-wasm-main-focused.log. The corrected isolated
+launches pass without any guard or algorithm change. Ownership passes28/942,
+language6/11, docs240/19 and roadmap/governance. All working checks are recorded
+under /tmp/uniform-effects-graph-data-c-wasm-main-*.
+
+Incoming main's three CI files are byte-identical to that parent, including its
+external900-second Macro/Resolution watchdog and20-minute job policy. This slice
+authors no CI-policy change and requires full semantic selection. New settings
+or future results do not prove an old-bound pass, fix its cause or transfer
+earlier checks. Final exact independent acceptance, committed lint, own CI and
+clean current-main integration preflight remain required. No migration, release,
+self-hosting, seed-retirement or full C8 legality credit follows.
