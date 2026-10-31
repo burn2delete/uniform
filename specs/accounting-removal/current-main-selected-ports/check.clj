@@ -3,7 +3,7 @@
          '[clojure.edn :as edn] '[clojure.string :as str] '[clojure.walk :as walk]
          '[gravity.development-test-runner :as dev]
          '[gravity.self-hosting.sh01-host-resource-broker :as broker])
-(import '[java.nio.file Files OpenOption StandardOpenOption LinkOption Path]
+(import '[java.nio.file Files StandardOpenOption LinkOption Path]
         '[java.nio.file.attribute FileAttribute])
 (def prefix "/Users/matt/Documents/Codex/2026-10-26/task-23/ci-evidence/")
 (def paths [(or (System/getProperty "gravity.ports.dev-source") "bootstrap/clojure/test/gravity/development_test_runner.clj")
