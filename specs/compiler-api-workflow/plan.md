@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-Edit implementation records only in [tasks.md](tasks.md#implementation-tasks). The existing outcome sections below retain their headings and acceptance boundaries as generated views:
+Edit implementation records only in [tasks.md](tasks.md#implementation-tasks). The existing outcome sections below retain their headings and acceptance boundaries and link directly to that ledger:
 
 - [built in compiler pipeline outcome](../../docs/component-roadmaps/compiler-api.md#built-in-compiler-pipeline-outcome)
 - [plugin host finite remaining tasks](../../docs/component-roadmaps/compiler-api.md#plugin-host-finite-remaining-tasks)
@@ -21,7 +21,6 @@ Edit implementation records only in [tasks.md](tasks.md#implementation-tasks). T
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
 3. `tasks.md`: three literal-key implementation records and the entire unchanged historical migration file, clearly separated.
 4. `evidence.md`: observed checks and implementation nonclaims.
-5. `tools/compiler_api_task_projection{,_test}.clj`: fixed-path parsing, deterministic projection and focused controls. Shared helpers stay unchanged.
 
 Central migration inventory/schema is owned separately. This package does not write shared indexes or transfer implementation ownership.
 
@@ -49,3 +48,22 @@ implementation tasks, accepted outcomes or new semantic authority. Existing
 task IDs, statuses, acceptance text and historical receipts retain their scope.
 
 - [TEST1](../../docs/phase-14-testing-verification-and-conformance/190-test1-language-conformance-test-plan.md#requirements): Compose portable language conformance from the owning front-end passes, with fixture/profile/target/type/effect identities and stable diagnostic spans; orchestration does not own each language rule.
+
+## Finite source composition over current main
+
+Use the existing task authority without copying the ALL-240
+reconciliation database. Preserve the four prior main outcome predicates as
+exact prefixes and all Open statuses. Extract the reviewed Plugin Host,
+Pipeline, domain-IR and Pass Evidence criterion bodies. The fifth literal outcome is the existing canonical domain-IR
+record, not a row-level task expansion. Keep historical workflow text intact.
+
+Archive the exact C17/C12 receipts and their reviewed task-file bytes, retaining
+immutable Git adoption references as history. Verify their current raw predicate
+spans. Run source conservation/refusal controls, affected SH checks, boundary and
+document validators. Append
+the domain routing key after the prior four routing positions so integer
+selectors retain their literal associations. Pin both source files and the
+new composition artifact to commits that actually contain them. Generated
+reports remain pending independent affected-composition review. Inspect the
+exact clean main-based candidate; governed integration requires independent
+review and coordinator action, separately from this source-only preparation.

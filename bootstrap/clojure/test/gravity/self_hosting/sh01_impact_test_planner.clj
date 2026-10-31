@@ -956,6 +956,10 @@
                   component-id)
         source (when stem (str "bootstrap/clojure/src/gravity/" stem ".clj"))
         prefix (when stem (str "bootstrap/clojure/src/gravity/" stem "/"))
+        lexical-source "bootstrap/clojure/src/gravity/c2_lexical_validation.clj"
+        lexical-parent (when (= "c2-artifact-identity" component-id)
+                         (stage0-component-metadata ownership lexical-source
+                           (get-in ownership [:module-owners lexical-source])))
         parent (when source
                  (stage0-component-metadata ownership source
                                             (get-in ownership [:module-owners source])))]
@@ -968,7 +972,13 @@
            ;; as owned or invent a component from an unreviewed path.
            (and parent (= :transitive role)
                 (str/starts-with? path prefix)
-                (re-matches #"[^/]+\.clj" (subs path (count prefix))))))
+                (re-matches #"[^/]+\.clj" (subs path (count prefix))))
+           ;; The Reader identity test directly consumes the paired lexical
+           ;; facade. Bind only these reviewed files to its existing owner.
+           (and parent lexical-parent (= :transitive role)
+                (contains? #{"bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                             "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                             "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"} path))))
      (:inputs closure))))
 
 (defn- exact-development-job-metadata
@@ -991,7 +1001,8 @@
              (closure-owned? ownership (:development-component-id entry)
                              (:cache-closure test-entry)))
         (assoc :cache-closure (:cache-closure test-entry)
-               :cache-closure-authorized? true))])))
+               :cache-closure-authorized?
+               (not (get-in test-entry [:test-policy :freshness-required?]))))])))
 
 (defn- dedicated-test-path?
   "Returns true when a path names a dedicated self-hosting test file.
@@ -1146,7 +1157,9 @@
                               gravity.self-hosting.module-census-test} namespace)
                 {:slice "SH-19" :owner :sh-runtime}
                 (= 'gravity.self-hosting.resolution-parent-mutation-test namespace)
-                {:slice "SH-06" :owner :sh-resolution})]
+                {:slice "SH-06" :owner :sh-resolution}
+                (= 'gravity.self-hosting.private-collection-chain-test namespace)
+                {:slice "SH-08" :owner :sh-types})]
     (when owner
       (merge owner
              {:id "SH01-IMPACT-EXTERNAL-WRAPPER"

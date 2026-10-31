@@ -115,6 +115,9 @@
                           :reader-diagnostics :incremental-reader-hash]
                   :rejects c2-reader-diagnostic-ids}
            :source-overrides overrides
+           ;; Diagnostic observations only; never SH03 authentication authority.
+           :extension-dispatch-observations
+           (:extension-dispatch-observations products)
            :module (assoc (dissoc module-context :namespace-clause-syntax)
                           :source-path source-path)
            :source-unit-record source-unit

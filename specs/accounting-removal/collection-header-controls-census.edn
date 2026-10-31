@@ -1,0 +1,229 @@
+{:before-sha256
+ "f334b4d2e292456c5cd7586286e875d34bdc354729fcd030303d22dcf4bfda52",
+ :nonclaims
+ [:new-budget-or-policy
+  :current-header-runtime-acceptance
+  :whole-compiler-or-runtime
+  :whole-path-incorporation
+  :ACC01-closure
+  :PR502-closure
+  :release
+  :self-hosting],
+ :upstream-fixtures
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :file-sha256
+  "48d3fcaa665f273361c098890ab1d326e51fd84eee4f588827cd020f6f698de1",
+  :definition-pins
+  [{:name list-query-input,
+    :form-sha256
+    "45fbc381ffa611fcd056fade6ca0cc2f0503b8a5eea9a10ff0446c6297bcecfe"}
+   {:name list-query-derived,
+    :form-sha256
+    "f02f012cd9957a6406b69280fcfc1eb7c6d9097d8732a39726287f7b862f8af9"}
+   {:name vector-rest-input,
+    :form-sha256
+    "44dbc8c96a67db70be9fb208ece80c252e275b9cec2595cda59c7a02003c601b"}
+   {:name list-set-input,
+    :form-sha256
+    "9f9510184f15c36f1cc34dbf752ee87696f2aa85b842c9136c8f4e6d16c37cd4"}
+   {:name set-conversion-derived,
+    :form-sha256
+    "e566268e05c5c028c624b2a6f939736963757d0fb21e8d1bdb4a62b4c227b0eb"}
+   {:name invoke-c7,
+    :form-sha256
+    "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17"}]},
+ :genuine-owner-controls :UNRUN,
+ :test-path
+ "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+ :reader-eval false,
+ :all-other-reader-definitions :conserved,
+ :integration :UNRUN,
+ :Bootstrap-loaded false,
+ :production
+ {:changed false,
+  :files
+  [{:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :file-sha256
+    "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+    :header-pins
+    [{:name sh08-vemp-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "d0b4e505f1b8137394621b04db6c345134ce478bb302b5dd7d1ac5e2d6d252bd",
+      :historical-form-sha256
+      "5b60a0d677b354a073a4117b49d914fbbd34abc9e744290c18007b353b4f3a9b",
+      :historical-identical false}
+     {:name sh08-lset-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "ba7214937348efadff5f7ca66fb42380d693f8dbbdb53c76c1d997394ecc318f",
+      :historical-form-sha256
+      "f54ea670493b99d1266b65ebf06b9be62cda24b4f67d5aae4c0815a78d7ac93e",
+      :historical-identical false}
+     {:name sh08-mkeys-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "8b1da69ebe677bddb16b325a5b54827a55a5e1ff97f52a6ac8c27edafbea4195",
+      :historical-form-sha256
+      "6de506439b1390b3fbefe8908751ac65c31d55e1b44073687fc7d0e54cc3ca63",
+      :historical-identical false}
+     {:name sh08-vrest-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "951b312a2377f09a37089c13ff3e1c034f06c36c7268c62ba8ab203dddc55690",
+      :historical-form-sha256
+      "845deaf0b8b2d038ebb3b84301623c1c66ac0436f11e795ace39028e01621915",
+      :historical-identical false}]}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :file-sha256
+    "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+    :header-pins
+    [{:name body-vemp-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "071b9895c23182751414a2b34dd6dc9aa7c9ccd7584932d5b107315996c62532",
+      :historical-form-sha256
+      "41543bebfad951af392edbba06b234088127cfadddc34e45028479acd69c726f",
+      :historical-identical false}
+     {:name body-lset-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "1c5dd4de19df9b2f254ada967f81b4c3f1e81ddaac95c72b0ea861573efd77ba",
+      :historical-form-sha256
+      "89d88711caaf56d16251cdf6e469a7cdaafc429c9ec20548f6b1a51cfad55c1f",
+      :historical-identical false}
+     {:name body-mkeys-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "83ecdecc3751c903ad1817efe520bfa2d01c8d17f4f996063049d67eeafa8e97",
+      :historical-form-sha256
+      "e7a34e9b2e110fef582db990435324287055fd99743c8619ac9e3b89b99852cc",
+      :historical-identical false}
+     {:name body-vrest-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "1e9392ba724607b34dd2262d8e90937fb0b45129a05398aaa847373489c7ceb8",
+      :historical-form-sha256
+      "2e7404dcd0b95173390ec1a375194e8d318ed00f79a5b76ca09c3c389177e75a",
+      :historical-identical false}]}
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :file-sha256
+    "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+    :header-pins
+    [{:name p15-s23-vemp-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "e68a3fdaf4ea8d25d8f9fd48eaf87d342e948925f5c4bd2ea2bcf8c35f8803ea",
+      :historical-form-sha256
+      "0901288de85ac71a410e5f61937e3dec8e9b6c920e18b195aa2bdc7c4e1f45b6",
+      :historical-identical false}
+     {:name p15-s23-lset-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "1eca150d1cc6a17b167b29ea56fa52e6c88936edcd1d64c6f32981803a6d429b",
+      :historical-form-sha256
+      "116a9fb0cb566c6af4afab62d849852ae7acbe0959be0717b963d7bfe8cc8629",
+      :historical-identical false}
+     {:name p15-s23-mkeys-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "beb6347a92c8b9d11833537be42f287cf808dd430a57a490ef862d0a8a13b51a",
+      :historical-form-sha256
+      "2b2d9cb4ce58b41de464350fd2b28597f65fd33e868003f491588978b5d91a00",
+      :historical-identical false}
+     {:name p15-s23-vrest-header,
+      :arguments
+      [core node call edge nodes bindings types module budget],
+      :form-sha256
+      "338a8df57a2281bddeaf66a42e956b158ae6d4e9d8dadc4d5892df27558467f1",
+      :historical-form-sha256
+      "c3930645feeaba28737f77d931e924750857d9fee01ca317f1fc0bc1ce15b2c0",
+      :historical-identical false}]}]},
+ :all-other-test-bytes :conserved,
+ :independent-source-review :pending,
+ :kind :preserved-collection-three-owner-header-controls,
+ :candidate-sha256
+ "35efc4f0352d24edae9c5c197859dfe7ac6ea0415c331e68716f908f073774fc",
+ :generator
+ {:language :clojure,
+  :sha256
+  "60f08840f9e1bf14457890c8b98049d35e25c732fd55d7238021d73676f68c14",
+  :preserved-locally true},
+ :restorations
+ [{:name current-gravity-vector-empty-lowering-development-kernel,
+   :family "vemp",
+   :historical-span-sha256
+   "069c62b077014dc2c327a6c2979cc5d6269a1a5323bf1f90310a8d0751ea195d",
+   :before-span-sha256
+   "23d0ce9995efac05aedc2b9548a0a23eda98a61ca9bfcac9e9a1e46628288c7a",
+   :candidate-span-sha256
+   "3520f94c515548f843c811df6f44e20f35e850e1b1ff357236868b236274e7a9",
+   :exact-raw-adaptations
+   [["            validation (invoke 'p15-s23-lc-type-work [input-type] 65536)\n"
+     ""]
+    ["(assoc descriptor :operand-type-work (:work-count validation))"
+     "(assoc descriptor :operand-type-work 1)\n                      (assoc descriptor :operand-type-work nil)"]],
+   :all-original-assertions :preserved,
+   :all-current-assertions :preserved}
+  {:name current-gravity-list-set-lowering-development-kernel,
+   :family "lset",
+   :historical-span-sha256
+   "983c3b8043bbdfa8e3c4470c6bb3148f47c9a51d70e4651a14a9b3d3b37f976c",
+   :before-span-sha256
+   "29486d8efa86615c11417050579116691203cc6498bc2cde06b8f19255b01801",
+   :candidate-span-sha256
+   "aece47f0b3f79e765d30afbbff4c994a720595cdc791bced5da8a67a84625738",
+   :exact-raw-adaptations
+   [["            validation (invoke 'p15-s23-lc-type-work [input-type] 65536)\n"
+     ""]
+    ["(assoc descriptor :operand-type-work (:work-count validation))"
+     "(assoc descriptor :operand-type-work 1)\n                      (assoc descriptor :operand-type-work nil)"]],
+   :all-original-assertions :preserved,
+   :all-current-assertions :preserved}
+  {:name current-gravity-map-keys-lowering-development-kernel,
+   :family "mkeys",
+   :historical-span-sha256
+   "3ae6b57b525ba7e86e7357850c530c9cec33488a897f6bc5f60986ed1aaf82d6",
+   :before-span-sha256
+   "01d08819ddc6335794ab0d88daba516f99fcec1010b3423afb660f0e43f15a97",
+   :candidate-span-sha256
+   "e1c8e42da1c88225c61de74e8a2d66899a944586a489c59c4b875a4d05086d67",
+   :exact-raw-adaptations
+   [["            validation (invoke 'p15-s23-lc-type-work [input-type] 65536)\n"
+     ""]
+    ["(assoc descriptor :operand-type-work (:work-count validation))"
+     "(assoc descriptor :operand-type-work 1)\n                      (assoc descriptor :operand-type-work nil)"]],
+   :all-original-assertions :preserved,
+   :all-current-assertions :preserved}
+  {:name current-gravity-vector-rest-lowering-development-kernel,
+   :family "vrest",
+   :historical-span-sha256
+   "6a4513ac393ea5305b64e155b54b6ec413a21c80f6d74350fbf5848205264fe6",
+   :before-span-sha256
+   "336a9ba0676bf94c0c384219eba2fcca4a30c5c65c24968ba3217719a688c1fc",
+   :candidate-span-sha256
+   "5ea24cd507d520443cb387fd2d3569b3202d121e2ce18f05c41066fd01119af4",
+   :exact-raw-adaptations
+   [["            validation (invoke 'p15-s23-lc-type-work [input-type] 65536)\n"
+     ""]
+    ["(assoc descriptor :operand-type-work (:work-count validation))"
+     "(assoc descriptor :operand-type-work 1)\n                      (assoc descriptor :operand-type-work nil)"]],
+   :all-original-assertions :preserved,
+   :all-current-assertions :preserved}],
+ :base "2654d155322f7863dd087065f19000b43c877cbe",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :retained-obsolete-field-forgeries [0 1 nil]}

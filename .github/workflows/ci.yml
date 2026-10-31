@@ -32,7 +32,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        mode: [static, projections, bootstrap]
+        mode: [static, contracts, bootstrap, macro, resolution]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -124,7 +124,7 @@ jobs:
             done < target/ci/changed-paths.nul
           fi
           echo "selected=$selected" >> "$GITHUB_OUTPUT"
-          echo "Full fresh leaf fallback selected: $selected. Markdown-only PRs retain projection and bootstrap checks." | tee target/ci/selection.txt
+          echo "Full fresh leaf fallback selected: $selected. Markdown-only PRs retain contract and bootstrap checks." | tee target/ci/selection.txt
       - name: Diagnose actual Darwin host and descriptor ABI
         if: matrix.platform == 'darwin'
         run: clojure -Srepro -M tools/ci/run.clj darwin-probe
@@ -196,7 +196,18 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/clojure
       - name: Package exact source twice and compare
-        run: clojure -J-Xmx256m -Srepro -M tools/ci/snapshot.clj
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/uniform-snapshot-diagnostic"
+          command -v clojure > "$RUNNER_TEMP/uniform-snapshot-diagnostic/launcher.txt"
+          clojure -J-Xmx256m -Srepro -M tools/ci/snapshot.clj 2> "$RUNNER_TEMP/uniform-snapshot-diagnostic/init.stderr"
+      - name: Retain bounded dependency evidence after the single snapshot launch
+        if: always()
+        run: >-
+          java -Xmx128m
+          -cp "$CLOJURE_INSTALL_DIR/lib/clojure/libexec/clojure-tools-1.12.5.1654.jar"
+          clojure.main tools/ci/snapshot_diagnostics.clj collect "$CLOJURE_INSTALL_DIR"
+          "$RUNNER_TEMP/uniform-snapshot-diagnostic"
       - name: Reject tracked source mutation
         if: always()
         run: git diff --exit-code HEAD

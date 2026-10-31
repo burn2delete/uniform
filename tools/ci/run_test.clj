@@ -144,7 +144,7 @@
   (let [catalog (var-get (requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/catalog))
         portable (ci/leaf-selection "portable" catalog)
         darwin (ci/leaf-selection "darwin" catalog)]
-    (is (= 51 (count portable)))
+    (is (= 52 (count portable)))
     (is (= ["darwin-publication"] (mapv :id darwin)))
     (is (= (set catalog) (set (concat portable darwin))))
     (is (= (count catalog) (count (concat portable darwin))))

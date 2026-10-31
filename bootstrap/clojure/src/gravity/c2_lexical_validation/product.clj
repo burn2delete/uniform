@@ -1,6 +1,34 @@
 (ns gravity.c2-lexical-validation.product
   (:require [clojure.string :as str]))
 
+(defn- native-child-ids [form]
+  ;; Opaque records and IDs retain the original lookup/hash callbacks below.
+  (when (and (or (identical? clojure.lang.PersistentArrayMap (class form))
+                 (identical? clojure.lang.PersistentHashMap (class form)))
+             (every? keyword? (keys form)))
+    (let [children (:children form)]
+      (when (and (identical? clojure.lang.PersistentVector (class children))
+                 (every? keyword? children))
+        (set children)))))
+
+(defn- shortest-root-length [roots]
+  (when (and (seq roots) (every? string? roots))
+    (reduce min (map #(.length ^String %) roots))))
+
+(defn- token-contains-root? [token roots shortest]
+  (let [too-short?
+        (and (some? shortest)
+             (identical? clojure.string$includes_QMARK_ (class str/includes?))
+             (nil? (.getThreadBinding ^clojure.lang.Var #'str/includes?))
+             (or (identical? clojure.lang.PersistentArrayMap (class token))
+                 (identical? clojure.lang.PersistentHashMap (class token)))
+             (every? keyword? (keys token))
+             (let [raw (:raw token)]
+               (and (string? raw) (< (.length ^String raw) shortest))))]
+    ;; A String cannot contain a longer String. All other cases retain the
+    ;; original search, including opaque lookups and interposed callbacks.
+    (and (not too-short?) (some #(str/includes? (:raw token) %) roots))))
+
 (defn lexical-product-validation
   [{:keys [utf8-slice span-encloses? spans-source-ordered? form-graph-metrics]}
    source-text token-stream form-tree root-form-ids]
@@ -17,6 +45,12 @@
         root-id-set (set root-form-ids)
         child-ids (mapcat :children form-tree)
         child-frequency (frequencies child-ids)
+        ;; Index the same last-wins parent records used by forms-by-id. The
+        ;; global frequency check below still rejects duplicate child edges.
+        parent-child-ids (into {} (keep (fn [[id form]]
+                                         (when (keyword? id)
+                                           (when-let [ids (native-child-ids form)] [id ids])))
+                                       forms-by-id))
         parentless-id-set (set (keep #(when (nil? (:parent-form-id %))
                                         (:form-id %)) form-tree))
         root-form-ids-resolve? (every? #(contains? forms-by-id %) root-form-ids)
@@ -48,7 +82,10 @@
                       (let [parent (forms-by-id parent-id)]
                         (and parent
                              (= 1 (get child-frequency form-id 0))
-                             (= 1 (count (filter #{form-id} (:children parent)))))))))
+                             (if-let [ids (and (keyword? parent-id) (keyword? form-id)
+                                               (get parent-child-ids parent-id))]
+                               (contains? ids form-id)
+                               (= 1 (count (filter #{form-id} (:children parent))))))))))
                 form-tree)
         parent-child-bidirectional?
         (and non-root-single-parent?
@@ -118,6 +155,7 @@
                                 (when (and form (or (:collection-kind form)
                                                    (seq (:children form))))
                                   (:raw form)))) root-form-ids))
+        shortest-root (shortest-root-length root-raw)
         token-raw-slices-exact?
         (every? (fn [token]
                   (let [span (:span token)]
@@ -157,7 +195,7 @@
                    (get-in % [:span :start :line]) (get-in % [:span :start :column])
                    (get-in % [:span :end :line]) (get-in % [:span :end :column])) token-stream)
      :no-token-contains-top-level-form?
-     (not-any? (fn [token] (some #(str/includes? (:raw token) %) root-raw)) token-stream)
+     (not-any? #(token-contains-root? % root-raw shortest-root) token-stream)
      :root-form-ids-resolve? root-form-ids-resolve?
      :token-links-resolve-exactly-once? token-links-resolve-exactly-once?
      :child-links-resolve-exactly-once? child-links-resolve-exactly-once?

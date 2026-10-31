@@ -5,8 +5,6 @@ Owner role: build/package maintainer; current owner unassigned by this proposal.
 Baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
 Implementation task authority: [Spec Kit ledger](../../specs/build-workflow/tasks.md#implementation-tasks).
-Edit the ledger and run `clojure -M tools/build_task_projection.clj --write`;
-the remaining-task table below is generated.
 
 ## Purpose and scope
 
@@ -35,15 +33,7 @@ is not a prerequisite for Reader or any earlier component's development.
 
 ## Remaining tasks and evidence
 
-<!-- build-task-projection:start -->
-| Task (all open) | Evidence baseline | Closing evidence |
-| --- | --- | --- |
-| Implement project/lock normalization and constraint resolution | [Package report](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00569-stage0-compiled-plan-package-report.clj) | Real dependency resolution with conflict, profile and capability rejection |
-| Execute typed graph under declared build effects | [Build architecture](../phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md) | Clean build node receipts and undeclared environment/network/shell rejection |
-| Implement dependency-aware caching and invalidation | [Pass cache](../../bootstrap/clojure/src/gravity/pass_cache.clj) | Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes |
-| Produce and verify package/provenance/signing records | [Artifact contract](../phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md) | Actual published package retrieval/verification fixtures; tamper and missing-record rejection |
-| Close reproducibility and target matrix | [Reproducibility contract](../phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md) | Repeated locked builds with matching identities and explicit failing-target diagnostics |
-<!-- build-task-projection:end -->
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/build-workflow/tasks.md#implementation-tasks).
 
 The inspected package report labels its gate `:metadata-gate-only`; its nested
 complete statuses do not establish a functioning resolver/build/package system.

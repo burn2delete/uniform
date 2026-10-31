@@ -83,6 +83,15 @@ diagnostic spans fail closed. LF and CRLF preserve row/column mapping; lone CR
 input is rejected rather than mapped approximately. This view models static
 namespace context; it does not execute Bootstrap or establish compiler acceptance.
 
+The authenticated artifact pipeline facade has a second explicit context: its
+namespace header followed by its five ordered `load` resources. The entrypoint
+namespace and exact load list are checked, every fragment parses separately,
+and namespace/load changes inside fragments fail closed. Both base and current
+closures use this non-evaluating view and the same diagnostic source mapping.
+Unknown fragments are rejected rather than linted without their owning context.
+Real-linter controls exercise the actual facade, introduced unknown symbols,
+changed dependencies, missing resources and malformed or unsupported recipes.
+
 Every diagnostic in the changed resources is mapped back to its original file,
 rows and columns before the same warning comparison. Every selected error
 still blocks. Complete context diagnostics remain visible in artifacts;
@@ -92,6 +101,19 @@ the entrypoint or manifest selects the whole context. Source bytes, input
 hashes, assembly hash, source map and redirected-input command receipts are
 retained for both revisions. Ordinary files are linted in separate invocations
 to prevent unrelated namespace state from corrupting diagnostic filenames.
+
+The C2 facade's private `definterposable` macro has one reviewed static
+`analyze-call` model. It retains both wrapper branches, operation keys, dynamic
+bindings, arguments and original body nodes, so body diagnostics and generated
+function arities remain checked at their source locations. CI never evaluates
+the production macro or its body. Before enabling the model, CI parses both
+immutable base and current source, verifies the exact macro-definition SHA and
+required wrapper declarations, and rejects unsupported definitions/invocations.
+The explicit hook configuration is identical for both revisions, with caches
+disabled. Root project configuration remains included. Hook/config/recipe
+changes invalidate inherited-warning allowances. Complete source observations,
+model hashes, configuration and process receipts remain in the static artifact.
+This model does not suppress errors or exempt the surrounding Bootstrap context.
 
 Cache tests retain their owner and permission checks: Java temporary
 files use a runner-owned private directory, rather than Linux's root-owned

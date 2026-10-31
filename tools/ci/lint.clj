@@ -8,6 +8,8 @@
 
 (load-file "tools/ci/lint_context.clj")
 (require '[ci.lint-context :as context])
+(load-file "tools/ci/lint_macros.clj")
+(require '[ci.lint-macros :as macros])
 
 (defn hunks [patch]
   (mapv (fn [[_ old-start old-count new-start new-count]]
@@ -108,10 +110,30 @@
                              [path (.getPath target)])) present))
         lint-argv (fn [files]
                     (into ["clj-kondo" "--repro" "--cache" "false"
+                           "--config-dir" macros/config-directory
                            "--config" "{:output {:format :edn}}" "--lint"] files))
-        context-requested? (some #(or (= context/bootstrap %)
-                                      (str/starts-with? % (str context/source-root "gravity/bootstrap_impl/"))) paths)
-        current-plan (when context-requested? (context/plan! context/local-bytes!))
+        macro-current (context/local-bytes! macros/source)
+        _ (Files/write (.toPath (io/file output "lint-macro-current-source.clj"))
+                       ^bytes macro-current (make-array java.nio.file.OpenOption 0))
+        macro-contract (let [observations (atom {:status :running :base-commit base})]
+                         (try
+                           (swap! observations assoc :model-inputs
+                                  (into (sorted-map)
+                                        (for [path ["tools/ci/lint_macros.clj" "tools/ci/kondo/config.edn"
+                                                    "tools/ci/kondo/hooks/c2.clj"]]
+                                          [path (context/sha256 (context/local-bytes! path))])))
+                           (let [macro-base (run "lint-macro-base-source"
+                                                 ["git" "show" (str base ":" macros/source)] #{0})]
+                             (swap! observations assoc :base (macros/contract! (Files/readAllBytes (.toPath macro-base)))))
+                           (swap! observations assoc :current (macros/contract! macro-current) :status :admitted)
+                           @observations
+                           (catch Exception error
+                             (swap! observations assoc :status :rejected :error {:message (.getMessage error) :data (ex-data error)})
+                             (throw error))
+                           (finally
+                             (spit (io/file output "lint-macro-contract.edn") (str (pr-str @observations) "\n")))))
+        context-requested? (some context/context-path? paths)
+        current-plan (when context-requested? (context/selected-plan! context/local-bytes! paths))
         context-paths (set (:paths current-plan))
         _ (doseq [path paths :when (and context-requested?
                                         (str/ends-with? path ".clj")
@@ -126,7 +148,7 @@
                       (run "lint-context-base-archive"
                            ["git" "archive" "--format=zip" (str "--output=" archive)
                             base "--" context/source-root] #{0})
-                      (context/archived-plan! archive inventory)))
+                      (context/archived-plan! archive inventory paths)))
         contextual (fn [id plan selected]
                      (if-not plan []
                              (let [view (context/assemble! (io/file output id) plan)
@@ -142,7 +164,7 @@
                                 (let [log (run (str id "-" index) (lint-argv [path]) #{0 2 3})]
                                   (findings! log #{path} #(get (set/map-invert copied) % %))))
                               (map-indexed vector files))))
-        whole-context? (some #{context/bootstrap context/manifest context/loader} paths)
+        whole-context? (some context/whole-context-path? paths)
         baseline (into (normal "lint-baseline" (vals (apply dissoc copied context-paths)))
                        (contextual "lint-context-baseline" base-plan
                                    (if whole-context? (set (:paths base-plan)) (set (keys copied)))))
@@ -166,10 +188,12 @@
                           [path {:changes (if patch (hunks (slurp patch)) [])
                                  :before (str/split-lines before)
                                  :after (str/split-lines after)}])))
-        config-diff (run "lint-config-diff" ["git" "diff" "--name-only" base "HEAD" "--" ".clj-kondo"] #{0})
+        config-diff (run "lint-config-diff" ["git" "diff" "--name-only" base "HEAD" "--"
+                                             ".clj-kondo" "tools/ci/kondo" "tools/ci/lint_macros.clj"] #{0})
         config-unchanged? (str/blank? (slurp config-diff))
         report (merge {:base base :commit (System/getenv "GITHUB_SHA")
                        :policy :unchanged-source-warnings-only :config-unchanged? config-unchanged?
+                       :macro-contract macro-contract
                        :context-selection (when current-plan
                                             {:whole-context? (boolean whole-context?)
                                              :current (vec (sort (if whole-context? context-paths

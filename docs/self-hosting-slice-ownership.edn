@@ -79,8 +79,7 @@
    "bootstrap/clojure/fixtures/p15-native-plan-specialization/"]
   :coordinator-runner-integration-reservations
   ["bootstrap/clojure/test/gravity/project_structure_test_runner.clj"
-   "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"
-   "bootstrap/clojure/test/gravity/project_structure_test_runner_unit.clj"]
+   "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"]
   :coordination-state
   ["docs/self-hosting-slice-backlog.md"
    "docs/self-hosting-slice-ownership.edn"]
@@ -95,10 +94,26 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/macro_run_storage.clj"
+ {"bootstrap/clojure/src/gravity/resolution.clj"
+  {:namespace gravity.resolution :owner :sh-resolution :slice "SH-06"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj"
+   :test-path "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/macro.clj"
+  {:namespace gravity.macro :owner :sh-macro :slice "SH-05"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj"
+   :test-path "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/macro_run_storage.clj"
   {:namespace gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
-   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj"
-   :test-path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"}}
+   :consumer-path "bootstrap/clojure/src/gravity/macro.clj"
+   :test-path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"}
+  "bootstrap/clojure/src/gravity/reader.clj"
+  {:namespace gravity.reader :owner :sh-reader :slice "SH-03"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj"
+   :test-path "bootstrap/clojure/test/gravity/reader/artifact_test.clj"}
+  "bootstrap/clojure/src/gravity/syntax.clj"
+  {:namespace gravity.syntax :owner :sh-syntax :slice "SH-04"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj"
+   :test-path "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"}}
 
  ;; Supplemental helper checks, outside the unchanged primary component pairs.
  :auxiliary-test-associations
@@ -215,12 +230,15 @@
   "bootstrap/clojure/src/gravity/diagnostics.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/digest.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/macro_expansion.clj" :sh-macro
+  "bootstrap/clojure/src/gravity/resolution.clj" :sh-resolution
+  "bootstrap/clojure/src/gravity/macro.clj" :sh-macro
   "bootstrap/clojure/src/gravity/macro_run_storage.clj" :sh-macro
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental
   "bootstrap/clojure/src/gravity/pass_execution.clj" :sh-verification
   "bootstrap/clojure/src/gravity/profile_validation.clj" :sh-profile
+  "bootstrap/clojure/src/gravity/reader.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_cursor.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj" :sh-reader
   "bootstrap/clojure/src/gravity/reader_host_oracle.clj" :sh-reader
@@ -228,7 +246,9 @@
   "bootstrap/clojure/src/gravity/reader_primitives.clj" :sh-reader
   "bootstrap/clojure/src/gravity/source_span.clj" :sh-reader
   "bootstrap/clojure/src/gravity/source_unit.clj" :sh-reader
+  "bootstrap/clojure/src/gravity/source_interface_header.clj" :sh-core
   "bootstrap/clojure/src/gravity/syntax_object_stream.clj" :sh-syntax
+  "bootstrap/clojure/src/gravity/syntax.clj" :sh-syntax
   "bootstrap/clojure/src/gravity/syntax_origin.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c2_test.clj" :master-coordinator
   "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj" :master-coordinator
@@ -307,11 +327,31 @@
   "bootstrap/clojure/test/gravity/reader_primitives_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/source_span_test.clj" :sh-reader
   "bootstrap/clojure/test/gravity/source_unit_test.clj" :sh-reader
+  "bootstrap/clojure/test/gravity/source_interface_header_test.clj" :sh-core
   "bootstrap/clojure/test/gravity/syntax_object_stream_test.clj" :sh-syntax
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
+ {"bootstrap/clojure/test/gravity/resolution/pipeline_test.clj"
+  {:namespace gravity.resolution.pipeline-test :slice "SH-06" :owner :sh-resolution}
+  "bootstrap/clojure/test/gravity/macro/pipeline_test.clj"
+  {:namespace gravity.macro.pipeline-test :slice "SH-05" :owner :sh-macro}
+  "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"
+  {:namespace gravity.syntax.pipeline-test
+   :slice "SH-04" :owner :sh-syntax}
+  "bootstrap/clojure/test/gravity/reader/artifact_test.clj"
+  {:namespace gravity.reader.artifact-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+  {:namespace gravity.reader.normal-dispatch-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/reader/dispatch_test.clj"
+  {:namespace gravity.reader.dispatch-test
+   :slice "SH-03" :owner :sh-reader}
+  "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
+  {:namespace gravity.self-hosting.private-collection-chain-test
+   :slice "SH-08" :owner :sh-types}
+  "bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
   {:namespace gravity.self-hosting.module-census-test
    :slice "SH-19" :owner :sh-runtime}
   "bootstrap/clojure/test/gravity/self_hosting/runtime_module_reads_test.clj"
@@ -448,6 +488,7 @@
   "reader-primitives" :sh-reader
   "source-span" :sh-reader
   "source-unit" :sh-reader
+  "source-interface-header" :sh-core
   "syntax-object-stream" :sh-syntax
   "syntax-origin" :sh-syntax
  }

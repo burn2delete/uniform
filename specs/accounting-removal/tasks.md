@@ -33,6 +33,159 @@ including implemented work whose required acceptance has not completed.
 - [ ] ACC-12 Close tests/docs/schema and current-main acceptance.
 - [ ] ACC-13 Resolve and close additional capacity/accounting mechanisms.
 
+## ACC-05 shared PL helper successor - 2026-10-28 UTC
+
+Accounting owns the existing C7, Effects and emitter files and their existing
+SH08, SH09 and runtime-iteration tests. This finite successor starts at main
+`19db4a52c6c3a354374acca78354adc738280b5e`, tree
+`de6fa80413b146f593efe13a59d66d28d3b00462`. Native retains the separate C6
+form-quota change. Held Native registration, SH fields and runtime successors
+are not prerequisites for this compiler-helper unit and are not edited.
+
+The complete source inventory is twelve `pl/ssin/syin/ksin-type-work` helpers,
+nineteen direct calls and nine first helper-debit consumers. The three PL
+dispatchers account for nine calls. The remaining ten calls are C7's derive,
+three inferred-call wrappers, loop insertion and semantic-only inferred-call
+validator; Effects' append context and loop insertion; and emitter's typed
+prepend and loop insertion. Three source builders read semantic helper fields.
+Effects also stores a successful helper result in its append context for later
+validation. That cache must not become independent result-type authority.
+
+- [x] Census definitions, all direct calls, result-field readers, returned
+  wrappers and the Effects cache escape; independently inspect the closure.
+- [x] Record the old four-family budget and width refusals on exact inputs.
+- [x] Replace the twelve helpers with budget-free semantic interfaces, remove
+  their exported cost fields and all nine injected helper debits, and migrate
+  direct and dynamic callers without an old-interface fallback.
+- [x] Retain complete native/type/member validation before reads, equality or
+  construction. Preserve bare, homogeneous and positional List distinctions,
+  String/Symbol carriers, finite-only Keyword insertion and ambiguous empty
+  Set/Never routing. Remove accounting-only member-width admission.
+- [x] Guard semantic result cells before their first field read and reject
+  obsolete or foreign fields. Independently rederive the Effects cached cell
+  from current typed arguments and compare the whole result before source,
+  descriptor, row and fact acceptance. Rejection diagnostics must not invoke
+  foreign receiver callbacks after operand validation fails.
+- [x] Pass cheap reader/interface/conservation controls and bounded actual
+  three-owner helpers, typed callers, Effects joins and emitter consumers,
+  including late-invalid members, coherent cache/source/row forgeries and zero
+  foreign callbacks. Obtain independent exact-source and retained-result review.
+- [x] Main-only conditional integration item (record below): reconcile current
+  main, pass repository and public CI gates, independently
+  review the outgoing payload and exact integration tuple, then merge normally.
+
+Retained outer source/context/inference/lowering pools and their own reports
+remain ACC-07/08/06 work. Runtime insertion value-work contracts and physical
+profile legality remain separate, unresolved dispositions; this finite helper
+unit does not close all ACC-05 or ACC-06. No percentage is inferred from counts.
+
+### Current finite PL disposition - 2026-10-28 00:43 UTC
+
+Independent source and retained-result review accepted this finite helper unit
+at `e8c8a14f`, tree `2edb41b1`, after normal reconciliation with main `656f545f`.
+The nine debit sites and three loop-insertion paths have actual acceptance
+evidence. The implementation does not publish zero helper charges or retain
+an old budget API. The Effects cache receives a fresh semantic derivation;
+fresh local helper results are not needlessly derived again at every source
+publisher. All source publishers first guard the supplied semantic cell.
+
+Publication remains draft. Two unchanged Symbol-membership kernel negative
+blocks fail at foreign-map classification in Effects and emitter. The complete
+diagnostic attributes all 88 failures and 24 errors to those blocks; the
+earlier truncated consumer batch remains nonpassing. A minimal actual old
+emitter run confirms the preexisting callback, and both membership closures
+are unchanged from that baseline. No failing negative control is removed or
+weakened. Resolve this existing membership validation requirement under ACC-06
+before the workflow permits ready/merge; do not turn its old callback into PL
+acceptance or claim the whole consumer batch passed.
+
+Repository gates passed at `414b3c67`: boundary/LOC 11/23, source census 2,035,
+docs 240/19, roadmap and changed-file lint with zero blockers. Public-content
+review, draft readback and eventual validated integration remain required.
+Only ACC-02 and ACC-03 are closed;
+the original thirteen criteria and eleven residual criteria are unchanged.
+
+### Required membership guard parity follow-through
+
+Independent diagnosis identifies the exact preexisting cause of the draft
+hold: `body-ism-selected?` and `p15-s23-ism-selected?` omit the three-field
+descriptor-schema guard already present in `sh08-ism-selected?`. Port only
+that existing guard, before `:kind` reads, to the two missing copies. This is
+necessary to satisfy the recorded unchanged consumer negatives; it is not a
+new member allowance, accounting requirement or additional cleanup criterion.
+
+- [x] Independently review the exact two-function parity diff and prove every
+  other production function unchanged. Preserve Integer/Never selection,
+  supported carriers, complete membership validation, budgets and reports.
+- [x] Run the two unchanged failing kernels and the minimal old case with
+  zero field/sequence callbacks, plus boundary controls, on the frozen repair.
+- [x] Independently review actual schema-parity results;
+  preserve all old failures and original successful PL evidence separately.
+
+The schema repair at `c71da7c3`, tree `92ac0fad`, passed 9 tests / 1,008
+assertions and independent retained-result review. It establishes zero field
+and sequence reads for those cases, not zero count callbacks or arbitrary
+foreign-map safety. At that schema-only checkpoint, native ingress remained open.
+
+### Membership native-ingress boundary
+
+The complete read-only census at `c71da7c3` finds fifteen classifier/domain
+definitions and sixteen direct calls: twelve internal dispatch calls and four
+external calls to the three `ksm-domain` roots. The external callers are C7
+derive/inferred-call, Effects `mc-context` and typed emitter membership. The
+four specific classifier/domain helpers per owner are internal to the root;
+they are not independent input-validation authorities.
+
+- [x] Put the existing canonical `lc-validate-types` walk first in each root,
+  before classification or carrier reads. Retain original arguments and vector
+  arity; do not normalize a new input domain, add a Native API, charge the walk,
+  introduce another allowance or change valid membership/budget results.
+- [x] Project failed native/type ingress as a rejected operand report, with
+  the canonical reason and the existing defined failure report for callers.
+  Do not invoke unsafe selectors again after preflight failure.
+- [x] Preserve legacy-family and throw-consumer positives using native vectors
+  or supported SubVectors. Separate former foreign-vector observer assumptions
+  into explicit zero-callback rejection controls; this is native-domain
+  strengthening, not accounting-only test deletion or unchanged foreign input
+  admission. Check complete children, cycles and invalid views.
+- [x] Obtain independent exact-source/result review and affected consumer
+  acceptance before clearing this native-ingress hold. Root validation does
+  not certify arbitrary facts or the earlier Effects context classification;
+  whole-plan ingress remains separate.
+
+### Current accepted PL composition - 2026-10-28 01:24 UTC
+
+Independent source/result review accepted the membership root boundary and
+composed PL consumers at `a674a3e9`, tree `f3541519`. The original full native
+panel at `90a80f5a` remains NONPASS (18 tests, 2,700 passing assertions and nine
+failures in one duplicated foreign observer fixture). Its eleven unaffected
+nonboundary selectors retain their successful original provenance. The
+test-only native-view correction plus boundary passed 7 tests / 581 assertions
+at `a674a3e9`; no summed or globally fresh pass is claimed.
+
+The demonstrated membership-root blocker is resolved. The first canonical walk
+checks the original complete native/type graph before internal classification;
+the original accepted domain bodies, vector arity, arguments, budgets and
+reports remain unchanged. No Native API, new cost charge or replacement quota
+is introduced. The earlier shape-only repair and all failed receipts remain
+separate history. This does not establish arbitrary-facts or whole-plan ingress.
+
+The PR remains draft until current-head CI, public readback and
+independent integration review. Only normal validated integration will complete
+this finite helper milestone; ACC-05 and ACC-06 as a whole remain open.
+
+### Main-only finite helper integration record
+
+The checked final lifecycle item above applies only to main containing the
+normally merged, independently reviewed PR509 and its exact merged-tree
+readback. An unmerged draft or branch receives no integration or closure credit.
+Pending current-head CI, public readback and integration-review requirements
+remain pending until their actual evidence exists; neither this conditional
+checkbox nor a worktree preflight substitutes for that evidence. After actual
+integration, PR509 records the observed merge/tree and CI receipts; no future
+identities or outcomes are asserted here. This finite milestone never closes
+the broader ACC-05/06 rows or changes the original thirteen-row assessment.
+
 ## ACC-06 LR validation allowance removal - 2026-10-27 UTC
 
 Accounting retains sole ownership of the three existing C7, Effects and emitter
@@ -66,11 +219,13 @@ identity, source reconstruction and full-row/census contracts stay intact.
   C7 large 1/2, with original baseline 1/39 and compiler-free controls 2/41.
 - [x] Pass repository gates at `59efea4e`: boundary/LOC 11/23, source census
   2,035, docs 240/19 and roadmap, with complete clean bounded capture.
-- [ ] Finish exact current-main preflight and outgoing review, publish draft and
+- [x] Finish exact current-main preflight and outgoing review, publish draft and
   verify current-head CI/readback before ordinary validated integration.
 
-Fresh main readback remains `9c093bc6`; no incoming dependency change invalidates
-the accepted candidate. Local CI-pinned lint recognizes 223 unchanged baseline
+PR507 integrated this finite unit at `19db4a52`, tree `de6fa804`, identical to
+reviewed head `c2eaa507`. Main run 40603015619 passed seven routine jobs and the
+source-only prerelease; only the explicit unavailable Core gate failed, without
+genuine Core execution. Local CI-pinned lint recognizes 223 unchanged baseline
 warnings and zero blockers without a policy change. Each receipt and the
 controlled 401-byte reflection warning keep their exact scope in `evidence.md`.
 
@@ -483,3 +638,142 @@ claimed. The broader held PR359 remains unchanged.
 The old 50% remains a historical unmeasured estimate, not a recalculated score.
 Two original rows closing does not establish a weighted completion denominator;
 no percentage is derived from rows, PRs, tests or assertions.
+
+## ACC-05 integrated helper result and remaining ownership - 2026-10-27 MDT
+
+This assessment supersedes the earlier dated ACC-05 helper-publication status,
+without changing the original thirteen criteria. PR509 is integrated as
+`4a998729ec03513b137d7b40d4bb3d8be285a9f4`, tree
+`d07eb74722f8bd43b5bdcb6adc2c1bee1f71c3e6`. The merged tree exactly matches
+the independently reviewed current-main candidate `a4504d43`. Its twelve
+budget-free PL validation helpers, nineteen original direct calls, nine removed
+helper debits, semantic-cache reconstruction and required native membership-root
+repair are accepted within their recorded source/result scope. Historical
+failed batches remain failed; unchanged selectors retain their original source
+identities rather than becoming a newly executed combined result.
+
+ACC-05 remains partial. The remaining original obligations have concrete source
+owners and must not be counted as completed helper work:
+
+| Remaining obligation | Source and accountable implementation owner | Acceptance boundary |
+| --- | --- | --- |
+| Insertion descriptor accounting | ACC-05: the three `pl-source` builders still publish nested insertion `:budget`, `:value-work-model`, Symbol work-representation policy and `:representation-work` invalidation premises | Coherent producer/constraint/fact/consumer migration, complete descriptor equality and stale-field rejection; retain actual allocation, storage, type, source, profile and effect semantics |
+| Runtime value and construction accounting | ACC-09: String insertion helper, shared Keyword/String/Symbol/Integer membership helper, and Symbol/Keyword inline `conj` consumers | Remove admission budgets, content/width refusals and prospective construction reservations across the actual call closure; preserve complete native/domain/Unicode/distinctness validation before hit/miss and construction, input/result semantics and real effects |
+| Outer source/inference/lowering pools | Existing ACC-06/07/08 interfaces: C7 PL derive/inferred-call/loop insertion, Effects append/loop contexts and emitter typed prepend/loop insertion | Remove each actual outer allowance/debit family coherently; preserve source/authentication, Never, type, effect, profile and termination obligations |
+
+The dedicated ACC-06 owner currently has the serialized C7/Effects/emitter
+writer slot for six PC chain definitions. ACC-05 does not reclaim those files
+or duplicate ACC-09's runtime writer. The next ACC-05 compiler transaction is
+the remaining insertion-descriptor contract, after that exact source slot is
+released and its full producer/consumer migration is independently reviewed.
+Runtime membership's pre-read native-ingress interface is a real unresolved
+dependency; a budget is not evidence of class, callback or cycle safety. Held
+Native registration and source-admission operations are not restarted here.
+
+Only ACC-02 and ACC-03 are closed. Eleven original criteria remain open or
+partial; the historical 50% remains an unmeasured estimate. No score is derived
+from the helper, test or PR counts above. The existing accounting owner retains
+the sole canonical-ledger writer; dedicated row owners submit exact source and
+acceptance evidence for reconciliation here.
+
+## ACC-05 insertion descriptor integration - 2026-10-28 UTC
+
+PR518 integrated the finite insertion-descriptor transaction at
+`1e784ac42b13a05cfcd0be35072c70239098d103`. Its merged tree
+`61b636e8b99808ea3e5c55878d80a62228bce59e` matches the independently
+reviewed candidate `7fe81d4cf43ab78ede1055ad6d8e9bcd25d9bf36`. This
+supersedes the pending insertion-descriptor row and slot statement in the
+preceding assessment; their other remaining obligations still apply.
+
+The C7, Effects and emitter String, Symbol and Keyword Set insertion
+descriptors no longer carry the accounting-only reservation, value-work model,
+Symbol work-representation policy or corresponding invalidation premise.
+Allocation and storage policy, complete type and member validation, source,
+effect and profile relations, and strict reconstructed descriptor equality
+remain. Coherent old fields and tags are rejected. The focused normalized owner
+and consumer batch passed 20 tests and 2,958 assertions; the two updated
+authenticated-composition assertions remain unrun. Runtime Set work and the
+outer inference, validation and lowering pools remain with their existing
+owners, and ACC-05 remains partial. ACC-06 and the other original row states
+are unchanged. No authenticated-source, Core, C12, release or overall
+completion is inferred.
+
+## ACC-13 C3 comparison and remaining boundary
+
+The ACC-13 owner has independently reviewed a finite C3 graph-membership
+change and its direct Guest comparison. The local candidate is not integrated.
+The comparison uses explicit normalized input and leaves the original source
+authentication, selected-current Syntax binding and genuine C5 route open.
+Draft PR512 now contains the reviewed candidate. Its owner's earlier push was
+blocked by automatic approval review before execution; the same operation
+subsequently succeeded through the supported route after new authorization.
+The candidate is published but not integrated.
+
+ACC-13 remains partial. Source-byte limits, other Syntax, macro, schema and
+carrier mechanisms, current source admission and their actual owner acceptance
+remain open. This comparison does not close ACC-12 or authorize a held B51
+endpoint, C12 or release.
+
+## ACC-12 B51 test artifact restoration
+
+PR517 restored the truncated SH07 B51 test artifact on main at `068de740`.
+The independently reviewed repair conserves the historical test names and
+assertions, with focused fixture and host UTF-8 checks passing on the composed
+head. The full suite, current seven-shard assembly, B51 public roots, source
+authentication and quota-source migration remain unassessed. ACC-12 remains
+partial; the separately owned ACC-13 B51 route remains open.
+
+## ACC-04 BKA anchor-width integration
+
+PR521 integrated the finite BKA anchor-width removal at `38daf99e`. C7,
+Effects and emitter no longer reject an otherwise valid keyword anchor solely
+because it exceeds 1,024 members. Nonemptiness, the exact Set schema, complete
+keyword-member and type validation, source and descriptor reconstruction
+remain. The selected normalized producer, consumer and typed-emitter controls
+passed; no authenticated-source or runtime acceptance is implied.
+
+ACC-04 remains partial. BKA header accounting and runtime policy, PMK and ANE
+families, outer pools, metadata carrier safety and the original row's complete
+consumer acceptance remain open. DSE's preserved unrun work and the separate
+unknown historical mode operation are not replayed or reclassified here.
+
+## ACC-12 operative documentation correction
+
+PR522 integrated the two-span development-verification correction at
+`4a798d86`. It removes contradictory instructions to preserve accounting quota
+and work-limit boundaries while retaining source, type, effect, extent and
+transfer checks. Live membership and vector-index work pools remain for their
+actual source owners to migrate. ACC-12 remains partial; this documentation
+correction does not establish source, runtime, Core, C12 or release acceptance.
+
+## ACC-06 private collection chain integration
+
+PR511 integrated the finite private collection binding-chain change at
+`0ea44f0c`. C7, Effects and emitter no longer impose the paired 128-link
+traversal and link-domain admissions. Cycle detection, complete source and
+link validation, immutable binding, mutation and proof checks remain. The
+current-main composition passed its selected 14-test/266-assertion panel.
+
+ACC-06 remains open: recursive validation and construction allowances,
+source/conversion pools, other private collection width/source limits and
+PE/PC dependencies still require their own coherent owner work. This finite
+result does not establish authenticated-source, runtime, Core, C12 or release.
+The later PR513 metadata gate found that the new PC test namespace was absent
+from its impact catalog. That separate catalog registration is open with the
+existing metadata owners; the failed gate is not a PC semantic pass.
+
+## ACC-04 BKA header integration
+
+PR524 integrated the finite BKA header and first-debit migration at
+`d63e6096`. The three owners now derive the header and inferred-call result
+without the removed header allowance and cost report. Existing keyword and
+native-view validation precedes authority-vector traversal; source, descriptor,
+type and permission checks remain. Rejected results do not acquire fabricated
+cost reports. This supersedes the BKA-header accounting item in the earlier
+anchor-width assessment.
+
+ACC-04 remains open: independent row, fact, call, edge, child and outer pools,
+runtime policy, PMK and ANE still require their own coherent migrations and
+acceptance. DSE and the separate historical mode operation remain unresolved.
+This finite integration does not establish authenticated-source, runtime, Core,
+C12 or whole-row acceptance. ACC-02 and ACC-03 remain closed.

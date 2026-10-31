@@ -6,10 +6,10 @@
   "source_root": "bootstrap/clojure/src",
   "test_root": "bootstrap/clojure/test",
   "counts": {
-    "components": 54,
-    "sources": 54,
-    "tests": 54,
-    "bootstrap_free_tests": 48,
+    "components": 55,
+    "sources": 55,
+    "tests": 55,
+    "bootstrap_free_tests": 49,
     "compatibility_tests": 5,
     "coordinator_tests": 1
   },
@@ -144,8 +144,40 @@
       "kind": "production-verification-helper",
       "owner": "sh-macro",
       "source": {"path": "bootstrap/clojure/src/gravity/macro_run_storage.clj", "namespace": "gravity.macro-run-storage"},
-      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj", "namespace": "gravity.bootstrap", "owner": "sh-macro"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/macro.clj", "namespace": "gravity.macro", "owner": "sh-macro"},
       "test": {"path": "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj", "namespace": "gravity.self-hosting.macro-run-storage-test", "registration": "standalone"}
+    },
+    {
+      "id": "reader-artifact-assembly",
+      "kind": "production-stage-helper",
+      "owner": "sh-reader",
+      "source": {"path": "bootstrap/clojure/src/gravity/reader.clj", "namespace": "gravity.reader"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj", "namespace": "gravity.bootstrap", "owner": "sh-reader"},
+      "test": {"path": "bootstrap/clojure/test/gravity/reader/artifact_test.clj", "namespace": "gravity.reader.artifact-test", "registration": "standalone"}
+    },
+    {
+      "id": "syntax-pipeline",
+      "kind": "production-stage-helper",
+      "owner": "sh-syntax",
+      "source": {"path": "bootstrap/clojure/src/gravity/syntax.clj", "namespace": "gravity.syntax"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-syntax"},
+      "test": {"path": "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj", "namespace": "gravity.syntax.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "resolution-plan-runtime",
+      "kind": "production-stage-helper",
+      "owner": "sh-resolution",
+      "source": {"path": "bootstrap/clojure/src/gravity/resolution.clj", "namespace": "gravity.resolution"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj", "namespace": "gravity.bootstrap", "owner": "sh-resolution"},
+      "test": {"path": "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj", "namespace": "gravity.resolution.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "macro-plan-runtime",
+      "kind": "production-stage-helper",
+      "owner": "sh-macro",
+      "source": {"path": "bootstrap/clojure/src/gravity/macro.clj", "namespace": "gravity.macro"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj", "namespace": "gravity.bootstrap", "owner": "sh-macro"},
+      "test": {"path": "bootstrap/clojure/test/gravity/macro/pipeline_test.clj", "namespace": "gravity.macro.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
@@ -2007,6 +2039,35 @@
       "contract_var": "namespace-contract",
       "stage0_group": "foundation-reader",
       "leaf_execution_group": null
+    },
+    {
+      "id": "source-interface-header",
+      "owner": "sh-core",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/source_interface_header.clj",
+        "namespace": "gravity.source-interface-header"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/source_interface_header_test.clj",
+        "namespace": "gravity.source-interface-header-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": ["source-interface-header"],
+      "canonical_pass_refs": ["core-ast", "gravity-mir"],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "interface-version!",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "source-unit",

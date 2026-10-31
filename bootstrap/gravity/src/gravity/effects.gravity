@@ -1051,16 +1051,15 @@
         bound (+ 2 selected-nodes (- (count records) 1) (- slots (count (get record :parameter-binding-ids))) (count ids) selected-locals)]
     (if (body-all?
           [(sh09-exact-keys? cold #{:mode :cut :source-argument-call-node-ids :source-preparation-work-count
-                                   :quote-work-count :round-count :round-bound :work-count})
+                                   :round-count :round-bound :work-count})
            (= cut (get cold :cut)) (= (get cut :mode) (get cold :mode))
            (= ids (get cold :source-argument-call-node-ids)) (= preparation (get cold :source-preparation-work-count))
            (= bound (get cold :round-bound))
-           (loop [remaining [(get cold :quote-work-count) (get cold :round-count) (get cold :work-count)]]
+           (loop [remaining [(get cold :round-count) (get cold :work-count)]]
              (if (= 0 (count remaining)) true
                (if (integer? (first remaining)) (if (>= (first remaining) 0) (recur (rest remaining)) false) false)))])
       (body-all? [(> (get cold :round-count) 0) (<= (get cold :round-count) bound)
-                  (<= (get cold :quote-work-count) (count forms))
-                  (<= (+ preparation (get cold :quote-work-count) (* round-work (get cold :round-count))) (get cold :work-count))
+                  (<= (+ preparation (* round-work (get cold :round-count))) (get cold :work-count))
                   (<= (get cold :work-count) 65536)]) false)))
 
 (defn body-is-source-cost [core bindings forms record arguments target-slots]
@@ -3470,44 +3469,39 @@
 
 (defn body-pl-list? [type]
   (if (= :gravity.type/list type) true
-    (if (map? type) (= :gravity.type/list (get type :kind)) false)))
+    (if (body-lc-native-map? type) (= :gravity.type/list (get type :kind)) false)))
 
-(defn body-ssin-type-work [arguments budget]
-  ; The closed carrier retains only the String member domain, never cardinality.
-  (let [limit (if (< budget 65536) budget 65536)]
-    (if (< limit 2)
-      {:status :rejected :reason :string-set-insertion-work-limit :work-count 2}
-      (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (let [receiver (get arguments 0) value (get arguments 1)
-              construction (if (= :gravity.type/never value) 0 3)]
-          (if (if (map? receiver) (= :homogeneous (get receiver :shape)) false)
-            (if (< limit (+ 3 construction))
-              {:status :rejected :reason :string-set-insertion-work-limit :work-count (+ 3 construction)}
-              (if (if (body-ss-type? receiver) (if (= :gravity.type/string value) true (= :gravity.type/never value)) false)
-                {:status :accepted :collection-family :string-set-insertion :argument-types arguments
-                 :input-extent nil :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string})
-                 :operand-work 3 :result-work 0 :construction-work construction :work-count (+ 3 construction)}
-                {:status :rejected :reason :string-set-insertion-operand-type-required :work-count 3}))
-          (if (if (map? receiver) (if (= 3 (count receiver))
-                (if (= :gravity.type/set (get receiver :kind))
-                  (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false)
-            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
-              (if (> width 1024)
-                {:status :rejected :reason :string-set-insertion-type-width :work-count 2}
-                (if (> work limit)
-                  {:status :rejected :reason :string-set-insertion-work-limit :work-count work}
-                  (let [valid? (loop [i 0]
-                                 (if (= i width) true
-                                   (if (= :gravity.type/string (get members i)) (recur (+ i 1)) false)))]
-                    (if (if valid? (if (= :gravity.type/string value) true (= :gravity.type/never value)) false)
-                      {:status :accepted :collection-family :string-set-insertion :argument-types arguments
-                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string})
-                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
-                      {:status :rejected :reason :string-set-insertion-operand-type-required :work-count work})))))
-            {:status :rejected :reason :string-set-insertion-operand-type-required :work-count 2})))
-        {:status :rejected :reason :string-set-insertion-arity-mismatch :work-count 2}))))
+(defn body-ssin-validate-types [arguments]
+  ; Type bookkeeping is not an admission allowance. Check the whole original
+  ; carrier before any member read, equality or result construction.
+  (let [checked (body-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (body-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (get arguments 0) value (get arguments 1)
+                homogeneous? (body-ss-type? receiver)
+                literal? (if (map? receiver)
+                           (if (= :gravity.type/set (get receiver :kind))
+                             (= :literal (get receiver :shape)) false) false)
+                members (if literal? (get receiver :element-types) [])
+                valid? (if homogeneous? true
+                         (if literal?
+                           (loop [remaining members]
+                             (if (= 0 (count remaining)) true
+                               (if (= :gravity.type/string (first remaining))
+                                 (recur (rest remaining)) false))) false))]
+            (if (if valid? (if (= :gravity.type/string value) true (= :gravity.type/never value)) false)
+              {:status :accepted :collection-family :string-set-insertion
+               :argument-types arguments :input-extent (if literal? (count members) nil)
+               :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string})}
+              {:status :rejected :reason :string-set-insertion-operand-type-required}))
+          {:status :rejected :reason :string-set-insertion-arity-mismatch}))
+      {:status :rejected :reason :string-set-insertion-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
 (defn body-syin-selected? [arguments]
+  (if (= :accepted (get (body-lc-validate-types arguments) :status))
+
   ; Preserve existing routes for ambiguous Never and known legacy member values.
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [receiver (get arguments 0) value (get arguments 1)]
@@ -3522,45 +3516,40 @@
           (if (= 0 (count members)) (= :gravity.type/symbol value)
             (if (= :gravity.type/symbol (get members 0))
               (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false))) false))
-        false)) false))
+        false)) false)
+    false))
 
-(defn body-syin-type-work [arguments budget]
-  ; STD3: finite Symbol input is checked completely; the result retains no member facts.
-  (let [limit (if (< budget 65536) budget 65536)]
-    (if (< limit 2) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count 2}
-      (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (let [receiver (get arguments 0) value (get arguments 1)
-              construction (if (= :gravity.type/never value) 0 3)]
-          (if (body-syc-type? receiver)
-            (let [work (+ 3 construction)]
-              (if (> work limit)
-                {:status :rejected :reason :symbol-set-insertion-work-limit :work-count work}
-                (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
-                  {:status :accepted :collection-family :symbol-set-insertion :argument-types arguments
-                   :input-extent nil :result-type (if (= :gravity.type/never value) :gravity.type/never
-                                                  {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})
-                   :operand-work 3 :result-work 0 :construction-work construction :work-count work}
-                  {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 3})))
-            (if (if (map? receiver) (if (= 3 (count receiver))
-                (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
-                      (if (keyword? (first fields)) (recur (rest fields)) false)))
-                  (if (= :gravity.type/set (get receiver :kind))
-                    (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
-            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
-              (if (> width 1024) {:status :rejected :reason :symbol-set-insertion-type-width :work-count 2}
-                (if (> work limit) {:status :rejected :reason :symbol-set-insertion-work-limit :work-count work}
-                  (if (loop [i 0] (if (= i width) true
-                        (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
-                    (if (if (= :gravity.type/symbol value) true (= :gravity.type/never value))
-                      {:status :accepted :collection-family :symbol-set-insertion :argument-types arguments
-                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})
-                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
-                      {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work})
-                    {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count work}))))
-            {:status :rejected :reason :symbol-set-insertion-operand-type-required :work-count 2})))
-        {:status :rejected :reason :symbol-set-insertion-arity-mismatch :work-count 2}))))
+(defn body-syin-validate-types [arguments]
+  ; Type bookkeeping is not an admission allowance. Check the whole original
+  ; carrier before any member read, equality or result construction.
+  (let [checked (body-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (body-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (get arguments 0) value (get arguments 1)
+                homogeneous? (body-syc-type? receiver)
+                literal? (if (map? receiver)
+                           (if (= :gravity.type/set (get receiver :kind))
+                             (= :literal (get receiver :shape)) false) false)
+                members (if literal? (get receiver :element-types) [])
+                valid? (if homogeneous? true
+                         (if literal?
+                           (loop [remaining members]
+                             (if (= 0 (count remaining)) true
+                               (if (= :gravity.type/symbol (first remaining))
+                                 (recur (rest remaining)) false))) false))]
+            (if (if valid? (if (= :gravity.type/symbol value) true (= :gravity.type/never value)) false)
+              {:status :accepted :collection-family :symbol-set-insertion
+               :argument-types arguments :input-extent (if literal? (count members) nil)
+               :result-type (if (= :gravity.type/never value) :gravity.type/never {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol})}
+              {:status :rejected :reason :symbol-set-insertion-operand-type-required}))
+          {:status :rejected :reason :symbol-set-insertion-arity-mismatch}))
+      {:status :rejected :reason :symbol-set-insertion-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
 (defn body-ksin-selected? [arguments]
+  (if (= :accepted (get (body-lc-validate-types arguments) :status))
+
   ; Preserve the String route for ambiguous empty-Set/Never and wrong families.
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (let [receiver (get arguments 0) value (get arguments 1)]
@@ -3572,74 +3561,70 @@
         (let [members (get receiver :element-types)]
           (if (= 0 (count members)) (= :gravity.type/keyword value)
             (if (= :gravity.type/keyword (get members 0))
-              (if (= :gravity.type/keyword value) true (= :gravity.type/never value)) false))) false)) false))
+              (if (= :gravity.type/keyword value) true (= :gravity.type/never value)) false))) false)) false)
+    false))
 
-(defn body-ksin-type-work [arguments budget]
-  ; STD3: finite Keyword input is checked completely; the result retains no member facts.
-  (let [limit (if (< budget 65536) budget 65536)]
-    (if (< limit 2) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count 2}
-      (if (if (vector? arguments) (= 2 (count arguments)) false)
-        (let [receiver (get arguments 0) value (get arguments 1)
-              construction (if (= :gravity.type/never value) 0 3)]
-          (if (if (map? receiver) (if (= 3 (count receiver))
-                (if (loop [fields (keys receiver)] (if (= 0 (count fields)) true
-                      (if (keyword? (first fields)) (recur (rest fields)) false)))
-                  (if (= :gravity.type/set (get receiver :kind))
-                    (if (= :literal (get receiver :shape)) (vector? (get receiver :element-types)) false) false) false) false) false)
-            (let [members (get receiver :element-types) width (count members) work (+ 2 width construction)]
-              (if (> width 1024) {:status :rejected :reason :keyword-set-insertion-type-width :work-count 2}
-                (if (> work limit) {:status :rejected :reason :keyword-set-insertion-work-limit :work-count work}
-                  (if (loop [i 0] (if (= i width) true
-                        (if (= :gravity.type/keyword (get members i)) (recur (+ i 1)) false)))
-                    (if (if (= :gravity.type/keyword value) true (= :gravity.type/never value))
-                      {:status :accepted :collection-family :keyword-set-insertion :argument-types arguments
-                       :input-extent width :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)
-                       :operand-work (+ 2 width) :result-work 0 :construction-work construction :work-count work}
-                      {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count work})
-                    {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count work}))))
-            {:status :rejected :reason :keyword-set-insertion-operand-type-required :work-count 2}))
-        {:status :rejected :reason :keyword-set-insertion-arity-mismatch :work-count 2}))))
+(defn body-ksin-validate-types [arguments]
+  ; Type bookkeeping is not an admission allowance. Check the whole original
+  ; carrier before any member read, equality or result construction.
+  (let [checked (body-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (body-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (get arguments 0) value (get arguments 1)
+                homogeneous? false
+                literal? (if (map? receiver)
+                           (if (= :gravity.type/set (get receiver :kind))
+                             (= :literal (get receiver :shape)) false) false)
+                members (if literal? (get receiver :element-types) [])
+                valid? (if homogeneous? true
+                         (if literal?
+                           (loop [remaining members]
+                             (if (= 0 (count remaining)) true
+                               (if (= :gravity.type/keyword (first remaining))
+                                 (recur (rest remaining)) false))) false))]
+            (if (if valid? (if (= :gravity.type/keyword value) true (= :gravity.type/never value)) false)
+              {:status :accepted :collection-family :keyword-set-insertion
+               :argument-types arguments :input-extent (if literal? (count members) nil)
+               :result-type (if (= :gravity.type/never value) :gravity.type/never :gravity.type/set)}
+              {:status :rejected :reason :keyword-set-insertion-operand-type-required}))
+          {:status :rejected :reason :keyword-set-insertion-arity-mismatch}))
+      {:status :rejected :reason :keyword-set-insertion-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
-(defn body-pl-type-work [arguments budget]
-  (if (if (= :gravity.type/set (get arguments 0)) true (if (map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false))
-    (if (if (< budget 2) false (body-syin-selected? arguments))
-      (body-syin-type-work arguments budget)
-      (if (body-ksin-selected? arguments)
-      (body-ksin-type-work arguments budget)
-      (body-ssin-type-work arguments budget)))
-  (if (= 2 (count arguments))
-    (let [checked (body-lc-validate-types arguments)]
-      (if (= :accepted (get checked :status))
-        (let [receiver (first arguments) value (get arguments 1) invoked? (= false (= :gravity.type/never value))
-              homogeneous? (body-hl-type? receiver) positional? (= :literal (get receiver :shape))
-              elements (get receiver :element-types) width (if (vector? elements) (count elements) 0)
-              construction (if (if invoked? positional? false) (+ 1 width) 0)
-              work construction]
-          (if (= false (body-pl-list? receiver))
-            {:status :rejected :reason :list-prepend-list-type-required}
-            (if (if homogeneous? (if invoked? (= false (= value (get receiver :element-type))) false) false)
-              {:status :rejected :reason :list-prepend-element-type-mismatch}
-              (if (if positional? (if invoked? (>= width 1024) false) false)
-                {:status :rejected :reason :list-prepend-type-width-limit}
-                (if (> work budget)
-                  {:status :rejected :reason :list-prepend-work-limit :work-count work}
-                  (let [result (if (= false invoked?) :gravity.type/never
-                                 (if positional?
-                                   {:kind :gravity.type/list :shape :literal
-                                    :element-types (loop [remaining elements out [value]]
-                                                     (if (= 0 (count remaining)) out
-                                                       (recur (rest remaining) (conj out (first remaining)))))}
-                                   receiver))
-                        validation (body-lc-validate-types [result])
-                        total work]
-                    (if (= :accepted (get validation :status))
-                      {:status :accepted :work-count total
-                       :construction-work construction :result-type result}
-                      {:status :rejected :reason :list-prepend-result-type-required
-                       :type-check-reason (get validation :reason) :work-count total})))))))
-        {:status :rejected :reason :list-prepend-operand-type-required
-         :type-check-reason (get checked :reason)}))
-    {:status :rejected :reason :list-prepend-arity-mismatch :work-count 0})))
+(defn body-pl-validate-types [arguments]
+  (let [checked (body-lc-validate-types arguments)]
+    (if (= :accepted (get checked :status))
+      (let [arguments (get (body-lc-native-arguments arguments) :arguments)]
+        (if (= 2 (count arguments))
+          (let [receiver (first arguments) value (get arguments 1)]
+            (if (if (= :gravity.type/set receiver) true
+                  (if (map? receiver) (= :gravity.type/set (get receiver :kind)) false))
+              (if (body-syin-selected? arguments) (body-syin-validate-types arguments)
+                (if (body-ksin-selected? arguments) (body-ksin-validate-types arguments)
+                  (body-ssin-validate-types arguments)))
+              (let [invoked? (= false (= :gravity.type/never value))
+                    homogeneous? (body-hl-type? receiver)
+                    positional? (if (map? receiver) (= :literal (get receiver :shape)) false)]
+                (if (= false (body-pl-list? receiver))
+                  {:status :rejected :reason :list-prepend-list-type-required}
+                  (if (if homogeneous? (if invoked? (= false (= value (get receiver :element-type))) false) false)
+                    {:status :rejected :reason :list-prepend-element-type-mismatch}
+                    (let [result (if (= false invoked?) :gravity.type/never
+                                   (if positional?
+                                     {:kind :gravity.type/list :shape :literal
+                                      :element-types (loop [remaining (get receiver :element-types) out [value]]
+                                                       (if (= 0 (count remaining)) out
+                                                         (recur (rest remaining) (conj out (first remaining)))))}
+                                     receiver))
+                          validation (body-lc-validate-types [result])]
+                      (if (= :accepted (get validation :status))
+                        {:status :accepted :result-type result}
+                        {:status :rejected :reason :list-prepend-result-type-required
+                         :type-check-reason (get validation :reason)})))))))
+          {:status :rejected :reason :list-prepend-arity-mismatch}))
+      {:status :rejected :reason :list-prepend-operand-type-required
+       :type-check-reason (get checked :reason)})))
 
 (defn body-ksin-source-ids? [node call nodes bindings module]
   (if (body-sse-call-ids? node call)
@@ -3684,7 +3669,32 @@
                                 (if (= (get (get child :attributes) :symbol) (get form :value)) (recur (+ i 1)) false) false)
                               (recur (+ i 1))) false) false) false) false)))) false) false) false) false)) false))
 
+(defn body-pl-validation? [validation]
+  ; This is a closed semantic cell, not a transferable proof or cost report.
+  (let [header (bootstrap-native-carrier-header validation) kind (get header 0)]
+    (if (if (= :map kind) true
+          (if (= :tree-map kind) (= :default-comparator (get header 4)) false))
+      (if (>= (get header 2) 0)
+        (if (loop [fields (keys validation)]
+              (if (= 0 (count fields)) true
+                (if (keyword? (first fields)) (recur (rest fields)) false)))
+          (if (= :accepted (get validation :status))
+            (let [fields (set (keys validation))]
+              (if (= #{:status :result-type} fields)
+                (= :accepted (get (body-lc-validate-types [(get validation :result-type)]) :status))
+                (if (= #{:status :collection-family :argument-types :input-extent :result-type} fields)
+                  (if (keyword? (get validation :collection-family))
+                    (if (contains? #{:string-set-insertion :symbol-set-insertion :keyword-set-insertion}
+                                   (get validation :collection-family))
+                      (if (if (= nil (get validation :input-extent)) true
+                            (if (integer? (get validation :input-extent))
+                              (>= (get validation :input-extent) 0) false))
+                        (if (= :accepted (get (body-lc-validate-types (get validation :argument-types)) :status))
+                          (= :accepted (get (body-lc-validate-types [(get validation :result-type)]) :status)) false)
+                        false) false) false) false))) false) false) false) false)))
 (defn body-pl-source [core node call edge nodes bindings types module validation]
+  (if (body-pl-validation? validation)
+
   (if (if (if (= :symbol-set-insertion (get validation :collection-family)) true (= :keyword-set-insertion (get validation :collection-family)))
         (body-ksin-source-ids? node call nodes bindings module) true)
     (if (if (vector? (get call :argument-node-ids))
@@ -3730,13 +3740,11 @@
                            :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
                            :member-domain :independently-established-symbol-only :member-equality :guarded-atomic-symbol-value
                            :symbol-equality :original-namespace-and-name :normalization :none :locale :none :coercion :none
-                           :resolution-authority :none :representation-unit-policy :jvm-utf16-symbol-display-for-work-only
+                           :resolution-authority :none
                            :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
                            :operand-evaluation :left-to-right-once :operand-position :non-tail
                            :result-evidence :homogeneous-symbol-set-only :carrier-schema :gravity/homogeneous-symbol-set-type-v1 :cardinality-analysis :none
                            :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                           :budget :full-remaining-membership-and-construction-reservation
-                           :value-work-model :gravity/symbol-set-insertion-logical-content-work-v1
                            :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
        :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
        :storage-policy {:representation :development-persistent-symbol-set :input :preserved
@@ -3750,7 +3758,7 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :set-member-domain :inferred-member-carrier :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+                      :callee-body :set-member-domain :inferred-member-carrier :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
         (if (= :keyword-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
           {:kind :gravity.type/applied-keyword-set-insertion :version :sh08-keyword-set-insertion-v1
@@ -3766,8 +3774,6 @@
                            :operand-evaluation :left-to-right-once :operand-position :non-tail
                            :result-evidence :bare-set-only :cardinality-analysis :none
                            :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                           :budget :full-remaining-membership-and-construction-reservation
-                           :value-work-model :gravity/keyword-set-insertion-logical-content-work-v1
                            :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
        :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
        :storage-policy {:representation :development-persistent-keyword-set :input :preserved
@@ -3781,7 +3787,7 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
         (if (= :string-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
           {:kind :gravity.type/applied-string-set-insertion :version :sh08-string-set-insertion-v2
@@ -3797,8 +3803,6 @@
                            :operand-evaluation :left-to-right-once :operand-position :non-tail
                            :result-evidence :homogeneous-string-set-only :carrier-schema :gravity/homogeneous-string-set-type-v1 :cardinality-analysis :none
                            :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                           :budget :full-remaining-membership-and-construction-reservation
-                           :value-work-model :gravity/string-set-insertion-logical-content-work-v1
                            :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
        :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
        :storage-policy {:representation :development-persistent-string-set :input :preserved
@@ -3812,7 +3816,7 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :set-member-domain :inferred-member-carrier :private-entry-domain :inserted-value :insertion-semantics :member-equality :representation-work :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+                      :callee-body :set-member-domain :inferred-member-carrier :private-entry-domain :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
         {:kind :gravity.type/applied-list-prepend :version :sh08-list-prepend-v1
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-list-prepend
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
@@ -3832,6 +3836,7 @@
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
                       :callee-body :list-suffix :prepended-value :allocation-policy :storage-policy :profile :target :evaluation-order]}))) nil)) nil)
+    nil)
     nil))
 
 (defn body-pl-constraint [descriptor]
@@ -3979,19 +3984,17 @@
                                     (if (= false (= 2 (count args)))
                                       (assoc (body-failure :body-conj-arity-required) :work-count work)
                                       (if (let [receiver (get types (get args 0))]
-                                            (if (body-pl-list? receiver) true (if (= :gravity.type/set receiver) true (if (map? receiver) (= :gravity.type/set (get receiver :kind)) false))))
+                                            (if (body-pl-list? receiver) true (if (= :gravity.type/set receiver) true (if (body-lc-native-map? receiver) (= :gravity.type/set (get receiver :kind)) false))))
                                         (if (= false (if (vector? (get (get nodes id) :children))
                                                       (= 3 (count (get (get nodes id) :children))) false))
                                           (assoc (body-failure :body-conj-call-shape-required) :work-count work)
-                                        (let [validation (body-pl-type-work [(get types (get args 0) :gravity.type/unknown)
-                                                                             (get types (get args 1) :gravity.type/unknown)] (- budget work))
-                                              total (if (contains? validation :work-count) (+ work (get validation :work-count)) work)]
+                                        (let [validation (body-pl-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
+                                              total work]
                                           (if (= :accepted (get validation :status))
                                             (recur (rest remaining) total (assoc checks id validation) (assoc families id (if (= :symbol-set-insertion (get validation :collection-family))
             :symbol-set-insertion
             (if (= :keyword-set-insertion (get validation :collection-family)) :keyword-set-insertion (if (= :string-set-insertion (get validation :collection-family)) :string-set-insertion :list-prepend)))))
-                                            (assoc (body-failure (if (contains? #{:list-prepend-work-limit :string-set-insertion-work-limit :keyword-set-insertion-work-limit :symbol-set-insertion-work-limit} (get validation :reason))
-                                                                  :body-deferred-work-limit (get validation :reason))) :work-count total))))
+                                            (assoc (body-failure (get validation :reason)) :work-count total))))
                                         (if (> (+ work 1024) budget)
                                           (assoc (body-failure :body-deferred-work-limit) :work-count (+ work 1024))
                                           (recur (rest remaining) (+ work 1024) checks (assoc families id :vector-append))))))))
@@ -4002,7 +4005,7 @@
     (let [types (get facts :type-table)
         validation (get (get (get facts :append-context) :type-checks) (get node :node-id))
         descriptor (get types (get call :operator-node-id))
-        header (body-pl-source core node call edge nodes bindings types (get core :module) validation)
+        header (if (body-pl-validation? validation) (if (= validation (body-pl-validate-types (body-io-child-types (get call :argument-node-ids) types))) (body-pl-source core node call edge nodes bindings types (get core :module) validation) nil) nil)
         forms (get (get facts :append-context) :forms)
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
         row (get (get (get facts :append-context) :conj-rows) (get node :node-id))
@@ -7425,7 +7428,7 @@
   (loop [current id links [] seen #{} used 0]
     (if (= false (body-pc-id? current))
       {:status :rejected :reason :map-get-source-mismatch :work-count used}
-      (if (if (contains? seen current) true (>= (count links) 128))
+      (if (contains? seen current)
         {:status :rejected :reason :map-get-source-mismatch :work-count used}
         (let [prefix (+ used 32)]
           (if (> prefix budget) {:status :rejected :reason :map-get-work-limit :work-count prefix}
@@ -8183,7 +8186,7 @@
                           (recur (rest remaining)) false) false) false)))) false) false)))]) false))
 
 (defn body-pc-links-domain? [links]
-  (if (if (vector? links) (<= (count links) 128) false)
+  (if (vector? links)
     (loop [remaining links]
       (if (= 0 (count remaining)) true
         (let [link (first remaining) record (get link :binding-record)]
@@ -9207,7 +9210,9 @@
     (let [items (get arguments 0) needle (get arguments 1)]
       (if (= :gravity.type/integer needle) true
         (if (= :gravity.type/never needle)
-          (if (map? items)
+          ; Descriptor field count is schema, not a collection-size quota.
+          ; Match C7: reject the wrong shape before reading supplied fields.
+          (if (if (map? items) (= 3 (count items)) false)
             (if (if (= :gravity.type/set (get items :kind)) (= :literal (get items :shape)) false)
               (let [members (get items :element-types)]
                 (if (vector? members) (= :gravity.type/integer (get members 0)) false)) false) false) false))) false))
@@ -9236,6 +9241,11 @@
         {:status :rejected :reason :integer-set-contains-operand-type-required :work-count 2}))))
 
 (defn body-ksm-domain [arguments budget]
+  ; Supported membership entry: validate the entire original type graph
+  ; before internal selectors can read a carrier. This adds no work debit.
+  (let [ingress (body-lc-validate-types arguments)]
+    (if (= :accepted (get ingress :status))
+
   (if (if (>= budget 2) (body-ism-selected? arguments) false)
     (body-ism-domain arguments budget)
   (if (if (>= budget 2) (body-sysm-selected? arguments) false)
@@ -9293,7 +9303,9 @@
                                  :work-count (+ 2 n)}))))))))
                 {:status :rejected :reason type-reason :work-count 2})))
             {:status :rejected :reason :keyword-set-contains-operand-type-required :work-count 2})))
-      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0})))))
+      {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}))))
+      {:status :rejected :reason :keyword-set-contains-operand-type-required
+       :type-check-reason (get ingress :reason) :work-count 2})))
 
 (defn body-sysm-source-ids? [node call nodes bindings module]
   (if (body-sse-call-ids? node call)
@@ -12951,14 +12963,30 @@
       (if (if (= 3 (count type)) (= :literal (get type :shape)) false)
         (if (vector? (get type :element-types))
           (let [members (get type :element-types) length (count members)]
-            (if (if (> length 0) (<= length 1024) false)
+            (if (> length 0)
               (loop [index 0]
                 (if (= index length) true
                   (if (keyword? (get members index))
                     (if (= :gravity.type/keyword (get members index)) (recur (+ index 1)) false) false))) false)) false) false) false) false))
 
 (defn body-bka-binding? [binding module]
-  (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
+  (if (if (body-lc-native-view? (get binding :profile-set)) (if (body-lc-native-view?
+                                                     (get binding :target-set))
+                                                 (loop [groups [(get binding :profile-set)
+                                                                (get binding :target-set)]]
+                                                   (if (= 0 (count groups))
+                                                     true
+                                                     (if (loop [members (first groups)]
+                                                           (if
+                                                             (= 0 (count members))
+                                                             true
+                                                             (if
+                                                               (keyword? (first members))
+                                                               (recur (rest members))
+                                                               false)))
+                                                       (recur (rest groups))
+                                                       false)))
+                                                 false) false)
   (body-all?
     [(= ['= :core :var 'gravity.core {:name 'gravity/core :version "bootstrap-contract-v1"} :gravity.type/core-var :safe]
         [(get binding :name) (get binding :binding-class) (get binding :kind) (get binding :namespace)
@@ -12972,7 +13000,7 @@
   (if (if (map? node) (map? call) false)
     (if (body-all? [(map? nodes) (map? bindings) (map? module)
                            (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
-  ; Fixed physical groups only: no profile or target traversal before reservation.
+  ; Check fixed source fields here; authority members are validated before membership.
   (if (if (map? node) (map? call) false)
     (let [args (get call :argument-node-ids) children (get node :children)]
       (if (if (vector? args) (if (= 2 (count args)) (if (vector? children) (= 3 (count children)) false) false) false)
@@ -13006,110 +13034,215 @@
 (defn body-bka-optional-id? [id]
   (if (= nil id) true (body-sse-ids? [id] 1)))
 
-(defn body-bka-header [core node call edge nodes bindings types module budget]
+(defn body-bka-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-  (let [limit (if (> budget 65536) 65536 budget)
-        base (+ 193 (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :bare-keyword-anchor-set-equality-work-limit :work-count base}
-      (if (body-bka-ids? node call nodes bindings module)
-        (let [args (get call :argument-node-ids) children (get node :children)
-              operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
-              binding (get bindings bid) arguments [(get types (get args 0)) (get types (get args 1))]
-              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
-          (if (> reserved limit) {:status :rejected :reason :bare-keyword-anchor-set-equality-work-limit :work-count reserved}
-            (let [validation (body-lc-validate-types arguments)
-                  work reserved]
-              (if (= false (= :accepted (get validation :status)))
-                {:status :rejected :reason :bare-keyword-anchor-set-equality-operand-type-required
-                 :work-count work}
-                (if (body-bka-type? arguments)
-                  (let [anchor-index (if (body-bka-bare? (get arguments 0)) 1 0) bare-index (- 1 anchor-index)
-                        anchor-type (get arguments anchor-index)
-                        anchor-count (if (map? anchor-type)
-                                       (if (vector? (get anchor-type :element-types)) (count (get anchor-type :element-types)) 0) 0)
-                        anchor-domain-work (+ 3 anchor-count) result-type-work 1
-                        total (+ work anchor-domain-work result-type-work)]
-                    (if (> total limit) {:status :rejected :reason :bare-keyword-anchor-set-equality-work-limit :work-count total}
-                      (if (body-bka-anchor? anchor-type)
-                      (let [result-type :gravity.type/bool
-                            work total]
-                        (if (if (body-nq-ids? node call nodes bindings module)
-                        (if (map? edge)
-                          (if (integer? (get edge :ordinal))
-                            (if (>= (get edge :ordinal) 0)
-                              (body-all? [(body-bka-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
-                                                 (body-bka-optional-id? (get edge :caller-function-syntax-id))
-                                                 (body-bka-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
-                    (let [caller (loop [remaining (get core :function-records)]
-                                   (if (= 0 (count remaining)) nil
-                                     (let [record (first remaining)]
-                                       (if (if (map? record)
-                                             (body-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
-                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
-                                           record (recur (rest remaining))) :invalid-bare-keyword-anchor-set-equality-owner))))
-                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
-                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
-                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
-                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
-                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
-                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
-                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
-                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
-                      (if (body-all?
-                            [(= false (= :invalid-bare-keyword-anchor-set-equality-owner caller))
-                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
-                             (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
-                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
-                             (= expected-call call) (= expected-edge edge) (body-bka-binding? binding module)
-                             (= '= (get binding :name))
-                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
-                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
-                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-                             (contains? '#{= gravity.core/=} (get (get operator :attributes) :symbol))
-                             (= :operator-then-arguments (get (get node :evaluation) :kind))
-                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}
-                                {:index 2 :core-node-id (get children 2)}]
-                                (get (get node :evaluation) :order))])
-                        {:status :accepted :work-count work
-                         :descriptor {:kind :gravity.type/applied-bare-keyword-anchor-set-equality :version :sh08-bare-keyword-anchor-set-equality-v1
-                                      :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/bare-set-value-equality-with-keyword-anchor
-                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
-                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-                                      :source-call call :source-edge edge :source-binding binding :argument-types arguments
-                                      :equality-policy {:domain :bare-set-against-independent-nonempty-keyword-anchor :members :keyword-only-under-anchor-entry-contract
-                                      :comparison :guarded-atomic-keyword-leaf :order :unobserved :identity :unobserved
-                                      :entry-contract :type-conforming-typed-calls :anchor-premise :independent-nonempty-finite-keyword-set
-                                      :bare-domain :not-refined :domain-validation :both-complete-before-result
-                                      :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
-                                      :payload-evaluation :none :mutation :none :collection-construction :none
-                                      :operand-evaluation :once :operand-position :non-tail :operand-order :left-then-right
-                                      :provider-cpu-bound :not-established}
-
-
-                                      :value-origin {:kind :bare-keyword-anchor-set-value-equality :operation '= :operand-node-ids args}
-                                       :profile-validation-work (- reserved base)
-                                      :result-type-work result-type-work :anchor-domain-work anchor-domain-work
-                                      :anchor-operand-index anchor-index :bare-operand-index bare-index :anchor-type anchor-type
-                                      :operand-counts (if (= bare-index 0) [nil anchor-count] [anchor-count nil])
-                                      :runtime-policy {:guard :existing-complete-both-set-census
-                                                       :selector-premise :type-conforming-nonempty-keyword-anchor
-                                                       :maximum-input-elements 1024 :logical-work-limit 65536
-                                                       :member-uniqueness :before-cardinality :reservation :full-worst-case
-                                                       :certificate :not-established}
-
-
-                                      :application :normal :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
-                                      :parameter-types arguments :return result-type :result-type result-type
-                                      :profile (get module :profile) :target (get module :target)
-                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :equality-policy :runtime-policy :value-origin :anchor-type :anchor-operand-index
-                                                     :bare-operand-index :operand-counts :anchor-domain-work :result-type-work :result-type :profile :target :evaluation-order]}}
-                        {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch :work-count work}))
-                    {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch :work-count work}))
-                      {:status :rejected :reason :bare-keyword-anchor-set-equality-operand-type-required :work-count total})))
-                  {:status :rejected :reason :bare-keyword-anchor-set-equality-operand-type-required :work-count work})))))
-        {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch :work-count base})))
-    {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch :work-count 193}))
+    (if (body-bka-ids? node call nodes bindings module)
+      (let [args (get call :argument-node-ids)
+            children (get node :children)
+            operator (get nodes (get call :operator-node-id))
+            bid (get call :operator-binding-id)
+            binding (get bindings bid)
+            arguments [(get types (get args 0)) (get types (get args 1))]]
+        (let [validation (body-lc-validate-types arguments)]
+          (if (= false (= :accepted (get validation :status)))
+            {:status :rejected, :reason :bare-keyword-anchor-set-equality-operand-type-required}
+            (if (body-bka-type? arguments)
+              (let [anchor-index (if (body-bka-bare? (get arguments 0)) 1 0)
+                    bare-index (- 1 anchor-index)
+                    anchor-type (get arguments anchor-index)
+                    anchor-count (if (map? anchor-type)
+                                   (if (vector? (get anchor-type :element-types))
+                                     (count (get anchor-type :element-types))
+                                     0)
+                                   0)]
+                (if (body-bka-anchor? anchor-type)
+                  (let [result-type :gravity.type/bool]
+                    (if (if (if (body-bka-binding? binding module)
+                              (body-nq-ids? node call nodes bindings module)
+                              false)
+                          (if (map? edge)
+                            (if (integer? (get edge :ordinal))
+                              (if (>= (get edge :ordinal) 0)
+                                (body-all?
+                                  [(body-bka-optional-id?
+                                     (get (get node :evaluation) :owner-function-syntax-id))
+                                   (body-bka-optional-id? (get edge :caller-function-syntax-id))
+                                   (body-bka-optional-id?
+                                     (get edge :caller-function-core-node-id))])
+                                false)
+                              false)
+                            false)
+                          false)
+                      (let [caller (loop [remaining (get core :function-records)]
+                                     (if (= 0 (count remaining))
+                                       nil
+                                       (let [record (first remaining)]
+                                         (if (if (map? record)
+                                               (body-sse-ids?
+                                                 [(get record :function-syntax-id)
+                                                  (get record :function-core-node-id)]
+                                                 2)
+                                               false)
+                                           (if (=
+                                                 (get
+                                                   (get node :evaluation)
+                                                   :owner-function-syntax-id)
+                                                 (get record :function-syntax-id))
+                                             record
+                                             (recur (rest remaining)))
+                                           :invalid-bare-keyword-anchor-set-equality-owner))))
+                            expected-call {:core-node-id (get node :node-id),
+                                           :operator-node-id (first children),
+                                           :operator-binding-id bid,
+                                           :argument-node-ids (vec (rest children)),
+                                           :ordered-evaluation-node-ids children,
+                                           :evaluation-order :operator-then-arguments,
+                                           :result-policy :call-result}
+                            expected-edge {:callee-binding-id bid,
+                                           :argument-core-node-ids args,
+                                           :callee-definition-syntax-id
+                                           (get binding :definition-syntax-id),
+                                           :ordered-evaluation-node-ids children,
+                                           :callee-function-core-node-id nil,
+                                           :ordinal (get edge :ordinal),
+                                           :caller-function-core-node-id
+                                           (get caller :function-core-node-id),
+                                           :evaluation-order :operator-then-arguments,
+                                           :callee-function-syntax-id nil,
+                                           :classification :nonlocal-or-nonfunction,
+                                           :call-core-node-id (get node :node-id),
+                                           :caller-function-syntax-id
+                                           (get caller :function-syntax-id)}]
+                        (if (body-all?
+                              [(= false (= :invalid-bare-keyword-anchor-set-equality-owner caller))
+                               (= :call (get node :core-form))
+                               (= :reference (get operator :core-form))
+                               (=
+                                 {:operator-child-index 0,
+                                  :argument-count 2,
+                                  :argument-child-indexes [1 2],
+                                  :evaluation-order :operator-then-arguments,
+                                  :dispatch :resolved-symbol-call}
+                                 (get node :attributes))
+                               (= expected-call call)
+                               (= expected-edge edge)
+                               (= '= (get binding :name))
+                               (=
+                                 [bid]
+                                 (get node :resolved-binding-ids)
+                                 (get operator :resolved-binding-ids))
+                               (=
+                                 {:symbol (get (get operator :attributes) :symbol),
+                                  :position :operator,
+                                  :binding-id bid,
+                                  :binding-class :core,
+                                  :definition-syntax-id (get binding :definition-syntax-id)}
+                                 (get operator :attributes))
+                               (contains?
+                                 '#{gravity.core/= =}
+                                 (get (get operator :attributes) :symbol))
+                               (= :operator-then-arguments (get (get node :evaluation) :kind))
+                               (=
+                                 [{:index 0, :core-node-id (first children)}
+                                  {:index 1, :core-node-id (get children 1)}
+                                  {:index 2, :core-node-id (get children 2)}]
+                                 (get (get node :evaluation) :order))])
+                          {:status :accepted,
+                           :descriptor
+                           {:capabilities [],
+                            :latent-effects [],
+                            :equality-policy
+                            {:comparison :guarded-atomic-keyword-leaf,
+                             :identity :unobserved,
+                             :anchor-premise :independent-nonempty-finite-keyword-set,
+                             :collection-construction :none,
+                             :domain-validation :both-complete-before-result,
+                             :entry-contract :type-conforming-typed-calls,
+                             :mutation :none,
+                             :operand-evaluation :once,
+                             :payload-evaluation :none,
+                             :bare-domain :not-refined,
+                             :operand-order :left-then-right,
+                             :budget :full-worst-case-reservation,
+                             :order :unobserved,
+                             :domain :bare-set-against-independent-nonempty-keyword-anchor,
+                             :operand-position :non-tail,
+                             :members :keyword-only-under-anchor-entry-contract,
+                             :provider-cpu-bound :not-established,
+                             :member-uniqueness :validated-before-cardinality},
+                            :source-binding binding,
+                            :application :normal,
+                            :return result-type,
+                            :operator-node-id (get operator :node-id),
+                            :source-call call,
+                            :direct-effects [],
+                            :operation '=,
+                            :intrinsic
+                            :gravity.collections/bare-set-value-equality-with-keyword-anchor,
+                            :anchor-operand-index anchor-index,
+                            :operator-source (get operator :source),
+                            :source (get node :source),
+                            :call-core-node-id (get node :node-id),
+                            :operand-counts
+                            (if (= bare-index 0) [nil anchor-count] [anchor-count nil]),
+                            :resolution :gravity.core-compatibility,
+                            :operator-binding-id bid,
+                            :parameter-types arguments,
+                            :source-edge edge,
+                            :bare-operand-index bare-index,
+                            :semantic-owner 'gravity.collections,
+                            :kind :gravity.type/applied-bare-keyword-anchor-set-equality,
+                            :result-type result-type,
+                            :thrown-error-effects [],
+                            :runtime-policy
+                            {:guard :existing-complete-both-set-census,
+                             :selector-premise :type-conforming-nonempty-keyword-anchor,
+                             :maximum-input-elements 1024,
+                             :logical-work-limit 65536,
+                             :member-uniqueness :before-cardinality,
+                             :reservation :full-worst-case,
+                             :certificate :not-established},
+                            :value-origin
+                            {:kind :bare-keyword-anchor-set-value-equality,
+                             :operation '=,
+                             :operand-node-ids args},
+                            :anchor-type anchor-type,
+                            :target (get module :target),
+                            :version :sh08-bare-keyword-anchor-set-equality-v1,
+                            :argument-types arguments,
+                            :invalidation
+                            [:calls
+                             :call-edges
+                             :binding-table
+                             :source-forms
+                             :type-table
+                             :lexical-bindings
+                             :definitions
+                             :function-records
+                             :callee-body
+                             :operand-types
+                             :equality-policy
+                             :runtime-policy
+                             :value-origin
+                             :anchor-type
+                             :anchor-operand-index
+                             :bare-operand-index
+                             :operand-counts
+                             :result-type
+                             :profile
+                             :target
+                             :evaluation-order],
+                            :profile (get module :profile)}}
+                          {:status :rejected,
+                           :reason :bare-keyword-anchor-set-equality-source-mismatch}))
+                      {:status :rejected,
+                       :reason :bare-keyword-anchor-set-equality-source-mismatch}))
+                  {:status :rejected,
+                   :reason :bare-keyword-anchor-set-equality-operand-type-required}))
+              {:status :rejected,
+               :reason :bare-keyword-anchor-set-equality-operand-type-required}))))
+      {:status :rejected, :reason :bare-keyword-anchor-set-equality-source-mismatch})
+    {:status :rejected, :reason :bare-keyword-anchor-set-equality-source-mismatch}))
 
 (defn body-bka-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-bare-keyword-anchor-set-equality-constraint-v1 :application descriptor}
@@ -13172,9 +13305,18 @@
                   (if (body-sse-ids? [id] 1)
                     (if (contains? seen id) {:status :rejected :reason :bare-keyword-anchor-set-equality-source-mismatch :work-count used}
                       (let [source-call (get calls id) source-edge (get edges id) source-node (get nodes id)
-                            result (if (= target id) {:status :accepted :descriptor descriptor :work-count 0}
-                                     (body-bka-header core source-node source-call source-edge nodes bindings types (get core :module) (- budget used)))
-                            total (+ used (get result :work-count)) canonical (get result :descriptor)]
+                            result (if (= target id)
+                                     {:status :accepted, :descriptor descriptor}
+                                     (body-bka-header
+                                       core
+                                       source-node
+                                       source-call
+                                       source-edge
+                                       nodes
+                                       bindings
+                                       types
+                                       (get core :module)))
+                            total used canonical (get result :descriptor)]
                         (if (= :accepted (get result :status))
                           (if (if (body-bka-ids? source-node source-call nodes bindings (get core :module))
                                 (if (= canonical (get types (get source-call :operator-node-id)))
@@ -13212,8 +13354,8 @@
   (if (if (vector? ledger) (if (if (vector? facts) true (map? facts))
                           (if (vector? (get core :calls)) (vector? (get core :call-edges)) false) false) false)
     (let [limit (if (> budget 65536) 65536 budget)
-          derived (body-bka-header core node call edge nodes bindings types (get core :module) limit)
-          base (+ (get derived :work-count) (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges))))]
+          derived (body-bka-header core node call edge nodes bindings types (get core :module))
+          base (+ (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges))))]
       (if (= :accepted (get derived :status))
         (if (> base limit) {:status :rejected :reason :bare-keyword-anchor-set-equality-work-limit :work-count base}
           (let [id (get node :node-id) descriptor (get derived :descriptor)
@@ -13840,7 +13982,9 @@
                         (let [result (body-bka-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
                                        node call (get (get edge-index :index) (get call :core-node-id)) nodes bindings
                                        (get facts :type-table) (- budget used))
-                              total (+ used (get result :work-count))]
+                              total (if (contains? result :work-count)
+                                      (+ used (get result :work-count))
+                                      used)]
                           (if (= :accepted (get result :status))
                             (recur (rest remaining) total checks (assoc keyword-checks (get call :core-node-id) result) list-checks)
                             (assoc (body-failure (if (= :bare-keyword-anchor-set-equality-work-limit (get result :reason))
@@ -17981,9 +18125,8 @@ true
       (if (if (body-sse-call-ids? node call)
             (if (vector? args) (if (= 2 (count args))
               (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false) false)
-        (let [validation (body-syin-type-work [(get types (get args 0) :gravity.type/unknown)
-                                                  (get types (get args 1) :gravity.type/unknown)] (- budget base))
-              work (+ base (get validation :work-count))]
+        (let [validation (body-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
+              work base]
           (if (= :accepted (get validation :status))
             (let [header (body-pl-source core node call edge (get env :nodes) (get env :bindings) types (get core :module) validation)]
               (if (if (map? header) (if (body-ksin-call-forms? node (get env :nodes) (get env :forms))
@@ -17992,8 +18135,7 @@ true
                 (let [descriptor (body-pl-finish header)]
                   {:status :accepted :work-count work :type (get descriptor :result-type) :descriptor descriptor})
                 {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
-            {:status :rejected :reason (if (= :symbol-set-insertion-work-limit (get validation :reason))
-                                        :loop-type-work-limit :unsupported-loop-member-grounding) :work-count work}))
+            {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
         {:status :rejected :reason :unsupported-loop-member-grounding :work-count base}))))
 
 (defn body-lsi-ground [transfer coordinate binding env budget]

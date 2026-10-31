@@ -1,91 +1,76 @@
-(def ^:dynamic ^:private *sh04-syntax-form-index-transaction* nil)
-(declare ^:private sh04-syntax-form-index-roots sh04-syntax-form-index-runtime?)
-(declare ^:private sh04-syntax-literal-operation-defaults)
+(def
+ ^{:private true, :dynamic true} *sh04-syntax-form-index-transaction*
+ nil)
 
-(defn- sh04-syntax-native-keyword-map? [value]
-  (and (or (identical? clojure.lang.PersistentArrayMap (class value))
-           (identical? clojure.lang.PersistentHashMap (class value)))
-       (let [entries (.iterator (.entrySet ^java.util.Map value))]
-         (loop []
-           (if (.hasNext entries)
-             (and (identical? clojure.lang.Keyword
-                              (class (.getKey ^java.util.Map$Entry (.next entries))))
-                  (recur))
-             true)))))
+(declare
+ ^{:private true} sh04-syntax-form-index-roots
+ sh04-syntax-form-index-runtime?
+ sh04-syntax-literal-operation-defaults)
 
-(defn- sh04-syntax-form-index-roots-current? []
-  (let [entries (.iterator (.entrySet ^java.util.Map sh04-syntax-form-index-roots))]
-    (loop []
-      (if (.hasNext entries)
-        (let [entry ^java.util.Map$Entry (.next entries)]
-          (and (nil? (.getThreadBinding ^clojure.lang.Var (.getKey entry)))
-               (identical? (.getValue entry) (.deref ^clojure.lang.Var (.getKey entry)))
-               (recur)))
-        true))))
+(declare
+ ^{:private true} sh04-syntax-form-index-roots-current?
+ sh04-syntax-native-keyword-map?)
 
-(defn- sh04-syntax-form-index [c2-artifact]
-  (let [transaction *sh04-syntax-form-index-transaction*]
-    (if (and transaction
-             (identical? (Thread/currentThread) (:thread transaction))
-             (identical? c2-artifact (:artifact transaction))
-             (sh04-syntax-form-index-roots-current?)
-             (sh04-syntax-native-keyword-map? c2-artifact)
-             sh04-syntax-form-index-runtime?)
-      (let [tree (:form-tree c2-artifact)
-            previous @(:slot transaction)]
-        (if (and previous (identical? tree (:tree previous)))
-          (:index previous)
-          (let [index (into {} (map (juxt :form-id identity)) tree)]
-            ;; Only the immutable native lookup projection is reused. All
-            ;; descendant, descriptor, validation and authentication work stays
-            ;; fresh. Qualification never asks opaque values to compare/hash.
-            (when (and (identical? clojure.lang.PersistentVector (class tree))
-                       (sh04-syntax-native-keyword-map? index)
-                       (let [records (.iterator ^java.lang.Iterable tree)]
-                         (loop []
-                           (if (.hasNext records)
-                             (let [record (.next records)]
-                               (and (sh04-syntax-native-keyword-map? record)
-                                    (identical? clojure.lang.Keyword (class (:form-id record)))
-                                    (recur)))
-                             true))))
-              (vreset! (:slot transaction) {:tree tree :index index}))
-            index)))
-      (into {} (map (juxt :form-id identity)) (:form-tree c2-artifact)))))
+(declare
+ ^{:private true} syntax-index-runtime-supported?
+ syntax-index-literal-operation-defaults)
 
-(defn- sh04-syntax-literal-index
-  [artifact cache-key field id-key original]
-  (let [transaction *sh04-syntax-form-index-transaction*]
-    (if (and transaction
-             (identical? (Thread/currentThread) (:thread transaction))
-             (identical? artifact (:artifact transaction))
-             (sh04-syntax-form-index-roots-current?)
-             (sh04-syntax-native-keyword-map? artifact)
-             sh04-syntax-form-index-runtime?
-             (c3-literal-projection/c3-index-operations-current?
-              sh04-syntax-literal-operation-defaults))
-      (let [records (get artifact field) previous (get @(:slot transaction) cache-key)]
-        (if (and previous (identical? records (:records previous)))
-          (:index previous)
-          (let [index (original)]
-            ;; Preserve the original eager construction before qualification,
-            ;; including malformed/opaque callbacks and last-wins behavior.
-            (when (and (sh04-syntax-form-index-roots-current?)
-                       (identical? clojure.lang.PersistentVector (class records))
-                       (sh04-syntax-native-keyword-map? index)
-                       (let [iterator (.iterator ^java.lang.Iterable records)]
-                         (loop []
-                           (if (.hasNext iterator)
-                             (let [record (.next iterator)]
-                               (and (sh04-syntax-native-keyword-map? record)
-                                    (identical? clojure.lang.Keyword
-                                                (class (.valAt ^clojure.lang.ILookup record id-key)))
-                                    (recur)))
-                             true))))
-              (vreset! (:slot transaction)
-                       (assoc @(:slot transaction) cache-key {:records records :index index})))
-            index)))
-      (original))))
+(def
+ ^{:private true} syntax-stage-index-defaults
+ {:literal-operation-defaults
+  #'syntax-index-literal-operation-defaults,
+  :literal-operations-current?
+  #'c3-literal-projection/c3-index-operations-current?,
+  :runtime-supported? #'syntax-index-runtime-supported?,
+  :sh04-syntax-form-index-roots-current?
+  #'sh04-syntax-form-index-roots-current?,
+  :sh04-syntax-native-keyword-map? #'sh04-syntax-native-keyword-map?})
+
+(defn- syntax-stage-index-operations [] syntax-stage-index-defaults)
+
+(defn-
+ syntax-index-runtime-supported?
+ []
+ sh04-syntax-form-index-runtime?)
+
+(defn-
+ syntax-index-literal-operation-defaults
+ []
+ sh04-syntax-literal-operation-defaults)
+
+(defn-
+ sh04-syntax-native-keyword-map?
+ [value]
+ (gravity.syntax/native-keyword-map? value))
+
+(defn-
+ sh04-syntax-form-index-roots-current?
+ []
+ (gravity.syntax/index-roots-current? sh04-syntax-form-index-roots))
+
+(defn-
+ sh04-syntax-form-index
+ [c2-artifact]
+ (gravity.syntax/form-index
+  c2-artifact
+  *sh04-syntax-form-index-transaction*
+  ^{:line 23, :column 65}
+  (syntax-stage-index-operations)
+  syntax-stage-index-defaults))
+
+(defn-
+ sh04-syntax-literal-index
+ [artifact cache-key field id-key original]
+ (gravity.syntax/literal-index
+  artifact
+  cache-key
+  field
+  id-key
+  original
+  *sh04-syntax-form-index-transaction*
+  ^{:line 23, :column 65}
+  (syntax-stage-index-operations)
+  syntax-stage-index-defaults))
 
 ;; The native PersistentVector factory paths in the supported Clojure runtime.
 ;; An interposed descriptor/walker or core dependency disables reuse, retaining
@@ -93,7 +78,11 @@
 (def ^:private sh04-syntax-form-index-runtime? (= "1.12.5" (clojure-version)))
 (def ^:private sh04-syntax-literal-operation-defaults (c3-literal-projection-ops))
 (def ^:private sh04-syntax-form-index-roots
-  {#'sh04-syntax-source-descriptor sh04-syntax-source-descriptor
+  {#'gravity.syntax/source-descriptor gravity.syntax/source-descriptor
+   #'gravity.syntax/descendant-form-ids gravity.syntax/descendant-form-ids
+   #'syntax-stage-descriptor-defaults syntax-stage-descriptor-defaults
+   #'syntax-stage-index-defaults syntax-stage-index-defaults
+   #'sh04-syntax-source-descriptor sh04-syntax-source-descriptor
    #'sh04-syntax-descendant-form-ids sh04-syntax-descendant-form-ids
    #'c3-literal-projection-call c3-literal-projection-call
    #'c3-literal-projection-ops c3-literal-projection-ops

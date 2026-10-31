@@ -146,21 +146,22 @@
 
 (defn p15-s23-c11-mir-source-rule-record
   [binding]
+  (p15-s23-c11-mir-versioned-record
   {:artifact :gravity/c11-pinned-source-rule
    :owner :gravity-source
    :source-content-hash (:source-content-hash binding)
    :source-byte-count (:source-byte-count binding)
    :plan-semantic-hash (:plan-semantic-hash binding)
    :functions-semantic-hash (:functions-semantic-hash binding)
-   :builder-function p15-s23-c11-mir-builder-function
+   :builder-function (p15-s23-c11-mir-selected-builder-function (get binding :interface-version 1))
    :builder-semantic-hash (:builder-semantic-hash binding)
-   :verifier-function p15-s23-c11-mir-verifier-function
+   :verifier-function (p15-s23-c11-mir-selected-verifier-function (get binding :interface-version 1))
    :verifier-semantic-hash (:verifier-semantic-hash binding)
    :function-shapes (:function-shapes binding)
    :compiled-by :clojure-stage0-seed
    :executed-by :clojure-stage0-rule-runner
    :clojure-seed-boundary? true
-   :self-hosted? false})
+   :self-hosted? false} (or (:interface-version binding) 1)))
 
 (def p15-s23-c11-legacy-effectful-context-keys
   #{:source-path :source-text :source-content-hash
