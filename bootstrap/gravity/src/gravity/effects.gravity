@@ -4368,93 +4368,87 @@
 (defn body-lset-optional-id? [id]
   (if (= nil id) true (body-sse-ids? [id] 1)))
 
-(defn body-lset-header [core node call edge nodes bindings types module budget]
+(defn body-lset-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-  (let [limit (if (> budget 65536) 65536 budget)
-        base (+ 129 (count (get core :function-records)))]
-    (if (> base limit) {:status :rejected :reason :list-set-conversion-work-limit :work-count base}
-      (if (body-lset-ids? node call nodes bindings module)
-        (let [args (get call :argument-node-ids) children (get node :children)
-              operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
-              binding (get bindings bid) receiver (get types (first args))
-              reserved (+ base (* 2 (+ (count (get binding :profile-set)) (count (get binding :target-set)))))]
-          (if (> reserved limit) {:status :rejected :reason :list-set-conversion-work-limit :work-count reserved}
-            (let [validation (body-lc-validate-types [receiver])
-                  work reserved]
-              (if (= false (= :accepted (get validation :status)))
-                {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required
-                 :work-count work}
-                (if (body-lset-type? receiver)
-                  (let [result-type-work 1 total (+ work result-type-work)]
-                    (if (> total limit) {:status :rejected :reason :list-set-conversion-work-limit :work-count total}
-                      (if (body-lset-type? receiver)
-                      (let [result-type :gravity.type/set
-                            work total]
-                        (if (if (body-nq-ids? node call nodes bindings module)
+    (if (body-lset-ids? node call nodes bindings module)
+      (let [args (get call :argument-node-ids) children (get node :children)
+            operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
+            binding (get bindings bid) receiver (get types (first args))
+            validation (body-lc-validate-types [receiver])
+            nq-valid? (if (body-nq-ids? node call nodes bindings module)
                         (if (map? edge)
                           (if (integer? (get edge :ordinal))
                             (if (>= (get edge :ordinal) 0)
                               (body-all? [(body-lset-optional-id? (get (get node :evaluation) :owner-function-syntax-id))
-                                                 (body-lset-optional-id? (get edge :caller-function-syntax-id))
-                                                 (body-lset-optional-id? (get edge :caller-function-core-node-id))]) false) false) false) false)
-                    (let [caller (loop [remaining (get core :function-records)]
-                                   (if (= 0 (count remaining)) nil
-                                     (let [record (first remaining)]
-                                       (if (if (map? record)
-                                             (body-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
-                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
-                                           record (recur (rest remaining))) :invalid-list-set-conversion-owner))))
-                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
-                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
-                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
-                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
-                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
-                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
-                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
-                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
-                      (if (body-all?
-                            [(= false (= :invalid-list-set-conversion-owner caller))
-                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
-                             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
-                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
-                             (= expected-call call) (= expected-edge edge) (body-lset-binding? binding module)
-                             (= 'set (get binding :name))
-                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
-                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
-                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-                             (contains? '#{set gravity.core/set} (get (get operator :attributes) :symbol))
-                             (= :operator-then-arguments (get (get node :evaluation) :kind))
-                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
-                                (get (get node :evaluation) :order))])
-                        {:status :accepted :work-count work
-                         :descriptor {:kind :gravity.type/applied-list-set-conversion :version :sh08-list-set-conversion-v1
-                                      :operation 'set :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-set-from-keyword-list
-                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
-                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-                                      :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
-                                      :construction-policy {:input :homogeneous-keyword-persistent-list :operand-evaluation :once :operand-position :non-tail
-                                       :domain-validation :all-physical-keywords-before-equality-or-hash
-                                       :payload-evaluation :none :original :unchanged :duplicates :gravity-keyword-value-equality
-                                       :result-carrier :persistent-set :output-refinements :none :order :unspecified}
-                                      :allocation-policy {:behavior :possible-persistent-set-from-keyword-list-construction :condition :normal-operand-completion
-                                                          :effect :memory/allocate :empty-result :possible}
-                                      :storage-policy {:representation :development-persistent-set :collection-construction :bounded-list-snapshot-and-set
-                                        :copy :temporary-snapshot-and-output-storage :stored-values :shallow-share
-                                        :input-storage :not-retained :borrow :none :lifetime :persistent-values
-                                        :allocation :possible-even-empty :provider-allocation-bound :not-established}
-                                      :value-origin {:kind :list-value-set-conversion :operation 'set :operand-node-id (first args)}
-                                      :application :normal :latent-effects [:memory/allocate] :direct-effects [:memory/allocate] :capabilities [] :thrown-error-effects []
-                                      :parameter-types [receiver] :return result-type :result-type result-type
-                                      :profile (get module :profile) :target (get module :target)
-                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :construction-policy :storage-policy :value-origin :allocation-policy
-                                                     :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
-                        {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work}))
-                    {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work}))
-                      {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required :work-count total})))
-                  {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required :work-count work})))))
-        {:status :rejected :reason :list-set-conversion-source-mismatch :work-count base})))
-    {:status :rejected :reason :list-set-conversion-source-mismatch :work-count 129}))
+                                          (body-lset-optional-id? (get edge :caller-function-syntax-id))
+                                          (body-lset-optional-id? (get edge :caller-function-core-node-id))])
+                              false)
+                            false)
+                          false)
+                        false)]
+        (if (= false (= :accepted (get validation :status)))
+          {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required}
+          (if (body-lset-type? receiver)
+            (if nq-valid?
+                (let [caller (loop [remaining (get core :function-records)]
+                               (if (= 0 (count remaining)) nil
+                                 (let [record (first remaining)]
+                                   (if (if (map? record)
+                                         (body-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
+                                     (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
+                                       record (recur (rest remaining)))
+                                     :invalid-list-set-conversion-owner))))
+                      expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                                     :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                                     :evaluation-order :operator-then-arguments :result-policy :call-result}
+                      expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                     :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                                     :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                     :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                                     :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+                  (if (body-all?
+                        [(= false (= :invalid-list-set-conversion-owner caller))
+                         (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                         (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                         (= expected-call call) (= expected-edge edge) (body-lset-binding? binding module)
+                         (= 'set (get binding :name))
+                         (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                         (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                             :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                         (contains? '#{set gravity.core/set} (get (get operator :attributes) :symbol))
+                         (= :operator-then-arguments (get (get node :evaluation) :kind))
+                         (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
+                            (get (get node :evaluation) :order))])
+                    {:status :accepted
+                     :descriptor {:kind :gravity.type/applied-list-set-conversion :version :sh08-list-set-conversion-v1
+                                  :operation 'set :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-set-from-keyword-list
+                                  :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                  :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+                                  :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
+                                  :construction-policy {:input :homogeneous-keyword-persistent-list :operand-evaluation :once :operand-position :non-tail
+                                   :domain-validation :all-physical-keywords-before-equality-or-hash
+                                   :payload-evaluation :none :original :unchanged :duplicates :gravity-keyword-value-equality
+                                   :result-carrier :persistent-set :output-refinements :none :order :unspecified}
+                                  :allocation-policy {:behavior :possible-persistent-set-from-keyword-list-construction :condition :normal-operand-completion
+                                                      :effect :memory/allocate :empty-result :possible}
+                                  :storage-policy {:representation :development-persistent-set :collection-construction :bounded-list-snapshot-and-set
+                                    :copy :temporary-snapshot-and-output-storage :stored-values :shallow-share
+                                    :input-storage :not-retained :borrow :none :lifetime :persistent-values
+                                    :allocation :possible-even-empty :provider-allocation-bound :not-established}
+                                  :value-origin {:kind :list-value-set-conversion :operation 'set :operand-node-id (first args)}
+                                  :application :normal :latent-effects [:memory/allocate] :direct-effects [:memory/allocate] :capabilities [] :thrown-error-effects []
+                                  :parameter-types [receiver] :return :gravity.type/set :result-type :gravity.type/set
+                                  :profile (get module :profile) :target (get module :target)
+                                  :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                                 :callee-body :operand-types :construction-policy :storage-policy :value-origin :allocation-policy
+                                                 :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
+                    {:status :rejected :reason :list-set-conversion-source-mismatch}))
+                {:status :rejected :reason :list-set-conversion-source-mismatch})
+            {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required}))
+      {:status :rejected :reason :list-set-conversion-source-mismatch})
+    {:status :rejected :reason :list-set-conversion-source-mismatch})
+  {:status :rejected :reason :list-set-conversion-source-mismatch}))
 
 (defn body-lset-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-list-set-conversion-constraint-v1 :application descriptor}
@@ -4503,84 +4497,78 @@
               (recur (+ index 1) (if (= target id) (conj items row) items) (assoc table id row)))
             {:status :rejected})))) {:status :rejected}))
 
-(defn body-lset-row-census [core ledger nodes bindings types calls edges target descriptor budget]
-  (let [base (* 4 (count ledger))]
-    (if (> base budget) {:status :rejected :reason :list-set-conversion-work-limit :work-count base}
-      (loop [index 0 items [] seen #{} descriptors {} used base]
-        (if (= index (count ledger)) {:status :accepted :items items :descriptors descriptors :work-count used}
-          ; Ordinary C7 local-call rows omit the selector; explicit malformed
-          ; selector values remain subject to the Keyword guard below.
-          (let [row (get ledger index) producer (if (map? row) (get row :producer-rule :ordinary-local-function-call) nil)]
-            (if (keyword? producer)
-              (if (= :sh08-list-set-conversion-v1 producer)
-                (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
-                  (if (body-sse-ids? [id] 1)
-                    (if (contains? seen id) {:status :rejected :reason :list-set-conversion-source-mismatch :work-count used}
-                      (let [source-call (get calls id) source-edge (get edges id) source-node (get nodes id)
-                            result (if (= target id) {:status :accepted :descriptor descriptor :work-count 0}
-                                     (body-lset-header core source-node source-call source-edge nodes bindings types (get core :module) (- budget used)))
-                            total (+ used (get result :work-count)) canonical (get result :descriptor)]
-                        (if (= :accepted (get result :status))
-                          (if (if (body-lset-ids? source-node source-call nodes bindings (get core :module))
-                                (if (= canonical (get types (get source-call :operator-node-id)))
-                                  (= (body-lset-constraint canonical) row) false) false)
-                            (recur (+ index 1) (if (= target id) (conj items row) items) (conj seen id) (assoc descriptors id canonical) total)
-                            {:status :rejected :reason :list-set-conversion-source-mismatch :work-count total})
-                          {:status :rejected :reason (get result :reason) :work-count total})))
-                    {:status :rejected :reason :list-set-conversion-source-mismatch :work-count used}))
-                (recur (+ index 1) items seen descriptors used))
-              {:status :rejected :reason :list-set-conversion-source-mismatch :work-count used})))))))
+(defn body-lset-row-census [core ledger nodes bindings types calls edges target descriptor]
+  (loop [index 0 items [] seen #{} descriptors {}]
+    (if (= index (count ledger))
+      {:status :accepted :items items :descriptors descriptors}
+      ; Ordinary C7 local-call rows omit the selector; explicit malformed
+      ; selector values remain subject to the Keyword guard below.
+      (let [row (get ledger index) producer (if (map? row) (get row :producer-rule :ordinary-local-function-call) nil)]
+        (if (keyword? producer)
+          (if (= :sh08-list-set-conversion-v1 producer)
+            (let [lhs (get row :lhs) id (if (map? lhs) (get lhs :core-node-id) nil)]
+              (if (body-sse-ids? [id] 1)
+                (if (contains? seen id)
+                  {:status :rejected :reason :list-set-conversion-source-mismatch}
+                  (let [source-call (get calls id) source-edge (get edges id) source-node (get nodes id)
+                        result (if (= target id) {:status :accepted :descriptor descriptor}
+                                 (body-lset-header core source-node source-call source-edge nodes bindings types (get core :module)))
+                        canonical (get result :descriptor)]
+                    (if (= :accepted (get result :status))
+                      (if (if (body-lset-ids? source-node source-call nodes bindings (get core :module))
+                            (if (= canonical (get types (get source-call :operator-node-id)))
+                              (= (body-lset-constraint canonical) row) false) false)
+                        (recur (+ index 1) (if (= target id) (conj items row) items) (conj seen id) (assoc descriptors id canonical))
+                        {:status :rejected :reason :list-set-conversion-source-mismatch})
+                      {:status :rejected :reason (get result :reason)})))
+                {:status :rejected :reason :list-set-conversion-source-mismatch}))
+            (recur (+ index 1) items seen descriptors))
+          {:status :rejected :reason :list-set-conversion-source-mismatch})))))
 
-(defn body-lset-fact-census [facts module descriptors target budget]
-  (let [work (* 3 (count facts))]
-    (if (> work budget) {:status :rejected :reason :list-set-conversion-work-limit :work-count work}
-      (loop [remaining (if (map? facts) (keys facts) facts) index 0 items [] seen #{}]
-        (if (= index (count facts))
-          (if (= (set (keys descriptors)) seen) {:status :accepted :items items :work-count work}
-            {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work})
-          (let [entry (first remaining) fact (if (map? facts) (if (body-sse-ids? [entry] 1) (get facts entry) nil) entry)
-                id (if (map? fact) (get fact :call-core-node-id) nil)
-                dispatch (if (map? fact) (get fact :dispatch :ordinary-local-function-call) nil)]
-            (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
-              (if (keyword? dispatch)
-                (if (= :direct-list-set-conversion dispatch)
-                  (if (contains? seen id) {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work}
-                    (let [canonical (get descriptors id)]
-                      (if (if (map? canonical) (= (body-lset-call-fact canonical module) fact) false)
-                        (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
-                        {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work})))
-                  (recur (rest remaining) (+ index 1) items seen))
-                {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work})
-              {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work})))))))
+(defn body-lset-fact-census [facts module descriptors target]
+  (loop [remaining (if (map? facts) (keys facts) facts) index 0 items [] seen #{}]
+    (if (= index (count facts))
+      (if (= (set (keys descriptors)) seen) {:status :accepted :items items}
+        {:status :rejected :reason :list-set-conversion-source-mismatch})
+      (let [entry (first remaining) fact (if (map? facts) (if (body-sse-ids? [entry] 1) (get facts entry) nil) entry)
+            id (if (map? fact) (get fact :call-core-node-id) nil)
+            dispatch (if (map? fact) (get fact :dispatch :ordinary-local-function-call) nil)]
+        (if (if (body-sse-ids? [id] 1) (if (map? facts) (= entry id) true) false)
+          (if (keyword? dispatch)
+            (if (= :direct-list-set-conversion dispatch)
+              (if (contains? seen id)
+                {:status :rejected :reason :list-set-conversion-source-mismatch}
+                (let [canonical (get descriptors id)]
+                  (if (if (map? canonical) (= (body-lset-call-fact canonical module) fact) false)
+                    (recur (rest remaining) (+ index 1) (if (= target id) (conj items fact) items) (conj seen id))
+                    {:status :rejected :reason :list-set-conversion-source-mismatch})))
+              (recur (rest remaining) (+ index 1) items seen))
+            {:status :rejected :reason :list-set-conversion-source-mismatch})
+          {:status :rejected :reason :list-set-conversion-source-mismatch})))))
 
-(defn body-lset-evidence [core ledger facts node call edge nodes bindings types budget]
+(defn body-lset-evidence [core ledger facts node call edge nodes bindings types]
   (if (if (vector? ledger) (if (if (vector? facts) true (map? facts))
                           (if (vector? (get core :calls)) (vector? (get core :call-edges)) false) false) false)
-    (let [limit (if (> budget 65536) 65536 budget)
-          derived (body-lset-header core node call edge nodes bindings types (get core :module) limit)
-          base (+ (get derived :work-count) (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges))))]
+    (let [derived (body-lset-header core node call edge nodes bindings types (get core :module))]
       (if (= :accepted (get derived :status))
-        (if (> base limit) {:status :rejected :reason :list-set-conversion-work-limit :work-count base}
-          (let [id (get node :node-id) descriptor (get derived :descriptor)
-                original-calls (body-lset-originals (get core :calls) :core-node-id id)
-                original-edges (body-lset-originals (get core :call-edges) :call-core-node-id id)]
-            (if (body-all? [(= :accepted (get original-calls :status)) (= :accepted (get original-edges :status))
-                                   (= [call] (get original-calls :items)) (= [edge] (get original-edges :items))])
-              (let [rows (body-lset-row-census core ledger nodes bindings types (get original-calls :index) (get original-edges :index)
-                           id descriptor (- limit base)) work (+ base (get rows :work-count))]
-                (if (= :accepted (get rows :status))
-                  (let [calls (body-lset-fact-census facts (get core :module) (get rows :descriptors) id (- limit work))
-                        total (+ work (get calls :work-count))]
-                    (if (if (= :accepted (get calls :status))
-                          (if (= [(body-lset-constraint descriptor)] (get rows :items))
-                            (= [(body-lset-call-fact descriptor (get core :module))] (get calls :items)) false) false)
-                      {:status :accepted :descriptor descriptor :work-count total}
-                      {:status :rejected :reason (if (= :list-set-conversion-work-limit (get calls :reason)) :list-set-conversion-work-limit :list-set-conversion-source-mismatch)
-                       :work-count total}))
-                  {:status :rejected :reason (get rows :reason) :work-count work}))
-              {:status :rejected :reason :list-set-conversion-source-mismatch :work-count base})))
+        (let [id (get node :node-id) descriptor (get derived :descriptor)
+              original-calls (body-lset-originals (get core :calls) :core-node-id id)
+              original-edges (body-lset-originals (get core :call-edges) :call-core-node-id id)]
+          (if (body-all? [(= :accepted (get original-calls :status)) (= :accepted (get original-edges :status))
+                          (= [call] (get original-calls :items)) (= [edge] (get original-edges :items))])
+            (let [rows (body-lset-row-census core ledger nodes bindings types (get original-calls :index) (get original-edges :index)
+                                             id descriptor)]
+              (if (= :accepted (get rows :status))
+                (let [calls (body-lset-fact-census facts (get core :module) (get rows :descriptors) id)]
+                  (if (if (= :accepted (get calls :status))
+                        (if (= [(body-lset-constraint descriptor)] (get rows :items))
+                          (= [(body-lset-call-fact descriptor (get core :module))] (get calls :items)) false) false)
+                    {:status :accepted :descriptor descriptor}
+                    {:status :rejected :reason :list-set-conversion-source-mismatch}))
+                {:status :rejected :reason (get rows :reason)}))
+            {:status :rejected :reason :list-set-conversion-source-mismatch}))
         derived))
-    {:status :rejected :reason :list-set-conversion-source-mismatch :work-count 0}))
+    {:status :rejected :reason :list-set-conversion-source-mismatch}))
 
 (defn body-lset-forms? [node call nodes forms]
   (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
@@ -9886,12 +9874,10 @@
                                         (if (body-lset-entry? node call nodes bindings (get facts :type-table) (get core :module))
                                           (let [result (body-lset-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
                                                          node call (get (get edge-index :index) (get call :core-node-id))
-                                                         nodes bindings (get facts :type-table) (- budget used))
-                                                total (+ used (get result :work-count))]
+                                                         nodes bindings (get facts :type-table))]
                                             (if (= :accepted (get result :status))
-                                              (recur (rest remaining) total (assoc checks (get call :core-node-id) result))
-                                              (assoc (body-failure (if (= :list-set-conversion-work-limit (get result :reason))
-                                                                    :body-deferred-work-limit :body-list-set-conversion-source-mismatch)) :work-count total)))
+                                              (recur (rest remaining) used (assoc checks (get call :core-node-id) result))
+                                              (body-failure :body-list-set-conversion-source-mismatch)))
                                           (let [fixed (+ 65 (count (get core :function-records)))]
                                             (if (> (+ used fixed) budget)
                                               (assoc (body-failure :body-deferred-work-limit) :work-count (+ used fixed))
@@ -9922,7 +9908,7 @@
   (if (body-lset-entry? node call nodes bindings (get facts :type-table) (get core :module))
     (let [types (get facts :type-table) context (get facts :set-conversion-context)
                 result (body-lset-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
-                         node call edge nodes bindings types 65536)]
+                         node call edge nodes bindings types)]
             (if (= :accepted (get result :status))
               (if (if (map? context) (map? (get context :forms)) false)
                 (body-all? [(= (get result :descriptor) (get types (get call :operator-node-id)))
