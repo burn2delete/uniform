@@ -606,7 +606,7 @@
                :function-core-node-ids [(get record :function-core-node-id)]
                :internal-call-edge-ordinals [ordinal]} component)
            (= :named-top-level (get record :definition-kind))
-           (if (integer? (get record :fixed-arity)) (if (> (get record :fixed-arity) 0) (<= (get record :fixed-arity) 1024) false) false)
+           (if (integer? (get record :fixed-arity)) (> (get record :fixed-arity) 0) false)
            (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
            (body-ds-type? (get (get signature :return) :type-id))
            (loop [remaining parameters]
@@ -742,7 +742,7 @@
     (if (if (> (count calls) 0)
           (= (count calls) (count edges) (count uses) (count resolutions) (count references)) false)
     (if (body-all?
-          [(map? record) (map? definition) (vector? params) (> (count params) 0) (<= (count params) 1024)
+          [(map? record) (map? definition) (vector? params) (> (count params) 0)
            (= (count params) (count (set params)) (get record :fixed-arity))
            (= :named-top-level (get record :definition-kind))
            (= :function (get binding :kind)) (= :namespace (get binding :binding-class))
@@ -1357,7 +1357,7 @@
            :internal-call-edge-ordinals [(get edge :ordinal)]} component)
        (= :named-top-level (get record :definition-kind))
        (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
-       (> (count parameters) 0) (<= (count parameters) 1024)
+       (> (count parameters) 0)
        (if indexed?
          (if (body-ix-types? parameters) (= :gravity.type/bool (get function :return)) false)
        (loop [remaining (conj parameters (get function :return))]

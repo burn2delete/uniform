@@ -1628,7 +1628,7 @@
     (if (if (> (count calls) 0)
           (= (count calls) (count edges) (count uses) (count resolutions) (count references)) false)
     (if (p15-s23-typed-all
-          [(map? record) (map? definition) (vector? params) (> (count params) 0) (<= (count params) 1024)
+          [(map? record) (map? definition) (vector? params) (> (count params) 0)
            (= (count params) (count (set params)) (get record :fixed-arity))
            (= :named-top-level (get record :definition-kind))
            (= :function (get binding :kind)) (= :namespace (get binding :binding-class))

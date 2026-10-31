@@ -1106,9 +1106,7 @@
 
 (defn sh08-ft-id? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 256)
-      false)
+    (> (count value) 0)
     false))
 
 (defn sh08-ft-all-checks-true? [checks]
@@ -2468,7 +2466,7 @@
 ; against the authenticated source records. Unknown stays unresolved; Never
 ; means no normal return and contributes no payload return type.
 (defn sh08-lsi-id? [id]
-  (if (keyword? id) true (if (string? id) (if (> (count id) 0) (<= (count id) 256) false) false)))
+  (if (keyword? id) true (if (string? id) (> (count id) 0) false)))
 
 (defn sh08-lsi-empty? [type]
   (if (map? type) (if (= 3 (count type))
@@ -5173,7 +5171,7 @@
     (if (if (> (count calls) 0)
           (= (count calls) (count edges) (count uses) (count resolutions) (count references)) false)
     (if (sh08-ft-all-true?
-          [(map? record) (map? definition) (vector? params) (> (count params) 0) (<= (count params) 1024)
+          [(map? record) (map? definition) (vector? params) (> (count params) 0)
            (= (count params) (count (set params)) (get record :fixed-arity))
            (= :named-top-level (get record :definition-kind))
            (= :function (get binding :kind)) (= :namespace (get binding :binding-class))
