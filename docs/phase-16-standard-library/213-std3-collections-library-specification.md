@@ -109,16 +109,13 @@ establishes no Set member-domain, cardinality, order or nonempty refinement.
 Arbitrary sequence views and nil remain outside this conversion contract.
 Existing Vector conversion behavior is preserved.
 
-The development List provider must reserve bounded first/rest traversal,
-termination observations and temporary capture before performing them. It must
-not count or materialize the whole input before that bounded census. Validate
-every physical Keyword member before member comparison, formatting, hashing or
-Set insertion. A bounded temporary snapshot may then use the existing Keyword
-deduplication implementation with the remaining budget; all partial capture,
-temporary construction and returned conversion work remain cumulative.
-The existing 1024-element and 65536 logical-work guards remain residual
-development checks, with P15S23X002 on rejection. They are not safety
-certificates, provider CPU bounds or permission to increase a resource cap.
+The development List provider must perform complete first/rest traversal and
+termination validation before member comparison, formatting, hashing or Set
+insertion. It must validate every physical Keyword member and complete the
+census before deriving the result; no member may be skipped. A temporary
+snapshot may then use the existing Keyword deduplication implementation.
+Temporary construction and returned conversion follow the declared allocation,
+ownership, lifetime, effect, capability and profile rules.
 Temporary and output storage may allocate, including for empty conversion;
 stored values are shared shallowly with persistent lifetimes and no borrowed
 input List spine.
@@ -312,8 +309,8 @@ allocation-free execution, provider complexity or profile availability.
 
 Collection semantics remain owned by `gravity.collections`; compatibility
 bindings do not grant representation or profile support. A compiler must state
-its supported operand and member-type subset and account for construction work
-without inventing facts for an unvalidated input.
+its supported operand and member-type subset and validate the input before
+construction without inventing facts for an unvalidated input.
 
 ## Persistent Map Keys As A List
 
@@ -329,16 +326,16 @@ enumeration and construction; its result is Never, with no direct allocation
 from `keys`. Stored values are inert: enumeration neither evaluates nor hashes
 them as keys. The original Map is unchanged.
 
-The initial checked subset accepts complete finite literal Map types whose
-physical even `member-types` Vector contains at most 1024 slots (512 pairs),
-with every key-slot type exactly Keyword and every value type fully validated.
+The checked subset accepts complete finite literal Map types whose physical
+`member-types` Vector has an even number of paired key/value slots, with every
+key-slot type exactly Keyword and every value type fully validated.
 The normal result type is exactly the homogeneous Keyword List, including for
 an empty Map. Other key families and general Maps reject in this subset.
 A bare Map parameter is accepted only through L5's complete private call-entry
 key-domain rule: each normal entry independently establishes the whole finite
-Keyword-key Map and validates every stored value type within the same 512-pair
-limit. Different entry shapes and value types are permitted; the parameter
-remains bare Map and the result remains the homogeneous Keyword List.
+Keyword-key Map and validates every stored value type. Different entry shapes
+and value types are permitted; the parameter remains bare Map and the result
+remains the homogeneous Keyword List.
 
 This exception requires the complete closed private function/use/call census,
 actual argument sources and types, bare-Map compatibility and call facts.
@@ -350,20 +347,20 @@ mutation and parameter re-entry cannot be silently excluded. Each consuming
 compiler stage must reconstruct the proof and retain its function, parameter,
 `keys` use and complete caller dependencies and invalidations.
 
-Depth 128 and logical work 65536 remain unchanged. Reserve all profile, target,
-type, key-domain, census and construction work before the corresponding walk
-or construction; ignored values and malformed tails remain subject to complete
-type validation. This exception adds no common shape, key presence, extent,
-cardinality, nonempty, flow or specialization facts.
+Validate profile, target, type, key-domain, census and construction conditions
+as part of the corresponding walk or construction; ignored values and
+malformed tails remain subject to complete type validation. This exception adds
+no common shape, key presence, extent, cardinality, nonempty, flow or
+specialization facts.
 
 Normal completion permits `:memory/allocate`, including for an empty result.
-The development provider checks the actual Map and its width before temporary
-enumeration, validates every physical Keyword key before fresh output List
-construction, and accounts cumulatively for temporary enumeration, indexed
-snapshot and output copying. The returned List owns its copied spine, shares
-stored keys shallowly, has persistent value lifetimes and borrows no Map backing
-storage. This establishes no allocation bound for other providers. Conversion
-of this List follows the separate Set-conversion contract above.
+The development provider validates the actual Map's complete key/type census
+before temporary enumeration, validates every physical Keyword key before
+fresh output List construction, and performs complete temporary enumeration,
+indexed snapshot and output copying. The returned List owns its copied spine,
+shares stored keys shallowly, has persistent value lifetimes and borrows no Map
+backing storage. This establishes no allocation bound for other providers.
+Conversion of this List follows the separate Set-conversion contract above.
 
 ## Map Lookup With An Explicit Default
 
@@ -499,7 +496,7 @@ In a no-allocation profile, this function must choose a bounded representation o
 - Vector family classification distinguishes Vector and non-Vector values, preserves ordinary unary evaluation and transfers, and neither evaluates stored payloads nor invents member or bounds facts.
 - Map family classification distinguishes Map and non-Map values, preserves ordinary unary evaluation and transfers, and neither evaluates stored keys/values nor invents key, member, presence or cardinality facts.
 - Set family classification distinguishes Set and non-Set values, preserves ordinary unary evaluation and transfers, and does not evaluate stored payloads, mutate the value or construct a collection.
-- Persistent Set conversion covers empty, unique and duplicate Vector and persistent List values under supported Gravity equality/hash rules, preserves ordinary evaluation, transfers and the old value, and declares allocation/storage policy. The initial homogeneous Keyword List subset uses a bounded prepaid census before member equality/hash/insertion and returns a bare Set without static member-domain or cardinality facts. Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
+- Persistent Set conversion covers empty, unique and duplicate Vector and persistent List values under supported Gravity equality/hash rules, preserves ordinary evaluation, transfers and the old value, and declares allocation/storage policy. The homogeneous Keyword List subset validates the complete physical Keyword census before member equality, hashing and insertion, and returns a bare Set without static member-domain or cardinality facts. Set cardinality counts distinct stored members without evaluating payloads or promising iteration order.
 - Persistent Set equality covers empty, reordered and differing membership under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and does not evaluate stored payloads or depend on enumeration order or object identity.
 - Persistent Set membership covers empty, present and absent values under applicable Gravity member equality, preserves ordinary operand evaluation, transfers and original values, and neither evaluates stored payloads nor depends on enumeration order or object identity.
 - Binary persistent Set insertion covers empty input, absent values and equal existing members under applicable Gravity equality, preserves ordinary operand evaluation, transfers and original values, and declares allocation/storage policy without inventing cardinality, member-type, order or identity facts.
