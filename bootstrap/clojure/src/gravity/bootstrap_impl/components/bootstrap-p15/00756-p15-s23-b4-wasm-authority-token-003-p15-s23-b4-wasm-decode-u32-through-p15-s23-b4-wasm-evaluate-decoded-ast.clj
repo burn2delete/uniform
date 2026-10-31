@@ -1,54 +1,12 @@
 (let [p15-s23-b4-wasm-authority-token (nth __gravity_bootstrap_lexical_values_136338 0)
       p15-s23-b4-wasm-node-state (nth __gravity_bootstrap_lexical_values_136338 1)]
-(defn p15-s23-b4-wasm-decode-u32 [bytes offset limit]
-  (loop [offset offset shift 0 value 0 raw []]
-    (when (or (>= offset limit) (>= (count raw) 5))
-      (p15-s23-b4-wasm-fail!
-       "B4-MANIFEST" "<b4-wasm>" {}
-       {:missing-fact :canonical-bounded-u32-leb}))
-    (let [byte (p15-s23-b4-wasm-canonical-bounded-octet!
-                (nth bytes offset) :canonical-bounded-u32-leb)
-          low (bit-and byte 0x7f)
-          value (+ value (bit-shift-left low shift))
-          raw (conj raw byte)]
-      (if (zero? (bit-and byte 0x80))
-        (do
-          (when-not (and (<= 0 value 0xffffffff)
-                         (or (< shift 28) (<= low 15))
-                         (= raw (p15-s23-b4-wasm-parser-u32-bytes value)))
-            (p15-s23-b4-wasm-fail!
-             "B4-MANIFEST" "<b4-wasm>" {}
-             {:missing-fact :noncanonical-u32-leb}))
-          [value (inc offset)])
-        (recur (inc offset) (+ shift 7) value raw)))))
+(defn p15-s23-b4-wasm-decode-u32
+  [bytes offset limit]
+  (gravity.backend.wasm/decode-u32 #'p15-s23-b4-wasm-canonical-bounded-octet! #'p15-s23-b4-wasm-parser-u32-bytes #'p15-s23-b4-wasm-fail! bytes offset limit))
 
-(defn p15-s23-b4-wasm-decode-s32 [bytes offset limit]
-  (loop [offset offset shift 0 value 0 raw []]
-    (when (or (>= offset limit) (>= (count raw) 5))
-      (p15-s23-b4-wasm-fail!
-       "B4-MANIFEST" "<b4-wasm>" {}
-       {:missing-fact :canonical-bounded-s32-leb}))
-    (let [byte (p15-s23-b4-wasm-canonical-bounded-octet!
-                (nth bytes offset) :canonical-bounded-s32-leb)
-          low (bit-and byte 0x7f)
-          next-shift (+ shift 7)
-          unsigned (+ value (bit-shift-left low shift))
-          continued? (pos? (bit-and byte 0x80))
-          signed (if (and (not continued?)
-                          (pos? (bit-and low 0x40))
-                          (< next-shift 64))
-                   (- unsigned (bit-shift-left 1 next-shift))
-                   unsigned)
-          raw (conj raw byte)]
-      (if continued?
-        (recur (inc offset) next-shift unsigned raw)
-        (do
-          (when-not (and (<= Integer/MIN_VALUE signed Integer/MAX_VALUE)
-                         (= raw (p15-s23-b4-wasm-parser-s32-bytes signed)))
-            (p15-s23-b4-wasm-fail!
-             "B4-MANIFEST" "<b4-wasm>" {}
-             {:missing-fact :noncanonical-or-overflowing-s32-leb}))
-          [signed (inc offset)])))))
+(defn p15-s23-b4-wasm-decode-s32
+  [bytes offset limit]
+  (gravity.backend.wasm/decode-s32 #'p15-s23-b4-wasm-canonical-bounded-octet! #'p15-s23-b4-wasm-parser-s32-bytes #'p15-s23-b4-wasm-fail! bytes offset limit))
 
 (declare p15-s23-b4-wasm-parse-instructions!)
 
