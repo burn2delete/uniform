@@ -488,7 +488,7 @@
   (let [input-fn (sh08-helper 'list-query-input) c7 (sh08-helper 'invoke-c7)]
     (doseq [type [:gravity.type/map :gravity.type/never]]
       (let [{:keys [core node call edge nodes bindings types forms]} (input-fn 'count [type])
-            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536])
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms])
             descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-cq-call-fact [descriptor (:module core)])]
@@ -2016,7 +2016,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-ie-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-ie-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -2082,7 +2082,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-kse-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-kse-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -2181,7 +2181,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-kse-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-kse-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -2251,7 +2251,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-ve-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-ve-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -2389,7 +2389,7 @@
         prepend-owner? (or (= receiver :gravity.type/list) (= :gravity.type/list (:kind receiver))
                            (= receiver :gravity.type/set) (= :gravity.type/set (:kind receiver)))
         prefix (if prepend-owner? "sh08-pl-" "sh08-va-")
-        result (c7 (symbol (str prefix "derive")) [core node call edge nodes (:bindings base) types forms 65536])
+        result (c7 (symbol (str prefix "derive")) [core node call edge nodes (:bindings base) types forms])
         descriptor (:descriptor result)
         facts {:module module :type-table (assoc types (:operator-node-id call) descriptor (:node-id node) (:type result))
                :function-type-table [] :call-type-facts [(c7 (symbol (str prefix "call-fact")) [descriptor module])]
@@ -2406,7 +2406,7 @@
         data [(input n k 0) (input s n 1) (input nk k 2)
               (input {:kind :gravity.type/list :shape :literal :element-types [s]} {:kind :gravity.type/list :shape :literal :element-types []} 3)]
         checked (mapv (fn [{:keys [core node nodes types bindings forms]}]
-                        (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])) data)
+                        (c7 'sh08-ij-derive [core node nodes types bindings forms])) data)
         core (assoc (:core (first data)) :nodes (vec (mapcat #(get-in % [:core :nodes]) data))
                                              :function-records (vec (mapcat #(get-in % [:core :function-records]) data))
                                              :control-flow (vec (mapcat #(get-in % [:core :control-flow]) data)))
@@ -2456,7 +2456,7 @@
         homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
         data [(input (finite [s]) (finite []) 0) (input homogeneous (finite [s s]) 1)]
         checked (mapv (fn [{:keys [core node nodes types bindings forms]}]
-                        (c7 'sh08-ij-derive [core node nodes types bindings forms 65536])) data)
+                        (c7 'sh08-ij-derive [core node nodes types bindings forms])) data)
         core (assoc (:core (first data)) :nodes (vec (mapcat #(get-in % [:core :nodes]) data))
                                              :function-records (vec (mapcat #(get-in % [:core :function-records]) data))
                                              :control-flow (vec (mapcat #(get-in % [:core :control-flow]) data)))
@@ -2749,7 +2749,7 @@
         core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
         nodes (into {} (map (juxt :node-id identity) node-list)) node (nodes (:core-node-id call))
         types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-        result (c7 'sh08-cq-derive [core node call edge nodes (:bindings base) types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-cq-derive [core node call edge nodes (:bindings base) types forms]) descriptor (:descriptor result)
         facts {:module (:module core) :function-type-table [] :type-table (assoc types (:operator-node-id call) descriptor (:node-id node) (:type result))
                :call-type-facts [(c7 'sh08-cq-call-fact [descriptor (:module core)])] :constraint-ledger [(c7 'sh08-cq-constraint [descriptor])]}]
     {:core core :nodes nodes :node node :forms forms :bindings (:bindings base) :call call :edge edge
@@ -2946,7 +2946,7 @@
     (doseq [extent [0 1 3]]
       (let [{:keys [core nodes bindings types forms] :as input} (input-fn extent)
             result (derive input 65536) descriptor (:descriptor result)
-            count-result (c7 'sh08-cq-derive [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms 65536])
+            count-result (c7 'sh08-cq-derive [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms])
             count-descriptor (:descriptor count-result)
             ordering (c7 'sh08-io-descriptor [core (nodes :guard) (second (:calls core)) (second (:call-edges core)) nodes bindings types (:module core)])
             facts {:module (:module core) :type-table (assoc types :inc-op descriptor :count-op count-descriptor :less-op ordering)
@@ -2989,7 +2989,7 @@
   ;; Normalized current-source proof consumers, not an authenticated module product.
   (let [c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         {:keys [core nodes bindings types forms]} input
-        count-result (c7 'sh08-cq-derive [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms 65536])
+        count-result (c7 'sh08-cq-derive [core (nodes :count-query) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms])
         count-descriptor (:descriptor count-result)
         ordering (c7 'sh08-io-descriptor [core (nodes :guard) (second (:calls core)) (second (:call-edges core)) nodes bindings types (:module core)])
         types (cond-> (assoc types :count-op count-descriptor :less-op ordering) access (assoc :nth-op access))
@@ -3066,7 +3066,7 @@
 (defn- body-vector-loop-nth-products [input descriptor]
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
         {:keys [core nodes bindings types forms]} input
-        count-result (c7 'sh08-cq-derive [core (nodes :count-query) (get (:calls core) 0) (get (:call-edges core) 0) nodes bindings types forms 65536])
+        count-result (c7 'sh08-cq-derive [core (nodes :count-query) (get (:calls core) 0) (get (:call-edges core) 0) nodes bindings types forms])
         count-descriptor (:descriptor count-result)
         ordering (c7 'sh08-io-descriptor [core (nodes :guard) (get (:calls core) 1) (get (:call-edges core) 1) nodes bindings types (:module core)])
         invariant (get types :inc-op)
@@ -3947,7 +3947,7 @@
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword :gravity.type/integer]}
                   {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/unknown]}]]
       (let [{:keys [core node call edge nodes bindings types forms module]} (input-fn 'count [type])
-            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            result (c7 'sh08-cq-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
             facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
                    :call-type-facts [(c7 'sh08-cq-call-fact [descriptor module])]
                    :constraint-ledger [(c7 'sh08-cq-constraint [descriptor])]}
@@ -6048,7 +6048,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-ve-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-ve-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -6708,7 +6708,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-ve-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-ve-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -6842,7 +6842,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-kse-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-kse-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -7234,7 +7234,7 @@
             slice (c7 'sh08-vsl-derive [core (nodes slice-id) slice-call slice-edge nodes bindings types forms])
             types (assoc types (:operator-node-id slice-call) (:descriptor slice) slice-id (:type slice))
             call (last calls) edge (last edges) id (:core-node-id call) node (nodes id)
-            comparison (c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])
+            comparison (c7 'sh08-ve-derive [core node call edge nodes bindings types forms])
             descriptors [(:descriptor child) (:descriptor slice) (:descriptor comparison)]
             facts {:module (:module core) :type-table (assoc types (:operator-node-id call) (:descriptor comparison) id (:type comparison))
                    :function-type-table []
@@ -7295,8 +7295,7 @@
         derive (fn [name id types] (let [call (first (filter #(= id (:core-node-id %)) calls))
                                          edge (first (filter #(= id (:call-core-node-id %)) edges))
                                          args [core (nodes id) call edge nodes bindings types forms]]
-                                     (c7 name (if (contains? '#{sh08-scv-derive sh08-vsl-derive} name)
-                                                args (conj args 65536)))))
+                                     (c7 name args)))
         child (when (:child base) (derive 'sh08-scv-derive (ids :call) types))
         types (if child (assoc types (ids :operator) (:descriptor child) (ids :call) (:type child) (ids :slice-ref) (:type child)) types)
         slice (derive 'sh08-vsl-derive (ids :slice-call) types)
@@ -7386,8 +7385,7 @@
         derive (fn [name id types] (let [call (first (filter #(= id (:core-node-id %)) calls))
                                          edge (first (filter #(= id (:call-core-node-id %)) edges))
                                          args [core (nodes id) call edge nodes bindings types forms]]
-                                     (c7 name (if (contains? '#{sh08-scv-derive sh08-vsl-derive} name)
-                                                args (conj args 65536)))))
+                                     (c7 name args)))
         child (when (:child base) (derive 'sh08-scv-derive (ids :call) types))
         types (if child (assoc types (ids :operator) (:descriptor child) (ids :call) (:type child) (ids :slice-ref) (:type child)) types)
         slice (derive 'sh08-vsl-derive (ids :slice-call) types)
@@ -7472,7 +7470,7 @@
             slice (c7 'sh08-vsl-derive [core (nodes slice-id) slice-call slice-edge nodes bindings types forms])
             types (assoc types (:operator-node-id slice-call) (:descriptor slice) slice-id (:type slice))
             call (last calls) edge (last edges) id (:core-node-id call) node (nodes id)
-            comparison (c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])
+            comparison (c7 'sh08-ve-derive [core node call edge nodes bindings types forms])
             descriptors [(:descriptor child) (:descriptor slice) (:descriptor comparison)]
             facts {:module (:module core) :type-table (assoc types (:operator-node-id call) (:descriptor comparison) id (:type comparison) (ids :slice-let) (:type comparison))
                    :local-binding-facts (c7 'sh08-ft-local-facts [records types {:slice-let-binding (:type child)} nodes (:module core)])
@@ -7559,7 +7557,7 @@
             slice (c7 'sh08-vsl-derive [core (nodes slice-id) slice-call slice-edge nodes bindings types forms])
             types (assoc types (:operator-node-id slice-call) (:descriptor slice) slice-id (:type slice))
             call (last calls) edge (last edges) id (:core-node-id call) node (nodes id)
-            comparison (c7 'sh08-ve-derive [core node call edge nodes bindings types forms 65536])
+            comparison (c7 'sh08-ve-derive [core node call edge nodes bindings types forms])
             types (assoc types (:operator-node-id call) (:descriptor comparison) id (:type comparison))
             gate-type (c7 'sh08-ft-infer-node-with-context [(nodes (ids :prefix-if)) types {} {} edges {}])
             descriptors [(:descriptor child) (:descriptor slice) (:descriptor comparison)]
@@ -7799,8 +7797,7 @@
         derived (reduce
                  (fn [{:keys [types results]} [name call edge]]
                    (let [args [core (nodes (:core-node-id call)) call edge nodes bindings types forms]
-                         result (c7 name (if (contains? '#{sh08-scv-derive sh08-vsl-derive} name)
-                                           args (conj args 65536)))]
+                         result (c7 name args)]
                      {:types (assoc types (:operator-node-id call) (:descriptor result) (:core-node-id call) (:type result))
                       :results (conj results result)}))
                  {:types initial-types :results []}
@@ -7843,8 +7840,7 @@
         derived (reduce
                  (fn [{:keys [types results]} [name call edge]]
                    (let [args [core (nodes (:core-node-id call)) call edge nodes bindings types forms]
-                         result (c7 name (if (contains? '#{sh08-scv-derive sh08-vsl-derive} name)
-                                           args (conj args 65536)))]
+                         result (c7 name args)]
                      {:types (assoc types (:operator-node-id call) (:descriptor result) (:core-node-id call) (:type result))
                       :results (conj results result)}))
                  {:types initial-types :results []}
@@ -8356,10 +8352,10 @@
             forms (:forms original) bindings (:bindings original)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types original)))
             count-call (first calls) count-id (:core-node-id count-call)
-            count-result (c7 'sh08-cq-derive [core (get nodes count-id) count-call (first edges) nodes bindings types forms 65536])
+            count-result (c7 'sh08-cq-derive [core (get nodes count-id) count-call (first edges) nodes bindings types forms])
             types (assoc types (:operator-node-id count-call) (:descriptor count-result) count-id (:type count-result))
             qcall (second calls) qid (:core-node-id qcall)
-            qresult (c7 'sh08-nq-derive [core (get nodes qid) qcall (second edges) nodes bindings types forms 65536])
+            qresult (c7 'sh08-nq-derive [core (get nodes qid) qcall (second edges) nodes bindings types forms])
             types (assoc types (:operator-node-id qcall) (:descriptor qresult) qid (:type qresult))
             call (last calls) edge (last edges) id (:core-node-id call) node (get nodes id)
             result (c7 'sh08-cqs-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
@@ -8471,10 +8467,10 @@
             forms (:forms original) bindings (:bindings original)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types original)))
             count-call (when (:count-id original) (first calls)) count-id (:core-node-id count-call)
-            count-result (when count-call (c7 'sh08-cq-derive [core (get nodes count-id) count-call (first edges) nodes bindings types forms 65536]))
+            count-result (when count-call (c7 'sh08-cq-derive [core (get nodes count-id) count-call (first edges) nodes bindings types forms]))
             types (if count-call (assoc types (:operator-node-id count-call) (:descriptor count-result) count-id (:type count-result)) types)
             call (last calls) edge (last edges) id (:core-node-id call) node (get nodes id)
-            result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            result (c7 'sh08-nq-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
             facts {:module (:module core) :type-table (assoc types (:operator-node-id call) descriptor id (:type result))
                    :function-type-table []
                    :call-type-facts (cond-> [] count-call (conj (c7 'sh08-cq-call-fact [(:descriptor count-result) (:module core)]))
@@ -8612,7 +8608,7 @@
         _ (require 'gravity.self-hosting.sh08-function-call-type-test)
         input-fn (sh08-helper 'map-contains-input) c7 (sh08-helper 'invoke-c7)
         {:keys [core node call edge nodes bindings types forms module]} (input-fn [finite :gravity.type/symbol])
-        result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-ksm-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
         ids identity
         facts {:type-table (assoc types :operator descriptor :call (:type result)) :function-type-table []
@@ -8778,7 +8774,7 @@
                               :call mapped-call :edge mapped-edge
                               :types (into {} (map (fn [[id type]] [(ids id) type]) (:types base))))
             {:keys [core node call edge nodes bindings types forms]} input
-            result (c7 (symbol (str "sh08-" family "-derive")) [core node call edge nodes bindings types forms 65536])
+            result (c7 (symbol (str "sh08-" family "-derive")) [core node call edge nodes bindings types forms])
             descriptor (:descriptor result) id (:node-id node) op-id (:operator-node-id call)
             fact #(c7 (symbol (str "sh08-" family "-call-fact")) [% (:module core)])
             row #(c7 (symbol (str "sh08-" family "-constraint")) [%])
@@ -8824,8 +8820,8 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} c7 (sh08-helper 'invoke-c7)
         {:keys [core node call edge nodes bindings types forms]} ((sh08-helper 'atomic-equality-input) [carrier carrier])
-        validation (c7 'sh08-sse-domain [[carrier carrier] 65536])
-        result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        validation (c7 'sh08-sse-domain [[carrier carrier]])
+        result (c7 'sh08-kse-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
         facts {:module (:module core) :type-table (assoc types :operator descriptor :call :gravity.type/bool)
                :function-type-table [] :call-type-facts [(c7 'sh08-kse-call-fact [descriptor (:module core)])]
@@ -9029,7 +9025,7 @@
             core (assoc (:core base) :nodes node-list :calls [call] :call-edges [edge])
             nodes (into {} (map (juxt :node-id identity) node-list)) node (last node-list)
             types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-            result (c7 'sh08-le-derive [core node call edge nodes (:bindings base) types (:forms base) 65536])
+            result (c7 'sh08-le-derive [core node call edge nodes (:bindings base) types (:forms base)])
             descriptor (:descriptor result)
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals (:forms base)))}}}
             facts {:module (:module base) :type-table (assoc types (ids :operator) descriptor (ids :call) (:type result))
@@ -9128,7 +9124,7 @@
   (let [input-fn (sh08-helper 'atomic-equality-input) c7 (sh08-helper 'invoke-c7)
         finite #(hash-map :kind :gravity.type/list :shape :literal :element-types (vec %))
         {:keys [core node call edge nodes bindings types forms module]} (input-fn [(finite [:gravity.type/string]) (finite [:gravity.type/string])])
-        result (c7 'sh08-le-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-le-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
         facts {:type-table (assoc types :operator descriptor :call :gravity.type/bool)
                :call-type-facts [(c7 'sh08-le-call-fact [descriptor module])]
@@ -9291,7 +9287,7 @@
   (let [input-fn (sh08-helper 'atomic-inequality-input) c7 (sh08-helper 'invoke-c7)
         finite #(hash-map :kind :gravity.type/list :shape :literal :element-types (vec %))
         {:keys [core node call edge nodes bindings types forms module]} (input-fn [(finite [:gravity.type/string]) (finite [:gravity.type/string])])
-        result (c7 'sh08-ane-derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+        result (c7 'sh08-ane-derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
         facts {:type-table (assoc types :operator descriptor :call :gravity.type/bool)
                :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
