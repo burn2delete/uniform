@@ -56,3 +56,14 @@ stage/test lint and changed-file repository lint have zero blockers. An initial
 new-test delimiter error and an incorrect expected vector index were corrected;
 those initial runs remain nonpasses. Final regression and independent review
 are recorded separately before integration.
+
+The final resolution regression passed 34 tests / 1156 assertions, and
+independent focused lexical, pattern and dependency checks passed 3 / 40.
+Complete CI lint selection exposed an unrecognized companion EDN manifest and
+incomplete removal of its three retired records. Both defects were corrected.
+The full contextual/EDN lint comparison then passed with zero blockers and
+3502 unchanged baseline warnings. CI harness regression passed 11 / 106,
+including companion selection and rejection of unknown EDN paths. Earlier
+companion-manifest and test-reader failures remain nonpasses. The companion
+manifest's preexisting Macro navigation entries were not changed; this slice
+does not claim that it mirrors every active loader resource.
