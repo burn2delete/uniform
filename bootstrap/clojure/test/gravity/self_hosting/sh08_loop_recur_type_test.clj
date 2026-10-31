@@ -2502,7 +2502,7 @@
                       #(assoc-in % [:nodes :symbol-vector :attributes :source-value] bad)
                       #(assoc-in % [:forms :symbol-vector-form :value] bad)
                       #(assoc-in % [:types :first-operator :bounds-proof :operand-node-id] bad)]]
-        (is (= :rejected (:status (walk (mutate env) nil))))
+        (is (= :rejected (:status (walk (mutate env)))))
         (is (zero? @callbacks)))
       (is (= :rejected (:status (c7-invoke 'sh08-lsi-first-data [lazy-value]))))
       (is (zero? @callbacks))

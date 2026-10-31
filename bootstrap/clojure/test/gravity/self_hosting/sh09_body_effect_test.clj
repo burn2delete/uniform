@@ -476,7 +476,7 @@
                            (assoc descriptor :transition {:kind :absent :parts []})
                            (assoc descriptor :result-shape {:status :accepted :shape-kind :map :parts []})
                            (assoc descriptor :direct-effects (if normal? [] [:memory/allocate]))
-                           (update descriptor :call-join-work inc)]]
+                           (assoc descriptor :call-join-work 1)]]
             (let [candidate (-> facts (assoc-in [:type-table (ids :operator)] changed)
                                 (assoc :call-type-facts [(c7 'sh08-mr-call-fact [changed (:module base)])]
                                        :constraint-ledger [(c7 'sh08-mr-constraint [changed])]))]
@@ -507,8 +507,14 @@
                            (assoc-in facts [:type-table :operator :direct-effects] [:memory/allocate])
                            (assoc-in facts [:count-context :forms :arg0 :parent-form-id] :sibling)]]
           (is (false? (valid candidate))))
-        (doseq [wrong [:gravity.type/vector :gravity.type/set :gravity.type/string :gravity.type/nil :gravity.type/unknown]]
-          (is (nil? (leaf 'body-cq-source core node call edge nodes bindings (assoc types :arg0 wrong) (:module core)))))))))
+        (doseq [wrong [:gravity.type/vector :gravity.type/string :gravity.type/nil :gravity.type/unknown]]
+          (is (nil? (leaf 'body-cq-source core node call edge nodes bindings (assoc types :arg0 wrong) (:module core)))))
+        (let [set-input (input-fn 'count [:gravity.type/set])
+              source (leaf 'body-cq-source (:core set-input) (:node set-input) (:call set-input)
+                           (:edge set-input) (:nodes set-input) (:bindings set-input)
+                           (:types set-input) (:module (:core set-input)))]
+          (is (= [:gravity.type/set] (:argument-types source)))
+          (is (= :established-persistent-set (get-in source [:query-semantics :normal-input]))))))))
 
 (deftest body-map-association-catch-effects-development-kernel
   ;; Current C8 on normalized DATA: catching a source error does not discharge
@@ -1780,10 +1786,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (deftest body-map-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -1847,10 +1850,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (deftest body-keyword-set-contains-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -1922,10 +1922,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (deftest body-not-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -1988,10 +1985,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (deftest body-integral-equality-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -2357,10 +2351,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (defn- prepend-effect-input [receiver value ordinal]
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -3985,7 +3976,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-mapp-context request {} bindings)]
+          _ (leaf 'body-mapp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4046,7 +4037,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-setp-context request {} bindings)]
+          _ (leaf 'body-setp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4107,7 +4098,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-symp-context request {} bindings)]
+          _ (leaf 'body-symp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4168,7 +4159,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-boolp-context request {} bindings)]
+          _ (leaf 'body-boolp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4280,7 +4271,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-chp-context request {} bindings)]
+          _ (leaf 'body-chp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4392,7 +4383,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-nilp-context request {} bindings)]
+          _ (leaf 'body-nilp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4865,7 +4856,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-kp-context request {} bindings)]
+          _ (leaf 'body-kp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4925,7 +4916,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-strp-context request {} bindings)]
+          _ (leaf 'body-strp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -4968,7 +4959,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-ip-context request {} bindings)]
+          _ (leaf 'body-ip-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -5011,7 +5002,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-vp-context request {} bindings)]
+          _ (leaf 'body-vp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -5136,7 +5127,7 @@
   (let [{:keys [core facts bindings forms proof data]} (private-self-value-kernel-data :throw)
         ids (:node-id-map data)
         self (ids :self-call) body (ids :recursive-body)
-        context (leaf 'body-is-context core facts bindings forms)
+        _ (leaf 'body-is-context core facts bindings forms)
         derived (leaf 'body-derive-recursive-nodes core facts {})
         graph (:nodes derived)
         checked (leaf 'body-tc-verify core facts bindings graph {:active? true})]
@@ -6183,10 +6174,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 
 (deftest body-string-set-contains-development-kernel
@@ -6261,10 +6249,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (deftest body-vector-first-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -7023,10 +7008,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (deftest body-sha-suffix-character-membership-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -8471,10 +8453,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-)))))))
+))))))
 
 (deftest body-symbol-set-contains-id-guard-development-kernel
   (let [finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/symbol]}
@@ -8554,14 +8533,14 @@
         nodes {:entry-0 {:source {:form-id :entry-0}} :entry-1 {:source {:form-id :entry-1}}}
         types {:again b :value s :seen carrier :other-again b :other-value s :other-seen carrier
                :entry-0 :gravity.type/never :entry-1 b}
-        entries #(invoke 'body-is-entry-values)
+        entries (fn [types*] (invoke 'body-is-entry-values [census nodes types*]))
         result (entries types)
         return-nodes {:body {:node-id :body :core-form :if :children [:guard :self :answer]}
                       :guard {:node-id :guard :core-form :reference :children []}
                       :self {:node-id :self :core-form :call :children []}
                       :answer {:node-id :answer :core-form :reference :children []}}
         return-types {:guard b :self :gravity.type/unknown :answer carrier}
-        witness #(invoke 'body-is-return-witness)
+        witness (fn [types*] (invoke 'body-is-return-witness [record return-nodes types*]))
         returned (witness return-types)]
     (is (true? (invoke 'body-ss-type? [carrier])))
     (is (true? (invoke 'body-is-value-type? [carrier])))
@@ -8656,7 +8635,7 @@
             request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
             context-name (if equality? 'body-ae-context 'body-ane-context)
             context-key (if equality? :equality-context :atomic-inequality-context)
-            prepare #(leaf context-name request %1 bindings %2) context (prepare facts)
+            prepare #(leaf context-name request %1 bindings) context (prepare facts)
             checked (assoc facts context-key (:context context))
             valid #(leaf 'body-call-joins-with-foreign-valid? core % bindings {})
             graph (leaf 'body-derive-nodes-with-foreign core checked {}) record (get-in graph [:nodes id])
@@ -8788,7 +8767,7 @@
           {:keys [core bindings forms]} (input-fn [:gravity.type/keyword])
           request {:canonical-core-artifact (assoc core :calls hostile)
                    :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-          result (leaf 'body-listp-context request {} bindings)]
+          _ (leaf 'body-listp-context request {} bindings)]
 
       (is (= 0 @visits)))))
 
@@ -9064,11 +9043,7 @@
         (let [check (observe #(valid checked))]
           (is (true? (:result check)))
           (is (zero? (:calls check))))
-        (let [prefix (+ (count (:calls core)) (count (:nodes core)) (count (:call-edges core)) (count bindings)
-                        (count forms) (+ 66 (count (:function-records core))))
-              own-prefix (if (= :gravity.type/never left) 5 4)
-              limit (+ prefix own-prefix 1)
-              failed (observe #(leaf 'body-ane-context request facts bindings))]
+        (let [failed (observe #(leaf 'body-ane-context request facts bindings))]
 
 
           (is (= 1 (:calls failed))))
@@ -9533,10 +9508,7 @@
                 analyze #(leaf 'body-analyze-module request facts {})
                 analyzed (analyze)]
             (is (= :accepted (:status analyzed)) (pr-str analyzed))
-            (when (= :accepted (:status analyzed))
-
-
-))))))
+)))))
   (let [invoke (fn [name args] (apply leaf name args))
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
         callbacks (atom 0) opaque (proxy [Object] []
@@ -9635,12 +9607,12 @@
         observe (ns-resolve owner 'vector-first-symbol-loop-observe-data-work)
         cases ((ns-resolve owner 'vector-first-symbol-loop-keyword-cases))]
     (doseq [[label value] cases]
-      (let [{:keys [result formats]} (observe 'body-pc-evidence-work #(leaf 'body-pc-evidence-work value))]
+      (let [{:keys [formats]} (observe 'body-pc-evidence-work #(leaf 'body-pc-evidence-work value))]
 
         (is (= :rejected (:status (leaf 'body-pc-evidence-work value))) (str label))
         (is (zero? (:keyword formats)) (str label))))
     (doseq [value ["source text" 'library/member]]
-      (let [{:keys [result formats]} (observe 'body-pc-evidence-work #(leaf 'body-pc-evidence-work value))]
+      (let [{:keys [formats]} (observe 'body-pc-evidence-work #(leaf 'body-pc-evidence-work value))]
 
 
         (is (zero? (:keyword formats)))
