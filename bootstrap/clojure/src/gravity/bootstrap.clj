@@ -5,6 +5,12 @@
   implementation. It is intentionally small and records unsupported behavior
   as diagnostics instead of pretending to be the final compiler."
   (:require [gravity.checked-core]
+            [gravity.mir]
+            [gravity.runtime]
+            [gravity.backend.wasm]
+            [gravity.backend.c]
+            [gravity.backend.llvm]
+            [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]
             [clojure.edn :as edn]

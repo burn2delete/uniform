@@ -186,6 +186,62 @@
       "source": {"path": "bootstrap/clojure/src/gravity/checked_core.clj", "namespace": "gravity.checked-core"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj", "namespace": "gravity.bootstrap", "owner": "sh-core"},
       "test": {"path": "bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj", "namespace": "gravity.checked-core.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "types-products",
+      "kind": "production-stage-helper",
+      "owner": "sh-types",
+      "source": {"path": "bootstrap/clojure/src/gravity/types.clj", "namespace": "gravity.types"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/c7_type_checker/inference.clj", "namespace": "gravity.c7-type-checker.inference", "owner": "sh-types"},
+      "test": {"path": "bootstrap/clojure/test/gravity/c7_type_checker_test.clj", "namespace": "gravity.c7-type-checker-test", "registration": "bootstrap-free"}
+    },
+    {
+      "id": "mir-control-flow",
+      "kind": "production-stage-helper",
+      "owner": "sh-mir",
+      "source": {"path": "bootstrap/clojure/src/gravity/mir.clj", "namespace": "gravity.mir"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj", "namespace": "gravity.bootstrap", "owner": "sh-mir"},
+      "test": {"path": "bootstrap/clojure/test/gravity/mir/pipeline_test.clj", "namespace": "gravity.mir.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "runtime-invocation",
+      "kind": "production-stage-helper",
+      "owner": "sh-runtime",
+      "source": {"path": "bootstrap/clojure/src/gravity/runtime.clj", "namespace": "gravity.runtime"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj", "namespace": "gravity.bootstrap", "owner": "sh-runtime"},
+      "test": {"path": "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj", "namespace": "gravity.runtime.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "optimization-reconstruction",
+      "kind": "production-stage-helper",
+      "owner": "sh-optimization",
+      "source": {"path": "bootstrap/clojure/src/gravity/optimization.clj", "namespace": "gravity.optimization"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj", "namespace": "gravity.bootstrap-c13-comparison", "owner": "sh-optimization"},
+      "test": {"path": "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj", "namespace": "gravity.optimization.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "llvm-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-llvm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/llvm.clj", "namespace": "gravity.backend.llvm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-llvm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj", "namespace": "gravity.backend.llvm.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "c-emission",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-c",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/c.clj", "namespace": "gravity.backend.c"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-023-p15-s23-b2-c17-operation-expression-through-p15-s23-b2-c17-discard-cast-records.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-c"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj", "namespace": "gravity.backend.c.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "wasm-codec",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-wasm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/wasm.clj", "namespace": "gravity.backend.wasm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00756-p15-s23-b4-wasm-authority-token-002-p15-s23-b4-wasm-operation-bytes-through-p15-s23-b4-wasm-canonical-bounded-octet.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-wasm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj", "namespace": "gravity.backend.wasm.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [

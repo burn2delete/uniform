@@ -6,7 +6,7 @@
                        :function-count :function-names-hash :function-shapes-hash
                        :public-function-hashes :public-function-shapes :input-key :plan]))
 
-(declare ^:private sh07-core-build-verified-artifact)
+(declare ^:private sh07-core-build-verified-artifact ^:private sh07-core-artifact-base)
 
 (defn- sh07-core-construction-fail! [source-path reason]
   (throw (ex-info "SH-07 construction dependencies changed"
@@ -238,7 +238,11 @@
  #'sh07-core-proof-from-checks
  #'sh07-core-exact-comparison-value
  #'sh07-core-artifact-identity-input
- #'sh07-core-verification-report]
+ #'sh07-core-verification-report
+ #'gravity.checked-core/artifact-base
+ #'sh07-core-artifact-base
+ #'sh07-core-adapter-contract
+ #'sh07-core-governing-document]
     (filter var? (vals checked-core-stage-defaults))))
   (mapv
    (fn
