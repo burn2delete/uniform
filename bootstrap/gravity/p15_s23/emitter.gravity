@@ -1721,8 +1721,8 @@
                 (if (if (contains? next node-id) true
                       (loop [remaining deps]
                         (if (= 0 (count remaining)) false
-                          (if (contains? next (first remaining)) true (recur (rest remaining)))))
-                  (conj next node-id) next)))))))
+                          (if (contains? next (first remaining)) true (recur (rest remaining))))))
+                  (conj next node-id) next))))))
     {:status :rejected :reason :private-self-cold-mode-required}))
 
 (defn p15-s23-is-entry-values [census nodes types]
@@ -1761,9 +1761,9 @@
                           {:status :rejected :reason :private-self-entry-type-conflict
                            :expected selected :actual arguments :entry entry}
                           (recur (rest remaining) (rest remaining-edges) (conj entries entry)
-                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))
+                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
                   {:status :rejected :reason :private-self-entry-census-mismatch}))))
-      {:status :rejected :reason :private-self-entry-families-required}))))
+      {:status :rejected :reason :private-self-entry-families-required})))
 
 (defn p15-s23-is-parameter-record [core parameter index binding type]
   (let [premise (get core :sh08-private-self-parameter-premise)
@@ -1963,9 +1963,9 @@
                             {:status :rejected :reason :indexed-self-entry-type-conflict
                              :expected selected :actual arguments :entry entry}
                             (recur (rest remaining) (rest rows) (conj entries entry)
-                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
-                  {:status :rejected :reason :indexed-self-entry-census-mismatch}))))))
-      {:status :rejected :reason :indexed-self-entry-families-required}))
+                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))))
+                  {:status :rejected :reason :indexed-self-entry-census-mismatch}))))
+      {:status :rejected :reason :indexed-self-entry-families-required})))
 
 
 (defn p15-s23-ix-if-source? [core node nodes forms]
@@ -3787,7 +3787,7 @@
                               (p15-s23-lsi-first-form? source)
                               false)
                           (if (= (get owner :form-id) (get source :parent-form-id))
-                            (if (if (= (get child :source) (p15-s23-ma-form-source source))
+                            (if (if (= (get child :source) (p15-s23-ix-form-source source))
                                   (= (get (get owner :value) i) (get source :value))
                                   false)
                               (recur (+ i 1)
@@ -3814,7 +3814,7 @@
                                 (if (vector? (get owner :value))
                                   (if (= (count children) (count (get owner :value)))
                                     (if (= (get attrs :source-value) (get owner :value))
-                                      (if (= (get arg :source) (p15-s23-ma-form-source owner))
+                                      (if (= (get arg :source) (p15-s23-ix-form-source owner))
                                         (if (= [] (get arg :resolved-binding-ids))
                                           (if (= :left-to-right (get (get arg :evaluation) :kind))
                                             (= (get (get arg :evaluation) :order)
@@ -3858,7 +3858,7 @@
                               (if (if (= :p15-s23-vector-first-v1 (get descriptor :version))
                                     (if (= :normal (get descriptor :application))
                                       (if (= :gravity.type/symbol (get descriptor :result-type))
-                                        (if (p15-s23-si-call-forms? node nodes forms)
+                                        (if (p15-s23-ix-call-forms? node nodes forms)
                                           (= descriptor
                                              (get types (get (get input :call)
                                                              :operator-node-id)))
@@ -4065,6 +4065,32 @@
                            {:transfer transfer :types actual :normal? normal :known? known}))))
           {:status :rejected :reason :incoherent-loop-member-source})))))
 
+(defn p15-s23-lsi-first-order-evidence [proof]
+  (loop [pending [proof]]
+    (if (= 0 (count pending)) {:status :accepted}
+      (let [value (first pending) tail (rest pending)]
+        (if (map? value)
+          (let [entries (vec value)]
+            (let [next (loop [remaining entries out tail]
+                         (if (= 0 (count remaining)) out
+                           (let [entry (first remaining)]
+                             (recur (rest remaining)
+                                    (conj (conj out (get entry 0)) (get entry 1))))))]
+              (recur next)))
+          (if (vector? value)
+            (let [next (loop [remaining value out tail]
+                         (if (= 0 (count remaining)) out
+                           (recur (rest remaining) (conj out (first remaining)))))]
+              (recur next))
+            (if (if (= nil value) true
+                  (if (boolean? value) true
+                    (if (keyword? value) true
+                      (if (symbol? value) true
+                        (if (string? value) true
+                          (if (integer? value) true (char? value)))))))
+              (recur tail)
+              {:status :rejected :reason :map-get-source-mismatch})))))))
+
 (defn p15-s23-lsi-slot [record target entries env]
   (let [binding (get record :binding-id) coordinate (get record :ordinal)
         empty-type (get (get env :types) (get record :initializer-node-id))
@@ -4080,7 +4106,7 @@
                                :initializer-node-id (get record :initializer-node-id)
                                :initializer-type empty-type :invariant-type carrier
                                :grounding witness :entries evidence}
-                    measured (p15-s23-pc-evidence-work invariant)]
+                    measured (p15-s23-lsi-first-order-evidence invariant)]
                 (if (= :accepted (get measured :status))
                   {:status :accepted :invariant invariant}
                   measured))
@@ -4120,7 +4146,7 @@
             targets (p15-s23-lsi-index (get core :recur-targets []) :owner-core-node-id)
             entries (p15-s23-lsi-entry-index (get core :recur-transfers []) types)
             env {:core core :types types :nodes (get source :nodes) :forms (get source :forms)
-                 :bindings (get source :bindings) :aliases aliases :calls calls :edges edges}]
+                 :bindings (get source :bindings) :aliases (get aliases :index) :calls (get calls :index) :edges (get edges :index)}]
         (if (if (= :accepted (get aliases :status))
               (if (= :accepted (get calls :status))
                 (if (= :accepted (get edges :status))
@@ -15912,43 +15938,43 @@
   (let [conditional? (= :if (get container :core-form)) calls (get core :calls) edges (get core :call-edges)
         records (get core :function-records) definitions (get core :definitions)
         children (get container :children)]
-    (if (if (if (vector? calls) (vector? edges) false) (if (if (vector? records) (vector? definitions) false) (p15-s23-sse-ids?? children (if conditional? 3 2)) false) false)
-        (if (p15-s23-typed-all? [(loop [rows calls] (if (= 0 (count rows)) true (if (p15-s23-sse-ids?? [(get (first rows) :core-node-id)] 1) (recur (rest rows)) false))) (loop [rows edges] (if (= 0 (count rows)) true (if (p15-s23-sse-ids?? [(get (first rows) :call-core-node-id)] 1) (recur (rest rows)) false))) (loop [rows records] (if (= 0 (count rows)) true (if (p15-s23-sse-ids?? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2) (recur (rest rows)) false))) (loop [rows definitions] (if (= 0 (count rows)) true (if (p15-s23-sse-ids?? [(get (first rows) :binding-id)] 1) (recur (rest rows)) false)))])
+    (if (if (if (vector? calls) (vector? edges) false) (if (if (vector? records) (vector? definitions) false) (p15-s23-sse-ids? children (if conditional? 3 2)) false) false)
+        (if (p15-s23-typed-all [(loop [rows calls] (if (= 0 (count rows)) true (if (p15-s23-sse-ids? [(get (first rows) :core-node-id)] 1) (recur (rest rows)) false))) (loop [rows edges] (if (= 0 (count rows)) true (if (p15-s23-sse-ids? [(get (first rows) :call-core-node-id)] 1) (recur (rest rows)) false))) (loop [rows records] (if (= 0 (count rows)) true (if (p15-s23-sse-ids? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2) (recur (rest rows)) false))) (loop [rows definitions] (if (= 0 (count rows)) true (if (p15-s23-sse-ids? [(get (first rows) :binding-id)] 1) (recur (rest rows)) false)))])
           (let [ids (get node :children)
                 owner (get (get node :evaluation) :owner-function-syntax-id)
                 scope (get (get let-node :attributes) :body-scope-id) region (get (get node :evaluation) :region)]
-            (if (if (p15-s23-sse-ids?? ids 2) (if (if (p15-s23-sse-ids?? [(get node :node-id) (get slice-node :node-id) scope (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 5) (p15-s23-sse-ids?? [(get container :node-id) (get (get container :source) :form-id) (get (get container :source) :syntax-id) (get (get slice-node :source) :form-id) (get (get slice-node :source) :syntax-id)] 5) false) (if (if conditional? (p15-s23-vsl-prefix-call-region? container region) (keyword? region)) (if (if (= nil owner) true (p15-s23-sse-ids?? [owner] 1)) (if conditional? (if (p15-s23-sse-ids?? (get slice-node :children) 4)
+            (if (if (p15-s23-sse-ids? ids 2) (if (if (p15-s23-sse-ids? [(get node :node-id) (get slice-node :node-id) scope (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 5) (p15-s23-sse-ids? [(get container :node-id) (get (get container :source) :form-id) (get (get container :source) :syntax-id) (get (get slice-node :source) :form-id) (get (get slice-node :source) :syntax-id)] 5) false) (if (if conditional? (p15-s23-vsl-prefix-call-region? container region) (keyword? region)) (if (if (= nil owner) true (p15-s23-sse-ids? [owner] 1)) (if conditional? (if (p15-s23-sse-ids? (get slice-node :children) 4)
                          (loop [remaining (get slice-node :children)]
                            (if (= 0 (count remaining)) true
                              (let [id (first remaining) child (get nodes id) child-owner (get (get child :evaluation) :owner-function-syntax-id)]
-                               (if (p15-s23-sse-ids?? [(get child :node-id) (get child :binding-context)] 2)
-                                 (if (if (= nil child-owner) true (p15-s23-sse-ids?? [child-owner] 1))
-                                   (if (p15-s23-typed-all? [(= id (get child :node-id)) (= scope (get child :binding-context))
+                               (if (p15-s23-sse-ids? [(get child :node-id) (get child :binding-context)] 2)
+                                 (if (if (= nil child-owner) true (p15-s23-sse-ids? [child-owner] 1))
+                                   (if (p15-s23-typed-all [(= id (get child :node-id)) (= scope (get child :binding-context))
                                          (= owner child-owner) (p15-s23-vsl-prefix-call-region? container (get (get child :evaluation) :region))])
                                      (recur (rest remaining)) false) false) false)))) false) true) false) false) false) false)
               (let [operator (get nodes (get ids 0)) bid (get (get operator :attributes) :binding-id)
                     call (p15-s23-nq-one calls :core-node-id (get node :node-id))
                     edge (p15-s23-nq-one edges :call-core-node-id (get node :node-id))]
-                (if (if (p15-s23-typed-all? [(p15-s23-sse-ids?? (get call :argument-node-ids) 1) (p15-s23-sse-ids?? (get call :ordered-evaluation-node-ids) 2) (p15-s23-sse-ids?? (get edge :argument-core-node-ids) 1) (p15-s23-sse-ids?? (get edge :ordered-evaluation-node-ids) 2)]) (if (p15-s23-sse-ids?? [(get operator :node-id) bid (get (get operator :source) :form-id) (get (get operator :source) :syntax-id) (get edge :callee-function-syntax-id) (get edge :callee-function-core-node-id)] 6) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false) false)
+                (if (if (p15-s23-typed-all [(p15-s23-sse-ids? (get call :argument-node-ids) 1) (p15-s23-sse-ids? (get call :ordered-evaluation-node-ids) 2) (p15-s23-sse-ids? (get edge :argument-core-node-ids) 1) (p15-s23-sse-ids? (get edge :ordered-evaluation-node-ids) 2)]) (if (p15-s23-sse-ids? [(get operator :node-id) bid (get (get operator :source) :form-id) (get (get operator :source) :syntax-id) (get edge :callee-function-syntax-id) (get edge :callee-function-core-node-id)] 6) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false) false)
                   (let [binding (get bindings bid) callee (p15-s23-nq-one records :function-syntax-id (get edge :callee-function-syntax-id))
                         definition (p15-s23-nq-one definitions :binding-id bid)
                         caller (if (= nil owner) nil (p15-s23-nq-one records :function-syntax-id owner))
                         local-ids (get let-node :resolved-binding-ids)]
-                    (if (if (p15-s23-sse-ids?? [(get callee :function-core-node-id) (get callee :definition-core-node-id) (get callee :definition-binding-id) (get callee :function-form-id) (get binding :definition-syntax-id) (get callee :body-core-node-id)] 6) (if (p15-s23-sse-ids?? local-ids 1) (p15-s23-sse-ids?? (get callee :parameter-binding-ids) 1) false) false)
+                    (if (if (p15-s23-sse-ids? [(get callee :function-core-node-id) (get callee :definition-core-node-id) (get callee :definition-binding-id) (get callee :function-form-id) (get binding :definition-syntax-id) (get callee :body-core-node-id)] 6) (if (p15-s23-sse-ids? local-ids 1) (p15-s23-sse-ids? (get callee :parameter-binding-ids) 1) false) false)
                       (let [fn-node (get nodes (get callee :function-core-node-id)) def-node (get nodes (get callee :definition-core-node-id))
                             callee-body (get nodes (get callee :body-core-node-id))
                             local (get bindings (get local-ids 0))]
-                        (if (p15-s23-sse-ids?? [(get (get def-node :source) :form-id) (get (get fn-node :source) :form-id) (get (get def-node :source) :syntax-id) (get (get fn-node :source) :syntax-id)] 4)
+                        (if (p15-s23-sse-ids? [(get (get def-node :source) :form-id) (get (get fn-node :source) :form-id) (get (get def-node :source) :syntax-id) (get (get fn-node :source) :syntax-id)] 4)
                           (let [call-form (get forms (get (get node :source) :form-id)) op-form (get forms (get (get operator :source) :form-id))
                             def-form (get forms (get (get def-node :source) :form-id)) fn-form (get forms (get (get fn-node :source) :form-id))
                             def-ids (get def-form :child-form-ids) fn-ids (get fn-form :child-form-ids)]
-                        (if (if (p15-s23-typed-all? [(p15-s23-sse-ids?? (get fn-node :children) 1) (p15-s23-sse-ids?? (get def-node :children) 1)]) (if (p15-s23-sse-ids?? def-ids 3) (if (p15-s23-sse-ids?? fn-ids 3) (if (p15-s23-sse-ids?? (get call-form :child-form-ids) 2) (if (p15-s23-sse-ids?? [(get def-form :form-id) (get def-form :syntax-id) (get fn-form :form-id) (get fn-form :syntax-id) (get op-form :form-id) (get op-form :syntax-id)] 6) (if (p15-s23-sse-ids?? (get fn-node :resolved-binding-ids) 1) (p15-s23-sse-ids?? (get def-node :resolved-binding-ids) 1) false) false) false) false) false) false)
+                        (if (if (p15-s23-typed-all [(p15-s23-sse-ids? (get fn-node :children) 1) (p15-s23-sse-ids? (get def-node :children) 1)]) (if (p15-s23-sse-ids? def-ids 3) (if (p15-s23-sse-ids? fn-ids 3) (if (p15-s23-sse-ids? (get call-form :child-form-ids) 2) (if (p15-s23-sse-ids? [(get def-form :form-id) (get def-form :syntax-id) (get fn-form :form-id) (get fn-form :syntax-id) (get op-form :form-id) (get op-form :syntax-id)] 6) (if (p15-s23-sse-ids? (get fn-node :resolved-binding-ids) 1) (p15-s23-sse-ids? (get def-node :resolved-binding-ids) 1) false) false) false) false) false) false)
                           (let [def-op (get forms (get def-ids 0)) name-form (get forms (get def-ids 1))
                                 fn-op (get forms (get fn-ids 0)) parameters (get forms (get fn-ids 1))
                                 parameter-ids (get parameters :child-form-ids)]
-                            (if (if (p15-s23-sse-ids?? parameter-ids 1) (if (vector? (get parameters :value)) (if (= 1 (count (get parameters :value))) (if (vector? (get (get fn-node :attributes) :parameters)) (= 1 (count (get (get fn-node :attributes) :parameters))) false) false) false) false)
+                            (if (if (p15-s23-sse-ids? parameter-ids 1) (if (vector? (get parameters :value)) (if (= 1 (count (get parameters :value))) (if (vector? (get (get fn-node :attributes) :parameters)) (= 1 (count (get (get fn-node :attributes) :parameters))) false) false) false) false)
                                 (let [parameter-name (get forms (get parameter-ids 0))
- scalar? (p15-s23-typed-all? [(symbol? (get binding :name)) (symbol? (get binding :namespace))
+ scalar? (p15-s23-typed-all [(symbol? (get binding :name)) (symbol? (get binding :namespace))
                         (symbol? (get (get core :module) :namespace)) (symbol? (get (get operator :attributes) :symbol))
                         (symbol? (get op-form :value)) (symbol? (get name-form :value))
                         (symbol? (get definition :name)) (symbol? (get callee :definition-name))
@@ -15957,13 +15983,13 @@
                         (symbol? (get (get (get fn-node :attributes) :parameters) 0))
                         (if (= nil (get local :mutability)) true (keyword? (get local :mutability)))])]
                                   (if (if scalar?
-       (if (p15-s23-sse-ids?? [(get callee-body :node-id) (get (get callee-body :source) :form-id)] 2)
+       (if (p15-s23-sse-ids? [(get callee-body :node-id) (get (get callee-body :source) :form-id)] 2)
          (loop [rows [call-form op-form def-form def-op name-form fn-form fn-op parameters parameter-name]]
            (if (= 0 (count rows)) true
              (if (map? (first rows))
-               (if (p15-s23-sse-ids?? [(get (first rows) :form-id) (get (first rows) :syntax-id)] 2)
+               (if (p15-s23-sse-ids? [(get (first rows) :form-id) (get (first rows) :syntax-id)] 2)
                  (recur (rest rows)) false) false))) false) false)
-                                    (if (p15-s23-typed-all?
+                                    (if (p15-s23-typed-all
                                           [(= :call (get node :core-form)) (= :reference (get operator :core-form))
                                            (= [(get operator :node-id) (get slice-node :node-id)] ids)
                                            (= (get node :node-id) (get children 1)) (= [] (get operator :children))
@@ -16052,23 +16078,23 @@
   ; Exactly one original if container; no parent walk or branch-result inference.
   (let [controls (get core :control-flow) children (get node :children)]
     (if (if (if (boolean? local-call?) (vector? controls) false)
-            (if (p15-s23-sse-ids?? children 3)
-              (if (p15-s23-sse-ids?? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)
+            (if (p15-s23-sse-ids? children 3)
+              (if (p15-s23-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)
                          (get let-node :node-id) (get (get let-node :source) :form-id) (get (get let-node :attributes) :body-scope-id)] 6)
                 (loop [remaining controls] (if (= 0 (count remaining)) true
-                  (if (p15-s23-sse-ids?? [(get (first remaining) :core-node-id)] 1) (recur (rest remaining)) false))) false) false) false)
+                  (if (p15-s23-sse-ids? [(get (first remaining) :core-node-id)] 1) (recur (rest remaining)) false))) false) false) false)
         (let [form (get forms (get (get node :source) :form-id)) ids (get form :child-form-ids)
               branch-nodes [(get nodes (get children 0)) (get nodes (get children 1)) (get nodes (get children 2))]
               control (p15-s23-nq-one controls :core-node-id (get node :node-id))
               scope (get (get let-node :attributes) :body-scope-id)
               owner (get (get node :evaluation) :owner-function-syntax-id) region (get (get node :evaluation) :region)]
-          (if (if (p15-s23-sse-ids?? ids 4)
-                (if (p15-s23-sse-ids?? [(get form :form-id) (get form :syntax-id) (get form :scope-id)] 3)
-                  (if (if (= nil owner) true (p15-s23-sse-ids?? [owner] 1))
+          (if (if (p15-s23-sse-ids? ids 4)
+                (if (p15-s23-sse-ids? [(get form :form-id) (get form :syntax-id) (get form :scope-id)] 3)
+                  (if (if (= nil owner) true (p15-s23-sse-ids? [owner] 1))
                     (loop [remaining branch-nodes] (if (= 0 (count remaining)) true
                       (let [child (first remaining) child-owner (get (get child :evaluation) :owner-function-syntax-id)]
-                        (if (p15-s23-sse-ids?? [(get child :node-id) (get (get child :source) :form-id) (get (get child :source) :syntax-id)] 3)
-                          (if (if (= nil child-owner) true (p15-s23-sse-ids?? [child-owner] 1)) (recur (rest remaining)) false) false)))) false) false) false)
+                        (if (p15-s23-sse-ids? [(get child :node-id) (get (get child :source) :form-id) (get (get child :source) :syntax-id)] 3)
+                          (if (if (= nil child-owner) true (p15-s23-sse-ids? [child-owner] 1)) (recur (rest remaining)) false) false)))) false) false) false)
             (let [operator (get forms (get ids 0)) condition-form (get forms (get ids 1))
                   then-form (get forms (get ids 2)) else-form (get forms (get ids 3))
                   selected-forms [form operator condition-form then-form else-form]
@@ -16077,27 +16103,27 @@
                                      (if (keyword? (first remaining)) (recur (rest remaining)) false))) false) false)
                   region-valid? (if (keyword? region) (contains? #{:module-initialization :function-body} region)
                                   (if region-fields?
-                                    (if (if (p15-s23-sse-ids?? [(get region :if-syntax-id) (get region :if-form-id)] 2)
-                                          (if (if (= nil (get region :parent-if-syntax-id)) true (p15-s23-sse-ids?? [(get region :parent-if-syntax-id)] 1))
+                                    (if (if (p15-s23-sse-ids? [(get region :if-syntax-id) (get region :if-form-id)] 2)
+                                          (if (if (= nil (get region :parent-if-syntax-id)) true (p15-s23-sse-ids? [(get region :parent-if-syntax-id)] 1))
                                             (if (keyword? (get region :role))
                                               (if (keyword? (get region :parent-region-kind))
                                                 (if (= nil (get region :parent-branch-role)) true (keyword? (get region :parent-branch-role))) false) false) false) false)
-                                      (p15-s23-typed-all? [(= #{:kind :if-syntax-id :if-form-id :role :execution :parent-region-kind :parent-if-syntax-id :parent-branch-role} (set (keys region)))
+                                      (p15-s23-typed-all [(= #{:kind :if-syntax-id :if-form-id :role :execution :parent-region-kind :parent-if-syntax-id :parent-branch-role} (set (keys region)))
                                             (= :conditional-branch (get region :kind)) (= :selected-exactly-once (get region :execution))
                                             (contains? #{:then :else} (get region :role))
                                             (contains? #{:module-initialization :function-body :conditional-branch :match-guard} (get region :parent-region-kind))
                                             (if (= :conditional-branch (get region :parent-region-kind))
-                                              (if (p15-s23-sse-ids?? [(get region :parent-if-syntax-id)] 1)
+                                              (if (p15-s23-sse-ids? [(get region :parent-if-syntax-id)] 1)
                                                 (contains? #{:then :else} (get region :parent-branch-role)) false)
                                               (if (= nil (get region :parent-if-syntax-id)) (= nil (get region :parent-branch-role)) false))]) false) false))]
               (if (if region-valid?
                     (if (symbol? (get operator :value))
-                      (if (p15-s23-sse-ids?? [(get control :condition-node-id) (get (get (get control :branches) 0) :core-node-id)
+                      (if (p15-s23-sse-ids? [(get control :condition-node-id) (get (get (get control :branches) 0) :core-node-id)
                                  (get (get (get control :branches) 1) :core-node-id)] 3)
                         (loop [remaining selected-forms] (if (= 0 (count remaining)) true
                           (let [item (first remaining)]
-                            (if (p15-s23-sse-ids?? [(get item :form-id) (get item :syntax-id) (get item :scope-id)] 3) (recur (rest remaining)) false)))) false) false) false)
-                (if (p15-s23-typed-all? [
+                            (if (p15-s23-sse-ids? [(get item :form-id) (get item :syntax-id) (get item :scope-id)] 3) (recur (rest remaining)) false)))) false) false) false)
+                (if (p15-s23-typed-all [
                       (= :if (get node :core-form)) (= :let (get let-node :core-form)) (= [] (get node :resolved-binding-ids))
                       (= (get node :node-id) (get (get let-node :children) 1))
                       (= :list (get form :kind)) (= :symbol (get operator :kind)) (= 'if (get operator :value)) (= [] (get operator :child-form-ids))
@@ -16116,7 +16142,7 @@
                           :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true} :result-policy :selected-branch} control)])
                   (let [then-node (get branch-nodes 1) then-ids (get then-node :children)
                         branch-call (if local-call?
-                                      (if (p15-s23-sse-ids?? then-ids 2)
+                                      (if (p15-s23-sse-ids? then-ids 2)
                                         (p15-s23-vsl-call-body core let-node node then-node (get nodes (get then-ids 1)) nodes bindings forms )
                                         {:status :rejected :reason :vector-slice-source-mismatch})
                                       {:status :accepted})]
@@ -16142,12 +16168,12 @@
                                                :parent-if-syntax-id (if (map? region) (get region :if-syntax-id) nil)
                                                :parent-branch-role (if (map? region) (get region :role) nil)})]
                         (if (if (if local-call? (= i 2) false) (if (boolean? value) (= false value) false) (if (if local-call? (= i 1) false) true (if (= i 0) true (if (boolean? value) (boolean? (get child-form :value)) false))))
-                          (if (p15-s23-typed-all? [(= (get children i) (get child :node-id)) (= (get child :source) (p15-s23-typed-source child-form))
+                          (if (p15-s23-typed-all [(= (get children i) (get child :node-id)) (= (get child :source) (p15-s23-typed-source child-form))
                                     (= scope (get child :binding-context) (get child-form :scope-id))
                                     (= owner (get (get child :evaluation) :owner-function-syntax-id))
                                     (= expected-region (get (get child :evaluation) :region))
                                     (if (if local-call? (= i 1) false) true (if (= i 0) true
-                                      (p15-s23-typed-all? [(= :literal (get child :core-form)) (= :boolean (get child-form :kind))
+                                      (p15-s23-typed-all [(= :literal (get child :core-form)) (= :boolean (get child-form :kind))
                                             (= {:literal-kind :boolean :value value} (get child :attributes)) (= value (get child-form :value))
                                             (= [] (get child :children) (get child :resolved-binding-ids) (get child-form :child-form-ids))
                                             (= :value (get (get child :evaluation) :kind)) (= [] (get (get child :evaluation) :order))])))])
@@ -16166,24 +16192,24 @@
 (defn p15-s23-vsl-prefix-call-body [core let-node slice-node nodes bindings types forms]
   ; Exactly if -> then call -> this argument; its condition keeps its own slice proof.
   (let [ids (get let-node :children)]
-    (if (p15-s23-sse-ids?? ids 2)
+    (if (p15-s23-sse-ids? ids 2)
         (let [root (get nodes (get ids 1))
               container (p15-s23-vsl-if-container core let-node root nodes bindings forms true )]
           (if (= :accepted (get container :status))
             (let [condition (get container :condition) condition-ids (get condition :children)]
-              (if (p15-s23-sse-ids?? condition-ids 3)
+              (if (p15-s23-sse-ids? condition-ids 3)
                 (let [prefix (get nodes (get condition-ids 1)) prefix-ids (get prefix :children) tail-ids (get slice-node :children)
                       local-ids (get let-node :resolved-binding-ids)]
-                  (if (if (p15-s23-sse-ids?? prefix-ids 4) (if (p15-s23-sse-ids?? tail-ids 4)
-                        (if (p15-s23-sse-ids?? local-ids 1)
-                          (p15-s23-sse-ids?? [(get prefix :node-id) (get (get prefix :source) :form-id) (get (get prefix :source) :syntax-id)
+                  (if (if (p15-s23-sse-ids? prefix-ids 4) (if (p15-s23-sse-ids? tail-ids 4)
+                        (if (p15-s23-sse-ids? local-ids 1)
+                          (p15-s23-sse-ids? [(get prefix :node-id) (get (get prefix :source) :form-id) (get (get prefix :source) :syntax-id)
                                          (get slice-node :node-id) (get (get slice-node :source) :form-id)] 5) false) false) false)
                     (let [prefix-op (get nodes (get prefix-ids 0)) prefix-ref (get nodes (get prefix-ids 1))
                           tail-op (get nodes (get tail-ids 0)) tail-ref (get nodes (get tail-ids 1))]
-                      (if (if (p15-s23-sse-ids?? [(get (get prefix-op :attributes) :binding-id) (get (get tail-op :attributes) :binding-id)
+                      (if (if (p15-s23-sse-ids? [(get (get prefix-op :attributes) :binding-id) (get (get tail-op :attributes) :binding-id)
                                             (get (get prefix-ref :attributes) :binding-id) (get (get tail-ref :attributes) :binding-id)] 4)
                             (symbol? (get (get prefix-op :attributes) :symbol)) false)
-                        (if (p15-s23-typed-all?
+                        (if (p15-s23-typed-all
                               [(= :call (get prefix :core-form)) (= false (= (get prefix :node-id) (get slice-node :node-id)))
                                (= (get slice-node :node-id) (get (get (get (get (get container :proof) :then-call) :call) :argument-node-ids) 0))
                                (contains? '#{subvec gravity.core/subvec} (get (get prefix-op :attributes) :symbol))
@@ -16210,12 +16236,12 @@
 (defn p15-s23-vsl-first-parent [core let-node node expected-id slice-node nodes bindings forms]
   ; Fixed original first edge; caller/root identity remains source-authenticated.
   (let [ids (get node :children)]
-    (if (if (p15-s23-sse-ids?? ids 2)
-                (p15-s23-sse-ids?? [(get node :node-id) expected-id (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 4) false)
+    (if (if (p15-s23-sse-ids? ids 2)
+                (p15-s23-sse-ids? [(get node :node-id) expected-id (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 4) false)
             (let [operator (get nodes (get ids 0)) bid (get (get operator :attributes) :binding-id)
                   scope (get (get let-node :attributes) :body-scope-id)]
-              (if (if (p15-s23-sse-ids?? [(get operator :node-id) bid scope (get slice-node :node-id)] 4)
-                    (if (p15-s23-sse-ids?? [(get (get operator :source) :form-id) (get (get operator :source) :syntax-id)
+              (if (if (p15-s23-sse-ids? [(get operator :node-id) bid scope (get slice-node :node-id)] 4)
+                    (if (p15-s23-sse-ids? [(get (get operator :source) :form-id) (get (get operator :source) :syntax-id)
                                (get (get slice-node :source) :form-id) (get (get slice-node :source) :syntax-id)] 4)
                       (symbol? (get (get operator :attributes) :symbol)) false) false)
                 (let [binding (get bindings bid) owner (get forms (get (get node :source) :form-id))
@@ -16223,17 +16249,17 @@
                       profiles (get binding :profile-set) targets (get binding :target-set)
                       region (get (get node :evaluation) :region)
                       caller (get (get node :evaluation) :owner-function-syntax-id)]
-                  (if (if (p15-s23-sse-ids?? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
+                  (if (if (p15-s23-sse-ids? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
                                    (get binding :definition-syntax-id)] 5)
-                          (if (p15-s23-sse-ids?? (get owner :child-form-ids) 2)
+                          (if (p15-s23-sse-ids? (get owner :child-form-ids) 2)
                             (if (if (symbol? (get binding :name)) (symbol? (get op-form :value)) false)
                               (if (if (vector? profiles) (vector? targets) false)
                                 (if (loop [remaining profiles] (if (= 0 (count remaining)) true
                                       (if (keyword? (first remaining)) (recur (rest remaining)) false)))
                                   (if (loop [remaining targets] (if (= 0 (count remaining)) true
                                         (if (keyword? (first remaining)) (recur (rest remaining)) false)))
-                                    (if (keyword? region) (if (= nil caller) true (p15-s23-sse-ids?? [caller] 1)) false) false) false) false) false) false) false)
-                      (if (p15-s23-typed-all? [
+                                    (if (keyword? region) (if (= nil caller) true (p15-s23-sse-ids? [caller] 1)) false) false) false) false) false) false) false)
+                      (if (p15-s23-typed-all [
                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
                             (= [(get operator :node-id) (get slice-node :node-id)] ids)
                             (= (get node :node-id) expected-id)
@@ -16259,40 +16285,40 @@
                             (= scope (get node :binding-context) (get operator :binding-context) (get owner :scope-id) (get op-form :scope-id))])
                         {:status :accepted :node node :form owner :source-forms [owner op-form]
                          :proof {:kind :direct-vector-first :node node :operator operator :binding binding :source-forms [owner op-form]}}
-                        {:status :rejected :reason :vector-slice-source-mismatch})))
+                        {:status :rejected :reason :vector-slice-source-mismatch})
                       {:status :rejected :reason :vector-slice-source-mismatch}))
                 {:status :rejected :reason :vector-slice-source-mismatch}))
-            {:status :rejected :reason :vector-slice-source-mismatch})
+            {:status :rejected :reason :vector-slice-source-mismatch})))
 
 (defn p15-s23-vsl-let-first-body [core let-node slice-node nodes bindings forms]
   ; The original direct-first entry retains its inputs and proof.
   (let [children (get let-node :children)]
-    (if (p15-s23-sse-ids?? children 2)
+    (if (p15-s23-sse-ids? children 2)
         (p15-s23-vsl-first-parent core let-node (get nodes (get children 1)) (get children 1) slice-node nodes bindings forms )
         {:status :rejected :reason :vector-slice-source-mismatch})))
 
 (defn p15-s23-vsl-character-set [node parent scope region caller nodes forms]
   ; Original flat Character Set source only; this emits no member-type fact.
   (let [ids (get node :children) n (if (vector? ids) (count ids) 0)]
-    (if (if (p15-s23-sse-ids?? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id) parent scope] 5)
-              (if (keyword? region) (if (if (= nil caller) true (p15-s23-sse-ids?? [caller] 1))
+    (if (if (p15-s23-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id) parent scope] 5)
+              (if (keyword? region) (if (if (= nil caller) true (p15-s23-sse-ids? [caller] 1))
                 (if (vector? ids) (loop [remaining ids] (if (= 0 (count remaining)) true
-                  (if (p15-s23-sse-ids?? [(first remaining)] 1) (recur (rest remaining)) false))) false) false) false) false)
+                  (if (p15-s23-sse-ids? [(first remaining)] 1) (recur (rest remaining)) false))) false) false) false) false)
           (let [form (get forms (get (get node :source) :form-id)) attrs (get node :attributes)
                 values (get form :value) source-values (get attrs :source-value) source-ids (get form :child-form-ids)
                 node-caller (get (get node :evaluation) :owner-function-syntax-id)]
-            (if (if (p15-s23-sse-ids?? [(get form :form-id) (get form :syntax-id) (get form :parent-form-id) (get form :scope-id)] 4)
-                  (if (if (= nil node-caller) true (p15-s23-sse-ids?? [node-caller] 1))
+            (if (if (p15-s23-sse-ids? [(get form :form-id) (get form :syntax-id) (get form :parent-form-id) (get form :scope-id)] 4)
+                  (if (if (= nil node-caller) true (p15-s23-sse-ids? [node-caller] 1))
                     (if (if (vector? source-ids) (= n (count source-ids)) false)
                       (if (loop [remaining source-ids] (if (= 0 (count remaining)) true
-                            (if (p15-s23-sse-ids?? [(first remaining)] 1) (recur (rest remaining)) false)))
+                            (if (p15-s23-sse-ids? [(first remaining)] 1) (recur (rest remaining)) false)))
                         (if (if (set? values) (set? source-values) false)
                           (if (if (<= (count values) n) (<= (count source-values) n) false)
                             (if (loop [members (vec values) i 0] (if (= i (count members)) true
                                   (if (char? (get members i)) (recur members (+ i 1)) false)))
                               (loop [members (vec source-values) i 0] (if (= i (count members)) true
                                 (if (char? (get members i)) (recur members (+ i 1)) false))) false) false) false) false) false) false) false)
-              (if (p15-s23-typed-all? [
+              (if (p15-s23-typed-all [
                     (contains? #{:module-initialization :function-body} region)
                     (= :collection-literal (get node :core-form)) (= [] (get node :resolved-binding-ids))
                     (= {:literal-kind :set :element-count n :source-value source-values} attrs)
@@ -16310,14 +16336,14 @@
                       {:status :accepted :node node :form form :source-forms selected}
                       {:status :rejected :reason :vector-slice-source-mismatch})
                     (let [id (get ids i) child (get nodes id) source (get child :source)]
-                      (if (if (p15-s23-sse-ids?? [id (get child :node-id) (get source :form-id) (get source :syntax-id)] 4)
+                      (if (if (p15-s23-sse-ids? [id (get child :node-id) (get source :form-id) (get source :syntax-id)] 4)
                             (if (= false (contains? seen id)) (= false (contains? seen-forms (get source :form-id))) false) false)
                         (let [original (get forms (get source :form-id)) value (get (get child :attributes) :value)
                               child-caller (get (get child :evaluation) :owner-function-syntax-id)]
-                          (if (if (p15-s23-sse-ids?? [(get original :form-id) (get original :syntax-id) (get original :parent-form-id) (get original :scope-id)] 4)
-                                (if (if (= nil child-caller) true (p15-s23-sse-ids?? [child-caller] 1))
+                          (if (if (p15-s23-sse-ids? [(get original :form-id) (get original :syntax-id) (get original :parent-form-id) (get original :scope-id)] 4)
+                                (if (if (= nil child-caller) true (p15-s23-sse-ids? [child-caller] 1))
                                   (if (char? value) (char? (get original :value)) false) false) false)
-                            (if (p15-s23-typed-all? [
+                            (if (p15-s23-typed-all [
                                   (= id (get child :node-id)) (= (get source-ids i) (get original :form-id))
                                   (= :literal (get child :core-form)) (= {:literal-kind :character :value value} (get child :attributes))
                                   (= [] (get child :children) (get child :resolved-binding-ids) (get original :child-form-ids))
@@ -16337,14 +16363,14 @@
 (defn p15-s23-vsl-let-first-membership-body [core let-node slice-node nodes bindings forms]
   ; Exactly contains?(original Character Set, first(actual slice)); no ancestry walk.
   (let [root-ids (get let-node :children)]
-    (if (p15-s23-sse-ids?? root-ids 2)
+    (if (p15-s23-sse-ids? root-ids 2)
         (let [node (get nodes (get root-ids 1)) children (get node :children)]
-          (if (if (p15-s23-sse-ids?? children 3)
-                (p15-s23-sse-ids?? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
+          (if (if (p15-s23-sse-ids? children 3)
+                (p15-s23-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
             (let [operator (get nodes (get children 0)) items (get nodes (get children 1)) first-node (get nodes (get children 2))
                   bid (get (get operator :attributes) :binding-id) scope (get (get let-node :attributes) :body-scope-id)]
-              (if (if (p15-s23-sse-ids?? [(get operator :node-id) bid (get items :node-id) (get first-node :node-id) scope] 5)
-                    (if (p15-s23-sse-ids?? [(get (get operator :source) :form-id) (get (get operator :source) :syntax-id)
+              (if (if (p15-s23-sse-ids? [(get operator :node-id) bid (get items :node-id) (get first-node :node-id) scope] 5)
+                    (if (p15-s23-sse-ids? [(get (get operator :source) :form-id) (get (get operator :source) :syntax-id)
                                (get (get items :source) :form-id) (get (get items :source) :syntax-id)
                                (get (get first-node :source) :form-id) (get (get first-node :source) :syntax-id)] 6)
                       (symbol? (get (get operator :attributes) :symbol)) false) false)
@@ -16353,20 +16379,20 @@
                       profiles (get binding :profile-set) targets (get binding :target-set)
                       region (get (get node :evaluation) :region) caller (get (get node :evaluation) :owner-function-syntax-id)
                       first-caller (get (get first-node :evaluation) :owner-function-syntax-id)]
-                  (if (if (p15-s23-sse-ids?? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
+                  (if (if (p15-s23-sse-ids? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
                                    (get first-form :form-id) (get first-form :syntax-id)] 6)
-                          (if (p15-s23-sse-ids?? [(get binding :definition-syntax-id) (get first-form :parent-form-id) (get first-form :scope-id)
+                          (if (p15-s23-sse-ids? [(get binding :definition-syntax-id) (get first-form :parent-form-id) (get first-form :scope-id)
                                      (get owner :scope-id) (get op-form :scope-id)] 5)
-                            (if (p15-s23-sse-ids?? (get owner :child-form-ids) 3)
+                            (if (p15-s23-sse-ids? (get owner :child-form-ids) 3)
                               (if (if (symbol? (get binding :name)) (symbol? (get op-form :value)) false)
                                 (if (if (vector? profiles) (vector? targets) false)
                                   (if (loop [remaining profiles] (if (= 0 (count remaining)) true
                                         (if (keyword? (first remaining)) (recur (rest remaining)) false)))
                                     (if (loop [remaining targets] (if (= 0 (count remaining)) true
                                           (if (keyword? (first remaining)) (recur (rest remaining)) false)))
-                                      (if (keyword? region) (if (if (= nil caller) true (p15-s23-sse-ids?? [caller] 1))
-                                        (if (= nil first-caller) true (p15-s23-sse-ids?? [first-caller] 1)) false) false) false) false) false) false) false) false) false)
-                      (if (p15-s23-typed-all? [
+                                      (if (keyword? region) (if (if (= nil caller) true (p15-s23-sse-ids? [caller] 1))
+                                        (if (= nil first-caller) true (p15-s23-sse-ids? [first-caller] 1)) false) false) false) false) false) false) false) false) false)
+                      (if (p15-s23-typed-all [
                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
                             (= (get node :node-id) (get root-ids 1))
                             (= [(get operator :node-id) (get items :node-id) (get first-node :node-id)] children)
@@ -16414,29 +16440,29 @@
 (defn p15-s23-vsl-let-call-body [core let-node slice-node nodes bindings forms]
   ; Retain the original direct let/body proof.
   (let [ids (get let-node :children)]
-    (if (p15-s23-sse-ids?? ids 2)
+    (if (p15-s23-sse-ids? ids 2)
         (p15-s23-vsl-call-body core let-node let-node (get nodes (get ids 1)) slice-node nodes bindings forms )
         {:status :rejected :reason :vector-slice-source-mismatch})))
 
 (defn p15-s23-vsl-let-equality-body [core let-node slice-node nodes bindings types forms]
   ; One fixed parent edge. The enclosing VE still proves its own operand domain.
   (let [children (get let-node :children)]
-    (if (p15-s23-sse-ids?? children 2)
+    (if (p15-s23-sse-ids? children 2)
         (let [root (get nodes (get children 1)) first-consumer? (if (vector? (get root :children)) (= 2 (count (get root :children))) false)
-              membership-consumer? (if (p15-s23-sse-ids?? (get root :children) 3)
+              membership-consumer? (if (p15-s23-sse-ids? (get root :children) 3)
                                      (let [left (get nodes (get (get root :children) 1))]
                                        (if (= :collection-literal (get left :core-form)) (= :set (get (get left :attributes) :literal-kind)) false)) false)
-              local-call-consumer? (if (p15-s23-sse-ids?? (get root :children) 2)
+              local-call-consumer? (if (p15-s23-sse-ids? (get root :children) 2)
                                   (let [operator (get nodes (get (get root :children) 0))
                                         bid (get (get operator :attributes) :binding-id)]
-                                    (if (p15-s23-sse-ids?? [bid] 1)
+                                    (if (p15-s23-sse-ids? [bid] 1)
                                       (= [:namespace :function] [(get (get bindings bid) :binding-class) (get (get bindings bid) :kind)]) false)) false)
               conditional? (= :if (get root :core-form))
-              then-node (if (if conditional? (p15-s23-sse-ids?? (get root :children) 3) false)
+              then-node (if (if conditional? (p15-s23-sse-ids? (get root :children) 3) false)
                           (get nodes (get (get root :children) 1)) nil)
               then-ids (get then-node :children)
-              call-branch? (if (p15-s23-sse-ids?? then-ids 2) (= :call (get then-node :core-form)) false)
-              conditional-call-consumer? (if call-branch? (if (p15-s23-sse-ids?? [(get slice-node :node-id)] 1)
+              call-branch? (if (p15-s23-sse-ids? then-ids 2) (= :call (get then-node :core-form)) false)
+              conditional-call-consumer? (if call-branch? (if (p15-s23-sse-ids? [(get slice-node :node-id)] 1)
                                             (= (get slice-node :node-id) (get then-ids 1)) false) false)
               container (if conditional? (if conditional-call-consumer? nil
                           (if call-branch? (p15-s23-vsl-if-container core let-node root nodes bindings forms true )
@@ -16451,16 +16477,16 @@
             (if membership-consumer?
               (p15-s23-vsl-let-first-membership-body core let-node slice-node nodes bindings forms )
               (if (if conditional? (= :accepted (get container :status)) true)
-            (if (if (p15-s23-sse-ids?? children 3)
-                (p15-s23-sse-ids?? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
+            (if (if (p15-s23-sse-ids? children 3)
+                (p15-s23-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3) false)
             (let [operator (get nodes (get children 0)) right (get nodes (get children 2))
                   ids (get right :children) n (if (vector? ids) (count ids) 0)
                   bid (get (get operator :attributes) :binding-id)]
               (if (if (if (vector? ids)
                               (loop [remaining ids] (if (= 0 (count remaining)) true
-                                (if (p15-s23-sse-ids?? [(first remaining)] 1) (recur (rest remaining)) false))) false)
-                        (if (p15-s23-sse-ids?? [(get operator :node-id) (get right :node-id) bid] 3)
-                          (if (p15-s23-sse-ids?? [(get (get operator :source) :form-id) (get (get operator :source) :syntax-id)
+                                (if (p15-s23-sse-ids? [(first remaining)] 1) (recur (rest remaining)) false))) false)
+                        (if (p15-s23-sse-ids? [(get operator :node-id) (get right :node-id) bid] 3)
+                          (if (p15-s23-sse-ids? [(get (get operator :source) :form-id) (get (get operator :source) :syntax-id)
                                      (get (get right :source) :form-id) (get (get right :source) :syntax-id)] 4)
                             (symbol? (get (get operator :attributes) :symbol)) false) false) false)
                     (let [owner (get forms (get (get node :source) :form-id))
@@ -16469,15 +16495,15 @@
                           values (get right-form :value) attrs (get right :attributes) source-values (get attrs :source-value)
                           scope (get (get let-node :attributes) :body-scope-id)
                           profiles (get binding :profile-set) targets (get binding :target-set)]
-                      (if (if (p15-s23-sse-ids?? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
+                      (if (if (p15-s23-sse-ids? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
                                      (get right-form :form-id) (get right-form :syntax-id)] 6)
-                            (if (p15-s23-sse-ids?? (get owner :child-form-ids) 3)
+                            (if (p15-s23-sse-ids? (get owner :child-form-ids) 3)
                               (if (if (vector? (get right-form :child-form-ids))
                                     (if (= n (count (get right-form :child-form-ids)))
                                       (loop [remaining (get right-form :child-form-ids)] (if (= 0 (count remaining)) true
-                                        (if (p15-s23-sse-ids?? [(first remaining)] 1) (recur (rest remaining)) false))) false) false)
+                                        (if (p15-s23-sse-ids? [(first remaining)] 1) (recur (rest remaining)) false))) false) false)
                                 (if (if (vector? values) (vector? source-values) false)
-                                  (if (p15-s23-sse-ids?? [scope (get binding :definition-syntax-id)] 2)
+                                  (if (p15-s23-sse-ids? [scope (get binding :definition-syntax-id)] 2)
                                     (if (if (symbol? (get op-form :value)) (symbol? (get binding :name)) false)
                                       (if (if (vector? profiles) (vector? targets) false)
                                         (if (loop [remaining profiles] (if (= 0 (count remaining)) true
@@ -16485,7 +16511,7 @@
                                           (if (loop [remaining targets] (if (= 0 (count remaining)) true
                                                 (if (keyword? (first remaining)) (recur (rest remaining)) false)))
                                             (= n (count values) (count source-values)) false) false) false) false) false) false) false) false) false)
-                        (if (p15-s23-typed-all? [
+                        (if (p15-s23-typed-all [
                               (= :call (get node :core-form)) (= :reference (get operator :core-form))
                               (= [(get operator :node-id) (get slice-node :node-id) (get right :node-id)] children)
                               (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
@@ -16525,19 +16551,19 @@
                                   {:status :accepted :node (if conditional? root node) :form (if conditional? (get container :form) owner) :source-forms selected
                                    :proof (let [proof {:kind :direct-left-vector-equality :node node :operator operator :binding binding :right right
                                            :literal-type expected :source-forms selected}] (if conditional? (assoc proof :condition-container (get container :proof)) proof))}
-                                  {:status :rejected :reason :vector-slice-source-mismatch})))
+                                  {:status :rejected :reason :vector-slice-source-mismatch}))
                               (let [id (get ids i) child (get nodes id) source (get child :source)]
-                                (if (if (p15-s23-sse-ids?? [id (get source :form-id) (get source :syntax-id)] 3)
+                                (if (if (p15-s23-sse-ids? [id (get source :form-id) (get source :syntax-id)] 3)
                                       (if (= false (contains? seen id)) (= false (contains? seen-forms (get source :form-id))) false) false)
                                   (let [form (get forms (get source :form-id)) value (get (get child :attributes) :value)
                                         kind (get (get child :attributes) :literal-kind)
-                                        valid? (if (p15-s23-sse-ids?? [(get form :form-id) (get form :syntax-id) (get form :parent-form-id) (get form :scope-id)] 4)
+                                        valid? (if (p15-s23-sse-ids? [(get form :form-id) (get form :syntax-id) (get form :parent-form-id) (get form :scope-id)] 4)
                                                  (if (= :integer kind)
                                                  (if (integer? value) (if (integer? (get form :value))
                                                    (if (integer? (get values i)) (integer? (get source-values i)) false) false) false)
                                                  (if (= :character kind) (if (char? value) (if (char? (get form :value))
                                                    (if (char? (get values i)) (char? (get source-values i)) false) false) false) false)) false)]
-                                    (if (if valid? (p15-s23-typed-all? [
+                                    (if (if valid? (p15-s23-typed-all [
                                           (= id (get child :node-id)) (= (get (get right-form :child-form-ids) i) (get form :form-id))
                                           (= :literal (get child :core-form)) (= {:literal-kind kind :value value} (get child :attributes))
                                           (= [] (get child :children) (get child :resolved-binding-ids) (get form :child-form-ids))
@@ -16548,10 +16574,11 @@
                                       (recur (+ i 1) (conj selected form) (conj members (if (= :integer kind) :gravity.type/integer :gravity.type/character))
                                              (conj seen id) (conj seen-forms (get source :form-id)))
                                       {:status :rejected :reason :vector-slice-source-mismatch}))
-                                  {:status :rejected :reason :vector-slice-source-mismatch}))
+                                  {:status :rejected :reason :vector-slice-source-mismatch})))
                           {:status :rejected :reason :vector-slice-source-mismatch})
                         {:status :rejected :reason :vector-slice-source-mismatch})
-                    {:status :rejected :reason :vector-slice-source-mismatch}))))
+                    {:status :rejected :reason :vector-slice-source-mismatch}))
+                    {:status :rejected :reason :vector-slice-source-mismatch}))
             {:status :rejected :reason :vector-slice-source-mismatch})
             container))))))
         {:status :rejected :reason :vector-slice-source-mismatch})))
@@ -16564,14 +16591,14 @@
         bid (get (get reference :attributes) :binding-id)]
     (if (= nil owner) {:status :not-applicable}
         (if (if (if (vector? records) (vector? mutations) false)
-              (p15-s23-sse-ids?? [owner bid (get reference :node-id)] 3) false)
+              (p15-s23-sse-ids? [owner bid (get reference :node-id)] 3) false)
           (if (loop [rows records]
                 (if (= 0 (count rows)) true
-                  (if (p15-s23-sse-ids?? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2)
+                  (if (p15-s23-sse-ids? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2)
                     (recur (rest rows)) false)))
             (let [record (p15-s23-nq-one records :function-syntax-id owner)
                   params (get record :parameter-binding-ids)]
-              (if (if (p15-s23-sse-ids?? params 1) (= [bid] params) false)
+              (if (if (p15-s23-sse-ids? params 1) (= [bid] params) false)
                 (let [fn-node (get nodes (get record :function-core-node-id))
                       function (get types (get record :function-core-node-id))
                       parameters (get function :parameters)
@@ -16582,34 +16609,34 @@
                     (let [validation (p15-s23-lc-validate-types [type (get slot :type)])]
                         (if (= false (= :accepted (get validation :status)))
                           {:status :rejected :reason :vector-slice-receiver-proof-required}
-                          (if (if (p15-s23-sse-ids?? [(get (get fn-node :source) :form-id) (get (get fn-node :source) :syntax-id)
+                          (if (if (p15-s23-sse-ids? [(get (get fn-node :source) :form-id) (get (get fn-node :source) :syntax-id)
                                       (get (get fn-node :attributes) :parameter-form-id) (get binding :definition-syntax-id)
                                       (get binding :scope-id) (get reference :binding-context)] 6)
-                                (p15-s23-sse-ids?? [(get (get reference :source) :form-id) (get (get reference :source) :syntax-id)
+                                (p15-s23-sse-ids? [(get (get reference :source) :form-id) (get (get reference :source) :syntax-id)
                                       (get (get slice-node :source) :form-id) (get slice-node :node-id)] 4) false)
                             (let [fn-form (get forms (get (get fn-node :source) :form-id))
                                   ids (get fn-form :child-form-ids)
                                   parameter-form (get forms (get (get fn-node :attributes) :parameter-form-id))
                                   names (get parameter-form :child-form-ids)]
-                              (if (if (p15-s23-sse-ids?? ids 3) (p15-s23-sse-ids?? names 1) false)
+                              (if (if (p15-s23-sse-ids? ids 3) (p15-s23-sse-ids? names 1) false)
                                 (let [operator (get forms (get ids 0)) name-form (get forms (get names 0))
                                       ref-form (get forms (get (get reference :source) :form-id))
                                       scope (get binding :scope-id)]
                                   (if (if (symbol? (get binding :name))
                                         (if (= nil (get binding :mutability)) true (keyword? (get binding :mutability))) false)
-                                  (if (p15-s23-typed-all?
+                                  (if (p15-s23-typed-all
                                         [(= :accepted (get validation :status))
                                          (= {:kind :gravity.type/vector :shape :literal :element-types members} type)
                                          (= :gravity/c7-function-type (get function :artifact))
                                          (= :inferred (get function :status))
                                          (= owner (get function :function-id) (get record :function-syntax-id) (get fn-form :syntax-id))
                                          (= (get record :function-core-node-id) (get fn-node :node-id) (get function :function-core-node-id))
-                                         (p15-s23-sse-ids?? (get function :parameter-binding-ids) 1)
-                                         (p15-s23-sse-ids?? (get fn-node :resolved-binding-ids) 1)
+                                         (p15-s23-sse-ids? (get function :parameter-binding-ids) 1)
+                                         (p15-s23-sse-ids? (get fn-node :resolved-binding-ids) 1)
                                          (= params (get function :parameter-binding-ids) (get fn-node :resolved-binding-ids))
                                          (= 1 (get function :fixed-arity) (get record :fixed-arity))
                                          (= nil (get record :signature) (get function :signature) (get (get fn-node :attributes) :signature))
-                                         (= :fn (get fn-node :core-form)) (p15-s23-sse-ids?? (get fn-node :children) 1)
+                                         (= :fn (get fn-node :core-form)) (p15-s23-sse-ids? (get fn-node :children) 1)
                                          (= [(get slice-node :node-id)] (get fn-node :children))
                                          (= :call (get (get nodes (get (get slice-node :children) 3)) :core-form))
                                          (= (get slice-node :node-id) (get record :body-core-node-id) (get function :body-core-node-id))
@@ -16669,24 +16696,24 @@
   (let [records (get core :lexical-bindings []) mutations (get core :mutations [])
       bid (get (get reference :attributes) :binding-id)]
     (if (if (if (vector? records) (vector? mutations) false)
-          (if (p15-s23-sse-ids?? [(get reference :node-id) (get (get reference :source) :form-id) (get (get reference :source) :syntax-id) bid (get slice-node :node-id)] 5)
-            (p15-s23-sse-ids?? [(get (get slice-node :source) :form-id) (get (get slice-node :source) :syntax-id)] 2) false) false)
+          (if (p15-s23-sse-ids? [(get reference :node-id) (get (get reference :source) :form-id) (get (get reference :source) :syntax-id) bid (get slice-node :node-id)] 5)
+            (p15-s23-sse-ids? [(get (get slice-node :source) :form-id) (get (get slice-node :source) :syntax-id)] 2) false) false)
         (if (if (loop [rows records] (if (= 0 (count rows)) true
-                (if (p15-s23-sse-ids?? [(get (first rows) :binding-id) (get (first rows) :let-core-node-id)] 2) (recur (rest rows)) false)))
+                (if (p15-s23-sse-ids? [(get (first rows) :binding-id) (get (first rows) :let-core-node-id)] 2) (recur (rest rows)) false)))
             (loop [rows mutations] (if (= 0 (count rows)) true
                 (if (= nil (get (first rows) :target-binding-id)) (recur (rest rows))
-                  (if (p15-s23-sse-ids?? [(get (first rows) :target-binding-id)] 1) (recur (rest rows)) false)))) false)
+                  (if (p15-s23-sse-ids? [(get (first rows) :target-binding-id)] 1) (recur (rest rows)) false)))) false)
           (let [record (p15-s23-nq-one records :binding-id bid) ]
             (if (map? record)
-              (if (if (p15-s23-sse-ids?? [(get record :let-core-node-id) (get record :initializer-node-id) (get record :definition-form-id) (get record :definition-syntax-id) (get record :initializer-form-id) (get record :initializer-syntax-id)] 6)
-                  (p15-s23-sse-ids?? [(get record :binding-scope-id) (get record :initializer-scope-id)] 2) false)
+              (if (if (p15-s23-sse-ids? [(get record :let-core-node-id) (get record :initializer-node-id) (get record :definition-form-id) (get record :definition-syntax-id) (get record :initializer-form-id) (get record :initializer-syntax-id)] 6)
+                  (p15-s23-sse-ids? [(get record :binding-scope-id) (get record :initializer-scope-id)] 2) false)
                 (let [let-node (get nodes (get record :let-core-node-id)) initializer (get nodes (get record :initializer-node-id))
                     binding (get bindings bid) ref-form (get forms (get (get reference :source) :form-id))
                     slice-form (get forms (get (get slice-node :source) :form-id))
                     name-form (get forms (get record :definition-form-id)) init-form (get forms (get record :initializer-form-id)) ]
-                  (if (if (p15-s23-sse-ids?? [(get (get let-node :source) :form-id) (get (get let-node :source) :syntax-id)
+                  (if (if (p15-s23-sse-ids? [(get (get let-node :source) :form-id) (get (get let-node :source) :syntax-id)
                           (get (get let-node :attributes) :binding-vector-form-id) (get (get let-node :attributes) :binding-vector-syntax-id) (get binding :definition-syntax-id)] 5)
-                      (if (p15-s23-sse-ids?? [(get let-node :node-id) (get initializer :node-id) (get binding :binding-id)] 3)
+                      (if (p15-s23-sse-ids? [(get let-node :node-id) (get initializer :node-id) (get binding :binding-id)] 3)
                         (symbol? (get binding :name)) false) false)
                     (let [let-form (get forms (get (get let-node :source) :form-id))
                         vector-form (get forms (get (get let-node :attributes) :binding-vector-form-id))
@@ -16695,20 +16722,20 @@
                                  (p15-s23-vsl-let-equality-body core let-node slice-node nodes bindings types forms ))
                         root-node (get bridge :node) root-form (get bridge :form)]
                       (if (= :accepted (get bridge :status))
-                        (if (p15-s23-typed-all? [(p15-s23-sse-ids?? [(get ref-form :form-id) (get ref-form :syntax-id) (get name-form :form-id) (get name-form :syntax-id) (get init-form :form-id) (get init-form :syntax-id)] 6)
-                            (p15-s23-sse-ids?? [(get slice-form :form-id) (get slice-form :syntax-id) (get let-form :form-id) (get let-form :syntax-id) (get vector-form :form-id) (get vector-form :syntax-id)] 6)])
-                        (if (if (p15-s23-sse-ids?? (get let-form :child-form-ids) 3)
-                            (if (p15-s23-sse-ids?? (get vector-form :child-form-ids) 2)
-                              (if (p15-s23-sse-ids?? [(get ref-form :scope-id) (get name-form :scope-id) (get slice-form :scope-id) (get init-form :scope-id) (get let-form :scope-id) (get binding :scope-id)] 6)
-                                (p15-s23-sse-ids?? [(get (get let-node :attributes) :outer-scope-id) (get (get let-node :attributes) :body-scope-id) (get reference :binding-context) (get initializer :binding-context) (get let-node :binding-context) (get slice-node :binding-context)] 6) false) false) false)
+                        (if (p15-s23-typed-all [(p15-s23-sse-ids? [(get ref-form :form-id) (get ref-form :syntax-id) (get name-form :form-id) (get name-form :syntax-id) (get init-form :form-id) (get init-form :syntax-id)] 6)
+                            (p15-s23-sse-ids? [(get slice-form :form-id) (get slice-form :syntax-id) (get let-form :form-id) (get let-form :syntax-id) (get vector-form :form-id) (get vector-form :syntax-id)] 6)])
+                        (if (if (p15-s23-sse-ids? (get let-form :child-form-ids) 3)
+                            (if (p15-s23-sse-ids? (get vector-form :child-form-ids) 2)
+                              (if (p15-s23-sse-ids? [(get ref-form :scope-id) (get name-form :scope-id) (get slice-form :scope-id) (get init-form :scope-id) (get let-form :scope-id) (get binding :scope-id)] 6)
+                                (p15-s23-sse-ids? [(get (get let-node :attributes) :outer-scope-id) (get (get let-node :attributes) :body-scope-id) (get reference :binding-context) (get initializer :binding-context) (get let-node :binding-context) (get slice-node :binding-context)] 6) false) false) false)
                           (let [op-form (get forms (get (get let-form :child-form-ids) 0))
                               body (get record :binding-scope-id) outer (get record :initializer-scope-id)
                         bound-forms (loop [remaining (get bridge :source-forms) out [ref-form let-form op-form vector-form name-form]]
                                       (if (= 0 (count remaining)) out (recur (rest remaining) (conj out (first remaining)))))  ]
-                            (if (p15-s23-typed-all? [(p15-s23-sse-ids?? [(get op-form :form-id) (get op-form :syntax-id)] 2)
+                            (if (p15-s23-typed-all [(p15-s23-sse-ids? [(get op-form :form-id) (get op-form :syntax-id)] 2)
                                   (symbol? (get op-form :value)) (symbol? (get ref-form :value)) (symbol? (get name-form :value))
                                   (symbol? (get record :name)) (symbol? (get (get reference :attributes) :symbol))])
-                              (if (p15-s23-typed-all? [
+                              (if (p15-s23-typed-all [
                                     (= [:lexical :local] [(get binding :binding-class) (get binding :kind)])
                                     (= bid (get binding :binding-id))
                                     (if (= nil (get binding :mutability)) true (= :immutable (get binding :mutability)))
@@ -16780,32 +16807,32 @@
         first-body? (= :direct-vector-first (get body-consumer :kind))
         parameter? (= :immutable-parameter-vector (get (get receiver :receiver) :kind))]
     (if (if (if (vector? calls) (vector? edges) false) (vector? functions) false)
-        (if (p15-s23-typed-all?
-              [(p15-s23-sse-ids?? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3)
+        (if (p15-s23-typed-all
+              [(p15-s23-sse-ids? [(get node :node-id) (get (get node :source) :form-id) (get (get node :source) :syntax-id)] 3)
                (loop [rows calls] (if (= 0 (count rows)) true
-                 (if (p15-s23-sse-ids?? [(get (first rows) :core-node-id)] 1) (recur (rest rows)) false)))
+                 (if (p15-s23-sse-ids? [(get (first rows) :core-node-id)] 1) (recur (rest rows)) false)))
                (loop [rows edges] (if (= 0 (count rows)) true
-                 (if (p15-s23-sse-ids?? [(get (first rows) :call-core-node-id)] 1) (recur (rest rows)) false)))
+                 (if (p15-s23-sse-ids? [(get (first rows) :call-core-node-id)] 1) (recur (rest rows)) false)))
                (loop [rows functions] (if (= 0 (count rows)) true
-                 (if (p15-s23-sse-ids?? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2)
+                 (if (p15-s23-sse-ids? [(get (first rows) :function-syntax-id) (get (first rows) :function-core-node-id)] 2)
                    (recur (rest rows)) false)))])
           (let [call (p15-s23-nq-one calls :core-node-id (get node :node-id))
                 edge (p15-s23-nq-one edges :call-core-node-id (get node :node-id))
                 lexical (get receiver :receiver) original (get lexical :reference)
                 local-binding (get lexical :binding) record (get lexical :record)]
             (if (if (if (map? call) (map? edge) false)
-                  (if (p15-s23-typed-all? [(p15-s23-sse-ids?? [(get call :operator-node-id) (get call :operator-binding-id)] 2)
-                                      (p15-s23-sse-ids?? (get node :children) 2)
-                                      (p15-s23-sse-ids?? (get call :argument-node-ids) 1)])
+                  (if (p15-s23-typed-all [(p15-s23-sse-ids? [(get call :operator-node-id) (get call :operator-binding-id)] 2)
+                                      (p15-s23-sse-ids? (get node :children) 2)
+                                      (p15-s23-sse-ids? (get call :argument-node-ids) 1)])
                     (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false) false)
               (let [operator (get nodes (get call :operator-node-id)) binding (get bindings (get call :operator-binding-id))
                     children (get node :children) argument (get nodes (get children 1))
                     profiles (get binding :profile-set) targets (get binding :target-set)]
                 (if (p15-s23-nq-ids? node call nodes bindings (get core :module))
-                    (if (if (p15-s23-typed-all? [(p15-s23-sse-ids?? [(get argument :node-id) (get (get argument :source) :form-id) (get (get argument :source) :syntax-id)
+                    (if (if (p15-s23-typed-all [(p15-s23-sse-ids? [(get argument :node-id) (get (get argument :source) :form-id) (get (get argument :source) :syntax-id)
                                         (get (get argument :attributes) :binding-id) (get (get argument :attributes) :definition-syntax-id)
                                         (get argument :binding-context)] 6)
-                                        (p15-s23-sse-ids?? [(get node :binding-context) (get operator :binding-context)
+                                        (p15-s23-sse-ids? [(get node :binding-context) (get operator :binding-context)
                                         (get binding :definition-syntax-id) (get (get operator :attributes) :definition-syntax-id)] 4)])
                         (if (keyword? (get (get core :module) :target))
                           (if (loop [rows profiles] (if (= 0 (count rows)) true (if (keyword? (first rows)) (recur (rest rows)) false)))
@@ -16816,22 +16843,22 @@
                           slice-form (get forms (get (get slice-node :source) :form-id))
                           scope (if parameter? (get local-binding :scope-id) (get record :binding-scope-id)) region (get (get slice-node :evaluation) :region)
                           caller (get (get slice-node :evaluation) :owner-function-syntax-id)]
-                      (if (if (p15-s23-typed-all? [(p15-s23-sse-ids?? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
+                      (if (if (p15-s23-typed-all [(p15-s23-sse-ids? [(get owner :form-id) (get owner :syntax-id) (get op-form :form-id) (get op-form :syntax-id)
                                             (get arg-form :form-id) (get arg-form :syntax-id)] 6)
-                                            (p15-s23-sse-ids?? [(get owner :scope-id) (get op-form :scope-id) (get arg-form :scope-id)] 3)])
+                                            (p15-s23-sse-ids? [(get owner :scope-id) (get op-form :scope-id) (get arg-form :scope-id)] 3)])
                             (if (symbol? (get op-form :value)) (if (symbol? (get arg-form :value))
                               (if (symbol? (get (get argument :attributes) :symbol))
-                                (if (= nil caller) true (p15-s23-sse-ids?? [caller] 1)) false) false) false) false)
-                        (if (p15-s23-typed-all?
+                                (if (= nil caller) true (p15-s23-sse-ids? [caller] 1)) false) false) false) false)
+                        (if (p15-s23-typed-all
                               [(if parameter? true (= :immutable-let-vector (get lexical :kind)))
                                (if parameter? true (= :authenticated-string-character-vector (get (get lexical :origin) :kind)))
                                (if (= nil body-consumer)
                                  (= (get slice-node :node-id) (get (get (get lexical :owner) :children) (if parameter? 0 1)))
                                  (if first-body?
                                    (let [head-node (get body-consumer :node) head-op (get body-consumer :operator)]
-                                     (if (if (p15-s23-sse-ids?? [(get head-node :node-id) (get head-op :node-id)] 2)
-                                           (p15-s23-sse-ids?? (get head-node :children) 2) false)
-                                       (p15-s23-typed-all? [(= head-node (get nodes (get head-node :node-id)))
+                                     (if (if (p15-s23-sse-ids? [(get head-node :node-id) (get head-op :node-id)] 2)
+                                           (p15-s23-sse-ids? (get head-node :children) 2) false)
+                                       (p15-s23-typed-all [(= head-node (get nodes (get head-node :node-id)))
                                                 (= head-op (get nodes (get head-op :node-id)))
                                                 (= (get head-node :node-id) (get (get (get lexical :owner) :children) 1))
                                                 (= [(get head-op :node-id) (get slice-node :node-id)] (get head-node :children))]) false))
@@ -16883,11 +16910,11 @@
                 receiver-node (get nodes (get args 0)) start-node (get nodes (get args 1)) end-node (get nodes (get args 2))
                 arguments (p15-s23-io-child-types args types)
                 owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-            (if (if (p15-s23-sse-ids?? ids 4)
+            (if (if (p15-s23-sse-ids? ids 4)
                   (loop [remaining args]
                     (if (= 0 (count remaining)) true
                       (let [operand (get nodes (first remaining))]
-                        (if (p15-s23-sse-ids?? [(get operand :node-id) (get (get operand :source) :form-id)
+                        (if (p15-s23-sse-ids? [(get operand :node-id) (get (get operand :source) :form-id)
                                             (get (get operand :source) :syntax-id)] 3)
                           (recur (rest remaining)) false)))) false)
               (let [operator (get nodes (first children))
@@ -16895,12 +16922,12 @@
                                (if (= 0 (count remaining)) out
                                  (recur (rest remaining) (conj out (get forms (get (get (get nodes (first remaining)) :source) :form-id))))))
                     valid-source? (if (symbol? (get (get selected 1) :value))
-                                    (p15-s23-typed-all?
+                                    (p15-s23-typed-all
                                       [(= :list (get owner :kind)) (= (get node :source) (p15-s23-typed-source owner))
                                        (loop [i 0]
                                          (if (= i 4) true
                                            (let [form (get selected (+ i 1)) child (get nodes (get children i))]
-                                             (if (p15-s23-typed-all? [(= (get ids i) (get form :form-id))
+                                             (if (p15-s23-typed-all [(= (get ids i) (get form :form-id))
                                                    (= (get owner :form-id) (get form :parent-form-id))
                                                    (= (get child :source) (p15-s23-typed-source form))
                                                    (if (= i 0) (if (= :symbol (get form :kind))
