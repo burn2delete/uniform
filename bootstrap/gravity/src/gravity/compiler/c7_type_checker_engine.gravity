@@ -24045,34 +24045,31 @@
 ; A recursive result never witnesses its own return type. Select only normal
 ; return positions reachable through independently typed control and prefixes.
 ; Pending positions remain obligations of the later complete body check.
-(defn sh08-is-return-witness [record nodes types budget]
+(defn sh08-is-return-witness [record nodes types]
   ; Each active return path carries its own canonical-ID ancestors. Shared
   ; acyclic leaves remain independent witnesses; path length is not admission.
   (let [body (get record :body-core-node-id)]
     (loop [queue [{:node-id body :path [body] :control-records [] :ancestors #{}}] offset 0
-           witnesses [] pending [] selected nil work 0]
+           witnesses [] pending [] selected nil]
       (if (= offset (count queue))
         (if (> (count witnesses) 0)
           {:status :accepted :return-type selected :witnesses witnesses
-           :pending-return-node-ids pending :work-count work}
+           :pending-return-node-ids pending}
           {:status :rejected :reason :private-self-independent-return-required
-           :pending-return-node-ids pending :work-count work})
+           :pending-return-node-ids pending})
         (let [frame (get queue offset) id (get frame :node-id)
               valid-id? (if (keyword? id) true (if (string? id) (> (count id) 0) false))
               node (if valid-id? (get nodes id) nil)
               kind (get node :core-form) children (get node :children)
               path (get frame :path) controls (get frame :control-records) ancestors (get frame :ancestors)
-              type (if valid-id? (get types id :gravity.type/unknown) :gravity.type/unknown)
-              used (+ work 1 (* (+ 3 (count path) (count controls)) (+ 1 (count children))))]
-          (if (> used budget)
-            {:status :rejected :reason :private-self-work-limit :work-count used}
-            (if (if valid-id? (contains? ancestors id) false)
-              {:status :rejected :reason :private-self-return-cycle :work-count used}
+              type (if valid-id? (get types id :gravity.type/unknown) :gravity.type/unknown)]
+          (if (if valid-id? (contains? ancestors id) false)
+              {:status :rejected :reason :private-self-return-cycle}
               (if (= false (if (map? node)
                                (let [stored-id (get node :node-id)]
                                  (if (if (keyword? stored-id) true (if (string? stored-id) (> (count stored-id) 0) false))
                                    (= id stored-id) false)) false))
-                {:status :rejected :reason :private-self-return-source-required :work-count used}
+                {:status :rejected :reason :private-self-return-source-required}
                 (if (= kind :if)
                   (if (= 3 (count children))
                     (let [condition-id (first children) condition (get nodes condition-id)
@@ -24088,7 +24085,7 @@
                                    :condition-type condition-type :condition-source (get condition :source)
                                    :selected-branch-indexes branches :rule :independent-normal-condition}]
                       (if (= condition-type :gravity.type/never)
-                        (recur queue (+ offset 1) witnesses pending selected used)
+                        (recur queue (+ offset 1) witnesses pending selected)
                         (if (sh08-ft-known? condition-type)
                           (recur
                             (loop [remaining branches out queue]
@@ -24097,9 +24094,9 @@
                                   (recur (rest remaining)
                                     (conj out {:node-id child :path (conj path child) :ancestors (conj ancestors id)
                                                :control-records (conj controls control)})))))
-                            (+ offset 1) witnesses pending selected used)
-                          (recur queue (+ offset 1) witnesses (conj pending id) selected used))))
-                    {:status :rejected :reason :private-self-return-source-required :work-count used})
+                            (+ offset 1) witnesses pending selected)
+                          (recur queue (+ offset 1) witnesses (conj pending id) selected))))
+                    {:status :rejected :reason :private-self-return-source-required})
                   (if (contains? #{:do :let} kind)
                     (if (> (count children) 0)
                       (let [prefix (loop [i 0 out [] normal? true abort? false]
@@ -24111,35 +24108,35 @@
                                            (if (= child-type :gravity.type/never) true abort?)))))
                             last-id (get children (- (count children) 1))]
                         (if (get prefix :abort?)
-                          (recur queue (+ offset 1) witnesses pending selected used)
+                          (recur queue (+ offset 1) witnesses pending selected)
                           (if (get prefix :normal?)
                             (recur (conj queue {:node-id last-id :path (conj path last-id) :ancestors (conj ancestors id)
                                                 :control-records (conj controls {:owner-core-node-id id
                                                                                  :rule :independent-normal-prefix
                                                                                  :prefix (get prefix :rows)})})
-                              (+ offset 1) witnesses pending selected used)
-                            (recur queue (+ offset 1) witnesses (conj pending id) selected used))))
-                      {:status :rejected :reason :private-self-independent-return-required :work-count used})
+                              (+ offset 1) witnesses pending selected)
+                            (recur queue (+ offset 1) witnesses (conj pending id) selected))))
+                      {:status :rejected :reason :private-self-independent-return-required})
                     (if (if (contains? #{:throw :recur} kind) true (= type :gravity.type/never))
-                      (recur queue (+ offset 1) witnesses pending selected used)
+                      (recur queue (+ offset 1) witnesses pending selected)
                       (if (contains? #{:try :alternatives :loop :match} kind)
-                        {:status :rejected :reason :private-self-return-shape-required :work-count used}
+                        {:status :rejected :reason :private-self-return-shape-required}
                         (if (sh08-is-value-type? type)
                           (if (if (= selected nil) false (= false (= selected type)))
                             {:status :rejected :reason :private-self-return-type-conflict
-                             :expected selected :actual type :node-id id :work-count used}
+                             :expected selected :actual type :node-id id}
                             (recur queue (+ offset 1)
                               (conj witnesses {:node-id id :source (get node :source) :type type
                                                :path path :control-records controls
                                                :rule :independent-normal-return-value})
-                              pending type used))
+                              pending type))
                           (if (sh08-ft-unknown? type)
-                            (recur queue (+ offset 1) witnesses (conj pending id) selected used)
+                            (recur queue (+ offset 1) witnesses (conj pending id) selected)
                             {:status :rejected :reason :private-self-return-value-type-required
-                             :actual type :node-id id :work-count used}))))))))))))))
+                             :actual type :node-id id})))))))))))))
 
 (defn sh08-is-cold-infer [core products record nodes bindings forms imports mode parameter-types budget]
-  (let [cut (sh08-is-cold-cut core record nodes mode budget)
+  (let [cut (sh08-is-cold-cut core record nodes mode)
         sequence (get core :nodes) records (get core :function-records)
         calls (get core :calls) edges (get core :call-edges)
         locals (get core :lexical-bindings) definitions (get core :definitions)
@@ -24190,8 +24187,7 @@
                       (loop [ids (get record :parameter-binding-ids) types parameter-types out seeds]
                         (if (= 0 (count ids)) out
                           (recur (rest ids) (rest types) (assoc out (first ids) (first types))))) seeds)
-              quotes (sh08-qd-products-with-budget selected-nodes forms (get core :module) (- budget base))
-              spent (+ base (get quotes :work-count 0))]
+              quotes (sh08-qd-products selected-nodes forms (get core :module))]
           (if (> (count (get quotes :diagnostics)) 0)
             {:status :rejected :reason
              (if (loop [remaining (get quotes :diagnostics)]
@@ -24224,41 +24220,19 @@
              :mode mode :cut cut :quoted-products quotes :source-preparation-work-count base
              :inference inferred :work-count work}))))))))))
 
-(defn sh08-is-proof [shape products bindings module prior-work]
+(defn sh08-is-proof [shape products bindings module]
   (let [core (get shape :analysis-core) source-forms (get shape :analysis-source-forms)
         nodes (get products :node-table) records (get products :function-records)
         calls (get products :calls) edges (get products :call-edges)
-        components (get products :recursion-components)
-        prefix (+ prior-work 16 (count records) (count calls) (count (get core :recur-targets)))]
-    (if (> prefix 65536) {:status :rejected :reason :private-self-work-limit :work-count prefix}
-      (if (if (= 1 (count components)) (map? core) false)
+        components (get products :recursion-components)]
+    (if (if (= 1 (count components)) (map? core) false)
         (let [component (first components) id (first (get component :function-syntax-ids))
               record (sh08-ft-function-by-syntax-id records id) arity (get record :fixed-arity)
-              argument-slots (loop [remaining calls total 0]
-                               (if (= 0 (count remaining)) total
-                                 (recur (rest remaining) (+ total (count (get (first remaining) :argument-node-ids))))))
-              target-slots (loop [remaining (get core :recur-targets) total 0]
-                             (if (= 0 (count remaining)) total
-                               (recur (rest remaining) (+ total (count (get (first remaining) :binding-ids))))))
-              ; Before the budgetless source census: reserve global population
-              ; scans and each selected call's use/resolution/edge/owner joins.
-              reservation (+ prefix (if (= 3 arity) (* 4 (count calls)) 0) (* 8 (count (get core :nodes))) (* 4 (count bindings))
-                             (* 2 (count source-forms)) (* 4 (count (get core :definitions)))
-                             (* 4 (count (get core :lexical-bindings))) (* 3 (count (get core :mutations)))
-                             (count (get core :var-references)) (* 2 (count (get core :reference-uses)))
-                             (* 2 (count (get (get core :preserved-resolution) :resolution-table)))
-                             (count (get (get core :module) :exports)) (* 4 (count records))
-                             (* 4 argument-slots) (* 4 (if (integer? arity) (if (> arity 0) arity 0) 0))
-                             (count (get core :recur-transfers))
-                             (* (count (get core :recur-transfers)) (+ (count (get core :recur-targets)) target-slots))
-                             (* (count calls) (+ 32 (* 3 (count calls)) (count records)
-                                               (* 4 (if (integer? arity) (if (> arity 0) arity 0) 0)))))]
-          (if (> reservation 65536) {:status :rejected :reason :private-self-work-limit :work-count reservation}
-            (if (= false (if (integer? arity) (if (> arity 0) (<= arity 1024) false) false))
-              {:status :rejected :reason :private-self-fixed-arity-required :work-count reservation}
-            (let [binding-table (sh08-ft-binding-index bindings)
-                  forms (sh08-ft-index source-forms :form-id)
-                  census (sh08-is-private-census record core nodes binding-table forms)
+              binding-table (sh08-ft-binding-index bindings)
+              forms (sh08-ft-index source-forms :form-id)]
+            (if (= false (if (integer? arity) (> arity 0) false))
+              {:status :rejected :reason :private-self-fixed-arity-required}
+            (let [census (sh08-is-private-census record core nodes binding-table forms)
                   self (first (sh08-pe-select (get census :edges) :caller-function-syntax-id id))
                   self-call (sh08-pe-one (get census :calls) :core-node-id (get self :call-core-node-id))
                   locals (loop [remaining (get core :lexical-bindings) out (set (get record :parameter-binding-ids))]
@@ -24281,14 +24255,12 @@
                                     (recur (rest remaining)) false))))]
               (if (if (map? census) captures? false)
                 (let [cold (sh08-is-cold-infer core products record nodes bindings source-forms
-                             (get shape :analysis-imports) :entries [] (- 65536 reservation))
-                      after-cold (+ reservation (get cold :work-count 0))]
+                             (get shape :analysis-imports) :entries [])]
                   (if (= :accepted (get cold :status))
                     (let [indexed? (sh08-ix-candidate? record nodes census (get (get cold :inference) :type-table))
                           entries (if indexed?
                                     (sh08-ix-entry-values census nodes (get (get cold :inference) :type-table) forms)
                                     (sh08-is-entry-values census nodes (get (get cold :inference) :type-table)))
-                          after-entries (+ after-cold (get entries :work-count 0))
                           declarations (get (get record :signature) :parameters)
                           declared? (loop [types (get entries :parameter-types) declarations declarations]
                                       (if (= 0 (count types)) true
@@ -24297,9 +24269,8 @@
                                           (recur (rest types) (rest declarations)) false)))]
                       (if (if (= :accepted (get entries :status)) declared? false)
                         (let [induction (if indexed?
-                                          (sh08-ix-source core census entries nodes binding-table forms (- 65536 after-entries))
-                                          {:status :not-applicable :work-count 0})
-                              after-induction (+ after-entries (get induction :work-count 0))
+                                          (sh08-ix-source core census entries nodes binding-table forms)
+                                          {:status :not-applicable})
                               premise (if indexed?
                                         {:domain :gravity/sh08-indexed-private-self-entry-premise-v1
                                          :source-census census :entry-values entries
@@ -24311,13 +24282,10 @@
                               working (assoc core :sh08-private-self-parameter-premise premise)
                               body-cold (if (= :rejected (get induction :status)) induction
                                           (sh08-is-cold-infer working products record nodes bindings source-forms
-                                            (get shape :analysis-imports) :body (get entries :parameter-types) (- 65536 after-induction)))
-                              after-body (+ after-induction (if (= :rejected (get induction :status)) 0 (get body-cold :work-count 0)))]
+                                            (get shape :analysis-imports) :body (get entries :parameter-types)))]
                           (if (= :accepted (get body-cold :status))
                             (let [witness (if indexed? (get induction :return-witness)
-                                            (sh08-is-return-witness record nodes (get (get body-cold :inference) :type-table)
-                                              (- 65536 after-body)))
-                                  work (+ after-body (if indexed? 0 (get witness :work-count 0)))
+                                            (sh08-is-return-witness record nodes (get (get body-cold :inference) :type-table)))
                                   return-declaration (get (get record :signature) :return)]
                               (if (if (= :accepted (get witness :status))
                                     (if (= return-declaration nil) true
@@ -24329,8 +24297,7 @@
                                  :self-call-core-node-id (get self-call :core-node-id)
                                  :parameter-types (get entries :parameter-types) :inferred-return-type (get witness :return-type)
                                  :parameter-value-premise premise :cold-body-derivation (sh08-is-cold-evidence body-cold)
-                                 :return-witness witness :source-reservation-work reservation :prior-attempt-work prior-work
-                                 :work-count work :module module
+                                 :return-witness witness :module module
                                  :owned-node-ids (loop [remaining (get core :nodes) out []]
                                                    (if (= 0 (count remaining)) out
                                                      (recur (rest remaining)
@@ -24341,15 +24308,15 @@
                                                             (recur (rest remaining)
                                                               (if (= id (get (first remaining) :callee-function-syntax-id))
                                                                 (conj out (get (first remaining) :call-core-node-id)) out))))}
-                                {:status :rejected :reason (if (= :rejected (get witness :status)) (get witness :reason)
+                                 {:status :rejected :reason (if (= :rejected (get witness :status)) (get witness :reason)
                                                             :private-self-return-declaration-conflict)
-                                 :return-witness witness :work-count work}))
-                            (assoc body-cold :work-count after-body)))
-                        (if (= :rejected (get entries :status)) (assoc entries :work-count after-entries)
-                          {:status :rejected :reason :private-self-parameter-declaration-conflict :work-count after-entries})))
-                    (assoc cold :work-count after-cold)))
-                {:status :rejected :reason :private-self-source-census-or-capture :work-count reservation})))))
-        {:status :rejected :reason :private-self-source-single-component-required :work-count prefix}))))
+                                 :return-witness witness}))
+                            body-cold))
+                        (if (= :rejected (get entries :status)) entries
+                          {:status :rejected :reason :private-self-parameter-declaration-conflict})))
+                    cold))
+                {:status :rejected :reason :private-self-source-census-or-capture}))))
+        {:status :rejected :reason :private-self-source-single-component-required})))
 
 (defn sh08-ft-proof-results [shape products bindings module]
   (let [legacy-recursive-proof
@@ -24369,7 +24336,7 @@
           (let [declared (sh08-ds-proof shape products bindings module)]
             (if (= :accepted (get declared :status)) declared
               (if (= :declared-self-work-limit (get declared :reason)) declared
-                (let [inferred (sh08-is-proof shape products bindings module (get declared :work-count))]
+                (let [inferred (sh08-is-proof shape products bindings module)]
                   (if (if (= :accepted (get inferred :status)) true
                         (= false (contains? #{:private-self-source-single-component-required
                                               :private-self-source-census-or-capture :private-self-fixed-arity-required}
