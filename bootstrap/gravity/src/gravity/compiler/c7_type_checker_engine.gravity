@@ -23480,8 +23480,9 @@
                       combined-constraints (sh08-ft-add-values-to-set (get throw-products :constraints) base-constraints)
                       convergence
                       {:status (get inference :convergence-status)
-                       :proof
-                       :monotone-finite-type-fact-propagation}
+                       :method (if recursive?
+                                 :checked-recursive-rule
+                                 :exact-inference-state-fixed-point)}
                       identity-input-base
                       {:domain (if recursive?
                                 (if (sh08-is? recursive-proof)
