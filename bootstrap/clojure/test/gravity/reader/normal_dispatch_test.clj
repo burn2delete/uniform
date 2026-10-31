@@ -35,7 +35,12 @@
 (defn sh03-reader-boundary-fail! [_ rule _ _]
   (throw (ex-info "Fixture reached normal Reader refusal" {:id "C2-HASH" :rule rule})))
 
-(declare sh03-reader-host-bigint! sh03-reader-host-decimal-value!
+;; This existing fixture family exercises standard/pure policies only. The
+;; separate resource connection model owns the lexical resource ports.
+(defn reader-resource-options? [_] false)
+(declare reader-resource-record!)
+
+(declare sh03-reader-host-bigint! sh03-reader-host-decimal-value! sh03-reader-host-atomic-value!
          sh03-reader-host-character-value! sh03-reader-host-values!
          sh03-reader-semantic-value-reference-keys sh03-reader-source-slice-keys
          standard-reader-policy sh03-reader-source-scalar-boundaries!

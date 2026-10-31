@@ -196,6 +196,9 @@
          p15-s23-stage2-sh02-descriptor-envelope-verify! c2-reader-fail!
          source-span standard-reader-options)
 
+(defn reader-resource-admission-required? [_] false)
+(declare reader-resource-consume! reader-resource-record!)
+
 (binding [*ns* (the-ns 'gravity.reader.gravity-pure-text-test)]
   (eval (first (filter #(and (seq? %) (= 'sh03-c3-precomputed-c2-verify! (second %)))
                        (forms (str "bootstrap/clojure/src/gravity/bootstrap_impl/components/"
@@ -277,7 +280,7 @@
         bindings (second (nth definition 3))
         expression (get (into {} (map vec (partition 2 bindings))) 'extension-records)
         project (binding [*ns* (the-ns 'gravity.reader.gravity-pure-text-test)]
-                  (eval (list 'fn '[sealed? result form-id-map source-path source-id
+                  (eval (list 'fn '[sealed? resource? result form-id-map source-path source-id
                                    source-bytes source-content-id scalar-boundaries form-tree]
                               expression)))
         result (resolved-model)
@@ -286,7 +289,7 @@
       {'sh03-reader-path-span (fn [_ _ span] (assoc span :file :synthetic-source))
        'sh03-reader-accepted-raw-text! (fn [& _] "#text \"x\"")}
       (fn []
-        (let [record (first (project true result {"form/0" :form-0 "form/1" :form-1}
+        (let [record (first (project true false result {"form/0" :form-0 "form/1" :form-1}
                                     "pair.gravity" :synthetic-source nil nil nil nil))
               projected (first (:invocations record))]
           (is (= :form-0 (:form-id projected)))
