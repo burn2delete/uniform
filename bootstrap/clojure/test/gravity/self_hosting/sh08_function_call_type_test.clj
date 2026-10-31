@@ -9880,12 +9880,28 @@
         [group _] (keyword-match-alias-group {:node (:node base) :nodes (:nodes base) :forms (:forms base) :binding-index (:bindings base)}
                                             (get-in base [:nodes :input]) (:types base))
         alias (first (get-in group [:node :children])) bid (first (get-in group [:nodes alias :resolved-binding-ids]))
-        receiver (-> (get-in group [:nodes alias]) (assoc-in [:attributes :binding-class] :lexical))]
+        receiver (-> (get-in group [:nodes alias]) (assoc-in [:attributes :binding-class] :lexical))
+        children [:operator alias :key]
+        node (-> (:node base) (assoc :children children)
+                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
+        call (assoc (:call base) :argument-node-ids [alias :key] :ordered-evaluation-node-ids children)
+        edge (assoc (:edge base) :argument-core-node-ids [alias :key] :ordered-evaluation-node-ids children)
+        nodes (assoc (:nodes group) alias receiver :present-get node)
+        forms (-> (:forms group) (assoc-in [:present-get :child-form-ids] children)
+                  (assoc-in [alias :parent-form-id] :present-get))
+        types (assoc (:types base) alias (get-in base [:types :input]))
+        core (assoc (:core base) :nodes (vec (vals nodes)) :calls [call] :call-edges [edge]
+                    :lexical-bindings (:lexical-bindings group))
+        context (assoc (invoke-c7 'sh08-sm-call-context
+                                  [(assoc (:products base) :calls [call] :call-edges [edge]) types])
+                       :source-core core)
+        args [node nodes types {bid (:input types)} {} (:lexical-bindings group) (:binding-index group)
+              forms {} context]
+        finite (invoke-c7 'sh08-mg-present-finite-derive args)
+        full (invoke-c7 'sh08-mg-present-derive args)]
     (is (= :accepted (:status finite)) (pr-str finite))
-    (is (= :accepted (:status high)))
-    (is (= :accepted (:status checked)) (pr-str checked))
-    (is (= (:descriptor finite) (:descriptor checked))))
-  )
+    (is (= :accepted (:status full)) (pr-str full))
+    (is (= (:descriptor finite) (:descriptor full)))))
 
 (defn- private-entry-cold-input []
   (let [base (private-entry-get-input)
@@ -12749,7 +12765,7 @@
       (is (= :not-applicable (:status (derive core node nodes changed bindings forms)))))
     (is (= homogeneous (:type (derive (assoc-in core [:function-records 0 :signature :return :type-id]
                                                {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword})
-                                     node nodes types bindings forms)))))
+                                     node nodes types bindings forms))))))
 
 (deftest sh08-list-if-join-inference-development-kernel
   (let [s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
@@ -12840,7 +12856,7 @@
       (let [large (finite (vec (repeat 1025 s))) result (join large same)]
         (is (= :accepted (:status result)))
         (is (= 1025 (get-in result [:branch-compatibility 0 :checked-member-count])))
-        (is (= result (join large same)))))
+        (is (= result (join large same))))
       (is (= :gravity.type/unknown
              (invoke-c7 'sh08-ft-normal-return-type [:alternatives [left same] :gravity.type/unknown])))
       (is (= :gravity.type/unknown
