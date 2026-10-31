@@ -29,3 +29,47 @@ No historical Reader, migration or native-launch refusal is retried or renewed.
 Full Core lowering, authenticated Core artifact publication, typing, safety,
 release, performance, self-hosting and seed retirement remain unsupported claims.
 This early boundary document grants no acceptance.
+
+The implementation adds 16 public projection functions to the six runtime
+functions: `source-path-from-resolution`, `semantic-span`, `value-kind`,
+`children`, `decimal-descriptor`, `decimal-evidence`, `projected-form-id`,
+`projected-syntax-id`, `neutral-value` (both arities), `macro-trace`,
+`root-syntax-id`, `decimal-evidence-complete!`, `semantic-macro-trace`,
+`build-form-tree`, `source-map-order` and `parameter-binding-paths`.
+`source-occurrence-context` and `projected-source-mismatch` remain private.
+The namespace contract records every API, private helper, port and nonclaim.
+Bootstrap preserves every original compatibility name, arity and visibility,
+with explicit callable Var ports and late construction/receipt root capture.
+
+The paired `sh-07-projection/source-occurrences` fixtures contain a decimal,
+ten-entry map, ten-entry set, Character, quoted map and expanded defn. The real
+current-development Reader/C5 path emits 66 form records, six roots, one macro
+origin trace and one decimal evidence family in each source spelling. The
+projection binding is
+`sha256:779017dd0c05bb4de564cc2a64de4b0fd73d062f222a1b61d022b54df55e2bb1`.
+Forging a projected parent's child links rejects with C6-ORIGIN,
+`:map-projected-child-link`. The complete C5 parent, emitted authenticated
+C5-to-Core request, form projection and rejection data compare equal before
+and after extraction, eight full product comparisons across both spellings.
+This is evidence for request/projection data, not a published Core artifact.
+
+All 18 moved algorithms conserve their original bodies after removing only
+explicit operation bindings; every unselected definition and the historical
+migration-pin body remain conserved. The strict EOF reader checks complete
+files. A fresh process loads 22 public functions and both private helpers
+without loading Bootstrap. Direct stage/test lint has zero errors or warnings.
+The first direct lint identified unused pure-function operation arguments and
+a falsely detected dependency shadowed by a local source-span binding; these
+were corrected without changing the algorithms. A scratch conservation-script
+scope error and one test delimiter error were corrected before semantic checks.
+
+Focused tests pass 7 tests / 424 assertions, including the existing source-map,
+Character and quoted-duplicate development kernels. These preserve evaluated
+map/set order, inert quote behavior, exact source/child/decoding bijections,
+decimal scale and consumption, macro transfer, deterministic occurrence IDs
+and source provenance. New stage tests also qualify all public/private stage
+roots and compatibility wrappers for construction and receipt invalidation.
+The language boundary passes 6 tests / 11 assertions; cljfmt accepts tools/ci.
+The CI runtime mode includes the three existing projection kernels in a fresh
+process. Full runtime regression, contextual lint, independent acceptance and
+exact-head CI remain required before integration.
