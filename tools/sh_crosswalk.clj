@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "1dc2471f87f2d0915e9dd003bf420254759ee031", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -284,7 +284,7 @@
   "cli/remaining-tasks-and-evidence/normalize-json-text-exit-codes-and-redaction"
   "cli/remaining-tasks-and-evidence/package-and-verify-user-entrypoints"],
  "compiler-api"
- ["pipeline" "plugins" "pass-evidence" "development-boundaries"],
+ ["pipeline" "plugins" "pass-evidence" "development-boundaries" "domain-ir-boundaries"],
  "core"
  ["core/current-evidence-and-remaining-work/core1-lower-core-forms"
   "core/current-evidence-and-remaining-work/core2-preserve-binding-structure"
@@ -503,12 +503,10 @@
     :composition-receipt-sha256 "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904"
     :scope "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."}
    :qualification "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate."}})
-(def mapping-review
+(def reader-dispatch-mapping-review
 {:status :pending-source-version-review,
- :pre-source-api-input-fingerprint "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
- :source-api-qualification "Pure Native selector ownership adoption; all predecessor Reader/Build source and review history retained, no admission or implementation acceptance.",
  :input-fingerprint
- "f46081f1dfe8ee424b8b1d97faf37df26c7750e5488c4843f06dfbbd5fdfd264",
+ "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
  :predecessor-review
  {:status :pending-source-version-review,
   :input-fingerprint
@@ -561,7 +559,7 @@
    :input-fingerprint
    "660701592149e71eae4ec4408301c54d34fd4ca7dcf58eebef1888cacadb5abb"},
   :source-version-bridge
-  "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
+   "specs/sh-family-crosswalk/reader-dispatch-source-version.edn",
   :qualification
   "Reader metadata source 2e0292c6 reconciled with main43112981 in e446f326; both standalone ownership records retained. Incoming and Reader predecessor reviews remain historical; composed inputs await independent source-version review. No implementation acceptance or task credit."},
  :pkg5-source-review
@@ -639,6 +637,83 @@
  :prior-current-main-qualification
  "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."}
 )
+(def compiler-domain-predecessor-review
+  (assoc reader-dispatch-mapping-review
+         :input-fingerprint "72d98bc3492489de1de0f43982ac06f707578f57468b3df934e2eec3c8e85aed"
+         :source-version-bridge "specs/sh-family-crosswalk/reader-assembly-source-version.edn"
+         :reader-assembly-predecessor-review reader-dispatch-mapping-review
+         :reader-assembly-source-version
+         "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))
+
+(def syntax-pipeline-predecessor-review (assoc compiler-domain-predecessor-review :compiler-domain-predecessor-review compiler-domain-predecessor-review :input-fingerprint "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465" :compiler-domain-current-source {:status :pending-independent-affected-composition-review, :path "specs/compiler-api-workflow/domain-contract-source-composition.edn", :sha256 "ee5fe99c1b1184cbc4432237fffe1e955d3660271f4f1e6f57c1b7e03dce9e5e", :source-commit "ce96db1e2d4fd2846b8939ca9b01d6f8d5934474", :implementation-credit :none, :global-count-adoption :none}))
+
+(def macro-runtime-predecessor-review
+  (assoc syntax-pipeline-predecessor-review
+         :input-fingerprint "9bbe81fd3a6b40aa2cff2ba10d32764ab86faf692bd8d3cb133e018a022a4a4e"
+         :source-version-bridge "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"
+         :syntax-pipeline-predecessor-review
+         (select-keys syntax-pipeline-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])))
+
+(def macro-artifacts-predecessor-review
+  (assoc macro-runtime-predecessor-review
+         :input-fingerprint "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048"
+         :source-version-bridge "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
+         :macro-runtime-predecessor-review
+         (select-keys macro-runtime-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])))
+
+(def macro-artifacts-current-review
+  (assoc macro-artifacts-predecessor-review
+         :input-fingerprint "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86"
+         :source-version-bridge "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"
+         :macro-artifacts-predecessor-review
+         (select-keys macro-artifacts-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])))
+
+(def pr574-predecessor-review macro-runtime-predecessor-review)
+
+(def resolution-main-predecessor-review
+  (assoc macro-artifacts-current-review
+         :input-fingerprint "5fe8f9a8d3b7297cd8613e48637528ec01fe0a35f58182a98a4dfa28bfaa8af7"
+         :macro-artifacts-current-review (select-keys macro-artifacts-current-review [:status :input-fingerprint :source-version-bridge])
+         :current-main-predecessor-review macro-artifacts-predecessor-review
+         :pr574-predecessor-review pr574-predecessor-review
+         :published-d15-review (:published-d15-review (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn")))
+         :native-pure-source-review (:native-pure-source-review (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-composition-source-version.edn")))
+         :previous-Native-review (:previous-review (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn")))
+         :source-version-bridge "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"
+         :qualification "Actual macro artifacts and accepted Native header reporting composition only; preserve all predecessor histories and pending unassessed scope."))
+
+(defn git-source [commit path]
+  (let [process (.start (doto (ProcessBuilder. ^java.util.List ["git" "show" (str commit ":" path)])
+                         (.redirectErrorStream true)))
+        text (slurp (.getInputStream process))]
+    (when-not (zero? (.waitFor process))
+      (throw (ex-info "Pinned local Git source unavailable; no projection written" {:path path :source-commit commit})))
+    text))
+
+(def resolution-runtime-current-review
+  (:mapping-review (edn/read-string
+                    (git-source "a83255c9de9158c6925b97637cd5d64cbdb71892"
+                                "specs/sh-family-crosswalk/crosswalk.edn"))))
+
+(def resolution-runtime-predecessor-review
+  (:resolution-runtime-predecessor-review resolution-runtime-current-review))
+
+(def mapping-review
+  (assoc resolution-main-predecessor-review
+         :input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
+         :source-version-bridge "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
+         :resolution-main-predecessor-review
+         (select-keys resolution-main-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :resolution-runtime-current-review
+         (select-keys resolution-runtime-current-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :resolution-runtime-predecessor-review resolution-runtime-predecessor-review
+         :qualification "Native and resolution ownership source composition only; immutable predecessor projections remain pinned, all current states unassessed."))
+
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
         _ (when-not (= original-sh07-sha256 (sh-inventory/sha256 (slurp sh07-path)))
@@ -726,6 +801,30 @@
     {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :pr574-macro-artifacts-composition
+     {:path "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))}
+     :pr574-composition-source-version
+     {:path "specs/sh-family-crosswalk/pr574-composition-source-version.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-composition-source-version.edn"))}
+     :pr574-conflict-composition-source-version
+     {:path "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn"))}
+     :resolution-runtime-source-version
+     {:path "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"))}
+     :resolution-runtime-composition-source-version
+     {:path "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"))}
+     :macro-artifacts-source-version
+     {:path "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"))}
+     :macro-runtime-source-version
+     {:path "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/macro-runtime-source-version.edn"))}
+     :syntax-pipeline-source-version
+     {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"))}
+     :reader-assembly-source-version
+     {:path "specs/sh-family-crosswalk/reader-assembly-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/reader-assembly-source-version.edn"))}
      :source-version-bridge {:path "specs/sh-family-crosswalk/source-version-bridge.edn"
                              :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/source-version-bridge.edn"))}
      :task-authority-lineage {:path "specs/sh-family-crosswalk/task-authority-lineage.edn"
@@ -898,14 +997,6 @@
       (when-not (= expected (sh-inventory/sha256 (read-version commit path)))
         (throw (ex-info "Source differs from its applying Git pin; preserve lineage before regeneration"
                         {:path path :source-commit commit}))))))
-
-(defn git-source [commit path]
-  (let [process (.start (doto (ProcessBuilder. ^java.util.List ["git" "show" (str commit ":" path)])
-                         (.redirectErrorStream true)))
-        text (slurp (.getInputStream process))]
-    (when-not (zero? (.waitFor process))
-      (throw (ex-info "Pinned local Git source unavailable; no projection written" {:path path :source-commit commit})))
-    text))
 
 (defn run [args]
   (let [result (build)]

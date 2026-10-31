@@ -64,7 +64,30 @@
   ;; Explicit short-seam drift boundary. No namespace scan or missing roots;
   ;; later actual owner verification remains the acceptance authority.
   (mapv (fn [v] [v (var-get v)])
-        [#'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
+        [#'gravity.resolution/boundary-fail! #'gravity.resolution/resolve-source-path
+         #'gravity.resolution/read-current-source! #'gravity.resolution/read-pinned-source!
+         #'gravity.resolution/plan-identities #'gravity.resolution/build-plan-binding!
+         #'gravity.resolution/source-key #'gravity.resolution/binding-current!
+         #'gravity.resolution/current-plan-binding! #'gravity.resolution/execute!
+         #'gravity.resolution/candidate-for
+         #'gravity.resolution/core-record
+         #'gravity.resolution/core-records
+         #'gravity.resolution/definition-kind
+         #'gravity.resolution/definition-records
+         #'gravity.resolution/envelope-id
+         #'gravity.resolution/package-record
+         #'gravity.resolution/request-overrides
+         #'gravity.resolution/semantic-span
+         #'gravity.resolution/source-revision-id
+         #'known-source-profiles
+         #'sh06-resolution-all-core-symbols
+         #'sh06-resolution-core-record
+         #'sh06-resolution-definition-kind
+         #'sh06-resolution-semantic-span
+         #'sh06-resolution-special-symbols
+         #'sh06-resolution-type-symbols
+         #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
+         #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*
          #'sh07-proof-transaction-report #'sh07-proof-transaction-context!
          #'sh06-resolution-validate-c3! #'c3-syntax-validate! #'c3-artifact-id

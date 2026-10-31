@@ -178,7 +178,7 @@
       (is (= (+ 204 (count helper-paths)) (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
-      (is (= 17 (count support-paths)))
+      (is (= 16 (count support-paths)))
       (doseq [relative ["bootstrap/clojure/test/gravity/native_syntax_invocation_test.clj"
                         "bootstrap/clojure/test/gravity/reader_invocation_test.clj"]]
         (is (contains? support-paths relative))
@@ -223,24 +223,101 @@
 
 (def ^:private macro-helper-path "bootstrap/clojure/src/gravity/macro_run_storage.clj")
 (def ^:private macro-helper-consumer
-  "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj")
+  "bootstrap/clojure/src/gravity/macro.clj")
 (def ^:private macro-helper-test
   "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj")
+(def ^:private reader-helper-path "bootstrap/clojure/src/gravity/reader.clj")
+(def ^:private reader-helper-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj")
+(def ^:private reader-helper-test
+  "bootstrap/clojure/test/gravity/reader/artifact_test.clj")
+(def ^:private syntax-helper-path "bootstrap/clojure/src/gravity/syntax.clj")
+(def ^:private syntax-helper-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj")
+(def ^:private syntax-helper-test "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj")
+(def ^:private macro-stage-path "bootstrap/clojure/src/gravity/macro.clj")
+(def ^:private macro-stage-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj")
+(def ^:private macro-stage-test "bootstrap/clojure/test/gravity/macro/pipeline_test.clj")
+
+(def ^:private resolution-stage-path "bootstrap/clojure/src/gravity/resolution.clj")
+(def ^:private resolution-stage-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj")
+(def ^:private resolution-stage-test "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")
 
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {macro-helper-path expected} (:production-helper-associations record))
+    (and (= {resolution-stage-path
+             {:namespace 'gravity.resolution :owner :sh-resolution :slice "SH-06"
+              :consumer-path resolution-stage-consumer :test-path resolution-stage-test}
+             macro-helper-path expected
+             reader-helper-path
+             {:namespace 'gravity.reader :owner :sh-reader :slice "SH-03"
+              :consumer-path reader-helper-consumer :test-path reader-helper-test}
+             syntax-helper-path
+             {:namespace 'gravity.syntax :owner :sh-syntax :slice "SH-04"
+              :consumer-path syntax-helper-consumer :test-path syntax-helper-test}
+             macro-stage-path
+             {:namespace 'gravity.macro :owner :sh-macro :slice "SH-05"
+              :consumer-path macro-stage-consumer :test-path macro-stage-test}}
+            (:production-helper-associations record))
          (= :sh-macro (get-in record [:module-owners macro-helper-path]))
          (= {:namespace 'gravity.self-hosting.macro-run-storage-test
              :slice "SH-05" :owner :sh-macro}
             (get-in record [:standalone-test-owners macro-helper-test]))
+         (= :sh-reader (get-in record [:module-owners reader-helper-path]))
+         (= {:namespace 'gravity.reader.artifact-test :slice "SH-03" :owner :sh-reader}
+            (get-in record [:standalone-test-owners reader-helper-test]))
+         (= :sh-syntax (get-in record [:module-owners syntax-helper-path]))
+         (= {:namespace 'gravity.syntax.pipeline-test :slice "SH-04" :owner :sh-syntax}
+            (get-in record [:standalone-test-owners syntax-helper-test]))
+         (= :sh-macro (get-in record [:module-owners macro-stage-path]))
+         (= {:namespace 'gravity.macro.pipeline-test :slice "SH-05" :owner :sh-macro}
+            (get-in record [:standalone-test-owners macro-stage-test]))
+         (= :sh-resolution (get-in record [:module-owners resolution-stage-path]))
+         (= {:namespace 'gravity.resolution.pipeline-test :slice "SH-06" :owner :sh-resolution}
+            (get-in record [:standalone-test-owners resolution-stage-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
-              "consumer" {"path" macro-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
+              "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
               "test" {"path" macro-helper-test "namespace" "gravity.self-hosting.macro-run-storage-test"
+                      "registration" "standalone"}}
+             {"id" "reader-artifact-assembly" "kind" "production-stage-helper" "owner" "sh-reader"
+              "source" {"path" reader-helper-path "namespace" "gravity.reader"}
+              "consumer" {"path" reader-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-reader"}
+              "test" {"path" reader-helper-test "namespace" "gravity.reader.artifact-test"
+                      "registration" "standalone"}}
+             {"id" "syntax-pipeline" "kind" "production-stage-helper" "owner" "sh-syntax"
+              "source" {"path" syntax-helper-path "namespace" "gravity.syntax"}
+              "consumer" {"path" syntax-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-syntax"}
+              "test" {"path" syntax-helper-test "namespace" "gravity.syntax.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "resolution-plan-runtime" "kind" "production-stage-helper" "owner" "sh-resolution"
+              "source" {"path" resolution-stage-path "namespace" "gravity.resolution"}
+              "consumer" {"path" resolution-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-resolution"}
+              "test" {"path" resolution-stage-test "namespace" "gravity.resolution.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "macro-plan-runtime" "kind" "production-stage-helper" "owner" "sh-macro"
+              "source" {"path" macro-stage-path "namespace" "gravity.macro"}
+              "consumer" {"path" macro-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
+              "test" {"path" macro-stage-test "namespace" "gravity.macro.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
+
+(deftest macro-runtime-helper-joins-real-stage-consumer-and-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [macro-stage-path macro-stage-consumer macro-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path macro-stage-consumer)) "(clojure.core/require 'gravity.macro)"))
+    (is (str/includes? (slurp (path macro-stage-consumer)) "gravity.macro/build-plan-binding!"))
+    (doseq [bad [(assoc-in record [:module-owners macro-stage-path] :master-coordinator)
+                 (assoc-in record [:production-helper-associations macro-stage-path :consumer-path] "forged.clj")
+                 (update record :standalone-test-owners dissoc macro-stage-test)]]
+      (is (not (production-helper-registration-valid? bad contract))))))
 
 (deftest production-helper-joins-real-source-consumer-and-existing-standalone-test
   (require 'gravity.bootstrap-free-leaf-test-runner)
@@ -253,7 +330,10 @@
       (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-path)))]
         (is (= 'gravity.macro-run-storage (second (read reader)))))
       (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-consumer)))]
-        (is (= '(require '[gravity.macro-run-storage :as macro-run-storage]) (read reader)))))
+        (let [consumer (read reader)]
+          (is (= 'gravity.macro (second consumer)))
+          (is (some #{'[gravity.macro-run-storage :as macro-run-storage]}
+                    (rest (last consumer)))))))
     (is (str/includes? (slurp (path macro-helper-consumer)) "(macro-run-storage/exact? runs)"))
     (is (not (.exists (path "bootstrap/clojure/test/gravity/macro_run_storage_test.clj"))))
     (doseq [bad [(assoc-in record [:module-owners macro-helper-path] :master-coordinator)
@@ -268,6 +348,51 @@
     (doseq [bad [(assoc-in contract ["production_helpers" 0 "owner"] "master-coordinator")
                  (assoc-in contract ["production_helpers" 0 "test" "registration"] "bootstrap-free")
                  (assoc-in contract ["production_helpers" 0 "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest reader-assembly-helper-joins-the-owned-stage-and-bootstrap-consumer
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [reader-helper-path reader-helper-consumer reader-helper-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path reader-helper-path)))]
+        (is (= 'gravity.reader (second (read reader))))))
+    (is (str/includes? (slurp (path reader-helper-consumer))
+                       "(gravity.reader/read-source-artifact"))
+    (doseq [bad [(assoc-in record [:module-owners reader-helper-path] :master-coordinator)
+                 (assoc-in record [:production-helper-associations reader-helper-path :namespace]
+                           'gravity.forged)
+                 (assoc-in record [:production-helper-associations reader-helper-path :consumer-path]
+                           "forged.clj")
+                 (update record :standalone-test-owners dissoc reader-helper-test)]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" 1 "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" 1 "test" "registration"] "bootstrap-free")
+                 (assoc-in contract ["production_helpers" 1 "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest syntax-stage-helper-joins-real-source-consumer-and-standalone-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [syntax-helper-path syntax-helper-consumer syntax-helper-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path syntax-helper-path)))]
+        (is (= 'gravity.syntax (second (read reader))))))
+    (is (str/includes? (slurp (path syntax-helper-consumer)) "(gravity.syntax/build"))
+    (doseq [bad [(assoc-in record [:module-owners syntax-helper-path] :sh-reader)
+                 (update record :standalone-test-owners dissoc syntax-helper-test)
+                 (assoc-in record [:production-helper-associations syntax-helper-path :consumer-path]
+                           "forged.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" 2 "owner"] "sh-reader")
+                 (assoc-in contract ["production_helpers" 2 "consumer" "path"] "forged.clj")
+                 (assoc-in contract ["production_helpers" 2 "test" "registration"] "bootstrap-free")]]
       (is (not (production-helper-registration-valid? record bad))))))
 
 (deftest auxiliary-helper-associations-are-explicit-and-owned

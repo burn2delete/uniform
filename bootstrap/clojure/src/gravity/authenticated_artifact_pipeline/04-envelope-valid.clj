@@ -55,7 +55,7 @@
                                (:artifact-id envelope) parents
                                (get-in envelope [:receipt :cache :hit?])
                                expected-key-id source-id provenance)
-                       [:receipt-id]))))
+                      [:receipt-id]))))
     (catch clojure.lang.ExceptionInfo _ false)
     (catch IllegalArgumentException _ false)))
 
@@ -83,25 +83,61 @@
                 :expected-parent-id expected
                 :observed-parent-id observed})))))
 
+(defn- reader-operation!
+  [source-path request]
+  (when (= :development-current (:reader request))
+    (let [reader-path (bootstrap-call 'sh03-reader-resolve-source-path)
+          invocation {:reader-source-path reader-path
+                      :authenticated-envelope-options {:source :development-current}}
+          binding (:binding (bootstrap-call 'sh03-reader-verification-invocation! source-path invocation))
+          identity (select-keys binding [:source-content-hash :source-byte-count :plan-semantic-hash :functions-semantic-hash])
+          inputs (get request :module-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []})
+          views (if (and (vector? (:module-artifacts inputs)) (seq (:module-artifacts inputs)))
+                  (bootstrap-call 'sh06-resolution-with-reader-invocation source-path invocation
+                                  #(bootstrap-call 'sh06-resolution-module-input-views! source-path inputs))
+                  (bootstrap-call 'sh06-resolution-module-input-views! source-path inputs))]
+      (when-not (and (= 4 (count identity)) (every? some? (vals identity)))
+        (fail! "ARTIFACT-READER" "selected Reader binding is incomplete" {:source-path source-path}))
+      {:invocation invocation :binding identity :module-inputs inputs
+       :module-artifact-ids (mapv :artifact-id views)})))
+
+(defn- stable-reader-after! [source-path request]
+  (when (:reader-operation request)
+    (when-not (= (:reader-operation request) (reader-operation! source-path request))
+      (fail! "ARTIFACT-MUTATED" "selected Reader or module inputs changed during the pipeline"
+             {:source-path source-path}))))
+
 (defn- build-payload
-  [stage source-path source-text context previous]
-  (case stage
-    :source (source-payload source-path nil context)
-    :reader (bootstrap-call 'compiler-c2-reader-source-artifact
-                            source-path source-text context)
-    :syntax (bootstrap-call
-             'compiler-c3-syntax-source-artifact
-             source-path source-text context (:payload (last previous))
-             (var-get (bootstrap-var 'sh03-reader-internal-product-authority)))
+  ([stage source-path source-text context previous]
+   (build-payload stage source-path source-text context previous nil))
+  ([stage source-path source-text context previous request]
+   (if-let [{:keys [invocation module-inputs]} (:reader-operation request)]
+     (let [reader-path (:reader-source-path invocation)
+           parent (:payload (last previous))]
+       (case stage
+         :reader (bootstrap-call 'compiler-c2-reader-source-artifact source-path source-text context nil nil reader-path invocation)
+         :syntax (bootstrap-call 'compiler-c3-syntax-source-artifact source-path source-text context parent
+                                 (var-get (bootstrap-var 'sh03-reader-internal-product-authority)) nil invocation)
+         :macroexpansion (bootstrap-call 'sh05-macro-artifact-from-c3-artifact source-path parent invocation)
+         :resolution (bootstrap-call 'sh06-resolution-artifact-from-sh05-artifact source-path parent module-inputs reader-path invocation)
+         :checked-core (bootstrap-call 'sh07-core-from-resolution-artifact parent invocation)))
+     (case stage
+       :source (source-payload source-path nil context)
+       :reader (bootstrap-call 'compiler-c2-reader-source-artifact
+                               source-path source-text context)
+       :syntax (bootstrap-call
+                'compiler-c3-syntax-source-artifact
+                source-path source-text context (:payload (last previous))
+                (var-get (bootstrap-var 'sh03-reader-internal-product-authority)))
     ;; SH-05 and SH-06 consume only their immediate authenticated parent.
     ;; Their historical source entrypoints remain compatibility wrappers, but
     ;; the unified pipeline must not rebuild an already-authenticated prefix.
-    :macroexpansion (bootstrap-call 'sh05-macro-artifact-from-c3-artifact
-                                    source-path (:payload (last previous)))
-    :resolution (bootstrap-call 'sh06-resolution-artifact-from-sh05-artifact
-                                source-path (:payload (last previous)))
-    :checked-core (bootstrap-call 'sh07-core-from-resolution-artifact
-                                 (:payload (last previous)))))
+       :macroexpansion (bootstrap-call 'sh05-macro-artifact-from-c3-artifact
+                                       source-path (:payload (last previous)))
+       :resolution (bootstrap-call 'sh06-resolution-artifact-from-sh05-artifact
+                                   source-path (:payload (last previous)))
+       :checked-core (bootstrap-call 'sh07-core-from-resolution-artifact
+                                     (:payload (last previous)))))))
 
 (defn- build-stage!
   [stage lane source-id provenance source-path source-text context previous
@@ -124,7 +160,8 @@
                                                     (:payload cached))
                        true
                        (catch clojure.lang.ExceptionInfo _ false)))
-                 (revalidate-payload? stage source-path (:payload cached)))
+                 (apply revalidate-payload? (cond-> [stage source-path (:payload cached)]
+                                              (:reader-operation request) (conj (:reader-operation request)))))
           (-> cached
               (assoc :cache-hit? true
                      :cache-policy (assoc (:cache-policy cached)
@@ -134,20 +171,22 @@
                               key-id source-id provenance)))
           (do
             (swap! stage-cache dissoc key)
-            (let [payload (build-payload stage source-path source-text context previous)
+            (let [payload (apply build-payload (cond-> [stage source-path source-text context previous]
+                                                 (:reader-operation request) (conj request)))
                   _ (when (= :reader stage)
                       (authenticate-reader-source! source-path source-id payload))
                   _ (authenticate-embedded-parent! stage payload parents)
                   built (envelope stage lane source-id provenance parents payload
-                                   false key-id)]
+                                  false key-id)]
               (cache-put! key built)
               built))))
-      (let [payload (build-payload stage source-path source-text context previous)
+      (let [payload (apply build-payload (cond-> [stage source-path source-text context previous]
+                                           (:reader-operation request) (conj request)))
             _ (when (= :reader stage)
                 (authenticate-reader-source! source-path source-id payload))
             _ (authenticate-embedded-parent! stage payload parents)
             built (envelope stage lane source-id provenance parents payload false
-                             key-id)]
+                            key-id)]
         (when (= lane :fast)
           (cache-put! key built))
         built))))
@@ -171,7 +210,7 @@
     (fail! "ARTIFACT-REQUEST"
            "authenticated artifact pipeline request must be a map"
            {:request request}))
-  (let [known #{:source-path :target-stage :mode}]
+  (let [known #{:source-path :target-stage :mode :reader :module-inputs}]
     (when-let [unknown (seq (remove known (keys request)))]
       (fail! "ARTIFACT-REQUEST"
              "authenticated artifact pipeline request contains unknown keys"
@@ -183,4 +222,9 @@
     (require-source-path! source-path)
     (require-stage! target-stage)
     (require-lane! mode)
-    {:source-path source-path :target-stage target-stage :mode mode}))
+    (when (and (contains? request :reader) (not= :development-current (:reader request)))
+      (fail! "ARTIFACT-REQUEST" "Reader option must select development-current" {}))
+    (when (and (contains? request :module-inputs) (not= :development-current (:reader request)))
+      (fail! "ARTIFACT-REQUEST" "module inputs require explicit current Reader selection" {}))
+    (merge {:source-path source-path :target-stage target-stage :mode mode}
+           (select-keys request [:reader :module-inputs]))))

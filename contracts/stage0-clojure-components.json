@@ -144,8 +144,40 @@
       "kind": "production-verification-helper",
       "owner": "sh-macro",
       "source": {"path": "bootstrap/clojure/src/gravity/macro_run_storage.clj", "namespace": "gravity.macro-run-storage"},
-      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj", "namespace": "gravity.bootstrap", "owner": "sh-macro"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/macro.clj", "namespace": "gravity.macro", "owner": "sh-macro"},
       "test": {"path": "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj", "namespace": "gravity.self-hosting.macro-run-storage-test", "registration": "standalone"}
+    },
+    {
+      "id": "reader-artifact-assembly",
+      "kind": "production-stage-helper",
+      "owner": "sh-reader",
+      "source": {"path": "bootstrap/clojure/src/gravity/reader.clj", "namespace": "gravity.reader"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00004-max-reader-form-depth.clj", "namespace": "gravity.bootstrap", "owner": "sh-reader"},
+      "test": {"path": "bootstrap/clojure/test/gravity/reader/artifact_test.clj", "namespace": "gravity.reader.artifact-test", "registration": "standalone"}
+    },
+    {
+      "id": "syntax-pipeline",
+      "kind": "production-stage-helper",
+      "owner": "sh-syntax",
+      "source": {"path": "bootstrap/clojure/src/gravity/syntax.clj", "namespace": "gravity.syntax"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj", "namespace": "gravity.bootstrap", "owner": "sh-syntax"},
+      "test": {"path": "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj", "namespace": "gravity.syntax.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "resolution-plan-runtime",
+      "kind": "production-stage-helper",
+      "owner": "sh-resolution",
+      "source": {"path": "bootstrap/clojure/src/gravity/resolution.clj", "namespace": "gravity.resolution"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj", "namespace": "gravity.bootstrap", "owner": "sh-resolution"},
+      "test": {"path": "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj", "namespace": "gravity.resolution.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "macro-plan-runtime",
+      "kind": "production-stage-helper",
+      "owner": "sh-macro",
+      "source": {"path": "bootstrap/clojure/src/gravity/macro.clj", "namespace": "gravity.macro"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj", "namespace": "gravity.bootstrap", "owner": "sh-macro"},
+      "test": {"path": "bootstrap/clojure/test/gravity/macro/pipeline_test.clj", "namespace": "gravity.macro.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [

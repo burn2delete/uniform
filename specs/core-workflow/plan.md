@@ -14,7 +14,7 @@ Only task editing authority changes; compiler and language semantics do not.
 ## Canonical work and handoffs
 
 - Implementation work: [five authoritative records](tasks.md#implementation-tasks).
-- Compatibility view: [generated table](../../docs/component-roadmaps/core.md#current-evidence-and-remaining-work).
+- Roadmap navigation: [sole task ledger](tasks.md#implementation-tasks).
 - Release criteria: [owning acceptance checklist](../../docs/component-roadmaps/core.md#acceptance-criteria-yesno).
 - Overall composition: [integration outcomes](../../docs/component-roadmaps/README.md#integration-outcomes).
 - Input: Expanded syntax, namespace/profile context and binding references supplied through Resolve.
@@ -34,38 +34,20 @@ and concrete exit evidence. The known five-ID set prevents row loss/substitution
 the ID must agree with the retained phase/title slug. An intentional task-set
 change needs explicit review, not positional renumbering.
 
-`tools/core_task_projection.clj` follows Reader's accepted projection pattern.
-It validates the complete source before writing only the marked table region in
-`docs/component-roadmaps/core.md`. Its focused test covers accepted projection
-and rejection controls. The three-column table, all cells, existing anchors,
-release criteria and historical receipts retain their original meaning. Original
-migration checkboxes stay frozen outside the implementation region and are not
-an implementation denominator. No independent machine-readable status ledger is
-added. The four workflow artifacts explain this authority transfer.
-
 ## Validation and evidence
 
 Run from repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/core_task_projection.clj --write
-clojure -J-Xmx512m -M tools/core_task_projection.clj --check
-clojure -J-Xmx512m -M tools/core_task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-`--check` is read-only. Missing/duplicate IDs and region markers, malformed
-records, identity/title mismatch, checkbox/status disagreement, unsupported
-Markdown and stale projections reject. Record fields support plain text and
-inline absolute HTTPS links, preventing receipt targets from changing between
-ledger and roadmap locations. Core's existing `set!` spelling remains plain
-text; images are explicitly rejected. URL syntax alone cannot establish acceptance.
-
-Compare baseline/current table bytes and all five phase/title IDs and complete
-historical migration ledger bytes. Check all five affected Markdown files for
-ASCII and local file/heading links; check `git diff --check`. Run integration
+Check the five task IDs, statuses, preserved criteria and historical migration
+ledger. Core's existing `set!` spelling remains plain text. Check the affected
+Markdown files for ASCII and local file/heading links; check `git diff --check`.
+Run integration
 preflight against the exact final base/commit/tree. Record actual results in
 [evidence](evidence.md). Structural checks do not establish compiler semantics
 or authoritative module admission.
@@ -75,13 +57,13 @@ or authoritative module admission.
 Publish a draft after independent current-head review of the complete product
 payload and PR body. Keep implementation, validation, review and integration
 distinct. Merge only after the maintainer confirms independent review and
-integration disposition. Future implementation updates change the ledger and
-regenerate the table together. No task closes here.
+integration disposition. Future implementation updates change the ledger; the
+roadmap remains a direct navigation link. No task closes here.
 
 ## Names, callers and compatibility
 
-Preserve existing anchors, links, semantic IDs and table text; consumers continue
-reading the generated roadmap table. New semantic tool filenames/namespaces
+Preserve existing anchors, links, semantic IDs and task text; consumers continue
+following the direct task-ledger link. New semantic tool filenames/namespaces
 follow Reader conventions. No caller, load order, runtime API, schema,
 diagnostic, manifest or wire ID changes.
 

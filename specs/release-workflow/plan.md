@@ -12,12 +12,7 @@ The workflow records work and evidence; it does not replace normative authority.
 
 ## Approach and exact files
 
-Keep the four workflow artifacts, generated roadmap task region and
-`tools/release_task_projection{,_test}.clj` in scope. Edit implementation
-records only in [tasks.md](tasks.md#implementation-tasks); the roadmap task link
-below is a generated view. Retain the entire original migration file as history.
-Shared helpers remain unchanged. Shared migration indexes are owned
-by the migration coordinator and are not edited by this package.
+Keep the four workflow artifacts and direct roadmap task link.
 
 | Canonical truth | Reference | Package use |
 | --- | --- | --- |
@@ -36,7 +31,7 @@ semantic package names and absence of duplicated component checklists.
 Negative acceptance cases are broken/missing links, treating artifact presence
 as implementation completion, or narrowing retained contracts without disposition.
 Run the existing structural documentation and full-language roadmap validators.
-Run focused projector, link-preservation and language-boundary checks; no
+Run focused task-ledger navigation and language-boundary checks; no
 compiler/service execution suite is claimed. Record commands/results and exact review identity in evidence.md.
 
 ## Delivery and remaining work

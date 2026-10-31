@@ -167,6 +167,7 @@
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/operations.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/projections.clj" :role :transitive}
        {:path "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj" :role :test}
+       {:path "bootstrap/clojure/test/gravity/build/producer_git_observation.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache.clj" :role :runner}

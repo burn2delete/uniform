@@ -4,7 +4,9 @@
   This seed exists to make the first Gravity milestone executable with a Lisp
   implementation. It is intentionally small and records unsupported behavior
   as diagnostics instead of pretending to be the final compiler."
-  (:require [clojure.edn :as edn]
+  (:require [gravity.resolution]
+            [gravity.macro-run-storage :as macro-run-storage]
+            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
