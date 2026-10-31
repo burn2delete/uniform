@@ -15,42 +15,42 @@
 
 (deftest finite-data-capture-normalizes-and-authenticates-without-execution
   (fixture
-    (fn [[root home install capture :as dirs] write!]
-      (write! (io/file install "lib/clojure/deps.edn") "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
-      (write! (io/file root ".cpcache/123.cp") (str home "/.m2/repository/org/clojure/clojure/1.12.5/clojure-1.12.5.jar"))
-      (write! (io/file root ".cpcache/123.basis") (str "{:classpath-roots [\"" root "\"]}"))
-      (write! (io/file root ".cpcache/123.manifest") (str install "/lib/clojure/deps.edn"))
-      (write! (io/file root ".cpcache/unrelated-secret") "MUST-NOT-CAPTURE")
-      (write! (io/file home ".m2/settings.xml") "MUST-NOT-CAPTURE")
-      (write! (io/file capture "init.stderr")
-              "Could not locate clojure/spec/alpha; https://user:secret@example.test/private HTTPS://DATA-user:UPPER-TOKEN@example.invalid/a HtTp://DATA-user:MIXED-TOKEN@example.invalid/a")
-      (write! (io/file capture "launcher.txt") (str install "/bin/clojure"))
-      (let [result (apply diagnostic/collect dirs) text (pr-str result)]
-        (is (= :observed (:cache-status result)))
-        (is (false? (:dependency-resolution-performed result)))
-        (is (= "$CLOJURE_INSTALL/bin/clojure" (get-in result [:files "launcher-path" :text])))
-        (is (str/starts-with? (get-in result [:files "classpath-cache/123.cp" :text]) "$HOME/"))
-        (is (= :observed (get-in result [:files "classpath-cache/123.basis" :status])))
-        (is (= :missing (get-in result [:files "spec.alpha/0.5.238.jar" :status])))
-        (is (re-matches #"[0-9a-f]{64}" (get-in result [:files "installed-deps" :sha256])))
-        (is (= "Could not locate clojure/spec/alpha; <url-redacted> <url-redacted> <url-redacted>"
-               (get-in result [:files "init-stderr" :text])))
-        (doseq [secret [(str (.getParentFile root)) "MUST-NOT-CAPTURE" "user:secret"
+   (fn [[root home install capture :as dirs] write!]
+     (write! (io/file install "lib/clojure/deps.edn") "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
+     (write! (io/file root ".cpcache/123.cp") (str home "/.m2/repository/org/clojure/clojure/1.12.5/clojure-1.12.5.jar"))
+     (write! (io/file root ".cpcache/123.basis") (str "{:classpath-roots [\"" root "\"]}"))
+     (write! (io/file root ".cpcache/123.manifest") (str install "/lib/clojure/deps.edn"))
+     (write! (io/file root ".cpcache/unrelated-secret") "MUST-NOT-CAPTURE")
+     (write! (io/file home ".m2/settings.xml") "MUST-NOT-CAPTURE")
+     (write! (io/file capture "init.stderr")
+             "Could not locate clojure/spec/alpha; https://user:secret@example.test/private HTTPS://DATA-user:UPPER-TOKEN@example.invalid/a HtTp://DATA-user:MIXED-TOKEN@example.invalid/a")
+     (write! (io/file capture "launcher.txt") (str install "/bin/clojure"))
+     (let [result (apply diagnostic/collect dirs) text (pr-str result)]
+       (is (= :observed (:cache-status result)))
+       (is (false? (:dependency-resolution-performed result)))
+       (is (= "$CLOJURE_INSTALL/bin/clojure" (get-in result [:files "launcher-path" :text])))
+       (is (str/starts-with? (get-in result [:files "classpath-cache/123.cp" :text]) "$HOME/"))
+       (is (= :observed (get-in result [:files "classpath-cache/123.basis" :status])))
+       (is (= :missing (get-in result [:files "spec.alpha/0.5.238.jar" :status])))
+       (is (re-matches #"[0-9a-f]{64}" (get-in result [:files "installed-deps" :sha256])))
+       (is (= "Could not locate clojure/spec/alpha; <url-redacted> <url-redacted> <url-redacted>"
+              (get-in result [:files "init-stderr" :text])))
+       (doseq [secret [(str (.getParentFile root)) "MUST-NOT-CAPTURE" "user:secret"
                        "DATA-user" "UPPER-TOKEN" "MIXED-TOKEN"]]
-          (is (not (str/includes? text secret))))))))
+         (is (not (str/includes? text secret))))))))
 
 (deftest missing-oversize-and-linked-inputs-stay-explicit
   (fixture
-    (fn [[root home _install _capture :as dirs] write!]
-      (write! (io/file root ".cpcache/9.cp") (apply str (repeat (inc diagnostic/text-cap) "x")))
-      (let [outside (io/file home "secret") link (io/file root ".cpcache/9.basis")]
-        (write! outside "MUST-NOT-CAPTURE")
-        (Files/createSymbolicLink (.toPath link) (.toPath outside) (make-array FileAttribute 0))
-        (let [result (apply diagnostic/collect dirs)]
-          (is (= :capture-limit (get-in result [:files "classpath-cache/9.cp" :id])))
-          (is (= :linked-or-outside-path (get-in result [:files "classpath-cache/9.basis" :status])))
-          (is (= :missing (get-in result [:files "installed-deps" :status])))
-          (is (not (str/includes? (pr-str result) "MUST-NOT-CAPTURE"))))))))
+   (fn [[root home _install _capture :as dirs] write!]
+     (write! (io/file root ".cpcache/9.cp") (apply str (repeat (inc diagnostic/text-cap) "x")))
+     (let [outside (io/file home "secret") link (io/file root ".cpcache/9.basis")]
+       (write! outside "MUST-NOT-CAPTURE")
+       (Files/createSymbolicLink (.toPath link) (.toPath outside) (make-array FileAttribute 0))
+       (let [result (apply diagnostic/collect dirs)]
+         (is (= :capture-limit (get-in result [:files "classpath-cache/9.cp" :id])))
+         (is (= :linked-or-outside-path (get-in result [:files "classpath-cache/9.basis" :status])))
+         (is (= :missing (get-in result [:files "installed-deps" :status])))
+         (is (not (str/includes? (pr-str result) "MUST-NOT-CAPTURE"))))))))
 
 (let [result (run-tests 'ci.snapshot-diagnostics-test)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

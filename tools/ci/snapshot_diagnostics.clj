@@ -47,7 +47,7 @@
                                 (cond-> {:status :observed :size (alength bytes) :symlink? symlink?
                                          :resolved-path (normalize real)
                                          :sha256 (format "%064x" (java.math.BigInteger. 1
-                                                  (.digest (MessageDigest/getInstance "SHA-256") bytes)))}
+                                                                                        (.digest (MessageDigest/getInstance "SHA-256") bytes)))}
                                   text? (assoc :text (normalize (String. bytes java.nio.charset.StandardCharsets/UTF_8)))))))
                     (catch Exception e {:status :unavailable :error-class (.getName (class e))
                                         :id (:id (ex-data e))})))
