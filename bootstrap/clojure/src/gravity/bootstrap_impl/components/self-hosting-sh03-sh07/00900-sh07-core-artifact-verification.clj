@@ -27,26 +27,93 @@
     (sh07-core-verification-report
      artifact expected upstream-verification))))
 
-(defn sh07-core-artifact-verification
+(let
+ [canonical-core-operations
+  checked-core-stage-defaults
+  canonical-core-binding-root
+  (.getRawRoot #'*sh07-core-execution-binding*)
+  canonical-core-roots
+  (into
+   {}
+   (map (fn [v] [v (.getRawRoot ^clojure.lang.Var v)]))
+   (concat
+    (filter var? (vals canonical-core-operations))
+    [#'gravity.checked-core/build-plan-binding!
+     #'gravity.checked-core/current-plan-binding!
+     #'gravity.checked-core/execute!
+     #'gravity.checked-core/plan-identities
+     #'gravity.checked-core/source-key
+     #'gravity.checked-core/source-path
+     #'sh07-core-build-binding!
+     #'sh07-core-current-binding!
+     #'sh07-core-current-source-key
+     #'sh07-core-execute!
+     #'sh07-core-plan-identities
+     #'sh07-core-source-path
+     #'checked-core-stage-operations
+     #'checked-core-stage-defaults
+     #'checked-core-stage-input
+     #'sh07-core-cached-binding
+     #'sh07-core-development-binding
+     #'sh07-core-public-function-shapes
+     #'sh07-core-source-relative-path]))]
+ (defn
+  sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))
   ([artifact invocation]
-  (when invocation
+   (when
+    invocation
     (sh03-reader-authenticated-envelope-options
-     (get-in artifact [:provenance :source-path]) invocation))
-  (let [binding @sh07-core-cached-binding]
-   (sh07-proof-transaction-report
-   :sh07 :final
-   {:verifier-root
-    (var-get #'sh07-core-artifact-verification*)
-    :report-schema-version 1
-    :invocation invocation
-    :check-catalog-domain :gravity/sh07-final-verification-checks
-    :source-content-hash (:source-content-hash binding)
-    :plan-semantic-hash (:plan-semantic-hash binding)
-    :functions-semantic-hash
-    (:functions-semantic-hash binding)}
-   artifact
-   #(sh07-core-artifact-verification* artifact invocation)))))
+     (get-in artifact [:provenance :source-path])
+     invocation))
+   (let
+    [binding @sh07-core-cached-binding]
+    (sh07-proof-transaction-report
+     :sh07
+     :final
+     {:verifier-root
+      (let
+       [entries
+        (.iterator (.entrySet ^java.util.Map canonical-core-roots))]
+       (if
+        (and
+         (identical?
+          (.getRawRoot #'checked-core-stage-defaults)
+          canonical-core-operations)
+         (identical?
+          (.getRawRoot #'*sh07-core-execution-binding*)
+          canonical-core-binding-root)
+         (loop
+          []
+          (if
+           (.hasNext entries)
+           (let
+            [entry
+             (.next entries)
+             v
+             (.getKey ^java.util.Map$Entry entry)]
+            (if
+             (and
+              (identical?
+               (.getValue ^java.util.Map$Entry entry)
+               (.getRawRoot ^clojure.lang.Var v))
+              (nil? (.getThreadBinding ^clojure.lang.Var v)))
+             (recur)
+             false))
+           true)))
+        (var-get #'sh07-core-artifact-verification*)
+        (Object.))),
+      :report-schema-version 1,
+      :invocation invocation,
+      :check-catalog-domain :gravity/sh07-final-verification-checks,
+      :source-content-hash (:source-content-hash binding),
+      :plan-semantic-hash (:plan-semantic-hash binding),
+      :functions-semantic-hash (:functions-semantic-hash binding),
+      :checked-core-operation-binding *sh07-core-execution-binding*}
+     artifact
+     (fn*
+      []
+      (sh07-core-artifact-verification* artifact invocation)))))))
 
 (defn sh07-core-capability-based-proof
   ([artifact] (sh07-core-capability-based-proof artifact nil))

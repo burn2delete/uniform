@@ -123,6 +123,54 @@
          #'sh06-resolution-source-relative-path
          #'gravity.resolution/boundary-keys-for
          #'gravity.resolution/envelope-descriptor
+         #'c5-resolution-diagnostic-ids
+         #'c5-resolution-governing-document
+         #'sh06-resolution-adapter-contract
+         #'sh06-resolution-product-projections
+         #'sh06-resolution-sh02-descriptor
+         #'gravity.resolution/assemble-candidate
+         #'gravity.resolution/base-request
+         #'gravity.resolution/diagnostic-origin
+         #'gravity.resolution/module-request
+         #'sh06-resolution-artifact-keys
+         #'sh06-resolution-artifact-verification*
+         #'sh06-resolution-artifact-verification-bounded*
+         #'sh06-resolution-boundary-keys-for
+         #'sh06-resolution-carrier-validation
+         #'sh06-resolution-component-validations
+         #'sh06-resolution-contained-verification-failure
+         #'sh06-resolution-context-plan-binding!
+         #'sh06-resolution-envelope-source-options
+         #'sh06-resolution-execution-boundary-contract
+         #'sh06-resolution-module-request
+         #'sh06-resolution-pass-contract
+         #'sh06-resolution-request
+         #'sh06-resolution-run-request!
+         #'gravity.resolution/verification-failure
+         #'gravity.resolution/verify*
+         #'gravity.resolution/verify-contained*
+         #'gravity.resolution/verify-current*
+         #'gravity.resolution/verify
+         #'c5-resolution-fail!
+         #'p15-s23-sh02-sha256-id?
+         #'sh06-resolution-boundary-fail!
+         #'sh06-resolution-digest-reference
+         #'sh06-resolution-execute!
+         #'sh06-resolution-raise-rejection!
+         #'sh06-resolution-require-carrier!
+         #'sh06-resolution-resolve-analysis!
+         #'sh06-resolution-resolve-declared-id!
+         #'sh06-resolution-resolve-digest-requests!
+         #'sh06-resolution-resolve-record-binding-id!
+         #'gravity.resolution/digest-reference
+         #'gravity.resolution/order-compatibility
+         #'gravity.resolution/raise-rejection!
+         #'gravity.resolution/require-carrier!
+         #'gravity.resolution/resolve-analysis!
+         #'gravity.resolution/resolve-declared-id!
+         #'gravity.resolution/resolve-digest-requests!
+         #'gravity.resolution/resolve-record-binding-id!
+         #'gravity.resolution/run-request!
          #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
          #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*

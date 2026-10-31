@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 40 (count publics)))
+    (is (= 55 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -439,6 +439,141 @@
     (is (= #{:supplied-key :module-inputs}
            (resolution/boundary-keys-for ordinary (assoc ops :input (fn [_] #{:supplied-key})))))))
 
+(deftest base-request-normalization-preserves-parent-and-source-fields
+  ;; Supplied expanded DATA exercises normalization, not C4 owner admission.
+  (let [ops (operations) span {:line-start 3 :column-start 1}
+        parent {:artifact-id "synthetic-parent" :expanded-syntax-stream-id "expanded"
+                :macro-expansion-trace-id "trace"
+                :expanded-syntax-stream
+                [{:syntax/id "ns" :span span
+                  :form '(ns example.request (:profile :meta) (:target :jvm)
+                             (:exports [exported]) (:effects #{}) (:capabilities #{}) (:safety :safe))}
+                 {:syntax/id "fn" :span span :form '(defn exported [value] value)}]}
+        request (resolution/base-request source parent {} ops)]
+    (is (= :gravity/sh06-authenticated-c4-resolution-request (:artifact request)))
+    (is (= 1 (:schema-version request)))
+    (is (= 'example.request (get-in request [:module :namespace])))
+    (is (= "synthetic-parent" (get-in request [:module :c4-artifact-id])))
+    (is (= (get-in request [:module :source-revision-id])
+           (get-in request [:macro-expansion-binding :source-revision-id])))
+    (is (= ["synthetic-parent" "expanded"]
+           ((juxt :c4-artifact-id :macro-result-id) (:macro-expansion-binding request))))
+    (is (= {:actual-source-path source} (:provenance request)))
+    (is (= ['exported] (mapv :name (:definitions request))))
+    (is (= :public (:visibility (first (:definitions request)))))
+    (is (= (resolution/core-records ops) (:core-bindings request)))
+    (is (some #(= 'value (:symbol %)) (:references request)))
+    (is (= [] (:imports request)))
+    (is (not (contains? request :module-premises)))))
+
+(deftest module-request-projection-retains-verified-views-and-header-provenance
+  (let [span {:line-start 1 :column-start 1}
+        parent {:expanded-syntax-stream [{:syntax/id "header" :span span}]}
+        base {:imports [{:namespace 'library :source-span :old :semantic-span {:ordinal 2}}]
+              :definitions [] :module {:namespace 'consumer}}
+        views [{:artifact-id "verified-by-owner" :analysis {}}]
+        inputs {:module-artifacts [:supplied-to-owner]}
+        expected (resolution/module-request parent base views)
+        calls (atom []) original resolution/module-request
+        wrapper (seed-var 'resolution-module-request-from-base)
+        owner (seed-var 'sh06-resolution-module-input-views!)]
+    (is (= :gravity/sh06-ordinary-module-resolution-request (:artifact expected)))
+    (is (= 2 (:schema-version expected)))
+    (is (identical? views (:module-premises expected)))
+    (is (= span (get-in expected [:imports 0 :source-span])))
+    (is (= {:ordinal 2 :namespace-syntax-id "header"} (get-in expected [:imports 0 :semantic-span])))
+    (is (= {:semantic-span {:namespace-syntax-id "header"} :source-span span} (:namespace-source expected)))
+    (with-redefs-fn
+      {owner (fn [path value] (swap! calls conj [:owner path value]) views)
+       #'resolution/module-request (fn [& args] (swap! calls conj (into [:stage] args)) (apply original args))}
+      #(is (= expected (wrapper source parent inputs base))))
+    (is (= [[:owner source inputs] [:stage parent base views]] @calls))
+    (let [failure (ex-info "module owner refused" {:id "UNIT-MODULE"})]
+      (reset! calls [])
+      (with-redefs-fn
+        {owner (fn [& _] (throw failure))
+         #'resolution/module-request (fn [& _] (swap! calls conj :unexpected-stage))}
+        #(is (identical? failure (caught (fn [] (wrapper source parent inputs base))))))
+      (is (= [] @calls)))))
+
+(deftest diagnostic-origin-recovery-requires-one-exact-generated-reference
+  ;; These joined records do not constitute parent/request authentication.
+  (let [ops (operations) span {:line-start 4 :column-start 1 :line-end 4 :column-end 12}
+        origin [{:kind :source :source source} {:kind :generated :producer :unit}]
+        parent {:artifact-id "parent" :expanded-syntax-stream-id "expanded"
+                :expanded-syntax-stream [{:syntax/id "owner" :span span :origin origin}]}
+        revision (resolution/source-revision-id parent ops)
+        reference {:name 'missing :symbol 'missing :qualifier nil :position :expression :scope-chain []
+                   :source-span span :semantic-span {:ordinal 1}
+                   :syntax-id ((:reader-canonical-hash ops)
+                               {:domain :gravity/sh06-reference-syntax-v1 :owner-syntax-id "owner"
+                                :ordinal 1 :symbol 'missing :position :expression})}
+        request {:references [reference]
+                 :module {:namespace 'example.request :profile :meta :target :jvm
+                          :source-revision-id revision :c4-artifact-id "parent"}
+                 :macro-expansion-binding {:c4-artifact-id "parent" :source-revision-id revision
+                                           :macro-result-id "expanded"}
+                 :provenance {:actual-source-path source}}
+        diagnostic {:diagnostic-family :c5-name-resolution :stage :name-resolution :id "C5-UNRESOLVED"
+                    :candidate-bindings [] :syntax-id (:syntax-id reference) :symbol 'missing
+                    :source-span (assoc span :source source) :namespace 'example.request
+                    :active-profile :meta :target :jvm
+                    :facts {:reason :no-legal-binding :semantic-span {:ordinal 1}
+                            :c4-artifact-id "parent" :source-revision-id revision
+                            :rule-specific (merge (select-keys reference [:name :qualifier :position :scope-chain])
+                                                  {:reason :no-legal-binding :candidate-count 0})}}]
+    (is (identical? origin (resolution/diagnostic-origin source parent request diagnostic ops)))
+    (doseq [changed [(assoc diagnostic :origin-chain [])
+                     (assoc diagnostic :diagnostic-family :other)
+                     (assoc diagnostic :symbol 'other)
+                     (assoc diagnostic :active-profile :core)
+                     (assoc diagnostic :syntax-id "other")
+                     (assoc-in diagnostic [:facts :rule-specific :scope-chain] [:other])
+                     (assoc-in diagnostic [:facts :rule-specific :candidate-count] 1)
+                     (assoc-in diagnostic [:facts :semantic-span :ordinal] 0)
+                     (assoc-in diagnostic [:facts :semantic-span :ordinal] 2)]]
+      (is (nil? (resolution/diagnostic-origin source parent request changed ops))))
+    (is (nil? (resolution/diagnostic-origin source (update parent :expanded-syntax-stream into (:expanded-syntax-stream parent))
+                                            request diagnostic ops)))
+    (is (nil? (resolution/diagnostic-origin source (assoc-in parent [:expanded-syntax-stream 0 :origin] [{:kind :source}])
+                                            request diagnostic ops)))))
+
+(deftest private-candidate-products-preserve-identity-without-publication-proof
+  (let [base-ops (operations) calls (atom [])
+        ops (assoc base-ops :sh06-resolution-sh02-descriptor
+                   (fn [& args] (swap! calls conj args) {:private-descriptor true}))
+        parent {:artifact-id "parent" :expanded-syntax-stream-id "expanded" :macro-expansion-trace-id "trace"}
+        request {:module {:source-revision-id "revision"}}
+        binding {:plan {:private true} :source-text "private" :input-key {:private true} :reader-invocation {:private true}
+                 :source-content-hash "source" :plan-semantic-hash "plan"}
+        run {:raw-template-result {:template true} :raw-analysis {:raw true}
+             :resolved-analysis {:artifact-id "analysis" :binding-table [] :resolution-table []
+                                 :dependency-graph {:nodes [] :edges []} :incremental-invalidation-inputs {}}
+             :digest-requests [] :resolved-digests [] :template-verification {:status :passed}
+             :resolved-verification {:status :passed}}
+        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}]
+    (doseq [contextual? [false true]]
+      (reset! calls [])
+      (let [{:keys [artifact descriptor]} (resolution/assemble-candidate source parent contextual? inputs request binding run ops)
+            boundary (:gravity-resolution-boundary artifact)]
+        (is (= :gravity/sh06-resolution-artifact (:kind artifact)))
+        (is (= :accepted (:status artifact)))
+        (is (nil? (:capability-based-proof artifact)))
+        (is (= {:private-descriptor true} descriptor))
+        (is (= 1 (count @calls)))
+        (is (= [source binding (resolution/envelope-summary artifact ops)] (vec (first @calls))))
+        (is (= (resolution/artifact-id artifact ops) (:artifact-id artifact)))
+        (is (= (dissoc binding :plan :source-text :input-key :reader-invocation) (:plan-binding boundary)))
+        (is (= (not contextual?) (contains? boundary :module-inputs)))
+        (is (= {:source-path source :source-revision-id "revision"} (:provenance artifact)))
+        (is (= (:resolved-analysis run) (:resolved-analysis boundary)))
+        (is (= (input :c5-resolution-governing-document) (:governing-document artifact)))
+        (is (= (input :c5-resolution-diagnostic-ids) (get-in artifact [:pass :rejects])))
+        (is (false? (get-in artifact [:execution-boundary :self-hosted?])))
+        (is (not (contains? boundary :authenticated-envelope)))))
+    (is (= :none (get-in (:gravity/namespace-contract (meta #'resolution/assemble-candidate))
+                        [:public-api 'assemble-candidate :admission])))))
+
 (deftest actual-nested-bindings-emit-and-out-of-scope-binding-rejects
   (let [compile-fixture (fn [name]
                           (let [path (.getCanonicalPath
@@ -602,7 +737,8 @@
          (is (= 2 (get-in @ctx [:reuses :sh06])))))))
 
 (deftest every-stage-and-operation-var-invalidates-old-receipts
-  (let [stage-vars (set (vals (ns-publics 'gravity.resolution)))
+  (let [stage-vars (set (concat (vals (ns-publics 'gravity.resolution))
+                                [#'resolution/verify-current* #'resolution/verify* #'resolution/verify-contained*]))
         vars (set (concat stage-vars
                          (filter var? (vals (operations)))
                          [(seed-var 'resolution-stage-operations)]))]
@@ -618,6 +754,14 @@
     (is (= @v copied))
     (is (not (identical? @v copied)))
     (assert-interposition-misses #(with-redefs-fn {v copied} %))))
+
+(deftest request-catalog-roots-invalidate-old-receipts
+  (doseq [name '[c5-resolution-diagnostic-ids c5-resolution-governing-document
+                sh06-resolution-adapter-contract]]
+    (let [v (seed-var name) original @v
+          replacement (if (set? original) (conj original :unit-extra) :unit-different)]
+      (is (not= original replacement))
+      (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
 
 (deftest descriptor-configuration-roots-invalidate-old-receipts
   (doseq [name '[sh06-resolution-envelope-stage sh06-resolution-sealed-artifact-kind
@@ -679,7 +823,8 @@
         check! (seed-var 'resolution-construction-check!)
         reads (atom 0)
         expected (set (concat (vals (ns-publics 'gravity.resolution))
-                              [(seed-var 'resolution-stage-operations)
+                              [#'resolution/verify-current* #'resolution/verify* #'resolution/verify-contained*
+                               (seed-var 'resolution-stage-operations)
                                (seed-var 'resolution-stage-defaults)
                                (seed-var 'resolution-stage-input)
                                (seed-var 'sh06-resolution-dependency-record)
@@ -688,7 +833,10 @@
                                (seed-var 'p15-s23-c6c10-canonical-digest)
                                (seed-var 'sh06-resolution-envelope-stage)
                                (seed-var 'sh06-resolution-sealed-artifact-kind)
-                               (seed-var 'sh06-resolution-boundary-keys)]))]
+                               (seed-var 'sh06-resolution-boundary-keys)
+                               (seed-var 'c5-resolution-diagnostic-ids)
+                               (seed-var 'c5-resolution-governing-document)
+                               (seed-var 'sh06-resolution-adapter-contract)]))]
     ;; Isolate the existing readonly drift seam; no parent/owner admission runs.
     (with-redefs-fn
       {environment (fn [] (swap! reads inc) {})}
@@ -696,12 +844,17 @@
          (is (every? (set (map first roots)) expected))
          (doseq [v expected]
            (let [original @v
-                 replacement (if (map? original) (reduce-kv assoc {} original)
-                                 (fn [& args] (apply original args)))
+                 replacement (cond (map? original) (reduce-kv assoc {} original)
+                                   (set? original) (into #{} (map identity) original)
+                                   (vector? original) (mapv identity original)
+                                   (string? original) (String. ^String original)
+                                   (keyword? original) :unit-different
+                                   :else (fn [& args] (apply original args)))
                  error (caught (fn []
                                  (with-redefs-fn {v replacement}
                                    (fn [] (check! source {} {} roots :gravity.bootstrap/unavailable)))))]
-             (is (= [:construction-parent-dependency-drift] (:missing-fields (ex-data error))))))
+             (is (= [:construction-parent-dependency-drift] (:missing-fields (ex-data error)))
+                 (str (:name (meta v)) " " (pr-str (ex-data error))))))
          (is (zero? @reads))))))
 
 (deftest invocation-rejection-precedes-binding-and-stage-work
@@ -743,3 +896,218 @@
     (is (true? (second observed)))
     (is (= {:open? false :cleanup-complete? true :retained-receipt-count 0}
            (select-keys @cleanup [:open? :cleanup-complete? :retained-receipt-count])))))
+
+(deftest verifier-preflight-refuses-opaque-carriers-before-semantic-inspection
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) 7)
+                 (equals [_] (swap! callbacks conj :equals) false)
+                 (toString [] (swap! callbacks conj :print) "opaque"))
+        ops (assoc (operations)
+                   :sh06-resolution-artifact-verification-bounded*
+                   (fn [& _] (swap! callbacks conj :semantic-verification)))]
+    (doseq [value [opaque {:untrusted opaque} [opaque]]]
+      (let [report (#'resolution/verify* value false :gravity.bootstrap/legacy ops)]
+        (is (= :failed (:status report)))
+        (is (false? (get-in report [:checks :trusted-artifact-carrier?])))
+        (is (nil? (:gravity-verification report)))
+        (is (nil? (:upstream-verification report)))))
+    (is (empty? @callbacks))))
+
+(deftest verifier-preflight-retains-shape-and-component-order
+  ;; Isolated admission port records dispatch only, never owner acceptance.
+  (let [calls (atom [])
+        boundary (zipmap ((:sh06-resolution-boundary-keys-for (operations)) {}) (repeat nil))
+        artifact (assoc (zipmap @(seed-var 'sh06-resolution-artifact-keys) (repeat nil))
+                        :gravity-resolution-boundary boundary)
+        ops (assoc (operations)
+                   :sh06-resolution-component-validations
+                   (fn [_] (swap! calls conj :components) {:unit {:status :passed}})
+                   :sh06-resolution-artifact-verification-bounded*
+                   (fn [& args] (swap! calls conj [:semantic args]) unit-report))]
+    (is (= :failed (:status (#'resolution/verify* (dissoc artifact :kind) false :gravity.bootstrap/legacy ops))))
+    (is (empty? @calls))
+    (is (= unit-report (#'resolution/verify* artifact false :gravity.bootstrap/legacy ops)))
+    (is (= [:components [:semantic (list artifact false)]] @calls))
+    (reset! calls [])
+    (is (= unit-report (#'resolution/verify* artifact true {:context :unit} ops)))
+    (is (= [:components [:semantic (list artifact true {:context :unit})]] @calls))
+    (reset! calls [])
+    (let [report (#'resolution/verify* artifact false :gravity.bootstrap/legacy
+                                    (assoc ops :sh06-resolution-component-validations
+                                           (fn [_] (swap! calls conj :components) {:unit {:status :failed}})))]
+      (is (= :failed (:status report)))
+      (is (= [:trusted-semantic-components?] (:failed-checks report)))
+      (is (= [:components] @calls)))))
+
+(deftest verifier-contained-failures-preserve-the-original-host-boundary
+  (doseq [error [(Exception. "unit") (AssertionError. "unit")
+                 (LinkageError. "unit") (StackOverflowError. "unit")
+                 (OutOfMemoryError. "unit")]]
+    (let [ops (assoc (operations) :sh06-resolution-artifact-verification*
+                     (fn [& _] (throw error)))
+          report (#'resolution/verify-contained* {} false :gravity.bootstrap/legacy ops)]
+      (is (= (resolution/verification-failure error) report))
+      (is (= :failed (:status report)))
+      (is (= [(:contained-host-error report) [:contained-host-resource-failure?]]
+             [(.getName (class error)) (:failed-checks report)]))))
+  (let [error (InterruptedException. "unit")
+        observed (try
+                   (#'resolution/verify-contained* {} false :gravity.bootstrap/legacy
+                                                (assoc (operations) :sh06-resolution-artifact-verification*
+                                                       (fn [& _] (throw error))))
+                   (catch InterruptedException caught [caught (.isInterrupted (Thread/currentThread))])
+                   (finally (Thread/interrupted)))]
+    (is (identical? error (first observed)))
+    (is (true? (second observed)))))
+
+(deftest verifier-requires-fresh-replay-current-products-and-public-proof
+  (let [artifact @real-artifact
+        verify (fn [value construction? ops]
+                 ((seed-var 'sh06-resolution-with-reader-invocation)
+                  source invocation
+                  #(#'resolution/verify-contained* value construction? :gravity.bootstrap/legacy ops)))
+        ops (operations)]
+    (is (= :passed (:status (verify artifact false ops))))
+    (is (= :passed (:status ((seed-var 'sh06-resolution-with-reader-invocation)
+                             source invocation #(resolution/verify artifact :gravity.bootstrap/legacy ops)))))
+    (is (= '([artifact context operations]) (:arglists (meta #'resolution/verify))))
+    (is (nil? ((ns-publics 'gravity.resolution) 'verify-current*)))
+    (is (nil? ((ns-publics 'gravity.resolution) 'verify*)))
+    (is (nil? ((ns-publics 'gravity.resolution) 'verify-contained*)))
+    (let [without-proof (assoc artifact :capability-based-proof nil)]
+      (is (= :passed (:status (verify without-proof true ops))))
+      (let [report (verify without-proof false ops)]
+        (is (= :failed (:status report)))
+        (is (= [:embedded-capability-proof-current?] (:failed-checks report)))))
+    (doseq [[path value expected]
+            [[[:artifact-id] "sha256:changed" :artifact-identity-current?]
+             [[:provenance :source-revision-id] "changed" :provenance-current?]
+             [[:gravity-resolution-boundary :raw-template-result] {} :raw-template-result-current?]
+             [[:gravity-resolution-boundary :authenticated-envelope] {} :fresh-sh02-envelope-verified?]
+             [[:capability-based-proof :status] :failed :embedded-capability-proof-current?]]]
+      (let [report (verify (assoc-in artifact path value) false ops)]
+        (is (= :failed (:status report)))
+        (is (some #{expected} (:failed-checks report)))))
+    (doseq [[key replacement expected]
+            [[:sh06-resolution-verify-sh05 (fn [& _] {:status :failed}) :fresh-upstream-sh05-verification?]
+             [:sh06-resolution-run-request! (fn [& _] (throw (ex-info "unit replay refusal" {:id "C5-UNRESOLVED"})))
+              :fresh-gravity-request-replay?]
+             [:p15-s23-stage2-sh02-descriptor-envelope-verify! (fn [& _] (throw (ex-info "unit envelope refusal" {})))
+              :fresh-sh02-envelope-verified?]]]
+      (let [report (with-redefs-fn {(get ops key) replacement} #(verify artifact false ops))]
+        (is (= :failed (:status report)))
+        (is (some #{expected} (:failed-checks report)))))))
+
+(deftest verifier-configuration-roots-invalidate-old-receipts
+  (doseq [name '[sh06-resolution-artifact-keys sh06-resolution-pass-contract
+                sh06-resolution-execution-boundary-contract]]
+    (let [v (seed-var name) original @v
+          replacement (cond (map? original) (reduce-kv assoc {} original)
+                            (set? original) (into #{} (map identity) original))]
+      (is (= original replacement))
+      (is (not (identical? original replacement)))
+      (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
+
+(deftest declared-digest-materialization-preserves-indices-and-semantic-preimages
+  (let [ops (operations)
+        refs [{:digest-ref 0} {:digest-ref 1}]
+        span {:source source :line-start 2}
+        raw {:binding-table [{:binding-id (refs 0) :name 'a} {:binding-id (refs 1) :name 'b}]
+             :resolution-table [{:binding-id (refs 1) :syntax-id "reference" :source-span span}]
+             :identity-preimage {:binding-identities refs :resolutions []}
+             :incremental-invalidation-inputs {:binding-ids refs}
+             :artifact-id {:digest-ref 2}}
+        requests [{:ordinal 0 :purpose :sh06-binding-id :preimage {:name 'a}}
+                  {:ordinal 1 :purpose :sh06-binding-id :preimage {:name 'b}}
+                  {:ordinal 2 :purpose :sh06-namespace-analysis-id :preimage :ignored}]
+        digests (resolution/resolve-digest-requests! source raw requests ops)
+        resolved (resolution/resolve-analysis! source raw digests ops)]
+    (is (= 3 (count digests)))
+    (is (every? #(re-matches #"sha256:[0-9a-f]{64}" %) digests))
+    (is (= (subvec digests 0 2) (mapv :binding-id (:binding-table resolved))))
+    (is (= (subvec digests 0 2) (get-in resolved [:identity-preimage :binding-identities])))
+    (is (= (subvec digests 0 2) (get-in resolved [:incremental-invalidation-inputs :binding-ids])))
+    (is (= (digests 1) (get-in resolved [:resolution-table 0 :binding-id])))
+    (is (= span (get-in resolved [:resolution-table 0 :source-span])))
+    (is (= (digests 2) (:artifact-id resolved)))
+    (is (not (contains? (get-in resolved [:identity-preimage :resolutions 0]) :source-span)))
+    (is (= digests (resolution/resolve-digest-requests!
+                   source (assoc-in raw [:resolution-table 0 :source-span] {:source "changed"}) requests ops)))
+    (is (not= digests (resolution/resolve-digest-requests!
+                      source raw (assoc-in requests [0 :preimage :name] 'changed) ops)))
+    (is (= {:digest-ref 2} (:artifact-id (resolution/resolve-analysis! source raw (subvec digests 0 2) true ops))))
+    (doseq [[changed expected] [[[] :resolution-digest-requests]
+                                [(pop requests) :complete-resolution-digest-requests]
+                                [(assoc-in requests [0 :ordinal] 1) :ordered-resolution-digest-requests]]]
+      (is (= [expected] (:missing-fields (ex-data (caught #(resolution/resolve-digest-requests! source raw changed ops)))))))
+    (doseq [bad [nil {:digest-ref -1} {:digest-ref 0.5} {:digest-ref 9} {:digest-ref 0 :extra true}]]
+      (is (= [:unit-slot] (:missing-fields (ex-data (caught #(resolution/resolve-declared-id! source bad digests :unit-slot ops)))))))
+    (is (= 0 (resolution/digest-reference {:digest-ref 0})))
+    (doseq [bad [nil {} {:digest-ref -1} {:digest-ref 0.5} {:digest-ref 0 :extra true}]]
+      (is (nil? (resolution/digest-reference bad))))))
+
+(deftest execution-rejects-host-carriers-before-invoking-the-resolver
+  (let [calls (atom 0)
+        opaque (proxy [Object] []
+                 (toString [] (swap! calls inc) "opaque")
+                 (hashCode [] (swap! calls inc) 7)
+                 (equals [_] (swap! calls inc) false))
+        ops (assoc (operations) :sh06-resolution-execute!
+                   (fn [& _] (swap! calls inc)))]
+    (doseq [request [opaque {:opaque opaque}]]
+      (let [error (caught #(resolution/run-request! source {} request ops))]
+        (is (= "C5-UNRESOLVED" (:id (ex-data error))))
+        (is (= [:untrusted-sh06-resolution-carrier] (:missing-fields (ex-data error))))))
+    (is (zero? @calls))))
+
+(deftest execution-phase-failures-stop-before-later-materialization
+  ;; Unit control flow only: supplied reports cannot confer admission authority.
+  (let [calls (atom []) template {:status :accepted :namespace-analysis-template {} :digest-requests []}
+        ops (assoc (operations)
+                   :sh06-resolution-require-carrier! (fn [_ carrier _] (swap! calls conj carrier) {:status :passed})
+                   :sh06-resolution-execute!
+                   (fn [_ _ function _]
+                     (swap! calls conj function)
+                     (case function
+                       sh06-build-resolution-template template
+                       sh06-verify-resolution-template {:status :failed}))
+                   :sh06-resolution-resolve-digest-requests! (fn [& _] (swap! calls conj :unexpected-digests))
+                   :sh06-resolution-resolve-analysis! (fn [& _] (swap! calls conj :unexpected-analysis)))
+        error (caught #(resolution/run-request! source {} {} ops))]
+    (is (= [:fresh-gravity-resolution-template-verification] (:missing-fields (ex-data error))))
+    (is (= [:authenticated-sh06-resolution-request 'sh06-build-resolution-template
+            :gravity-resolution-template 'sh06-verify-resolution-template] @calls))
+    (reset! calls [])
+    (let [error (caught #(resolution/run-request! source {} {}
+                                                (assoc ops :sh06-resolution-execute! (fn [& _] {:status :unknown}))))]
+      (is (= [:gravity-resolution-result-status] (:missing-fields (ex-data error)))))
+    (is (= [:authenticated-sh06-resolution-request :gravity-resolution-template] @calls))))
+
+(deftest stage-execution-emits-real-verified-analysis-and-real-unresolved-rejection
+  ;; Execute the actual current Gravity leaf on explicit normalized requests.
+  ;; Source authentication and publication remain with their owning boundaries.
+  (let [id #(format "sha256:%064x" %)
+        request {:artifact :gravity/sh06-authenticated-c4-resolution-request :schema-version 1
+                 :module {:namespace 'stage.execution :package 'stage :profile :hosted :target :jvm
+                          :safety :safe :effects [] :capabilities [] :exports []
+                          :source-revision-id (id 1) :c4-artifact-id (id 2)}
+                 :definitions [] :imports [] :import-bindings [] :lexical-scopes []
+                 :references [] :core-bindings [] :dependency-edges []
+                 :macro-expansion-binding {:artifact :gravity/sh05-macro-expansion-binding :schema-version 1
+                                           :source-revision-id (id 1) :c4-artifact-id (id 2)
+                                           :macro-result-id (id 3) :authenticated-envelope-id (id 4)}
+                 :provenance {:actual-source-path source}}
+        binding (real-binding)
+        run (resolution/run-request! source binding request (operations))
+        rejected (assoc request :references [{:syntax-id (id 9) :symbol 'missing :qualifier nil :name 'missing
+                                              :position :expression :scope-chain [] :semantic-span {} :source-span nil}])
+        error (caught #(resolution/run-request! source binding rejected (operations)))]
+    (is (= :accepted (get-in run [:raw-template-result :status])))
+    (is (= :passed (get-in run [:template-verification :status])))
+    (is (= :passed (get-in run [:resolved-verification :status])))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (get-in run [:resolved-analysis :artifact-id])))
+    (is (= "C5-UNRESOLVED" (:id (ex-data error))))
+    (is (= 'missing (:symbol (ex-data error))))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id (ex-data error))))
+    (is (= source (get-in (ex-data error) [:source-span :source])))))
