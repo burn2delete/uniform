@@ -6,10 +6,10 @@
   "source_root": "bootstrap/clojure/src",
   "test_root": "bootstrap/clojure/test",
   "counts": {
-    "components": 54,
-    "sources": 54,
-    "tests": 54,
-    "bootstrap_free_tests": 48,
+    "components": 55,
+    "sources": 55,
+    "tests": 55,
+    "bootstrap_free_tests": 49,
     "compatibility_tests": 5,
     "coordinator_tests": 1
   },
@@ -2039,6 +2039,35 @@
       "contract_var": "namespace-contract",
       "stage0_group": "foundation-reader",
       "leaf_execution_group": null
+    },
+    {
+      "id": "source-interface-header",
+      "owner": "sh-core",
+      "source": {
+        "path": "bootstrap/clojure/src/gravity/source_interface_header.clj",
+        "namespace": "gravity.source-interface-header"
+      },
+      "test": {
+        "path": "bootstrap/clojure/test/gravity/source_interface_header_test.clj",
+        "namespace": "gravity.source-interface-header-test",
+        "lane": "bootstrap-free",
+        "execution_requires_bootstrap": false
+      },
+      "direct_source_dependencies": [],
+      "direct_test_dependencies": ["source-interface-header"],
+      "canonical_pass_refs": ["core-ast", "gravity-mir"],
+      "mapping_kind": "primary",
+      "authority": {
+        "ceiling": "none",
+        "compatibility_only": false,
+        "canonical_authority": false,
+        "self_hosted": false,
+        "release": false,
+        "seed_retirement": false
+      },
+      "contract_var": "interface-version!",
+      "stage0_group": "compiler",
+      "leaf_execution_group": "compiler"
     },
     {
       "id": "source-unit",
