@@ -7,6 +7,7 @@
   (:require [gravity.checked-core]
             [gravity.mir]
             [gravity.runtime]
+            [gravity.backend.js]
             [gravity.backend.jvm]
             [gravity.backend.wasm]
             [gravity.backend.c]
