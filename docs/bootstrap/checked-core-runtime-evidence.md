@@ -80,3 +80,11 @@ four existing current-binding and normalized-kernel checks. This is not a full
 SH-07 artifact or migration run. CI adds a checked-core-runtime mode that runs
 those nine tests and the four existing checks in separate fresh processes.
 The older owner-gated artifact model is not counted as runtime evidence.
+
+The actual checked-core-runtime CI command also passes locally in fresh child
+processes: stage suite 9 tests / 417 assertions and current-binding/kernel suite
+4 / 57. The runtime body conservation check passes for all six moved functions,
+after reversing only the explicit operation/input seam and cache-lock alias.
+All unselected definitions, including the historical pin-check body and its
+configuration, remain conserved. The scope does not include the baseline
+owner-admission model or authenticated Core artifact construction.
