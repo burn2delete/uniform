@@ -9,6 +9,14 @@
     {:arglists ([lineage fragment-manifest _operations]),
      :operation-inputs [],
      :admission :none},
+    request-preflight!
+    {:arglists [[request operations]],
+     :operation-inputs
+     [:p15-s23-c6c10-carrier-validation
+      :reader-canonical-hash
+      :sh07-core-projection-binding-input
+      :sh07-core-request-diagnostic!],
+     :admission :none},
     semantic-mutation
     {:arglists ([semantic-projection-id mutation operations]),
      :operation-inputs [:sh07-core-semantic-projection-id],
@@ -23,6 +31,21 @@
      :operation-inputs
      [:reader-canonical-hash :sh05-path-neutral-semantic-value],
      :admission :none},
+    run-structural-request-for-test
+    {:arglists [[authenticated-request operations]],
+     :operation-inputs
+     [:input
+      :with-execution-binding
+      :sh07-core-canonical-artifact
+      :sh07-core-current-source-key
+      :sh07-core-digest-requests
+      :sh07-core-execute!
+      :sh07-core-raise-diagnostic!
+      :sh07-core-request-preflight!
+      :sh07-core-resolve-result],
+     :admission :none,
+     :test-only? true,
+     :authenticates-sh06-membership? false},
     canonical-artifact
     {:arglists ([resolved-template operations]),
      :operation-inputs [:sh07-core-semantic-identity-preimage],
@@ -39,6 +62,24 @@
     {:arglists ([resolution _operations]),
      :operation-inputs [],
      :admission :none},
+    run-request-for-test
+    {:arglists
+     [[resolution-artifact authenticated-request operations]
+      [resolution-artifact
+       authenticated-request
+       invocation
+       operations]],
+     :operation-inputs
+     [:sh07-core-run-request-for-test
+      :sh03-reader-authenticated-envelope-options
+      :sh06-resolution-artifact-verification
+      :sh07-core-authenticated-request
+      :sh07-core-request-diagnostic!
+      :sh07-core-run-structural-request-for-test
+      :sh07-core-source-path-from-resolution],
+     :admission :none,
+     :test-only? true,
+     :authenticates-sh06-membership? true},
     children
     {:arglists [[value _operations]],
      :operation-inputs [],
@@ -342,12 +383,14 @@
     :sh07-core-authenticated-request
     :sh07-core-build-binding!
     :sh07-core-build-form-tree
+    :sh07-core-canonical-artifact
     :sh07-core-children
     :sh07-core-current-source-key
     :sh07-core-decimal-descriptor
     :sh07-core-decimal-evidence
     :sh07-core-decimal-evidence-complete!
     :sh07-core-digest-reference-ordinal
+    :sh07-core-digest-requests
     :sh07-core-execute!
     :sh07-core-lineage-with-semantic-trace
     :sh07-core-macro-trace
@@ -357,12 +400,18 @@
     :sh07-core-projected-source-mismatch
     :sh07-core-projected-syntax-id
     :sh07-core-projection-binding-input
+    :sh07-core-raise-diagnostic!
+    :sh07-core-request-diagnostic!
     :sh07-core-request-from-verified-upstream
+    :sh07-core-request-preflight!
     :sh07-core-resolution-projection!
     :sh07-core-resolve-digest-preimage!
     :sh07-core-resolve-reference!
     :sh07-core-resolve-reference-vector!
+    :sh07-core-resolve-result
     :sh07-core-root-syntax-id
+    :sh07-core-run-request-for-test
+    :sh07-core-run-structural-request-for-test
     :sh07-core-semantic-binding
     :sh07-core-semantic-error-handler
     :sh07-core-semantic-error-transfer
@@ -379,7 +428,9 @@
     :sh07-core-source-path
     :sh07-core-source-path-from-resolution
     :sh07-core-value-kind
-    :sha256-bytes-hex],
+    :sha256-bytes-hex
+    :with-execution-binding],
+   :scoped-binding-operation :with-execution-binding,
    :dependency-direction
    {:requires [clojure.core], :forbids [gravity.bootstrap]},
    :seed-lifetime
@@ -451,7 +502,9 @@
     :seed-retirement
     :backend-artifact-manifest-completion
     :diagnostic-safe-public-projection
-    :diagnostic-publication],
+    :diagnostic-publication
+    :structural-test-runner-c5-authentication
+    :test-runner-core-owner-admission],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -472,7 +525,10 @@
     :verified-resolved-template-data
     :explicit-decimal-descriptors
     :rejected-gravity-result
-    :request-rule-specific-failure-data],
+    :request-rule-specific-failure-data
+    :native-core-request
+    :verified-c5-parent-and-reader-invocation
+    :current-scoped-core-plan],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -490,7 +546,11 @@
      :digest-purpose-and-ordinal-legality
      :failed-gravity-digest-or-result-resolution
      :core-lowering-rejection-carrier
-     :core-request-failure-carrier],
+     :core-request-failure-carrier
+     :request-shape-and-identity-preflight
+     :test-request-membership
+     :test-execution-revision-bookends
+     :template-and-resolved-replay-failure],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -516,10 +576,12 @@
     :materialized-core-template-data
     :canonical-core-candidate-data
     :explicit-host-decimal-presentation
-    :c6-diagnostic-construction-records],
+    :c6-diagnostic-construction-records
+    :request-preflight-acceptance
+    :test-only-core-template-digest-and-replay-bundle],
    :clojure-seed-boundary? true,
    :contract-boundary
-   :checked-core-supported-data-and-runtime-boundaries})
+   :checked-core-supported-data-runtime-and-test-execution})
 
 (defn
  source-path
@@ -3305,6 +3367,317 @@
     "SH-07 authenticated request failed validation"
     diagnostic))))
 
+(defn
+ request-preflight!
+ [request operations]
+ (let
+  [p15-s23-c6c10-carrier-validation
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :p15-s23-c6c10-carrier-validation)
+   reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh07-core-projection-binding-input
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-projection-binding-input)
+   sh07-core-request-diagnostic!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-request-diagnostic!)]
+  (p15-s23-c6c10-carrier-validation "<sh07-core-request>" request)
+  (let
+   [value-shape
+    (fn
+     [value]
+     (cond
+      (nil? value)
+      :nil
+      (map? value)
+      :map
+      (vector? value)
+      :vector
+      (set? value)
+      :set
+      (sequential? value)
+      :sequential
+      (coll? value)
+      :collection
+      :else
+      :scalar))
+    require-shape
+    (fn
+     [predicate key reason]
+     (when-not
+      (predicate (get request key))
+      (sh07-core-request-diagnostic!
+       request
+       {:reason reason,
+        :observed-shape (value-shape (get request key))})))]
+   (when-not
+    (map? request)
+    (sh07-core-request-diagnostic!
+     {}
+     {:reason :request-map-required,
+      :observed-shape (value-shape request)}))
+   (doseq
+    [[key reason]
+     [[:lineage :request-lineage-map-required]
+      [:module :request-module-map-required]
+      [:provenance :request-provenance-map-required]]]
+    (require-shape map? key reason))
+   (doseq
+    [[key reason]
+     [[:forms :request-forms-vector-required]
+      [:binding-table :request-binding-table-vector-required]
+      [:alias-table :request-alias-table-vector-required]
+      [:resolution-table :request-resolution-table-vector-required]
+      [:fragment-manifest :request-fragment-manifest-vector-required]
+      [:macro-expansion-trace :request-macro-trace-vector-required]]]
+    (require-shape vector? key reason))
+   (when-not
+    (=
+     (:projection-binding request)
+     (reader-canonical-hash
+      (sh07-core-projection-binding-input request)))
+    (sh07-core-request-diagnostic!
+     request
+     {:reason :request-projection-binding-mismatch}))
+   (when-not
+    (=
+     (get-in request [:lineage :alias-table-id])
+     (reader-canonical-hash
+      {:domain :gravity/sh07-sh06-alias-table-v1,
+       :aliases (:alias-table request)}))
+    (sh07-core-request-diagnostic!
+     request
+     {:reason :request-alias-table-lineage-mismatch}))
+   (when-not
+    (= 15 (:schema-version request))
+    (sh07-core-request-diagnostic!
+     request
+     {:reason :request-schema-version,
+      :expected 15,
+      :observed (:schema-version request)}))
+   (when-not
+    (= :sh07-b15-keyword-map-lookup (:scope request))
+    (sh07-core-request-diagnostic!
+     request
+     {:reason :request-scope,
+      :expected :sh07-b15-keyword-map-lookup,
+      :observed (:scope request)}))
+   :passed)))
+
+(defn
+ run-structural-request-for-test
+ "Test-only structural runner. It does not authenticate SH-06 membership;\n  callers testing the executable boundary must use\n  sh07-core-run-request-for-test with the verified SH-06 artifact."
+ [authenticated-request operations]
+ (let
+  [input
+   (.valAt ^clojure.lang.ILookup operations :input)
+   with-execution-binding
+   (.valAt ^clojure.lang.ILookup operations :with-execution-binding)
+   sh07-core-canonical-artifact
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-canonical-artifact)
+   sh07-core-current-source-key
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-current-source-key)
+   sh07-core-digest-requests
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-digest-requests)
+   sh07-core-execute!
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-execute!)
+   sh07-core-raise-diagnostic!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-raise-diagnostic!)
+   sh07-core-request-preflight!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-request-preflight!)
+   sh07-core-resolve-result
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-resolve-result)
+   input-key
+   (sh07-core-current-source-key)
+   core-binding
+   (or
+    (input :*sh07-core-execution-binding*)
+    @(input :sh07-core-cached-binding))
+   _
+   (when-not
+    (=
+     (second (:source input-key))
+     (:source-content-hash core-binding))
+    (throw
+     (ex-info
+      "SH-07 construction started with a stale binding"
+      {:id "C6-VERIFY",
+       :stage :core-lowering,
+       :reason :checked-core-operation-revision-drift})))
+   run
+   (with-execution-binding
+    core-binding
+    (fn
+     []
+     (let
+      [_
+       (sh07-core-request-preflight! authenticated-request)
+       source-path
+       (get-in authenticated-request [:provenance :actual-source-path])
+       result
+       (sh07-core-execute!
+        source-path
+        'sh07-build-core-template
+        [authenticated-request])]
+      (case
+       (:status result)
+       :rejected
+       (sh07-core-raise-diagnostic! source-path result)
+       :accepted
+       (let
+        [template
+         (:core-template result)
+         digest-requests
+         (:digest-requests result)
+         template-verification
+         (sh07-core-execute!
+          source-path
+          'sh07-verify-core-template
+          [authenticated-request template digest-requests])
+         _
+         (when-not
+          (= :passed (:status template-verification))
+          (throw
+           (ex-info
+            "Gravity SH-07 template replay failed"
+            {:id "C6-VERIFY",
+             :stage :core-lowering,
+             :source-path source-path,
+             :template-verification template-verification})))
+         resolved-digests
+         (sh07-core-digest-requests source-path digest-requests)
+         resolved-template
+         (sh07-core-resolve-result
+          source-path
+          template
+          digest-requests
+          resolved-digests)
+         resolved-verification
+         (sh07-core-execute!
+          source-path
+          'sh07-verify-core-resolved
+          [authenticated-request
+           resolved-template
+           digest-requests
+           resolved-digests])
+         _
+         (when-not
+          (= :passed (:status resolved-verification))
+          (throw
+           (ex-info
+            "Gravity SH-07 resolved replay failed"
+            {:id "C6-VERIFY",
+             :stage :core-lowering,
+             :source-path source-path,
+             :resolved-verification resolved-verification})))]
+        {:raw-template-result result,
+         :canonical-core-artifact
+         (sh07-core-canonical-artifact resolved-template),
+         :digest-requests digest-requests,
+         :resolved-digests resolved-digests,
+         :template-verification template-verification,
+         :resolved-verification resolved-verification})
+       (throw
+        (ex-info
+         "Gravity SH-07 returned an invalid result status"
+         {:id "C6-VERIFY",
+          :stage :core-lowering,
+          :source-path source-path,
+          :status (:status result)}))))))]
+  (when-not
+   (= input-key (sh07-core-current-source-key))
+   (throw
+    (ex-info
+     "SH-07 inputs changed during construction"
+     {:id "C6-VERIFY",
+      :stage :core-lowering,
+      :reason :checked-core-operation-revision-drift})))
+  run))
+
+(defn
+ run-request-for-test
+ ([resolution-artifact authenticated-request operations]
+  (let
+   [sh07-core-run-request-for-test
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-run-request-for-test)]
+   (sh07-core-run-request-for-test
+    resolution-artifact
+    authenticated-request
+    nil)))
+ ([resolution-artifact authenticated-request invocation operations]
+  (let
+   [sh03-reader-authenticated-envelope-options
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh03-reader-authenticated-envelope-options)
+    sh06-resolution-artifact-verification
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh06-resolution-artifact-verification)
+    sh07-core-authenticated-request
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-authenticated-request)
+    sh07-core-request-diagnostic!
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-request-diagnostic!)
+    sh07-core-run-structural-request-for-test
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-run-structural-request-for-test)
+    sh07-core-source-path-from-resolution
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-source-path-from-resolution)
+    _
+    (when
+     invocation
+     (sh03-reader-authenticated-envelope-options
+      (sh07-core-source-path-from-resolution resolution-artifact)
+      invocation))
+    upstream-verification
+    (if
+     invocation
+     (sh06-resolution-artifact-verification
+      resolution-artifact
+      :gravity.bootstrap/legacy
+      invocation)
+     (sh06-resolution-artifact-verification resolution-artifact))
+    expected-request
+    (when
+     (= :passed (:status upstream-verification))
+     (sh07-core-authenticated-request
+      resolution-artifact
+      :gravity.bootstrap/legacy
+      invocation))]
+   (when-not
+    (= :passed (:status upstream-verification))
+    (sh07-core-request-diagnostic!
+     authenticated-request
+     {:reason :authenticated-sh06-artifact-required,
+      :failed-checks (:failed-checks upstream-verification)}))
+   (when-not
+    (= expected-request authenticated-request)
+    (sh07-core-request-diagnostic!
+     authenticated-request
+     {:reason :authenticated-sh06-request-membership-mismatch}))
+   (sh07-core-run-structural-request-for-test authenticated-request))))
+
 (doseq
  [operation
   [#'build-plan-binding!
@@ -3360,7 +3733,10 @@
    #'canonical-artifact
    #'public-decimal-presentation
    #'raise-diagnostic!
-   #'request-diagnostic!]]
+   #'request-diagnostic!
+   #'request-preflight!
+   #'run-structural-request-for-test
+   #'run-request-for-test]]
  (alter-meta!
   operation
   assoc

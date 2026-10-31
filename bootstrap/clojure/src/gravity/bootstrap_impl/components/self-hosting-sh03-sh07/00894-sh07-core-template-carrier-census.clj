@@ -1,93 +1,24 @@
-(defn sh07-core-run-structural-request-for-test
-  "Test-only structural runner. It does not authenticate SH-06 membership;
-  callers testing the executable boundary must use
-  sh07-core-run-request-for-test with the verified SH-06 artifact."
-  [authenticated-request]
-  (let [input-key (sh07-core-current-source-key)
-        core-binding (or *sh07-core-execution-binding* @sh07-core-cached-binding)
-        _ (when-not (= (second (:source input-key)) (:source-content-hash core-binding))
-            (throw (ex-info "SH-07 construction started with a stale binding"
-                            {:id "C6-VERIFY" :stage :core-lowering
-                             :reason :checked-core-operation-revision-drift})))
-        run (binding [*sh07-core-execution-binding* core-binding]
-  (let [_ (sh07-core-request-preflight! authenticated-request)
-        source-path (get-in authenticated-request [:provenance :actual-source-path])
-        result
-        (sh07-core-execute!
-         source-path 'sh07-build-core-template [authenticated-request])]
-    (case (:status result)
-      :rejected (sh07-core-raise-diagnostic! source-path result)
-      :accepted
-      (let [template (:core-template result)
-            digest-requests (:digest-requests result)
-            template-verification
-            (sh07-core-execute!
-             source-path 'sh07-verify-core-template
-             [authenticated-request template digest-requests])
-            _ (when-not (= :passed (:status template-verification))
-                (throw
-                 (ex-info "Gravity SH-07 template replay failed"
-                          {:id "C6-VERIFY" :stage :core-lowering
-                           :source-path source-path
-                           :template-verification template-verification})))
-            resolved-digests
-            (sh07-core-digest-requests source-path digest-requests)
-            resolved-template
-            (sh07-core-resolve-result
-             source-path template digest-requests resolved-digests)
-            resolved-verification
-            (sh07-core-execute!
-             source-path 'sh07-verify-core-resolved
-             [authenticated-request resolved-template
-              digest-requests resolved-digests])
-            _ (when-not (= :passed (:status resolved-verification))
-                (throw
-                 (ex-info "Gravity SH-07 resolved replay failed"
-                          {:id "C6-VERIFY" :stage :core-lowering
-                           :source-path source-path
-                           :resolved-verification
-                           resolved-verification})))]
-        {:raw-template-result result
-         :canonical-core-artifact (sh07-core-canonical-artifact resolved-template)
-         :digest-requests digest-requests
-         :resolved-digests resolved-digests
-         :template-verification template-verification
-         :resolved-verification resolved-verification})
-      (throw
-       (ex-info "Gravity SH-07 returned an invalid result status"
-                {:id "C6-VERIFY" :stage :core-lowering
-                 :source-path source-path
-                 :status (:status result)})))))]
-    (when-not (= input-key (sh07-core-current-source-key))
-      (throw (ex-info "SH-07 inputs changed during construction"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :reason :checked-core-operation-revision-drift})))
-    run))
+(defn
+ sh07-core-run-structural-request-for-test
+ "Test-only structural runner. It does not authenticate SH-06 membership;\n  callers testing the executable boundary must use\n  sh07-core-run-request-for-test with the verified SH-06 artifact."
+ [authenticated-request]
+ (gravity.checked-core/run-structural-request-for-test
+  authenticated-request
+  (checked-core-stage-operations)))
 
-(defn sh07-core-run-request-for-test
-  ([resolution-artifact authenticated-request]
-   (sh07-core-run-request-for-test resolution-artifact authenticated-request nil))
-  ([resolution-artifact authenticated-request invocation]
-  (let [_ (when invocation
-            (sh03-reader-authenticated-envelope-options
-             (sh07-core-source-path-from-resolution resolution-artifact) invocation))
-        upstream-verification
-        (if invocation
-          (sh06-resolution-artifact-verification resolution-artifact ::legacy invocation)
-          (sh06-resolution-artifact-verification resolution-artifact))
-        expected-request
-        (when (= :passed (:status upstream-verification))
-          (sh07-core-authenticated-request resolution-artifact ::legacy invocation))]
-    (when-not (= :passed (:status upstream-verification))
-      (sh07-core-request-diagnostic!
-       authenticated-request
-       {:reason :authenticated-sh06-artifact-required
-        :failed-checks (:failed-checks upstream-verification)}))
-    (when-not (= expected-request authenticated-request)
-      (sh07-core-request-diagnostic!
-       authenticated-request
-       {:reason :authenticated-sh06-request-membership-mismatch}))
-    (sh07-core-run-structural-request-for-test authenticated-request))))
+(defn
+ sh07-core-run-request-for-test
+ ([resolution-artifact authenticated-request]
+  (gravity.checked-core/run-request-for-test
+   resolution-artifact
+   authenticated-request
+   (checked-core-stage-operations)))
+ ([resolution-artifact authenticated-request invocation]
+  (gravity.checked-core/run-request-for-test
+   resolution-artifact
+   authenticated-request
+   invocation
+   (checked-core-stage-operations))))
 
 (defn sh07-core-projection-diagnostic!
   [resolution-artifact reason]

@@ -27,12 +27,13 @@
     sh07-core-semantic-error-handler sh07-core-semantic-node sh07-core-semantic-identity-preimage
     sh07-core-resolve-digest-preimage! sh07-core-digest-requests sh07-core-resolve-result
     sh07-core-public-decimal-presentation sh07-core-canonical-artifact sh07-core-raise-diagnostic!
-    sh07-core-request-diagnostic!])
+    sh07-core-request-diagnostic! sh07-core-request-preflight!
+    sh07-core-run-structural-request-for-test sh07-core-run-request-for-test])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 50 (count publics)))
+    (is (= 53 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -404,6 +405,160 @@
     (let [missing (ex-data (caught #(core/request-diagnostic! {} {} ops)))]
       (is (= {:namespace nil :profile nil :target nil} (select-keys missing [:namespace :profile :target])))
       (is (= :authenticated-core-request (get-in missing [:facts :reason]))))))
+
+(defn- bind-request [request]
+  (assoc request :projection-binding (b/reader-canonical-hash (b/sh07-core-projection-binding-input request))))
+
+(defn- preflight-request []
+  (bind-request
+   {:schema-version 15 :scope :sh07-b15-keyword-map-lookup
+    :lineage {:alias-table-id (b/reader-canonical-hash {:domain :gravity/sh07-sh06-alias-table-v1 :aliases []})}
+    :module {} :provenance {:actual-source-path source} :forms [] :binding-table []
+    :alias-table [] :resolution-table [] :fragment-manifest [] :macro-expansion-trace []}))
+
+(deftest request-preflight-retains-shapes-identities-and-native-first-order
+  (let [ops (operations) request (preflight-request)]
+    (is (= :passed (core/request-preflight! request ops) (b/sh07-core-request-preflight! request)))
+    (doseq [[bad reason] (concat
+                         [[nil :request-map-required]
+                          [(assoc request :projection-binding :forged) :request-projection-binding-mismatch]
+                          [(bind-request (assoc-in request [:lineage :alias-table-id] :forged)) :request-alias-table-lineage-mismatch]
+                          [(bind-request (assoc request :schema-version 16)) :request-schema-version]
+                          [(bind-request (assoc request :scope :other)) :request-scope]]
+                         (map (fn [[field reason]] [(assoc request field nil) reason])
+                              [[:lineage :request-lineage-map-required] [:module :request-module-map-required]
+                               [:provenance :request-provenance-map-required] [:forms :request-forms-vector-required]
+                               [:binding-table :request-binding-table-vector-required] [:alias-table :request-alias-table-vector-required]
+                               [:resolution-table :request-resolution-table-vector-required] [:fragment-manifest :request-fragment-manifest-vector-required]
+                               [:macro-expansion-trace :request-macro-trace-vector-required]]))]
+      (let [failure (ex-data (caught #(core/request-preflight! bad ops)))]
+        (is (= "C6-VERIFY" (:rule failure)))
+        (is (= reason (get-in failure [:facts :reason])))
+        (is (= failure (ex-data (caught #(b/sh07-core-request-preflight! bad)))))))
+    (let [calls (atom []) opaque (proxy [Object] []
+                                  (hashCode [] (swap! calls conj :hash) 7)
+                                  (equals [_] (swap! calls conj :equals) false)
+                                  (toString [] (swap! calls conj :string) "opaque"))
+          guarded (assoc ops :reader-canonical-hash (fn [& _] (swap! calls conj :canonical-hash))
+                         :sh07-core-request-diagnostic! (fn [& _] (swap! calls conj :diagnostic)))
+          failure (caught #(core/request-preflight! (assoc request :forms [opaque]) guarded))]
+      (is (= "C6-VERIFY" (:id (ex-data failure))))
+      (is (= [] @calls)))))
+
+(deftest executable-test-runner-verifies-owner-and-membership-before-execution
+  ;; Dispatch model; paired current Reader/C5 source evidence exercises the owner.
+  (let [calls (atom []) request {:unit :request} parent :parent
+        ops (assoc (operations)
+                   :sh07-core-run-request-for-test (fn [& args] [:recursive (vec args)])
+                   :sh07-core-source-path-from-resolution (constantly source)
+                   :sh03-reader-authenticated-envelope-options (fn [& args] (swap! calls conj [:reader (vec args)]))
+                   :sh06-resolution-artifact-verification (fn [& args] (swap! calls conj [:owner (vec args)]) {:status :passed})
+                   :sh07-core-authenticated-request (fn [& args] (swap! calls conj [:request (vec args)]) request)
+                   :sh07-core-run-structural-request-for-test (fn [value] (swap! calls conj [:execute value]) :unit-result))]
+    (is (= [:recursive [parent request nil]] (core/run-request-for-test parent request ops)))
+    (doseq [invocation [nil {:reader :current}]]
+      (reset! calls [])
+      (is (= :unit-result (core/run-request-for-test parent request invocation ops)))
+      (is (= (vec (concat (when invocation [[:reader [source invocation]]])
+                          [[:owner (if invocation [parent :gravity.bootstrap/legacy invocation] [parent])]
+                           [:request [parent :gravity.bootstrap/legacy invocation]] [:execute request]])) @calls)))
+    (doseq [[changes reason expected-calls]
+            [[{:sh06-resolution-artifact-verification (fn [& args] (swap! calls conj [:owner (vec args)])
+                                                       {:status :rejected :failed-checks [:tampered]})}
+              :authenticated-sh06-artifact-required [[:owner [parent]]]]
+             [{} :authenticated-sh06-request-membership-mismatch
+              [[:owner [parent]] [:request [parent :gravity.bootstrap/legacy nil]]]]]]
+      (reset! calls [])
+      (let [failure (caught #(core/run-request-for-test parent {:unit :forged} nil (merge ops changes)))]
+        (is (= reason (get-in (ex-data failure) [:facts :reason])))
+        (is (= expected-calls @calls))))
+    (let [contract (:gravity/namespace-contract (meta #'core/run-request-for-test))]
+      (is (= :with-execution-binding (:scoped-binding-operation contract)))
+      (doseq [name '[run-request-for-test run-structural-request-for-test]]
+        (is (true? (get-in contract [:public-api name :test-only?])))
+        (is (= :none (get-in contract [:public-api name :admission])))))))
+
+(defn- structural-fixture [calls]
+  (let [binding-var (seed-var '*sh07-core-execution-binding*)
+        core-binding {:source-content-hash :unit-source :plan :unit-plan}
+        input-key {:source [:unit :unit-source]}
+        raw {:status :accepted :core-template :template :digest-requests [:digest-request]}
+        ops (assoc (operations)
+                   :input (fn [field] (case field :*sh07-core-execution-binding* @binding-var
+                                           :sh07-core-cached-binding (delay core-binding)))
+                   :sh07-core-current-source-key (constantly input-key)
+                   :sh07-core-request-preflight! (fn [request] (swap! calls conj [:preflight request @binding-var]) :passed)
+                   :sh07-core-execute! (fn [_ function args]
+                                         (swap! calls conj [:execute function args @binding-var])
+                                         (case function sh07-build-core-template raw
+                                               sh07-verify-core-template {:status :passed}
+                                               sh07-verify-core-resolved {:status :passed}))
+                   :sh07-core-digest-requests (fn [_ _] [:resolved-digest])
+                   :sh07-core-resolve-result (fn [& _] :resolved-template)
+                   :sh07-core-canonical-artifact (fn [value] {:unit-candidate value}))]
+    {:binding core-binding :key input-key :raw raw :ops ops}))
+
+(deftest structural-test-execution-scopes-the-selected-binding-and-replays-in-order
+  (let [calls (atom []) {:keys [binding raw ops]} (structural-fixture calls)
+        binding-var (seed-var '*sh07-core-execution-binding*) original @binding-var
+        request {:provenance {:actual-source-path source}}
+        result (core/run-structural-request-for-test request ops)]
+    (is (= {:raw-template-result raw :canonical-core-artifact {:unit-candidate :resolved-template}
+            :digest-requests [:digest-request] :resolved-digests [:resolved-digest]
+            :template-verification {:status :passed} :resolved-verification {:status :passed}} result))
+    (is (= [[:preflight request binding]
+            [:execute 'sh07-build-core-template [request] binding]
+            [:execute 'sh07-verify-core-template [request :template [:digest-request]] binding]
+            [:execute 'sh07-verify-core-resolved [request :resolved-template [:digest-request] [:resolved-digest]] binding]] @calls))
+    (is (identical? original @binding-var))
+    (let [outer (assoc binding :plan :outer-plan) error (ex-info "unit preflight" {:id "UNIT"})]
+      (with-bindings {binding-var outer}
+        (reset! calls [])
+        (core/run-structural-request-for-test request ops)
+        (is (every? #(identical? outer (last %)) @calls))
+        (is (identical? error (caught #(core/run-structural-request-for-test
+                                        request (assoc ops :sh07-core-request-preflight! (fn [_] (throw error)))))))
+        (is (identical? error (caught #((:with-execution-binding ops) binding
+                                      (fn [] (is (identical? binding @binding-var)) (throw error))))))
+        (is (identical? outer @binding-var))))
+    (is (identical? original @binding-var))))
+
+(deftest structural-test-execution-rejects-source-drift-replay-failure-and-invalid-status
+  (let [calls (atom []) {:keys [key ops]} (structural-fixture calls)
+        request {:provenance {:actual-source-path source}}]
+    (doseq [[keys expected-calls] [[[{:source [:unit :stale]}] 0] [[key {:source [:unit :changed]}] 4]]]
+      (reset! calls [])
+      (let [remaining (atom keys)
+            drift-ops (assoc ops :sh07-core-current-source-key
+                             (fn [] (let [value (first @remaining)] (swap! remaining next) value)))
+            failure (caught #(core/run-structural-request-for-test request drift-ops))]
+        (is (= :checked-core-operation-revision-drift (:reason (ex-data failure))))
+        (is (= expected-calls (count @calls)))))
+    (doseq [[failure-at expected-field expected-functions]
+            [['sh07-verify-core-template :template-verification ['sh07-build-core-template 'sh07-verify-core-template]]
+             ['sh07-verify-core-resolved :resolved-verification ['sh07-build-core-template 'sh07-verify-core-template 'sh07-verify-core-resolved]]]]
+      (reset! calls [])
+      (let [execute (:sh07-core-execute! ops)
+            failure (caught #(core/run-structural-request-for-test
+                              request (assoc ops :sh07-core-execute!
+                                             (fn [path function args]
+                                               (if (= function failure-at)
+                                                 (do (swap! calls conj [:execute function]) {:status :rejected})
+                                                 (execute path function args))))))]
+        (is (= "C6-VERIFY" (:id (ex-data failure))))
+        (is (= {:status :rejected} (get (ex-data failure) expected-field)))
+        (is (= expected-functions (mapv second (filter #(= :execute (first %)) @calls))))))
+    (let [rejected {:status :rejected :rule "UNIT-REJECT"}
+          expected (ex-info "unit Gravity rejection" {:id "UNIT-REJECT"})
+          raised (atom nil)
+          failure (caught #(core/run-structural-request-for-test
+                            request (assoc ops :sh07-core-execute! (fn [& _] rejected)
+                                           :sh07-core-raise-diagnostic! (fn [& args] (reset! raised args) (throw expected)))))]
+      (is (identical? expected failure))
+      (is (= [source rejected] @raised)))
+    (let [failure (caught #(core/run-structural-request-for-test
+                            request (assoc ops :sh07-core-execute! (fn [& _] {:status :invalid}))))]
+      (is (= ["C6-VERIFY" :invalid] ((juxt :id :status) (ex-data failure)))))))
 
 (deftest module-and-source-contract-drift-reject-before-binding-publication
   ;; Real current source bytes with isolated compiler result ports. No admission.
