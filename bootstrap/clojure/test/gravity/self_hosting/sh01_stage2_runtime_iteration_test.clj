@@ -707,8 +707,8 @@
         (is (= :normal-operand-completion (get-in record [:allocation :condition])))
         (is (= (mapv id children) (:evaluated-children record)))
         (is (true? (c8 'body-order-valid? constructor)))
-        (is (= :accepted (:status (c8 'body-effects-declared? core facts graph))))
-        (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) graph))))))))
+        (is (= :accepted (:status (c8 'body-allowance-check core facts graph))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))))
 
 (deftest current-gravity-evaluated-vector-lowering-development-kernel
   (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -1200,7 +1200,7 @@
     (is (true? (c8 'body-order-valid? lookup)))
     (is (false? (c8 'body-order-valid? (update-in lookup [:evaluation :order] #(vec (reverse %))))))
     (is (false? (c8 'body-order-valid? (assoc-in lookup [:evaluation :kind] :left-to-right))))
-    (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) graph))))))
+    (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))
 
 (deftest current-gravity-keyword-map-lookup-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -1256,8 +1256,8 @@
     (is (= [(id 2)] (:evaluated-children record)))
     (is (true? (c8 'body-order-valid? vector-node)))
     (is (false? (c8 'body-order-valid? (assoc-in vector-node [:evaluation :order] []))))
-    (is (= :accepted (:status (c8 'body-effects-declared? core facts graph))))
-    (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) graph))))))
+    (is (= :accepted (:status (c8 'body-allowance-check core facts graph))))
+    (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))
 
 (defn- evaluated-vector-c8-checks [input]
   (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
@@ -1276,7 +1276,7 @@
           (is (= (:children node) (get-in graph [:nodes (:node-id node) :evaluated-children]))))
         (is (some #(contains? (get-in graph [:nodes (:node-id %) :transitive]) :error/throw) vectors))
         (is (false? (c8 'body-order-valid? (assoc-in nonempty [:evaluation :order] []))))
-        (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) graph))))))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))))
 
 (deftest evaluated-vector-c8-consumer-development-kernel
   (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
@@ -1394,7 +1394,7 @@
           (is (= (:children node) (get-in graph [:nodes (:node-id node) :evaluated-children]))))
         (is (some #(contains? (get-in graph [:nodes (:node-id %) :transitive]) :error/throw) collections))
         (is (false? (c8 'body-order-valid? (assoc-in nonempty [:evaluation :order] []))))
-        (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) graph))))))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))))
 
 (deftest evaluated-map-c8-consumer-development-kernel
   (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
@@ -1514,7 +1514,7 @@
         (is (= #{:error/throw} (get-in graph [:nodes (:node-id never) :transitive])))
         (is (= #{:gravity.type/string} (get-in graph [:nodes (:node-id never) :escaping-thrown-errors])))
         (is (false? (c8 'body-order-valid? (assoc-in never [:evaluation :order] []))))
-        (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) graph))))))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))))
 
 (deftest keyword-lookup-c8-consumer-development-kernel
   (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
@@ -1715,7 +1715,7 @@
         (is (= 2 (count (get-in graph [(id 22) :conditional-coverage]))))
         (is (= #{:gravity.type/bool} (get-in graph [(id 24) :direct-thrown-errors])))
         (is (true? (c8 'body-graph-equations-valid? core facts {} graph)))
-        (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc facts :module {:effects []}) {:nodes graph :functions {}}))))
+        (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc facts :module {:effects []}) {:nodes graph :functions {}}))))
         (doseq [bad [(assoc facts :constraint-ledger [])
                      (assoc-in facts [:constraint-ledger 0 :dependencies :callee-source-body-id] :forged)]]
           (is (= :rejected (:status (verify bad graph)))))
@@ -2249,7 +2249,7 @@
                        (is (= [] (get-in effects [:graph :nodes guard-id :escaping-thrown-error-types])))
                        (is (= [:gravity.type/string] (get-in effects [:graph :nodes guard-id :covered-source-errors 0 :matched-error-types])))
                        (is (= [] (get-in effects [:graph :functions (get-in functions ['caught :function-id]) :throws]))))
-                     (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) (:graph effects))))))
+                     (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) (:graph effects))))))
                    {:input input :module module :definitions definitions :rows rows :guarded guarded})) [".gravity" ".qst"])
         {:keys [input module definitions guarded]} (first cases)
         ledger (get-in input [:typed :constraint-ledger]) row (first guarded)
@@ -2384,7 +2384,7 @@
                      (let [functions (into {} (map (juxt :definition-name identity)) (:function-type-table facts))]
                        (doseq [name ['gate 'checked 'checked-wrapper]]
                          (is (= [:gravity.type/string] (get-in effects [:graph :functions (get-in functions [name :function-id]) :throws])))))
-                     (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) (:graph effects))))))
+                     (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) (:graph effects))))))
                    {:input input :module module :definitions definitions :rows rows})) [".gravity" ".qst"])
         {:keys [input module definitions rows]} (first cases)
         row (first (filter #(seq (:extractions %)) rows)) ledger (get-in input [:typed :constraint-ledger])
@@ -2507,7 +2507,7 @@
                      (let [functions (into {} (map (juxt :definition-name identity)) (:function-type-table facts))]
                        (doseq [name ['probe 'whole-wildcard 'wildcard-wrapper 'throwing-wildcard]]
                          (is (= [:gravity.type/string] (get-in effects [:graph :functions (get-in functions [name :function-id]) :throws])))))
-                     (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) (:graph effects))))))
+                     (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) (:graph effects))))))
                    {:input input :module module :definitions definitions :rows rows})) [".gravity" ".qst"])
         {:keys [input module definitions rows]} (first cases)
         row (first rows) ledger (get-in input [:typed :constraint-ledger])
@@ -2619,7 +2619,7 @@
                  (is (= #{} (get-in effects [:graph :nodes (:node-id node) :direct]))))
                (let [never (first (filter #(= :gravity.type/never (get-in facts [:type-table (:node-id %)])) lookups))]
                  (is (= #{:gravity.type/string} (get-in effects [:graph :nodes (:node-id never) :escaping-thrown-errors]))))
-               (is (= "C8-UNDECLARED" (:rule (c8 'body-effects-declared? core (assoc-in facts [:module :effects] []) (:graph effects))))))
+               (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) (:graph effects))))))
              {:input input :module module :definitions definitions :rows rows :function-facts function-facts}))
          [".gravity" ".qst"])
         {:keys [input module definitions rows function-facts]} (first cases)
