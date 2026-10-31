@@ -2848,7 +2848,8 @@
                                  :path (sh08-lsi-first-append [arg-id] (get head :path))
                                  :leaf (get head :leaf)}
                                 {:status :rejected :reason :unsupported-loop-member-grounding})
-                              {:status :rejected :reason :unsupported-loop-member-grounding}))))
+                              {:status :rejected :reason :unsupported-loop-member-grounding})))
+                    {:status :rejected :reason :unsupported-loop-member-grounding})
                     {:status :rejected :reason :unsupported-loop-member-grounding}))
                 {:status :rejected :reason :unsupported-loop-member-grounding})
               {:status :rejected :reason :unsupported-loop-member-grounding}))
@@ -2930,10 +2931,10 @@
                               (sh08-lsi-first-head? node (get env :forms))
                               (sh08-lsi-leaf? node (get env :forms) mode)))
                         {:status :accepted :path next-path :leaf id}
-                        {:status :rejected :reason :unsupported-loop-member-grounding})))))
+                        {:status :rejected :reason :unsupported-loop-member-grounding}))))
               {:status :rejected :reason :incoherent-loop-member-source})
             {:status :rejected :reason :unknown-loop-member-grounding})))
-      {:status :rejected :reason :incoherent-loop-member-source}))
+      {:status :rejected :reason :incoherent-loop-member-source})))
 
 (defn sh08-lsi-path [start mode binding env]
   (sh08-lsi-path-from-seen start mode binding env #{}))
@@ -3759,11 +3760,11 @@
                             premise
                             (assoc premise :member-invariant-bindings
                               member-bindings)))))
-                    checked))))
+                    checked)))
               slot-result)
             (sh08-ft-loop-kernel-failure :incoherent-loop-transfer
               id :original-nearest-tail-transfer transfer))
-          nearest))))
+          nearest)))))
 
 (defn sh08-lsi-promote [result invariants]
   (loop [remaining (get result :constraints) rows []
@@ -3825,11 +3826,11 @@
                             :core-node-id id
                             :expected :declared-parameter-types
                             :actual (get slots :slots)}])
-                (recur (rest remaining))))
+                (recur (rest remaining)))
               slots)
             (sh08-ft-loop-kernel-failure :incoherent-loop-transfer
               id :original-nearest-tail-transfer transfer))
-          nearest))))
+          nearest)))))
 
 (defn sh08-ft-loop-type-step [core type-table binding-types]
   (if (if (map? type-table) (map? binding-types) false)
@@ -5309,8 +5310,8 @@
                            :expected selected :actual arguments :node entry-node :entry entry}
                           (recur (rest remaining) (rest remaining-edges) (conj entries entry)
                             (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
-                  {:status :rejected :reason :private-self-entry-census-mismatch})))
-      {:status :rejected :reason :private-self-entry-families-required}))))
+                            {:status :rejected :reason :private-self-entry-census-mismatch}))))
+      {:status :rejected :reason :private-self-entry-families-required})))
 
 (defn sh08-ds? [proof]
   (= :sh08-declared-self-value-v1 (get proof :rule-version)))
@@ -5418,8 +5419,8 @@
                              :expected selected :actual arguments :entry entry}
                             (recur (rest remaining) (rest rows) (conj entries entry)
                               (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))))
-                  {:status :rejected :reason :indexed-self-entry-census-mismatch})))
-      {:status :rejected :reason :indexed-self-entry-families-required}))))
+                  {:status :rejected :reason :indexed-self-entry-census-mismatch}))))
+      {:status :rejected :reason :indexed-self-entry-families-required})))
 
 (defn sh08-ix-if-source? [core node nodes forms]
   (let [children (get node :children) form (get forms (get (get node :source) :form-id))
@@ -6117,8 +6118,8 @@
                 (recur (rest remaining) types constraints
                   (conj diagnostics (sh08-bm-error (get result :rule) (get result :reason)
                                       (if (map? (get result :form)) (sh08-bm-source-node node (get result :form)) node)
-                                      (get result :expected) (get result :actual)))))
-            (recur (rest remaining) types constraints diagnostics))))))))
+                                      (get result :expected) (get result :actual))))))
+            (recur (rest remaining) types constraints diagnostics)))))))
 
 (defn sh08-qd-products [nodes source-forms module]
   (sh08-qd-products-valid-data nodes source-forms module))
@@ -6236,9 +6237,9 @@
                         (assoc thrown owner (if (if occurring? (= false (contains? (set (get thrown owner [])) type)) false)
                                               (conj (get thrown owner []) type) (get thrown owner []))))
                       (sh08-th-error "C7-ANNOTATION" :typed-throw-payload-type-required payload :concrete-error-value type))
-                    (sh08-th-error "C7-VERIFY" :typed-throw-source-transfer-join node :exact-original-error-transfer transfer))))
+                    (sh08-th-error "C7-VERIFY" :typed-throw-source-transfer-join node :exact-original-error-transfer transfer)))))
             (sh08-th-error "C7-VERIFY" :typed-throw-transfer-census {} :complete-unique-error-transfers transfers))
-          owners))))))
+          owners)))))
 
 (defn sh08-th-functions [functions thrown]
   (loop [remaining functions out []]
@@ -6805,7 +6806,7 @@
                             :integer-predicate-source-mismatch :integer-predicate-operand-type-required :integer-predicate-arity-mismatch
                             :set-conversion-source-mismatch :list-set-conversion-source-mismatch :set-conversion-operand-type-required :list-set-conversion-homogeneous-keyword-list-type-required :set-conversion-arity-mismatch :map-predicate-source-mismatch :map-predicate-operand-type-required :map-predicate-arity-mismatch  :keyword-predicate-source-mismatch :keyword-predicate-operand-type-required :keyword-predicate-arity-mismatch :string-predicate-source-mismatch :string-predicate-operand-type-required :string-predicate-arity-mismatch :set-predicate-arity-mismatch :set-predicate-operand-type-required :set-predicate-source-mismatch :symbol-predicate-arity-mismatch :symbol-predicate-operand-type-required :symbol-predicate-source-mismatch :boolean-predicate-arity-mismatch :boolean-predicate-operand-type-required :boolean-predicate-source-mismatch :nil-predicate-arity-mismatch :character-predicate-arity-mismatch :nil-predicate-operand-type-required :character-predicate-operand-type-required :nil-predicate-source-mismatch :character-predicate-source-mismatch :atomic-inequality-arity-mismatch :atomic-inequality-operand-type-required :atomic-inequality-source-mismatch :character-set-contains-type-width :string-set-contains-type-width :character-set-contains-arity-mismatch :string-set-contains-arity-mismatch :character-set-contains-operand-type-required :string-set-contains-operand-type-required :character-set-contains-source-mismatch :string-set-contains-source-mismatch :vector-first-source-mismatch :vector-first-nonempty-complete-positional-type-required :map-get-source-mismatch :map-get-private-entry-presence-required :map-get-private-entry-selected-type-required :vector-empty-source-mismatch :vector-empty-vector-type-required :vector-rest-source-mismatch :map-keys-source-mismatch :vector-rest-finite-positional-vector-type-required :map-keys-finite-keyword-map-type-required}
                   (get checked-edges :reason))
-              derived)))) scoped))))
+              derived derived)))) scoped))))
 
 (defn sh08-tc-products [core types functions bindings direct]
   (sh08-tc-products-with-source-forms core types functions bindings direct nil))
