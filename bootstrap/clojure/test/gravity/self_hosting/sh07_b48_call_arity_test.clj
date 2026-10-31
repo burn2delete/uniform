@@ -358,7 +358,7 @@
            (:input-domain policy)))
     (is (= 4096 (:maximum-functions policy)))
     (is (= 65536 (:maximum-calls policy)))
-    (is (= 1024 (:maximum-arguments policy)))
+    (is (not (contains? policy :maximum-arguments)))
     (is (= :bounded-linear-indexes (:index-strategy policy)))
     (is (= :pending-nonlocal (:nonlocal-classification policy)))
     (is (= :host-validated-b47-report-and-opaque-provenance-digest
@@ -384,6 +384,85 @@
                                         "/rejected/" basename ".gravity"))))
            (seq (source-bytes (path (str fixture-root
                                         "/rejected/" basename ".qst")))))))
+
+(deftest sh07-b48-wide-argument-records-preserve-arity-shape
+  (let [call {:core-node-id "b48-call"
+              :operator-node-id "b48-operator"
+              :operator-binding-id "b48-binding"
+              :argument-node-ids ["b48-argument"]
+              :ordered-evaluation-node-ids ["b48-operator" "b48-argument"]
+              :evaluation-order :operator-then-arguments
+              :result-policy :call-result}
+        edge {:ordinal 0
+              :call-core-node-id "b48-call"
+              :caller-function-syntax-id nil
+              :caller-function-core-node-id nil
+              :callee-binding-id "b48-binding"
+              :callee-definition-syntax-id nil
+              :callee-function-syntax-id nil
+              :callee-function-core-node-id nil
+              :argument-core-node-ids ["b48-argument"]
+              :ordered-evaluation-node-ids ["b48-operator" "b48-argument"]
+              :evaluation-order :operator-then-arguments
+              :classification :nonlocal-or-nonfunction}
+        function {:ordinal 0
+                  :function-core-node-id "b48-function-core"
+                  :function-form-id "b48-function-form"
+                  :function-syntax-id "b48-function-syntax"
+                  :body-core-node-id "b48-body"
+                  :parameter-binding-ids ["b48-argument"]
+                  :fixed-arity 1
+                  :definition-kind :anonymous
+                  :definition-binding-id nil
+                  :definition-core-node-id nil
+                  :definition-name nil}
+        arguments (vec (map #(str "b48-wide-" %) (range 1025)))
+        ordered (vec (cons (:operator-node-id call) arguments))
+        wide-call (assoc call
+                         :argument-node-ids arguments
+                         :ordered-evaluation-node-ids ordered)
+        wide-edge (assoc edge
+                         :argument-core-node-ids arguments
+                         :ordered-evaluation-node-ids ordered)
+        wide-function (assoc function
+                             :fixed-arity (count arguments)
+                             :parameter-binding-ids arguments)
+        local-edge (assoc wide-edge
+                          :classification :local-function
+                          :callee-function-syntax-id
+                          (:function-syntax-id wide-function)
+                          :callee-function-core-node-id
+                          (:function-core-node-id wide-function))
+        wide-outcome
+        (invoke engine-plan 'sh07-b48-call-results-from
+                [[wide-call] [local-edge]
+                 {(:function-syntax-id wide-function) wide-function}
+                 {} 0 []])
+        narrow-target (assoc wide-function
+                             :fixed-arity 1024
+                             :parameter-binding-ids (vec (take 1024 arguments)))
+        too-many-outcome
+        (invoke engine-plan 'sh07-b48-call-results-from
+                [[wide-call] [local-edge]
+                 {(:function-syntax-id narrow-target) narrow-target}
+                 {} 0 []])
+        truncated-call
+        (assoc wide-call
+               :ordered-evaluation-node-ids (vec (butlast ordered)))]
+    (is (true?
+         (invoke engine-plan 'sh07-b48-function-record-valid?
+                 [wide-function])))
+    (is (true?
+         (invoke engine-plan 'sh07-b48-call-record-valid?
+                 [wide-call])))
+    (is (true?
+         (invoke engine-plan 'sh07-b48-edge-record-valid?
+                 [wide-edge])))
+    (is (= :accepted (:status wide-outcome)))
+    (is (= :too-many-arguments (:reason too-many-outcome)))
+    (is (false?
+         (invoke engine-plan 'sh07-b48-call-record-valid?
+                 [truncated-call])))))
 
 (deftest sh07-b48-authenticated-builder-aligns-with-engine-validators
   (doseq [extension [".gravity" ".qst"]
