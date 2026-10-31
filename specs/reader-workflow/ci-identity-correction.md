@@ -175,3 +175,23 @@ metadata-bearing quoted test lists and a misplaced closing parenthesis) are
 retained externally, not relabeled as passes. Real changed pipeline tests
 remain unrun locally. Source/model success does not establish a corrected CI
 result, runtime acceptance, resource clearance or review acceptance.
+
+## Current-main source-model adapter
+
+A normal conflict-free merge of main `3f22e6f5` preserves the reviewed complete
+oracle equations and all newer production and Resolution regression behavior.
+Main moved the Resolution preimage and chunk implementations to
+`gravity.resolution`; the old Bootstrap definitions now forward to that stage.
+The two inert source models initially errored by evaluating those forwarding
+wrappers without loading their destination namespace. They did not reach the
+identity assertions. This failed composition observation is retained separately
+from the independently accepted `f07a7805` oracle source.
+
+The test adapter now reads and evaluates the actual moved stage definitions
+with explicit operation DATA ports. It does not load the stage or Bootstrap.
+The independent expected equations, codec rules, production code and existing
+semantic assertions are unchanged. The complete models again pass 6 tests /
+259 assertions. All eight ordinary static checks pass on the merged head;
+focused adapter lint has zero errors and warnings. This adapter delta requires
+its own affected review; the earlier oracle acceptance does not cover it.
+Publication and automatic hosted CI for this composed correction remain pending.

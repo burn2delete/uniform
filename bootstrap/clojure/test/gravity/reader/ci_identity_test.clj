@@ -73,11 +73,12 @@
       (is (not= "Macro-implementation-A" (get-in actual [:plan-binding :source-content-hash]))))))
 
 (deftest resolution-retains-every-upstream-join-in-the-actual-preimage
-  (let [forms (source-forms "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00877-sh06-resolution-product-projections.clj")
-        form (named-form forms 'sh06-resolution-artifact-identity-input-with-chunks)
+  (let [forms (source-forms "bootstrap/clojure/src/gravity/resolution.clj")
+        form (named-form forms 'artifact-identity-input-with-chunks)
         ;; Identity instead of hashing exposes the complete dependency DATA.
-        ports {'reader-canonical-hash identity}
-        project (model-function form ports)
+        ports {:reader-canonical-hash identity}
+        project (fn [f] (let [run (model-function f {})]
+                          (fn [artifact chunks] (run artifact chunks ports))))
         fixture {:gravity-resolution-boundary
                  {:resolved-analysis {:artifact-id "analysis-A"}
                   :authenticated-resolution-request {:module {:source-revision-id "source-A"}}}
@@ -88,10 +89,10 @@
                   :upstream-trace-id "trace-A"}
         fields (set (keys expected))
         preserves? (fn [f] (= expected (select-keys (f fixture {}) fields)))]
-    (is (preserves? project))
+    (is (preserves? (project form)))
     (doseq [field fields]
       (let [mutant (walk/postwalk #(if (map? %) (dissoc % field) %) form)]
-        (is (false? (preserves? (model-function mutant ports))) (str "lost join " field))))))
+        (is (false? (preserves? (project mutant))) (str "lost join " field))))))
 
 (defn- changed-map-field [form field action]
   (walk/postwalk (fn [x]
@@ -192,13 +193,16 @@
       (is (not= (expected/macro-id artifact) (expected/macro-id reordered))))))
 
 (defn- resolution-projector [form]
-  (let [forms (source-forms "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00877-sh06-resolution-product-projections.clj")
-        chunks (model-function (named-form forms 'sh06-resolution-identity-chunks)
-                               {'reader-canonical-hash expected/resolution-hash})
-        products (model-function (named-form forms 'sh06-resolution-product-identity-chunks)
-                                 {'sh06-resolution-identity-chunks chunks})
-        project (model-function form {'reader-canonical-hash expected/resolution-hash})]
-    (fn [artifact] (project artifact (products artifact)))))
+  (let [forms (source-forms "bootstrap/clojure/src/gravity/resolution.clj")
+        chunks (model-function (named-form forms 'identity-chunks) {})
+        operations {:reader-canonical-hash expected/resolution-hash}
+        products (model-function (named-form forms 'product-identity-chunks) {})
+        project (model-function form {})]
+    (fn [artifact]
+      (project artifact
+               (products artifact {:sh06-resolution-identity-chunks
+                                   #(chunks % operations)})
+               operations))))
 
 (defn- resolution-fixture []
   {:kind :resolution :slice :SH-06 :task "resolution"
@@ -214,8 +218,8 @@
    :incremental-invalidation-keys {:invalidation-id "invalidation-A"}})
 
 (deftest resolution-complete-equation-rejects-loss-or-alteration-of-every-field
-  (let [form (named-form (source-forms "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00877-sh06-resolution-product-projections.clj")
-                         'sh06-resolution-artifact-identity-input-with-chunks)
+  (let [form (named-form (source-forms "bootstrap/clojure/src/gravity/resolution.clj")
+                         'artifact-identity-input-with-chunks)
         project (resolution-projector form) artifact (resolution-fixture)
         preimage (expected/resolution-preimage artifact)]
     (is (= 14 (count preimage)))
