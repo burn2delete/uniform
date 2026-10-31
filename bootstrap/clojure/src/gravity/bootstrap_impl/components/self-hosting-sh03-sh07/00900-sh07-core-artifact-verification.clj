@@ -159,7 +159,11 @@
  #'sh07-core-request-preflight!
  #'sh07-core-run-structural-request-for-test
  #'sh07-core-run-request-for-test
- #'checked-core-with-execution-binding]))]
+ #'checked-core-with-execution-binding
+ #'gravity.checked-core/error-transfers-coherent?
+ #'gravity.checked-core/projection-diagnostic!
+ #'sh07-core-error-transfers-coherent?
+ #'sh07-core-projection-diagnostic!]))]
  (defn
   sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))
