@@ -18058,7 +18058,7 @@
                         #(assoc-in % [:call-facts :call :effects] [:io/write])
                         #(assoc-in % [:bindings :ordering-binding :binding-class] :lexical)]]
           (let [rejected (compile (mutate context) )]
-            (is (= :rejected (:status rejected))))))))
+            (is (= :rejected (:status rejected)))))))))
 
 (deftest current-gravity-list-count-runtime-development-kernel
   (let [plan (:plan (typed-catch-runtime-projection))
@@ -18310,7 +18310,7 @@
               first-failure (compile first-context ) second-failure (compile second-context )]
           (is (= :unsupported-or-mismatched-typed-vector-get (get-in mismatch [:facts :reason])))
           (is (= :rejected (:status first-failure) (:status second-failure)))
-          ))))))
+          )))))
 
 
 
@@ -25603,7 +25603,7 @@
                         #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
                         #(assoc-in % [:types :arg0] (finite [:gravity.type/i64]))
                         #(assoc-in % [:call-facts :call :result-type] :gravity.type/string)]]
-          (is (= :rejected (:status (compile (mutate context) )))))))))
+          (is (= :rejected (:status (compile (mutate context) ))))))))))
 
 
 
@@ -26976,7 +26976,7 @@
                                 (assoc-in [:nodes second-id] (assoc node :node-id second-id)))
                   failure (compile candidate )]
               (is (= :rejected (:status failure)))
-              (is (zero? @callbacks)))))))))
+              (is (zero? @callbacks))))))))))
 
 (deftest current-gravity-string-set-inequality-lowering-runtime-development-kernel
   ;; Normalized typed lowering and existing-IR compatibility, not source/FFI admission.
@@ -27609,7 +27609,7 @@
                     child (invoke 'p15-s23-typed-compile-node (assoc candidate :tail? false) missing )
                     rejected (compile candidate )]
                 (is (= :rejected (:status rejected)))
-                (is (= (:facts child) (:facts rejected)))))))))))
+                (is (= (:facts child) (:facts rejected))))))))))
 (deftest current-gravity-string-set-insertion-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -29612,7 +29612,7 @@
         (is (= :rejected (:status rejected)))
         (is (= :typed-set-source-or-type-mismatch (get-in rejected [:facts :reason])))
         (is (nil? (:value rejected)))))
-))))
+)))
 
 (deftest current-gravity-integer-set-contains-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -32514,7 +32514,7 @@ else
         (is (= :rejected (:status rejected)))
         (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
         (is (nil? (:value rejected)))))
-))
+)))
 
 (deftest current-gravity-symbol-set-contains-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -35693,7 +35693,7 @@ else
         (is (= :rejected (:status rejected)))
         (is (= :unsupported-typed-set-member (get-in rejected [:facts :reason])))
         (is (nil? (:value rejected)))))
-))
+)))
 (deftest current-gravity-symbol-set-carrier-contains-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))]
@@ -36214,7 +36214,7 @@ else
           (is (false? (invoke 'p15-s23-lsi-empty-constructor? changed source)))
           (is (= :rejected (:status (invoke 'p15-s23-lsi-path :value-init :initializer :value env))))
           (is (zero? @callbacks)))))
-)))
+))
 
 (deftest current-gravity-vector-first-symbol-loop-witness-development-kernel
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)
@@ -36240,7 +36240,7 @@ else
                     (assoc-in context [:forms :symbol-vector-form :value] ['wrong])
                     (assoc-in context [:nodes :symbol-vector :evaluation :order] [])
                     (assoc-in context [:loop-rows [:loop-slot-type :value] :solution :member-invariant :grounding :member-path] [:vector-first])]]
-      (is (= :rejected (:status (compile changed ))))))))
+      (is (= :rejected (:status (compile changed )))))))
 
 (deftest current-gravity-vector-first-symbol-loop-witness-reached-metadata-development-kernel
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)
