@@ -195,3 +195,21 @@ Bootstrap-free tests and Bootstrap carrier tests run in separate fresh JVMs.
 No cold-load guard, catalog count, source identity protocol or CI configuration
 is weakened. Full diagnostic binding, redaction, rendering, canonical schema,
 source admission and all broader unsupported boundaries remain open.
+
+Main then advanced through JS PR719 to
+43c69654b3f2daefa05e3902cbe78b469af47d96, tree
+088aa0c632516704aa552a9fa2a046828661fabc. A normal composition adds that
+actual parent to the correction's intermediate source
+590bf415af9a9980b40ee20121ec5f1dca248598. Its only conflict is the ownership
+test file: the complete new main file is preserved and the one reviewed C15
+dependency test appended. All incoming JS source, consumers, tests, owner/helper
+records and evidence are conserved. The C15 correction's implementation and
+focused tests are unchanged. No prior CI green is transferred to this composition.
+
+Fresh composed-source checks pass: C15 8 tests / 216 assertions and affected
+C15/C16 cache 4 / 49 (each in a fresh leaf JVM), Bootstrap carrier/wrapper
+2 / 56, ownership 30 / 959 and language boundary 6 / 11. The paired emission
+and verification run again confirms both unchanged input hashes, six complete
+context-only data/text changes, both unchanged/recomputed legacy IDs, two real
+semantic-context refusals and two forged-ID refusals. This remains a bounded
+native diagnostic-data slice, not fresh canonical source compilation or proof.
