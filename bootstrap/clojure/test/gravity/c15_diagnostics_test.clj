@@ -1,6 +1,8 @@
 (ns gravity.c15-diagnostics-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.c15-diagnostics :as c15]))
+            [gravity.c15-diagnostics :as c15]
+            [gravity.diagnostics :as diagnostics]
+            [gravity.digest :as digest]))
 
 (def module
   {:module 'gravity.c15-test
@@ -40,7 +42,7 @@
     (is (some #{:redaction-policy-authority} (:does-not-own contract)))
     (is (some #{:renderer-authority} (:does-not-own contract)))
     (is (= #{'clojure.string 'gravity.compiler-verification-shared
-             'gravity.digest}
+             'gravity.digest 'gravity.diagnostics}
            (set (get-in contract [:dependency-direction :requires]))))
     (is (true? (get-in contract
                        [:operation-interposition :unknown-keys-rejected?])))
@@ -134,3 +136,64 @@
               (catch clojure.lang.ExceptionInfo exception exception))]
         (is (some? error))
         (is (= expected-id (:id (ex-data error))))))))
+
+(deftest stage-records-preserve-identity-inputs-and-private-data
+  (doseq [operation [#'diagnostics/diagnostic #'diagnostics/fail!
+                    #'diagnostics/stable-id #'diagnostics/diagnostic-record]]
+    (let [contract (:gravity/namespace-contract (meta operation))]
+      (is (= 'gravity.diagnostics (:namespace contract)))
+      (is (= (:arglists (meta operation))
+             (get-in contract [:public-api (:name (meta operation)) :arglists])))))
+  (let [events (atom [])
+        span {:source "actual.qst" :start-byte 7 :end-byte 12}
+        origin [{:producer :macro :syntax-id "source-syntax"}]
+        facts (sorted-map :expected :integer :actual :keyword)
+        record (diagnostics/diagnostic-record
+                 (fn [path index] (swap! events conj [:span path index]) span)
+                 (fn [value] (swap! events conj [:identity value])
+                   (diagnostics/stable-id digest/sha256-hex value))
+                 "C7-TYPE" :error :type-check :type.mismatch "actual.qst" 3 "core-id"
+                 facts [{:kind :change-type}]
+                 :related [{:role :generated-by :span span}] :origin-chain origin
+                 :redactions [{:field :private :replacement :redacted}]
+                 :lifecycle :stale-after-edit :generated? true)
+        identity-input (second (second @events))]
+    (is (= [:span "actual.qst" 3] (first @events)))
+    (is (= 2 (count @events)))
+    (is (not (contains? identity-input :diagnostic-id)))
+    (is (not (contains? identity-input :ordering-key)))
+    (is (= span (get-in record [:primary :span])))
+    (is (= origin (:origin-chain record)))
+    (is (identical? facts (:facts record)))
+    (is (= ["C7-TYPE" :type-check "core-id" 3] (:ordering-key record)))
+    (is (= :stale-after-edit (:lifecycle record)))
+    (is (true? (:generated? record)))
+    (is (= (:diagnostic-id record)
+           (diagnostics/stable-id digest/sha256-hex (assoc record :message-key :new.wording))))
+    (doseq [changed [(assoc record :rule "C8-EFFECT") (assoc record :stage :effect-check)
+                     (assoc-in record [:primary :artifact] "other-core")
+                     (assoc record :facts {:different :facts})]]
+      (is (not= (:diagnostic-id record) (diagnostics/stable-id digest/sha256-hex changed))))
+    (is (= (str "diag-" (pr-str {:rule "C7-TYPE" :stage :type-check :primary-artifact "core-id" :facts facts}))
+           (diagnostics/stable-id identity record)))
+    (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest stage-record-wrapper-preserves-nested-operation-interposition
+  (let [span {:source "interposed.gravity" :form-index 9}
+        calls (atom [])
+        record (c15/with-operations
+                 {:source-span (fn [path index] (swap! calls conj [:span path index]) span)
+                  :sha256-hex (fn [text] (swap! calls conj [:hash text]) "test-hash")}
+                 #(c15/c15-diagnostic-record "C15-FACTS" :info :c15 :facts "given.gravity" 2
+                                            "artifact" {:fact :preserved} [{:kind :inspect}]))]
+    (is (= span (get-in record [:primary :span])))
+    (is (= "diag-test-hash" (:diagnostic-id record)))
+    (is (= [:span "given.gravity" 2] (first @calls)))
+    (is (= :hash (first (second @calls))))
+    (is (= 2 (count @calls))))
+  (is (= "custom-id"
+         (:diagnostic-id
+           (c15/with-operations
+             {:c15-stable-diagnostic-id (constantly "custom-id")}
+             #(c15/c15-diagnostic-record "C15-FACTS" :info :c15 :facts "given.qst" 0
+                                        "artifact" {:fact :preserved} [{:kind :inspect}]))))))
