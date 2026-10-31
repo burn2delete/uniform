@@ -77,8 +77,6 @@
 
 (defn p15-s23-stage2-module-instructions [plan]
   (loop [pending (vec (mapcat :instructions (vals (:functions plan)))) result []]
-    (when (> (count result) 262144)
-      (p15-s23-stage2-module-fail! :instruction-visit-limit {}))
     (if (empty? pending) result
       (let [instruction (peek pending)]
         (when (or (some #(contains? instruction %) [:external-link :compiler-internal-caller :compiler-internal-provenance
@@ -110,7 +108,7 @@
     (p15-s23-stage2-module-fail! :bounded-module-artifact-carrier {}))
   (let [enqueue
         (fn [[pending seen] children]
-          (when-not (and (vector? children) (<= (count children) 256))
+          (when-not (vector? children)
             (p15-s23-stage2-module-fail! :bounded-module-dependencies {}))
           (reduce
            (fn [[pending seen] child]
@@ -121,9 +119,7 @@
                  (do (when-not (= previous child)
                        (p15-s23-stage2-module-fail! :conflicting-module-artifact {:module-id id}))
                      [pending seen])
-                 (do (when (>= (count seen) 257)
-                       (p15-s23-stage2-module-fail! :module-closure-limit {}))
-                     [(conj pending child) (assoc seen id child)]))))
+                 [(conj pending child) (assoc seen id child)])))
            [pending seen] children))]
     (loop [[pending seen] (enqueue [[] {}] [artifact])]
       (if (empty? pending)
