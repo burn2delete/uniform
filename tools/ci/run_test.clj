@@ -241,6 +241,12 @@
                 (str context/source-root "gravity/bootstrap_impl/b.clj") (bytes "(def value (first captured))\n")}
         read-bytes (fn [inputs] (fn [path] (or (get inputs path) (throw (ex-info "Missing fixture" {:path path})))))]
     (is (= 3 (count (:paths (context/plan! (read-bytes inputs))))))
+    (is (true? (context/whole-context-path? context/semantic-late-manifest)))
+    (is (= (:paths (context/plan! (read-bytes inputs)))
+           (:paths (context/selected-plan! (read-bytes inputs) [context/semantic-late-manifest]))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (context/selected-plan! (read-bytes inputs)
+                                         [(str context/source-root "gravity/bootstrap_impl/unregistered.edn")])))
     (doseq [changed [(str/replace entry "(gravity.bootstrap-impl.loader/load-components! \"gravity/bootstrap_impl/load_order.edn\")" "")
                      (str/replace entry "load_order.edn" "different.edn")
                      (str "(gravity.bootstrap-impl.loader/load-components! \"gravity/bootstrap_impl/load_order.edn\")\n" entry)]]
