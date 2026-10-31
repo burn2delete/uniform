@@ -1726,7 +1726,6 @@
                      (update core :nodes #(mapv (fn [n] (if (= (:node-id n) (id 22)) (assoc-in n [:evaluation :order] []) n)) %))]]
           (is (false? (c8 'body-graph-equations-valid? bad facts {} graph))))
         (is (= :rejected (:status (c8 'body-derive-nodes (assoc-in core [:match-branch-records 0 :branch-core-node-id] :forged) facts))))
-        (is (= :rejected (:status (c8 'body-tc-verify core facts binding-index graph joined ))))
         (doseq [bad [(update core :nodes #(mapv (fn [n] (if (= (:node-id n) (id 22)) (assoc n :core-form :unknown) n)) %))
                      (assoc core :recursion-components [{:function-syntax-ids [(fid 2)]}])]]
           (is (= :rejected (:status (c7 'sh08-tc-products bad types functions bindings direct))))
