@@ -36,8 +36,8 @@
                                           (vals (:aliases deps))))))
 (defn fixture-forms [text]
   (binding [*read-eval* false *data-readers* {'resource #(vector :resource %)
-                                           'unknown #(vector :unknown %)
-                                           'text #(vector :text %)}]
+                                              'unknown #(vector :unknown %)
+                                              'text #(vector :text %)}]
     (with-open [r (java.io.PushbackReader. (java.io.StringReader. text))]
       (loop [result []]
         (let [v (read {:eof ::end} r)]
@@ -66,8 +66,8 @@
 
 (deftest fixture-pairs-and-whole-population-data
   (doseq [stem ["granted" "disallowed" "undeclared-effect" "unknown" "mixed-effect" "mixed-unknown"
-               "normal-pure" "normal-unknown" "normal-effect"
-               "repeated-granted" "resource-unknown" "resource-outside-grant" "changed-source"]]
+                "normal-pure" "normal-unknown" "normal-effect"
+                "repeated-granted" "resource-unknown" "resource-outside-grant" "changed-source"]]
     (let [base (str "bootstrap/clojure/fixtures/reader-extension-binding/" stem)
           qst (slurp (str base ".qst")) gravity (slurp (str base ".gravity"))]
       (is (= qst gravity))
@@ -102,10 +102,10 @@
         paths (set (map #(nth % 2) (calls tamper 'assoc-in)))
         base [:reader-extension-invocation-records 0 :invocations 0]]
     (and (every? paths [[:source-unit-record :bytes-hash]
-                       (conj base :input-seed :datum)
-                       (conj base :returned-seed :datum)
-                       (conj base :invocation :request :input)
-                       (conj base :invocation :request :source-content-hash)])
+                        (conj base :input-seed :datum)
+                        (conj base :returned-seed :datum)
+                        (conj base :invocation :request :input)
+                        (conj base :invocation :request :source-content-hash)])
          (some #{'(assoc artifact :artifact-id "sha256:stale")} (nodes tamper))
          (some #{'(fixture "changed-source" extension)} (nodes tamper))
          (some #{'(command source [] requirements)} (nodes refusals))

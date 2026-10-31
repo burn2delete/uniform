@@ -32,7 +32,7 @@
                 path bootstrap/sh03-reader-source-relative-path)
         handler (#'bootstrap/reader-resource-handler-binding! path)]
     {:implementation (bootstrap/reader-canonical-hash
-                       {:reader (dissoc reader :plan) :handler (:identity handler)})
+                      {:reader (dissoc reader :plan) :handler (:identity handler)})
      :policy-id (#'bootstrap/reader-resource-policy-id)}))
 
 (defn- command [source inputs requirements]
@@ -58,20 +58,20 @@
   (let [consume @#'bootstrap/sh03-c3-precomputed-c2-verify!
         observations (atom 0)
         artifact (with-redefs-fn
-      {#'bootstrap/sh03-c3-precomputed-c2-verify!
-       (fn [& arguments]
-         (let [verified (apply consume arguments)]
-           (when (and (= 4 (count arguments)) (resource-artifact? verified))
-             (swap! observations inc)
+                   {#'bootstrap/sh03-c3-precomputed-c2-verify!
+                    (fn [& arguments]
+                      (let [verified (apply consume arguments)]
+                        (when (and (= 4 (count arguments)) (resource-artifact? verified))
+                          (swap! observations inc)
              ;; These really re-enter fresh reconstruction in verification mode.
              ;; They are NOT a causal provider-read counter.
-             (is (= verified (apply consume arguments)))
-             (is (= verified (apply consume arguments)))
-             (inspect-live verified
-                           (fn [candidate]
-                             (apply consume (assoc (vec arguments) 2 candidate)))))
-           verified))}
-      #(invocation/run-declared-input-build! arguments))]
+                          (is (= verified (apply consume arguments)))
+                          (is (= verified (apply consume arguments)))
+                          (inspect-live verified
+                                        (fn [candidate]
+                                          (apply consume (assoc (vec arguments) 2 candidate)))))
+                        verified))}
+                   #(invocation/run-declared-input-build! arguments))]
     ;; Count matching live consumers, never provider reads. This check must
     ;; run after every successful command, even when its observer never fires.
     (is (= 1 @observations))
@@ -80,13 +80,13 @@
 (defn- rehash-c2 [artifact]
   ;; Public identity recomputation is DATA, never authentication authority.
   (let [hashes (bootstrap/c2-incremental-hashes
-                 (:source-unit-record artifact) (:token-stream artifact)
-                 (:form-tree artifact) (:syntax-seed-stream artifact)
-                 (:reader-extension-invocation-records artifact) (:reader-diagnostics artifact))
+                (:source-unit-record artifact) (:token-stream artifact)
+                (:form-tree artifact) (:syntax-seed-stream artifact)
+                (:reader-extension-invocation-records artifact) (:reader-diagnostics artifact))
         integrity (bootstrap/c2-reader-product-integrity-record
-                    (:source-unit-record artifact) (:top-level-form-ids artifact) hashes
-                    (:literal-decoding-records artifact)
-                    (get-in artifact [:semantic-error-deferment-record :deferred-literal-records]))
+                   (:source-unit-record artifact) (:top-level-form-ids artifact) hashes
+                   (:literal-decoding-records artifact)
+                   (get-in artifact [:semantic-error-deferment-record :deferred-literal-records]))
         artifact (assoc artifact :incremental-reader-hashes hashes :reader-product-integrity integrity)]
     (assoc artifact :artifact-id (bootstrap/c2-reader-artifact-id artifact))))
 
@@ -105,7 +105,7 @@
     (is (= :invoked (:status record)))
     (is (= policy-id (get-in unit [:reader-options :extension-policy])))
     (is (= (str "sha256:" (digest/sha256-bytes-hex
-                            (.getBytes ^String (:text source) java.nio.charset.StandardCharsets/UTF_8)))
+                           (.getBytes ^String (:text source) java.nio.charset.StandardCharsets/UTF_8)))
            (:bytes-hash unit)))
     (is (= (count expected-inputs) (count calls)))
     (is (= (count calls) (count (set (map :form-id calls)))))
@@ -136,15 +136,15 @@
             arguments (command source [{:resource resource :content content}] requirements)
             observed (atom [])
             artifact (normal-build! arguments
-                       (fn [value _] (swap! observed conj value)
-                         (assert-artifact! value source requirements (repeat copies [resource content]))))]
+                                    (fn [value _] (swap! observed conj value)
+                                      (assert-artifact! value source requirements (repeat copies [resource content]))))]
         (is (= 1 (count @observed)))
         (is (= artifact (first @observed)))
         ;; Returned data and public hashes cannot extend the live invocation.
         (is (= "C2-HASH"
                (:id (failure-data #(bootstrap/c3-reader-artifact-view
-                                     artifact {:reader-source-path bootstrap/sh03-reader-source-relative-path
-                                               :authenticated-envelope-options {:source :development-current}})))))))))
+                                    artifact {:reader-source-path bootstrap/sh03-reader-source-relative-path
+                                              :authenticated-envelope-options {:source :development-current}})))))))))
 
 (deftest normal-live-verifier-refuses-tampered-duplicate-missing-and-stale-records
   (doseq [extension [".qst" ".gravity"]]
@@ -154,31 +154,31 @@
       ;; A prior result cannot replace this invocation's different original
       ;; return. Equal public data alone does not prove a stale receipt.
       (normal-build! (command source [{:resource resource :content "new invocation return"}] requirements)
-        (fn [artifact verify]
-          (is (= "C2-HASH" (:id (failure-data #(verify saved)))))
-          (is (= "C2-HASH" (:id (failure-data
-                                  #(verify (assoc artifact :artifact-id "sha256:stale"))))))
-          (doseq [changed [(assoc artifact :reader-extension-invocation-records [])
-                           (assoc-in artifact [:source-unit-record :bytes-hash] "sha256:stale")
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations] [])
-                           (update-in artifact [:reader-extension-invocation-records 0 :invocations] #(into % %))
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :policy] {})
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :handler] 'unregistered)
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :input-seed :datum] "other input")
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :returned-seed :datum] "forged")
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :payload-form-id] "other")
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :implementation] "sha256:stale")
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :policy-id] "sha256:stale")
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :input] "other input")
-                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :source-content-hash] "sha256:stale")]]
-            (is (= "C2-HASH" (:id (failure-data #(verify changed)))))
-            (is (= "C2-HASH" (:id (failure-data #(verify (rehash-c2 changed)))))))))
+                     (fn [artifact verify]
+                       (is (= "C2-HASH" (:id (failure-data #(verify saved)))))
+                       (is (= "C2-HASH" (:id (failure-data
+                                              #(verify (assoc artifact :artifact-id "sha256:stale"))))))
+                       (doseq [changed [(assoc artifact :reader-extension-invocation-records [])
+                                        (assoc-in artifact [:source-unit-record :bytes-hash] "sha256:stale")
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations] [])
+                                        (update-in artifact [:reader-extension-invocation-records 0 :invocations] #(into % %))
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :policy] {})
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :handler] 'unregistered)
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :input-seed :datum] "other input")
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :returned-seed :datum] "forged")
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :payload-form-id] "other")
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :implementation] "sha256:stale")
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :policy-id] "sha256:stale")
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :input] "other input")
+                                        (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :source-content-hash] "sha256:stale")]]
+                         (is (= "C2-HASH" (:id (failure-data #(verify changed)))))
+                         (is (= "C2-HASH" (:id (failure-data #(verify (rehash-c2 changed)))))))))
       ;; A different original source, even with the same resource and return,
       ;; cannot admit a product built for the earlier source.
       (normal-build! (command (fixture "changed-source" extension)
                               [{:resource resource :content "original return"}] requirements)
-        (fn [_ verify]
-          (is (= "C2-HASH" (:id (failure-data #(verify saved))))))))))
+                     (fn [_ verify]
+                       (is (= "C2-HASH" (:id (failure-data #(verify saved))))))))))
 
 (deftest normal-complete-population-and-policy-refusals
   (doseq [extension [".qst" ".gravity"]]
@@ -191,11 +191,11 @@
       ;; Keep source requirements and declared store entries intact; remove
       ;; only the explicit host permission. Source DATA cannot restore it.
       (is (= "T1003" (:id (failure-data
-                            #(invocation/run-declared-input-build!
-                               (into [(first arguments)]
-                                     (mapcat identity
-                                       (remove (fn [[flag _]] (= "--allow-read" flag))
-                                               (partition 2 (rest arguments))))))))))
+                           #(invocation/run-declared-input-build!
+                             (into [(first arguments)]
+                                   (mapcat identity
+                                           (remove (fn [[flag _]] (= "--allow-read" flag))
+                                                   (partition 2 (rest arguments))))))))))
       (doseq [[case stem expected]
               [[:unknown "unknown" "C2-HASH"]
                [:resource-then-unknown "resource-unknown" "C2-HASH"]
@@ -211,11 +211,11 @@
             (is (zero? @consumed)))))
       (doseq [stem ["disallowed" "undeclared-effect"]]
         (let [denied (if (= stem "disallowed") (assoc requirements :scope #{"other"})
-                        (assoc requirements :effects #{}))
+                         (assoc requirements :effects #{}))
               inputs (if (= stem "disallowed") [{:resource "other" :content "other"}] inputs)]
           (is (= (if (= stem "disallowed") "L15-CONTRACT" "T1003")
                  (:id (failure-data #(invocation/run-declared-input-build!
-                                       (command (fixture stem extension) inputs denied)))))))))))
+                                      (command (fixture stem extension) inputs denied)))))))))))
 
 (deftest normal-cli-json-is-the-real-command-projection
   (let [source (fixture "granted" ".gravity") requirements (policy [resource])
@@ -224,9 +224,9 @@
         stdout (binding [*err* stderr]
                  (with-out-str
                    (entrypoint/run! arguments
-                     {:resolve-operation #(ns-resolve 'gravity.bootstrap %)
-                      :print-diagnostic! #(swap! diagnostics conj %)
-                      :exit! #(swap! statuses conj %)})))
+                                    {:resolve-operation #(ns-resolve 'gravity.bootstrap %)
+                                     :print-diagnostic! #(swap! diagnostics conj %)
+                                     :exit! #(swap! statuses conj %)})))
         report (json/read-strict-json stdout)]
     (is (empty? @statuses))
     (is (empty? @diagnostics))
