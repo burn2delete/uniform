@@ -249,11 +249,17 @@
 (def ^:private core-stage-consumer
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00885-sh07-core-source-relative-path.clj")
 (def ^:private core-stage-test "bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj")
+(def ^:private types-stage-path "bootstrap/clojure/src/gravity/types.clj")
+(def ^:private types-stage-consumer "bootstrap/clojure/src/gravity/c7_type_checker/inference.clj")
+(def ^:private types-stage-test "bootstrap/clojure/test/gravity/c7_type_checker_test.clj")
 
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {core-stage-path
+    (and (= {types-stage-path
+             {:namespace 'gravity.types :owner :sh-types :slice "SH-08"
+              :consumer-path types-stage-consumer :test-path types-stage-test}
+             core-stage-path
              {:namespace 'gravity.checked-core :owner :sh-core :slice "SH-07"
               :consumer-path core-stage-consumer :test-path core-stage-test}
              resolution-stage-path
@@ -287,6 +293,8 @@
          (= {:namespace 'gravity.resolution.pipeline-test :slice "SH-06" :owner :sh-resolution}
             (get-in record [:standalone-test-owners resolution-stage-test]))
          (= :sh-core (get-in record [:module-owners core-stage-path]))
+         (= :sh-types (get-in record [:module-owners types-stage-path]))
+         (= :sh-types (get-in record [:module-owners types-stage-test]))
          (= {:namespace 'gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
             (get-in record [:standalone-test-owners core-stage-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
@@ -318,8 +326,39 @@
               "source" {"path" core-stage-path "namespace" "gravity.checked-core"}
               "consumer" {"path" core-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-core"}
               "test" {"path" core-stage-test "namespace" "gravity.checked-core.pipeline-test"
-                      "registration" "standalone"}}]
+                      "registration" "standalone"}}
+             {"id" "types-products" "kind" "production-stage-helper" "owner" "sh-types"
+              "source" {"path" types-stage-path "namespace" "gravity.types"}
+              "consumer" {"path" types-stage-consumer "namespace" "gravity.c7-type-checker.inference" "owner" "sh-types"}
+              "test" {"path" types-stage-test "namespace" "gravity.c7-type-checker-test"
+                      "registration" "bootstrap-free"}}]
             (get contract "production_helpers")))))
+
+(deftest types-products-helper-joins-existing-bootstrap-free-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [types-stage-path types-stage-consumer types-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path types-stage-path)))]
+        (is (= 'gravity.types (second (read reader))))))
+    (doseq [operation ["types/literal-type" "types/node-type" "types/type-fact"
+                      "types/type-environment" "types/constraint-ledger" "types/function-table"]]
+      (is (str/includes? (slurp (path types-stage-consumer)) operation)))
+    (doseq [bad [(update record :module-owners dissoc types-stage-path)
+                 (assoc-in record [:module-owners types-stage-path] :master-coordinator)
+                 (assoc-in record [:module-owners types-stage-test] :sh-core)
+                 (assoc-in record [:production-helper-associations types-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations types-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations types-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" 6 "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" 6 "test" "registration"] "standalone")
+                 (assoc-in contract ["production_helpers" 6 "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" 6 "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
 
 (deftest checked-core-runtime-helper-joins-real-source-consumer-and-standalone-test
   (require 'gravity.bootstrap-free-leaf-test-runner)
