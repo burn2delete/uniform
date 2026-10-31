@@ -8640,36 +8640,36 @@
                 form-index (body-index forms :form-id)
                 call-index (body-index (get core :calls) :core-node-id)
                 edge-index (body-index (get core :call-edges) :call-core-node-id)]
-            (if (body-all? [(= :accepted (get nodes :status)) (= :accepted (get form-index :status))
-                            (= :accepted (get call-index :status)) (= :accepted (get edge-index :status))])
+            (if (body-all? [(map? nodes) (map? form-index)
+                            (map? call-index) (map? edge-index)])
               (loop [remaining (get census :private-calls) checked-private {} checked-parents {}]
                 (if (= 0 (count remaining))
                   {:status :accepted
-                   :context {:forms (get form-index :index) :nodes (get nodes :index)
-                             :calls (get call-index :index) :edges (get edge-index :index) :bindings bindings
+                   :context {:forms form-index :nodes nodes
+                             :calls call-index :edges edge-index :bindings bindings
                              :private-selected-checks checked-private :private-parent-checks checked-parents}}
-                  (let [call (first remaining) receiver (get (get nodes :index) (first (get call :argument-node-ids)))
+                  (let [call (first remaining) receiver (get nodes (first (get call :argument-node-ids)))
                         supplied (get (get facts :type-table) (get call :operator-node-id))
                         proof (get supplied :presence-proof)
                         private? (if (= :sh08-map-get-private-entry-v1 (get supplied :version)) true
                                    (if (map? proof) (if (contains? proof :entry-census) true (contains? proof :entries)) false))
-                        node (get (get nodes :index) (get call :core-node-id))
-                        edge (get (get edge-index :index) (get call :core-node-id))
-                        candidate (body-pc-candidate core node call (get nodes :index) (get facts :type-table))
+                        node (get nodes (get call :core-node-id))
+                        edge (get edge-index (get call :core-node-id))
+                        candidate (body-pc-candidate core node call nodes (get facts :type-table))
                         route (if (= :accepted (get candidate :status))
-                                (body-pc-route core node call (get nodes :index) bindings)
+                                (body-pc-route core node call nodes bindings)
                                 candidate)
                         composed? (= :accepted (get route :status))
                         id (get call :core-node-id)
-                        header (body-mg-source core node call edge (get nodes :index) bindings
+                        header (body-mg-source core node call edge nodes bindings
                                                (get facts :type-table) (get core :module))
                         checked (if (map? header)
                                   (if composed?
                                     (body-pc-full-work route (get checked-private (get route :get-node-id)) core node call edge
-                                      (get nodes :index) bindings (get facts :type-table) (get form-index :index)
+                                      nodes bindings (get facts :type-table) form-index
                                       (get facts :call-type-facts) (get facts :constraint-ledger))
                                     (if private?
-                                      (body-pe-check header supplied core (get nodes :index) bindings (get form-index :index)
+                                      (body-pe-check header supplied core nodes bindings form-index
                                         (get facts :type-table))
                                       (let [validated (if (= :normal (get header :application))
                                                         (body-pe-validate-selected header {:calls [call] :parameter-index 0}
@@ -19465,7 +19465,16 @@ true
                  (= :accepted (get caller :status))
                  (let
                   [header
-                   nil
+                   (body-lq-source
+                    (get env :core)
+                    node
+                    (get input :call)
+                    (get input :edge)
+                    nodes
+                    (get env :bindings)
+                    types
+                    (get (get env :core) :module)
+                    actual)
                    descriptor
                    (if (map? header) (body-lq-finish header) nil)
                    compared
@@ -19570,7 +19579,10 @@ true
          (let
           [first
            (body-lsi-vector-first node binding env (conj seen id))]
-          (if (= :accepted (get first :status)) first first))
+          (if
+           (= :accepted (get first :status))
+           (assoc first :path (body-lsi-first-append next-path (get first :path)))
+           first))
          (if
           (= kind :reference)
           (if
