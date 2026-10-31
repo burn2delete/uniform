@@ -3,7 +3,7 @@
 ## Boundary and contracts
 
 D1, D2, D3, D8, D9, C1, C15, BOOT8 and TEST2 govern this increment.
-The independent source base is main
+The original independent source base is main
 58196ba55a8bf4a2a8d82d6622ba85a04d7d1cb7, tree
 030f46f68c520dae0b809d32a66f0f3d86630288. It does not contain or depend on
 the unmerged effects graph candidate in PR699. That candidate's failed
@@ -92,6 +92,41 @@ are not established. No manual cancellation or job retry is performed. The
 existing 61f22789 run 41212309115 remains a separate observation. The corrected
 candidate requires exact independent review, its own successful CI and clean
 current-main integration preflight before integration.
+
+## Current-main composition and retained CI failure
+
+Main subsequently advanced to f485e117186084a5ab4a04358831f4f93e0dab0a,
+tree 3eca3173a9605e7c121fa217ee5fecaf070c506b, through integrated PR701.
+Its three incoming paths change Core verification-session invocation forwarding,
+the associated Reader test and its specification. Normal main composition has
+no conflict and changes none of this slice's implementation, tests or metadata.
+Before this report update, the composed tree is
+8db59d4dbcf59867d61170036b9dadf01fe1ad7d, exactly the tree of GitHub's tested
+merge 70bd7798465e36102037124372f3c46cdac672c3, whose parents are that main
+and candidate 2d8f5448992ff939a3d705be7a3ea0f617121b28.
+
+Run 41212844570 has a nonpassing source-snapshot job 124571327761. Its single
+launch exits 1 during classpath construction: core.specs.alpha 0.4.74 cannot be
+resolved from central. The retained read-only dependency diagnostic reports
+the JAR/POM missing. No snapshot implementation execution or completed package
+comparison is established. The tracked source-mutation diff is empty. All six
+receipt-manifest entries verify; SHA256SUMS hashes to
+e7c1e405d8e4320372d219e82a6d56d076e69318941d3e82c2e716246b4d60be.
+The raw job log hashes to
+1acf4eadc7b2dee4b7d82501d1dbf3ece9bae0ca267761d4a6c80115bee636e8.
+The observed text establishes an unresolved dependency, not an HTTP status or
+source defect. No dependency download, failed job or upload is retried, and no
+cache, runner, watchdog or CI configuration is changed.
+
+Both independent reviews conditionally accept exact 2d8f5448 against original
+base 58196ba5. Composition with the actual new main and this evidence report
+require fresh exact review and validation. They provide no remedy or waiver
+for the retained failed run. The original before/after production context stays
+unchanged; no fresh source-production or authority evidence is claimed.
+With the working main composition, the base carrier regression again passes
+1 / 46, all six changed Clojure paths pass contextual lint against f485e117
+with zero warnings/errors, and docs validate 240 / 19. No inherited Core
+session source test or restricted source/native path is rerun by this slice.
 
 ## Unsupported boundaries
 
