@@ -10,8 +10,8 @@ Make [tasks.md](tasks.md#implementation-tasks) the sole editable authority for
 the existing fifteen keyed family Remaining tasks blocks. The
 [portfolio roadmap](../../docs/component-roadmaps/backends.md#release-outcome)
 retains family headings, keys, contracts, outcomes, ownership and all portfolio
-boundaries. Each original task/acceptance/evidence paragraph is generated back
-in its original section. No compiler/backend implementation changes.
+boundaries. The roadmap links directly to the sole task ledger. No
+compiler/backend implementation changes.
 
 The following contracts remain canonical and are linked, not replaced:
 
@@ -44,25 +44,22 @@ its acceptance questions, inspected evidence limits, decision and integration
 context. These are existing family-level blocks, not newly numbered individual
 clauses or a new task namespace. All fifteen remain Open and unchecked.
 
-Missing, duplicate or unknown keys, key/heading disagreement, malformed records,
-missing acceptance questions, unsupported links and stale projections reject.
-The original family anchors stay stable; no second editable task source remains.
+The sole task ledger retains the original keys, acceptance text and history; the roadmap links directly to it. No second editable task source remains.
 
 ### US2 - Preserve status and release boundaries
 
 Keep the complete historical migration task file frozen outside the parsed
 region. Its checkboxes do not indicate backend completion. Checkbox/Accepted;
-consistency is structural; actual immutable owner evidence and independent
-semantic review remain required. A non-Open record renders an explicit local
-status and a neutral summary instead of a false all-open banner. Family release
+consistency remains explicit; actual immutable owner evidence and independent
+semantic review remain required. A non-Open record retains an explicit local
+status and neutral summary instead of a false all-open banner. Family release
 acceptance remains separately open; no portfolio acceptance or percentage is
 computed from record counts.
 
 ## Scope and compatibility
 
-Seven files: Backends roadmap, four workflow artifacts and focused projector/
-test. Reuse shared record/region and relative-link helpers unchanged. Preserve
-all fifteen task paragraphs and literal keys, entire original roadmap wording,
+Own the Backends roadmap and four workflow artifacts. Preserve all fifteen task
+paragraphs and literal keys, entire original roadmap wording,
 B1-B14 and AI references, full historical tasks suffix and reviewed Additional
 contract interfaces appendix from plan blob
 `1b2a18bbc06d4379f7373c3bdaa619de7f89631a`. Shared helpers, other packages,
@@ -83,10 +80,10 @@ or backend execution is authorized by this workflow. See [evidence](evidence.md)
 All family implementation and release outcomes remain open. The checked-in keys
 establish family identity; they do not establish identities of external dashboard
 objects or separately accepted semicolon clauses. This migration makes no such
-identity or completion claim. Generated task text remains original bytes.
+identity or completion claim. Task text remains in the sole editable ledger.
 
 ## Implementation naming review
 
-`backends-task-projection` names subsystem and behavior. Follow the
+`backends-workflow` names subsystem and behavior. Follow the
 [semantic naming rule](../../.specify/semantic-names.md); contract numbers and
 historical source paths remain traceability, while compatibility IDs stay intact.

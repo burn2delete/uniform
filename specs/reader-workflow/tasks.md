@@ -8,7 +8,7 @@ Authority transfer baseline: `c40d74aded3a019ff2bdeb1f4050cf95dbb11c1e`.
 
 This is the sole editable Reader implementation task ledger. The roadmap's
 [finite remaining work](../../docs/component-roadmaps/reader.md#finite-remaining-work)
-is generated from these records, not a second editable truth. Stable semantic
+is navigation to these records, not a second editable truth. Stable semantic
 IDs do not change with ordering. An unchecked box means not accepted complete;
 the evidence/status text distinguishes open, partial and unassessed evidence.
 Check a box only with an explicit accepted outcome and its immutable receipt in

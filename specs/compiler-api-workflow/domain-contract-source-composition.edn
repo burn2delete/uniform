@@ -30,7 +30,7 @@
   :source-facets 10,
   :authority :captured-source-context-not-semantic-acceptance},
  :scope
- "Extract exact reviewed C17/C12 consumer and prerequisite producer criterion bodies and their generated views; preserve existing main outcomes, source/version histories and source-only review ceilings. The isolated main composition is a new candidate requiring its own independent review. No other source cohort, global task count, release, migration or self-hosting acceptance follows. No compiler/plugin/domain/checker/provider/runtime/target or held operation is executed.",
+ "Extract exact reviewed C17/C12 consumer and prerequisite producer criterion bodies from the sole editable task ledger; preserve existing main outcomes, source/version histories and source-only review ceilings. The isolated main composition is a new candidate requiring its own independent review. No other source cohort, global task count, release, migration or self-hosting acceptance follows. No compiler/plugin/domain/checker/provider/runtime/target or held operation is executed.",
  :cohorts
  [{:id :C17,
    :source-facets 108,
@@ -277,8 +277,6 @@
  :owned-paths
  ["specs/compiler-api-workflow/tasks.md"
   "docs/component-roadmaps/compiler-api.md"
-  "tools/compiler_api_task_projection.clj"
-  "tools/compiler_api_task_projection_test.clj"
   "tools/compiler_domain_source_test.clj"
   "specs/compiler-api-workflow/spec.md"
   "specs/compiler-api-workflow/plan.md"
@@ -311,23 +309,13 @@
  :source-file-pins
  {"docs/component-roadmaps/compiler-api.md"
   {:mode-and-blob
-   "100644 blob fe1eaf59fd86a965fbe94e765aca10b1297bb1b4\tdocs/component-roadmaps/compiler-api.md",
+   "100644 blob 778083262c8082dfab07082a36b6f0af2ca50294\tdocs/component-roadmaps/compiler-api.md",
    :sha256
-   "ae1de98a3b98f88fd36816c965f89688ed99a8c76dad1d6c24d99226d529ceb8"},
+   "375affc3a9cb5df192807d07179f2453587c58628af1d6da8451aa802f72446a"},
   "specs/compiler-api-workflow/tasks.md"
   {:mode-and-blob
    "100644 blob f320b803ae659206ed727ae0706da6cd67b5c3a5\tspecs/compiler-api-workflow/tasks.md",
    :sha256
-   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"},
-  "tools/compiler_api_task_projection.clj"
-  {:mode-and-blob
-   "100644 blob 57863b7a2789c449f14e3abd38483304ca6e348c\ttools/compiler_api_task_projection.clj",
-   :sha256
-   "0da3c3680947e4db64d418787df465ea244beda795ea94edf4be8e5bbf293039"},
-  "tools/compiler_api_task_projection_test.clj"
-  {:mode-and-blob
-   "100644 blob 1e18848463c67af74e55c2dd97d657d2a94e7769\ttools/compiler_api_task_projection_test.clj",
-   :sha256
-   "303a117e1b3cc55cfcfefee16362c872935202ac5d0ba2d18f361427b4f20622"}},
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"}},
  :prior-main-outcomes
  ["pipeline" "plugins" "pass-evidence" "development-boundaries"]}
