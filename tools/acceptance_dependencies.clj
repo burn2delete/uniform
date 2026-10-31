@@ -207,9 +207,16 @@
   ;; Component roadmaps and task-ledger preambles are navigation-only views of
   ;; the exact task rows. Their captured digests stay in the crosswalk as
   ;; historical provenance, but layout edits must not rebind SH acceptance
-  ;; history. Task rows and all other source-bound inputs remain exact below.
+  ;; history. Task rows and all other source-bound inputs remain exact below;
+  ;; the separately classified historical ownership map is not a current claim.
   (or (str/starts-with? path "docs/component-roadmaps/")
       (re-matches #"specs/[a-z-]+-workflow/tasks\.md" path)))
+
+(defn historical-sh-source-path? [path]
+  ;; This ownership map is a historical SH routing input. Its live entries may
+  ;; be retired without rebinding current task or acceptance authority; the
+  ;; caller records that drift as unassessed instead of treating it as current.
+  (= path "docs/self-hosting-slice-ownership.edn"))
 
 (defn source-bound! [{:keys [path start-byte end-byte sha256 raw]} read-text]
   (let [text (read-text path) bytes (.getBytes text "UTF-8")]
@@ -368,8 +375,21 @@
                       "Unmapped SH criterion without explicit gap")
             (doseq [t (:task-references r)]
               (require! (= (:component t) (:component (task-map (:id t)))) "Unknown SH task owner/reference")))
+        historical-source-applicability
+        (into (sorted-map)
+              (for [[path digest] (:source-digests crosswalk)
+                    :when (historical-sh-source-path? path)]
+                [path (evidence-source-state
+                       {:path path
+                        :sha256 digest
+                        :source-commit (get-in crosswalk [:applying-source-pins path])
+                        :current-applicability :unassessed}
+                       read-text)]))
+        ;; Navigation snapshots and the explicitly historical ownership input
+        ;; report drift separately; current task/acceptance inputs stay exact.
         _ (doseq [[path digest] (:source-digests crosswalk)
-                  :when (not (navigation-source-path? path))]
+                  :when (not (or (navigation-source-path? path)
+                                 (historical-sh-source-path? path)))]
             (require! (= digest (sha256 (read-text path))) (str "Stale SH input: " path)))
         ;; Contract declarations permit interface work; they do not attest an
         ;; implementation. Acceptance facets remain unknown without exact receipts.
@@ -451,6 +471,7 @@
     {:schema-version 1 :authority :structural-only :nodes nodes :typed-edges edges
      :condition-values conditions
      :evidence-source-applicability evidence-applicability
+     :historical-source-applicability historical-source-applicability
      :mapping-ready? (every? #(= :owner-and-independent-reviewed (:coverage %)) requirements)
      :coverage-gaps (mapv :id (filter #(= :missing-task-authority (:coverage %)) requirements))
      :adjacency adjacency :cycles (cycles adjacency) :frontier (advisory-frontier nodes edges conditions)

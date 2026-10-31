@@ -230,6 +230,23 @@
     ;; are exempt from the historical whole-file digest check.
     (is (thrown? Exception (dependencies/task-sh-view source task-read)))))
 
+(deftest historical-sh-routing-drift-stays-unassessed
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        path "docs/self-hosting-slice-ownership.edn"
+        changed (fn [read-path]
+                  (if (= read-path path)
+                    (str (slurp read-path) "\n")
+                    (slurp read-path)))
+        same (dependencies/task-sh-view source slurp)
+        drifted (dependencies/task-sh-view source changed)]
+    (is (= :same-bytes-as-inspection
+           (get-in same [:historical-source-applicability path :state])))
+    (is (= :changed-since-inspection
+           (get-in drifted [:historical-source-applicability path :state])))
+    (is (= :unassessed
+           (get-in drifted [:historical-source-applicability path :current-applicability])))
+    (is (= :structural-only (:authority drifted)))))
+
 (deftest complete-sh-task-view-conserves-sources-and-refuses-credit-forgeries
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         view (dependencies/task-sh-view source slurp)
