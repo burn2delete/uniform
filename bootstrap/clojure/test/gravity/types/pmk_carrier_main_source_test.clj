@@ -1,8 +1,8 @@
 (ns gravity.types.pmk-carrier-main-source-test
-  "Inert current-main source equations. No Gravity definition or project model is evaluated."
+  "Inert composed-source equations against the accepted accounting-removal source. No Gravity definition or project model is evaluated."
   (:require [clojure.test :refer [deftest is]] [clojure.java.shell :as shell]
             [clojure.walk :as walk] [clojure.edn :as edn]))
-(def base "ae0cd80165b2085e7ce362d0c7bfc5eeec79b2de")
+(def base "361db6aa215c7adcb21a06ab1e9865c32ae8e4f0")
 (def owners [["sh08" "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"]
              ["body" "bootstrap/gravity/src/gravity/effects.gravity"]
              ["p15-s23" "bootstrap/gravity/p15_s23/emitter.gravity"]])
@@ -29,13 +29,12 @@
                      (if (= :keyword kind)
                        (if (keyword? original) (if (keyword? value) (= original value) false) false) false))
                  (recur (+ i 1)) false)) false))))))
-(def failure {:status :rejected :reason :private-map-keys-source-mismatch :work-count 'base})
+(def failure {:status :rejected :reason :private-map-keys-source-mismatch})
 (defn expected [old]
   (let [accepted (filter #(and (map? %) (= :accepted (:status %))) (nodes old))]
     (assert (= 1 (count accepted)))
     (assert (= 1 (count (for [x (nodes old) :when (vector? x)
                               pair (partition 2 1 x) :when (= old-width (vec pair))] pair))))
-    (assert (= 'base (:work-count (first accepted))))
     (assert (some #{failure} (nodes old)))
     (walk/postwalk
       (fn [x]
@@ -60,9 +59,9 @@
   (doseq [[prefix path] owners
           :let [name (symbol (str prefix "-pmk-parameter")) a (before path) b (slurp path)
                 old (definitions a) new (definitions b) of (get old name) nf (get new name)]]
-    (is (= 7 (count (nth of 2)) (count (nth nf 2))))
+    (is (= 6 (count (nth of 2)) (count (nth nf 2))))
     (is (not= of nf))
-    (is (= nf (expected of)) "Preserve main accounting and failure priority in the complete equation")
+    (is (= nf (expected of)) "Add only the two accepted correctness sites; preserve existing refusal priority")
     (is (= of (erase nf)))
     (is (= (dissoc old name) (dissoc new name)))
     (is (= (outside a name) (outside b name)))
@@ -79,30 +78,24 @@
                    ['(map? form) true] ['(symbol? original) true] ['(symbol? value) true]
                    ['(keyword? original) true] ['(keyword? value) true] ['(= original value) true]
                    ['(get values i) '(get values 0)] ['(get forms (get names i)) '(get forms (first names))]
-                   ['(recur (+ i 1)) true] ['(= i (count names)) '(= i 1)]
-                   ['(> base budget) false] [failure (dissoc failure :work-count)]]]
+                   ['(recur (+ i 1)) true] ['(= i (count names)) '(= i 1)]]]
       (let [bad (replace-data good a b)]
         (is (not= good bad))
         (is (not= (expected old) bad))))
     (let [bad (assoc (vec good) 2 (vec (butlast (nth good 2))))]
-      (is (= 6 (count (nth bad 2))))
+      (is (= 5 (count (nth bad 2))))
       (is (not= (expected old) bad)))
     (let [accepted (first (filter #(and (map? %) (= :accepted (:status %))) (nodes old)))
           without (replace-data good (list 'if correspondence accepted failure) accepted)
           lifted (list 'defn name (nth good 2) (list 'if correspondence (nth without 3) failure))]
       (is (not= good lifted))
-      (is (not= (expected old) lifted) "Lifting the walk changes existing failure priority")
-      (let [missing-report (replace-data good (list 'if correspondence accepted failure)
-                                        (list 'if correspondence accepted (dissoc failure :work-count)))]
-        (is (not= good missing-report))
-        (is (not= (expected old) missing-report) "The new refusal alone must retain main's work report")))))
+      (is (not= (expected old) lifted) "Lifting the walk changes existing failure priority"))))
+
 
 (deftest data-expectations-are-not-semantic-results
   (let [p (edn/read-string (slurp "specs/accounting-removal/pmk-carrier-main-data.edn"))]
     (is (= :inert-data-only (:authority p)))
     (is (= :unrun (:semantic-execution p)))
-    (is (= 7 (:parameter-ABI p)))
-    (is (= :preserved (:remaining-accounting p)))
     (is (every? #(= :unrun (:observed %)) (:cases p)))
     (is (= #{:valid :carrier :width :late-name :late-marker :late-type :opaque :children :metadata}
            (set (map :kind (:cases p)))))))

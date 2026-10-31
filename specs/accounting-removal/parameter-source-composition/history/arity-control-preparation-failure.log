@@ -1,0 +1,5 @@
+Execution error (NullPointerException) at user/bad-arities$iter$fn$iter$fn (arity.clj:11).
+Cannot invoke "Object.getClass()" because "target" is null
+
+Full report at:
+/var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/clojure-17000270016736920304.edn

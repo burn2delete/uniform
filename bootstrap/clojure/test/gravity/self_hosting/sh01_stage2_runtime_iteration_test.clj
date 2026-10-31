@@ -9301,7 +9301,11 @@
                     (assoc-in [:forms :list-type-form] {:form-id :list-type-form :syntax-id :list-type :value 'List :parent-form-id :parameter-form})
                     (assoc-in [:bindings :list] {:binding-id :list :name 'List :kind :type :binding-class :core :namespace 'gravity.core}))
         call (get-in context [:calls :call]) edge (get-in context [:edges :call])
-        checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+        checked (if (= :gravity.type/map (get (get (get function :parameters) 0) :type))
+                  (c7 'sh08-mp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context)])
+                  (c7
+                    'sh08-lp-compatibility
+                    [(:core context) call edge function 0 actual (:nodes context) (:bindings context)]))
         pair {:parameter :parameter :argument actual :chosen :gravity.type/list :compatibility (:premise checked)}
         row (assoc (first (:ledger base)) :rhs [pair] :kind :argument-compatibility :compatibility-rule-version :sh08-bare-list-parameter-v1)
         fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual])
@@ -9346,13 +9350,16 @@
             row (first (:constraints (constrain input)))
             pairs (mapv (fn [index]
                           (let [actual (get types (get (:argument-node-ids call) index))
-                                expected (c7 'sh08-lp-compatibility [core call edge callee index actual nodes bindings 65536])
-                                checked (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings 65536)
+                                expected (if (= :gravity.type/map (get (get (get callee :parameters) index) :type))
+                                           (c7 'sh08-mp-compatibility [core call edge callee index actual nodes bindings])
+                                           (c7 'sh08-lp-compatibility [core call edge callee index actual nodes bindings]))
+                                checked (if (= :gravity.type/map (get (get (get callee :parameters) index) :type))
+                                          (invoke 'p15-s23-mp-compatibility core call edge callee index actual nodes bindings)
+                                          (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings))
                                 pair {:parameter (get order index) :argument actual :chosen (get-in callee [:parameters index :type])}]
                             (is (= expected checked))
                             (when (= :accepted (:status checked))
-                              (is (= checked (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings (:work-count checked))))
-                              (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee index actual nodes bindings (dec (:work-count checked)))))))
+                              (is (not (contains? checked :work-count))))
                             (if (= :accepted (:status checked)) (assoc pair :compatibility (:premise checked)) pair)))
                         (range 4))
             base-row (-> row (dissoc :compatibility-rule-version) (assoc :kind :equality :rhs pairs))]
@@ -9368,8 +9375,9 @@
               (is (false? (invoke 'p15-s23-typed-declaration? declaration :gravity.type/map (assoc-in context [:forms id :value] value)))))
             (doseq [changed [(assoc-in bindings [(:type-binding-id declaration) :kind] :var)
                              (assoc-in bindings [(:type-binding-id declaration) :namespace] 'other)]]
-              (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee map-index
-                                                (get types map-id) nodes changed 65536)))))))))))
+              (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) map-index) :type))
+                                          (invoke 'p15-s23-mp-compatibility core call edge callee map-index (get types map-id) nodes changed)
+                                          (invoke 'p15-s23-lp-compatibility core call edge callee map-index (get types map-id) nodes changed))))))))))))
 
 (deftest current-gravity-homogeneous-list-parameter-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
@@ -9384,8 +9392,12 @@
         type {:kind :gravity.type/list :shape :homogeneous :element-type s}]
     (doseq [members [[] [s] [s s]]]
       (let [actual (positional members) {:keys [core call edge callee nodes bindings declaration]} (input-fn actual)
-            expected (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
-            checked (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            expected (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                       (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                       (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))
+            checked (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                      (invoke 'p15-s23-mp-compatibility core call edge callee 0 actual nodes bindings)
+                      (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings))
             app-id (:type-form-id declaration) ctor-id (:constructor-form-id declaration) member-id (:element-form-id declaration)
             forms {app-id {:form-id app-id :syntax-id (:type-syntax-id declaration) :kind :list :child-form-ids [ctor-id member-id]}
                    ctor-id {:form-id ctor-id :syntax-id (:constructor-syntax-id declaration) :value 'gravity.core/List :parent-form-id app-id}
@@ -9393,8 +9405,8 @@
             context {:forms forms :bindings bindings}]
         (is (= :accepted (:status checked)))
         (is (= expected checked))
-        (is (= checked (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings (:work-count checked))))
-        (is (= :list-parameter-work-limit (:reason (invoke 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings (dec (:work-count checked))))))
+        (is (not (contains? checked :work-count)))
+        (is (= #{:status :premise} (set (keys checked))))
         (is (true? (invoke 'p15-s23-typed-parameter-declaration? declaration type context)))
         (is (false? (invoke 'p15-s23-typed-declaration? declaration type context)))
         (doseq [mutate [#(assoc-in % [:forms app-id :child-form-ids] [member-id ctor-id])
@@ -9403,7 +9415,9 @@
                         #(assoc-in % [:bindings (:element-binding-id declaration) :kind] :var)]]
           (is (false? (invoke 'p15-s23-typed-parameter-declaration? declaration type (mutate context)))))
         (doseq [bad-members [42 s '(x) #{s} {:member s} nil [:gravity.type/unknown] [s :gravity.type/keyword]]]
-          (is (= :rejected (:status (invoke 'p15-s23-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings 65536)))))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (invoke 'p15-s23-mp-compatibility core call edge callee 0 (positional bad-members) nodes bindings)
+                                      (invoke 'p15-s23-lp-compatibility core call edge callee 0 (positional bad-members) nodes bindings))))))))
     (is (= {:status :accepted} (invoke 'p15-s23-lc-validate-types [type])))
 
     (doseq [bad [(assoc type :element-type :gravity.type/nil) (assoc type :element-type type) (assoc type :schema :secret)]]
@@ -9446,7 +9460,11 @@
                         (assoc-in [:forms member-id] {:form-id member-id :syntax-id (:element-syntax-id declaration) :value 'String :parent-form-id app-id})
                         (update :bindings merge (select-keys (:bindings parameter) [(:type-binding-id declaration) (:element-binding-id declaration)])))
             call (get-in context [:calls :call]) edge (get-in context [:edges :call])
-            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+            checked (if (= :gravity.type/map (get (get (get function :parameters) 0) :type))
+                      (c7 'sh08-mp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context)])
+                      (c7
+                        'sh08-lp-compatibility
+                        [(:core context) call edge function 0 actual (:nodes context) (:bindings context)]))
             pair {:parameter :parameter :argument actual :chosen type :compatibility (:premise checked)}
             row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
             fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
@@ -9501,7 +9519,11 @@
                                                   :parent-form-id :parameter-form :child-form-ids []})
                         (update :bindings merge (select-keys (:bindings parameter) [(:type-binding-id declaration)])))
             call (get-in context [:calls :call]) edge (get-in context [:edges :call])
-            checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+            checked (if (= :gravity.type/map (get (get (get function :parameters) 0) :type))
+                      (c7 'sh08-mp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context)])
+                      (c7
+                        'sh08-lp-compatibility
+                        [(:core context) call edge function 0 actual (:nodes context) (:bindings context)]))
             pair (cond-> {:parameter :parameter :argument actual :chosen type}
                    (= :accepted (:status checked)) (assoc :compatibility (:premise checked)))
             row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
@@ -9575,7 +9597,13 @@
                               (assoc-in [:bindings :second-parameter]
                                         (assoc (get-in context [:bindings :parameter]) :binding-id :second-parameter :name 'suffix :definition-syntax-id :second-name-syntax))
                               (assoc-in [:calls :call] call2) (assoc-in [:edges :call] edge2))
-                checked2 (c7 'sh08-lp-compatibility [(:core candidate) call2 edge2 function2 0 actual (:nodes candidate) (:bindings candidate) 65536])
+                checked2 (if (= :gravity.type/map (get (get (get function2 :parameters) 0) :type))
+                           (c7
+                             'sh08-mp-compatibility
+                             [(:core candidate) call2 edge2 function2 0 actual (:nodes candidate) (:bindings candidate)])
+                           (c7
+                             'sh08-lp-compatibility
+                             [(:core candidate) call2 edge2 function2 0 actual (:nodes candidate) (:bindings candidate)]))
                 pair2 (assoc pair :compatibility (:premise checked2))
                 row2 (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair2 {:parameter :second-parameter
                                                                                    :argument :gravity.type/string :chosen :gravity.type/string}])])

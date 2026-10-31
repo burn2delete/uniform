@@ -1,0 +1,555 @@
+{:preparation-history
+ {:author-log
+  {:path
+   "specs/accounting-removal/map-parameter-compatibility/preparation-failure.log",
+   :sha256
+   "a824e3e1491546a3a6ca7b1627dc0c4aff04a75d18c10418f64d7686ace8b0ef",
+   :state :historical-NONPASS-preserved},
+  :reviewer
+  [:extra-reader-delimiters-corrected
+   :missing-composition-loop-delimiter-corrected
+   :capacity-interruption-preserved
+   :local-wrapper-analysis-scoped-to-its-own-lexical-let
+   :contract-navigation-name-corrected-before-seal],
+  :candidate-data-modified false},
+ :handoff
+ {:path
+  "specs/accounting-removal/map-parameter-compatibility/handoff.edn",
+  :sha256
+  "0606238ab377d4afe2ed5790e98fb22b45ccde46314ced194112725a3f8948a6",
+  :files
+  {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+   "47cd88926cca6da19443f990abd21247ee11cafa95b99e0d7324df538c2a5e38",
+   "specs/accounting-removal/map-parameter-compatibility/source-controls.log"
+   "752fe604a9f944e356f7afbc3bbc61dda5b2af2cb0cd224815e25327c1161d0e",
+   "specs/accounting-removal/map-parameter-compatibility/check.clj"
+   "db20f10fc3039ff124d47aedaca22d687f0d81f6ae66150725ee997f73297e09",
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+   "4e07a95179e54c0423673d7c6b26364fe1f174b7e31caf7511415a2b2f6432a9",
+   "specs/accounting-removal/map-parameter-compatibility/preparation-failure.log"
+   "a824e3e1491546a3a6ca7b1627dc0c4aff04a75d18c10418f64d7686ace8b0ef",
+   "specs/accounting-removal/map-parameter-compatibility/overlap-intake.edn"
+   "4dbe10972dbfde46cd14b51af31991ccdd5f58a86401a01afe589a71fa98ddeb",
+   "specs/accounting-removal/map-parameter-compatibility/source_forms.clj"
+   "26c443cac9fec21d3343c91a6cbdafbe090e8c486855941a4d3c4f77a1fff109",
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "1026f0205d22c4305cc93ed3981432be17bb8bfc02b4a27c8aefeb12fc60bbc6",
+   "specs/accounting-removal/map-parameter-compatibility/language-boundary.log"
+   "4c94354a3566151730141d285a9fe05227a0cd47499255fd0e7a4b7996d32f38",
+   "specs/accounting-removal/map-parameter-compatibility/README.md"
+   "b5cd78122dd0e3484edbd2f7a513a9816399793559c86f56fa22c300a71ce54d",
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "6493561c4c037ead63f29c037977841aa5e8efcce8f76811544fa830a6820df5",
+   "specs/accounting-removal/map-parameter-compatibility/composition-witness.edn"
+   "dfd410cc210c6dc6ab45acecd86916024c3c3672be85e904936d3753060a3915",
+   "bootstrap/gravity/p15_s23/emitter.gravity"
+   "f326ca94c1c606f53a8f6af2f0db1cfdc01b5b5deee5c2e4ca3d689fde629061",
+   "bootstrap/gravity/src/gravity/effects.gravity"
+   "7bae134306e20609365c219afc4d6901029d5557af985c4b11e61c2290248120",
+   "specs/accounting-removal/map-parameter-compatibility/source-controls-result.edn"
+   "953a403bb7799b2a090b42695e4fbb0a9804903dfeb6b3c3ad7e8d796925a222"}},
+ :dependency
+ {:List
+  {:candidate "54212001bf5cbaa7f6030fcf439c9e87e0b4728c",
+   :receipt-sha256
+   "c657429c60e017a13a9c51d1529f33a7962f31aa9beb88e51a1ba940a291a499",
+   :receipt-bytes :verified,
+   :rerun-or-replay false,
+   :Map-or-whole-stack-acceptance-inherited false}},
+ :tree-conservation
+ {:changed-production-definitions 12,
+  :pinned-inputs 15,
+  :all-changed-path-modes :regular-100644,
+  :additional-path :handoff-itself,
+  :complete-parent-mode-blob-overlay :pass,
+  :Map-producers 3,
+  :actual-callers 9,
+  :actual-changed-paths 16,
+  :raw-other-production-forms-preserved 2588},
+ :tree "505e8d4f64ffb0e834134adfef674d6907e6b938",
+ :execution
+ {:compiler-Gravity-Bootstrap-helper-kernel-native-runtime-provider-sourceauth
+  :UNRUN,
+  :publication :none,
+  :shared-checkout-write false,
+  :read-eval false,
+  :project-namespace-loads 0,
+  :reviewer-local-artifacts :only-writes,
+  :APPROVE false,
+  :new-worker false,
+  :immutable-Git-input-reads :only-frozen-refs,
+  :lease-probe-binding-platform-process-or-CI-operation :none,
+  :outbound-send false,
+  :Git-bookend :none,
+  :project-target-evaluations 0},
+ :candidate "59e858da99da3534bcf1d440ae9b57734c4ff257",
+ :reviewer-thread "01a18528-de28-74d3-8222-fda7dddcdfb3",
+ :blocking-findings
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :explanation
+   "Removing the Map budget expression removes the final anonymous-function argument reference. The reader therefore produces (fn* [] ...), while the same lexical let still calls (check 65536) and (check -1). These calls require one argument and would throw an arity error before the retained List assertions. A later, separate one-argument local check is outside this lexical scope and is not part of this finding.",
+   :execution :not-performed,
+   :candidate-parameter-count 0,
+   :requested-correction
+   "Make this local definition and its two invocations arity-consistent without restoring the Map allowance. Preserve the surrounding List assertions and obtain affected successor review.",
+   :lines [6259 6262 6270],
+   :proof
+   :core-reader-produced-empty-fn-parameter-vector-with-one-argument-invocations,
+   :unchanged-calls [(check 65536) (check -1)],
+   :title
+   "Preserve the local check wrapper's invocation arity in the List kernel",
+   :priority 2,
+   :id :Map-test-local-closure-arity,
+   :effect
+   :preserved-List-kernel-would-fail-before-its-semantic-assertions,
+   :base-parameter-count 1,
+   :test sh08-homogeneous-list-parameter-development-kernel,
+   :frozen-source-only true}],
+ :remaining
+ [:author-local-test-API-correction
+  :frozen-successor-affected-source-review
+  :actual-full-List-Map-ACC04-combined-candidate-and-independent-overlap-review
+  :separately-authorized-genuine-execution],
+ :contracts
+ [{:path
+   "docs/phase-01-core-language/015-l5-type-system-specification.md",
+   :commit "59e858da99da3534bcf1d440ae9b57734c4ff257",
+   :sha256
+   "0a7eacfe8745a47e07c3475276cc44337e27129945972370f20805ead2facd0c",
+   :parent-identical true}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :commit "59e858da99da3534bcf1d440ae9b57734c4ff257",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a",
+   :parent-identical true}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :commit "59e858da99da3534bcf1d440ae9b57734c4ff257",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+   :parent-identical true}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :commit "59e858da99da3534bcf1d440ae9b57734c4ff257",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405",
+   :parent-identical true}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :commit "59e858da99da3534bcf1d440ae9b57734c4ff257",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b",
+   :parent-identical true}],
+ :author-results
+ {:source-reader-controls :reported-only-6-tests-21391-assertions,
+  :language-boundary :reported-only-6-tests-11-assertions,
+  :genuine-authentic-definitions :UNRUN},
+ :reproduction
+ {:checker "/tmp/map-parameter-independent-59e858da/review.clj",
+  :sha256
+  "742307854db72bb3fd3990d7990aba9636cc655bcf66e7906a081fb2f1ab5301",
+  :log "/tmp/map-parameter-independent-59e858da/review.log",
+  :log-sha256
+  "d62dbebf39b8faf55e30ec94afc820a3f8f37def839e1fe2807c1c1b99b80802",
+  :runtime :core-JAR-only-Clojure1.12.5-spec0.5.238-core-specs0.4.74,
+  :oracle-provenance
+  :manually-inspected-pure-declared-rewrite-relations-copied-from-frozen-author-checker-lines43-115,
+  :author-checker-loaded-or-executed false,
+  :source-forms-or-authentic-tests-evaluated false},
+ :schema-version 1,
+ :test-assessment
+ {:retained-semantic-assertion-count 17990,
+  :assertions-as-source :preserved-including-accepted-ACC02-and-List,
+  :Map-and-context-direct-target-call-arities :pass,
+  :local-test-wrapper-arity :changes-required,
+  :genuine-semantic-execution :UNRUN,
+  :callback-safety :not-established-by-source-reading},
+ :delivery
+ :own-thread-sealed-result-only-Accounting-consumption-through-Reconciliation,
+ :controls
+ {:checks 24644,
+  :negative-count 73,
+  :negative-controls
+  [{:id [sh08-mp-compatibility :lost-semantic-predicate 0],
+    :coherent-form-sha256
+    "866a520a909ce69e4c7f53964d104c8ebe92486f4e40dafebcc991d84eb3f632",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 1],
+    :coherent-form-sha256
+    "c01626b94f283d314014ec68568ac2b069996bea30ed0ec7b4f6e388e1a9504a",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 2],
+    :coherent-form-sha256
+    "cb52e39b431c6cb8d754d9d4ba4ae5b144a44c12e9a03e7cc3d079fa0f0af39f",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 3],
+    :coherent-form-sha256
+    "28a82c804f4dc94759ba0234a416e2959eb34cef2de124a12b70de7bd48f3dda",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 4],
+    :coherent-form-sha256
+    "4026914c7847110ab1eb14dfcfad8f2e089cf0acada270c5b66a5be6065b6680",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 5],
+    :coherent-form-sha256
+    "679d496b60daaa152d2054764599888949f2e5a1ee88d4b5a20ca63ca50a0cde",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 6],
+    :coherent-form-sha256
+    "10412bc677052ba8cd75cf6828384344c62cefbc0458023d95a5dffff89383f5",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 7],
+    :coherent-form-sha256
+    "d5761e8bf572182088448877570f488a9ad0698b643480b63967b2c2242691db",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 8],
+    :coherent-form-sha256
+    "1dff676063b920c8fd8430d3342838cf98dd260c1849e09d4d67483e57ec7630",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 9],
+    :coherent-form-sha256
+    "bb8ac9a2dd6afb910b0892f574ea27c3050cd6e6afac1966739f46cec47d61a8",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 10],
+    :coherent-form-sha256
+    "f7cdcec4c1be142bc5bf14a2917724578dcb3293a24b1ee953ef448819825d61",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 11],
+    :coherent-form-sha256
+    "6cc29bc306208b7719f51c444dde3082262fefd6c284beea9b7e823917c883b3",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 12],
+    :coherent-form-sha256
+    "6ae97414561bfee1f313595dc94a343515064f182b45d1e484022ddb925b6e10",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :lost-semantic-predicate 13],
+    :coherent-form-sha256
+    "cf4ceaf2e3f875f16dbec9360280431dec0fd9e33bc4058da2b692e8fff0bced",
+    :refused-by :every-semantic-predicate}
+   {:id [sh08-mp-compatibility :budget-arity],
+    :coherent-form-sha256
+    "b617387ec2d3c402eb8b0515aca71b6247d1b9a8db9b0b84c734a7fda042791f",
+    :refused-by :Map-arity}
+   {:id [sh08-mp-compatibility :synthetic-report],
+    :coherent-form-sha256
+    "31dbac0ae62aab500848e0c9ffd083d7f0cdc76b375ec4e3047a5b149e9c5f75",
+    :refused-by :Map-accounting}
+   {:id [sh08-mp-compatibility :premise],
+    :coherent-form-sha256
+    "2dc52b82d25589b7d2f83ed8084a86a51e2f6a8f1d5619536a07bb64bc9a1c43",
+    :refused-by :complete-success-premise}
+   {:id [sh08-mp-compatibility :refusal],
+    :coherent-form-sha256
+    "5820faa61aa8f09a4ffb8ceaa40e8bac35096874003bd7ef40fad54e2db36598",
+    :refused-by :semantic-refusal}
+   {:id [sh08-pmk-proof :old-Map-arity],
+    :coherent-form-sha256
+    "3de24d1e9d82c668dc9d6d126f2ad8216f0efd4ccad82966a8a618a217e14068",
+    :refused-by :complete-caller-oracle}
+   {:id [sh08-ft-call-constraints-with-context :old-Map-arity],
+    :coherent-form-sha256
+    "84911f770bcd73154af61596fb65ba6b7ce93b93a9aa3ac73bb9626286a186d7",
+    :refused-by :complete-caller-oracle}
+   {:id [body-mp-compatibility :lost-semantic-predicate 0],
+    :coherent-form-sha256
+    "765692bf2a41adc1656929d7b17ec76954aefe3c708fe01f5eee23e5d7d63987",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 1],
+    :coherent-form-sha256
+    "35ef71ffb9ec02528b656230a7e8a099455de9caad1f70b3b824f7beaa67143f",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 2],
+    :coherent-form-sha256
+    "1d281c2c8fb25e666b46f65ce3ab925e31190b3fa3bcaf09c9a1410c62137d26",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 3],
+    :coherent-form-sha256
+    "218121af235fb33e6df2d1005f9c17d7fc1a5894eac37cec560c605e0d26a868",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 4],
+    :coherent-form-sha256
+    "f09fb6b29a56b128b31209e0b6530c6596d5e508814b20e55613beebd4d30ce2",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 5],
+    :coherent-form-sha256
+    "b125578210374828571ddb074fe3406bb0110493e397343c9de7ece18db40a05",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 6],
+    :coherent-form-sha256
+    "5bf08809288c463db69b218789b5d1dbfd635f2e62583e2675ebe6168d717658",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 7],
+    :coherent-form-sha256
+    "70b50880378738559316d9ccb390b118dbd22a69e3ec70ff3e80de0afd3f32a9",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 8],
+    :coherent-form-sha256
+    "74070bc7efc4d8d4e419bd2794a2c6808a9a0c966fae6613a34634c9d99aab56",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 9],
+    :coherent-form-sha256
+    "70ac4a80e5fb35f515afdece60b87f0d9159cd536f4965e852dec9b39cbe1f95",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 10],
+    :coherent-form-sha256
+    "5c05d8429a157d344f7d2fb0605adfcd6e58c6aecc3e58a80cf163e686f9d187",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 11],
+    :coherent-form-sha256
+    "156cdc6f4d329bcd526f16855b87ef07f107b2045abc04c83b749aea685d5485",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 12],
+    :coherent-form-sha256
+    "770d98fcc9c7e4bad8c29f1efbf56c2658c809b26aee6150b7f1a508e9ff9a7a",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :lost-semantic-predicate 13],
+    :coherent-form-sha256
+    "0c72f2bd63ed6d335894587045bcd3e79a0830de80ff8bc557349498575c5029",
+    :refused-by :every-semantic-predicate}
+   {:id [body-mp-compatibility :budget-arity],
+    :coherent-form-sha256
+    "4c48622d35ca4f4368818cd1ba4652d51fa3a0c54276da65a90c70daa8f3e9b1",
+    :refused-by :Map-arity}
+   {:id [body-mp-compatibility :synthetic-report],
+    :coherent-form-sha256
+    "e08d4ba4e244e183469fbbb34b826ddbb02f441ae60a1cff7dead4f4f465eee8",
+    :refused-by :Map-accounting}
+   {:id [body-mp-compatibility :premise],
+    :coherent-form-sha256
+    "58a42ed67dc8e4b0c51cdc51ec0b91e9a50d0dffc348ad0864843a42d26c1cce",
+    :refused-by :complete-success-premise}
+   {:id [body-mp-compatibility :refusal],
+    :coherent-form-sha256
+    "8ed6d6e6fd437a6ca89fa958d98e631e3d23c5eb0265d0a79668750688545de9",
+    :refused-by :semantic-refusal}
+   {:id [body-pmk-entry-evidence :old-Map-arity],
+    :coherent-form-sha256
+    "1b5a50f2730088266e54ed4ee0a1579e54721aa2d234619bfdf96269971cf2cd",
+    :refused-by :complete-caller-oracle}
+   {:id [body-lp-context :old-Map-arity],
+    :coherent-form-sha256
+    "cdefabc20d78023395f014a6f7d92f85d45e8b1a30744db600643e6a305d8c3e",
+    :refused-by :complete-caller-oracle}
+   {:id [body-pmk-proof :old-Map-arity],
+    :coherent-form-sha256
+    "ae40c94b271a79d71cad21fe7fc5735b8cedeb455e9f715fdbe21dc53b4bbe41",
+    :refused-by :complete-caller-oracle}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 0],
+    :coherent-form-sha256
+    "bdbbfba3531c03e5c782f9c26adc0811d40890b36ffbb75ee9670fa4f6e1d199",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 1],
+    :coherent-form-sha256
+    "4edeca8b290ae83703adc9a2cd5805c64959203b073ffaec914a020965406860",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 2],
+    :coherent-form-sha256
+    "badd0999d73395854ffbb6f15fffef3e3921a293c61d269e5a5f525cc2d7bdc7",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 3],
+    :coherent-form-sha256
+    "45f99fe9637c81665475dc618d7fb53b43e86262489b9642f7e8c465f524ecaf",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 4],
+    :coherent-form-sha256
+    "998612c4ba7a29d6921e8b661a3a829dc617dd2c8d7dea3ff7f354a5af3260d6",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 5],
+    :coherent-form-sha256
+    "862c13f3bea322222d1ade8227cc330df3377ac896d12ecee922a29dde7b0379",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 6],
+    :coherent-form-sha256
+    "49491c373a9120958f675a965c7fbd64de48417aa82e75ccd68b9cd0a9ed80f2",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 7],
+    :coherent-form-sha256
+    "261bfa93e9d3fc90fec6a8a28e903103e217473c762035b165e43e4d0b5e7fd3",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 8],
+    :coherent-form-sha256
+    "021f5f31e1bdeaffe5a56cd41f03d5d5ad566697a64bbe8d388760b29dc4b072",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 9],
+    :coherent-form-sha256
+    "8cd38e6c7d45192711f6d3c41ce0dc97195c0a65f97cea49f2ee43e443d721de",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 10],
+    :coherent-form-sha256
+    "2ffbe905f50d061611d7de19bb7f0eec6afedfd3c5f7ac828d053b1508e0bc32",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 11],
+    :coherent-form-sha256
+    "0e6e55c2ef192a404cfc54accc13f103b6de01fcf4660e147b57e116dfce6bb1",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 12],
+    :coherent-form-sha256
+    "8792521549a7d7854ed4a6f4582c617718551f4c091249ed9dfb69eac5dda8c8",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :lost-semantic-predicate 13],
+    :coherent-form-sha256
+    "d691a67f7eeccf8fb2191977e4415f89c6ec8dbae0a41de53d3a2c67582883c4",
+    :refused-by :every-semantic-predicate}
+   {:id [p15-s23-mp-compatibility :budget-arity],
+    :coherent-form-sha256
+    "9e2d528f403ab57656da8ffdb4bb3e59f2407d9bca7179110d5f355e301cf157",
+    :refused-by :Map-arity}
+   {:id [p15-s23-mp-compatibility :synthetic-report],
+    :coherent-form-sha256
+    "25fe7db95b4443d71df627069e7dd209cf7a8b3e7e438a77eb1abf2e48246149",
+    :refused-by :Map-accounting}
+   {:id [p15-s23-mp-compatibility :premise],
+    :coherent-form-sha256
+    "a8521c2998c74b75f9f72acdc5348b235facb6ae2fee06a22a04dd28a57a4ede",
+    :refused-by :complete-success-premise}
+   {:id [p15-s23-mp-compatibility :refusal],
+    :coherent-form-sha256
+    "28d81ea03f0de4f9a30072f11bd5685f0107c18e3a1a7d19d8e7b7f9d5e6eb97",
+    :refused-by :semantic-refusal}
+   {:id [p15-s23-pmk-proof :old-Map-arity],
+    :coherent-form-sha256
+    "151bcae10b34ca68037d8e5bf7f27cf3ee357ccd3d82806db5b9ef59132cd6f3",
+    :refused-by :complete-caller-oracle}
+   {:id [p15-s23-pmk-entry-evidence :old-Map-arity],
+    :coherent-form-sha256
+    "1a4bd14a800eb5bc0f11fe24d98fc17d393d5f61ba7ce792b36c1da75b0643ee",
+    :refused-by :complete-caller-oracle}
+   {:id [p15-s23-typed-compile-call :old-Map-arity],
+    :coherent-form-sha256
+    "e5d2a7fcdf9b84cdf55d53c9f6dffb3c914689ccf147f8c440d858b2881916d4",
+    :refused-by :complete-caller-oracle}
+   {:id :row-equality,
+    :coherent-form-sha256
+    "d5e78263cdbb52f4291ef1e1976879bc2ddc6db0b3b26d73dad181f2e35970d9",
+    :refused-by :complete-caller-oracle}
+   {:id :synthetic-context-report,
+    :coherent-form-sha256
+    "82c8b1ad905c7cb8910d1b9bd827c63159d44bfe361dae9d765b480bb5ff6aaa",
+    :refused-by :complete-caller-oracle}
+   {:id
+    [p15-s23-pmk-entry-evidence
+     :composition-old-arity
+     "-mp-compatibility"],
+    :coherent-form-sha256
+    "1a4bd14a800eb5bc0f11fe24d98fc17d393d5f61ba7ce792b36c1da75b0643ee",
+    :refused-by :Map-only-composition}
+   {:id [p15-s23-pmk-proof :composition-old-arity "-mp-compatibility"],
+    :coherent-form-sha256
+    "7656eaac93f2aaa81c74becfcd959bd908152e43851024ca7eaae0b0821d184b",
+    :refused-by :Map-only-composition}
+   {:id [p15-s23-pmk-proof :composition-old-arity "-pmk-physical"],
+    :coherent-form-sha256
+    "f2bf19e3ed987c97aea0abd165751b2d67be0c40e23aa90dfffc5cc571fe6a3c",
+    :refused-by :Map-only-composition}
+   {:id [sh08-pmk-proof :composition-old-arity "-mp-compatibility"],
+    :coherent-form-sha256
+    "dc5d8997b04a2b617bf39b4b0a4ee4b8b100fc485f7cbfb0fe72d1157661cf47",
+    :refused-by :Map-only-composition}
+   {:id [sh08-pmk-proof :composition-old-arity "-pmk-physical"],
+    :coherent-form-sha256
+    "bfc9eb6095ed1e041c315536af6700dea2fdd06f00119841859d429d2ff823c7",
+    :refused-by :Map-only-composition}
+   {:id
+    [body-pmk-entry-evidence
+     :composition-old-arity
+     "-mp-compatibility"],
+    :coherent-form-sha256
+    "1b5a50f2730088266e54ed4ee0a1579e54721aa2d234619bfdf96269971cf2cd",
+    :refused-by :Map-only-composition}
+   {:id [body-pmk-proof :composition-old-arity "-mp-compatibility"],
+    :coherent-form-sha256
+    "6b07c7fd88fda18517758529fef67bb38cd91d48703803c2ed1dae133167879a",
+    :refused-by :Map-only-composition}
+   {:id [body-pmk-proof :composition-old-arity "-pmk-physical"],
+    :coherent-form-sha256
+    "fe6286b0f93b99013f9ca985769e2b63704bfb03cc1e1bd81593d649bac5cd27",
+    :refused-by :Map-only-composition}
+   {:id :actual-local-wrapper-arity,
+    :coherent-form-sha256
+    "7cf588234d6baee4b5a5c4aaf494cd5d2d5498a90f638deaba10e65f4ab25c90",
+    :refused-by :local-helper-invocation-arity}],
+  :negative-envelope
+  :each-inert-form-SHA256-recomputed-before-structural-semantic-refusal,
+  :scope
+  [:budget-and-report
+   :every-semantic-condition
+   :complete-premise
+   :refusal
+   :row-equality
+   :Map-arity
+   :physical-arity
+   :actual-local-wrapper-regression],
+  :counterfactual-local-repair
+  :reader-data-only-two-calls-fixed-in-the-same-lexical-let-no-source-write,
+  :path "/tmp/map-parameter-independent-59e858da/controls.edn",
+  :sha256
+  "8a1b7435dd222d9dcb85aa1b14c9ad054f3cf790edee49f65db7fda9dd02b34f"},
+ :intake-main "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+ :kind :independent-affected-Map-parameter-source-test-contract-review,
+ :source-assessment
+ {:wider-inference-lowering-and-PMK-accounting :separate-and-unclaimed,
+  :Effects-context-work-fields :absent-on-success-and-failure,
+  :Map-work-fields-and-limit-refusals :absent,
+  :Effects-parameter-context-arity 3,
+  :Map-producers
+  :pass-preserved-complete-semantic-contract-minus-accounting,
+  :caller-AST-oracles :pass-all-nine,
+  :List-producers-and-other-validators
+  :byte-identical-to-reviewed-parent,
+  :Map-arity 8,
+  :preserved
+  [:every-semantic-predicate
+   :complete-success-premise
+   :semantic-refusal
+   :parameter-binding
+   :applicability
+   :full-declaration-record-scan
+   :Never-identity
+   :argument-index
+   :call-and-edge-identity
+   :source-and-provenance
+   :profile
+   :target
+   :extent-and-keyword-guard
+   :row-equality
+   :invalidation]},
+ :composition
+ {:overlap-intake-sha256
+  "4dbe10972dbfde46cd14b51af31991ccdd5f58a86401a01afe589a71fa98ddeb",
+  :projected-Map-arity 8,
+  :whole-form-ACC04-overlay-or-import :not-performed,
+  :actual-combined-candidate :absent,
+  :accepted-physical-arity 4,
+  :full-base-working-accepted-file-pins :verified,
+  :all-five-form-pins :verified-and-correlated-to-Accounting-intake,
+  :witness-sha256
+  "dfd410cc210c6dc6ab45acecd86916024c3c3672be85e904936d3753060a3915",
+  :working-parent-Map-arity 9,
+  :accepted-ACC04 "1235e8d49d0720b22dd37caedb7acb4c2fa4a003",
+  :Map-only-projection :pass-five-complete-forms,
+  :working-parent-physical-arity 5,
+  :intake-working-effects-file
+  :intermediate-history-file-pin-not-the-final-working-file-pin,
+  :final-working-file-pin :bound-by-witness-and-frozen-handoff,
+  :future-combined-candidate-and-metadata-overlap-review :required,
+  :accepted-tree "c87fc1c97aebc609cdc595acd9361da7e6c56c6d",
+  :accepted-physical-source-fact-construction-semantics
+  :unchanged-by-projection},
+ :limits
+ [:no-current-main-acceptance
+  :no-actual-combined-candidate-acceptance
+  :no-full-ACC06-or-general-accounting-closure
+  :no-genuine-execution-or-integration-credit
+  :no-later-author-correction-acceptance
+  :all-existing-denials-and-holds-retained],
+ :base-tree "75d68b80ac9fbc1fbc8753c083f6ba65d6f67764",
+ :base "54212001bf5cbaa7f6030fcf439c9e87e0b4728c",
+ :decision :CHANGES-REQUIRED,
+ :reservation-and-authorship
+ {:Reconciliation :only-this-existing-reviewer-assignment,
+  :Accounting :same-route-preserved,
+  :ACC06 :frozen-author-source-separate-correction-not-reviewed,
+  :ACC04 :no-conflicting-review,
+  :new-worker false}}

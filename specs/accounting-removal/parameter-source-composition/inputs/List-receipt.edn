@@ -1,0 +1,197 @@
+{:caller-source-inventory
+ {:scope :source-data-caller-dispatch-and-report-shape,
+  :producer-invocations 0,
+  :caller-rows
+  [{:caller sh08-ft-call-constraints-with-context,
+    :path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :List-arity 8,
+    :Map-arity 9,
+    :same-eight-semantic-arguments true,
+    :Map-only-allowance
+    (- (get context :loop-work-left 65536) work used),
+    :dispatch-condition
+    (=
+     :gravity.type/map
+     (get (get (get callee :parameters) index) :type))}
+   {:caller body-lp-context,
+    :path "bootstrap/gravity/src/gravity/effects.gravity",
+    :List-arity 8,
+    :Map-arity 9,
+    :same-eight-semantic-arguments true,
+    :Map-only-allowance (- map-budget (if (= used nil) 0 used)),
+    :dispatch-condition map-parameter?}
+   {:caller p15-s23-typed-compile-call,
+    :path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :List-arity 8,
+    :Map-arity 9,
+    :same-eight-semantic-arguments true,
+    :Map-only-allowance (- budget 16 (count arguments) work),
+    :dispatch-condition
+    (=
+     :gravity.type/map
+     (get (get (get callee :parameters) i) :type))}],
+  :Effects-optional-report-branches
+  [(if (= map-work nil) result (assoc result :work-count map-work))
+   (if (= map-work nil) failure (assoc failure :work-count map-work))
+   (if (= used nil) failure (assoc failure :work-count used))
+   (if (= used nil) failure (assoc failure :work-count used))],
+  :effects-map-only-total-present true},
+ :pin-check
+ {:patch-sha256
+  "e9e7495715ff13d362186b6a48aad0e2f1328a333b979738e3ac97aeaa6e7bdf",
+  :target-operations 0,
+  :tree "75d68b80ac9fbc1fbc8753c083f6ba65d6f67764",
+  :candidate "54212001bf5cbaa7f6030fcf439c9e87e0b4728c",
+  :pinned-files 12,
+  :handoff-sha256
+  "99b87d292cb979a75a62755677d59531438119661f8f91c785304e0a40a8ec85",
+  :kind :independent-list-parameter-source-pin-review,
+  :base "c486a4d78f67937deb42b8bfa978e456d583bc32",
+  :Git-scope :immutable-objects-only},
+ :tree "75d68b80ac9fbc1fbc8753c083f6ba65d6f67764",
+ :owned-source-findings [],
+ :candidate "54212001bf5cbaa7f6030fcf439c9e87e0b4728c",
+ :not-conferred
+ [:semantic-runtime-acceptance
+  :integration-or-later-main-composition
+  :whole-migration-credit
+  :unmetered-pipeline
+  :Map-or-broader-inference-removal
+  :platform-or-binding-permission],
+ :retained
+ [:ACC02-accepted-semantic-closure
+  :complete-semantic-predicates-bindings-record-scan
+  :actual-type-source-profile-target-premises
+  :Map-producers-and-controls
+  :Effects-full-row-equality-and-refusals
+  :ACC07-cycle-fixedpoint
+  :ACC04-PMK
+  :all-original-operational-holds],
+ :boundary :owner6-11-not-rerun,
+ :original-PR600-binding-goal :blocked-unchanged,
+ :handoff-sha256
+ "99b87d292cb979a75a62755677d59531438119661f8f91c785304e0a40a8ec85",
+ :kind :independent-List-parameter-compatibility-source-review,
+ :verdict :pass-qualified-source-test-contract-delta-only,
+ :operations
+ {:publication 0,
+  :target-module-loads 0,
+  :compiler-Bootstrap-Gravity-runtime-invocations 0,
+  :Git-operational-bookends 0,
+  :shared-source-writes 0,
+  :messages 0,
+  :goal-tool-action false,
+  :production-helper-evaluation 0,
+  :leases-probes-platform-binding-retries 0},
+ :independent-source-controls
+ {:counts {:test 5, :pass 21288, :fail 0, :error 0, :type :summary},
+  :baseline-read :immutable-Git-objects-only,
+  :target-module-loads 0,
+  :scope
+  :source-forms-and-authentic-inert-controls-not-Gravity-execution,
+  :Bootstrap-compiler-runtime-execution 0,
+  :kind :List-parameter-compatibility-source-controls,
+  :changed-files
+  {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+   "2119fe78e7820f9c59cd1c87a5df8556ce92aabfb8d80f73c68b2215db8bbe8a",
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "e0680ceea85bee31a2e10ec4e96a4b2ce46f08c7622fc47fc0233622b3afcef2",
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+   "c201885897d024ce0dbb644a03053ab3a180351f5d3a5c132a13dbae2bc956ea",
+   "bootstrap/gravity/p15_s23/emitter.gravity"
+   "a9d4677006fc470a76d1642783b70f6341ad76a50f27133fd26d0ff07552c0f8",
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "5bdfb7b8e86dc2482da7e7f216bfeda5bab8c6ee9ddba635f073d451816d33a2",
+   "bootstrap/gravity/src/gravity/effects.gravity"
+   "49d8a0251ad0d98601b05803091b3fdd8d8aae781f6779f9bb8d6ed51966b75e"},
+  :base "c486a4d78f67937deb42b8bfa978e456d583bc32",
+  :production-helper-invocations 0},
+ :base "c486a4d78f67937deb42b8bfa978e456d583bc32",
+ :authentic-semantic-tests :UNRUN,
+ :artifacts
+ [{:path "REPORT.md",
+   :sha256
+   "502c9fe02545c98de11f3b49980437458fb14416a9f3abda6c469f2b97778f94"}
+  {:path "caller-check-result.edn",
+   :sha256
+   "7d7eb49bfda0ed93e7b37c3e983345e45f48ab3371b14e9e57b392452212d2ed"}
+  {:path "caller-check.clj",
+   :sha256
+   "9cf90d48a81b103635abf6ef1689a61af0f5732006788ae5c59002f9fc2ba878"}
+  {:path "freeze-draft-v1.clj.txt",
+   :sha256
+   "740e6cf7685619c23d30db20da236eebc2b79ad37c521c91b33159a1beb32984"}
+  {:path "freeze.clj",
+   :sha256
+   "570b666c9df172b64b8d79da5d0c475ae11d28908a95f4aa4e2defc97601d49f"}
+  {:path "pin-result.edn",
+   :sha256
+   "64e12048b14c7f0430db37b206e47830a441cc1dad826fd82944616997e3e7d3"}
+  {:path "pins-draft-v1.clj.txt",
+   :sha256
+   "b47333d2314a540e4f22ac660ebacecf92607681ca4314a2a23ba57e34d4164f"}
+  {:path "pins.clj",
+   :sha256
+   "349070d3ba475690a5d0be9a09bbf21559622d8529a6ecb71daece124624df96"}
+  {:path
+   "snapshot/.cpcache/list-parameter-compatibility/source-controls-result.edn",
+   :sha256
+   "653d3b0d647e29bbc4b6159da8205f4981f00cc36455d39990611d06814fce67"}
+  {:path
+   "snapshot/bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :sha256
+   "2119fe78e7820f9c59cd1c87a5df8556ce92aabfb8d80f73c68b2215db8bbe8a"}
+  {:path
+   "snapshot/bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :sha256
+   "e0680ceea85bee31a2e10ec4e96a4b2ce46f08c7622fc47fc0233622b3afcef2"}
+  {:path
+   "snapshot/bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :sha256
+   "c201885897d024ce0dbb644a03053ab3a180351f5d3a5c132a13dbae2bc956ea"}
+  {:path "snapshot/bootstrap/gravity/p15_s23/emitter.gravity",
+   :sha256
+   "a9d4677006fc470a76d1642783b70f6341ad76a50f27133fd26d0ff07552c0f8"}
+  {:path
+   "snapshot/bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :sha256
+   "5bdfb7b8e86dc2482da7e7f216bfeda5bab8c6ee9ddba635f073d451816d33a2"}
+  {:path "snapshot/bootstrap/gravity/src/gravity/effects.gravity",
+   :sha256
+   "49d8a0251ad0d98601b05803091b3fdd8d8aae781f6779f9bb8d6ed51966b75e"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/README.md",
+   :sha256
+   "e596a00b483bc71a137c337b3b2fa038e367685512466b23ffe082c059e1d439"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/check.clj",
+   :sha256
+   "f58f1f5ebf5dcdb64d7c17a5f226a292e716a2076717af0a451f7a4cd86c8a6d"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/handoff.edn",
+   :sha256
+   "99b87d292cb979a75a62755677d59531438119661f8f91c785304e0a40a8ec85"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/language-boundary.log",
+   :sha256
+   "4c94354a3566151730141d285a9fe05227a0cd47499255fd0e7a4b7996d32f38"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/reviewer-check.clj",
+   :sha256
+   "7bf74abf71dc24815c4b8219c91c6e7542d57852245b07d27e5ee681e29f3525"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/source-controls-result.edn",
+   :sha256
+   "653d3b0d647e29bbc4b6159da8205f4981f00cc36455d39990611d06814fce67"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/source-controls.log",
+   :sha256
+   "2efcf21785795924fb24c34b7d11f26a7808a8581022e4bafc2e68a435b3b937"}
+  {:path
+   "snapshot/specs/accounting-removal/list-parameter-compatibility/source_forms.clj",
+   :sha256
+   "26c443cac9fec21d3343c91a6cbdafbe090e8c486855941a4d3c4f77a1fff109"}
+  {:path "source-and-test.patch",
+   :sha256
+   "e9e7495715ff13d362186b6a48aad0e2f1328a333b979738e3ac97aeaa6e7bdf"}]}

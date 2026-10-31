@@ -169,11 +169,14 @@
   (java.util.IdentityHashMap.))
 
 (defn- function-request
-  [artifact]
+  ([artifact] (function-request artifact nil))
+  ([artifact invocation]
   (locking *function-request-cache*
-    (if (.containsKey *function-request-cache* artifact)
+    (if (and (nil? invocation) (.containsKey *function-request-cache* artifact))
       (.get *function-request-cache* artifact)
-      (let [report (b47-verification artifact)
+      (let [report (if invocation
+                     (bootstrap/sh07-core-artifact-verification artifact invocation)
+                     (b47-verification artifact))
             coordinator (coordinator-verification artifact report)
             context (b47-context artifact report coordinator)
             request
@@ -183,9 +186,9 @@
         ;; Failed receipts are diagnostic inputs, not reusable verification
         ;; evidence.  Rebuild them on every call so mutation-focused tests keep
         ;; exercising the verifier rather than a cached failure carrier.
-        (when (= :passed (:status report))
+        (when (and (nil? invocation) (= :passed (:status report)))
           (.put *function-request-cache* artifact request))
-        request))))
+        request)))))
 
 (deftest sh08-imported-function-types-development-kernel
   ;; Normalized DATA exercises Gravity's joins and inference, not B47 authority.
@@ -3343,12 +3346,16 @@
                                     :elapsed-ms (quot (- (System/nanoTime) started) 1000000)})) value))
         text (slurp source-path)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}}
         context (bootstrap/reader-project-context-for-source source-path)
-        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact source-path text context nil nil reader-path))
-        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax))
-        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact source-path expanded))
-        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
-        request (stage :c7-request #(function-request core))]
+        syntax (stage :c3 #(bootstrap/compiler-c3-syntax-source-artifact source-path text context nil nil reader-path invocation))
+        expanded (stage :sh05 #(bootstrap/sh05-macro-artifact-from-c3-artifact source-path syntax invocation))
+        resolved (stage :sh06 #(bootstrap/sh06-resolution-artifact-from-sh05-artifact
+                                source-path expanded {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                                reader-path invocation))
+        core (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
+        request (stage :c7-request #(function-request core invocation))]
     {:request request :core core :syntax syntax :expanded expanded :resolved resolved}))
 
 (deftest sh08-parameter-vector-count-slice-current-source-composition
@@ -6256,16 +6263,18 @@
             {:keys [core call edge callee nodes bindings signature] :as input} (homogeneous-list-parameter-input actual)
             result (bare-list-parameter-constraints input) row (first (:constraints result)) pair (first (:rhs row))
             premise (:compatibility pair)
-            check #(invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings %])
-            checked (check 65536)]
+            check #(if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                     (invoke-c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                     (invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))
+            checked (check)]
         (is (= [] (:diagnostics result)) (pr-str result))
         (is (= :sh08-list-parameter-compatibility-v2 (:compatibility-rule-version row)))
         (is (= :sh08-homogeneous-list-parameter-v1 (:version premise)))
         (is (= :all-positional-elements-match (:relation premise)))
         (is (= [actual actual type type] [(:argument pair) (:actual-type premise) (:chosen pair) (:declared-type premise)]))
         (is (= [s (count members) [:static-length]] [(:checked-element-type premise) (:checked-element-count premise) (:forgets premise)]))
-        (is (= checked (check (:work-count checked))))
-        (is (= :list-parameter-work-limit (:reason (check (dec (:work-count checked))))))
+        (is (not (contains? checked :work-count)))
+        (is (= checked (check)))
         (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 1 bindings])))
         (is (false? (invoke-c7 'sh08-ft-declaration-valid? [(:declaration input) bindings])))
         (is (false? (invoke-c7 'sh08-ft-signature-valid?
@@ -6283,8 +6292,9 @@
     (let [input (homogeneous-list-parameter-input (positional [s]))]
       (doseq [members [42 s '(x) #{s} {:member s} nil]]
         (let [{:keys [core call edge callee nodes bindings]} (homogeneous-list-parameter-input (positional members))]
-          (is (= :rejected (:status (invoke-c7 'sh08-lp-compatibility
-                                              [core call edge callee 0 (positional members) nodes bindings 65536]))))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (invoke-c7 'sh08-mp-compatibility [core call edge callee 0 (positional members) nodes bindings])
+                                      (invoke-c7 'sh08-lp-compatibility [core call edge callee 0 (positional members) nodes bindings])))))))
       (doseq [mutate [#(assoc-in % [:context :ordering-core :function-records 0 :signature :parameters 0 :element-binding-id] "forged")
                       #(assoc-in % [:context :ordering-bindings (get-in input [:declaration :element-binding-id]) :kind] :var)
                       #(assoc-in % [:context :ordering-core :function-records 0 :signature :parameters 0 :constructor-syntax-id] "forged")]]
@@ -6412,8 +6422,10 @@
     (doseq [actual actuals]
       (let [{:keys [core call edge callee nodes bindings signature] :as input} (bare-map-parameter-input actual)
             result (bare-list-parameter-constraints input) row (first (:constraints result)) pair (first (:rhs row)) premise (:compatibility pair)
-            scan #(invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings %])
-            work (:work-count (scan 65536))]
+            scan #(if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                    (invoke-c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                    (invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))
+            checked (scan)]
         (is (= [] (:diagnostics result)) (pr-str result))
         (is (= :argument-compatibility (:kind row)))
         (is (= :sh08-map-list-parameter-compatibility-v1 (:compatibility-rule-version row)))
@@ -6422,16 +6434,11 @@
         (is (= :gravity.type/map (:chosen pair) (:declared-type premise) (get-in result [:binding-types :parameter])))
         (is (= [:key-value-member-types :static-entry-count] (:forgets premise)))
         (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations] (:preserves premise)))
-        (is (= :accepted (:status (scan work))))
-        (is (= :map-parameter-work-limit (:reason (scan (dec work)))))
+        (is (= :accepted (:status checked)))
+        (is (= #{:status :premise} (set (keys checked))))
         (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 1 bindings])))
         (is (nil? (invoke-c7 'sh08-ft-atomic-type-id ['Map])))
-        (let [total (:compatibility-work-count result)]
-          (is (= result (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] total))))
-          (is (= ["C7-GENERIC" :map-parameter-work-limit]
-                 ((juxt :rule :reason) (first (:diagnostics (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] (dec total)))))))))
-        (doseq [budget [0 -1]]
-          (is (= :map-parameter-work-limit (:reason (scan budget)))))))
+        (is (= result (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] -1))))))
     (doseq [actual [:gravity.type/map :gravity.type/never]]
       (let [result (bare-list-parameter-constraints (bare-map-parameter-input actual))]
         (is (= [] (:diagnostics result)))
@@ -6479,9 +6486,7 @@
             (is (= (get (:argument-node-ids call) index) (:argument-node-id premise)))
             (is (= ({:record :sh08-bare-map-parameter-v1 :forms :sh08-bare-list-parameter-v1 :parts :sh08-homogeneous-list-parameter-v1} role)
                    (:version premise))))))
-      (let [work (:compatibility-work-count result)]
-        (is (= result (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] work))))
-        (is (= "C7-GENERIC" (get-in (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] (dec work))) [:diagnostics 0 :rule]))))
+      (is (= result (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] -1))))
       (let [index (.indexOf order :suffix) id (get (:argument-node-ids call) index)
             bad (assoc-in input [:types id] :gravity.type/bool)]
         (is (= :call-argument-type-mismatch (get-in (bare-list-parameter-constraints bad) [:diagnostics 0 :reason]))))
@@ -6497,7 +6502,9 @@
         constrained (bare-list-parameter-constraints input)
         row (first (:constraints constrained)) pair (first (:rhs row)) premise (:compatibility pair)
         facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes types {:callee callee} (:module core) {}])
-        scan #(invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings %])]
+        scan #(if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                (invoke-c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                (invoke-c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))]
     (is (= [] (:diagnostics constrained)))
     (is (= :argument-compatibility (:kind row)))
     (is (= :sh08-bare-list-parameter-v1 (:compatibility-rule-version row) (:version premise)))
@@ -6507,12 +6514,9 @@
     (is (= [:positional-element-types :static-length] (:forgets premise)))
     (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations] (:preserves premise)))
     (is (= [0 :argument :parameter declaration] [(:argument-index premise) (:argument-node-id premise) (:parameter-binding-id premise) (:declaration premise)]))
-    (is (= :accepted (:status (scan (:work-count (scan 65536))))))
-    (is (= :list-parameter-work-limit (:reason (scan (dec (:work-count (scan 65536)))))))
-    (let [work (:compatibility-work-count constrained)]
-      (is (= constrained (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] work))))
-      (is (= ["C7-GENERIC" :list-parameter-work-limit]
-             ((juxt :rule :reason) (first (:diagnostics (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] (dec work)))))))))
+    (is (= #{:status :premise} (set (keys (scan)))))
+    (is (= (scan) (scan)))
+    (is (= constrained (bare-list-parameter-constraints (assoc-in input [:context :loop-work-left] -1))))
     (doseq [value [:gravity.type/list :gravity.type/never]]
       (let [result (bare-list-parameter-constraints (bare-list-parameter-input value))]
         (is (= [] (:diagnostics result)))
@@ -21110,7 +21114,11 @@
                         (assoc-in [:forms ctor] {:form-id ctor :syntax-id (:constructor-syntax-id declaration) :kind :symbol :value 'List :parent-form-id type-id})
                         (assoc-in [:forms member] {:form-id member :syntax-id (:element-syntax-id declaration) :kind :symbol :value 'String :parent-form-id type-id}))) context)
         call (get-in context [:calls :call]) edge (get-in context [:edges :call])
-        checked (c7 'sh08-lp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context) 65536])
+        checked (if (= :gravity.type/map (get (get (get function :parameters) 0) :type))
+                  (c7 'sh08-mp-compatibility [(:core context) call edge function 0 actual (:nodes context) (:bindings context)])
+                  (c7
+                    'sh08-lp-compatibility
+                    [(:core context) call edge function 0 actual (:nodes context) (:bindings context)]))
         pair (cond-> {:parameter :parameter :argument actual :chosen type} (= :accepted (:status checked)) (assoc :compatibility (:premise checked)))
         row (c7 'sh08-lp-call-row [(assoc (first (:ledger base)) :rhs [pair])])
         fact (-> (get-in context [:call-facts :call]) (assoc :argument-types [actual]) (assoc-in [:fact-id-request :argument-types] [actual]))
@@ -21139,7 +21147,7 @@
   ((helper (case family :map 'bare-map-parameter-input :bare 'bare-list-parameter-input :hom 'homogeneous-list-parameter-input)) actual))
 (defn- acc02-facts-and-context [body input rows]
   (let [facts {:constraint-ledger (vec rows) :type-table (:types input) :function-type-table [(:callee input)]}
-        context (body 'body-lp-context {:canonical-core-artifact (:core input)} facts (:bindings input) 65536)]
+        context (body 'body-lp-context {:canonical-core-artifact (:core input)} facts (:bindings input))]
     {:facts facts :context context :checked (assoc facts :list-parameter-context (:context context))}))
 (defn- acc02-local-valid? [body input checked actual]
   (body 'body-local-arguments-valid? (:core input) checked (:bindings input) (:edge input) (:call input)
@@ -21158,9 +21166,15 @@
              [:map :gravity.type/map false] [:bare :gravity.type/list false] [:hom acc02-homogeneous false]]]
       (testing (str family " adaptation=" adapted?)
         (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
-              a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
-              b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
-              c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+              a (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                  (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                  (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))
+              b (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                  (body 'body-mp-compatibility core call edge callee 0 actual nodes bindings)
+                  (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings))
+              c (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                  (emit 'p15-s23-mp-compatibility core call edge callee 0 actual nodes bindings)
+                  (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings))
               produced ((helper 'bare-list-parameter-constraints) input) row (first (:constraints produced))
               {:keys [context checked facts]} (acc02-facts-and-context body input (:constraints produced))
               typed (acc02-typed-call-context base c7 input actual)
@@ -21181,7 +21195,7 @@
             (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                    (get-in a [:premise :preserves])))
             (when (= family :map)
-              (is (= (:premise a) (:premise (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings 65536])))))
+              (is (= (:premise a) (:premise (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])))))
             (when (= family :hom)
               (is (= (count (:element-types actual)) (get-in a [:premise :checked-element-count]))))
             (doseq [[key value] [[:operand-type-work 0]
@@ -21210,9 +21224,15 @@
           {:keys [core call edge callee nodes bindings]} input
           produced ((helper 'bare-list-parameter-constraints) input)
           {:keys [context checked]} (acc02-facts-and-context body input (:constraints produced))]
-      (is (= :not-applicable (:status (c7 'sh08-lp-compatibility [core call edge callee 0 :gravity.type/never nodes bindings 65536]))))
-      (is (= :not-applicable (:status (body 'body-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
-      (is (= :not-applicable (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings 65536))))
+      (is (= :not-applicable (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                        (c7 'sh08-mp-compatibility [core call edge callee 0 :gravity.type/never nodes bindings])
+                                        (c7 'sh08-lp-compatibility [core call edge callee 0 :gravity.type/never nodes bindings])))))
+      (is (= :not-applicable (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                        (body 'body-mp-compatibility core call edge callee 0 :gravity.type/never nodes bindings)
+                                        (body 'body-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings)))))
+      (is (= :not-applicable (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                        (emit 'p15-s23-mp-compatibility core call edge callee 0 :gravity.type/never nodes bindings)
+                                        (emit 'p15-s23-lp-compatibility core call edge callee 0 :gravity.type/never nodes bindings)))))
       (is (= :accepted (:status context)))
       (is (true? (acc02-local-valid? body input checked :gravity.type/never))))))
 
@@ -21236,9 +21256,15 @@
                              [:hom (acc02-positional [:gravity.type/never])]
                              [:hom (acc02-positional [:gravity.type/string opaque])]]]
       (let [{:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
-            a (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings 65536])
-            b (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
-            c (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings 65536)
+            a (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes bindings])
+                (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes bindings]))
+            b (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                (body 'body-mp-compatibility core call edge callee 0 actual nodes bindings)
+                (body 'body-lp-compatibility core call edge callee 0 actual nodes bindings))
+            c (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                (emit 'p15-s23-mp-compatibility core call edge callee 0 actual nodes bindings)
+                (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes bindings))
             produced ((helper 'bare-list-parameter-constraints) input)
             {:keys [checked]} (acc02-facts-and-context body input (:constraints produced))
             lowered (emit 'p15-s23-typed-compile-node (acc02-typed-call-context base c7 input actual) :call 65536)]
@@ -21252,15 +21278,109 @@
             {:keys [core call edge callee nodes bindings declaration] :as input} (acc02-parameter-input helper family actual)
             bid (if (= family :hom) (:element-binding-id declaration) (:type-binding-id declaration))]
         (doseq [changed-bindings [(assoc-in bindings [bid :kind] :var) (assoc-in bindings [bid :namespace] 'other)]]
-          (is (= :rejected (:status (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes changed-bindings 65536]))))
-          (is (= :rejected (:status (body 'body-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
-          (is (= :rejected (:status (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes changed-bindings 65536))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (c7 'sh08-mp-compatibility [core call edge callee 0 actual nodes changed-bindings])
+                                      (c7 'sh08-lp-compatibility [core call edge callee 0 actual nodes changed-bindings])))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (body 'body-mp-compatibility core call edge callee 0 actual nodes changed-bindings)
+                                      (body 'body-lp-compatibility core call edge callee 0 actual nodes changed-bindings)))))
+          (is (= :rejected (:status (if (= :gravity.type/map (get (get (get callee :parameters) 0) :type))
+                                      (emit 'p15-s23-mp-compatibility core call edge callee 0 actual nodes changed-bindings)
+                                      (emit 'p15-s23-lp-compatibility core call edge callee 0 actual nodes changed-bindings)))))
           (is (= :rejected (:status (emit 'p15-s23-typed-compile-node
                                          (assoc-in (acc02-typed-call-context base c7 input actual) [:bindings bid]
                                                    (get changed-bindings bid)) :call 65536)))))
-        (is (= :not-applicable (:status (c7 'sh08-lp-compatibility [core call edge callee 1 actual nodes bindings 65536]))))))
+        (is (= :not-applicable (:status (if (= :gravity.type/map (get (get (get callee :parameters) 1) :type))
+                                          (c7 'sh08-mp-compatibility [core call edge callee 1 actual nodes bindings])
+                                          (c7 'sh08-lp-compatibility [core call edge callee 1 actual nodes bindings])))))))
     (is (empty? @callbacks))))
 
+
+(deftest map-parameter-compatibility-preserves-complete-validation-without-allowance
+  ;; Authentic controls are definitions only during reader/source validation.
+  (let [{:keys [helper c7 body emit]} (acc02-environment)
+        members (vec (mapcat identity (repeat 4096 [:gravity.type/keyword :gravity.type/string])))
+        actual (acc02-finite-map members)
+        {:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper :map actual)
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))
+        check (fn [value]
+                [(c7 'sh08-mp-compatibility [core call edge callee 0 value nodes bindings])
+                 (body 'body-mp-compatibility core call edge callee 0 value nodes bindings)
+                 (emit 'p15-s23-mp-compatibility core call edge callee 0 value nodes bindings)])
+        results (check actual)
+        produced ((helper 'bare-list-parameter-constraints) input)
+        row (first (:constraints produced))
+        {:keys [context checked]} (acc02-facts-and-context body input [row])]
+    (is (= [:accepted :accepted :accepted] (mapv :status results)))
+    (is (apply = results))
+    (is (every? #(= #{:status :premise} (set (keys %))) results))
+    (is (every? #(= actual (get-in % [:premise :actual-type])) results))
+    (is (every? #(= [:key-value-member-types :static-entry-count] (get-in % [:premise :forgets])) results))
+    (is (= :accepted (:status context)))
+    (is (not (contains? context :work-count)))
+    (is (true? (acc02-local-valid? body input checked actual)))
+    (doseq [bad [(acc02-finite-map (pop members))
+                 (acc02-finite-map (assoc members (dec (count members)) :gravity.type/unknown))
+                 (acc02-finite-map (assoc members (dec (count members)) opaque))
+                 (acc02-finite-map (assoc members (dec (count members))
+                                         {:kind :gravity.type/list :shape :literal :element-types [:gravity.type/string :gravity.type/unknown]}))
+                 (assoc actual :extra-field true)]]
+      (let [rejected (check bad)]
+        (is (= [:rejected :rejected :rejected] (mapv :status rejected)))
+        (is (every? #(not (contains? % :work-count)) rejected))))
+    (doseq [value [:gravity.type/map :gravity.type/never]]
+      (is (= (repeat 3 {:status :not-applicable}) (check value))))
+    (doseq [rows [[(assoc-in row [:rhs 0 :compatibility :actual-type] :gravity.type/map)]
+                  [(assoc row :compatibility-rule-version :forged)] [row row]]]
+      (let [failed (:context (acc02-facts-and-context body input rows))]
+        (is (= :rejected (:status failed)))
+        (is (not (contains? failed :work-count)))))
+    (is (= {:status :accepted :context nil}
+           (:context (acc02-facts-and-context body input [(assoc row :kind :equality)]))))
+    (is (empty? @callbacks))))
+
+(deftest list-parameter-compatibility-preserves-complete-validation-without-allowance
+  ;; Authentic owner controls, defined here but not executed by source-only audits.
+  (let [{:keys [helper c7 body emit]} (acc02-environment)
+        member :gravity.type/string
+        members (vec (repeat 4096 member))
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "opaque hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "opaque equality")))
+                 (toString [] (swap! callbacks conj :format) (throw (AssertionError. "opaque formatting"))))]
+    (doseq [family [:bare :hom]]
+      (let [actual (acc02-positional members)
+            {:keys [core call edge callee nodes bindings] :as input} (acc02-parameter-input helper family actual)
+            check (fn [value]
+                    [(c7 'sh08-lp-compatibility [core call edge callee 0 value nodes bindings])
+                     (body 'body-lp-compatibility core call edge callee 0 value nodes bindings)
+                     (emit 'p15-s23-lp-compatibility core call edge callee 0 value nodes bindings)])
+            results (check actual)
+            produced ((helper 'bare-list-parameter-constraints) input)
+            row (first (:constraints produced))
+            {:keys [context checked]} (acc02-facts-and-context body input [row])]
+        (is (= [:accepted :accepted :accepted] (mapv :status results)))
+        (is (apply = results))
+        (is (every? #(= #{:status :premise} (set (keys %))) results))
+        (is (every? #(= actual (get-in % [:premise :actual-type])) results))
+        (when (= family :hom)
+          (is (every? #(= (count members) (get-in % [:premise :checked-element-count])) results)))
+        (is (= :accepted (:status context)))
+        (is (not (contains? context :work-count)))
+        (is (true? (acc02-local-valid? body input checked actual)))
+        (doseq [bad [(acc02-positional (assoc members (dec (count members)) :gravity.type/unknown))
+                     (acc02-positional (assoc members (dec (count members)) opaque))
+                     (acc02-positional (conj members {:kind :gravity.type/list :shape :literal
+                                                      :element-types [:gravity.type/string :gravity.type/unknown]}))]]
+          (is (= [:rejected :rejected :rejected] (mapv :status (check bad)))))
+        (is (= [:not-applicable :not-applicable :not-applicable]
+               (mapv :status (check :gravity.type/never))))
+        (is (empty? @callbacks))))))
 
 (deftest sh08-nonintrinsic-opaque-ordering-classification-development-kernel
   (let [callbacks (atom [])
@@ -21812,7 +21932,7 @@
 (deftest pr359-descriptor-private-map-route-reconstructs-the-complete-descriptor
   (let [{:keys [core node call edge nodes bindings forms types facts descriptor type-result join-result]}
         ((pr359-descriptor-helper 'private-map-keys-typed-input))
-        source-args [core node call edge nodes bindings types (:module core) 65536]
+        source-args [core node call edge nodes bindings types (:module core)]
         sources [(apply pr359-descriptor-c7 'sh08-pmk-source source-args)
                  (apply pr359-descriptor-body 'body-pmk-source source-args) (apply pr359-descriptor-emit 'p15-s23-pmk-source source-args)]
         complete-args [core node call edge nodes bindings types forms 65536]
@@ -21820,7 +21940,7 @@
                  (apply pr359-descriptor-body 'body-pmk-header complete-args) (apply pr359-descriptor-emit 'p15-s23-pmk-header complete-args)]
         request {:canonical-core-artifact core
                  :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}
-        parameters (pr359-descriptor-body 'body-lp-context request facts bindings 65536)
+        parameters (pr359-descriptor-body 'body-lp-context request facts bindings)
         facts (assoc facts :list-parameter-context (:context parameters))
         prepare #(pr359-descriptor-body 'body-lq-context request % bindings 65536)
         prepared (prepare facts)
@@ -21838,10 +21958,14 @@
     (is (every? #(= :accepted (:status %)) sources))
     (is (apply = (map :descriptor sources)))
     (is (not-any? #(contains? (:descriptor %) :operand-type-work) sources))
+    (is (not-any? #(contains? % :work-count) sources))
+    (is (not-any? #(contains? (:descriptor %) :profile-validation-work) sources))
+    (is (not-any? #(contains? (:descriptor %) :construction-work) sources))
     (is (every? #(= :accepted (:status %)) headers))
     (is (every? #(= descriptor (:descriptor %)) headers))
     (is (apply = (map #(get-in % [:descriptor :key-domain-proof]) headers)))
     (is (not-any? #(contains? (:descriptor %) :entry-proof-work) headers))
+    (is (not-any? #(contains? (:descriptor %) :construction-work-basis) headers))
     (is (= (pr359-descriptor-c7 'sh08-pmk-constraint descriptor)
            (pr359-descriptor-c7 'sh08-lq-constraint descriptor)
            (pr359-descriptor-body 'body-mkeys-constraint descriptor)
@@ -21859,6 +21983,9 @@
     (is (= :complete (:status (compile context))))
     (doseq [changed [(assoc descriptor :operand-type-work 0)
                      (assoc descriptor :entry-proof-work 0)
+                     (assoc descriptor :construction-work 0)
+                     (assoc descriptor :construction-work 1)
+                     (assoc descriptor :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)
                      (assoc descriptor :operand-type-work 0 :entry-proof-work 2875)
                      (assoc descriptor :extra true)
                      (assoc descriptor :kind :gravity.type/applied-map-keys)

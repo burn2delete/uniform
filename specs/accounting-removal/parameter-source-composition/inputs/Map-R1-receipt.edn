@@ -1,0 +1,225 @@
+{:handoff
+ {:path
+  "specs/accounting-removal/map-parameter-compatibility/handoff-v2.edn",
+  :sha256
+  "5a88c7cb003ed856aa930a74b8afbe92ddde03569e833f7433a1bba7c35f7c41",
+  :pinned-files
+  {"bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+   "47cd88926cca6da19443f990abd21247ee11cafa95b99e0d7324df538c2a5e38",
+   "specs/accounting-removal/map-parameter-compatibility/source-controls.log"
+   "d1ff7de49233ff1df441833f81eca6b14fb5048e12e91aedbf6223c3bb040bc1",
+   "specs/accounting-removal/map-parameter-compatibility/check.clj"
+   "316e2dd0724df2517d0325ec0e0642050ceb1576f7cc48208724494b81f59baf",
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+   "4e07a95179e54c0423673d7c6b26364fe1f174b7e31caf7511415a2b2f6432a9",
+   "specs/accounting-removal/map-parameter-compatibility/preparation-failure.log"
+   "a824e3e1491546a3a6ca7b1627dc0c4aff04a75d18c10418f64d7686ace8b0ef",
+   "specs/accounting-removal/map-parameter-compatibility/history/59e858da/goal-receipt.json"
+   "a83758ce4d87ccdb7548bbeb3ac08508ed95be66b8563c46bd9c54e1b9c494ac",
+   "specs/accounting-removal/map-parameter-compatibility/overlap-intake.edn"
+   "4dbe10972dbfde46cd14b51af31991ccdd5f58a86401a01afe589a71fa98ddeb",
+   "specs/accounting-removal/map-parameter-compatibility/history/59e858da/source-controls.log"
+   "752fe604a9f944e356f7afbc3bbc61dda5b2af2cb0cd224815e25327c1161d0e",
+   "specs/accounting-removal/map-parameter-compatibility/source_forms.clj"
+   "26c443cac9fec21d3343c91a6cbdafbe090e8c486855941a4d3c4f77a1fff109",
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "0dc65aa8983e1c94544b8ca0d9909173cc74b6035b6d0d8d81f799f363873aa0",
+   "specs/accounting-removal/map-parameter-compatibility/language-boundary.log"
+   "4c94354a3566151730141d285a9fe05227a0cd47499255fd0e7a4b7996d32f38",
+   "specs/accounting-removal/map-parameter-compatibility/history/59e858da/findings.edn"
+   "e0f783e19dfece941862b3f8609dcc182449c4da92d98c5c11daf627d24cb4be",
+   "specs/accounting-removal/map-parameter-compatibility/history/59e858da/handoff.edn"
+   "0606238ab377d4afe2ed5790e98fb22b45ccde46314ced194112725a3f8948a6",
+   "specs/accounting-removal/map-parameter-compatibility/history/59e858da/source-controls-result.edn"
+   "953a403bb7799b2a090b42695e4fbb0a9804903dfeb6b3c3ad7e8d796925a222",
+   "specs/accounting-removal/map-parameter-compatibility/handoff.edn"
+   "0606238ab377d4afe2ed5790e98fb22b45ccde46314ced194112725a3f8948a6",
+   "specs/accounting-removal/map-parameter-compatibility/README.md"
+   "8ffd82acecb4eb8d11b54e4dc4b0cb02e410a27e7909c9e462e2b0fbeb2e2a2f",
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "6493561c4c037ead63f29c037977841aa5e8efcce8f76811544fa830a6820df5",
+   "specs/accounting-removal/map-parameter-compatibility/composition-witness.edn"
+   "dfd410cc210c6dc6ab45acecd86916024c3c3672be85e904936d3753060a3915",
+   "specs/accounting-removal/map-parameter-compatibility/history/59e858da/receipt.edn"
+   "1f8b566db6c5f1c09fef8b13bd9848ea79a226dcb57675d02e3890f87db81ef3",
+   "bootstrap/gravity/p15_s23/emitter.gravity"
+   "f326ca94c1c606f53a8f6af2f0db1cfdc01b5b5deee5c2e4ca3d689fde629061",
+   "bootstrap/gravity/src/gravity/effects.gravity"
+   "7bae134306e20609365c219afc4d6901029d5557af985c4b11e61c2290248120",
+   "specs/accounting-removal/map-parameter-compatibility/source-controls-result.edn"
+   "ea092351d51d9efbff1f10037b75cc6b0e8f3daaa0c2471a729a21001c0aa30c"}},
+ :parent-tree "505e8d4f64ffb0e834134adfef674d6907e6b938",
+ :tree "fee9197b791d22c3bff306836cc07003ee872989",
+ :execution
+ {:original-author-checker-runs 0,
+  :publication :none,
+  :project-namespace-loads 0,
+  :source-and-inert-data-only true,
+  :APPROVE false,
+  :new-worker false,
+  :target-evaluations 0,
+  :shared-source-write false,
+  :outbound-send false,
+  :Git-bookend :none,
+  :Bootstrap-compiler-Gravity-helper-kernel-native-runtime-module-lease-probe-platform-binding-CI
+  :UNRUN},
+ :admission
+ {:fresh-goal-before-review :null,
+  :completed-earlier-goals :not-reopened,
+  :authorship-conflict :none,
+  :reservation :one-existing-Reconciliation-route,
+  :author-correction :distinct-frozen-R1,
+  :denial-intake :all-original-holds-retained-no-retry-or-transfer},
+ :prior-source-evidence
+ {:receipt "/tmp/map-parameter-independent-59e858da/receipt.edn",
+  :old-negative-controls 73,
+  :old-verdict :CHANGES-REQUIRED,
+  :original-findings-goal-handoff-and-source-result-history :preserved,
+  :history-receipt-and-native-completion :byte-identical,
+  :old-counts-added-to-new-review false,
+  :old-handoff
+  "0606238ab377d4afe2ed5790e98fb22b45ccde46314ced194112725a3f8948a6",
+  :old-witness
+  "dfd410cc210c6dc6ab45acecd86916024c3c3672be85e904936d3753060a3915",
+  :old-overlap
+  "4dbe10972dbfde46cd14b51af31991ccdd5f58a86401a01afe589a71fa98ddeb",
+  :reuse-basis
+  :exact-parent-context-and-byte-identity-for-three-production-two-other-tests-and-original-handoff-overlap-witness,
+  :author-private-intake-reader-error
+  :reported-corrected-and-preserved-not-relabelled,
+  :sha256
+  "1f8b566db6c5f1c09fef8b13bd9848ea79a226dcb57675d02e3890f87db81ef3",
+  :old-checks 24644},
+ :parent "59e858da99da3534bcf1d440ae9b57734c4ff257",
+ :candidate "a93ef34ba81f812d6142d9f8c560d926168c89b3",
+ :reviewer-thread "01a18528-de28-74d3-8222-fda7dddcdfb3",
+ :full-tree-review
+ {:candidate-tree-and-single-parent :verified,
+  :complete-mode-blob-overlay :pass,
+  :actual-changed-path-count 12,
+  :all-changed-modes :100644,
+  :other-parent-files-and-modes :unchanged,
+  :pinned-current-and-history-inputs 22},
+ :blocking-findings [],
+ :migration-base "54212001bf5cbaa7f6030fcf439c9e87e0b4728c",
+ :control-review
+ {:three-wrapper-lexical-scope-audit :pass,
+  :separate-one-argument-sibling :pass,
+  :normalization
+  :only-two-literal-obsolete-calls-in-the-named-homogeneous-List-test,
+  :all-other-Map-and-composition-control-definitions :unchanged,
+  :author-checker-loaded-or-evaluated false},
+ :reproduction
+ {:checker "/tmp/map-R1-independent-a93ef34b/check.clj",
+  :sha256
+  "9b95c67f36c63cebcb8e499690b844ad455271205417e240008c1b867c2952d8",
+  :log "/tmp/map-R1-independent-a93ef34b/check.log",
+  :log-sha256
+  "48bc392ae1b6eff01fb5c956e3e221d383147f4777e7103f246ab46e61c13724",
+  :runtime :core-JAR-only-Clojure1.12.5-spec0.5.238-core-specs0.4.74,
+  :reader-eval false,
+  :preparation
+  [:reader-delimiters-and-call-parentheses-corrected-before-PASS
+   :quoted-reader-data-normalization-map-corrected-before-PASS],
+  :candidate-source-modified false},
+ :schema-version 1,
+ :delivery :sealed-own-thread-only-Accounting-consumption,
+ :controls
+ {:new-checks 200,
+  :new-negative-count 9,
+  :negative-controls
+  [{:id :original-frozen-59-defect,
+    :rehashed-form-sha256
+    "8140736c95c62641b2cf2008d3ca1cc6044bc3cb1417992e53cb51050447b16f",
+    :refused-by :local-call-arity}
+   {:id :restored-positive-allowance,
+    :rehashed-form-sha256
+    "95f2a5d4d9853bce03a1eefc5f1d86bede7ba0c21f708e9d1cbe945c3580a3b4",
+    :refused-by :local-call-arity}
+   {:id :restored-negative-allowance,
+    :rehashed-form-sha256
+    "5813adc8849f4aa3c58a818674153f742c2c4af4de018462e5339323eccdb553",
+    :refused-by :local-call-arity}
+   {:id :dummy-parameter,
+    :rehashed-form-sha256
+    "bcb301632440f4e480cc747fba89e0b578a79d788f4c70b82abb93759fc157c7",
+    :refused-by :no-dummy-parameter}
+   {:id :lost-full-result-equality,
+    :rehashed-form-sha256
+    "9df1e72d4a4a4a57ac75a0889ac10220e10a1b67a5aab9f2977899f0c26e8669",
+    :refused-by :only-two-obsolete-calls-normalized}
+   {:id :changed-sibling-type-assertion,
+    :rehashed-form-sha256
+    "d4e6f935ac925d395279a3dca0bb892c2a1f701ffbda6eddc431cbd5f1cf6ab0",
+    :refused-by :only-two-obsolete-calls-normalized}
+   {:id :dummy-argument-and-parameter,
+    :rehashed-form-sha256
+    "a9108ae09fd371d7eb94e038cd8e358b97560a1f4fb621eb96c1a7afd1c5ef39",
+    :refused-by :only-two-obsolete-calls-normalized}
+   {:id :overbroad-normalization,
+    :rehashed-form-sha256
+    "2c8fb9c1fdd5da71b1b2b55a455da2d3ee0d577b7ead68801815e960b4ba5b91",
+    :refused-by :only-two-normalization-rules}
+   {:id :removed-normalization-scope,
+    :rehashed-form-sha256
+    "899ffa412b0812034b86dfe6592e96b6cf6077a0de43d1874f01234f76f339be",
+    :refused-by :normalization-scoped-to-named-test}],
+  :negative-envelope
+  :inert-form-SHA256-recomputed-before-semantic-structure-checks,
+  :path "/tmp/map-R1-independent-a93ef34b/controls.edn",
+  :sha256
+  "ca7f852303d404483ab3681f2dc6f9966adf1d3871500faf32a16924d1782336"},
+ :kind :independent-affected-Map-R1-source-test-control-review,
+ :reported-author-results
+ {:source-tests 7,
+  :source-assertions 21404,
+  :boundary-tests 6,
+  :boundary-assertions 11,
+  :credit :reported-only-not-rerun,
+  :authentic-semantic-execution :UNRUN},
+ :composition
+ {:ACC04-input "1235e8d49d0720b22dd37caedb7acb4c2fa4a003",
+  :scope :unchanged-five-form-data-witness-only,
+  :Map-arity 8,
+  :physical-arity 4,
+  :actual-combined-candidate :absent,
+  :newer-d713-cfdf-metadata-import :none,
+  :future-full-combined-source-and-independent-metadata-overlap-review
+  :required,
+  :whole-Map-List-ACC04-stack-acceptance :not-conferred},
+ :authentic-test-review
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :old-calls [(check 65536) (check -1)],
+  :full-result-equality (is (= checked (check))),
+  :new-calls [(check) (check)],
+  :all-other-authentic-source-bytes :identical,
+  :dummy-parameter :none,
+  :obsolete-allowance-observation
+  :explicitly-retired-no-budget-API-remains,
+  :separate-one-argument-check
+  {:definition :unchanged,
+   :parameter-count 1,
+   :calls [(check type) (check wrong)],
+   :assertions :unchanged},
+  :wrappers
+  [{:test sh08-homogeneous-list-parameter-development-kernel,
+    :parameters [],
+    :calls [(check) (check)]}
+   {:test sh08-bare-map-parameter-development-kernel,
+    :parameters [],
+    :calls [(scan)]}
+   {:test sh08-bare-list-parameter-development-kernel,
+    :parameters [],
+    :calls [(scan) (scan) (scan)]}],
+  :entire-file-equation :only-two-exact-raw-call-replacements,
+  :equality-retained true},
+ :limits
+ [:no-genuine-semantic-or-runtime-acceptance
+  :no-combined-candidate-acceptance
+  :no-current-main-or-integration-credit
+  :no-whole-ACC06-or-accounting-closure
+  :original-binding-goal-blocked-unchanged
+  :prior-goals-stay-closed
+  :all-original-denials-and-unknown-actions-stopped-including-ACC09v4-and-PR531],
+ :decision :PASS-qualified-affected-R1-source-test-control-scope}

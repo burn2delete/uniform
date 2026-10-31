@@ -26,11 +26,7 @@
           core nodes bindings forms))
 
 (defn- parameter [owner c {:keys [core node nodes bindings forms]}]
-  (invoke owner "pmk-parameter" c core node nodes bindings forms 65536))
-
-(defn- expected-work [c input]
-  (+ 64 (* 12 (count (get-in c [:function-record :parameter-binding-ids])))
-     (count (get-in input [:forms :helper-parameters :child-form-ids]))))
+  (invoke owner "pmk-parameter" c core node nodes bindings forms))
 
 (defn- payload [input value]
   (assoc-in input [:forms :helper-parameters :value] value))
@@ -58,7 +54,7 @@
             result (parameter owner c input)]
         (is (= :closed-private-parameter-entry (:kind c)))
         (is (= :accepted (:status result)))
-        (is (= (expected-work c input) (:work-count result)))
+        (is (not (contains? result :work-count)))
         (is (= (if two-parameters?
                  [{:binding-id :span-binding :type :gravity.type/map}
                   {:binding-id :other-binding :type :gravity.type/unknown}]
@@ -97,8 +93,8 @@
           (let [result (parameter owner c changed)
                 callbacks @calls]
             ;; Select scalar diagnostics only; never print an opaque result.
-            (is (= [:rejected reason (expected-work c changed)]
-                   ((juxt :status :reason :work-count) result)))
+            (is (= [:rejected reason]
+                   ((juxt :status :reason) result)))
             (is (= [] callbacks))))))))
 
 (deftest pmk-carrier-real-owner-native-guard-and-refusal-priority
@@ -110,32 +106,27 @@
       (testing "Non-Vector must be refused before Counted or Seqable callbacks"
         (let [changed (payload input opaque)
               result (parameter owner c changed) callbacks @calls]
-          (is (= [:rejected :private-map-keys-source-mismatch (expected-work c changed)]
-                 ((juxt :status :reason :work-count) result)))
+          (is (= [:rejected :private-map-keys-source-mismatch]
+                 ((juxt :status :reason) result)))
           (is (= [] callbacks))))
       (testing "Existing declaration refusal precedes final correspondence"
         (let [changed (-> input
                           (assoc-in [:forms marker :value] :wrong)
                           (payload (assoc good 3 'forged)))
               result (parameter owner c changed)]
-          (is (= [:rejected :private-map-keys-entry-domain-required (expected-work c changed)]
-                 ((juxt :status :reason :work-count) result))))))))
+          (is (= [:rejected :private-map-keys-entry-domain-required]
+                 ((juxt :status :reason) result))))))))
 
-(deftest pmk-carrier-real-owner-proof-consumer-retains-work-report
+(deftest pmk-carrier-real-owner-proof-consumer-retains-source-refusal
   (doseq [owner owners]
     (let [{:keys [core node call edge nodes bindings types forms] :as input} (fixture true)
-          source (invoke owner "pmk-source" core node call edge nodes bindings types (:module core) 65536)
+          source (invoke owner "pmk-source" core node call edge nodes bindings types (:module core))
           descriptor (:descriptor source)
           good (invoke owner "pmk-proof" descriptor core node nodes bindings types forms 65536)
           changed (payload input (assoc (get-in input [:forms :helper-parameters :value]) 3 'forged))
           changed-forms (:forms changed)
-          physical (invoke owner "pmk-physical" core nodes bindings changed-forms 65536)
-          first-work (:work-count physical)
-          receiver (get nodes (first (get-in descriptor [:source-call :argument-node-ids])))
-          reserved (invoke owner "pe-reserve" core receiver nodes bindings (- 65536 first-work))
-          c (census owner changed)
+          physical (invoke owner "pmk-physical" core nodes bindings changed-forms)
           result (invoke owner "pmk-proof" descriptor core node nodes bindings types changed-forms 65536)]
-      (is (= :accepted (:status source) (:status good) (:status physical) (:status reserved)))
-      (is (= [:rejected :private-map-keys-source-mismatch
-              (+ first-work (:work-count reserved) (expected-work c changed))]
-             ((juxt :status :reason :work-count) result))))))
+      (is (= :accepted (:status source) (:status good) (:status physical)))
+      (is (= [:rejected :private-map-keys-source-mismatch]
+             ((juxt :status :reason) result))))))
