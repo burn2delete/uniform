@@ -124,3 +124,22 @@ original complete/text captures, both source hashes, full lock history, actual
 refusals, source bodies and public arglists. The new committed composition
 requires fresh lint, exact independent acceptance, own CI and clean actual-main
 integration preflight. All original nonpasses and nonclaims remain unchanged.
+
+## Compiler accounting-removal main composition
+
+External PR725 advanced main to7019c174703d534e8da0341587a172a9214b9f20,
+tree749fd2729a7c9782c08786c8485f067274f5ecfb. It changes the compiler module
+bundle, emitter, effects/runtime source, C6 arity source and related tests to
+remove accounting and input quotas. Package composes that actual main by a
+normal conflict-free merge. The complete incoming15-file change is preserved;
+Package still changes only its nine intended paths. No CI policy is authored
+and no historical failure receives causal-repair or prior-green credit.
+
+Fresh current-source checks again pass Package/compatibility/private-binding
+27/479, isolated native C8/C15 leaves15/352, ownership33/1013, language6/11,
+docs240/19 and roadmap/governance. All sixteen complete/text original Package
+captures, both actual source-file hashes, full lock history, native refusals,
+bodies and arglists remain equal. This tests current emitter/runtime composition
+through the private-binding suite without retrying the historical Reader-pin
+path. New committed lint, exact independent acceptance, own CI and clean
+current-main preflight remain required.
