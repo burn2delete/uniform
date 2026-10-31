@@ -73,7 +73,7 @@
     (is (empty? (ns-aliases 'gravity.diagnostics)))
     (is (= '([id message data]) (:arglists (meta #'diagnostics/diagnostic))))
     (is (= '([id message data]) (:arglists (meta #'diagnostics/fail!))))
-    (is (= #{'diagnostic 'fail!}
+    (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record}
            (set (keys (ns-publics 'gravity.diagnostics))))))
   (testing "the namespace contract states its API and ownership boundary"
     (let [contract-var
@@ -81,19 +81,35 @@
           contract (var-get contract-var)]
       (is (true? (:private (meta contract-var))))
       (is (= 'gravity.diagnostics (:namespace contract)))
-      (is (= :stage0-base-exception-info-carrier
+      (is (= :stage0-diagnostic-carriers-and-record-data
              (:contract-boundary contract)))
-      (is (= #{'diagnostic 'fail!} (set (keys (:public-api contract)))))
-      (is (= [:rule-id :human-message :structured-data]
+      (is (= #{'diagnostic 'fail! 'stable-id 'diagnostic-record} (set (keys (:public-api contract)))))
+      (is (= [:rule-id :human-message :structured-data :explicit-span-and-identity-operations
+              :native-seed-diagnostic-fields]
              (:artifact-inputs contract)))
-      (is (= [:stage0-exception-info-carrier]
+      (is (= [:stage0-exception-info-carrier :native-seed-diagnostic-record :legacy-diagnostic-id]
              (:artifact-outputs contract)))
       (is (= ['clojure.core]
              (get-in contract [:dependency-direction :requires])))
-      (is (= ['gravity.bootstrap]
+      (is (= ['gravity.bootstrap 'gravity.c15-diagnostics 'gravity.cli 'gravity.release]
              (get-in contract [:dependency-direction :forbids])))
       (is (some #{:c15-schema}
                 (get-in contract [:diagnostic-ownership :does-not-own])))
       (is (true? (:bootstrap-hosted? contract)))
       (is (true? (:clojure-seed-boundary? contract)))
       (is (false? (:self-hosted? contract))))))
+
+(deftest bootstrap-record-wrapper-preserves-phase-context
+  (doseq [context [{} {:profile :kernel :target :llvm :syntax-id "caller-syntax-id"}]]
+    (let [arguments ["C15-FACTS" :info :c15 :facts "caller.gravity" 2
+                     "caller-artifact" {:fact :preserved} [{:kind :inspect}]]
+          options (mapcat identity context)
+          compatibility (apply bootstrap/c15-diagnostic-record (concat arguments options))
+          direct (apply diagnostics/diagnostic-record
+                        bootstrap/source-span bootstrap/c15-stable-diagnostic-id
+                        (concat arguments options))]
+      (is (= direct compatibility))
+      (is (= (:profile context) (:profile compatibility)))
+      (is (= (:target context) (:target compatibility)))
+      (is (contains? (:primary compatibility) :syntax-id))
+      (is (= (:syntax-id context) (get-in compatibility [:primary :syntax-id]))))))
