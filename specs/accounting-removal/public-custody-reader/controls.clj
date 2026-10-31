@@ -1,5 +1,5 @@
 (require '[clojure.test :refer [deftest is run-tests]] '[clojure.java.io :as io]
-         '[clojure.string :as str] '[clojure.set :as set]
+         '[clojure.set :as set]
          '[gravity.self-hosting.sh01-host-resource-broker :as broker]
          '[gravity.self-hosting.sh01-parallel-test-runner :as parallel]
          '[gravity.self-hosting.sh01-operation-fence :as fence])
