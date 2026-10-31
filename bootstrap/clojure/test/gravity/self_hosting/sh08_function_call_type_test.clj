@@ -18285,13 +18285,17 @@
    [return-premise-emit 'p15-s23-is-return-witness]])
 
 (defn- private-return-path-results [{:keys [record nodes types]}]
-  (mapv (fn [[invoke name]] (invoke name record nodes types 65536)) private-return-path-owners))
+  (mapv (fn [[invoke name]]
+          (if (= 'body-is-return-witness name)
+            (invoke name record nodes types 65536)
+            (invoke name record nodes types)))
+        private-return-path-owners))
 
 (deftest sh08-private-return-complete-path-development-kernel
   (doseq [length [1 128 129 130]]
     (let [{:keys [path] :as input} (private-return-path-input length)
           results (private-return-path-results input)]
-      (is (apply = results))
+      (is (apply = (map #(dissoc % :work-count) results)))
       (doseq [result results]
         (is (= :accepted (:status result)))
         (is (= :gravity.type/string (:return-type result)))

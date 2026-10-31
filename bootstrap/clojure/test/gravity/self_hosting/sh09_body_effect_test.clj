@@ -5089,7 +5089,7 @@
         function (get functions (:function-syntax-id proof))
         working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise proof))
         cold (invoke 'sh08-is-cold-infer [working core (first (:function-records core)) nodes bindings forms {}
-                                         :body (:parameter-types proof) 65536])
+                                         :body (:parameter-types proof)])
         return (:inferred-return-type proof)
         completed-types (clojure.walk/postwalk-replace (get data :node-id-map {})
                         (merge
