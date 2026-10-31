@@ -1,4 +1,3 @@
-(require '[gravity.build.reader-bridge :as declared-reader-bridge])
 (declare ^:private p15-s23-stage2-native-carrier-header)
 (declare ^:private p15-s23-stage2-hosted-native-data)
 
