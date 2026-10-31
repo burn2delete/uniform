@@ -18367,7 +18367,7 @@
         args [core node call edge nodes bindings types module]]
     (if (= family :ane)
       [(pr359-descriptor-body 'body-ane-finish
-             (apply pr359-descriptor-body 'body-ane-source (conj args (pr359-descriptor-body 'body-ane-type-work arguments))))
+             (apply pr359-descriptor-body 'body-ane-source (conj args (pr359-descriptor-body 'body-ane-type-check arguments))))
        (pr359-descriptor-emit 'p15-s23-ane-finish
              (apply pr359-descriptor-emit 'p15-s23-ane-source (conj args (pr359-descriptor-emit 'p15-s23-ane-type-work arguments))))]
       [(:descriptor (apply pr359-descriptor-body (symbol (str "body-" (name family) "-header")) args))
