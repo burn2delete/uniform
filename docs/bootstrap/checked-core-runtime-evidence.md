@@ -88,3 +88,10 @@ after reversing only the explicit operation/input seam and cache-lock alias.
 All unselected definitions, including the historical pin-check body and its
 configuration, remain conserved. The scope does not include the baseline
 owner-admission model or authenticated Core artifact construction.
+
+Final prefix static checks pass: changed-file/context lint has 3503 unchanged
+baseline warnings and zero blocking findings; cljfmt 0.13.4 accepts tools/ci;
+actual CI harness controls pass 11 tests / 106 assertions. No lint policy or
+warning baseline was relaxed. Independent prefix review accepts d2255ffc
+conditionally; final evidence-only review, current-main composition, exact-head
+CI and final clean integration preflight remain required.
