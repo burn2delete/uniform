@@ -291,10 +291,17 @@
 (def ^:private lowering-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-012-p15-s23-c14-policy-base-through-p15-s23-b2-c17-expected-source-content-hash.clj")
 (def ^:private lowering-stage-test "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj")
 
+(def ^:private effects-stage-path "bootstrap/clojure/src/gravity/effects.clj")
+(def ^:private effects-stage-consumer "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj")
+(def ^:private effects-stage-test "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj")
+
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {lowering-stage-path
+    (and (= {effects-stage-path
+             {:namespace 'gravity.effects :owner :sh-effects :slice "SH-09"
+              :consumer-path effects-stage-consumer :test-path effects-stage-test}
+             lowering-stage-path
              {:namespace 'gravity.lowering :owner :master-coordinator :slice "SH-17"
               :consumer-path lowering-stage-consumer :test-path lowering-stage-test}
              js-source-stage-path
@@ -358,6 +365,8 @@
          (= {:namespace 'gravity.resolution.pipeline-test :slice "SH-06" :owner :sh-resolution}
             (get-in record [:standalone-test-owners resolution-stage-test]))
          (= :sh-core (get-in record [:module-owners core-stage-path]))
+         (= :sh-effects (get-in record [:module-owners effects-stage-path]))
+         (= :sh-effects (get-in record [:module-owners effects-stage-test]))
          (= :sh-types (get-in record [:module-owners types-stage-path]))
          (= :sh-types (get-in record [:module-owners types-stage-test]))
          (= :master-coordinator (get-in record [:module-owners lowering-stage-path]))
@@ -468,7 +477,12 @@
               "source" {"path" lowering-stage-path "namespace" "gravity.lowering"}
               "consumer" {"path" lowering-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
               "test" {"path" lowering-stage-test "namespace" "gravity.lowering.pipeline-test"
-                      "registration" "standalone"}}]
+                      "registration" "standalone"}}
+             {"id" "effects-graph-data" "kind" "production-stage-helper" "owner" "sh-effects"
+              "source" {"path" effects-stage-path "namespace" "gravity.effects"}
+              "consumer" {"path" effects-stage-consumer "namespace" "gravity.c8-effect-checker.facts" "owner" "sh-effects"}
+              "test" {"path" effects-stage-test "namespace" "gravity.c8-effect-checker-test"
+                      "registration" "bootstrap-free"}}]
             (get contract "production_helpers")))))
 
 (deftest runtime-invocation-helper-has-an-explicit-consumer-and-test
@@ -1185,4 +1199,31 @@
                  (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest effects-graph-helper-joins-existing-bootstrap-free-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        helper-index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "effects-graph-data")]
+    (is (not (neg? helper-index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [effects-stage-path effects-stage-consumer effects-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path effects-stage-path)))]
+        (is (= 'gravity.effects (second (read reader))))))
+    (doseq [operation ["effects/fact-direct-effects" "effects/effectful-facts" "effects/effect-graph"]]
+      (is (str/includes? (slurp (path effects-stage-consumer)) operation)))
+    (doseq [bad [(update record :module-owners dissoc effects-stage-path)
+                 (assoc-in record [:module-owners effects-stage-path] :master-coordinator)
+                 (assoc-in record [:module-owners effects-stage-test] :sh-core)
+                 (assoc-in record [:production-helper-associations effects-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations effects-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations effects-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" helper-index "test" "registration"] "standalone")
+                 (assoc-in contract ["production_helpers" helper-index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
       (is (not (production-helper-registration-valid? record bad))))))

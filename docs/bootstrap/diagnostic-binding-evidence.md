@@ -95,3 +95,21 @@ separate leaf JVM, ownership31/975, language6/11, docs240/19 and roadmap/governa
 pass. Final lint, independent review, own CI and clean exact preflight are still
 required. The historical full C15 compatibility Reader-pin nonpass remains
 unreached and unretried; these focused source and native tests do not replace it.
+
+## Effects main composition
+
+Main integrated Effects PR699 asb2f4cbbc598ec1a0e1e3f38743ba2beffa708bd6,
+tree459f9bdb482056a3b7150fde799003ca3f777690. A normal merge of that actual
+parent has no conflicts. All incoming Effects source, consumer, tests, metadata
+and evidence survive; the Diagnostics source bodies and six intended paths stay
+scoped. The earlier sourceb86b6eb4 received both independent acceptances; its
+CI41250832770 is separate and supplies no acceptance for a different tuple.
+
+Fresh current composition passes binding/carrier8/198, isolated native C8/C15
+15/352, ownership32/995, language6/11, docs240/19 and roadmap/governance.
+The current source plan/native refusal/original fields/request/candidate/results
+again match all eight original complete/text captures. Full source/hash,
+complete-request digest, normalized resolver body and complete Reader-component
+conservation verify. Existing Effects legality and C15 context/identity refusals
+remain unchanged. Exact committed lint, independent acceptance, own new CI and
+clean actual-main integration preflight are still required.
