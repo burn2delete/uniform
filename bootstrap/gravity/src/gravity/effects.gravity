@@ -599,14 +599,14 @@
                       :owned-node-ids owned :incoming-call-node-ids incoming
                       :value-check :complete-body-and-all-incoming-arguments
                       :effect-error-status :pending-sh09-recursive-body
-                      :captures :own-parameters-and-lexical-locals-only :work-count (get proof :work-count)}]
+                      :captures :own-parameters-and-lexical-locals-only}]
         (body-all?
           [(= expected proof)
            (= {:ordinal 0 :kind :self-recursive :function-syntax-ids [id]
                :function-core-node-ids [(get record :function-core-node-id)]
                :internal-call-edge-ordinals [ordinal]} component)
            (= :named-top-level (get record :definition-kind))
-           (if (integer? (get record :fixed-arity)) (if (> (get record :fixed-arity) 0) (<= (get record :fixed-arity) 1024) false) false)
+           (if (integer? (get record :fixed-arity)) (> (get record :fixed-arity) 0) false)
            (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
            (body-ds-type? (get (get signature :return) :type-id))
            (loop [remaining parameters]
@@ -635,28 +635,20 @@
                      (recur (rest remaining)
                        (if (= id (get (get (get nodes (get local :let-core-node-id)) :evaluation) :owner-function-syntax-id))
                          (conj out (get local :binding-id)) out)))))
-        argument-work (loop [remaining (get core :calls) work 0]
-                        (if (= 0 (count remaining)) work
-                          (recur (rest remaining) (+ work (* 2 (count (get (first remaining) :argument-node-ids)))))))
-        expected-work (+ 32 (* 8 (count (get core :nodes))) (* 8 (count (get core :calls)))
-                         (* 4 (count (get core :call-edges))) (* 4 (count bindings))
-                         (* 4 (count (get core :function-records))) (* 4 (count (get core :lexical-bindings)))
-                         argument-work (* (count (get core :calls)) (count bindings)))
         self (get nodes (get proof :self-call-core-node-id))]
-    (if (if (body-is? facts) true (= expected-work (get proof :work-count)))
-      (loop [remaining (get core :nodes)]
-        (if (= 0 (count remaining)) true
-          (let [node (first remaining) bid (get (get node :attributes) :binding-id) binding (get bindings bid)]
-            (if (if (= id (get (get node :evaluation) :owner-function-syntax-id))
-                  (if (if (contains? #{:try :loop :recur} (get node :core-form)) true
-                          (if (body-is? facts) (= :match (get node :core-form)) false)) false
-                    (if (= :reference (get node :core-form))
-                      (if (contains? locals bid) true
-                        (if (= bid (get proof :definition-binding-id))
-                          (= (get node :node-id) (first (get self :children)))
-                          (= [:core :var 'gravity.core]
-                             [(get binding :binding-class) (get binding :kind) (get binding :namespace)]))) true)) true)
-              (recur (rest remaining)) false)))) false)))
+    (loop [remaining (get core :nodes)]
+      (if (= 0 (count remaining)) true
+        (let [node (first remaining) bid (get (get node :attributes) :binding-id) binding (get bindings bid)]
+          (if (if (= id (get (get node :evaluation) :owner-function-syntax-id))
+                (if (if (contains? #{:try :loop :recur} (get node :core-form)) true
+                        (if (body-is? facts) (= :match (get node :core-form)) false)) false
+                  (if (= :reference (get node :core-form))
+                    (if (contains? locals bid) true
+                      (if (= bid (get proof :definition-binding-id))
+                        (= (get node :node-id) (first (get self :children)))
+                        (= [:core :var 'gravity.core]
+                           [(get binding :binding-class) (get binding :kind) (get binding :namespace)]))) true)) true)
+            (recur (rest remaining)) false))))))
 
 ; L3/L5/C7: independently reconstruct the private self VALUE premises
 ; before the existing C8 effect/error fixed point consumes their signature.
@@ -750,7 +742,7 @@
     (if (if (> (count calls) 0)
           (= (count calls) (count edges) (count uses) (count resolutions) (count references)) false)
     (if (body-all?
-          [(map? record) (map? definition) (vector? params) (> (count params) 0) (<= (count params) 1024)
+          [(map? record) (map? definition) (vector? params) (> (count params) 0)
            (= (count params) (count (set params)) (get record :fixed-arity))
            (= :named-top-level (get record :definition-kind))
            (= :function (get binding :kind)) (= :namespace (get binding :binding-class))
@@ -1026,57 +1018,40 @@
                           (= false (contains? excluded (get call :core-node-id))))))]
           (recur (rest calls) (rest edges) (if keep? (conj out (get call :core-node-id)) out)))))))
 
-(defn body-is-cold-metadata-valid? [core facts record bindings forms cold cut]
-  (let [records (get core :function-records) calls (get core :calls) sequence (get core :nodes)
-        locals (get core :lexical-bindings) definitions (get core :definitions)
-        excluded (set (get cut :excluded-node-ids))
-        slots (loop [remaining records total 0]
-                (if (= 0 (count remaining)) total
-                  (recur (rest remaining) (+ total (count (get (first remaining) :parameter-binding-ids))))))
-        arguments (loop [remaining calls total 0]
-                    (if (= 0 (count remaining)) total
-                      (recur (rest remaining) (+ total (count (get (first remaining) :argument-node-ids))))))
-        selected-nodes (loop [remaining sequence total 0]
-                         (if (= 0 (count remaining)) total
-                           (recur (rest remaining) (+ total (if (contains? excluded (get (first remaining) :node-id)) 0 1)))))
-        selected-locals (loop [remaining locals total 0]
-                          (if (= 0 (count remaining)) total
-                            (recur (rest remaining) (+ total (if (contains? excluded (get (first remaining) :initializer-node-id)) 0 1)))))
-        ids (body-is-cold-call-ids core record cut)
-        preparation (+ (get cut :work-count) (* 4 (count sequence)) (* 4 (count records)) (* 2 slots)
-                       (* 4 (count calls)) (count (get core :call-edges)) arguments (* 2 (count locals))
-                       (* 2 (count definitions)) (count forms) (count bindings) (count (get facts :imported-function-types)))
-        round-work (+ (* 6 (count sequence)) (* 3 (count locals)) (* 3 (count definitions)) (* 7 (count records))
-                      (* 5 slots) (* 5 (count calls)) (* 3 arguments) (* 3 (count bindings)) (* 2 (count forms)))
-        bound (+ 2 selected-nodes (- (count records) 1) (- slots (count (get record :parameter-binding-ids))) (count ids) selected-locals)]
-    (if (body-all?
-          [(sh09-exact-keys? cold #{:mode :cut :source-argument-call-node-ids :source-preparation-work-count
-                                   :round-count :round-bound :work-count})
-           (= cut (get cold :cut)) (= (get cut :mode) (get cold :mode))
-           (= ids (get cold :source-argument-call-node-ids)) (= preparation (get cold :source-preparation-work-count))
-           (= bound (get cold :round-bound))
-           (loop [remaining [(get cold :round-count) (get cold :work-count)]]
-             (if (= 0 (count remaining)) true
-               (if (integer? (first remaining)) (if (>= (first remaining) 0) (recur (rest remaining)) false) false)))])
-      (body-all? [(> (get cold :round-count) 0) (<= (get cold :round-count) bound)
-                  (<= (+ preparation (* round-work (get cold :round-count))) (get cold :work-count))
-                  (<= (get cold :work-count) 65536)]) false)))
+(defn body-is-cold-cut-semantic [cut]
+  (body-project cut [:status :mode :excluded-node-ids]))
 
-(defn body-is-source-cost [core bindings forms record arguments target-slots]
-  (let [nodes (count (get core :nodes)) calls (count (get core :calls)) edges (count (get core :call-edges))
-        records (count (get core :function-records)) locals (count (get core :lexical-bindings))
-        arity (count (get record :parameter-binding-ids))
-        prior (+ 32 (* 8 nodes) (* 8 calls) (* 4 edges) (* 4 (count bindings)) (* 4 records) (* 4 locals)
-                 (* 2 arguments) (* calls (count bindings)))
-        reservation (+ prior (if (= 3 arity) (* 4 calls) 0) 16 records calls (count (get core :recur-targets))
-                       (* 8 nodes) (* 4 (count bindings)) (* 2 (count forms)) (* 4 (count (get core :definitions)))
-                       (* 4 locals) (* 3 (count (get core :mutations))) (count (get core :var-references))
-                       (* 2 (count (get core :reference-uses))) (* 2 (count (get (get core :preserved-resolution) :resolution-table)))
-                       (count (get (get core :module) :exports)) (* 4 records) (* 4 arguments) (* 4 arity)
-                       (count (get core :recur-transfers))
-                       (* (count (get core :recur-transfers)) (+ (count (get core :recur-targets)) target-slots))
-                       (* calls (+ 32 (* 3 calls) records (* 4 arity))))]
-    {:prior-attempt-work prior :source-reservation-work reservation}))
+(defn body-is-cold-evidence-shape? [cold]
+  (if (sh09-exact-keys? cold #{:mode :cut :source-argument-call-node-ids})
+    (if (sh09-exact-keys? (get cold :cut) #{:status :mode :excluded-node-ids})
+      (body-all? [(= :accepted (get (get cold :cut) :status))
+                  (contains? #{:entries :body} (get cold :mode))
+                  (= (get cold :mode) (get (get cold :cut) :mode))
+                  (vector? (get cold :source-argument-call-node-ids))]) false) false))
+
+(defn body-is-entry-values-shape? [entries]
+  (if (= :accepted (get entries :status))
+    (sh09-exact-keys? entries #{:status :parameter-types :entries :normal-entry-count}) false))
+
+(defn body-is-return-witness-shape? [witness]
+  (if (= :accepted (get witness :status))
+    (sh09-exact-keys? witness #{:status :return-type :witnesses :pending-return-node-ids}) false))
+
+(defn body-is-parameter-premise-shape? [premise indexed?]
+  (if (sh09-exact-keys? premise
+        (if indexed?
+          #{:domain :source-census :entry-values :cold-entry-derivation :source-induction :invalidation}
+          #{:domain :source-census :entry-values :cold-entry-derivation :invalidation}))
+    (body-all? [(body-is-entry-values-shape? (get premise :entry-values))
+                (body-is-cold-evidence-shape? (get premise :cold-entry-derivation))
+                (if indexed? (map? (get premise :source-induction)) true)]) false))
+
+(defn body-is-cold-metadata-valid? [core facts record bindings forms cold cut]
+  (let [ids (body-is-cold-call-ids core record cut)]
+    (body-all? [(body-is-cold-evidence-shape? cold)
+                (= (body-is-cold-cut-semantic cut) (get cold :cut))
+                (= (get cut :mode) (get cold :mode))
+                (= ids (get cold :source-argument-call-node-ids))])))
 
 (defn body-ix-form-source [form]
   (get (body-ma-form-node {} form) :source))
@@ -1370,16 +1345,19 @@
                   :value-inference (if indexed? :closed-private-indexed-normal-entries-and-source-induction
                                       :closed-private-monomorphic-normal-entries-and-return-witness)
                   :value-check :complete-body-and-all-incoming-arguments :effect-error-status :pending-sh09-recursive-body
-                  :captures :own-parameters-and-lexical-locals-only :prior-attempt-work (get proof :prior-attempt-work)
-                  :source-reservation-work (get proof :source-reservation-work) :work-count (get proof :work-count)}]
+                  :captures :own-parameters-and-lexical-locals-only}]
     (body-all?
-      [(= expected proof) (= [component] (get core :recursion-components))
+      [(= expected proof)
+       (body-is-parameter-premise-shape? (get proof :parameter-value-premise) indexed?)
+       (body-is-cold-evidence-shape? (get proof :cold-body-derivation))
+       (body-is-return-witness-shape? (get proof :return-witness))
+       (= [component] (get core :recursion-components))
        (= {:ordinal 0 :kind :self-recursive :function-syntax-ids [id]
            :function-core-node-ids [(get record :function-core-node-id)]
            :internal-call-edge-ordinals [(get edge :ordinal)]} component)
        (= :named-top-level (get record :definition-kind))
        (= (get record :fixed-arity) (count parameters) (count (get record :parameter-binding-ids)))
-       (> (count parameters) 0) (<= (count parameters) 1024)
+       (> (count parameters) 0)
        (if indexed?
          (if (body-ix-types? parameters) (= :gravity.type/bool (get function :return)) false)
        (loop [remaining (conj parameters (get function :return))]
@@ -1390,13 +1368,7 @@
        (= id (get edge :caller-function-syntax-id) (get edge :callee-function-syntax-id)
           (get (get (get nodes (get call :core-node-id)) :evaluation) :owner-function-syntax-id))
        (= :local-function (get edge :classification))
-       (= (get function :return) (get (get proof :return-witness) :return-type))
-       (loop [remaining [(get proof :work-count) (get proof :source-reservation-work) (get proof :prior-attempt-work)
-                         (get (get (get proof :parameter-value-premise) :cold-entry-derivation) :work-count)
-                         (get (get proof :cold-body-derivation) :work-count) (get (get proof :return-witness) :work-count)]]
-         (if (= 0 (count remaining)) true
-           (if (integer? (first remaining)) (if (if (>= (first remaining) 0) (<= (first remaining) 65536) false)
-                                              (recur (rest remaining)) false) false))) ])))
+       (= (get function :return) (get (get proof :return-witness) :return-type))])))
 
 ; Match the finite cold entry projection to current C7-verified VALUE facts.
 ; An aborting entry never supplies a parameter seed; Unknown is retained there.
@@ -1494,12 +1466,16 @@
                                             (if (= :accepted (get body-cut :status)) (get witness :work-count 0) 0)))
                       expected (if indexed?
                                  {:domain :gravity/sh08-indexed-private-self-entry-premise-v1
-                                  :source-census census :entry-values derived :cold-entry-derivation cold-entry
+                                  :source-census census
+                                  :entry-values (body-project derived [:status :parameter-types :entries :normal-entry-count])
+                                  :cold-entry-derivation cold-entry
                                   :source-induction (get induction :proof)
                                   :invalidation [:private-use-census :entry-call-sources :cold-value-dependencies
                                                  :parameter-bindings :mutations :function-records :source-induction]}
                                  {:domain :gravity/sh08-private-self-entry-parameter-premise-v1
-                                  :source-census census :entry-values derived :cold-entry-derivation cold-entry
+                                  :source-census census
+                                  :entry-values (body-project derived [:status :parameter-types :entries :normal-entry-count])
+                                  :cold-entry-derivation cold-entry
                                   :invalidation [:private-use-census :entry-call-sources :cold-value-dependencies
                                                  :parameter-bindings :mutations :function-records]})
                       row {:constraint-id-request {:domain (if indexed? :gravity/sh08-indexed-private-self-value-constraint-v1
@@ -1516,17 +1492,14 @@
                          (body-is-proof-valid? core facts) (= expected premise)
                          (body-is-cold-metadata-valid? core facts record bindings source-forms cold-entry cut)
                          (body-is-cold-metadata-valid? core facts record bindings source-forms (get proof :cold-body-derivation) body-cut)
-                         (= (body-is-source-cost core bindings source-forms record args slots)
-                            {:prior-attempt-work (get proof :prior-attempt-work) :source-reservation-work (get proof :source-reservation-work)})
-                         (= cut (get cold-entry :cut)) (= :entries (get cold-entry :mode))
-                         (= body-cut (get (get proof :cold-body-derivation) :cut))
+                         (= (body-is-cold-cut-semantic cut) (get cold-entry :cut)) (= :entries (get cold-entry :mode))
+                         (= (body-is-cold-cut-semantic body-cut) (get (get proof :cold-body-derivation) :cut))
                          (= :body (get (get proof :cold-body-derivation) :mode))
-                         (= witness (get proof :return-witness))
+                         (= (body-project witness [:status :return-type :witnesses :pending-return-node-ids])
+                            (get proof :return-witness))
                          (= (get derived :parameter-types) (get proof :parameter-types))
                          (= [row] (body-select (get facts :constraint-ledger) :producer-rule
-                                    (if indexed? :sh08-indexed-private-self-value-v1 :sh08-private-self-value-v1)))
-                         (= (+ (get proof :source-reservation-work) (get cold-entry :work-count) (get derived :work-count)
-                               (get (get proof :cold-body-derivation) :work-count) (get witness :work-count)) (get proof :work-count))])
+                                    (if indexed? :sh08-indexed-private-self-value-v1 :sh08-private-self-value-v1)))])
                     {:status :accepted :parameter-value-premise expected :proof proof :component (get proof :component) :work-count total}
                     {:status :rejected :reason :private-self-source-value-premise-mismatch :work-count total})))
                 {:status :rejected :reason (if (= :rejected (get cut :status)) :body-deferred-work-limit
@@ -4476,6 +4449,7 @@
                                       :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
                                       :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
                                       :construction-policy {:input :homogeneous-keyword-persistent-list :operand-evaluation :once :operand-position :non-tail
+                                       :domain-validation :all-physical-keywords-before-equality-or-hash
                                        :payload-evaluation :none :original :unchanged :duplicates :gravity-keyword-value-equality
                                        :result-carrier :persistent-set :output-refinements :none :order :unspecified}
                                       :allocation-policy {:behavior :possible-persistent-set-from-keyword-list-construction :condition :normal-operand-completion
@@ -4485,20 +4459,11 @@
                                         :input-storage :not-retained :borrow :none :lifetime :persistent-values
                                         :allocation :possible-even-empty :provider-allocation-bound :not-established}
                                       :value-origin {:kind :list-value-set-conversion :operation 'set :operand-node-id (first args)}
- :profile-validation-work (- reserved base)
-                                      :result-type-work result-type-work
-                                      :runtime-census-policy {:traversal :bounded-prepaid-first-rest :termination :prepaid-empty-list-carrier
-                                                             :domain-validation :all-physical-keywords-before-equality-or-hash
-                                                             :capture :prepaid-temporary-vector :maximum-input-elements 1024
-                                                             :initial-reservation 1 :termination-reservation 1 :member-step-reservation 4}
-                                      :runtime-work-policy {:limit 65536 :accounting :cumulative-capture-plus-remaining-keyword-dedup
-                                                            :model :gravity/keyword-list-set-logical-content-work-v1
-                                                            :residual-guard :development-only :provider-cpu-bound :not-established}
                                       :application :normal :latent-effects [:memory/allocate] :direct-effects [:memory/allocate] :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return result-type :result-type result-type
                                       :profile (get module :profile) :target (get module :target)
                                       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :construction-policy :storage-policy :value-origin :allocation-policy :result-type-work :runtime-census-policy :runtime-work-policy
+                                                     :callee-body :operand-types :construction-policy :storage-policy :value-origin :allocation-policy
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work}))
                     {:status :rejected :reason :list-set-conversion-source-mismatch :work-count work}))
@@ -4513,9 +4478,7 @@
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :list-set-conversion}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application) :direct-effects (get descriptor :direct-effects)
-              :result-type-work (get descriptor :result-type-work)
-              :runtime-census-policy (get descriptor :runtime-census-policy) :runtime-work-policy (get descriptor :runtime-work-policy) :allocation-policy (get descriptor :allocation-policy)
-              :storage-policy (get descriptor :storage-policy)}
+              :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
 
@@ -4656,7 +4619,6 @@
        :behavior :possible-persistent-set-from-keyword-list-construction :condition :normal-operand-completion
        :normal-completion-possible? (= :normal (get descriptor :application))
        :extent nil
-       :runtime-census-policy (get descriptor :runtime-census-policy) :runtime-work-policy (get descriptor :runtime-work-policy)
        :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)
        :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil)))
 
@@ -4801,13 +4763,11 @@
                                                        :provider-allocation-bound :not-established}
                                                       {:collection-construction :not-invoked})
                                       :value-origin {:kind :map-value-keys :operation 'keys :operand-node-id (first args)}
- :profile-validation-work (- reserved base)
-                                      :key-domain-work key-domain-work :construction-work construction-work
                                       :application (if normal? :normal :not-invoked) :latent-effects [:memory/allocate] :direct-effects (if normal? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return result-type :result-type result-type
                                       :profile (get module :profile) :target (get module :target)
                                       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy :construction-work
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :map-keys-source-mismatch :work-count work}))
                     {:status :rejected :reason :map-keys-source-mismatch :work-count work}))
@@ -5048,13 +5008,11 @@
                                                        :provider-allocation-bound :not-established}
                                                       {:collection-construction :not-invoked})
                                       :value-origin {:kind :map-value-keys :operation 'keys :operand-node-id (first args)}
-                                       :profile-validation-work (- reserved base)
-                                      :key-domain-work key-domain-work :construction-work construction-work
                                       :application (if normal? :normal :not-invoked) :latent-effects [:memory/allocate] :direct-effects (if normal? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return result-type :result-type result-type
                                       :profile (get module :profile) :target (get module :target)
                                       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy :construction-work
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy
                                                      :private-entry-domain :caller-entries :reference-uses :preserved-resolution :exports :mutations :var-references :recur-targets :recur-transfers :recursion-components
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))
@@ -5257,7 +5215,7 @@
                   (loop [remaining (get census :calls) entries [] normal-count 0 used work domain-work 0]
                     (if (= 0 (count remaining))
                       (if (< 0 normal-count)
-                        {:status :accepted :work-count used :key-domain-work domain-work
+                        {:status :accepted :work-count used
                          :proof {:kind :complete-private-call-entry-key-domain :version :sh08-private-map-keys-entry-domain-v1
                                  :domain :keyword :parameter-type :gravity.type/map :result-refinement :none
                                  :parameter-binding-id (get (get census :parameter-binding) :binding-id)
@@ -5341,9 +5299,7 @@
               work (+ initial (get proof :work-count))]
           (if (= :accepted (get proof :status))
             {:status :accepted :work-count work
-             :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof)
-                           :key-domain-work (get proof :key-domain-work)
-                           :result-type-work 3 :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)}
+             :descriptor (assoc (get source :descriptor) :key-domain-proof (get proof :proof))}
             (assoc proof :work-count work)))
         (assoc source :work-count initial)))))
 
@@ -5353,7 +5309,7 @@
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :private-map-keys}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application) :direct-effects (get descriptor :direct-effects)
-              :construction-work (get descriptor :construction-work) :allocation-policy (get descriptor :allocation-policy)
+              :allocation-policy (get descriptor :allocation-policy)
               :storage-policy (get descriptor :storage-policy) :key-domain-proof (get descriptor :key-domain-proof)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
@@ -5585,7 +5541,6 @@
        :behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
        :normal-completion-possible? (= :normal (get descriptor :application))
        :extent nil
-       :construction-work (get descriptor :construction-work) :construction-work-basis (get descriptor :construction-work-basis)
        :key-domain-proof (get descriptor :key-domain-proof)
        :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)
        :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil)))
@@ -5607,7 +5562,7 @@
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :map-keys}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application (get descriptor :application) :direct-effects (get descriptor :direct-effects)
-              :construction-work (get descriptor :construction-work) :allocation-policy (get descriptor :allocation-policy)
+              :allocation-policy (get descriptor :allocation-policy)
               :storage-policy (get descriptor :storage-policy)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []}))
@@ -5748,7 +5703,6 @@
        :behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
        :normal-completion-possible? (= :normal (get descriptor :application))
        :extent nil
-       :construction-work (get descriptor :construction-work)
        :allocation-policy (get descriptor :allocation-policy) :storage-policy (get descriptor :storage-policy)
        :placement :pending-profile-representation :provider :pending-runtime-provider :ownership :pending-ownership-analysis} nil))))
 
@@ -5870,13 +5824,12 @@
                                                        :lifetime :persistent-values :allocation :possible-even-empty
                                                        :provider-allocation-bound :not-established}
                                       :value-origin {:kind :vector-value-rest :operation 'rest :operand-node-id (first args)}
- :profile-validation-work (- reserved base)
-                                      :construction-work construction-work :result-count result-count
+                                      :result-count result-count
                                       :application :normal :latent-effects [:memory/allocate] :direct-effects [:memory/allocate] :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return result-type :result-type result-type
                                       :profile (get module :profile) :target (get module :target)
                                       :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy :construction-work
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :vector-rest-source-mismatch :work-count work}))
                     {:status :rejected :reason :vector-rest-source-mismatch :work-count work}))))
@@ -5890,7 +5843,7 @@
    :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :vector-rest}
    :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
    :solution {:result-type (get descriptor :result-type) :application :normal :direct-effects [:memory/allocate]
-              :construction-work (get descriptor :construction-work) :allocation-policy (get descriptor :allocation-policy)
+              :allocation-policy (get descriptor :allocation-policy)
               :storage-policy (get descriptor :storage-policy)}
    :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
    :status :solved :diagnostics []})
@@ -6148,7 +6101,6 @@
                                       :storage-policy {:representation :pending-profile-representation :query :stored-emptiness-test
                                                        :collection-construction :none :copy :none :provider-allocation-bound :not-established}
                                       :value-origin {:kind :vector-value-query :operation 'empty? :operand-node-id (first args)}
- :profile-validation-work (- reserved base)
                                       :application :normal :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
                                       :parameter-types [receiver] :return :gravity.type/bool :result-type :gravity.type/bool
                                       :profile (get module :profile) :target (get module :target)
@@ -9391,14 +9343,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-integer-set :members :generic-integer-only :needle :generic-integer-only
                            :comparison :original-integer-values :conversion :none :arithmetic :none :overflow :impossible :rounding :none
                            :cross-type :unsupported :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/integer-set-membership-logical-leaf-work-v1
-                           :representation-unit-policy :one-per-validated-integer-leaf
                            :precision-bound :not-established :provider-cpu-bound :not-established :provider-heap-bound :not-established
                            :payload-evaluation :none :mutation :none :construction :none :refinement :none
                            :cardinality-facts :none :enumeration-order :unobserved}
@@ -9415,13 +9364,10 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:carrier-schema :gravity/homogeneous-symbol-set-type-v1 :input :finite-persistent-symbol-set :members :symbol-only :needle :symbol-only
                            :comparison :guarded-atomic-symbol-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/symbol-set-membership-logical-content-work-v1
-                           :representation-unit-policy :jvm-utf16-symbol-display-for-work-only
                            :symbol-equality :original-namespace-and-name :normalization :none :coercion :none
                            :resolution-authority :none :operand-position :non-tail :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
@@ -9437,11 +9383,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
                            :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -9453,9 +9399,7 @@
           :intrinsic :gravity.collections/character-set-membership :membership-policy {:input :finite-persistent-character-set :members :character-only :needle :character-only
                            :comparison :guarded-atomic-character-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/character-set-membership-logical-content-work-v1
-                           :representation-unit-policy :boxed-one-carrier-two :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :character-premise :existing-atomic-character-ir-values :source-decoding :c2-owned
                            :host-surrogate-rejection :not-established :carrier-text-codepoint-consistency :not-established
@@ -9466,11 +9410,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
                            :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -9485,9 +9429,6 @@
             :membership-policy {:carrier-schema :gravity/homogeneous-string-set-type-v1 :input :finite-persistent-string-set :members :string-only :needle :string-only
                            :comparison :guarded-atomic-string-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation
-                           :value-work-model :gravity/string-set-membership-logical-content-work-v1
-                           :representation-unit-policy :jvm-utf16-code-units
                            :payload-evaluation :none :mutation :none :construction :none :refinement :none
                            :cardinality-facts :none :enumeration-order :unobserved :provider-cpu-bound :not-established})
           {:kind :gravity.type/applied-keyword-set-contains :version :sh08-keyword-set-contains-v1
@@ -9495,11 +9436,11 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :set-member-count (get validation :set-member-count) :type-domain-work-count (get validation :work-count)
+       :set-member-count (get validation :set-member-count)
        :membership-policy {:input :finite-persistent-keyword-set :members :keyword-only :needle :keyword-only
                            :comparison :guarded-atomic-keyword-leaf :operand-evaluation :set-then-value-once
                            :domain-validation :all-before-hit-or-miss :member-uniqueness :validated-before-result
-                           :budget :full-worst-case-reservation :payload-evaluation :none :mutation :none
+                           :payload-evaluation :none :mutation :none
                            :construction :none :refinement :none :cardinality-facts :none :enumeration-order :unobserved
                            :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -9829,11 +9770,7 @@
    :construction :persistent-set :payload-evaluation :none :input-preserved? true
    :duplicates :gravity-keyword-value-equality :semantic-deduplication :before-provider-insertion
    :order :unspecified :normalization :none :allocation :normal-invocation-even-empty
-   :value-work {:model :gravity/keyword-vector-set-logical-content-work-v1
-                :formula :one-plus-two-n-plus-pairs-plus-n-plus-one-times-total-units
-                :representation :jvm-utf16-code-units :limit 65536
-                :validation :all-keyword-members-before-print-compare-hash-or-insert
-                :provider-cpu-bound :not-established}})
+   :validation :all-keyword-members-before-print-compare-hash-or-insert})
 
 (defn body-st-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -9885,16 +9822,12 @@
        :operation 'set :semantic-owner 'gravity.collections :intrinsic (if invoked? :gravity.collections/persistent-set-from-string-vector :gravity.collections/persistent-set-construction)
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :construction-policy (if invoked? {:operation :persistent-set-from-string-vector :operand-evaluation :once :operand-position :non-tail
                          :construction :persistent-set :payload-evaluation :none :input-preserved? true
                          :duplicates :gravity-string-value-equality :order :unspecified :normalization :none
                          :allocation :normal-invocation-even-empty
-                         :value-work {:model :gravity/string-set-logical-content-work-v1
-                                      :formula :one-plus-two-n-plus-n-times-total-units-plus-pairs
-                                      :representation :jvm-utf16-code-units :limit 65536
-                                      :validation :all-string-members-before-hash
-                                      :provider-cpu-bound :not-established}}
+                         :validation :all-string-members-before-hash}
                               {:operation :persistent-set-construction :operand-evaluation :once :operand-position :non-tail
                                 :transfer :aborts-invocation :invocation :not-reached :allocation :normal-invocation-even-empty})
        :application (if invoked? :normal :not-invoked)
@@ -9908,7 +9841,7 @@
           (assoc descriptor :version :sh08-keyword-set-conversion-v1
             :intrinsic :gravity.collections/persistent-set-from-keyword-vector
             :input-policy {:version :sh08-keyword-vector-set-input-v1 :family :finite-homogeneous-keyword-vector
-                           :element-type :gravity.type/keyword :maximum-input-elements 1024
+                           :element-type :gravity.type/keyword
                            :output-type :gravity.type/set :output-refinements :none}
             :construction-policy (body-st-keyword-policy)
             :invalidation (conj (get descriptor :invalidation) :input-policy)) descriptor))
@@ -11423,12 +11356,7 @@
                          :nil-bearing :unsupported :cross-family :unsupported
                          :nested-list-versus-atomic :unsupported
                          :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}
-                             :type-domain {:shape :literal-positional :maximum-width 1024 :maximum-depth 128 :maximum-work 65536
-                                           :scalar-leaves [:nil :boolean :character :string :symbol :keyword]
-                                           :nil-or-leaves :unsupported :whole-nil-or-list :unsupported :nested-never :unsupported
-                                           :paired-nested-list-versus-atomic :unsupported
-                                           :validation :both-complete-domains-and-all-overlapping-pairs-before-value-comparison}
-                             :domain-type-work (get validation :list-domain-work)}
+                             }
               :inequality-policy {:operation :complement-of-binary-list-value-equality :domain :finite-persistent-lists
                                   :operand-evaluation :left-to-right-once :operand-position :non-tail
                                   :nil-bearing :unsupported :cross-family :unsupported :identity :unobserved
@@ -11476,12 +11404,7 @@
                          :nil-bearing :compare-original-values :cross-family :actual-value-families
                          :nested-vector-versus-atomic :false
                          :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}
-                            :type-domain {:shape :literal-positional :maximum-width 1024 :maximum-depth 128
-                                          :maximum-work 65536 :scalar-leaves [:nil :boolean :character :string :symbol :keyword]
-                                          :nil-or-leaves :five-closed-nonnumeric-atomic-views
-                                          :whole-nil-or-vector :unsupported :nested-never :unsupported
-                                          :validation :both-complete-domains-before-value-comparison}
-                            :domain-type-work (get validation :vector-domain-work)}
+                            }
                      :inequality-policy {:operation :complement-of-binary-vector-value-equality
                             :domain :finite-persistent-vectors :members :recursive-vector-and-supported-atomic
                             :operand-evaluation :left-to-right-once :operand-position :non-tail
@@ -11509,14 +11432,7 @@
                           :safety-rule :same-integral-value-equality-no-conversion-overflow-or-rounding
                           :equality-policy {:domain :same-integral-type :comparison :original-integer-values
                                             :conversion :none :arithmetic :none :overflow :impossible
-                                            :rounding :none :cross-type :unsupported}}
-                      :type-domain {:shape :flat-literal-positional :maximum-width 1024 :maximum-depth 128
-                                           :maximum-work 65536 :scalar-leaves [:nil :boolean :character :string :symbol :keyword :integer]
-                                           :integer-type :gravity.type/integer :numeric-leaf-depth 1
-                                           :nil-or-leaves :five-closed-nonnumeric-atomic-views
-                                           :whole-nil-or-vector :unsupported :nested-vectors :unsupported :nested-never :unsupported
-                                           :integer-cross-family :unsupported
-                                           :validation :both-complete-domains-and-overlapping-pairs-before-value-comparison})
+                                            :rounding :none :cross-type :unsupported}})
                     :inequality-policy (assoc (get result :inequality-policy)
                       :domain :finite-flat-persistent-vectors :members :supported-atomic-and-generic-integer
                       :numeric :same-established-generic-integer-leaves
@@ -11535,26 +11451,17 @@
                          :identity :unobserved :payload-evaluation :none :mutation :none
                          :numeric (if (get validation :vector-integer-leaves?) :same-established-generic-integer-leaves :unsupported)
                          :keyword-sets :independently-finite-keyword-only
-                         :budget :aggregate-remaining-vector-allowance :entry-contract :type-conforming-typed-calls}
+                         :entry-contract :type-conforming-typed-calls}
                                  :keyword-set-leaf-equality {:version :sh08-vector-keyword-set-leaf-equality-v1
                             :semantic-owner 'gravity.collections :equality-version :sh08-keyword-set-equality-v1
                             :domain :independently-finite-persistent-keyword-sets :members :keyword-only
                             :comparison :guarded-atomic-keyword-leaf :order :unobserved
                             :domain-validation :owned-self-equality-before-any-vector-result
                             :member-uniqueness :validated-before-any-vector-result
-                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
-                            :budget :aggregate-repeated-owned-leaf-reservations :per-leaf-reset :none
+                            :comparison-validation :owned-pair-equality-after-domain-validation
+                            :per-leaf-reset :none
                             :identity :unobserved :payload-evaluation :none :mutation :none :construction :none
-                            :provider-cpu-bound :not-established}
-                                 :type-domain {:shape :flat-literal-positional :maximum-width 1024 :maximum-depth 128
-                                           :maximum-work 65536 :scalar-leaves [:nil :boolean :character :string :symbol :keyword :integer]
-                                           :integer-type :gravity.type/integer :numeric-leaf-depth 1
-                                           :keyword-set-leaves :independently-finite-keyword-only :keyword-set-maximum-width 1024
-                                           :keyword-set-work :aggregate-remaining-vector-allowance
-                                           :nil-or-leaves :five-closed-nonnumeric-atomic-views
-                                           :whole-nil-or-vector :unsupported :nested-vectors :unsupported :nested-never :unsupported
-                                           :integer-cross-family :unsupported :keyword-set-cross-family :unsupported
-                                           :validation :both-complete-domains-and-overlapping-pairs-before-value-comparison})
+                            :provider-cpu-bound :not-established})
                         policy (if (get validation :vector-integer-leaves?)
                                  (assoc policy :numeric-equality {:version :sh08-flat-integer-vector-leaf-equality-v1
                           :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core
@@ -11567,11 +11474,11 @@
                       :inequality-policy (assoc (get result :inequality-policy)
                         :domain :finite-flat-persistent-vectors :members :supported-atomic-generic-integer-and-finite-keyword-set
                         :numeric (if (get validation :vector-integer-leaves?) :same-established-generic-integer-leaves :unsupported)
-                        :keyword-sets :independently-finite-keyword-only :budget :aggregate-remaining-vector-allowance
+                        :keyword-sets :independently-finite-keyword-only
                         :integer-cross-family :unsupported :keyword-set-cross-family :unsupported :nested-vectors :unsupported
                         :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families)
-                      :invalidation (conj (conj (conj (conj (conj (conj (conj (get result :invalidation)
-                        :keyword-set-leaf-equality) :set-member-domain) :member-value-policy) :aggregate-leaf-work)
+                      :invalidation (conj (conj (conj (conj (conj (conj (get result :invalidation)
+                        :keyword-set-leaf-equality) :set-member-domain) :member-value-policy)
                         :numeric-equality) :numeric-mode) :integral-type)))
                   result))
               (if (= :string-set-carrier (get validation :comparison-domain))
@@ -11582,30 +11489,23 @@
                             :equality-policy (assoc {:domain :independently-established-string-sets :members :string-only
                          :comparison :guarded-atomic-string-leaf :order :unobserved
                          :domain-validation :both-complete-before-result
-                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
                          :collection-construction :none :provider-cpu-bound :not-established}
                               :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
-                              :value-work-model :gravity/string-set-equality-logical-content-work-v1
                               :entry-contract :type-conforming-typed-calls)
-                            :type-domain {:shape :finite-or-homogeneous :carrier-schema :gravity/homogeneous-string-set-type-v1
-                                          :members :string-only :maximum-literal-width 1024 :maximum-work 65536
-                                          :static-cardinality :not-established :operand-extent :not-established
-                                          :validation :both-complete-domains-before-value-comparison
-                                          :whole-nil-or-set :unsupported :nested-members :unsupported}
-                            :operand-domains (get validation :operand-domains)
-                            :domain-type-work (get validation :string-set-domain-work)}
+                            :operand-domains (get validation :operand-domains)}
                          :inequality-policy (assoc {:operation :complement-of-binary-string-set-value-equality
                             :domain :independently-established-string-sets :members :string-only
                             :operand-evaluation :left-to-right-once :operand-position :non-tail
                             :order :unobserved :domain-validation :both-complete-before-result
-                            :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                            :member-uniqueness :validated-before-cardinality
                             :cross-collection :unsupported :nil-bearing :unsupported :identity :unobserved
                             :coercion :none :normalization :none :locale :none :numeric :unsupported
                             :collections :independently-established-string-sets :construction :none
-                            :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
+                            :payload-evaluation :none :mutation :none
                             :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
-                           :strings :exact-valid-scalar-sequence :value-work-model :gravity/string-set-equality-logical-content-work-v1)
+                           :strings :exact-valid-scalar-sequence)
                          :invalidation (conj (conj (conj (conj (conj (conj (get header :invalidation) :inferred-member-carrier) :carrier-schema) :finite-member-types) :string-set-equality) :equality-domain) :value-policy)) nil)
                 (if (= :string-set (get validation :comparison-domain))
                 (if (= :jvm (get module :target))
@@ -11615,28 +11515,23 @@
                             :equality-policy (assoc {:domain :finite-persistent-string-sets :members :string-only
                          :comparison :guarded-atomic-string-leaf :order :unobserved
                          :domain-validation :both-complete-before-result
-                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
                          :collection-construction :none :provider-cpu-bound :not-established}
                               :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
-                              :value-work-model :gravity/string-set-equality-logical-content-work-v1
                               :entry-contract :type-conforming-typed-calls)
-                            :type-domain {:shape :literal :members :string-only :maximum-width 1024 :maximum-work 65536
-                                          :validation :both-complete-domains-before-value-comparison
-                                          :whole-nil-or-set :unsupported :nested-members :unsupported}
-                            :operand-counts (get validation :operand-counts)
-                            :domain-type-work (get validation :string-set-domain-work)}
+                            :operand-counts (get validation :operand-counts)}
                          :inequality-policy (assoc {:operation :complement-of-binary-string-set-value-equality
                             :domain :finite-persistent-string-sets :members :string-only
                             :operand-evaluation :left-to-right-once :operand-position :non-tail
                             :order :unobserved :domain-validation :both-complete-before-result
-                            :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                            :member-uniqueness :validated-before-cardinality
                             :cross-collection :unsupported :nil-bearing :unsupported :identity :unobserved
                             :coercion :none :normalization :none :locale :none :numeric :unsupported
                             :collections :finite-persistent-string-sets :construction :none
-                            :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
+                            :payload-evaluation :none :mutation :none
                             :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
-                           :strings :exact-valid-scalar-sequence :value-work-model :gravity/string-set-equality-logical-content-work-v1)
+                           :strings :exact-valid-scalar-sequence)
                          :invalidation (conj (conj (conj (get header :invalidation) :string-set-equality) :equality-domain) :value-policy)) nil)
                 (if (= :keyword-set (get validation :comparison-domain))
                 (if (= :jvm (get module :target))
@@ -11646,23 +11541,19 @@
                             :equality-policy {:domain :finite-persistent-keyword-sets :members :keyword-only
                          :comparison :guarded-atomic-keyword-leaf :order :unobserved
                          :domain-validation :both-complete-before-result
-                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
                          :collection-construction :none :provider-cpu-bound :not-established}
-                            :type-domain {:shape :literal :members :keyword-only :maximum-width 1024 :maximum-work 65536
-                                          :validation :both-complete-domains-before-value-comparison
-                                          :whole-nil-or-set :unsupported :nested-members :unsupported}
-                            :operand-counts (get validation :operand-counts)
-                            :domain-type-work (get validation :keyword-set-domain-work)}
+                            :operand-counts (get validation :operand-counts)}
                          :inequality-policy {:operation :complement-of-binary-keyword-set-value-equality
                             :domain :finite-persistent-keyword-sets :members :keyword-only
                             :operand-evaluation :left-to-right-once :operand-position :non-tail
                             :order :unobserved :domain-validation :both-complete-before-result
-                            :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                            :member-uniqueness :validated-before-cardinality
                             :cross-collection :unsupported :nil-bearing :unsupported :identity :unobserved
                             :coercion :none :normalization :none :locale :none :numeric :unsupported
                             :collections :finite-persistent-keyword-sets :construction :none
-                            :payload-evaluation :none :mutation :none :provider-cpu-bound :not-established
+                            :payload-evaluation :none :mutation :none
                             :lowering :owned-equality-branch-complement :entry-contract :type-conforming-typed-calls}
                          :invalidation (conj (conj (conj (get header :invalidation) :keyword-set-equality) :equality-domain) :value-policy)) nil)
                 header)))))))) nil)) nil) nil) nil))
@@ -12913,15 +12804,14 @@
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :operand-domains (get validation :operand-domains) :carrier-schema :gravity/homogeneous-string-set-type-v1 :type-domain-work-count (get validation :work-count)
+       :operand-domains (get validation :operand-domains) :carrier-schema :gravity/homogeneous-string-set-type-v1
        :equality-policy {:domain :independently-established-string-sets :members :string-only
                          :static-cardinality :not-established :operand-extent :not-established
                          :comparison :guarded-atomic-string-leaf :strings :exact-valid-scalar-sequence
                          :normalization :none :locale :none :conversion :none :numeric :unsupported
-                         :value-work-model :gravity/string-set-equality-logical-content-work-v1
                          :entry-contract :type-conforming-typed-calls :order :unobserved
                          :domain-validation :both-complete-before-result
-                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
                          :collection-construction :none :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -12929,17 +12819,17 @@
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
                       :callee-body :equality-domain :inferred-member-carrier :carrier-schema :finite-member-types
-                      :string-equality-policy :representation-work :value-policy :profile :target :evaluation-order]}
+                      :string-equality-policy :value-policy :profile :target :evaluation-order]}
       (let [header {:kind :gravity.type/applied-keyword-set-equality :version :sh08-keyword-set-equality-v1
        :operation '= :semantic-owner 'gravity.collections :intrinsic :gravity.collections/keyword-set-value-equality
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :operand-counts (get validation :operand-counts) :type-domain-work-count (get validation :work-count)
+       :operand-counts (get validation :operand-counts)
        :equality-policy {:domain :finite-persistent-keyword-sets :members :keyword-only
                          :comparison :guarded-atomic-keyword-leaf :order :unobserved
                          :domain-validation :both-complete-before-result
-                         :member-uniqueness :validated-before-cardinality :budget :full-worst-case-reservation
+                         :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
                          :collection-construction :none :provider-cpu-bound :not-established}
        :application (if invoked? :normal :not-invoked)
@@ -12953,9 +12843,8 @@
             :equality-policy (assoc (get header :equality-policy) :domain :finite-persistent-string-sets :members :string-only
                             :comparison :guarded-atomic-string-leaf :strings :exact-valid-scalar-sequence
                             :normalization :none :locale :none :conversion :none :numeric :unsupported
-                            :value-work-model :gravity/string-set-equality-logical-content-work-v1
                             :entry-contract :type-conforming-typed-calls)
-            :invalidation (conj (conj (get header :invalidation) :string-equality-policy) :representation-work))
+            :invalidation (conj (get header :invalidation) :string-equality-policy))
           header))) nil)) nil)
     nil))
 
@@ -13176,7 +13065,6 @@
                              :payload-evaluation :none,
                              :bare-domain :not-refined,
                              :operand-order :left-then-right,
-                             :budget :full-worst-case-reservation,
                              :order :unobserved,
                              :domain :bare-set-against-independent-nonempty-keyword-anchor,
                              :operand-position :non-tail,
@@ -13210,10 +13098,7 @@
                             :runtime-policy
                             {:guard :existing-complete-both-set-census,
                              :selector-premise :type-conforming-nonempty-keyword-anchor,
-                             :maximum-input-elements 1024,
-                             :logical-work-limit 65536,
                              :member-uniqueness :before-cardinality,
-                             :reservation :full-worst-case,
                              :certificate :not-established},
                             :value-origin
                             {:kind :bare-keyword-anchor-set-value-equality,
@@ -13851,20 +13736,20 @@
                          :identity :unobserved :payload-evaluation :none :mutation :none
                          :numeric (if (get validation :integer-leaves?) :same-established-generic-integer-leaves :unsupported)
                          :keyword-sets :independently-finite-keyword-only
-                         :budget :aggregate-remaining-vector-allowance :entry-contract :type-conforming-typed-calls}
+                         :entry-contract :type-conforming-typed-calls}
                          :keyword-set-leaf-equality {:version :sh08-vector-keyword-set-leaf-equality-v1
                             :semantic-owner 'gravity.collections :equality-version :sh08-keyword-set-equality-v1
                             :domain :independently-finite-persistent-keyword-sets :members :keyword-only
                             :comparison :guarded-atomic-keyword-leaf :order :unobserved
                             :domain-validation :owned-self-equality-before-any-vector-result
                             :member-uniqueness :validated-before-any-vector-result
-                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
-                            :budget :aggregate-repeated-owned-leaf-reservations :per-leaf-reset :none
+                            :comparison-validation :owned-pair-equality-after-domain-validation
+                            :per-leaf-reset :none
                             :identity :unobserved :payload-evaluation :none :mutation :none :construction :none
                             :provider-cpu-bound :not-established}
                          :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
                          :callee-body :equality-domain :value-policy :integral-type :numeric-mode :numeric-equality
-                         :keyword-set-leaf-equality :set-member-domain :member-value-policy :aggregate-leaf-work
+                         :keyword-set-leaf-equality :set-member-domain :member-value-policy
                          :profile :target :evaluation-order])]
             (if (get validation :integer-leaves?)
               (assoc result :numeric-equality {:version :sh08-flat-integer-vector-leaf-equality-v1
@@ -15636,7 +15521,7 @@
                       :bounds :zero-le-start-le-end-le-count :operand-evaluation :receiver-then-start-then-end-once
                       :input-preserved? true :payloads :inert :allocation :normal-invocation-even-empty-or-full
                       :index-conversion :exact-in-bounded-range :check-elision :not-authorized :runtime-guards :retained
-                      :value-work :logical-element-and-integer-units :integer-precision-bound :not-established
+                      :integer-precision-bound :not-established
                       :provider-cpu-bound :not-established :provider-heap-bound :not-established}
 
        :bounds-proof proof :safety :proven-safe
@@ -15911,7 +15796,7 @@
                                                :original-latin1-scalar-string-literal :original-ascii-string-literal) :order :original
                            :normalization :none :coercion :none :utf16-splitting :forbidden
                            :operand-evaluation :once :input-preserved? true
-                           :allocation :normal-invocation-even-empty :value-work :logical-character-units
+                           :allocation :normal-invocation-even-empty
                            :provider-cpu-bound :not-established :provider-heap-bound :not-established}
        :conversion-proof proof
        :storage-policy {:allocation :may-allocate-character-vector :condition :normal-invocation
