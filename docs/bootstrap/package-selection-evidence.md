@@ -107,3 +107,20 @@ provenance, eight refusals, exact old public arglists and normalized source
 bodies conserve. All unrelated incoming Effects/Lowering/CI files remain exact
 main. These are working-source observations; the final committed tuple still
 requires contextual lint, independent review, own CI and exact clean preflight.
+
+## Private Diagnostics main composition
+
+Main then integrated private Diagnostics binding PR723 as
+270313d819ff7299b7a351de4db8ef8d217dcb5a, tree
+0bce737a48117101f7a1c179af8538b80b38f788. A normal merge has no conflicts.
+All incoming binding code, Reader wrapper, C15 test dependency and evidence stay
+unchanged; Package still changes only its nine intended paths. Its earlier
+Effects-base CI41252081876 is separate and cannot supply current-base acceptance.
+
+Fresh Package/compatibility/private-binding tests pass27/479; isolated native
+C8/C15 leaves pass15/352, ownership33/1013, language6/11, docs240/19 and
+roadmap/governance. The producer and verifier again preserve all sixteen
+original complete/text captures, both source hashes, full lock history, actual
+refusals, source bodies and public arglists. The new committed composition
+requires fresh lint, exact independent acceptance, own CI and clean actual-main
+integration preflight. All original nonpasses and nonclaims remain unchanged.
