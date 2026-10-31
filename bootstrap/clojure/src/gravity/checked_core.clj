@@ -9,6 +9,10 @@
     {:arglists ([lineage fragment-manifest _operations]),
      :operation-inputs [],
      :admission :none},
+    semantic-mutation
+    {:arglists ([semantic-projection-id mutation operations]),
+     :operation-inputs [:sh07-core-semantic-projection-id],
+     :admission :none},
     current-plan-binding!
     {:arglists ([operations]),
      :operation-inputs
@@ -18,6 +22,10 @@
     {:arglists [[source-revision-id ordinal form operations]],
      :operation-inputs
      [:reader-canonical-hash :sh05-path-neutral-semantic-value],
+     :admission :none},
+    canonical-artifact
+    {:arglists ([resolved-template operations]),
+     :operation-inputs [:sh07-core-semantic-identity-preimage],
      :admission :none},
     execute!
     {:arglists ([source-path function arguments operations]),
@@ -35,9 +43,25 @@
     {:arglists [[value _operations]],
      :operation-inputs [],
      :admission :none},
+    resolve-reference-vector!
+    {:arglists [[source-path values resolved-digests operations]],
+     :operation-inputs [:sh07-core-resolve-reference!],
+     :admission :none},
     binding-order
     {:arglists ([_module trees bindings _operations]),
      :operation-inputs [],
+     :admission :none},
+    resolve-digest-preimage!
+    {:arglists
+     ([source-path purpose preimage resolved-digests operations]),
+     :operation-inputs
+     [:sh07-core-execute!
+      :sh07-core-resolve-reference-vector!
+      :sh07-core-semantic-identity-preimage],
+     :admission :none},
+    semantic-var-reference
+    {:arglists [[semantic-projection-id reference operations]],
+     :operation-inputs [:sh07-core-semantic-projection-id],
      :admission :none},
     projection-binding-input
     {:arglists ([request operations]),
@@ -75,6 +99,10 @@
      [[source-path value evidence projection-form-id operations]],
      :operation-inputs [:reader-canonical-hash],
      :admission :none},
+    request-diagnostic!
+    {:arglists ([request rule-specific operations]),
+     :operation-inputs [:reader-canonical-hash],
+     :admission :none},
     plan-identities
     {:arglists ([plan operations]),
      :operation-inputs
@@ -82,9 +110,28 @@
       :p15-s23-c11-mir-digest
       :p15-s23-stage2-compiler-artifact-semantic-input],
      :admission :none},
+    semantic-error-handler
+    {:arglists ([semantic-projection-id handler operations]),
+     :operation-inputs [:sh07-core-semantic-projection-id],
+     :admission :none},
+    semantic-binding
+    {:arglists [[semantic-projection-id binding _operations]],
+     :operation-inputs [],
+     :admission :none},
+    semantic-error-transfer
+    {:arglists ([semantic-projection-id transfer operations]),
+     :operation-inputs [:sh07-core-semantic-projection-id],
+     :admission :none},
     decimal-evidence
     {:arglists [[resolution-artifact operations]],
      :operation-inputs [:p15-s23-c6c10-literal-scalar-descriptor],
+     :admission :none},
+    digest-requests
+    {:arglists ([source-path digest-requests operations]),
+     :operation-inputs
+     [:p15-s23-c6c10-carrier-validation
+      :reader-canonical-hash
+      :sh07-core-resolve-digest-preimage!],
      :admission :none},
     source-key
     {:arglists ([operations]),
@@ -110,6 +157,26 @@
        operations]),
      :operation-inputs [:sh07-b13-alias-name],
      :admission :none},
+    semantic-resolution
+    {:arglists [[resolution _operations]],
+     :operation-inputs [],
+     :admission :none},
+    semantic-identity-preimage
+    {:arglists ([preimage operations]),
+     :operation-inputs
+     [:sh07-core-semantic-binding
+      :sh07-core-semantic-error-handler
+      :sh07-core-semantic-error-transfer
+      :sh07-core-semantic-mutation
+      :sh07-core-semantic-node
+      :sh07-core-semantic-projection-id
+      :sh07-core-semantic-resolution
+      :sh07-core-semantic-var-reference],
+     :admission :none},
+    public-decimal-presentation
+    {:arglists ([core _operations]),
+     :operation-inputs [],
+     :admission :none},
     value-kind
     {:arglists [[value _operations]],
      :operation-inputs [],
@@ -131,6 +198,11 @@
       :sh07-core-semantic-span
       :sh07-core-value-kind],
      :admission :none},
+    resolve-reference!
+    {:arglists [[source-path value resolved-digests operations]],
+     :operation-inputs
+     [:p15-s23-sh02-sha256-id? :sh07-core-digest-reference-ordinal],
+     :admission :none},
     source-path
     {:arglists ([operations]),
      :operation-inputs
@@ -144,6 +216,10 @@
     {:arglists
      [[source-revision-id root-syntax-id path kind trace operations]],
      :operation-inputs [:reader-canonical-hash],
+     :admission :none},
+    digest-reference-ordinal
+    {:arglists [[value _operations]],
+     :operation-inputs [],
      :admission :none},
     source-path-from-resolution
     {:arglists [[resolution-artifact _operations]],
@@ -185,8 +261,42 @@
      [[source-revision-id root-syntax-id path kind operations]],
      :operation-inputs [:reader-canonical-hash],
      :admission :none},
+    authenticated-request
+    {:arglists
+     [[resolution-artifact operations]
+      [resolution-artifact context operations]
+      [resolution-artifact context invocation operations]],
+     :operation-inputs
+     [:sh03-reader-authenticated-envelope-options
+      :sh06-resolution-artifact-verification
+      :sh07-core-authenticated-request
+      :sh07-core-request-from-verified-upstream
+      :sh07-core-source-path-from-resolution],
+     :admission :none,
+     :verifies-upstream-owner? true},
     semantic-span
     {:arglists [[span _operations]],
+     :operation-inputs [],
+     :admission :none},
+    semantic-node
+    {:arglists ([semantic-projection-id node operations]),
+     :operation-inputs
+     [:sh07-core-semantic-error-handler
+      :sh07-core-semantic-error-transfer
+      :sh07-core-semantic-mutation
+      :sh07-core-semantic-var-reference],
+     :admission :none},
+    resolve-result
+    {:arglists
+     ([source-path
+       template
+       _digest-requests
+       resolved-digests
+       operations]),
+     :operation-inputs [:sh07-core-execute!],
+     :admission :none},
+    semantic-projection-id
+    {:arglists [[value _operations]],
      :operation-inputs [],
      :admission :none},
     build-plan-binding!
@@ -199,6 +309,10 @@
       :sh07-core-plan-identities
       :sh07-core-source-path
       :sha256-bytes-hex],
+     :admission :none},
+    raise-diagnostic!
+    {:arglists ([_source-path template operations]),
+     :operation-inputs [:reader-canonical-hash],
      :admission :none}},
    :operation-inputs
    [:c-backend-resolve-p15-s23-compiler-source-path
@@ -207,29 +321,60 @@
     :p15-s23-c11-mir-digest
     :p15-s23-c6c10-carrier-validation
     :p15-s23-c6c10-literal-scalar-descriptor
+    :p15-s23-sh02-sha256-id?
     :p15-s23-stage2-compiler-artifact-plan
     :p15-s23-stage2-compiler-artifact-semantic-input
     :p15-s23-stage2-compiler-artifact-source-path
     :p15-s23-stage2-runtime-execute-function
     :read-forms
     :reader-canonical-hash
+    :sh03-reader-authenticated-envelope-options
     :sh03-reader-host-character-value!
     :sh04-syntax-strip-host-metadata
     :sh05-path-neutral-semantic-value
+    :sh06-resolution-artifact-verification
     :sh07-b13-alias-name
+    :sh07-b13-binding-order
+    :sh07-b13-fragment-coverage
+    :sh07-b13-fragment-manifest
     :sh07-b13-fragment-record
+    :sh07-b13-module-assembly-manifest
+    :sh07-core-authenticated-request
     :sh07-core-build-binding!
+    :sh07-core-build-form-tree
     :sh07-core-children
     :sh07-core-current-source-key
     :sh07-core-decimal-descriptor
+    :sh07-core-decimal-evidence
+    :sh07-core-decimal-evidence-complete!
+    :sh07-core-digest-reference-ordinal
+    :sh07-core-execute!
     :sh07-core-lineage-with-semantic-trace
+    :sh07-core-macro-trace
     :sh07-core-neutral-value
     :sh07-core-plan-identities
     :sh07-core-projected-form-id
     :sh07-core-projected-source-mismatch
     :sh07-core-projected-syntax-id
+    :sh07-core-projection-binding-input
+    :sh07-core-request-from-verified-upstream
+    :sh07-core-resolution-projection!
+    :sh07-core-resolve-digest-preimage!
+    :sh07-core-resolve-reference!
+    :sh07-core-resolve-reference-vector!
+    :sh07-core-root-syntax-id
+    :sh07-core-semantic-binding
+    :sh07-core-semantic-error-handler
+    :sh07-core-semantic-error-transfer
+    :sh07-core-semantic-identity-preimage
     :sh07-core-semantic-macro-trace
+    :sh07-core-semantic-mutation
+    :sh07-core-semantic-node
+    :sh07-core-semantic-projection-id
+    :sh07-core-semantic-resolution
     :sh07-core-semantic-span
+    :sh07-core-semantic-var-reference
+    :sh07-core-source-map-order
     :sh07-core-source-occurrence-context
     :sh07-core-source-path
     :sh07-core-source-path-from-resolution
@@ -261,6 +406,28 @@
     {:arglists ([resolution-artifact semantic-trace operations]),
      :operation-inputs
      [:reader-canonical-hash :sh05-path-neutral-semantic-value],
+     :admission :none},
+    request-from-verified-upstream
+    {:arglists
+     [[resolution-artifact upstream-verification operations]],
+     :operation-inputs
+     [:reader-canonical-hash
+      :sh07-b13-binding-order
+      :sh07-b13-fragment-coverage
+      :sh07-b13-fragment-manifest
+      :sh07-b13-module-assembly-manifest
+      :sh07-core-build-form-tree
+      :sh07-core-decimal-evidence
+      :sh07-core-decimal-evidence-complete!
+      :sh07-core-lineage-with-semantic-trace
+      :sh07-core-macro-trace
+      :sh07-core-projection-binding-input
+      :sh07-core-resolution-projection!
+      :sh07-core-root-syntax-id
+      :sh07-core-semantic-macro-trace
+      :sh07-core-source-map-order
+      :sh07-core-source-occurrence-context
+      :sh07-core-source-path-from-resolution],
      :admission :none}},
    :governing-contracts
    [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2 B13],
@@ -282,7 +449,9 @@
     :performance
     :self-hosting
     :seed-retirement
-    :backend-artifact-manifest-completion],
+    :backend-artifact-manifest-completion
+    :diagnostic-safe-public-projection
+    :diagnostic-publication],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -293,7 +462,17 @@
     :literal-decoding-records
     :verified-c5-semantic-records
     :projected-fragment-trees
-    :bindings-resolutions-and-aliases],
+    :bindings-resolutions-and-aliases
+    :c5-artifact-and-lexical-context
+    :explicit-reader-invocation
+    :digest-reference-table
+    :core-template-and-preimage-records
+    :ordered-declared-digest-requests
+    :resolved-digest-identities
+    :verified-resolved-template-data
+    :explicit-decimal-descriptors
+    :rejected-gravity-result
+    :request-rule-specific-failure-data],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -304,7 +483,14 @@
      :source-occurrence-bijections
      :decimal-c2-evidence
      :projected-parent-child-links
-     :fragment-undeclared-alias],
+     :fragment-undeclared-alias
+     :missing-upstream-context
+     :fresh-upstream-premises
+     :unresolved-digest-reference
+     :digest-purpose-and-ordinal-legality
+     :failed-gravity-digest-or-result-resolution
+     :core-lowering-rejection-carrier
+     :core-request-failure-carrier],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -320,9 +506,20 @@
     :projection-binding-inputs
     :fragment-manifests
     :fragment-coverage
-    :module-assembly-records],
+    :module-assembly-records
+    :c5-to-core-request
+    :resolved-digest-references
+    :normalized-semantic-references
+    :semantic-node-mutation-and-error-records
+    :normalized-core-identity-preimages
+    :declared-digest-identities
+    :materialized-core-template-data
+    :canonical-core-candidate-data
+    :explicit-host-decimal-presentation
+    :c6-diagnostic-construction-records],
    :clojure-seed-boundary? true,
-   :contract-boundary :checked-core-runtime-projection-and-lineage})
+   :contract-boundary
+   :checked-core-supported-data-and-runtime-boundaries})
 
 (defn
  source-path
@@ -2124,43 +2321,1048 @@
     content-id
     :module-id
     (:sh06-semantic-projection-id lineage))))
- (doseq
-  [operation
-   [#'build-plan-binding!
-    #'current-plan-binding!
-    #'execute!
-    #'plan-identities
-    #'source-key
-    #'source-path
-    #'build-form-tree
-    #'children
-    #'decimal-descriptor
-    #'decimal-evidence
-    #'decimal-evidence-complete!
-    #'macro-trace
-    #'neutral-value
-    #'parameter-binding-paths
-    #'projected-form-id
-    #'projected-source-mismatch
-    #'projected-syntax-id
-    #'root-syntax-id
-    #'semantic-macro-trace
-    #'semantic-span
-    #'source-map-order
-    #'source-occurrence-context
-    #'source-path-from-resolution
-    #'value-kind
-    #'alias-name
-    #'binding-order
-    #'fragment-coverage
-    #'fragment-manifest
-    #'fragment-record
-    #'module-assembly-manifest
-    #'lineage
-    #'lineage-with-semantic-trace
-    #'projection-binding-input]]
-  (alter-meta!
-   operation
-   assoc
-   :gravity/namespace-contract
-   namespace-contract)))
+ (defn-
+ request-from-verified-upstream
+ [resolution-artifact upstream-verification operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh07-b13-binding-order
+   (.valAt ^clojure.lang.ILookup operations :sh07-b13-binding-order)
+   sh07-b13-fragment-coverage
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b13-fragment-coverage)
+   sh07-b13-fragment-manifest
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b13-fragment-manifest)
+   sh07-b13-module-assembly-manifest
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b13-module-assembly-manifest)
+   sh07-core-build-form-tree
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-build-form-tree)
+   sh07-core-decimal-evidence
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-decimal-evidence)
+   sh07-core-decimal-evidence-complete!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-decimal-evidence-complete!)
+   sh07-core-lineage-with-semantic-trace
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-lineage-with-semantic-trace)
+   sh07-core-macro-trace
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-macro-trace)
+   sh07-core-projection-binding-input
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-projection-binding-input)
+   sh07-core-resolution-projection!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-resolution-projection!)
+   sh07-core-root-syntax-id
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-root-syntax-id)
+   sh07-core-semantic-macro-trace
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-macro-trace)
+   sh07-core-source-map-order
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-source-map-order)
+   sh07-core-source-occurrence-context
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-source-occurrence-context)
+   sh07-core-source-path-from-resolution
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-source-path-from-resolution)
+   source-path
+   (sh07-core-source-path-from-resolution resolution-artifact)]
+  (when-not
+   (and
+    (= :gravity/sh06-resolution-artifact (:kind resolution-artifact))
+    (= :passed (:status upstream-verification))
+    (=
+     :complete
+     (get-in resolution-artifact [:capability-based-proof :status])))
+   (throw
+    (ex-info
+     "SH-07 requires a fresh verified SH-06 artifact"
+     {:id "C6-VERIFY",
+      :stage :core-lowering,
+      :source-path source-path,
+      :missing-fields [:fresh-authenticated-sh06-resolution]})))
+  (let
+   [sh05
+    (:sh05-macro-artifact resolution-artifact)
+    semantic-macro-trace
+    (sh07-core-semantic-macro-trace (:macro-expansion-trace sh05))
+    lineage
+    (sh07-core-lineage-with-semantic-trace
+     resolution-artifact
+     semantic-macro-trace)
+    module-contract
+    (get-in
+     resolution-artifact
+     [:gravity-resolution-boundary
+      :resolved-analysis
+      :module-contract])
+    module
+    {:namespace (:namespace module-contract),
+     :profile (:profile module-contract),
+     :target (:target module-contract),
+     :safety (:safety module-contract),
+     :effects (vec (:effects module-contract)),
+     :capabilities (vec (:capabilities module-contract)),
+     :exports (vec (:exports module-contract)),
+     :source-revision-id (:source-revision-id lineage)}
+    decimal-evidence
+    (sh07-core-decimal-evidence resolution-artifact)
+    executable-syntax
+    (->>
+     (:expanded-syntax-stream sh05)
+     (remove
+      (fn*
+       [p1__154#]
+       (and (seq? (:form p1__154#)) (= 'ns (first (:form p1__154#))))))
+     (map-indexed
+      (fn
+       [ordinal syntax]
+       (assoc
+        syntax
+        :sh07/root-syntax-id
+        (sh07-core-root-syntax-id
+         (:source-revision-id lineage)
+         ordinal
+         (:form syntax)))))
+     vec)
+    source-occurrences
+    (sh07-core-source-occurrence-context
+     resolution-artifact
+     executable-syntax)
+    executable-syntax
+    (mapv
+     (fn*
+      [p1__155#]
+      (assoc
+       p1__155#
+       :sh07/source-occurrences
+       (get source-occurrences (:sh07/root-syntax-id p1__155#))))
+     executable-syntax)
+    root-id-by-upstream-id
+    (into
+     {}
+     (map
+      (fn
+       [syntax]
+       [(:syntax/id syntax) (:sh07/root-syntax-id syntax)]))
+     executable-syntax)
+    raw-traces
+    (filterv
+     (fn* [p1__156#] (= 'defn (:macro p1__156#)))
+     (:macro-expansion-trace sh05))
+    traces
+    (mapv
+     (fn
+      [ordinal step]
+      (sh07-core-macro-trace
+       lineage
+       (assoc
+        step
+        :input-syntax-id
+        (reader-canonical-hash
+         {:domain :gravity/sh07-macro-input-syntax-v1,
+          :source-revision-id (:source-revision-id lineage),
+          :ordinal ordinal,
+          :macro (:macro step)})
+        :output-syntax-id
+        (get root-id-by-upstream-id (:output-syntax-id step)))))
+     (range)
+     raw-traces)
+    trace-by-output
+    (into {} (map (juxt :output-def-syntax-id identity)) traces)
+    trees
+    (sh07-core-source-map-order
+     resolution-artifact
+     executable-syntax
+     (mapv
+      (fn*
+       [p1__157#]
+       (sh07-core-build-form-tree
+        source-path
+        (:source-revision-id lineage)
+        decimal-evidence
+        p1__157#
+        (get trace-by-output (:sh07/root-syntax-id p1__157#))))
+      executable-syntax))
+    _
+    (sh07-core-decimal-evidence-complete! source-path decimal-evidence)
+    authenticated-sh06-request
+    (get-in
+     resolution-artifact
+     [:gravity-resolution-boundary :authenticated-resolution-request])
+    resolved-analysis
+    (get-in
+     resolution-artifact
+     [:gravity-resolution-boundary :resolved-analysis])
+    projection
+    (sh07-core-resolution-projection!
+     source-path
+     (:source-revision-id lineage)
+     executable-syntax
+     trees
+     traces
+     authenticated-sh06-request
+     resolved-analysis)
+    forms
+    (:forms projection)
+    roots
+    (mapv (comp :form-id :root) trees)
+    bindings
+    (sh07-b13-binding-order module trees (:binding-table projection))
+    aliases
+    (:alias-table projection)
+    resolutions
+    (:resolution-table projection)
+    fragment-manifest
+    (sh07-b13-fragment-manifest
+     lineage
+     module
+     trees
+     bindings
+     resolutions
+     aliases)
+    fragment-coverage
+    (sh07-b13-fragment-coverage
+     module
+     forms
+     bindings
+     resolutions
+     fragment-manifest)
+    module-assembly-manifest
+    (sh07-b13-module-assembly-manifest lineage fragment-manifest)
+    expectation
+    {:source-revision-id (:source-revision-id lineage),
+     :sh05-artifact-id (:sh05-artifact-id lineage),
+     :macro-expansion-trace-id (:macro-expansion-trace-id lineage),
+     :expanded-defn-count (count traces),
+     :expected-input-syntax-ids (mapv :input-syntax-id traces),
+     :expected-output-def-syntax-ids
+     (mapv :output-def-syntax-id traces),
+     :expected-introduced-fn-syntax-ids
+     (mapv :introduced-fn-syntax-id traces)}
+    request
+    {:resolution-table resolutions,
+     :fragment-manifest fragment-manifest,
+     :lineage lineage,
+     :fragment-coverage fragment-coverage,
+     :schema-version 15,
+     :macro-origin-traces traces,
+     :projection-binding nil,
+     :scope :sh07-b15-keyword-map-lookup,
+     :binding-table bindings,
+     :module module,
+     :top-level-form-ids roots,
+     :provenance {:actual-source-path source-path},
+     :artifact :gravity/sh07-authenticated-sh06-core-request,
+     :alias-table aliases,
+     :module-assembly-manifest module-assembly-manifest,
+     :macro-origin-expectation expectation,
+     :macro-expansion-trace semantic-macro-trace,
+     :forms forms}
+    binding
+    (reader-canonical-hash
+     (sh07-core-projection-binding-input request))]
+   (assoc request :projection-binding binding))))
+
+(defn
+ authenticated-request
+ ([resolution-artifact operations]
+  (let
+   [sh07-core-authenticated-request
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-authenticated-request)]
+   (sh07-core-authenticated-request
+    resolution-artifact
+    :gravity.bootstrap/legacy)))
+ ([resolution-artifact context operations]
+  (let
+   [sh07-core-authenticated-request
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-authenticated-request)]
+   (sh07-core-authenticated-request resolution-artifact context nil)))
+ ([resolution-artifact context invocation operations]
+  (let
+   [sh03-reader-authenticated-envelope-options
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh03-reader-authenticated-envelope-options)
+    sh06-resolution-artifact-verification
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh06-resolution-artifact-verification)
+    sh07-core-request-from-verified-upstream
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-request-from-verified-upstream)
+    sh07-core-source-path-from-resolution
+    (.valAt
+     ^clojure.lang.ILookup operations
+     :sh07-core-source-path-from-resolution)
+    contextual?
+    (not= :gravity.bootstrap/legacy context)
+    source-path
+    (sh07-core-source-path-from-resolution resolution-artifact)
+    _
+    (when
+     invocation
+     (sh03-reader-authenticated-envelope-options
+      source-path
+      invocation))
+    _
+    (when
+     (and contextual? (nil? context))
+     (throw
+      (ex-info
+       "SH-07 requires lexical SH-06 authority"
+       {:id "C6-VERIFY",
+        :stage :core-lowering,
+        :source-path source-path,
+        :missing-fields [:sh06-context]})))
+    verification
+    (cond
+     invocation
+     (sh06-resolution-artifact-verification
+      resolution-artifact
+      context
+      invocation)
+     contextual?
+     (sh06-resolution-artifact-verification
+      resolution-artifact
+      context)
+     :else
+     (sh06-resolution-artifact-verification resolution-artifact))]
+   (sh07-core-request-from-verified-upstream
+    resolution-artifact
+    verification))))
+
+(defn
+ digest-reference-ordinal
+ [value _operations]
+ (when
+  (and
+   (map? value)
+   (=
+    #{:authority :schema-version :ordinal :artifact}
+    (set (keys value)))
+   (= :gravity/sh07-internal-digest-reference (:artifact value))
+   (= 1 (:schema-version value))
+   (= :sh07-digest-resolver (:authority value))
+   (integer? (:ordinal value))
+   (not (neg? (:ordinal value))))
+  (:ordinal value)))
+
+(defn
+ resolve-reference!
+ [source-path value resolved-digests operations]
+ (let
+  [p15-s23-sh02-sha256-id?
+   (.valAt ^clojure.lang.ILookup operations :p15-s23-sh02-sha256-id?)
+   sh07-core-digest-reference-ordinal
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-digest-reference-ordinal)
+   ordinal
+   (sh07-core-digest-reference-ordinal value)
+   resolved
+   (when (some? ordinal) (get resolved-digests ordinal))]
+  (when-not
+   (and (some? ordinal) (p15-s23-sh02-sha256-id? resolved))
+   (throw
+    (ex-info
+     "SH-07 digest reference is unresolved"
+     {:id "C6-VERIFY",
+      :stage :core-lowering,
+      :source-path source-path,
+      :digest-reference value,
+      :resolved-count (count resolved-digests)})))
+  resolved))
+
+(defn
+ resolve-reference-vector!
+ [source-path values resolved-digests operations]
+ (let
+  [sh07-core-resolve-reference!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-resolve-reference!)]
+  (mapv
+   (fn*
+    [p1__158#]
+    (sh07-core-resolve-reference!
+     source-path
+     p1__158#
+     resolved-digests))
+   values)))
+
+(defn
+ semantic-projection-id
+ [value _operations]
+ (or
+  (get-in value [:lineage :sh06-semantic-projection-id])
+  (get value :sh06-semantic-projection-id)
+  (get-in value [:attributes :sh06-semantic-projection-id])))
+
+(defn
+ semantic-binding
+ [semantic-projection-id binding _operations]
+ (cond->
+  binding
+  (:upstream-binding-id binding)
+  (assoc :upstream-binding-id (:binding-id binding))
+  (and semantic-projection-id (:definition-artifact-id binding))
+  (assoc :definition-artifact-id semantic-projection-id)))
+
+(defn
+ semantic-resolution
+ [resolution _operations]
+ (cond->
+  resolution
+  (:upstream-binding-id resolution)
+  (assoc :upstream-binding-id (:binding-id resolution))))
+
+(defn
+ semantic-var-reference
+ [semantic-projection-id reference operations]
+ (let
+  [sh07-core-semantic-projection-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-projection-id)
+   semantic-projection-id
+   (or
+    semantic-projection-id
+    (sh07-core-semantic-projection-id reference))]
+  (cond->
+   reference
+   (:upstream-binding-id reference)
+   (assoc :upstream-binding-id (:binding-id reference))
+   (and semantic-projection-id (:definition-artifact-id reference))
+   (assoc :definition-artifact-id semantic-projection-id)
+   (and
+    semantic-projection-id
+    (:authenticated-sh06-artifact-id reference))
+   (assoc :authenticated-sh06-artifact-id semantic-projection-id))))
+
+(defn
+ semantic-mutation
+ [semantic-projection-id mutation operations]
+ (let
+  [sh07-core-semantic-projection-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-projection-id)
+   semantic-projection-id
+   (or
+    semantic-projection-id
+    (sh07-core-semantic-projection-id mutation))]
+  (cond->
+   mutation
+   (:target-upstream-binding-id mutation)
+   (assoc :target-upstream-binding-id (:target-binding-id mutation))
+   (and
+    semantic-projection-id
+    (:target-definition-artifact-id mutation))
+   (assoc :target-definition-artifact-id semantic-projection-id)
+   (and
+    semantic-projection-id
+    (:authenticated-sh06-artifact-id mutation))
+   (assoc :authenticated-sh06-artifact-id semantic-projection-id))))
+
+(defn
+ semantic-error-transfer
+ [semantic-projection-id transfer operations]
+ (let
+  [sh07-core-semantic-projection-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-projection-id)
+   semantic-projection-id
+   (or
+    semantic-projection-id
+    (sh07-core-semantic-projection-id transfer))]
+  (cond->
+   transfer
+   (and
+    semantic-projection-id
+    (:authenticated-sh06-artifact-id transfer))
+   (assoc :authenticated-sh06-artifact-id semantic-projection-id))))
+
+(defn
+ semantic-error-handler
+ [semantic-projection-id handler operations]
+ (let
+  [sh07-core-semantic-projection-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-projection-id)
+   semantic-projection-id
+   (or
+    semantic-projection-id
+    (sh07-core-semantic-projection-id handler))]
+  (cond->
+   handler
+   (and
+    semantic-projection-id
+    (:authenticated-sh06-artifact-id handler))
+   (assoc :authenticated-sh06-artifact-id semantic-projection-id))))
+
+(defn
+ semantic-node
+ [semantic-projection-id node operations]
+ (let
+  [sh07-core-semantic-error-handler
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-error-handler)
+   sh07-core-semantic-error-transfer
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-error-transfer)
+   sh07-core-semantic-mutation
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-mutation)
+   sh07-core-semantic-var-reference
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-var-reference)]
+  (case
+   (:core-form node)
+   :var
+   (update
+    node
+    :attributes
+    (fn*
+     [p1__151#]
+     (sh07-core-semantic-var-reference
+      semantic-projection-id
+      p1__151#)))
+   :set!
+   (update
+    node
+    :attributes
+    (fn*
+     [p1__152#]
+     (sh07-core-semantic-mutation semantic-projection-id p1__152#)))
+   :throw
+   (update
+    node
+    :attributes
+    (fn*
+     [p1__153#]
+     (sh07-core-semantic-error-transfer
+      semantic-projection-id
+      p1__153#)))
+   :try
+   (update
+    node
+    :attributes
+    (fn*
+     [p1__154#]
+     (sh07-core-semantic-error-handler
+      semantic-projection-id
+      p1__154#)))
+   node)))
+
+(defn
+ semantic-identity-preimage
+ [preimage operations]
+ (let
+  [sh07-core-semantic-binding
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-binding)
+   sh07-core-semantic-error-handler
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-error-handler)
+   sh07-core-semantic-error-transfer
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-error-transfer)
+   sh07-core-semantic-mutation
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-mutation)
+   sh07-core-semantic-node
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-semantic-node)
+   sh07-core-semantic-projection-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-projection-id)
+   sh07-core-semantic-resolution
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-resolution)
+   sh07-core-semantic-var-reference
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-var-reference)
+   semantic-projection-id
+   (sh07-core-semantic-projection-id preimage)]
+  (cond->
+   preimage
+   (and
+    semantic-projection-id
+    (contains? preimage :projection-binding))
+   (assoc :projection-binding semantic-projection-id)
+   (and semantic-projection-id (contains? preimage :lineage))
+   (assoc-in
+    [:lineage :authenticated-sh06-artifact-id]
+    semantic-projection-id)
+   (:binding-table preimage)
+   (update
+    :binding-table
+    (fn*
+     [p1__155#]
+     (mapv
+      (partial sh07-core-semantic-binding semantic-projection-id)
+      p1__155#)))
+   (:resolution-table preimage)
+   (update
+    :resolution-table
+    (fn* [p1__156#] (mapv sh07-core-semantic-resolution p1__156#)))
+   (:var-references preimage)
+   (update
+    :var-references
+    (fn*
+     [p1__157#]
+     (mapv
+      (partial sh07-core-semantic-var-reference semantic-projection-id)
+      p1__157#)))
+   (:mutations preimage)
+   (update
+    :mutations
+    (fn*
+     [p1__158#]
+     (mapv
+      (partial sh07-core-semantic-mutation semantic-projection-id)
+      p1__158#)))
+   (:error-transfers preimage)
+   (update
+    :error-transfers
+    (fn*
+     [p1__159#]
+     (mapv
+      (partial
+       sh07-core-semantic-error-transfer
+       semantic-projection-id)
+      p1__159#)))
+   (:error-handlers preimage)
+   (update
+    :error-handlers
+    (fn*
+     [p1__160#]
+     (mapv
+      (partial sh07-core-semantic-error-handler semantic-projection-id)
+      p1__160#)))
+   (:nodes preimage)
+   (update
+    :nodes
+    (fn*
+     [p1__161#]
+     (mapv
+      (partial sh07-core-semantic-node semantic-projection-id)
+      p1__161#)))
+   (= :var (:core-form preimage))
+   (update
+    :attributes
+    (fn*
+     [p1__162#]
+     (sh07-core-semantic-var-reference
+      semantic-projection-id
+      p1__162#)))
+   (= :set! (:core-form preimage))
+   (update
+    :attributes
+    (fn*
+     [p1__163#]
+     (sh07-core-semantic-mutation semantic-projection-id p1__163#)))
+   (= :throw (:core-form preimage))
+   (update
+    :attributes
+    (fn*
+     [p1__164#]
+     (sh07-core-semantic-error-transfer
+      semantic-projection-id
+      p1__164#)))
+   (= :try (:core-form preimage))
+   (update
+    :attributes
+    (fn*
+     [p1__165#]
+     (sh07-core-semantic-error-handler
+      semantic-projection-id
+      p1__165#))))))
+
+(defn
+ resolve-digest-preimage!
+ [source-path purpose preimage resolved-digests operations]
+ (let
+  [sh07-core-execute!
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-execute!)
+   sh07-core-resolve-reference-vector!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-resolve-reference-vector!)
+   sh07-core-semantic-identity-preimage
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-identity-preimage)]
+  (case
+   purpose
+   :sh07-core-node-id
+   (->
+    preimage
+    (assoc
+     :children
+     (sh07-core-resolve-reference-vector!
+      source-path
+      (:children preimage)
+      resolved-digests))
+    (assoc
+     :evaluated-children
+     (sh07-core-resolve-reference-vector!
+      source-path
+      (:evaluated-children preimage)
+      resolved-digests))
+    sh07-core-semantic-identity-preimage)
+   :sh07-core-artifact-id
+   (let
+    [result
+     (sh07-core-execute!
+      source-path
+      'sh07-resolve-identity-preimage
+      [preimage resolved-digests])]
+    (when-not
+     (= :accepted (:status result))
+     (throw
+      (ex-info
+       "SH-07 identity digest preimage did not resolve"
+       {:id "C6-VERIFY",
+        :stage :core-lowering,
+        :source-path source-path,
+        :reason (:reason result)})))
+    (sh07-core-semantic-identity-preimage (:value result)))
+   :sh07-core-provenance-binding-id
+   (let
+    [result
+     (sh07-core-execute!
+      source-path
+      'sh07-resolve-provenance-preimage
+      [preimage resolved-digests])]
+    (when-not
+     (= :accepted (:status result))
+     (throw
+      (ex-info
+       "SH-07 provenance digest preimage did not resolve"
+       {:id "C6-VERIFY",
+        :stage :core-lowering,
+        :source-path source-path,
+        :reason (:reason result)})))
+    (:value result))
+   :sh07-source-core-map-id
+   (let
+    [result
+     (sh07-core-execute!
+      source-path
+      'sh07-resolve-source-core-map-preimage
+      [preimage resolved-digests])]
+    (when-not
+     (= :accepted (:status result))
+     (throw
+      (ex-info
+       "SH-07 mapping digest preimage did not resolve"
+       {:id "C6-VERIFY",
+        :stage :core-lowering,
+        :reason (:reason result)})))
+    (sh07-core-semantic-identity-preimage (:value result)))
+   :sh07-core-diagnostic-id
+   preimage
+   (throw
+    (ex-info
+     "Unknown SH-07 digest purpose"
+     {:id "C6-VERIFY",
+      :stage :core-lowering,
+      :reason :unknown-digest-purpose,
+      :purpose purpose})))))
+
+(defn
+ digest-requests
+ [source-path digest-requests operations]
+ (let
+  [p15-s23-c6c10-carrier-validation
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :p15-s23-c6c10-carrier-validation)
+   reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh07-core-resolve-digest-preimage!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-resolve-digest-preimage!)]
+  (p15-s23-c6c10-carrier-validation source-path digest-requests)
+  (loop
+   [remaining digest-requests ordinal 0 resolved []]
+   (if
+    (empty? remaining)
+    resolved
+    (let
+     [request (first remaining)]
+     (when-not
+      (and
+       (= ordinal (:ordinal request))
+       (= #{:purpose :preimage :ordinal} (set (keys request))))
+      (throw
+       (ex-info
+        "Malformed SH-07 digest request sequence"
+        {:id "C6-VERIFY",
+         :stage :core-lowering,
+         :digest-request request,
+         :ordinal ordinal})))
+     (let
+      [purpose
+       (:purpose request)
+       preimage
+       (sh07-core-resolve-digest-preimage!
+        source-path
+        purpose
+        (:preimage request)
+        resolved)
+       digest
+       (reader-canonical-hash
+        {:domain :gravity/sh07-declared-digest-v1,
+         :purpose purpose,
+         :preimage preimage})]
+      (recur
+       (rest remaining)
+       (inc ordinal)
+       (conj resolved digest))))))))
+
+(defn
+ resolve-result
+ [source-path template _digest-requests resolved-digests operations]
+ (let
+  [sh07-core-execute!
+   (.valAt ^clojure.lang.ILookup operations :sh07-core-execute!)
+   resolution
+   (sh07-core-execute!
+    source-path
+    'sh07-resolve-core-template
+    [template resolved-digests])]
+  (when-not
+   (= :accepted (:status resolution))
+   (throw
+    (ex-info
+     "SH-07 controlled digest-slot resolution failed"
+     {:id "C6-VERIFY",
+      :stage :core-lowering,
+      :source-path source-path,
+      :reason (:reason resolution),
+      :resolution resolution})))
+  (:value resolution)))
+
+(defn
+ public-decimal-presentation
+ "Return an explicit host presentation view. Do not use this view as an\n  authenticated canonical core: its decimal values differ from the preimage."
+ [core _operations]
+ (update
+  core
+  :nodes
+  (fn
+   [nodes]
+   (mapv
+    (fn
+     [node]
+     (let
+      [descriptor (get-in node [:attributes :value])]
+      (if
+       (and
+        (= :decimal (get-in node [:attributes :literal-kind]))
+        (map? descriptor)
+        (= :gravity/arbitrary-decimal-literal (:kind descriptor)))
+       (assoc-in
+        node
+        [:attributes :value]
+        (java.math.BigDecimal.
+         (java.math.BigInteger. (:unscaled-value descriptor))
+         (int (:scale descriptor))))
+       node)))
+    nodes))))
+
+(defn
+ canonical-artifact
+ [resolved-template operations]
+ (let
+  [sh07-core-semantic-identity-preimage
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-semantic-identity-preimage)]
+  (->
+   resolved-template
+   (assoc
+    :artifact
+    :gravity/sh07-canonical-core-artifact
+    :artifact-id
+    (:artifact-id-request resolved-template)
+    :provenance-binding-id
+    (:provenance-binding-id-request resolved-template)
+    :identity-preimage
+    (sh07-core-semantic-identity-preimage
+     (:identity-preimage resolved-template)))
+   (dissoc :artifact-id-request :provenance-binding-id-request))))
+
+(defn
+ raise-diagnostic!
+ [_source-path template operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   diagnostic
+   (first (:diagnostics template))
+   request
+   (first (:digest-requests template))
+   diagnostic-id
+   (reader-canonical-hash
+    {:domain :gravity/sh07-declared-digest-v1,
+     :purpose (:purpose request),
+     :preimage (:preimage request)})
+   resolved
+   (assoc diagnostic :diagnostic-id-request diagnostic-id)]
+  (throw
+   (ex-info
+    "Gravity checked-core lowering rejected the source"
+    resolved))))
+
+(defn
+ request-diagnostic!
+ [request rule-specific operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   source-path
+   (get-in request [:provenance :actual-source-path])
+   lineage
+   (:lineage request)
+   module
+   (:module request)
+   reason
+   (or (:reason rule-specific) :authenticated-core-request)
+   remediation
+   "Replay the Gravity template and bind every digest ordinal exactly once."
+   diagnostic
+   {:lowering-rule :sh07-b47-function-call-recursion-products,
+    :remediation remediation,
+    :source-span {:source source-path},
+    :stage :core-lowering,
+    :rule "C6-VERIFY",
+    :diagnostic-id-request
+    (reader-canonical-hash
+     {:domain :gravity/sh07-request-diagnostic-v16,
+      :source-revision-id (:source-revision-id lineage),
+      :rule-specific rule-specific}),
+    :generated-origin-chain [],
+    :syntax-id nil,
+    :severity :error,
+    :core-node-id nil,
+    :artifact :gravity/sh07-core-diagnostic,
+    :form-id nil,
+    :target (:target module),
+    :facts
+    {:reason reason,
+     :rule-specific rule-specific,
+     :source-revision-id (:source-revision-id lineage),
+     :sh06-artifact-id (:sh06-artifact-id lineage),
+     :authenticated-sh06-artifact-id
+     (:authenticated-sh06-artifact-id lineage),
+     :sh06-semantic-projection-id
+     (:sh06-semantic-projection-id lineage),
+     :fail-closed true},
+    :namespace (:namespace module),
+    :profile (:profile module)}]
+  (throw
+   (ex-info
+    "SH-07 authenticated request failed validation"
+    diagnostic))))
+
+(doseq
+ [operation
+  [#'build-plan-binding!
+   #'current-plan-binding!
+   #'execute!
+   #'plan-identities
+   #'source-key
+   #'source-path
+   #'build-form-tree
+   #'children
+   #'decimal-descriptor
+   #'decimal-evidence
+   #'decimal-evidence-complete!
+   #'macro-trace
+   #'neutral-value
+   #'parameter-binding-paths
+   #'projected-form-id
+   #'projected-source-mismatch
+   #'projected-syntax-id
+   #'root-syntax-id
+   #'semantic-macro-trace
+   #'semantic-span
+   #'source-map-order
+   #'source-occurrence-context
+   #'source-path-from-resolution
+   #'value-kind
+   #'alias-name
+   #'binding-order
+   #'fragment-coverage
+   #'fragment-manifest
+   #'fragment-record
+   #'module-assembly-manifest
+   #'lineage
+   #'lineage-with-semantic-trace
+   #'projection-binding-input
+   #'authenticated-request
+   #'digest-reference-ordinal
+   #'request-from-verified-upstream
+   #'resolve-reference!
+   #'resolve-reference-vector!
+   #'semantic-binding
+   #'semantic-projection-id
+   #'semantic-resolution
+   #'semantic-var-reference
+   #'digest-requests
+   #'resolve-digest-preimage!
+   #'resolve-result
+   #'semantic-error-handler
+   #'semantic-error-transfer
+   #'semantic-identity-preimage
+   #'semantic-mutation
+   #'semantic-node
+   #'canonical-artifact
+   #'public-decimal-presentation
+   #'raise-diagnostic!
+   #'request-diagnostic!]]
+ (alter-meta!
+  operation
+  assoc
+  :gravity/namespace-contract
+  namespace-contract)))
