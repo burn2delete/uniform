@@ -843,42 +843,47 @@
   (let [record (get census :function-record) id (get record :function-syntax-id)
         arity (get record :fixed-arity) calls (get census :calls) edges (get census :edges)]
     (if (if (if (vector? calls) (vector? edges) false)
-          (if (= (count calls) (count edges)) (if (integer? arity) (> arity 0) false) false) false)
+          (if (= (count calls) (count edges)) (if (integer? arity) (> arity 0) false) false)
+          false)
       (loop [remaining calls remaining-edges edges entries [] selected nil normal-count 0]
         (if (= 0 (count remaining))
           (if (> normal-count 0)
             {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count}
             {:status :rejected :reason :private-self-normal-entry-required})
-          (let [call (first remaining) edge (first remaining-edges) args (get call :argument-node-ids)
-                  self? (= id (get edge :caller-function-syntax-id))
-                  valid-call? (if (= (get call :core-node-id) (get edge :call-core-node-id))
-                               (if (= id (get edge :callee-function-syntax-id))
-                                 (if (= :local-function (get edge :classification))
-                                   (if (vector? args) (= arity (count args)) false) false) false) false)]
+          (let [call (first remaining)
+                edge (first remaining-edges)
+                args (get call :argument-node-ids)
+                self? (= id (get edge :caller-function-syntax-id))
+                valid-call? (body-all?
+                              [(= (get call :core-node-id) (get edge :call-core-node-id))
+                               (= id (get edge :callee-function-syntax-id))
+                               (= :local-function (get edge :classification))
+                               (vector? args) (= arity (count args))])]
             (if valid-call?
               (if self?
                 (recur (rest remaining) (rest remaining-edges) entries selected normal-count)
                 (let [arguments (body-io-child-types args types)
-                          invoked? (body-pe-invoked? types args)
-                          complete? (loop [values arguments]
-                                      (if (= 0 (count values)) true
-                                        (if (body-is-value-type? (first values)) (recur (rest values)) false)))
-                          entry {:call-core-node-id (get call :core-node-id)
-                                 :caller-function-syntax-id (get edge :caller-function-syntax-id)
-                                 :source-call call :source-edge edge :source (get (get nodes (get call :core-node-id)) :source)
-                                 :argument-node-ids args :argument-types arguments
-                                 :normal-invocation? invoked? :invocation-guard :all-operand-types-normal
-                                 :callee-result-is-not-invocation-guard true}]
-                      (if (if invoked? (= false complete?) false)
-                        {:status :rejected :reason :private-self-independent-entry-types-required
-                         :entry entry}
-                        (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
-                          {:status :rejected :reason :private-self-entry-type-conflict
-                           :expected selected :actual arguments :entry entry}
-                          (recur (rest remaining) (rest remaining-edges) (conj entries entry)
-                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
-              {:status :rejected :reason :private-self-entry-census-mismatch})))
-      {:status :rejected :reason :private-self-entry-families-required}))))
+                      invoked? (body-pe-invoked? types args)
+                      complete? (loop [values arguments]
+                                  (if (= 0 (count values)) true
+                                    (if (body-is-value-type? (first values)) (recur (rest values)) false)))
+                      entry {:call-core-node-id (get call :core-node-id)
+                             :caller-function-syntax-id (get edge :caller-function-syntax-id)
+                             :source-call call :source-edge edge
+                             :source (get (get nodes (get call :core-node-id)) :source)
+                             :argument-node-ids args :argument-types arguments
+                             :normal-invocation? invoked?
+                             :invocation-guard :all-operand-types-normal
+                             :callee-result-is-not-invocation-guard true}]
+                  (if (if invoked? (= false complete?) false)
+                    {:status :rejected :reason :private-self-independent-entry-types-required :entry entry}
+                    (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
+                      {:status :rejected :reason :private-self-entry-type-conflict
+                       :expected selected :actual arguments :entry entry}
+                      (recur (rest remaining) (rest remaining-edges) (conj entries entry)
+                        (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
+              {:status :rejected :reason :private-self-entry-census-mismatch}))))
+      {:status :rejected :reason :private-self-entry-families-required})))
 
 (defn body-is-parameter-record [core parameter index binding type]
   (let [premise (get core :sh08-private-self-parameter-premise)
@@ -1064,46 +1069,51 @@
        (= [] (get form :child-form-ids))
        (= (get node :source) (body-ix-form-source form))])))
 
+(defn body-ix-entry-values-checked [calls edges record nodes types forms]
+  (let [id (get record :function-syntax-id)]
+    (loop [remaining calls rows edges entries [] selected nil normal-count 0]
+      (if (= 0 (count remaining))
+        (if (> normal-count 0)
+          {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count}
+          {:status :rejected :reason :indexed-self-normal-entry-required})
+        (let [call (first remaining) edge (first rows) args (get call :argument-node-ids)
+              self? (= id (get edge :caller-function-syntax-id))
+              valid-call? (body-all?
+                            [(= (get call :core-node-id) (get edge :call-core-node-id))
+                             (= id (get edge :callee-function-syntax-id))
+                             (= :local-function (get edge :classification))
+                             (vector? args) (= 3 (count args)) (= 3 (get record :fixed-arity))])]
+          (if valid-call?
+            (if self?
+              (recur (rest remaining) (rest rows) entries selected normal-count)
+              (let [arguments (body-io-child-types args types)
+                    invoked? (body-pe-invoked? types args)
+                    index (get nodes (get args 2))
+                    zero? (body-ix-literal? index :integer 0 forms)
+                    entry {:call-core-node-id (get call :core-node-id)
+                           :caller-function-syntax-id (get edge :caller-function-syntax-id)
+                           :source-call call :source-edge edge
+                           :source (get (get nodes (get call :core-node-id)) :source)
+                           :argument-node-ids args :argument-types arguments
+                           :normal-invocation? invoked? :invocation-guard :all-operand-types-normal
+                           :callee-result-is-not-invocation-guard true
+                           :index-entry-source (if invoked? {:node index :form (get forms (get (get index :source) :form-id))} nil)}]
+                (if (if invoked? (= false (body-ix-types? arguments)) false)
+                  {:status :rejected :reason :indexed-self-independent-entry-types-required :entry entry}
+                  (if (if invoked? (= false zero?) false)
+                    {:status :rejected :reason :indexed-self-zero-source-entry-required :entry entry}
+                    (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
+                      {:status :rejected :reason :indexed-self-entry-type-conflict
+                       :expected selected :actual arguments :entry entry}
+                      (recur (rest remaining) (rest rows) (conj entries entry)
+                        (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))))
+            {:status :rejected :reason :indexed-self-entry-census-mismatch}))))))
+
 (defn body-ix-entry-values [census nodes types forms]
-  (let [record (get census :function-record) id (get record :function-syntax-id)
-        calls (get census :calls) edges (get census :edges)]
+  (let [record (get census :function-record) calls (get census :calls) edges (get census :edges)]
     (if (if (vector? calls) (if (vector? edges) (= (count calls) (count edges)) false) false)
-      (loop [remaining calls rows edges entries [] selected nil normal-count 0]
-        (if (= 0 (count remaining))
-          (if (> normal-count 0)
-            {:status :accepted :parameter-types selected :entries entries :normal-entry-count normal-count}
-            {:status :rejected :reason :indexed-self-normal-entry-required})
-            (let [call (first remaining) edge (first rows) args (get call :argument-node-ids)
-                  self? (= id (get edge :caller-function-syntax-id))
-                  valid-call? (body-all?
-                      [(= (get call :core-node-id) (get edge :call-core-node-id))
-                       (= id (get edge :callee-function-syntax-id)) (= :local-function (get edge :classification))
-                       (vector? args) (= 3 (count args)) (= 3 (get record :fixed-arity))])]
-              (if valid-call?
-                (if self?
-                  (recur (rest remaining) (rest rows) entries selected normal-count)
-                  (let [arguments (body-io-child-types args types)
-                          invoked? (body-pe-invoked? types args)
-                          index (get nodes (get args 2))
-                          zero? (body-ix-literal? index :integer 0 forms)
-                          entry {:call-core-node-id (get call :core-node-id)
-                                 :caller-function-syntax-id (get edge :caller-function-syntax-id)
-                                 :source-call call :source-edge edge :source (get (get nodes (get call :core-node-id)) :source)
-                                 :argument-node-ids args :argument-types arguments
-                                 :normal-invocation? invoked? :invocation-guard :all-operand-types-normal
-                                 :callee-result-is-not-invocation-guard true
-                                 :index-entry-source (if invoked? {:node index :form (get forms (get (get index :source) :form-id))} nil)}]
-                      (if (if invoked? (= false (body-ix-types? arguments)) false)
-                        {:status :rejected :reason :indexed-self-independent-entry-types-required :entry entry}
-                        (if (if invoked? (= false zero?) false)
-                          {:status :rejected :reason :indexed-self-zero-source-entry-required :entry entry}
-                          (if (if invoked? (if (= selected nil) false (= false (= selected arguments))) false)
-                            {:status :rejected :reason :indexed-self-entry-type-conflict
-                             :expected selected :actual arguments :entry entry}
-                            (recur (rest remaining) (rest rows) (conj entries entry)
-                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
-              {:status :rejected :reason :indexed-self-entry-census-mismatch})))
-      {:status :rejected :reason :indexed-self-entry-families-required})))))
+      (body-ix-entry-values-checked calls edges record nodes types forms)
+      {:status :rejected :reason :indexed-self-entry-families-required})))
 
 (defn body-ix-if-source? [core node nodes forms]
   (let [children (get node :children) form (get forms (get (get node :source) :form-id))
@@ -1338,32 +1348,38 @@
 
 ; Match the finite cold entry projection to current C7-verified VALUE facts.
 ; An aborting entry never supplies a parameter seed; Unknown is retained there.
+(defn body-is-entry-types-checked [calls rows edges id types excluded]
+  (loop [remaining calls edge-rows edges out {}]
+    (if (= 0 (count remaining))
+      {:status :accepted :types out}
+      (let [call (first remaining) edge (first edge-rows) args (get call :argument-node-ids)
+            row (body-pe-one rows :call-core-node-id (get call :core-node-id))
+            values (get row :argument-types)]
+        (if (= id (get edge :caller-function-syntax-id))
+          (recur (rest remaining) (rest edge-rows) out)
+          (if (if (vector? values) (= (count args) (count values)) false)
+            (let [normal? (loop [remaining values]
+                            (if (= 0 (count remaining)) true
+                              (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
+                  checked (loop [ids args remaining values result out]
+                            (if (= 0 (count ids)) result
+                              (let [node-id (first ids) value (first remaining) current (get types node-id :gravity.type/unknown)]
+                                (if (if (contains? result node-id) (= false (= value (get result node-id))) false)
+                                  nil
+                                  (if (if (body-ij-unknown? value) (= false normal?)
+                                        (if (= value current) (= false (contains? excluded node-id)) false))
+                                    (recur (rest ids) (rest remaining) (assoc result node-id value)) nil)))))]
+              (if (map? checked)
+                (recur (rest remaining) (rest edge-rows) checked)
+                {:status :rejected :reason :private-self-entry-current-value-mismatch}))
+            {:status :rejected :reason :private-self-entry-current-value-mismatch}))))))
+
 (defn body-is-entry-types [census claimed types excluded]
   (let [calls (get census :calls) rows (get claimed :entries)
         id (get (get census :function-record) :function-syntax-id)]
     (if (if (vector? rows) (= (count rows) (- (count calls) 1)) false)
-      (loop [remaining calls edges (get census :edges) out {}]
-        (if (= 0 (count remaining)) {:status :accepted :types out}
-          (let [call (first remaining) edge (first edges) args (get call :argument-node-ids)
-                  row (body-pe-one rows :call-core-node-id (get call :core-node-id))
-                  values (get row :argument-types)]
-            (if (= id (get edge :caller-function-syntax-id))
-              (recur (rest remaining) (rest edges) out)
-                  (if (if (vector? values) (= (count args) (count values)) false)
-                    (let [normal? (loop [remaining values]
-                                    (if (= 0 (count remaining)) true
-                                      (if (= :gravity.type/never (first remaining)) false (recur (rest remaining)))))
-                          checked (loop [ids args remaining values result out]
-                                    (if (= 0 (count ids)) result
-                                      (let [node-id (first ids) value (first remaining) current (get types node-id :gravity.type/unknown)]
-                                        (if (if (contains? result node-id) (= false (= value (get result node-id))) false) nil
-                                          (if (if (body-ij-unknown? value) (= false normal?)
-                                                (if (= value current) (= false (contains? excluded node-id)) false))
-                                            (recur (rest ids) (rest remaining) (assoc result node-id value)) nil)))))]
-                      (if (map? checked) (recur (rest remaining) (rest edges) checked)
-                        {:status :rejected :reason :private-self-entry-current-value-mismatch}))
-                    {:status :rejected :reason :private-self-entry-current-value-mismatch}))))
-      {:status :rejected :reason :private-self-entry-coverage-mismatch}))))
+      (body-is-entry-types-checked calls rows (get census :edges) id types excluded)
+      {:status :rejected :reason :private-self-entry-coverage-mismatch})))
 
 (defn body-is-context [core facts bindings source-forms]
   (if (= false (body-is? facts))
@@ -1437,8 +1453,8 @@
                          (= [row] (body-select (get facts :constraint-ledger) :producer-rule
                                     (if indexed? :sh08-indexed-private-self-value-v1 :sh08-private-self-value-v1)))])
                     {:status :accepted :parameter-value-premise expected :proof proof :component (get proof :component)}
-                    {:status :rejected :reason :private-self-source-value-premise-mismatch})))
-                {:status :rejected :reason :private-self-source-census-mismatch})))))
+                    {:status :rejected :reason :private-self-source-value-premise-mismatch}))
+                {:status :rejected :reason :private-self-source-census-mismatch}))))))
 
 (defn body-recursive? [typed]
   (if (contains? #{:private-inferred-monomorphic-named-self-value :declared-monomorphic-named-self-value
@@ -2562,8 +2578,8 @@
                              :relation :independent-nil-or-atomic-join :nil-type :gravity.type/nil :value-type (get validation :value-type))
                            (assoc premise :element-type (get validation :element-type))))}
                       {:status :rejected :reason :list-if-join-source-mismatch}))
-                  validation)))))
-      {:status :not-applicable}))
+                  validation))))
+      {:status :not-applicable})))
 
 (defn body-ij-row [premise]
   {:constraint-id-request {:domain (if (= :sh08-nil-if-join-v1 (get premise :version))
@@ -3895,10 +3911,13 @@
       (let [rows (body-pl-conj-rows ledger {})]
         (if (= :accepted (get rows :status)) {:status :accepted :context nil} rows))
       (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
-        (if (= false (vector? forms)) (body-failure :body-vector-append-source-forms-required)
-          (let [nodes (body-index (get core :nodes) :node-id) call-index (body-index calls :core-node-id)
+        (if (= false (vector? forms))
+          (body-failure :body-vector-append-source-forms-required)
+          (let [nodes (body-index (get core :nodes) :node-id)
+                call-index (body-index calls :core-node-id)
                 edges (body-index (get core :call-edges) :call-core-node-id)
-                call-facts (body-index (get facts :call-type-facts) :call-core-node-id) types (get facts :type-table)]
+                call-facts (body-index (get facts :call-type-facts) :call-core-node-id)
+                types (get facts :type-table)]
             (if (= false (= (count call-facts) (count (get facts :call-type-facts))))
               (body-failure :body-conj-call-fact-census)
               (loop [remaining calls checks {} families {}]
@@ -3910,33 +3929,40 @@
                                  :bindings bindings :type-checks checks :families families
                                  :conj-rows (get rows :rows) :call-facts call-facts}}
                       rows))
-                  (let [call (first remaining) args (get call :argument-node-ids) id (get call :core-node-id)]
-                    (if (body-va-binding? (get bindings (get call :operator-binding-id)) (get core :module))
+                  (let [call (first remaining)
+                        args (get call :argument-node-ids)
+                        id (get call :core-node-id)
+                        bound? (body-va-binding? (get bindings (get call :operator-binding-id)) (get core :module))
+                        receiver (get types (get args 0))
+                        receiver-valid? (if (body-pl-list? receiver) true
+                                         (if (= :gravity.type/set receiver) true
+                                           (if (body-lc-native-map? receiver)
+                                             (= :gravity.type/set (get receiver :kind)) false)))
+                        child-shape? (if (vector? (get (get nodes id) :children))
+                                       (= 3 (count (get (get nodes id) :children))) false)]
+                    (if (= false bound?)
+                      (recur (rest remaining) checks families)
                       (if (= false (vector? args))
                         (body-failure :body-conj-call-shape-required)
                         (if (= false (= 2 (count args)))
                           (body-failure :body-conj-arity-required)
-                          (if (let [receiver (get types (get args 0))]
-                                (if (body-pl-list? receiver) true
-                                  (if (= :gravity.type/set receiver) true
-                                    (if (body-lc-native-map? receiver) (= :gravity.type/set (get receiver :kind)) false))))
-                            (if (= false (if (vector? (get (get nodes id) :children))
-                                          (= 3 (count (get (get nodes id) :children))) false))
+                          (if (= false receiver-valid?)
+                            (recur (rest remaining) checks (assoc families id :vector-append))
+                            (if (= false child-shape?)
                               (body-failure :body-conj-call-shape-required)
                               (let [validation (body-pl-validate-types
                                                  [(get types (get args 0) :gravity.type/unknown)
                                                   (get types (get args 1) :gravity.type/unknown)])]
                                 (if (= :accepted (get validation :status))
                                   (recur (rest remaining) (assoc checks id validation)
-                                    (assoc families id (if (= :symbol-set-insertion (get validation :collection-family))
-                                                         :symbol-set-insertion
-                                                         (if (= :keyword-set-insertion (get validation :collection-family))
-                                                           :keyword-set-insertion
-                                                           (if (= :string-set-insertion (get validation :collection-family))
-                                                             :string-set-insertion :list-prepend))))
-                                  (body-failure (get validation :reason))))
-                            (recur (rest remaining) checks (assoc families id :vector-append))))))
-                      (recur (rest remaining) checks families)))))))))))))
+                                    (assoc families id
+                                      (if (= :symbol-set-insertion (get validation :collection-family))
+                                        :symbol-set-insertion
+                                        (if (= :keyword-set-insertion (get validation :collection-family))
+                                          :keyword-set-insertion
+                                          (if (= :string-set-insertion (get validation :collection-family))
+                                            :string-set-insertion :list-prepend)))))
+                                  (body-failure (get validation :reason)))))))))))))))))))
 
 (defn body-pl-call-valid? [core facts bindings node call edge nodes]
   (if (body-sse-call-ids? node call)
@@ -19666,7 +19692,7 @@ true
     (if (< budget 0) (assoc (body-failure :body-deferred-work-limit) :work-count declared-work)
     (if (body-shape-valid? core facts)
     (let [bindings (body-index (body-path request [:b47-context :authenticated-core-request :binding-table]) :binding-id)
-        private (body-is-context core facts bindings (body-path request [:b47-context :authenticated-core-request :forms]) budget)
+        private (body-is-context core facts bindings (body-path request [:b47-context :authenticated-core-request :forms]))
         core (assoc core :sh08-private-self-parameter-premise
                (if (= :accepted (get private :status)) (get private :parameter-value-premise) nil))
         request (assoc request :canonical-core-artifact core)
