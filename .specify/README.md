@@ -10,19 +10,16 @@ This is a work-artifact layer for bounded changes. The 240 contracts under
 
 ## Private rename fast path
 
-Spec Kit packages are optional for a mechanically scoped private rename. If a
-change only renames private implementation files, namespaces or helpers and
-updates their callers, tests, load order, documentation and any required
-manifests/digests without changing behavior, public APIs, serialized IDs,
-diagnostic IDs, ownership or evidence scope, use the normal branch and
-pull-request workflow. Include the old/new name map, a complete reference
-search and focused owner checks in the pull request; do not create four
-planning artifacts just to record the rename.
-
-Use `spec.md`, `plan.md`, `tasks.md` and `evidence.md` when the rename also
-changes a public or serialized identity, crosses component ownership, changes
-semantics, or needs new acceptance evidence. Historical four-artifact packages
-remain authoritative for their original scope and are not rewritten.
+The canonical classification and fast-path instructions are in
+[semantic-names.md](semantic-names.md). Apply them before selecting a feature
+directory: a private rename-only change returns to the ordinary branch/PR
+workflow, records its old/new name map, complete reference search and focused
+owner checks, and creates no feature directory or Spec Kit artifact. Public or
+serialized identity, protocol/schema/diagnostic IDs, ownership, semantic
+changes and new acceptance evidence remain outside that fast path. Use only
+the established bounded-workflow artifacts applicable to the change; no
+substantive edit implicitly requires all four. Historical packages remain
+authoritative for their original scope and are not rewritten.
 
 ## Official version and supported customization
 

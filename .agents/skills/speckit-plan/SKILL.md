@@ -15,6 +15,16 @@ metadata:
 $ARGUMENTS
 ```
 
+Before selecting a feature directory, classify the request with
+`.specify/semantic-names.md`. For private rename-only changes, return to the
+ordinary branch/PR workflow there and stop: record the old/new map, complete
+reference search, focused owner checks and required manifest/digest updates;
+create no feature directory or Spec Kit artifact. Otherwise continue only with
+this command's applicable bounded workflow. Public/serialized identity,
+protocol/schema/diagnostic IDs, ownership, semantics and new evidence are
+explicitly not private-only; no substantive edit implicitly requires all four
+artifacts.
+
 Read `AGENTS.md`, `.specify/README.md`, `.specify/memory/constitution.md`,
 and the owning canonical contracts before changing artifacts. User authorization
 and current coordination remain authoritative. Use the selected feature directory
@@ -23,12 +33,6 @@ from explicit user input, `SPECIFY_FEATURE_DIRECTORY`, or checkout-local
 selection is missing, ask only for that missing context. Do not change shared
 files owned by another worker. Keep partial work visible in an early draft PR.
 Do not add project quotas, repeated approval gates, hooks, services or schedules.
-
-Do not create a plan for a private rename-only change covered by the fast path
-in `.specify/semantic-names.md`. Keep that change in the ordinary branch/PR
-workflow with its old/new name map, complete reference search and focused owner
-checks, including required manifests/digests. Use this command when the rename also changes public or serialized
-identity, component ownership, semantics or acceptance evidence.
 
 Read the selected `spec.md` and `.specify/templates/overrides/plan-template.md`.
 Create `plan.md` only if absent; preserve and reconcile an existing plan. Write it
