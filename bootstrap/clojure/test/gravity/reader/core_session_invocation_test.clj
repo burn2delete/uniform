@@ -122,6 +122,50 @@
           (is (= 2 (:schema-version implicit)))
           (is (= [1 1 1 1] (mapv #(count (second %)) @events))))))))
 
+(deftest only-nil-selects-legacy-even-with-a-pinned-parent
+  (doseq [[body corrected?] [[session-body true]
+                            [(walk/postwalk-replace {'(some? invocation) 'invocation} session-body) false]]]
+    (with-model body
+      (fn [{:keys [create events namespace expected]}]
+        (let [pinned (assoc-in resolution [:reader-binding :revision] :fixture-pinned)
+              expected (assoc expected :sh06-resolution-artifact pinned)
+              validator 'sh03-reader-authenticated-envelope-options]
+          ;; The actual existing invocation validator body runs only with inert
+          ;; native-carrier/source-join ports. No Reader source or plan executes.
+          (intern namespace 'p15-s23-trusted-carrier-validation (fn [& _] {:status :passed}))
+          (intern namespace 'sh03-reader-boundary-fail!
+                  (fn [& _] (throw (ex-info "Fixture invocation refused" {:id "C2-HASH"}))))
+          (intern namespace 'sh03-reader-invocation-source! (fn [& _] :fixture-source))
+          (binding [*ns* namespace]
+            (eval (definition (forms "00813-sh03-reader-canonical-identity.clj") validator)))
+          (let [validate @(ns-resolve namespace validator)]
+            (intern namespace 'sh07-core-from-resolution-artifact
+                    (fn [& args]
+                      (swap! events conj [:construct args])
+                      (when (= 2 (count args)) (validate "fixture.gravity" (second args)))
+                      expected))
+            (intern namespace 'sh06-resolution-artifact-verification
+                    (fn [& args]
+                      (swap! events conj [:verify args])
+                      (when (= 3 (count args))
+                        (assert (= :gravity.bootstrap/legacy (second args)))
+                        (validate "fixture.gravity" (nth args 2)))
+                      {:status :passed :checks {:fixture true}}))
+            (let [implicit (create pinned) explicit (create pinned nil)]
+              (is (= :ready (:status implicit)))
+              (is (= implicit explicit))
+              (is (= [1 1 1 1] (mapv #(count (second %)) @events))))
+          (doseq [context (if corrected?
+                           [false 0 "malformed" [] {} {:reader-source-path "x" :authenticated-envelope-options {}}]
+                           [false])]
+            (reset! events [])
+            (let [session (create pinned context)]
+              (is (= (if corrected? :failed :ready) (:status session)))
+              (is (= (if corrected? [2 3] [1 1]) (mapv #(count (second %)) @events)))
+              (when corrected?
+                (is (identical? context (second (second (first @events)))))
+                (is (identical? context (nth (second (second @events)) 2))))))))))))
+
 (deftest missing-different-and-drifted-contexts-fail-closed
   (doseq [context [nil {} (assoc invocation :reader-source-path "wrong-reader.gravity")
                     (into {} invocation)]]

@@ -18,7 +18,7 @@
         source-path (:source-path upstream-snapshot)
         expected
         (try
-          (if invocation
+          (if (some? invocation)
             (sh07-core-from-resolution-artifact resolution-artifact invocation)
             (sh07-core-from-resolution-artifact resolution-artifact))
           (catch InterruptedException interrupted
@@ -27,7 +27,7 @@
           (catch Throwable _ nil))
         upstream-verification
         (try
-          (if invocation
+          (if (some? invocation)
             (sh06-resolution-artifact-verification resolution-artifact ::legacy invocation)
             (sh06-resolution-artifact-verification resolution-artifact))
           (catch InterruptedException interrupted

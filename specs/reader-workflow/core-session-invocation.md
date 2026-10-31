@@ -25,7 +25,9 @@ bookends. A map containing `:source :development-current` is a selection request
 not authority to skip those checks. No observed hash or byte count is adopted.
 
 The one-argument entry delegates with nil; the nil branch uses both original
-unary ports. Schema version 2 and all session output fields are unchanged.
+unary ports. Only omitted/explicit nil selects those ports; every non-nil
+value, including false, is forwarded to both explicit ports and their existing
+validation. Schema version 2 and all session output fields are unchanged.
 No invocation field, authority flag, new digest or alternate verifier is added.
 Full upstream snapshots, full expected integrity, session binding, replay
 validation and the real report/check catalog remain unchanged.
@@ -93,3 +95,36 @@ Actual C5/session/replay/B47/C7/C8 execution remains unrun. No historical
 231576-byte Reader pin, authentication helper, release record, migration
 fingerprint, public admission rule or full task status is renewed. The frozen
 alias-reader and normal-entry definition candidates remain separate.
+
+## Independent F1 correction
+
+Independent review of `724d8332cb6a0afcdc77514b43a202281356a83f` requested one
+P2 correction. Receipt SHA256
+`e9dba43b5a8cd7d61221ae263ee19a2746eff911fb95ce6d7269c8fff0a36af3`
+records 86 qualified source/injected checks and the false-value counterexample.
+The original receipt and counterexample remain unchanged. Their scope does not
+confer actual Reader/Core acceptance.
+
+The original two truthiness decisions silently selected legacy ports for
+false. This successor changes only those decisions to `some?`, so false is
+forwarded instead of being converted to nil/default selection. The existing
+three-argument resolution verifier enters `sh06-resolution-with-reader-invocation`,
+whose `some?` check invokes the original Reader invocation validator. No new
+validator, authentication flag or authority is introduced.
+
+The new pinned-parent control evaluates that actual validator body with inert
+carrier/source ports. Restoring the old branch conditions reproduces a ready
+false session. The corrected body refuses false, zero, string, vector, empty
+map and invalid-option map through its explicit ports, retaining the same
+original object and legacy verifier context. Omitted and explicit nil remain
+equal ready sessions. A pinned fixture prevents the current Reader's historical
+source-pin refusal from masking the bug.
+
+The complete focused suite passes 6 tests / 84 assertions; boundary checks pass
+6 / 11 and focused test lint has zero errors/warnings. Source equations show
+exactly two decision changes and identical nil-selected bodies, with every
+other session form and the seven governing ports unchanged. The first local
+test edit had an unmatched delimiter; its nonpass is retained separately from
+the passing corrected run. Independent affected review remains the next
+criterion. No Accounting adoption, selector retry, CI rerun or actual target
+execution was performed, and the separate frozen candidates were untouched.
