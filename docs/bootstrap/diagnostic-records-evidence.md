@@ -37,8 +37,37 @@ diagnostic ID to diag-forged rejects with C15-ID / missing stable-id. Its
 catalog/golden/redaction labels are explicit legacy test data, not performed
 golden conformance, redaction or publication evidence.
 
-Before/after comparison, regression checks, contextual lint, independent review,
-exact-head CI and clean current-main integration preflight are pending.
+Twelve complete record pairs and twelve captured serialized-text pairs match.
+Both imported input text hashes verify; both diagnostic IDs recompute under
+the unchanged legacy preimage protocol. The IDs differ between spellings
+because the retained facts contain their distinct actual source paths:
+
+- gravity: diag-5bd08a38f040f4069d2c1390839b2a0ea3c113691c3a69106cbec67b3b0961e7.
+- qst: diag-28d25cce3d2a72a9680c314539659eb2613e64055b09c57b75b23d7d82cf2a66.
+
+The C15 bootstrap-free suite passes 6 tests / 87 assertions; the existing base
+carrier regression passes 1 / 46. Tests cover exact callbacks and order, custom
+identity/record interposition, unchanged ID across wording changes, changed ID
+for rule/stage/artifact/facts changes, retained spans/origins/facts/options and
+the absence of a Bootstrap dependency. Ownership passes 21 / 821 and language
+passes 6 / 11. No inventory count, catalog entry or registration is changed.
+Docs validate 240 documents / 19 indexes; roadmap and governance validate.
+
+Changed-file contextual lint covers all five changed Clojure paths against the
+exact base: one unchanged baseline warning, zero blocking warnings/errors.
+An initial local lint invocation could not find clj-kondo before producing a
+lint observation; its unavailable receipt is retained. The existing local
+clj-kondo v2025.10.23 then produced the complete comparison. No download,
+configuration change or warning waiver was used. An initial test invocation
+selected C15 through the self-hosting runner, which refused the unowned namespace
+before execution. The correct existing bootstrap-free runner produced the
+reported result; no source failure was retried or reclassified.
+
+Independent source review accepts 6b23279418c1fb6787455c77411901437ccb9c04,
+tree 41ad2d4bdf944b2ddde1a1aa9d8f82bfd90dd2e8, conditionally on lint, final CI
+and clean integration preflight. This subsequent evidence-only update requires
+its own exact review; it changes no source or tests. Exact-head CI and clean
+current-main integration preflight remain required before integration.
 
 ## Unsupported boundaries
 
