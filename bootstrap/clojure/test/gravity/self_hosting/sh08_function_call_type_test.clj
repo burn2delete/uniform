@@ -433,31 +433,31 @@
                            (if (and (identical? owner (Thread/currentThread))
                                     (= :gravity-sh08-function-call-type-leaf (:engine runtime)))
                              (do (when (contains? #{'sh08-ft-authenticated-core 'sh08-carrier-preflight
-                                                    'sh08-im-producers-with-allowance
-                                                    'sh08-ft-function-type-core-artifact-with-imports-and-allowance} callee)
+                                                    'sh08-im-producers
+                                                    'sh08-ft-function-type-core-artifact-with-imports} callee)
                                    (swap! calls conj [callee args]))
                                  (cond
                                    (= 'sh08-ft-authenticated-core callee) resolution
-                                   (= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance callee)
+                                   (= 'sh08-ft-function-type-core-artifact-with-imports callee)
                                    {:status :accepted :scope :normalized-inference-control}
                                    :else (original runtime plan callee args scope)))
                              (original runtime plan callee args scope)))}
-                 #(invoke-c7 'sh08-im-derive-with-allowance [request memo active 37]))]
+                 #(invoke-c7 'sh08-im-derive [request memo active]))]
     {:result result :calls @calls :request request :memo memo :active active}))
 
 (deftest sh08-imported-module-control-routing-development-kernel
   (let [core {:module {:namespace 'example.normalized} :nodes []}
         accepted (normalized-import-derive {:status :accepted :core core :binding-table []})
         calls (:calls accepted)
-        producer-args (second (first (filter #(= 'sh08-im-producers-with-allowance (first %)) calls)))
-        inference-args (second (first (filter #(= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance (first %)) calls)))
+        producer-args (second (first (filter #(= 'sh08-im-producers (first %)) calls)))
+        inference-args (second (first (filter #(= 'sh08-ft-function-type-core-artifact-with-imports (first %)) calls)))
         entry (get-in accepted [:result :memo :current-module])]
     (is (= {:status :accepted :scope :normalized-inference-control} (get-in accepted [:result :result])))
     (is (= (:request accepted) (:request entry)))
     (is (= #{:request :result} (set (keys entry))))
     (is (= [core] (second (first (filter #(= 'sh08-carrier-preflight (first %)) calls)))))
     (is (= (assoc (:active accepted) :current-module true) (nth producer-args 2)))
-    (is (= 37 (last producer-args) (last inference-args))))
+    (is (= 4 (count producer-args) (count inference-args))))
   (doseq [resolution [{:status :accepted :core (nth (iterate vector :leaf) 129)}
                       {:status :rejected :reason :normalized-authentication-rejection}]]
     (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
@@ -471,8 +471,8 @@
                (assoc memo :current-module {:request request :result (:result result)}) memo)
              (:memo result)))
       (is (false? (boolean
-                    (some #(contains? #{'sh08-im-producers-with-allowance
-                                        'sh08-ft-function-type-core-artifact-with-imports-and-allowance} (first %)) calls)))))))
+                    (some #(contains? #{'sh08-im-producers
+                                        'sh08-ft-function-type-core-artifact-with-imports} (first %)) calls)))))))
 
 (deftest sh08-atomic-signature-inference-development-kernel
   ;; Execute the current Gravity inference algorithm with normalized records;
@@ -20130,182 +20130,12 @@
       (is (= :rejected (:status (invoke 'sh08-ksm-domain [[carrier needle] 65536])))))
 )
 )
-(deftest sh08-function-work-policy-options-development-kernel
-  (doseq [[options expected] [[{} 65536] [{:type-inference-work-allowance 1} 1]
-                              [{:type-inference-work-allowance 65537} 65537]
-                              [{:type-inference-work-allowance 100000000000000000000N} 100000000000000000000N]]]
-    (is (= expected (invoke-c7 'sh08-ft-work-allowance [options]))))
-  (let [callbacks (atom 0) touches (atom 0)
-        opaque (proxy [Object] []
-                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "policy opaque hash")))
-                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "policy opaque equality")))
-                 (toString [] (swap! callbacks inc) (throw (AssertionError. "policy opaque spelling"))))
-        lazy-value (lazy-seq (swap! callbacks inc) (throw (AssertionError. "policy lazy option")))
-        opaque-key (clojure.lang.PersistentArrayMap. (object-array [opaque 1]))
-        invalid [nil [] :policy opaque {:unknown 1} {"type-inference-work-allowance" 1} opaque-key
-                 {:type-inference-work-allowance nil} {:type-inference-work-allowance 0} {:type-inference-work-allowance -1}
-                 {:type-inference-work-allowance 1.0} {:type-inference-work-allowance 1/2}
-                 {:type-inference-work-allowance Double/POSITIVE_INFINITY} {:type-inference-work-allowance Double/NaN}
-                 {:type-inference-work-allowance true} {:type-inference-work-allowance "65536"}
-                 {:type-inference-work-allowance opaque} {:type-inference-work-allowance lazy-value}
-                 {:type-inference-work-allowance 1 :extra 1}]
-        getter (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get) original-get @getter]
-    (with-redefs-fn {getter (fn [plan value key]
-                             (when (identical? opaque value) (swap! touches inc))
-                             (original-get plan value key))}
-      #(doseq [options invalid]
-         (let [producer (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [opaque options])
-               verifier (invoke-c7 'sh08-verify-function-type-result-with-work-policy [opaque opaque options])]
-           (doseq [[envelope key] [[producer :result] [verifier :verification]]]
-             (is (nil? (:effective-work-policy envelope)))
-             (is (= [:rejected "C7-GENERIC" :invalid-type-inference-work-policy]
-                    ((juxt :status (fn [value] (get-in value [:diagnostics 0 :rule]))
-                           (fn [value] (get-in value [:diagnostics 0 :reason]))) (get envelope key)))))
-           (is (zero? @touches))
-           (is (zero? @callbacks)))))))
-
-(defn- observe-function-work-policy [operation]
-  ;; Passive observations of original scoped calls, on this test's thread/engine.
-  (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
-        original @scoped owner (Thread/currentThread) pools (atom []) inference (atom []) passes (atom [])
-        selected? (fn [runtime]
-                    (and (identical? owner (Thread/currentThread)) (= :gravity-sh08-function-call-type-leaf (:engine runtime))))
-        value (with-redefs-fn
-                {scoped (fn [runtime plan callee args scope]
-                          (when (and (selected? runtime) (= 'sh08-ft-function-type-core-artifact-with-imports-and-allowance callee))
-                            (swap! pools conj {:module (get-in (first args) [:module :namespace]) :allowance (last args)}))
-                          (let [result (original runtime plan callee args scope)]
-                            (when (selected? runtime)
-                              (when (= 'sh08-ft-infer-pass-products-prepared callee)
-                                (swap! passes conj {:budget (:loop-work-left (nth args 7))
-                                                    :work (get-in result [:pass :loop-work-count] 0)}))
-                              (when (= 'sh08-ft-infer-acyclic-with-context callee)
-                                (let [context (nth args 9)]
-                                  (swap! inference conj {:module (get-in context [:ordering-core :module :namespace])
-                                                        :budget (:loop-work-left context)
-                                                        :allowance (:type-inference-work-allowance context)
-                                                        :remaining (:type-join-work-left result)
-                                                        :rounds (:round-count result) :status (:convergence-status result)
-                                                        :initial-bindings (count (nth args 7))}))))
-                            result))}
-                operation)]
-    {:value value :pools @pools :inference @inference :passes @passes}))
-
-(deftest sh08-function-work-policy-chain-development-kernel
-  ;; Existing ordinary inference DATA, not canonical Core or source admission.
-  (let [{:keys [nodes node-table function-records definitions calls edges function-types call-node-ids]}
-        (synthetic-chain-input 3)
-        bound (invoke-c7 'sh08-ft-inference-round-bound [nodes function-records calls []])
-        args [nodes node-table [] definitions calls edges function-types {} bound]
-        run (fn [allowance]
-              (observe-function-work-policy
-                (fn [] (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                                 (conj args {:loop-work-left allowance :type-inference-work-allowance allowance})))))
-        allowance 1048576 legacy (invoke-c7 'sh08-ft-infer-acyclic args)
-        high (run allowance) default (run 65536) result (:value high) observation (first (:inference high))
-        semantic (fn [value]
-                   (-> value (dissoc :type-join-work-left)
-                       (update :shape-call-context dissoc :budget-left)))]
-    (is (= :converged (:convergence-status legacy) (:convergence-status result))
-        (pr-str (select-keys result [:convergence-status :diagnostics :round-count :type-join-work-left])))
-    ;; Scalar local calls are uncharged here; do not invent exhaustion work.
-    (is (= (semantic legacy) (semantic (:value default)) (semantic result)))
-    (is (= [allowance allowance] ((juxt :budget :allowance) observation)))
-    (is (= 0 (:initial-bindings observation)))
-    (is (< 1 (:rounds observation)))
-    (is (= (:rounds observation) (count (:passes high))))
-    (is (every? #(= :gravity.type/integer (get (:type-table result) %)) call-node-ids))
-    (is (every? #(= :gravity.type/integer (:return %)) (vals (:function-types result))))
-    (is (every? #(= [:gravity.type/integer] (mapv :type (:parameters %))) (vals (:function-types result))))
-    (is (every? #(= [:gravity.type/unknown] (mapv :type (:parameters %))) (vals function-types)))
-    (is (= bound (:round-bound result) (get-in default [:value :round-bound])))
-    (is (= [65536 65536] ((juxt :budget :allowance) (first (:inference default)))))
-    (is (= 1 (count (:inference high)) (count (:inference default))))))
-
-(deftest sh08-function-work-policy-inference-development-kernel
-  ;; Existing literal-map lookup DATA and context; no new seeds or paid facts.
-  ;; This actual lookup path, unlike scalar chains, charges the ordinary pool.
-  (let [{:keys [core nodes bindings forms products binding-types]} (map-present-get-input :file)
-        context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
-                 :lookup-bindings (vec (vals bindings)) :shape-call-products products}
-        args [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10]
-        run (fn [allowance]
-              (observe-function-work-policy
-                (fn [] (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                                 (conj args (assoc context :loop-work-left allowance :type-inference-work-allowance allowance))))))
-        allowance 1048576 legacy (invoke-c7 'sh08-ft-infer-acyclic-with-context (conj args context))
-        high (run allowance) result (:value high) observation (first (:inference high))
-        semantic (fn [value] (-> value (dissoc :type-join-work-left) (update :shape-call-context dissoc :budget-left)))]
-    (is (= :converged (:convergence-status legacy) (:convergence-status result)) (pr-str (:diagnostics result)))
-    (when (= :converged (:convergence-status result))
-      (let [used (- allowance (:type-join-work-left result)) default (run 65536)
-            exact (run used) below (run (dec used)) small (run 1)]
-        (is (= (semantic legacy) (semantic (:value default)) (semantic result)))
-        (is (= [allowance allowance] ((juxt :budget :allowance) observation)))
-        (is (= 0 (:initial-bindings observation)))
-        (is (< 1 (:rounds observation)))
-        (is (= (:rounds observation) (count (:passes high))))
-        (is (every? (fn [[a b]] (<= (:budget b) (- (:budget a) (:work a)))) (partition 2 1 (:passes high))))
-        (is (<= (:remaining observation) (- (:budget (last (:passes high))) (:work (last (:passes high))))))
-        (is (pos? used))
-        (is (= :converged (get-in exact [:value :convergence-status])))
-        (is (= 0 (get-in exact [:value :type-join-work-left])))
-        (is (= (semantic result) (semantic (:value exact))))
-        (is (= :resource-limit (get-in below [:value :convergence-status])))
-        (is (= :resource-limit (get-in small [:value :convergence-status])))
-        (is (= [1 1] ((juxt :budget :allowance) (first (:inference small)))))
-        (is (> (:budget observation) 65536))
-        (is (= :gravity.type/string (get-in result [:type-table :present-get])))
-        (is (= :sh08-map-get-present-v1 (get-in result [:type-table :operator :version])))
-        (is (= [] (:diagnostics result)))
-        (is (= 10 (:round-bound result) (get-in exact [:value :round-bound])))
-        (is (= [65536 65536] ((juxt :budget :allowance) (first (:inference default)))))
-        (is (= 1 (count (:inference high)) (count (:inference exact))))))))
-
-(deftest sh08-function-work-policy-neighbour-fuel-development-kernel
-  ;; Dispatch-only DATA: a real unresolved ordering prefix spends2 before
-  ;; each real consumer. Oversized function vectors are rejection sentinels,
-  ;; not admitted Core; count/base reservation must retain the local cap.
-  (doseq [[family callee reason input]
-          [[:list-set 'sh08-lset-inferred-call :list-set-conversion-work-limit
-            (list-set-input {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword})]
-           [:map-keys 'sh08-mkeys-inferred-call :map-keys-work-limit
-            (map-keys-input {:kind :gravity.type/map :shape :literal :member-types []})]]]
-    (let [{:keys [core call edge nodes bindings types]} input
-          prefix {:core-node-id :fuel-prefix :operator-node-id :fuel-prefix-op :operator-binding-id :fuel-ordering
-                  :argument-node-ids [:fuel-left :fuel-right] :ordered-evaluation-node-ids [:fuel-prefix-op :fuel-left :fuel-right]
-                  :evaluation-order :operator-then-arguments :result-policy :call-result}
-          prefix-edge {:ordinal 0 :call-core-node-id :fuel-prefix :callee-binding-id :fuel-ordering :classification :nonlocal-or-nonfunction}
-          ordering (get-in (integral-ordering-input '>= [:gravity.type/unknown :gravity.type/integer]) [:bindings :ordering-binding])
-          bindings (assoc bindings :fuel-ordering (assoc ordering :binding-id :fuel-ordering))
-          types (assoc types :fuel-left :gravity.type/unknown :fuel-right :gravity.type/integer)
-          core (assoc core :calls [prefix call] :call-edges [prefix-edge edge] :function-records (vec (repeat 65536 nil)))
-          scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
-          run (fn [budget]
-                (let [seen (atom [])
-                      result (with-redefs-fn
-                               {scoped (fn [r p c a s]
-                                         (when (= callee c) (swap! seen conj (last a)))
-                                         (original r p c a s))}
-                               #(invoke-c7 'sh08-ft-call-constraints-with-context
-                                           [[prefix call] [prefix-edge edge] nodes types {} {}
-                                            {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))
-                                             :association-forms (:forms input) :loop-work-left budget :type-inference-work-allowance 1048576}]))]
-                  {:result result :seen @seen}))
-          low (run 3) middle (run 65540) high (run 1048576)]
-      (is (= [1] (:seen low)))
-      (is (= [65538] (:seen middle)))
-      (is (= [1048574] (:seen high)))
-      (is (= reason (:reason (last (get-in low [:result :diagnostics])))))
-      (is (= (:result middle) (:result high)))
-      (is (> (get-in high [:result :compatibility-work-count]) 65536)))))
-
-(defn- function-work-policy-current-resolution
+(defn- function-current-resolution
   ([source-path]
-   (function-work-policy-current-resolution source-path (slurp source-path)
+   (function-current-resolution source-path (slurp source-path)
      {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
   ([source-path text module-inputs]
-   (function-work-policy-current-resolution source-path text module-inputs (fn [_ operation] (operation))))
+   (function-current-resolution source-path text module-inputs (fn [_ operation] (operation))))
   ([source-path text module-inputs stage]
    ;; Decompose the original 00884 four-arity body, retaining its real guard,
    ;; parent artifacts, module inputs and selected-reader checks in SH06.
@@ -20319,155 +20149,46 @@
        (stage :sh06 (fn [] (bootstrap/sh06-resolution-artifact-from-sh05-artifact
                             source-path parent module-inputs reader-source-path)))))))
 
-(defn- function-work-policy-current-source
+(defn- function-current-source
   ([source-path]
-   (function-work-policy-current-source source-path (slurp source-path)
+   (function-current-source source-path (slurp source-path)
      {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}))
   ([source-path text module-inputs]
-   (function-work-policy-current-source source-path text module-inputs (fn [_ operation] (operation))))
+   (function-current-source source-path text module-inputs (fn [_ operation] (operation))))
   ([source-path text module-inputs stage]
-   (let [resolved (function-work-policy-current-resolution source-path text module-inputs stage)
+   (let [resolved (function-current-resolution source-path text module-inputs stage)
          core (stage :sh07 (fn [] (bootstrap/sh07-core-from-resolution-artifact resolved)))
          request (stage :c7-request (fn [] (function-request core)))]
      {:resolved resolved :core core :request request})))
 
-(def ^:private function-work-policy-current-c8-plan
+(def ^:private function-current-c8-plan
   ;; Same real Effects dependency and C8 module-bundle construction as the
   ;; existing C8 test helper, with only explicit current-reader transport.
   (delay
     (let [source-path (path "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
           effects-path (path "bootstrap/gravity/src/gravity/effects.gravity")
           emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
-          dependency (function-work-policy-current-resolution effects-path)
+          dependency (function-current-resolution effects-path)
           inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [dependency]}
-          caller (function-work-policy-current-resolution source-path (slurp source-path) inputs)
+          caller (function-current-resolution source-path (slurp source-path) inputs)
           dependency-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter effects-path (slurp effects-path))]
       (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)
         {:caller-resolution-artifact caller :dependency-plans [dependency-plan]}))))
 
-(defn- function-work-policy-invoke-current-c8 [function arguments]
+(defn- function-invoke-current-c8 [function arguments]
   (bootstrap/p15-s23-stage2-runtime-execute-function
     {:engine :gravity-sh09-c7-effect-adapter-test :compiler-artifact-plan? true}
-    @function-work-policy-current-c8-plan function arguments))
+    @function-current-c8-plan function arguments))
 
-(deftest sh08-function-work-policy-public-composition
-  ;; Existing authenticated function-local-call fixture and request constructor.
-  (let [request (:request (function-work-policy-current-source (fixture-path "accepted" "function-local-call" ".gravity")))
-        legacy (invoke-c7 'sh08-function-type-core-artifact [request])
-        implicit (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {}])
-        explicit (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {:type-inference-work-allowance 65536}])
-        larger (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {:type-inference-work-allowance 1048576}])
-        tiny (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {:type-inference-work-allowance 1}])]
-    (is (= :accepted (:status legacy)))
-    (is (= legacy (:result implicit) (:result explicit) (:result larger)))
-    (is (= (pr-str legacy) (pr-str (:result implicit)) (pr-str (:result explicit))))
-    (is (= 3 (:schema-version legacy)))
-    (is (= (:identity-input legacy) (get-in larger [:result :identity-input])))
-    (is (every? #(not (contains? % :effective-work-policy)) [legacy (:identity-input legacy)]))
-    (is (= {:type-inference-work-allowance 65536 :scope :ordinary-inference-invocation} (:effective-work-policy implicit)))
-    (is (= (:effective-work-policy implicit) (:effective-work-policy explicit)))
-    (is (= 1048576 (get-in larger [:effective-work-policy :type-inference-work-allowance])))
-    ;; This scalar-only fixture does not acquire new per-call charges.
-    (is (= legacy (:result tiny)))
-    (is (= 1 (get-in tiny [:effective-work-policy :type-inference-work-allowance])))
-    (let [legacy-check (invoke-c7 'sh08-verify-function-type-result [request legacy])
-          fresh (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request (:result larger) {}])
-          limited (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request legacy {:type-inference-work-allowance 1}])
-          forged (assoc legacy :effective-work-policy {:type-inference-work-allowance 1048576})
-          rejected (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request forged {}])
-          envelope (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request larger {}])]
-      (is (= :passed (get-in fresh [:verification :status])))
-      (is (= legacy-check (:verification fresh)))
-      (is (= :passed (get-in limited [:verification :status])))
-      (is (= 1 (get-in limited [:effective-work-policy :type-inference-work-allowance])))
-      (is (= :rejected (get-in rejected [:verification :status]) (get-in envelope [:verification :status])))
-      (is (= #{:effective-work-policy :result} (set (keys larger))))
-      (is (= (pr-str legacy-check) (pr-str (:verification fresh)))))))
-
-(deftest sh08-function-work-policy-charged-public-composition
-  ;; One real map-present-get function exercises charged public output without
-  ;; the broader fixture's aliases, defaults, inert data and throw handlers.
-  (let [{artifact :core request :request}
-        (function-work-policy-current-source (fixture-path "accepted" "function-work-policy-minimal-map-get" ".gravity"))
-        options {:type-inference-work-allowance 1048576}
-        produced (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request options])
-        candidate (:result produced)]
-    (is (= :accepted (:status artifact)))
-    (is (= :accepted (:status candidate)) (pr-str (:diagnostics candidate)))
-    (when (= :accepted (:status candidate))
-      (let [tiny-options {:type-inference-work-allowance 1}
-            tiny (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request tiny-options])
-            fresh (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request candidate options])
-            limited (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request candidate tiny-options])]
-        (is (= [{:definition-name 'kind :return :gravity.type/keyword}]
-               (mapv #(select-keys % [:definition-name :return]) (:function-type-table candidate))))
-        (is (= [[:direct-map-get :gravity.type/keyword :sh08-map-get-present-v1 :kind]]
-               (mapv (juxt :dispatch :result-type #(get-in % [:applied-map-get :version])
-                            #(get-in % [:applied-map-get :key])) (:call-type-facts candidate))))
-        (is (= :rejected (get-in tiny [:result :status])))
-        (is (some #(= "C7-GENERIC" (:rule %)) (get-in tiny [:result :diagnostics])))
-        (is (some #(and (= "C7-GENERIC" (:rule %)) (= :structural-call-index-work-limit (:reason %)))
-                  (get-in tiny [:result :diagnostics])))
-        (is (= :passed (get-in fresh [:verification :status])))
-        (is (= :rejected (get-in limited [:verification :status])))
-        (is (= :rejected (get-in limited [:verification :expected :status])))
-        (is (= 1 (get-in limited [:effective-work-policy :type-inference-work-allowance])))))))
-
-(deftest sh08-function-work-policy-imported-composition
-  ;; Reuse the existing authenticated module constructors and native fixtures.
-  (let [library-source (function-work-policy-current-source (fixture-path "modules" "type-values" ".gravity"))
-        library-c5 (:resolved library-source) library (:core library-source) producer (:request library-source)
-        source-path (fixture-path "modules" "type-consumer" ".gravity")
-        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]}
-        consumer-source (function-work-policy-current-source source-path (slurp source-path) inputs)
-        c5 (:resolved consumer-source) core (:core consumer-source)
-        request (assoc (:request consumer-source) :module-type-inputs
-                       {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer]})
-        allowance 1048576 options {:type-inference-work-allowance allowance}
-        modules #{(get-in producer [:canonical-core-artifact :module :namespace])
-                  (get-in request [:canonical-core-artifact :module :namespace])}
-        legacy (invoke-c7 'sh08-function-type-core-artifact [request])
-        default (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request {}])
-        observed (observe-function-work-policy
-                   (fn [] (invoke-c7 'sh08-function-type-core-artifact-with-work-policy [request options])))
-        result (get-in observed [:value :result])]
-    (is (= :accepted (:status library-c5) (:status library) (:status c5) (:status core)))
-    (is (= :accepted (:status legacy) (:status result)) (pr-str (:diagnostics result)))
-    (when (= :accepted (:status result))
-      (is (= legacy (:result default) result))
-      (is (= (pr-str legacy) (pr-str (:result default)) (pr-str result)))
-      (is (= :direct-imported-functions-types-only (:scope result)))
-      (is (= 2 (count (:pools observed))))
-      (is (= (set (map (fn [module] {:module module :allowance allowance}) modules)) (set (:pools observed))))
-      (is (= 2 (count (:inference observed))))
-      (is (every? #(= [allowance allowance] ((juxt :budget :allowance) %)) (:inference observed)))
-      (is (= modules (set (map :module (:inference observed)))))
-      (is (every? #(= :converged (:status %)) (:inference observed)))
-      (is (every? #(<= 0 (:remaining %) allowance) (:inference observed)))
-      (let [fresh (observe-function-work-policy
-                    (fn [] (invoke-c7 'sh08-verify-function-type-result-with-work-policy [request result options])))
-            tiny (observe-function-work-policy
-                   (fn [] (invoke-c7 'sh08-function-type-core-artifact-with-work-policy
-                                   [request {:type-inference-work-allowance 1}])))]
-        (is (= :passed (get-in fresh [:value :verification :status])))
-        (is (= (:pools observed) (:pools fresh)))
-        (is (every? #(= [allowance allowance] ((juxt :budget :allowance) %)) (:inference fresh)))
-        (is (= result (get-in fresh [:value :verification :expected])))
-        (is (= allowance (get-in fresh [:value :effective-work-policy :type-inference-work-allowance])))
-        (is (= result (get-in tiny [:value :result])))
-        (is (every? #(= 1 (:allowance %)) (:pools tiny)))
-        (is (every? #(= [1 1] ((juxt :budget :allowance) %)) (:inference tiny)))
-        (is (= 2 (count (:pools tiny)) (count (:inference tiny))))))))
-
-(deftest sh08-function-work-policy-imported-tamper-current-source-composition
+(deftest sh08-function-imported-tamper-current-source-composition
   (let [cases
         (mapv
          (fn [extension]
-           (let [library-source (function-work-policy-current-source (fixture-path "modules" "type-values" extension))
+           (let [library-source (function-current-source (fixture-path "modules" "type-values" extension))
                  library-c5 (:resolved library-source) library (:core library-source) producer (:request library-source)
                  source-path (fixture-path "modules" "type-consumer" extension)
                  inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [library-c5]}
-                 consumer-source (function-work-policy-current-source source-path (slurp source-path) inputs)
+                 consumer-source (function-current-source source-path (slurp source-path) inputs)
                  c5 (:resolved consumer-source) core (:core consumer-source)
                  request (assoc (:request consumer-source) :module-type-inputs
                            {:artifact :gravity/sh08-module-type-inputs :schema-version 1 :module-requests [producer]})
@@ -20491,7 +20212,7 @@
                (is (= :passed (:status (invoke-c7 'sh08-verify-function-type-result [request result]))))
                (is (= :rejected (:status (invoke-c7 'sh08-verify-function-type-result
                                          [request (assoc-in result [:imported-function-types 0 :function-type :return] :gravity.type/bool)]))))
-               (let [rejected (function-work-policy-invoke-current-c8
+               (let [rejected (function-invoke-current-c8
                                'sh09-build-authenticated-pure-effect-result
                                [result (invoke-c7 'sh08-verify-function-type-result [request result])])
                      diagnostic (first (:diagnostics rejected))]
@@ -20520,14 +20241,14 @@
             [[(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64 true)") :call-argument-type-mismatch]
              [(clojure.string/replace (slurp source-path) "(values/identity-i64 value)" "(values/identity-i64)") :call-arity-mismatch]
              [(clojure.string/replace (slurp source-path) "[value :- I64] :- I64" "[value :- I64] :- String") :function-result-type-mismatch]]]
-      (let [temporary (java.io.File/createTempFile "gravity-sh08-policy-import-" ".gravity")]
+      (let [temporary (java.io.File/createTempFile "gravity-sh08-import-" ".gravity")]
         (try
           ;; The explicit current-reader snapshot must see these exact bytes.
           ;; Keep the real file alive through Core/request verification, C7,
           ;; and every diagnostic check; failures take the same cleanup path.
           (spit temporary source :encoding "UTF-8")
           (let [temporary-path (.getCanonicalPath temporary)
-                c5 (function-work-policy-current-resolution temporary-path source inputs)
+                c5 (function-current-resolution temporary-path source inputs)
                 artifact (bootstrap/sh07-core-from-resolution-artifact c5)
                 q (assoc (function-request artifact) :module-type-inputs (:module-type-inputs request))
                 rejected (invoke-c7 'sh08-function-type-core-artifact [q])
@@ -20540,11 +20261,11 @@
           (finally
             (java.nio.file.Files/deleteIfExists (.toPath temporary))))))))
 
-(deftest sh08-function-work-policy-arity-current-source-composition
+(deftest sh08-function-arity-current-source-composition
   (let [gravity (invoke-c7 'sh08-function-type-core-artifact
-                  [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-arity" ".gravity")))])
+                  [(:request (function-current-source (fixture-path "rejected" "function-call-arity" ".gravity")))])
         qst (invoke-c7 'sh08-function-type-core-artifact
-              [(:request (function-work-policy-current-source (fixture-path "rejected" "function-call-arity" ".qst")))])]
+              [(:request (function-current-source (fixture-path "rejected" "function-call-arity" ".qst")))])]
     (is (= :rejected (:status gravity) (:status qst)))
     (is (= :first-order-fixed-arity-functions-locals-calls
            (:scope gravity)))
@@ -20560,22 +20281,22 @@
     (is (map? (get-in gravity [:diagnostics 0 :constraint-id])))
     (is (= (:identity-input gravity) (:identity-input qst)))))
 
-(deftest sh08-function-work-policy-argument-type-current-source-composition
+(deftest sh08-function-argument-type-current-source-composition
   (let [produce
         (fn [ordinal extension]
           (let [stage (fn [label operation]
                         (let [started (System/nanoTime)]
-                          (println (pr-str {:policy-source-stage label :event :begin :elapsed-ms 0
+                          (println (pr-str {:source-stage label :event :begin :elapsed-ms 0
                                             :fixture-ordinal ordinal :extension extension}))
                           (flush)
                           (let [value (operation)]
-                            (println (pr-str {:policy-source-stage label :event :complete
+                            (println (pr-str {:source-stage label :event :complete
                                               :elapsed-ms (quot (- (System/nanoTime) started) 1000000)
                                               :fixture-ordinal ordinal :extension extension}))
                             (flush)
                             value)))
                 source-path (fixture-path "rejected" "function-call-type-mismatch" extension)
-                products (function-work-policy-current-source source-path (slurp source-path)
+                products (function-current-source source-path (slurp source-path)
                            {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)]
             ;; This elapsed boundary includes lazy full C7 plan compilation
             ;; and runtime execution; it is not a semantic CPU measurement.
