@@ -88,6 +88,16 @@
  sh07-core-semantic-var-reference
  sh07-core-resolution-projection!)
 
+(declare
+ sh07-core-digest-requests
+ sh07-core-resolve-digest-preimage!
+ sh07-core-resolve-result
+ sh07-core-semantic-error-handler
+ sh07-core-semantic-error-transfer
+ sh07-core-semantic-identity-preimage
+ sh07-core-semantic-mutation
+ sh07-core-semantic-node)
+
 (def
  ^{:private true} checked-core-stage-defaults
  {:p15-s23-stage2-compiler-artifact-plan
@@ -101,22 +111,29 @@
   :sh07-core-source-map-order #'sh07-core-source-map-order,
   :sh07-core-source-path-from-resolution
   #'sh07-core-source-path-from-resolution,
+  :sh07-core-semantic-error-handler #'sh07-core-semantic-error-handler,
+  :sh07-core-semantic-var-reference #'sh07-core-semantic-var-reference,
   :sh07-b13-fragment-record #'sh07-b13-fragment-record,
   :p15-s23-stage2-runtime-execute-function
   #'p15-s23-stage2-runtime-execute-function,
   :sh07-core-decimal-evidence-complete!
   #'sh07-core-decimal-evidence-complete!,
+  :sh07-core-resolve-digest-preimage!
+  #'sh07-core-resolve-digest-preimage!,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
   :sh07-core-lineage-with-semantic-trace
   #'sh07-core-lineage-with-semantic-trace,
   :sh06-resolution-artifact-verification
   #'sh06-resolution-artifact-verification,
+  :sh07-core-resolve-reference-vector!
+  #'sh07-core-resolve-reference-vector!,
   :sh07-core-children #'sh07-core-children,
   :read-forms #'read-forms,
   :sh07-core-projected-form-id #'sh07-core-projected-form-id,
   :sh07-core-value-kind #'sh07-core-value-kind,
   :reader-canonical-hash #'reader-canonical-hash,
+  :sh07-core-semantic-node #'sh07-core-semantic-node,
   :sh07-core-plan-identities #'sh07-core-plan-identities,
   :p15-s23-c6c10-literal-scalar-descriptor
   #'p15-s23-c6c10-literal-scalar-descriptor,
@@ -135,23 +152,30 @@
   :sh07-core-projected-source-mismatch
   #'sh07-core-projected-source-mismatch,
   :sh07-core-resolution-projection! #'sh07-core-resolution-projection!,
+  :sh07-core-semantic-mutation #'sh07-core-semantic-mutation,
   :sh07-core-digest-reference-ordinal
   #'sh07-core-digest-reference-ordinal,
   :sh07-core-decimal-evidence #'sh07-core-decimal-evidence,
   :sh07-b13-fragment-coverage #'sh07-b13-fragment-coverage,
   :sh07-core-root-syntax-id #'sh07-core-root-syntax-id,
+  :sh07-core-semantic-resolution #'sh07-core-semantic-resolution,
   :sh07-core-projected-syntax-id #'sh07-core-projected-syntax-id,
   :sha256-bytes-hex #'sha256-bytes-hex,
   :input #'checked-core-stage-input,
   :sh07-core-semantic-projection-id #'sh07-core-semantic-projection-id,
   :sh07-b13-binding-order #'sh07-b13-binding-order,
   :p15-s23-c6c10-carrier-validation #'p15-s23-c6c10-carrier-validation,
+  :sh07-core-semantic-identity-preimage
+  #'sh07-core-semantic-identity-preimage,
   :sh07-core-build-form-tree #'sh07-core-build-form-tree,
   :sh05-path-neutral-semantic-value #'sh05-path-neutral-semantic-value,
+  :sh07-core-execute! #'sh07-core-execute!,
   :sh07-b13-module-assembly-manifest
   #'sh07-b13-module-assembly-manifest,
   :p15-s23-sh02-sha256-id? #'p15-s23-sh02-sha256-id?,
   :sh07-core-build-binding! #'sh07-core-build-binding!,
+  :sh07-core-semantic-error-transfer
+  #'sh07-core-semantic-error-transfer,
   :c-backend-stage2-plan-emitter-source-rule!
   #'c-backend-stage2-plan-emitter-source-rule!,
   :sh07-b13-fragment-manifest #'sh07-b13-fragment-manifest,
@@ -159,6 +183,7 @@
   #'p15-s23-stage2-compiler-artifact-source-path,
   :sh07-core-authenticated-request #'sh07-core-authenticated-request,
   :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :sh07-core-semantic-binding #'sh07-core-semantic-binding,
   :sh03-reader-authenticated-envelope-options
   #'sh03-reader-authenticated-envelope-options,
   :sh07-core-macro-trace #'sh07-core-macro-trace,

@@ -23,12 +23,14 @@
     sh07-b13-module-assembly-manifest sh07-core-request-from-verified-upstream sh07-core-authenticated-request
     sh07-core-digest-reference-ordinal sh07-core-resolve-reference! sh07-core-resolve-reference-vector!
     sh07-core-semantic-projection-id sh07-core-semantic-binding sh07-core-semantic-resolution
-    sh07-core-semantic-var-reference])
+    sh07-core-semantic-var-reference sh07-core-semantic-mutation sh07-core-semantic-error-transfer
+    sh07-core-semantic-error-handler sh07-core-semantic-node sh07-core-semantic-identity-preimage
+    sh07-core-resolve-digest-preimage! sh07-core-digest-requests sh07-core-resolve-result])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 38 (count publics)))
+    (is (= 46 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -244,6 +246,85 @@
     (is (= :explicit (:definition-artifact-id (core/semantic-binding :explicit input ops))))
     (is (= :binding (:upstream-binding-id (core/semantic-resolution input ops))))
     (is (= {:binding-id :binding} (core/semantic-binding :semantic {:binding-id :binding} ops)))))
+
+(deftest semantic-products-normalize-each-existing-reference-family
+  (let [ops (operations) reference {:binding-id :binding :upstream-binding-id :upstream
+                                    :definition-artifact-id :authenticated :authenticated-sh06-artifact-id :authenticated
+                                    :unrelated :preserved}
+        mutation {:target-binding-id :binding :target-upstream-binding-id :upstream
+                  :target-definition-artifact-id :authenticated :authenticated-sh06-artifact-id :authenticated}
+        handler {:authenticated-sh06-artifact-id :authenticated :unrelated :preserved}
+        preimage {:projection-binding :authenticated
+                  :lineage {:sh06-semantic-projection-id :semantic :authenticated-sh06-artifact-id :authenticated}
+                  :binding-table [reference] :resolution-table [reference] :var-references [reference]
+                  :mutations [mutation] :error-transfers [handler] :error-handlers [handler]
+                  :nodes [{:core-form :var :attributes reference} {:core-form :set! :attributes mutation}
+                          {:core-form :throw :attributes handler} {:core-form :try :attributes handler}]
+                  :unrelated :preserved}
+        result (core/semantic-identity-preimage preimage ops)]
+    (is (= result (b/sh07-core-semantic-identity-preimage preimage)))
+    (is (= :semantic (:projection-binding result) (get-in result [:lineage :authenticated-sh06-artifact-id])))
+    (is (= :binding (get-in result [:mutations 0 :target-upstream-binding-id])))
+    (is (= :semantic (get-in result [:mutations 0 :target-definition-artifact-id])))
+    (doseq [node (:nodes result)]
+      (is (= :semantic (get-in node [:attributes :authenticated-sh06-artifact-id]))))
+    (doseq [family [:error-transfers :error-handlers]]
+      (is (= :preserved (get-in result [family 0 :unrelated])))
+      (is (= :semantic (get-in result [family 0 :authenticated-sh06-artifact-id]))))
+    (is (= :preserved (:unrelated result)))
+    (is (= {:core-form :literal :attributes {:value :unchanged}}
+           (core/semantic-node :semantic {:core-form :literal :attributes {:value :unchanged}} ops)))
+    (is (= {:unrelated :preserved} (core/semantic-mutation nil {:unrelated :preserved} ops)))
+    (is (= {:unrelated :preserved} (core/semantic-error-transfer nil {:unrelated :preserved} ops)))
+    (is (= {:unrelated :preserved} (core/semantic-error-handler nil {:unrelated :preserved} ops)))))
+
+(deftest digest-purpose-dispatch-preserves-the-existing-gravity-calls-and-refusals
+  (let [ops (operations) calls (atom [])
+        fixture-ops (assoc ops :sh07-core-execute! (fn [& args] (swap! calls conj (vec args)) {:status :accepted :value {:unit :value}}))]
+    (doseq [[purpose function] [[:sh07-core-artifact-id 'sh07-resolve-identity-preimage]
+                                [:sh07-core-provenance-binding-id 'sh07-resolve-provenance-preimage]
+                                [:sh07-source-core-map-id 'sh07-resolve-source-core-map-preimage]]]
+      (reset! calls [])
+      (is (= {:unit :value} (core/resolve-digest-preimage! source purpose {:unit :preimage} [] fixture-ops)))
+      (is (= [[source function [{:unit :preimage} []]]] @calls))
+      (is (= "C6-VERIFY" (:id (ex-data (caught #(core/resolve-digest-preimage!
+                                                 source purpose {} []
+                                                 (assoc ops :sh07-core-execute! (fn [& _] {:status :rejected :reason :unit-rejection})))))))))
+    (let [preimage {:unit :diagnostic}]
+      (is (identical? preimage (core/resolve-digest-preimage! source :sh07-core-diagnostic-id preimage [] ops))))
+    (is (= :unknown-digest-purpose
+           (:reason (ex-data (caught #(core/resolve-digest-preimage! source :unknown {} [] ops))))))))
+
+(deftest declared-digests-reject-schema-ordinal-and-forward-reference-drift
+  (let [ops (operations) diagnostic {:ordinal 0 :purpose :sh07-core-diagnostic-id :preimage {:rule "C6-VERIFY"}}
+        digest (first (core/digest-requests source [diagnostic] ops))
+        reference {:artifact :gravity/sh07-internal-digest-reference :schema-version 1 :ordinal 0 :authority :sh07-digest-resolver}
+        node {:ordinal 1 :purpose :sh07-core-node-id :preimage {:children [reference] :evaluated-children [reference]}}
+        result (core/digest-requests source [diagnostic node] ops)]
+    (is (= [digest] (core/digest-requests source [diagnostic] ops)))
+    (is (= result (b/sh07-core-digest-requests source [diagnostic node])))
+    (is (= 2 (count result)))
+    (is (not= (first result) (second result)))
+    (doseq [bad [[(assoc diagnostic :ordinal 1)] [(assoc diagnostic :extra true)]
+                 [diagnostic diagnostic] [(assoc diagnostic :purpose :unknown)]
+                 [diagnostic (assoc-in node [:preimage :children 0 :ordinal] 1)]]]
+      (is (= "C6-VERIFY" (:id (ex-data (caught #(core/digest-requests source bad ops)))))))
+    (let [calls (atom 0)
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! calls inc) 7)
+                   (equals [_] (swap! calls inc) false)
+                   (toString [] (swap! calls inc) "opaque"))]
+      (is (= "C6-VERIFY" (:id (ex-data (caught #(core/digest-requests source [opaque] ops))))))
+      (is (zero? @calls)))))
+
+(deftest materialized-result-retains-the-exact-runtime-result-boundary
+  (let [ops (operations) calls (atom []) value {:nodes []}
+        fixture-ops (assoc ops :sh07-core-execute! (fn [& args] (swap! calls conj (vec args)) {:status :accepted :value value}))]
+    (is (identical? value (core/resolve-result source :template :unused-declarations [:digest] fixture-ops)))
+    (is (= [[source 'sh07-resolve-core-template [:template [:digest]]]] @calls))
+    (let [error (caught #(core/resolve-result source :template [] []
+                                            (assoc ops :sh07-core-execute! (fn [& _] {:status :rejected :reason :missing-digest}))))]
+      (is (= ["C6-VERIFY" :missing-digest] ((juxt :id :reason) (ex-data error)))))))
 
 (deftest module-and-source-contract-drift-reject-before-binding-publication
   ;; Real current source bytes with isolated compiler result ports. No admission.

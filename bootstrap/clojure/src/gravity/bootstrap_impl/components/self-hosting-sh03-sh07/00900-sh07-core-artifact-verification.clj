@@ -128,7 +128,23 @@
  #'sh07-core-semantic-binding
  #'sh07-core-semantic-projection-id
  #'sh07-core-semantic-resolution
- #'sh07-core-semantic-var-reference]))]
+ #'sh07-core-semantic-var-reference
+ #'gravity.checked-core/digest-requests
+ #'gravity.checked-core/resolve-digest-preimage!
+ #'gravity.checked-core/resolve-result
+ #'gravity.checked-core/semantic-error-handler
+ #'gravity.checked-core/semantic-error-transfer
+ #'gravity.checked-core/semantic-identity-preimage
+ #'gravity.checked-core/semantic-mutation
+ #'gravity.checked-core/semantic-node
+ #'sh07-core-digest-requests
+ #'sh07-core-resolve-digest-preimage!
+ #'sh07-core-resolve-result
+ #'sh07-core-semantic-error-handler
+ #'sh07-core-semantic-error-transfer
+ #'sh07-core-semantic-identity-preimage
+ #'sh07-core-semantic-mutation
+ #'sh07-core-semantic-node]))]
  (defn
   sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))
