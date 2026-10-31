@@ -50,9 +50,13 @@
 (deftest module-analysis-preserves-child-order-and-short-circuits
   (let [expected (vec (cons 'body-is-context module-stage-order))
         complete (scripted-module-analysis nil)
+        shape (scripted-module-analysis :shape)
         join (scripted-module-analysis :join)]
     (is (= :accepted (get-in complete [:result :status])))
     (is (= expected (:calls complete)))
+    (is (= :rejected (get-in shape [:result :status])))
+    (is (= :incomplete-canonical-core-coverage (get-in shape [:result :reason])))
+    (is (empty? (:calls shape)))
     (doseq [[index failure] (map-indexed vector expected)]
       (let [{:keys [result calls]} (scripted-module-analysis failure)]
         (is (= :rejected (:status result)))
