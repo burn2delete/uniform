@@ -514,8 +514,8 @@
    (sh06-resolution-binding-current!
     request-source
     (input :*sh06-resolution-operation-binding*))
-   (locking
-    (input :sh06-resolution-cached-binding)
+   (let [cache-lock (input :sh06-resolution-cached-binding)]
+    (locking cache-lock
     (let
      [key
       (sh06-resolution-current-source-key)
@@ -550,7 +550,7 @@
          {}))
        (sh06-resolution-binding-current! request-source binding)
        (reset! (input :sh06-resolution-cached-binding) binding)
-       binding)))))))
+       binding))))))))
 
 (defn
  execute!

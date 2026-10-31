@@ -12642,6 +12642,11 @@
  {:path "specs/sh-family-crosswalk/macro-artifacts-source-version.edn",
   :sha256
   "e495dc2fd6b2398d2f9f6da929038f6f491087650f37cdd9c8dc5c0970824f82"},
+ :resolution-runtime-source-version
+ {:path
+  "specs/sh-family-crosswalk/resolution-runtime-source-version.edn",
+  :sha256
+  "b3c48da9dc7d2457dd27619be4d30db165e26f5113090beddd4d6da75472fb56"},
  :syntax-pipeline-source-version
  {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn",
   :sha256
@@ -12711,7 +12716,7 @@
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
   :source-version-bridge
-  "specs/sh-family-crosswalk/macro-artifacts-source-version.edn",
+  "specs/sh-family-crosswalk/resolution-runtime-source-version.edn",
   :reader-assembly-source-version
   "specs/sh-family-crosswalk/reader-assembly-source-version.edn",
   :macro-runtime-predecessor-review
@@ -13074,6 +13079,12 @@
    "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465",
    :source-version-bridge
    "specs/sh-family-crosswalk/reader-assembly-source-version.edn"},
+  :resolution-runtime-predecessor-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"},
   :reader-assembly-predecessor-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -13216,7 +13227,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86"},
+  "7e0d51192fd8ea2eae7f66dd0d9f20ef2971b77ad25dd923de817f79b9462c40"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16706,7 +16717,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "c9adcfcf7887c37721e95cd7fb6cfb15e77ab35765f1fd28c880212816306772",
+  "b7e54552cb35ab2f13374d3751f510c194e5558b6c99a4a102cb1e6e1c1c1d85",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -16773,7 +16784,7 @@
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/self-hosting-slice-ownership.edn"
-  "7591d0604d1de7944d15927d9ac2f8473701bac6",
+  "dc44fa6bf37a098a09691507d0a724f59782683e",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "4325a9f46292472a7f984c5adfef81209874bb5c"},
  :scope-boundaries

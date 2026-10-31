@@ -272,21 +272,52 @@
         change (:changed-entry bridge)
         entry [(:section change) (:path change) (:field change)]
         previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
-        current (edn/read-string (slurp path))
+        current (edn/read-string (sh-crosswalk/git-source (:commit after) path))
         view (sh-crosswalk/build)]
     (is (= previous (assoc-in current entry (:before change))))
     (is (= (:after change) (get-in current entry)))
     (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
-    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
     (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
-    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (is (= (:commit after) (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/resolution-runtime-source-version.edn")) [:source-file :before :commit])))
     (is (= (:predecessor-input-fingerprint bridge)
            (:input-fingerprint sh-crosswalk/macro-artifacts-predecessor-review)))
     (is (= (select-keys sh-crosswalk/macro-artifacts-predecessor-review
                        [:status :input-fingerprint :source-version-bridge])
            (get-in view [:mapping-review :macro-artifacts-predecessor-review])))
     (is (= (get-in view [:macro-artifacts-source-version :path])
+           (get-in view [:mapping-review :resolution-runtime-predecessor-review :source-version-bridge])))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= :source-conservation-only (:authority bridge)))
+    (is (= 180 (count (:requirements view))))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (doseq [wrong [(:commit before) "0000000000000000000000000000000000000000"]]
+      (is (thrown? Exception
+                   (sh-crosswalk/validate-pinned-sources!
+                    {:applying-source-pins {path wrong}
+                     :source-digests {path (:sha256 after)}} sh-crosswalk/git-source))))))
+
+(deftest resolution-runtime-source-version-preserves-predecessor-ownership-and-review
+  (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"))
+        {:keys [path before after]} (:source-file bridge)
+        previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
+        current (edn/read-string (slurp path))
+        conserved (reduce-kv (fn [record section added-path] (update record section dissoc added-path))
+                             current (:added-entries bridge))
+        view (sh-crosswalk/build)]
+    (is (= previous conserved))
+    (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
+    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (is (= (:predecessor-input-fingerprint bridge)
+           (:input-fingerprint sh-crosswalk/resolution-runtime-predecessor-review)))
+    (is (= (select-keys sh-crosswalk/resolution-runtime-predecessor-review
+                        [:status :input-fingerprint :source-version-bridge])
+           (get-in view [:mapping-review :resolution-runtime-predecessor-review])))
+    (is (= (get-in view [:resolution-runtime-source-version :path])
            (get-in view [:mapping-review :source-version-bridge])))
+    (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
+           (get-in view [:mapping-review :input-fingerprint])))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= :source-conservation-only (:authority bridge)))
     (is (= 180 (count (:requirements view))))
