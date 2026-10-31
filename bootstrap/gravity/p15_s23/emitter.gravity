@@ -1698,7 +1698,7 @@
                       (recur (rest remaining)
                         (if (= id (get edge :callee-function-syntax-id))
                           (conj (conj out (get call :core-node-id)) (get call :operator-node-id)) out)))))]
-    (loop [remaining sequence excluded initial next initial seen #{initial}]
+    (loop [remaining sequence excluded initial next initial]
           (if (= 0 (count remaining))
             (if (= excluded next)
               {:status :accepted :mode mode
@@ -1707,9 +1707,7 @@
                  (if (= 0 (count remaining)) out
                    (recur (rest remaining)
                      (if (contains? next (get (first remaining) :node-id)) (conj out (get (first remaining) :node-id)) out))))}
-              (if (contains? seen next)
-                {:status :rejected :reason :private-self-cold-cut-nonconvergence}
-                (recur sequence next next (conj seen next))))
+              (recur sequence next next))
             (let [node (first remaining) node-id (get node :node-id) kind (get node :core-form)
                   bid (get (get node :attributes) :binding-id)
                   initializer (if (= kind :reference)
