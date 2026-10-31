@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 46 (count publics)))
+    (is (= 55 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -1008,3 +1008,106 @@
       (is (= original replacement))
       (is (not (identical? original replacement)))
       (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
+
+(deftest declared-digest-materialization-preserves-indices-and-semantic-preimages
+  (let [ops (operations)
+        refs [{:digest-ref 0} {:digest-ref 1}]
+        span {:source source :line-start 2}
+        raw {:binding-table [{:binding-id (refs 0) :name 'a} {:binding-id (refs 1) :name 'b}]
+             :resolution-table [{:binding-id (refs 1) :syntax-id "reference" :source-span span}]
+             :identity-preimage {:binding-identities refs :resolutions []}
+             :incremental-invalidation-inputs {:binding-ids refs}
+             :artifact-id {:digest-ref 2}}
+        requests [{:ordinal 0 :purpose :sh06-binding-id :preimage {:name 'a}}
+                  {:ordinal 1 :purpose :sh06-binding-id :preimage {:name 'b}}
+                  {:ordinal 2 :purpose :sh06-namespace-analysis-id :preimage :ignored}]
+        digests (resolution/resolve-digest-requests! source raw requests ops)
+        resolved (resolution/resolve-analysis! source raw digests ops)]
+    (is (= 3 (count digests)))
+    (is (every? #(re-matches #"sha256:[0-9a-f]{64}" %) digests))
+    (is (= (subvec digests 0 2) (mapv :binding-id (:binding-table resolved))))
+    (is (= (subvec digests 0 2) (get-in resolved [:identity-preimage :binding-identities])))
+    (is (= (subvec digests 0 2) (get-in resolved [:incremental-invalidation-inputs :binding-ids])))
+    (is (= (digests 1) (get-in resolved [:resolution-table 0 :binding-id])))
+    (is (= span (get-in resolved [:resolution-table 0 :source-span])))
+    (is (= (digests 2) (:artifact-id resolved)))
+    (is (not (contains? (get-in resolved [:identity-preimage :resolutions 0]) :source-span)))
+    (is (= digests (resolution/resolve-digest-requests!
+                   source (assoc-in raw [:resolution-table 0 :source-span] {:source "changed"}) requests ops)))
+    (is (not= digests (resolution/resolve-digest-requests!
+                      source raw (assoc-in requests [0 :preimage :name] 'changed) ops)))
+    (is (= {:digest-ref 2} (:artifact-id (resolution/resolve-analysis! source raw (subvec digests 0 2) true ops))))
+    (doseq [[changed expected] [[[] :resolution-digest-requests]
+                                [(pop requests) :complete-resolution-digest-requests]
+                                [(assoc-in requests [0 :ordinal] 1) :ordered-resolution-digest-requests]]]
+      (is (= [expected] (:missing-fields (ex-data (caught #(resolution/resolve-digest-requests! source raw changed ops)))))))
+    (doseq [bad [nil {:digest-ref -1} {:digest-ref 0.5} {:digest-ref 9} {:digest-ref 0 :extra true}]]
+      (is (= [:unit-slot] (:missing-fields (ex-data (caught #(resolution/resolve-declared-id! source bad digests :unit-slot ops)))))))
+    (is (= 0 (resolution/digest-reference {:digest-ref 0})))
+    (doseq [bad [nil {} {:digest-ref -1} {:digest-ref 0.5} {:digest-ref 0 :extra true}]]
+      (is (nil? (resolution/digest-reference bad))))))
+
+(deftest execution-rejects-host-carriers-before-invoking-the-resolver
+  (let [calls (atom 0)
+        opaque (proxy [Object] []
+                 (toString [] (swap! calls inc) "opaque")
+                 (hashCode [] (swap! calls inc) 7)
+                 (equals [_] (swap! calls inc) false))
+        ops (assoc (operations) :sh06-resolution-execute!
+                   (fn [& _] (swap! calls inc)))]
+    (doseq [request [opaque {:opaque opaque}]]
+      (let [error (caught #(resolution/run-request! source {} request ops))]
+        (is (= "C5-UNRESOLVED" (:id (ex-data error))))
+        (is (= [:untrusted-sh06-resolution-carrier] (:missing-fields (ex-data error))))))
+    (is (zero? @calls))))
+
+(deftest execution-phase-failures-stop-before-later-materialization
+  ;; Unit control flow only: supplied reports cannot confer admission authority.
+  (let [calls (atom []) template {:status :accepted :namespace-analysis-template {} :digest-requests []}
+        ops (assoc (operations)
+                   :sh06-resolution-require-carrier! (fn [_ carrier _] (swap! calls conj carrier) {:status :passed})
+                   :sh06-resolution-execute!
+                   (fn [_ _ function _]
+                     (swap! calls conj function)
+                     (case function
+                       sh06-build-resolution-template template
+                       sh06-verify-resolution-template {:status :failed}))
+                   :sh06-resolution-resolve-digest-requests! (fn [& _] (swap! calls conj :unexpected-digests))
+                   :sh06-resolution-resolve-analysis! (fn [& _] (swap! calls conj :unexpected-analysis)))
+        error (caught #(resolution/run-request! source {} {} ops))]
+    (is (= [:fresh-gravity-resolution-template-verification] (:missing-fields (ex-data error))))
+    (is (= [:authenticated-sh06-resolution-request 'sh06-build-resolution-template
+            :gravity-resolution-template 'sh06-verify-resolution-template] @calls))
+    (reset! calls [])
+    (let [error (caught #(resolution/run-request! source {} {}
+                                                (assoc ops :sh06-resolution-execute! (fn [& _] {:status :unknown}))))]
+      (is (= [:gravity-resolution-result-status] (:missing-fields (ex-data error)))))
+    (is (= [:authenticated-sh06-resolution-request :gravity-resolution-template] @calls))))
+
+(deftest stage-execution-emits-real-verified-analysis-and-real-unresolved-rejection
+  ;; Execute the actual current Gravity leaf on explicit normalized requests.
+  ;; Source authentication and publication remain with their owning boundaries.
+  (let [id #(format "sha256:%064x" %)
+        request {:artifact :gravity/sh06-authenticated-c4-resolution-request :schema-version 1
+                 :module {:namespace 'stage.execution :package 'stage :profile :hosted :target :jvm
+                          :safety :safe :effects [] :capabilities [] :exports []
+                          :source-revision-id (id 1) :c4-artifact-id (id 2)}
+                 :definitions [] :imports [] :import-bindings [] :lexical-scopes []
+                 :references [] :core-bindings [] :dependency-edges []
+                 :macro-expansion-binding {:artifact :gravity/sh05-macro-expansion-binding :schema-version 1
+                                           :source-revision-id (id 1) :c4-artifact-id (id 2)
+                                           :macro-result-id (id 3) :authenticated-envelope-id (id 4)}
+                 :provenance {:actual-source-path source}}
+        binding (real-binding)
+        run (resolution/run-request! source binding request (operations))
+        rejected (assoc request :references [{:syntax-id (id 9) :symbol 'missing :qualifier nil :name 'missing
+                                              :position :expression :scope-chain [] :semantic-span {} :source-span nil}])
+        error (caught #(resolution/run-request! source binding rejected (operations)))]
+    (is (= :accepted (get-in run [:raw-template-result :status])))
+    (is (= :passed (get-in run [:template-verification :status])))
+    (is (= :passed (get-in run [:resolved-verification :status])))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (get-in run [:resolved-analysis :artifact-id])))
+    (is (= "C5-UNRESOLVED" (:id (ex-data error))))
+    (is (= 'missing (:symbol (ex-data error))))
+    (is (re-matches #"sha256:[0-9a-f]{64}" (:diagnostic-id (ex-data error))))
+    (is (= source (get-in (ex-data error) [:source-span :source])))))
