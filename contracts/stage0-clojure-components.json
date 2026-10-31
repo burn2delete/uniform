@@ -218,6 +218,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/optimization.clj", "namespace": "gravity.optimization"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj", "namespace": "gravity.bootstrap-c13-comparison", "owner": "sh-optimization"},
       "test": {"path": "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj", "namespace": "gravity.optimization.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "llvm-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-llvm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/llvm.clj", "namespace": "gravity.backend.llvm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-llvm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj", "namespace": "gravity.backend.llvm.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
