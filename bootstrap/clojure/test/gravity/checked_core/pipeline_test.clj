@@ -10,11 +10,19 @@
 (defn- input [field] ((:input (operations)) field))
 (defn- caught [f] (try (f) nil (catch clojure.lang.ExceptionInfo error error)))
 (def ^:private source "<checked-core-runtime-unit>")
+(def ^:private projection-compatibility-names
+  '[sh07-core-source-path-from-resolution sh07-core-semantic-span sh07-core-value-kind
+    sh07-core-children sh07-core-decimal-descriptor sh07-core-decimal-evidence
+    sh07-core-projected-form-id sh07-core-projected-syntax-id sh07-core-projected-source-mismatch
+    sh07-core-neutral-value sh07-core-macro-trace sh07-core-root-syntax-id
+    sh07-core-decimal-evidence-complete! sh07-core-semantic-macro-trace
+    sh07-core-source-occurrence-context sh07-core-build-form-tree sh07-core-source-map-order
+    sh07-core-parameter-binding-paths])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 6 (count publics)))
+    (is (= 22 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -23,6 +31,13 @@
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= :none (:admission api)))
       (is (= contract (:gravity/namespace-contract (meta (publics name))))))
+    (is (= '#{source-occurrence-context projected-source-mismatch}
+           (set (keys (:private-implementation contract)))))
+    (doseq [[name api] (:private-implementation contract)
+            :let [v (ns-resolve 'gravity.checked-core name)]]
+      (is (true? (:private (meta v))))
+      (is (= (:arglists api) (:arglists (meta v))))
+      (is (= contract (:gravity/namespace-contract (meta v)))))
     (is (true? (.isDynamic ^clojure.lang.Var (seed-var '*sh07-core-execution-binding*))))
     (is (not (contains? (ns-aliases 'gravity.checked-core) 'b)))
     (is (= '[gravity.bootstrap] (get-in contract [:dependency-direction :forbids])))))
@@ -38,6 +53,62 @@
     (is (= [] (:nodes empty-state) (:var-references empty-state)))
     (is (= (core/source-key ops) ((seed-var 'sh07-core-current-source-key))))
     (is (= (b/sh07-core-source-path) (core/source-path ops)))))
+
+(deftest projected-identities-distinguish-occurrences-and-preserve-generated-origins
+  (let [ops (operations) revision :unit-revision root :unit-root
+        first-id (core/projected-form-id revision root [0] :integer ops)
+        trace (core/macro-trace {:source-revision-id revision :sh05-artifact-id :macro-artifact
+                                :macro-expansion-trace-id :macro-trace}
+                               {:input-syntax-id :input :output-syntax-id root} ops)]
+    (is (= first-id (b/sh07-core-projected-form-id revision root [0] :integer)))
+    (is (= first-id (core/projected-form-id revision root [0] :integer ops)))
+    (doseq [[r s path kind] [[:other root [0] :integer] [revision :other [0] :integer]
+                             [revision root [1] :integer] [revision root [0] :decimal]]]
+      (is (not= first-id (core/projected-form-id r s path kind ops))))
+    (is (= root (core/projected-syntax-id revision root [] :list trace ops)))
+    (is (= (:introduced-fn-syntax-id trace)
+           (core/projected-syntax-id revision root [2] :list trace ops)))
+    (is (= revision (:source-revision-id trace)))
+    (is (not= (:def-generated-origin-id trace) (:fn-generated-origin-id trace)))
+    (is (= (core/semantic-macro-trace trace ops) (b/sh07-core-semantic-macro-trace trace)))
+    (is (= (core/root-syntax-id revision 0 '(def value 1) ops)
+           (b/sh07-core-root-syntax-id revision 0 '(def value 1))))))
+
+(deftest decimal-occurrence-state-preserves-scale-and-rejects-unconsumed-evidence
+  (let [ops (operations) value (java.math.BigDecimal. "1.250")
+        descriptor (b/p15-s23-c6c10-literal-scalar-descriptor value)
+        records (mapv #(hash-map :kind :decimal :decoded value :form-id % :literal-id % :token-id %) [:a :b])
+        evidence {:records {descriptor records} :next (atom {}) :cache (atom {})}
+        first-value (core/neutral-value source :revision :root [0] evidence value ops)
+        again (core/neutral-value source :revision :root [0] evidence value ops)]
+    (is (= 3 (:scale first-value)))
+    (is (= "1250" (:unscaled-value first-value)))
+    (is (identical? first-value again))
+    (is (= 1 (get @(:next evidence) descriptor)))
+    (let [error (caught #(core/decimal-evidence-complete! source evidence ops))]
+      (is (= ["C6-ORIGIN" :decimal-c2-occurrence-bijection]
+             ((juxt :id :reason) (ex-data error)))))
+    (let [second-value (core/neutral-value source :revision :root [1] evidence value ops)]
+      (is (not= (:literal-id first-value) (:literal-id second-value)))
+      (is (not= (:projection-form-id first-value) (:projection-form-id second-value)))
+      (is (= :passed (core/decimal-evidence-complete! source evidence ops))))
+    (doseq [bad [(assoc (first records) :kind :integer)
+                 (assoc (first records) :decoded (java.math.BigDecimal. "1.251")) nil]]
+      (is (= ["C6-ORIGIN" :exact-decimal-c2-evidence]
+             ((juxt :id :reason) (ex-data (caught #(core/decimal-descriptor source value bad :form ops)))))))))
+
+(deftest projection-classification-and-parameter-paths-retain-their-boundary
+  (let [ops (operations)]
+    (doseq [value [nil true 1 (java.math.BigDecimal. "1.0") 1/2 \a "text" :key 'name [] {} #{} '(value) (Object.)]]
+      (is (= (b/sh07-core-value-kind value) (core/value-kind value ops)))
+      (is (= (b/sh07-core-children value) (core/children value ops))))
+    (is (= [{:name 'a :path [2 0]} {:name 'more :path [2 4]}]
+           (core/parameter-binding-paths '[a :- Integer & more] [2] ops)))
+    (is (= {:byte-start 1 :byte-end 4}
+           (core/semantic-span {:primary {:byte-start 1 :byte-end 4 :source "ignored"}} ops)))
+    (is (= "actual.gravity" (core/source-path-from-resolution
+                              {:gravity-resolution-boundary {:authenticated-resolution-request
+                                                             {:provenance {:actual-source-path "actual.gravity"}}}} ops)))))
 
 (deftest module-and-source-contract-drift-reject-before-binding-publication
   ;; Real current source bytes with isolated compiler result ports. No admission.
@@ -117,7 +188,10 @@
          (is (= 2 (get-in @ctx [:reuses :sh07])))))))
 
 (deftest every-stage-operation-and-compatibility-root-invalidates-receipts
-  (let [vars (set (concat (vals (ns-publics 'gravity.checked-core)) (filter var? (vals (operations)))
+  (let [private-stages (map #(ns-resolve 'gravity.checked-core %)
+                           '[source-occurrence-context projected-source-mismatch])
+        vars (set (concat (vals (ns-publics 'gravity.checked-core)) private-stages
+                         (map seed-var projection-compatibility-names) (filter var? (vals (operations)))
                          (map seed-var '[checked-core-stage-operations sh07-core-source-path sh07-core-plan-identities
                                          sh07-core-build-binding! sh07-core-current-source-key sh07-core-current-binding!
                                          sh07-core-execute!])))]
@@ -163,6 +237,8 @@
 
 (deftest construction-roots-detect-the-new-runtime-inputs-before-owner-work
   (let [expected (set (concat (vals (ns-publics 'gravity.checked-core))
+                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch])
+                              (map seed-var projection-compatibility-names)
                               (filter var? (vals (operations)))
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input
                                               sh07-core-source-path sh07-core-plan-identities sh07-core-build-binding!

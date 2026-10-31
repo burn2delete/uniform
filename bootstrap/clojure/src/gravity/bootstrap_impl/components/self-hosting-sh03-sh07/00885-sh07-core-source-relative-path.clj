@@ -45,23 +45,62 @@
  sh07-core-plan-identities
  sh07-core-source-path)
 
+(declare
+ sh07-core-build-form-tree
+ sh07-core-children
+ sh07-core-decimal-descriptor
+ sh07-core-decimal-evidence
+ sh07-core-decimal-evidence-complete!
+ sh07-core-macro-trace
+ sh07-core-neutral-value
+ sh07-core-parameter-binding-paths
+ sh07-core-projected-form-id
+ ^{:private true} sh07-core-projected-source-mismatch
+ sh07-core-projected-syntax-id
+ sh07-core-root-syntax-id
+ sh07-core-semantic-macro-trace
+ sh07-core-semantic-span
+ sh07-core-source-map-order
+ ^{:private true} sh07-core-source-occurrence-context
+ sh07-core-source-path-from-resolution
+ sh07-core-value-kind)
+
 (def
  ^{:private true} checked-core-stage-defaults
  {:p15-s23-stage2-compiler-artifact-plan
   #'p15-s23-stage2-compiler-artifact-plan,
   :sh07-core-source-path #'sh07-core-source-path,
+  :sh07-core-semantic-span #'sh07-core-semantic-span,
   :sh07-core-current-source-key #'sh07-core-current-source-key,
+  :sh07-core-source-path-from-resolution
+  #'sh07-core-source-path-from-resolution,
   :p15-s23-stage2-runtime-execute-function
   #'p15-s23-stage2-runtime-execute-function,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh07-core-children #'sh07-core-children,
   :read-forms #'read-forms,
+  :sh07-core-projected-form-id #'sh07-core-projected-form-id,
+  :sh07-core-value-kind #'sh07-core-value-kind,
+  :reader-canonical-hash #'reader-canonical-hash,
   :sh07-core-plan-identities #'sh07-core-plan-identities,
+  :p15-s23-c6c10-literal-scalar-descriptor
+  #'p15-s23-c6c10-literal-scalar-descriptor,
   :c-backend-resolve-p15-s23-compiler-source-path
   #'c-backend-resolve-p15-s23-compiler-source-path,
+  :sh07-core-source-occurrence-context
+  #'sh07-core-source-occurrence-context,
+  :sh07-core-neutral-value #'sh07-core-neutral-value,
+  :sh03-reader-host-character-value!
+  #'sh03-reader-host-character-value!,
+  :sh07-core-decimal-descriptor #'sh07-core-decimal-descriptor,
+  :sh07-core-projected-source-mismatch
+  #'sh07-core-projected-source-mismatch,
+  :sh07-core-projected-syntax-id #'sh07-core-projected-syntax-id,
   :sha256-bytes-hex #'sha256-bytes-hex,
   :input #'checked-core-stage-input,
   :p15-s23-c6c10-carrier-validation #'p15-s23-c6c10-carrier-validation,
+  :sh05-path-neutral-semantic-value #'sh05-path-neutral-semantic-value,
   :sh07-core-build-binding! #'sh07-core-build-binding!,
   :c-backend-stage2-plan-emitter-source-rule!
   #'c-backend-stage2-plan-emitter-source-rule!,
@@ -162,27 +201,23 @@
   arguments
   (checked-core-stage-operations)))
 
-(defn sh07-core-source-path-from-resolution [resolution-artifact]
-  (or (get-in resolution-artifact [:provenance :source-path])
-      (get-in resolution-artifact
-              [:gravity-resolution-boundary
-               :authenticated-resolution-request
-               :provenance :actual-source-path])
-      "<sh07-core-input>"))
+(defn
+ sh07-core-source-path-from-resolution
+ [resolution-artifact]
+ (gravity.checked-core/source-path-from-resolution
+  resolution-artifact
+  (checked-core-stage-operations)))
 
-(defn sh07-core-semantic-span [span]
-  (select-keys (or (:primary span) span {})
-   [:byte-start :byte-end :line-start :column-start
-    :line-end :column-end :scalar-start :scalar-end]))
+(defn
+ sh07-core-semantic-span
+ [span]
+ (gravity.checked-core/semantic-span
+  span
+  (checked-core-stage-operations)))
 
-(defn sh07-core-value-kind [value]
-  (cond
-    (nil? value) :nil (boolean? value) :boolean (integer? value) :integer
-    (or (instance? java.math.BigDecimal value)
-        (instance? Double value) (instance? Float value)) :decimal
-    (ratio? value) :ratio (char? value) :character
-    (string? value) :string
-    (keyword? value) :keyword (symbol? value) :symbol
-    (vector? value) :vector (map? value) :map
-    (set? value) :set (seq? value) :list
-    :else :unsupported))
+(defn
+ sh07-core-value-kind
+ [value]
+ (gravity.checked-core/value-kind
+  value
+  (checked-core-stage-operations)))
