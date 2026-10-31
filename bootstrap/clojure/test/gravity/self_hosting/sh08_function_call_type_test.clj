@@ -993,8 +993,9 @@
         products (invoke-c7 'sh08-qd-products [nodes source-forms {}])
         invented {:node-id :invented :core-form :call :source {:form-id last-child}}
         collided (invoke-c7 'sh08-qd-products
-                            [[node invented (:node second-input)]
-                             (vec (vals (merge forms (:forms second-input))))] {})
+                            [[[node invented (:node second-input)]
+                              (vec (vals (merge forms (:forms second-input))))]
+                             {}])
         wide-input (quoted-data-input (vec (repeat 1025 true)))
         wide-products (invoke-c7 'sh08-qd-products
                                  [[(:node wide-input)] (:source-forms wide-input) {}])]
@@ -2612,7 +2613,7 @@
                        (assoc-in descriptor [:bounds-proof :receiver :kind] :authenticated-string-character-vector)
                        (assoc-in descriptor [:bounds-proof :receiver :node :attributes :source-value] [:forged])
                        (assoc-in descriptor [:bounds-proof :selected-types] [:gravity.type/string])]]
-        (is (= :rejected (:status (check (assoc established :slice-operator changed) 65536)))))))
+        (is (= :rejected (:status (check (assoc established :slice-operator changed))))))))
   (doseq [[values start end reason] [[[1 2 3] 0 4 :vector-slice-bounds-required]
                                     [[1 2 3] 2 1 :vector-slice-bounds-required]
                                     [[1 2 3] -1 2 :vector-slice-bounds-required]
@@ -2763,7 +2764,7 @@
       (doseq [path [[:bounds-proof :receiver :record :binding-scope-id]
                     [:bounds-proof :receiver :reference :attributes :symbol]
                     [:bounds-proof :receiver :origin :kind] [:bounds-proof :result-count]]]
-        (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged) 65536)))))))
+        (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged))))))))
   (doseq [[value start end] [["abc" -1 1] ["abc" 2 1] ["abc" 0 4]
                             [[65 66 67] -1 1] [[65 66 67] 2 1] [[65 66 67] 0 4]
                             ["\u0100" 0 1] [(vec (range 1025)) 0 1]]]
@@ -3258,7 +3259,7 @@
     (doseq [path [[:bounds-proof :receiver :parameter-index] [:bounds-proof :receiver :parameter-type]
                   [:bounds-proof :receiver :binding :definition-syntax-id] [:bounds-proof :end :value]
                   [:bounds-proof :end :reference :node-id] [:slice-policy :receiver] [:invalidation]]]
-      (is (= :rejected (:status (check (assoc-in established (into [:types :slice-operator] path) :forged) 65536))))))
+      (is (= :rejected (:status (check (assoc-in established (into [:types :slice-operator] path) :forged)))))))
   (doseq [[text start] [["0af" -1] ["0af" 4] ["" 1]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (parameter-vector-count-slice-input text start)
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ])]
@@ -3526,7 +3527,7 @@
                   [:bounds-proof :receiver :body-consumer :edge :argument-core-node-ids]
                   [:bounds-proof :receiver :body-consumer :binding :definition-syntax-id]
                   [:bounds-proof :selected-types]]]
-      (is (= :rejected (:status (check (assoc-in established (into [:types :argument-slice-operator] path) :forged) 65536))))))
+      (is (= :rejected (:status (check (assoc-in established (into [:types :argument-slice-operator] path) :forged)))))))
   (doseq [[start end] [[-1 2] [7 11] [8 7]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (let-vector-slice-call-input "sha256:0af" start end)
           result (invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings types forms ])]
@@ -3580,7 +3581,7 @@
         (doseq [path [[:bounds-proof :end :value] [:bounds-proof :end :reference :node-id]
                       [:bounds-proof :end :cardinality-proof :descriptor :query-semantics :operation]
                       [:slice-policy :indexes]]]
-          (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged) 65536))))))
+          (is (= :rejected (:status (check (assoc-in established (into [:slice-operator] path) :forged)))))))
       (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
                      :lookup-bindings (vec (vals bindings))
                      :shape-call-products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core)}}
@@ -3709,7 +3710,7 @@
       (doseq [path [[:bounds-proof :receiver :body-consumer :node :node-id]
                     [:bounds-proof :receiver :body-consumer :node :children]
                     [:bounds-proof :end :reference :node-id] [:bounds-proof :end :value]]]
-        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator] path) :forged) 65536)))))
+        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator] path) :forged))))))
       (when (< (count text) 1024)
         (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
                        :lookup-bindings (vec (vals bindings))
@@ -3774,7 +3775,7 @@
       (is (= (:type query) (get-in cold [:type-table :let-first-call]) (get-in cold [:type-table :slice-let])))
       (doseq [path [[:node :children] [:node :evaluation :order] [:operator :source :syntax-id]
                     [:binding :definition-syntax-id] [:source-forms]]]
-        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator :bounds-proof :receiver :body-consumer] path) :forged) 65536))))))))
+        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator :bounds-proof :receiver :body-consumer] path) :forged)))))))))
 
 (deftest sh08-let-vector-slice-first-boundaries-development-kernel
   (doseq [value ["" [] "abc" [65 66]]]
@@ -3813,7 +3814,7 @@
     (is (= 1036 (count (get-in slice [:descriptor :bounds-proof :source-forms]))))
 
 
-    (is (= :rejected (:status (check (assoc-in types [:slice-operator :bounds-proof :receiver :body-consumer :kind] :direct-left-vector-equality) 65536))))))
+    (is (= :rejected (:status (check (assoc-in types [:slice-operator :bounds-proof :receiver :body-consumer :kind] :direct-left-vector-equality)))))))
 
 
 (deftest sh08-let-vector-slice-first-diagnostics-development-kernel
@@ -3936,7 +3937,7 @@
       (doseq [path [[:node :children] [:operator :source :syntax-id] [:source-forms]
                     [:membership-container :node :evaluation :order] [:membership-container :set-node :attributes :source-value]
                     [:membership-container :binding :definition-syntax-id] [:membership-container :source-forms]]]
-        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator :bounds-proof :receiver :body-consumer] path) :forged) 65536))))))))
+        (is (= :rejected (:status (check (assoc-in types (into [:slice-operator :bounds-proof :receiver :body-consumer] path) :forged)))))))))
 
 (deftest sh08-let-vector-slice-first-membership-boundaries-development-kernel
   (doseq [members [[] (vec "0123456789abcdef")]]
@@ -3993,7 +3994,7 @@
     (is (= 1041 (count (get-in slice [:descriptor :bounds-proof :source-forms]))))
 
 
-    (is (= :rejected (:status (check (assoc-in types [:slice-operator :bounds-proof :receiver :body-consumer :kind] :direct-vector-first) 65536)))))
+    (is (= :rejected (:status (check (assoc-in types [:slice-operator :bounds-proof :receiver :body-consumer :kind] :direct-vector-first))))))
   (let [{:keys [core nodes bindings forms types]}
         (let-vector-slice-first-membership-input (vec (range 1024)) (mapv char (range 1024)) 0 1 nil)
         result (invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) (first (:calls core)) (first (:call-edges core)) nodes bindings types forms ])]
@@ -4090,7 +4091,7 @@
                     [:bounds-proof :receiver :body-consumer :right :node-id]
                     [:bounds-proof :receiver :body-consumer :literal-type]
                     [:bounds-proof :receiver :body-consumer :source-forms]]]
-        (is (= :rejected (:status (checked (assoc-in types (into [:slice-operator] path) :forged) 65536)))))))
+        (is (= :rejected (:status (checked (assoc-in types (into [:slice-operator] path) :forged))))))))
   (let [base (let-vector-slice-equality-input "sha256:abcd" "sha256:" nil)
         derive (fn [input] (:slice (let-vector-slice-equality-established input)))]
     (doseq [mutate [#(assoc-in % [:nodes :slice-let :children 1] :slice-call)
@@ -4319,7 +4320,7 @@
                       [:bounds-proof :receiver :body-consumer :condition-container :then :evaluation :region :role]
                       [:bounds-proof :receiver :body-consumer :condition-container :then-call :edge :callee-function-syntax-id]
                       [:bounds-proof :receiver :body-consumer :condition-container :node :evaluation :order]]]
-          (is (= :rejected (:status (cold (assoc-in established (into [:types op] path) :forged) 65536)))))
+          (is (= :rejected (:status (cold (assoc-in established (into [:types op] path) :forged))))))
         (doseq [[index mutate] (map-indexed vector [#(assoc-in % [:core :call-edges 4 :callee-function-syntax-id] :sibling)
                         #(assoc-in % [:core :control-flow 0 :branches 0 :core-node-id] :prefix-else)
                         #(assoc-in % [:nodes :parameter-entry :evaluation :region :role] :else)
@@ -4329,7 +4330,7 @@
                         #(assoc-in % [:forms :parameter-entry :parent-form-id] :argument-let)
                         #(assoc-in % [:forms :parameter-name :value] 'substitute)
                         #(assoc-in % [:nodes :prefix-else :attributes :value] true)])]
-          (is (= :rejected (:status (derive (mutate input) id 65536))) (str id " mutation " index)))
+          (is (= :rejected (:status (derive (mutate input) id))) (str id " mutation " index)))
         (when (= id :argument-slice-call)
           (is (= :parameter-entry (get-in consumer [:node :node-id])))
           (is (= 0 (:parameter-index consumer)))
@@ -4492,7 +4493,7 @@
                     [:bounds-proof :receiver :body-consumer :condition-container :control :branch-exclusivity]
                     [:bounds-proof :receiver :body-consumer :condition-container :node :evaluation :order]
                     [:bounds-proof :receiver :body-consumer :condition-container :then :evaluation :region :role]]]
-        (is (= :rejected (:status (checked (assoc-in types (into [:slice-operator] path) :forged) 65536)))))))
+        (is (= :rejected (:status (checked (assoc-in types (into [:slice-operator] path) :forged))))))))
   (let [base (let-prefix-gate-input "sha256:abcd" "sha256:" true false nil)
         derive (fn [input] (:slice (let-prefix-gate-established input)))]
     (doseq [mutate [#(assoc-in % [:nodes :slice-let :children 1] :slice-call)
@@ -4576,7 +4577,7 @@
         (is (= [] (:direct-effects descriptor) (:latent-effects descriptor)))
 
 
-        (is (= :rejected (:status (check (assoc-in types [:prefix-operator :equality-policy :leaves] :compare-types) 65536))))
+        (is (= :rejected (:status (check (assoc-in types [:prefix-operator :equality-policy :leaves] :compare-types)))))
         (when (nil? positions)
           (let [context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
                          :lookup-bindings (vec (vals bindings)) :shape-call-products (:products raw)}
@@ -4791,7 +4792,7 @@
                        (update descriptor :conversion-proof dissoc :selection)
                        (assoc-in descriptor [:conversion-policy :supported-domain] :original-ascii-string-literal)
                        (assoc descriptor :version :sh08-string-character-vector-v1)]]
-        (is (= :rejected (:status (check (assoc types :operator changed) 65536)))))))
+        (is (= :rejected (:status (check (assoc types :operator changed))))))))
   (doseq [input [(literal-string-vector-input "") (literal-string-vector-input "A")
                  (literal-string-vector-transfer-input)]]
     (let [result (literal-string-vector-derived input)
@@ -5014,11 +5015,11 @@
         (is (= :accepted (:status (invoke-c7 'sh08-nq-inferred-call
                                     [(:core input) (:node input) (:call input) (:edge input) (:nodes input) (:bindings input)
                                      (assoc (:types input) :operator descriptor) ]))))))
-    (is (= :rejected (:status (derive (nonnegative-integer-quotient-transfer-input [127 0] 0) 65536))))
-    (is (= :rejected (:status (derive (nonnegative-integer-quotient-transfer-input [-1 10] 1) 65536))))
+    (is (= :rejected (:status (derive (nonnegative-integer-quotient-transfer-input [127 0] 0)))))
+    (is (= :rejected (:status (derive (nonnegative-integer-quotient-transfer-input [-1 10] 1)))))
     (doseq [values [[] [1] [1 2 3]]]
-      (is (= :nonnegative-integer-quotient-arity-mismatch (:reason (derive (nonnegative-integer-quotient-input values) 65536)))))
-    (let [zero (derive (nonnegative-integer-quotient-input [127 0]) 65536)]
+      (is (= :nonnegative-integer-quotient-arity-mismatch (:reason (derive (nonnegative-integer-quotient-input values))))))
+    (let [zero (derive (nonnegative-integer-quotient-input [127 0]))]
       (is (= "STD5002" (:rule zero)))
       (is (= :nonnegative-integer-quotient-zero-divisor (:reason zero)))
       (is (= {:operation 'quot :numeric-mode :proof-required :dividend :source-proven-nonnegative-Integer
@@ -5031,9 +5032,8 @@
                     [:call :argument-node-ids 0] [:node :node-id] [:node :children 0]
                     [:node :source :form-id] [:nodes :operator :source :syntax-id]
                     [:nodes :operator :attributes :symbol] [:nodes :arg0 :attributes :value]
-                    [:forms :arg1 :value] [:edge :ordinal]]
-              budget [0 65536]]
-        (is (= :rejected (:status (derive (assoc-in base path opaque) budget))))
+                    [:forms :arg1 :value] [:edge :ordinal]]]
+        (is (= :rejected (:status (derive (assoc-in base path opaque)))))
         (is (zero? @callbacks))))))
 
 
@@ -5383,7 +5383,7 @@
                          (assoc-in descriptor [:storage-policy :borrow] :vector-backing-storage)
                          (assoc-in descriptor [:allocation-policy :empty-result] :none)
                          (assoc-in descriptor [:query-policy :payload-evaluation] :execute)]]
-          (is (= :rejected (:status (checked (assoc established :operator changed) 65536)))))))
+          (is (= :rejected (:status (checked (assoc established :operator changed))))))))
     (doseq [bad [:gravity.type/vector :gravity.type/unknown :gravity.type/string :gravity.type/map :gravity.type/set
                  (finite :gravity.type/vector [:gravity.type/unknown :gravity.type/character])
                  (finite :gravity.type/vector [:gravity.type/never :gravity.type/character])
@@ -5391,17 +5391,17 @@
                  (finite :gravity.type/vector [:gravity.type/character :gravity.type/unknown])
                  (assoc (finite :gravity.type/vector []) :extra true)
                  (finite :gravity.type/vector (conj (vec (repeat 1024 :gravity.type/bool)) :gravity.type/unknown))]]
-      (is (= :rejected (:status (derive (vector-rest-input bad) 65536)))))
+      (is (= :rejected (:status (derive (vector-rest-input bad))))))
     (is (= :vector-rest-finite-positional-vector-type-required
            (:reason (derive (vector-rest-input
                              (finite :gravity.type/vector
-                                     (conj (vec (repeat 1024 :gravity.type/bool)) :gravity.type/unknown))) 65536))))
+                                     (conj (vec (repeat 1024 :gravity.type/bool)) :gravity.type/unknown)))))))
     (let [literal-type (invoke-c7 'sh08-ft-collection-type
                         [{:core-form :collection-literal :attributes {:literal-kind :set} :children [:member]}
                          {:member :gravity.type/string}])]
       (is (= (finite :gravity.type/set [:gravity.type/string]) literal-type))
       (is (= ["C7-TYPE-MISMATCH" :vector-rest-finite-positional-vector-type-required]
-             ((juxt :rule :reason) (derive (vector-rest-input literal-type) 65536)))))
+             ((juxt :rule :reason) (derive (vector-rest-input literal-type))))))
     (doseq [elements [[] [:gravity.type/bool :gravity.type/nil]]]
       (let [input (list-query-input 'rest [(finite :gravity.type/list elements)]) result (list-query-derived input)
             descriptor (:descriptor result) changed (vector-rest-cross-family-descriptor descriptor)]
@@ -5409,9 +5409,9 @@
                      [(:core input) (:node input) (:call input) (:edge input) (:nodes input) (:bindings input)
                       (assoc (:types input) :operator changed :call (:type result))])))))
     (let [nested #(nth (iterate (fn [type] (finite :gravity.type/vector [type])) :gravity.type/bool) %)]
-      (is (= :accepted (:status (derive (vector-rest-input (nested 128)) 65536))))
-      (is (= :accepted (:status (derive (vector-rest-input (nested 192)) 65536))))
-      (let [result (derive (vector-rest-input (nested 129)) 65536)]
+      (is (= :accepted (:status (derive (vector-rest-input (nested 128))))))
+      (is (= :accepted (:status (derive (vector-rest-input (nested 192))))))
+      (let [result (derive (vector-rest-input (nested 129)))]
         (is (= :accepted (:status result)))
         (is (= (finite :gravity.type/list []) (:type result) (get-in result [:descriptor :result-type])))))
 ))
@@ -9295,7 +9295,7 @@
 (deftest sh08-private-map-keys-cold-and-budget-development-kernel
   (let [{:keys [core node call edge nodes bindings types forms binding-types] :as input} (private-map-keys-input)
         derive #(invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms])
-        result (derive nil) descriptor (:descriptor result) expected (:type result)
+        result (derive) descriptor (:descriptor result) expected (:type result)
         callee (assoc (invoke-c7 'sh08-ft-function-type-skeleton [(first (:function-records core)) (:module core)]) :return expected)
         table (reduce (fn [out entry] (assoc out (:operator-node-id entry) callee (:core-node-id entry) expected))
                       (assoc types :operator descriptor :present-get expected :helper-fn callee) (rest (:calls core)))
@@ -10057,9 +10057,9 @@
 
                                       :else (original runtime plan callee args scope)))} thunk)]
                     {:result result :counts @counts}))
-        run (fn [loop-work-left] (invoke-c7 'sh08-ft-infer-acyclic-with-context
+        run (fn [] (invoke-c7 'sh08-ft-infer-acyclic-with-context
                                    [(:nodes core) nodes [] (:definitions core) (:calls core) (:call-edges core)
-                                    skeletons {} (assoc context :loop-work-left loop-work-left)]))
+                                    skeletons {} context]))
         observed (observe :reuse #(run))
         inferred (:result observed)]
     (is (= 66 (count (:nodes core))))
@@ -10390,7 +10390,7 @@
                        (assoc-in input [:parts 1 :coordinate] 7) (assoc-in input [:parts 0 :shape] nil)
                        (assoc-in input [:type :member-types] []) (assoc-in input [:type :shape] :unknown)
                        (assoc-in input [:type :member-types 1] :gravity.type/string)]]
-        (is (= :map-removal-input-shape-required (:reason (transition changed :left 65536)))))
+        (is (= :map-removal-input-shape-required (:reason (transition changed :left)))))
       (doseq [key [nil "left" 1 'left]]
         (is (= :map-removal-input-shape-required (:reason (transition input key))))))))
 
@@ -10628,7 +10628,7 @@
 
         ))
     (doseq [[factor divisor] [[3 2] [-1 4] [1.0 4] [1/2 4]]]
-      (let [result (derive (count-quotient-scaling-input factor divisor :vector false) 65536)]
+      (let [result (derive (count-quotient-scaling-input factor divisor :vector false))]
         (is (= :rejected (:status result)))
         (is (= ["STD5001" :count-quotient-scaling-proof-required] ((juxt :rule :reason) result)))))
     (let [input (count-quotient-scaling-input 2 4 :vector false)]
@@ -12676,7 +12676,7 @@
             context {:ordering-core core :lookup-core core :lookup-nodes nodes
                      :lookup-bindings (vec (vals bindings)) :lookup-forms (vec (vals forms))}
             seeds (into {} (for [[role id] refs] [id (get types (nids role))]))
-            run #(invoke-c7 'sh08-ft-infer-pass-with-context [(:nodes core) [] [] [] [] {} seeds (assoc context :loop-work-left %)])
+            run #(invoke-c7 'sh08-ft-infer-pass-with-context [(:nodes core) [] [] [] [] {} seeds context])
             result (run) row (first (:constraints result)) premise (:dependencies row)
             derive #(invoke-c7 'sh08-ij-derive [%1 %2 %3 %4 %5 %6])]
         (is (= [] (:diagnostics result)) (pr-str (:diagnostics result)))
@@ -12771,7 +12771,7 @@
                      :lookup-bindings (vec (vals bindings)) :lookup-forms (vec (vals forms))}
             binding-types (into {} (for [[role id] refs] [id (get types (nids role))]))
             run #(invoke-c7 'sh08-ft-infer-pass-with-context
-                            [(:nodes core) [] [] [] [] {} binding-types (assoc context :loop-work-left %)])
+                            [(:nodes core) [] [] [] [] {} binding-types context])
             result (run)
             row (first (:constraints result))]
         (is (= homogeneous (get-in result [:type-table (nids :if)])))
@@ -12784,7 +12784,7 @@
         (is (= homogeneous (invoke-c7 'sh08-ft-infer-node-with-context [node types binding-types {} [] {}])))
         (let [unknown-types (dissoc types (nids :condition))
               step #(invoke-c7 'sh08-ij-step [node unknown-types context])]
-          (is (= :deferred (:status (step 1))))
+          (is (= :deferred (:status (step))))
           (doseq [[left right expected] [[:gravity.type/never :gravity.type/bool :gravity.type/bool]
                                         [:gravity.type/bool :gravity.type/never :gravity.type/bool]
                                         [:gravity.type/bool :gravity.type/bool :gravity.type/bool]
@@ -15120,7 +15120,7 @@
 (deftest sh08-private-first-entry-local-products-development-kernel
   (let [input (private-first-entry-source-input [])
         build private-first-entry-local-derived
-        first-result (build input {} (:types input) 65536)
+        first-result (build input {} (:types input))
         table {:inner-get (:local-private-product first-result)}
         scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped) original @scoped
         full-calls (atom 0)
@@ -15133,7 +15133,7 @@
                   {:result result :full-calls @full-calls}))]
     (is (= :accepted (:status first-result)) (pr-str (select-keys first-result [:status :reason])))
     (when (= :accepted (:status first-result))
-      (let [{:keys [result full-calls]} (trace #(build input table (:types input) 65536))]
+      (let [{:keys [result full-calls]} (trace #(build input table (:types input)))]
         (is (= :accepted (:status result)))
         (is (zero? full-calls))
         (is (= (:descriptor first-result) (:descriptor result)))
@@ -15143,33 +15143,33 @@
         )
       (let [data (-> input (assoc-in [:types :inner-get] :gravity.type/keyword)
                            (assoc-in [:types :inner-operator] (:descriptor first-result)))
-            observed (trace #(build data table (:types data) 65536))]
+            observed (trace #(build data table (:types data)))]
         (is (= :accepted (get-in observed [:result :status])))
         (is (zero? (:full-calls observed)) "Constructed BU outputs are not input dependencies"))
       (let [prior (assoc (:types input) :entry-value-0-0 :gravity.type/integer)
-            observed (trace #(build input table prior 65536))]
+            observed (trace #(build input table prior))]
         (is (= :accepted (get-in observed [:result :status])))
         (is (zero? (:full-calls observed)) "A concrete current type does not consult prior fallback"))
       ;; Provided parent proof metadata belongs to the standalone/full boundary.
       (doseq [data [(assoc-in input [:types :first-operator :bounds-proof :selected-index] 1)
                     (assoc-in input [:types :operator :key] :other)]]
-        (let [observed (trace #(build data nil (:types data) 65536))]
+        (let [observed (trace #(build data nil (:types data)))]
           (is (= :rejected (get-in observed [:result :status])))
           ))
       ;; Reference/initializer types remain genuine inputs of the local path.
       (doseq [data [(assoc-in input [:types :signature-reference :member-types 1] :gravity.type/integer)
                     (assoc-in input [:types :signatures-reference :element-types 0 :member-types 1] :gravity.type/integer)]]
-        (let [observed (trace #(build data table (:types data) 65536))]
+        (let [observed (trace #(build data table (:types data)))]
           (is (= :rejected (get-in observed [:result :status])))
           ))
       (let [data (update input :types dissoc :entry-value-0-0)
-            observed (trace #(build data table (:types input) 65536))]
+            observed (trace #(build data table (:types input)))]
         (is (= 1 (:full-calls observed)) "Presence and consulted fallback changes reconstruct the proof"))
       (let [callbacks (atom 0) opaque (proxy [Object] []
                                       (equals [_] (swap! callbacks inc) (throw (AssertionError. "opaque dependency compared")))
                                       (hashCode [] (swap! callbacks inc) (throw (AssertionError. "opaque dependency hashed"))))
             data (assoc-in input [:types :first-operator :bounds-proof :selected-index] opaque)
-            observed (trace #(build data nil (:types data) 65536))]
+            observed (trace #(build data nil (:types data)))]
         (let [row (invoke-c7 'sh08-pc-observed-type [:selected {:selected opaque} {}])
               rejected (invoke-c7 'sh08-pc-evidence-work [row ])]
           (is (= :map-get-source-mismatch (:reason rejected))))
@@ -15246,7 +15246,7 @@
                         (assoc-in [:types :operator] (:descriptor parent))
                         (assoc-in [:types :present-get] (:type parent))
                         (assoc-in [:types :signatures-reference] (:type parent)))))
-        data (refresh data) first-result (private-first-entry-local-derived data)
+        data (refresh data) first-result (private-first-entry-local-derived data {} (:types data))
         table {:inner-get (:local-private-product first-result)}]
     (is (= :accepted (:status first-result)) (pr-str (select-keys first-result [:status :reason])))
     (when (= :accepted (:status first-result))
@@ -15309,14 +15309,14 @@
         (is (some #{[:other-0 true :gravity.type/integer false nil nil]}
               (get-in result [:local-private-product :dependencies 3]))))
       (let [changed (refresh (assoc-in data [:types :other-0] :gravity.type/never))
-            result (private-first-entry-local-derived changed)]
+            result (private-first-entry-local-derived changed table (:types changed))]
         (is (= :accepted (:status result)) (pr-str (select-keys result [:status :reason])))
         (is (= :gravity.type/keyword (:type result)))
         (is (= [:not-invoked :invoked] (mapv :entry (get-in result [:descriptor :presence-proof :entries]))))
         (is (nil? (get-in result [:descriptor :presence-proof :entries 0 :selection]))))
       (let [changed (refresh (-> data (assoc-in [:types :other-0] :gravity.type/never)
                                       (assoc-in [:types :other-1] :gravity.type/never)))
-            result (private-first-entry-local-derived changed)]
+            result (private-first-entry-local-derived changed table (:types changed))]
         (is (= :rejected (:status result)))
         (is (not= :gravity.type/keyword (:type result)))))))
 
@@ -15460,7 +15460,7 @@
           (is (= :sh08-flat-keyword-set-vector-equality-v1 (:equality-version policy)))
           (is (= policy (get-in result [:constraint :solution :vector-equality]))))
         (let [foreign (-> input (assoc-in [:core :module :target] :native) (assoc-in [:module :target] :native))]
-          (is (= :rejected (:status (derive operation foreign 65536)))))))
+          (is (= :rejected (:status (derive operation foreign)))))))
     ;; Full domains precede outer-length and value-family mismatches.
     (doseq [bad [ :gravity.type/set (st [s]) (st [k s]) (st [i]) (st [:gravity.type/never])
                  (st [:gravity.type/unknown]) (ni ks) (v [k]) :gravity.type/i64
@@ -15795,9 +15795,9 @@
       (is (false? (invoke 'sh08-is-value-type? [wrong])))
       (is (= :private-self-independent-entry-types-required (:reason (entries (assoc types :seen wrong))))))
     (let [abort (assoc types :again :gravity.type/never :other-again :gravity.type/never)]
-      (is (= :private-self-normal-entry-required (:reason (entries abort 65536)))))
+      (is (= :private-self-normal-entry-required (:reason (entries abort)))))
     (let [abort (assoc types :other-again :gravity.type/never :other-seen :gravity.type/unknown)
-          retained (entries abort 65536)]
+          retained (entries abort)]
       (is (= :accepted (:status retained)))
       (is (= 1 (:normal-entry-count retained)))
       (is (= [b s carrier] (:parameter-types retained))))
@@ -15806,8 +15806,8 @@
     (is (= [:self] (:pending-return-node-ids returned)))
 
 
-    (is (= :private-self-independent-return-required (:reason (witness (assoc return-types :answer :gravity.type/never) 65536))))
-    (is (= :private-self-return-value-type-required (:reason (witness (assoc return-types :answer :gravity.type/set) 65536))))
+    (is (= :private-self-independent-return-required (:reason (witness (assoc return-types :answer :gravity.type/never)))))
+    (is (= :private-self-return-value-type-required (:reason (witness (assoc return-types :answer :gravity.type/set)))))
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "carrier hash")))
                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "carrier equality"))))]
@@ -16157,11 +16157,11 @@
                          (assoc-in descriptor [:equality-policy :identity] :observed)
                          (assoc-in descriptor [:equality-policy :nested-list-versus-atomic] :false)
                          (assoc descriptor :direct-effects [:memory/allocate])]]
-          (is (= :rejected (:status (check (assoc table :operator changed) 65536)))))))
+          (is (= :rejected (:status (check (assoc table :operator changed))))))))
     (doseq [leaf [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]]
-      (is (= :accepted (:status (derive (atomic-equality-input [(finite [leaf]) (finite [leaf])]) 65536)))))
+      (is (= :accepted (:status (derive (atomic-equality-input [(finite [leaf]) (finite [leaf])]))))))
     (doseq [pair [[(finite [s]) :gravity.type/never] [:gravity.type/never (finite [k])]]]
-      (let [result (derive (atomic-equality-input pair) 65536)]
+      (let [result (derive (atomic-equality-input pair))]
         (is (= :accepted (:status result)))
         (is (= :gravity.type/never (:type result)))
         (is (= :not-invoked (get-in result [:descriptor :application])))))
@@ -16169,7 +16169,7 @@
                  {:kind :gravity.type/list :shape :homogeneous :element-type s}
                  (assoc (finite []) :extra true) (dissoc (finite []) :shape)]
             pair [[bad (finite [])] [(finite []) bad] [bad :gravity.type/never] [:gravity.type/never bad]]]
-      (is (= :rejected (:status (derive (atomic-equality-input pair) 65536)))))
+      (is (= :rejected (:status (derive (atomic-equality-input pair))))))
     (doseq [bad [:gravity.type/integer :gravity.type/i64 :gravity.type/decimal :gravity.type/ratio :gravity.type/f64
                  :gravity.type/never :gravity.type/unknown :gravity.type/function :gravity.type/list
                  {:kind :gravity.type/nil-or :value-type s}
@@ -16178,12 +16178,12 @@
                  {:kind :gravity.type/set :shape :literal :element-types []}]]
       (doseq [pair [[(finite [k bad]) (finite [])] [(finite []) (finite [bad])]
                     [:gravity.type/never (finite [bad])] [(finite [bad]) :gravity.type/never]]]
-        (is (= :rejected (:status (derive (atomic-equality-input pair) 65536))))))
+        (is (= :rejected (:status (derive (atomic-equality-input pair)))))))
     ;; Even an earlier unequal length or atomic family cannot mask a later incompatible pair.
     (doseq [pair [[(finite [s (finite [])]) (finite [k s])]
                   [(finite [s (finite [])]) (finite [k s s])]
                   [(finite [(finite [s (finite [])])]) (finite [(finite [k s])])]]]
-      (is (= :list-equality-pair-type-required (:reason (derive (atomic-equality-input pair) 65536)))))
+      (is (= :list-equality-pair-type-required (:reason (derive (atomic-equality-input pair))))))
     (let [wide (finite (repeat 1024 k)) deep (nth (iterate #(finite [%]) k) 128)
           huge (finite (repeat 1024 wide))]
       (doseq [type [wide deep]]
@@ -16307,9 +16307,9 @@
                          (assoc-in descriptor [:list-equality :equality-policy :identity] :observed)
                          (assoc-in descriptor [:list-equality :equality-policy :nested-list-versus-atomic] :false)
                          (assoc descriptor :direct-effects [:memory/allocate])]]
-          (is (= :rejected (:status (check (assoc table :operator changed) 65536)))))))
+          (is (= :rejected (:status (check (assoc table :operator changed))))))))
     (doseq [leaf [:gravity.type/nil :gravity.type/bool :gravity.type/character :gravity.type/string :gravity.type/symbol :gravity.type/keyword]]
-      (is (= :accepted (:status (derive (atomic-inequality-input [(finite [leaf]) (finite [leaf])]) 65536)))))
+      (is (= :accepted (:status (derive (atomic-inequality-input [(finite [leaf]) (finite [leaf])]))))))
     (doseq [pair [[(finite [s]) :gravity.type/never] [:gravity.type/never (finite [k])]]]
       (let [result (derive (atomic-inequality-input pair))]
         (is (= :accepted (:status result)))

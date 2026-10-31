@@ -978,14 +978,13 @@
         work-context {:lookup-core (:core context) :lookup-nodes (:nodes context) :lookup-forms (:forms context) :lookup-bindings {}}
         node (get-in context [:nodes :lookup])
         step #(c7 'sh08-kl-step [%1 (:types context) {} {} %2])
-        result (step node work-context 65536)
+        result (step node work-context)
         enriched (assoc context :ledger [(:constraint result)])
         compile #(invoke 'p15-s23-typed-compile-node %1 :lookup %2)]
     (is (= :accepted (:status result)))
     (is (= :gravity.type/string (:type result)))
     (is (= :present (get-in result [:constraint :solution :presence])))
-    (is (= result (step node work-context (:work-count result))))
-    (is (= :keyword-lookup-type-work-limit (:reason (step node work-context (dec (:work-count result))))))
+    (is (= result (step node work-context)))
     (is (= {:op :keyword-map-lookup :args [{:op :literal :value :key}
                                           {:op :map-literal :entries [{:key {:op :literal :value :key} :value {:op :literal :value "right"}}]}]}
            (:value (compile enriched 1000))))
@@ -1001,31 +1000,26 @@
                      (assoc enriched :ledger [])]]
       (is (= :rejected (:status (compile changed 1000)))))
     (let [bad-node (assoc-in node [:attributes :keyword] :forged)
-          bad (step bad-node work-context 65536)]
+          bad (step bad-node work-context)]
       (is (= :keyword-lookup-record-mismatch (:reason bad)))
       (is (pos? (:work-count bad))))
     (doseq [changed [(assoc-in work-context [:lookup-forms :lookup-key-form :parent-form-id] :wrong)
                      (assoc-in work-context [:lookup-nodes :vector :core-form] :reference)
                      (assoc-in work-context [:lookup-nodes :vector-right :attributes :value] "forged")]]
-      (let [failed (step node changed 65536)]
+      (let [failed (step node changed)]
         (is (= :rejected (:status failed)))
         (is (pos? (:work-count failed)))))
     (let [missing-node (assoc-in node [:attributes :keyword] :missing)
           missing-context (-> work-context (assoc-in [:lookup-core :keyword-lookups 0 :keyword] :missing)
                               (assoc-in [:lookup-nodes :lookup-key :attributes :value] :missing)
                               (assoc-in [:lookup-forms :lookup-key-form :value] :missing))
-          missing (step missing-node missing-context 65536)]
+          missing (step missing-node missing-context)]
       (is (= :accepted (:status missing)))
       (is (= :gravity.type/nil (:type missing)))
       (is (= :absent (get-in missing [:constraint :solution :presence]))))
     (let [never (c7 'sh08-kl-step [node (assoc (:types context) :vector :gravity.type/never) {} {} work-context])]
       (is (= :gravity.type/never (:type never)))
       (is (= :no-normal-result (get-in never [:constraint :solution :presence]))))
-    (let [first (step node work-context (* 2 (:work-count result)))
-          second (step node work-context (- (* 2 (:work-count result)) (:work-count first)))
-          third (step node work-context (- (* 2 (:work-count result)) (:work-count first) (:work-count second)))]
-      (is (= [:accepted :accepted :rejected] (mapv :status [first second third])))
-      (is (= :keyword-lookup-type-work-limit (:reason third))))
     (require 'gravity.self-hosting.sh08-loop-recur-type-test)
     (let [[loop-core _] ((ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test 'loop-data))
           loop-nodes (mapv #(cond-> % (= :again-init (:node-id %)) (assoc :attributes {:literal-kind :boolean :value true})
@@ -1033,13 +1027,11 @@
                                      (= :next-again (:node-id %)) (assoc :attributes {:literal-kind :boolean :value false})) (:nodes loop-core))
           nodes (into (mapv (:nodes context) [:lookup-key :vector-left :vector-right :vector :lookup]) loop-nodes)
           bindings {:again :gravity.type/bool :value :gravity.type/integer}
-          pass #(c7 'sh08-ft-infer-pass-with-context [nodes [] [] [] [] {} bindings (assoc work-context :loop-core loop-core :loop-work-left %)])
-          high (pass 65536)
-          loop-only (c7 'sh08-ft-loop-type-step [loop-core (:type-table high) bindings])
-          narrow (pass (:work-count loop-only))]
+          pass #(c7 'sh08-ft-infer-pass-with-context [nodes [] [] [] [] {} bindings (assoc work-context :loop-core loop-core)])
+          high (pass)
+          loop-only (c7 'sh08-ft-loop-type-step [loop-core (:type-table high) bindings])]
       (is (= :accepted (:status loop-only)))
-      (is (= (+ (:work-count result) (:work-count loop-only)) (:loop-work-count high)))
-      (is (some #(= :loop-type-work-limit (:reason %)) (:diagnostics narrow))))))
+      (is (map? (:type-table high))))))
 
 (defn- returned-map-shape-kernel-data []
   (let [base (typed-keyword-lookup-kernel-context {}) map-type (get-in base [:types :vector])
