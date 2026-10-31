@@ -116,6 +116,37 @@ not committed-head authority bookends. The composition script is
 still requires independent acceptance, its own CI and clean current-main
 integration preflight. No prior green is transferred.
 
+## Compiler and type-checker parent
+
+Candidate 60480e9ae633219b6db70b3f5a205e86c4ff37d4, tree
+7dde5e329fcb1305787dd8ebb6357e199dee0f9d, passed all ten enabled jobs in
+CI 41232000367 against main 79f285f. Tested merge
+c286113de92b088918e03e56056bb37bec2f4e75 has those exact parents and tree.
+Verified receipts record Macro 16/293 and Resolution 54/2307, both exit zero
+under the configured 900-second host watchdog. The manifest digests are
+14ef23c2a521093ee1c590b363c3bae7f10b8029eacb34ec037ed7988fbd17e6
+(Macro), 4a06019b350f60a8d638580c5d61e35a729c4f611196a789fd35419945af5209
+(Resolution) and 7f742779ab976836d48a2686f82b14c4ffa9eba54b9ec1379d94c31e801c17ba
+(Bootstrap). They remain evidence for that exact candidate/base only.
+
+Before integration, main advanced through PRs 709, 712, 713 and 714: duplicate
+core-form retirement, normalized crosswalk source payloads, separated C7 quotient
+kernels and shared persistent-set policy construction. The actual new parent is
+1fa559ab38ae8059f7c2e47cb3d2e927cb60b041, tree
+d886151ee4fd6a2eea5b774f438f6e5cf8442f5b. A conflict-free composition preserves
+all seventeen incoming paths, C/LLVM bodies, registrations and namespace rows.
+No merge was attempted using stale-base green checks.
+
+Fresh C/LLVM plus normalized C7 quotient regressions pass 13/295, ownership
+26/905, language 6/11, documentation 240/19 and roadmap/governance. The C7
+selection executes only the normalized development kernel, with no authenticated
+source-composition or restricted migration namespace. Fresh C captures match
+all four original complete/text files, hashes and plan IDs recompute, and all
+five source files reconstruct exactly against the actual new main parent.
+These are working composition checks, not committed-head authority bookends.
+The final exact candidate still requires independent acceptance, its own full
+semantic CI, and clean current-main preflight. No prior green is transferred.
+
 Reproduction:
 
 ```bash
