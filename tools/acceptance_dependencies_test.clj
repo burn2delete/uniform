@@ -233,12 +233,24 @@
 (deftest historical-sh-routing-drift-stays-unassessed
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         path "docs/self-hosting-slice-ownership.edn"
-        changed (fn [read-path]
-                  (if (= read-path path)
-                    (str (slurp read-path) "\n")
-                    (slurp read-path)))
-        same (dependencies/task-sh-view source slurp)
-        drifted (dependencies/task-sh-view source changed)]
+        ;; The live ownership manifest is intentionally newer than the
+        ;; crosswalk's historical pin. Keep that pin untouched and use an
+        ;; immutable in-memory observation fixture for matching/mismatching
+        ;; reads so this test exercises state classification, not receipt
+        ;; refresh or live-file history.
+        snapshot-bytes (slurp path)
+        observation-source (assoc-in source [:source-digests path]
+                                     (dependencies/sha256 snapshot-bytes))
+        read-snapshot (fn [read-path]
+                        (if (= read-path path)
+                          snapshot-bytes
+                          (slurp read-path)))
+        read-drifted (fn [read-path]
+                       (if (= read-path path)
+                         (str snapshot-bytes "\n")
+                         (slurp read-path)))
+        same (dependencies/task-sh-view observation-source read-snapshot)
+        drifted (dependencies/task-sh-view observation-source read-drifted)]
     (is (= :same-bytes-as-inspection
            (get-in same [:historical-source-applicability path :state])))
     (is (= :changed-since-inspection

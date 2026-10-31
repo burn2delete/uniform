@@ -11,7 +11,7 @@
 (binding [*command-line-args* nil]
   (load-file "tools/verify_integration_candidate.clj"))
 (alias 'governance 'gravity.workstream-governance)
-(alias 'fresh 'gravity.integration-candidate-verification)
+(alias 'fresh 'verify-integration-candidate)
 
 (def ^:private contract-path "contracts/workstream-governance.json")
 (def ^:private ledger-path "contracts/workstream-ledger.json")
