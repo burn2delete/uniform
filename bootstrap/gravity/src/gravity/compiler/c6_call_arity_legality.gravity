@@ -50,9 +50,7 @@
 
 (defn sh07-b48-id? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 256)
-      false)
+    (> (count value) 0)
     false))
 
 (defn sh07-b48-nonnegative-integer? [value]
@@ -62,23 +60,11 @@
 
 (defn sh07-b48-nonempty-string? [value]
   (if (string? value)
-    (if (> (count value) 0)
-      (<= (count value) 4096)
-      false)
+    (> (count value) 0)
     false))
 
-(defn sh07-b48-bounded-vector? [value maximum]
-  (if (vector? value)
-    (<= (count value) maximum)
-    false))
-
-(defn sh07-b48-over-bound? [value maximum]
-  (if (vector? value)
-    (> (count value) maximum)
-    false))
-
-(defn sh07-b48-id-vector? [values maximum]
-  (if (sh07-b48-bounded-vector? values maximum)
+(defn sh07-b48-id-vector-valid? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -102,8 +88,8 @@
     (sh07-b48-unique-from? values 0)
     false))
 
-(defn sh07-b48-index-carrier-valid? [records key-name maximum]
-  (if (sh07-b48-bounded-vector? records maximum)
+(defn sh07-b48-index-carrier-valid? [records key-name]
+  (if (vector? records)
     (loop [remaining records
            seen #{}]
       (if (= (count remaining) 0)
@@ -153,28 +139,26 @@
             (if (sh07-b48-id? (get record :body-core-node-id))
               (if (sh07-b48-nonnegative-integer?
                    (get record :fixed-arity))
-                (if (<= (get record :fixed-arity) 1024)
-                  (if (= (get record :fixed-arity)
-                         (count (get record :parameter-binding-ids)))
-                    (if (sh07-b48-id-vector?
-                         (get record :parameter-binding-ids) 1024)
-                      (if (sh07-b48-member?
-                           [:named-top-level :anonymous]
-                           (get record :definition-kind))
-                        (if (if (= (get record :definition-binding-id) nil)
+                (if (= (get record :fixed-arity)
+                       (count (get record :parameter-binding-ids)))
+                  (if (sh07-b48-id-vector-valid?
+                       (get record :parameter-binding-ids))
+                    (if (sh07-b48-member?
+                         [:named-top-level :anonymous]
+                         (get record :definition-kind))
+                      (if (if (= (get record :definition-binding-id) nil)
+                            true
+                            (sh07-b48-id?
+                             (get record :definition-binding-id)))
+                        (if (if (= (get record :definition-core-node-id)
+                                   nil)
                               true
                               (sh07-b48-id?
-                               (get record :definition-binding-id)))
-                          (if (if (= (get record :definition-core-node-id)
-                                     nil)
+                               (get record :definition-core-node-id)))
+                          (if (if (= (get record :definition-name) nil)
                                 true
-                                (sh07-b48-id?
-                                 (get record :definition-core-node-id)))
-                            (if (if (= (get record :definition-name) nil)
-                                  true
-                                  (symbol? (get record :definition-name)))
-                              true
-                              false)
+                                (symbol? (get record :definition-name)))
+                            true
                             false)
                           false)
                         false)
@@ -190,7 +174,7 @@
     false))
 
 (defn sh07-b48-function-records-valid? [records]
-  (if (sh07-b48-bounded-vector? records 4096)
+  (if (vector? records)
     (if (sh07-b48-ordered-ordinals-from? records 0)
       (if (sh07-b48-unique?
            (loop [remaining records values []]
@@ -229,12 +213,12 @@
     (if (sh07-b48-id? (get record :core-node-id))
       (if (sh07-b48-id? (get record :operator-node-id))
         (if (sh07-b48-id? (get record :operator-binding-id))
-          (if (sh07-b48-id-vector?
-               (get record :argument-node-ids) 1024)
+          (if (sh07-b48-id-vector-valid?
+               (get record :argument-node-ids))
             (if (= (+ 1 (count (get record :argument-node-ids)))
                    (count (get record :ordered-evaluation-node-ids)))
-              (if (sh07-b48-id-vector?
-                   (get record :ordered-evaluation-node-ids) 1025)
+              (if (sh07-b48-id-vector-valid?
+                   (get record :ordered-evaluation-node-ids))
                 (if (= (get record :operator-node-id)
                        (first (get record :ordered-evaluation-node-ids)))
                   (if (= :operator-then-arguments
@@ -251,7 +235,7 @@
     false))
 
 (defn sh07-b48-call-records-valid? [records]
-  (if (sh07-b48-bounded-vector? records 65536)
+  (if (vector? records)
     (if (sh07-b48-unique?
          (loop [remaining records values []]
            (if (= (count remaining) 0)
@@ -300,10 +284,10 @@
                         true
                         (sh07-b48-id?
                          (get record :callee-function-core-node-id)))
-                    (if (sh07-b48-id-vector?
-                         (get record :argument-core-node-ids) 1024)
-                      (if (sh07-b48-id-vector?
-                           (get record :ordered-evaluation-node-ids) 1025)
+                    (if (sh07-b48-id-vector-valid?
+                         (get record :argument-core-node-ids))
+                      (if (sh07-b48-id-vector-valid?
+                           (get record :ordered-evaluation-node-ids))
                         (if (= :operator-then-arguments
                                (get record :evaluation-order))
                           (sh07-b48-member?
@@ -323,7 +307,7 @@
     false))
 
 (defn sh07-b48-edge-records-valid? [records]
-  (if (sh07-b48-bounded-vector? records 65536)
+  (if (vector? records)
     (if (sh07-b48-ordered-ordinals-from? records 0)
       (loop [remaining records]
         (if (= (count remaining) 0)
@@ -940,17 +924,15 @@
     "Match the direct call argument-node-ids to the authenticated fixed arity."
     (if (= code "B48-LINEAGE")
       "Replay the authenticated B47 v16 wrapper, core, lineage, and provenance receipt."
-      (if (= code "B48-BOUND")
-        "Reduce the product vector to the declared bounded SH-07 B48 limit."
-        (if (= code "B48-IDENTITY")
-          "Recompute the path-neutral B47/B48 identity inputs without checkout paths."
-          (if (= code "B48-PRODUCT")
-            "Replay the authenticated B47 product vectors and preserve ordered evaluation."
-            (if (= code "B48-VERIFY")
-              "Use the exact recomputed B48 result and retain all provenance fields."
-              (if (= code "B48-SCHEMA")
-                "Provide the complete B48 request schema with authenticated upstream products."
-                "Provide authenticated B47 products and their exact provenance."))))))))
+      (if (= code "B48-IDENTITY")
+        "Recompute the path-neutral B47/B48 identity inputs without checkout paths."
+        (if (= code "B48-PRODUCT")
+          "Replay the authenticated B47 product vectors and preserve ordered evaluation."
+          (if (= code "B48-VERIFY")
+            "Use the exact recomputed B48 result and retain all provenance fields."
+            (if (= code "B48-SCHEMA")
+              "Provide the complete B48 request schema with authenticated upstream products."
+              "Provide authenticated B47 products and their exact provenance.")))))))
 
 (defn sh07-b48-diagnostic [request code reason facts]
   (let [nested (if (map? facts)
@@ -1085,27 +1067,18 @@
                            :binding-table)
         definitions (get (get context :canonical-core-artifact) :definitions)
         nodes (get (get context :canonical-core-artifact) :nodes)]
-    (if (sh07-b48-over-bound? binding-table 2440)
-      {:status :rejected :code "B48-BOUND" :reason :binding-table-bound
-       :maximum 2440 :observed (count binding-table)}
+    (if (sh07-b48-index-carrier-valid?
+         binding-table :binding-id)
       (if (sh07-b48-index-carrier-valid?
-           binding-table :binding-id 2440)
-        (if (sh07-b48-over-bound? definitions 1024)
-          {:status :rejected :code "B48-BOUND" :reason :definition-bound
-           :maximum 1024 :observed (count definitions)}
-          (if (sh07-b48-index-carrier-valid?
-               definitions :binding-id 1024)
-            (if (sh07-b48-over-bound? nodes 65536)
-              {:status :rejected :code "B48-BOUND" :reason :node-bound
-               :maximum 65536 :observed (count nodes)}
-              (if (sh07-b48-index-carrier-valid? nodes :node-id 65536)
-                {:status :accepted}
-                {:status :rejected :code "B48-PRODUCT"
-                 :reason :malformed-node-index-carrier}))
-            {:status :rejected :code "B48-PRODUCT"
-             :reason :malformed-definition-index-carrier}))
+           definitions :binding-id)
+        (if (sh07-b48-index-carrier-valid? nodes :node-id)
+          {:status :accepted}
+          {:status :rejected :code "B48-PRODUCT"
+           :reason :malformed-node-index-carrier})
         {:status :rejected :code "B48-PRODUCT"
-         :reason :malformed-binding-index-carrier}))))
+         :reason :malformed-definition-index-carrier})
+      {:status :rejected :code "B48-PRODUCT"
+       :reason :malformed-binding-index-carrier})))
 
 (defn sh07-b48-build-call-arity-result [request]
   (if (sh07-b48-request-valid-basic? request)
@@ -1114,21 +1087,9 @@
           calls (get request :calls)
           edges (get request :call-edges)
           identity (get request :identity-input)]
-      (if (sh07-b48-over-bound? functions 4096)
-        (sh07-b48-rejected
-         request "B48-BOUND" :function-record-bound
-         {:maximum 4096 :observed (count functions)})
-        (if (sh07-b48-function-records-valid? functions)
-          (if (sh07-b48-over-bound? calls 65536)
-            (sh07-b48-rejected
-             request "B48-BOUND" :call-record-bound
-             {:maximum 65536 :observed (count calls)})
-            (if (sh07-b48-call-records-valid? calls)
-              (if (sh07-b48-over-bound? edges 65536)
-                (sh07-b48-rejected
-                 request "B48-BOUND" :call-edge-bound
-                 {:maximum 65536 :observed (count edges)})
-                (if (sh07-b48-edge-records-valid? edges)
+      (if (sh07-b48-function-records-valid? functions)
+        (if (sh07-b48-call-records-valid? calls)
+          (if (sh07-b48-edge-records-valid? edges)
                   (if (= (count calls) (count edges))
                     (let [carrier-check
                           (sh07-b48-index-carriers-preflight
@@ -1218,11 +1179,11 @@
                      request "B48-PRODUCT" :call-edge-count-mismatch
                      {:calls (count calls) :edges (count edges)}))
                   (sh07-b48-rejected
-                   request "B48-PRODUCT" :malformed-call-edge-products {})))
-              (sh07-b48-rejected
-               request "B48-PRODUCT" :malformed-call-products {})))
+                   request "B48-PRODUCT" :malformed-call-edge-products {}))
           (sh07-b48-rejected
-           request "B48-PRODUCT" :malformed-function-products {}))))
+           request "B48-PRODUCT" :malformed-call-products {}))
+        (sh07-b48-rejected
+         request "B48-PRODUCT" :malformed-function-products {})))
     (sh07-b48-rejected
      request
      (if (sh07-b48-request-shape-valid? request)
@@ -1306,9 +1267,6 @@
    :schema-version 1
    :governing-documents [:D1 :D2 :D3 :D8 :D9 :C6 :L2 :BOOT6]
    :input-domain :gravity/sh07-b47-canonical-core-v16
-   :maximum-functions 4096
-   :maximum-calls 65536
-   :maximum-arguments 1024
    :index-strategy :bounded-linear-indexes
    :accepted-arity-kinds [:zero :one :fixed-multi]
    :nonlocal-classification :pending-nonlocal
@@ -1317,7 +1275,7 @@
    :independent-gravity-cryptographic-verification? false
    :host-digest-authority-retained? true
    :diagnostics ["B48-SCHEMA" "B48-LINEAGE" "B48-PRODUCT"
-                 "B48-BOUND" "B48-ARITY" "B48-IDENTITY"
+                 "B48-ARITY" "B48-IDENTITY"
                  "B48-VERIFY"]
    :preserves [:ordered-arguments :evaluation-order
                :function-records :calls :call-edges
