@@ -7754,7 +7754,10 @@
              arguments
              (p15-s23-io-child-types args types)
              complete?
-             false]
+             (loop [values arguments]
+               (if (= 0 (count values)) true
+                 (if (p15-s23-pmk-unknown? (first values)) false
+                   (recur (rest values)))))]
                         (if (= false complete?) {:status :deferred :reason :private-map-keys-entry-domain-required :type :gravity.type/unknown}
                           (let
               [validation
@@ -9181,7 +9184,10 @@
        parameter-ids
        (get parameter :parameter-binding-ids)
        parameter-index
-       nil
+       (loop [i 0]
+         (if (= i (count parameter-ids)) nil
+           (if (= bid (get parameter-ids i)) i
+             (recur (+ i 1)))))
        declaration
        (get (get (get parameter :signature) :parameters) parameter-index)
        entry?
@@ -9200,7 +9206,21 @@
                                    (if (= bid (get (first records) :target-binding-id)) true (recur (rest records)))))
        header
        (if
-        (= :accepted (get path :status))
+        (if (= :accepted (get path :status))
+          (let [predicate-args (get predicate :argument-node-ids)
+                condition-children (get condition :children)
+                predicate-binding (get bindings (get predicate :operator-binding-id))]
+            (if (vector? predicate-args)
+              (if (= 1 (count predicate-args))
+                (if (vector? condition-children)
+                  (if (= 2 (count condition-children))
+                    (if (= 'empty? (get predicate-binding :name))
+                      (p15-s23-lq-binding? predicate-binding (get core :module)) false)
+                    false)
+                  false)
+                false)
+              false))
+          false)
         (p15-s23-lq-source core condition predicate (get edges (get condition :node-id))
                                nodes bindings types (get core :module) (p15-s23-lc-validate-types [input]))
         nil)
@@ -9288,7 +9308,9 @@
           validation
           (p15-s23-lc-validate-types (p15-s23-io-child-types args (get context :types)))
           head
-          {:status :not-applicable}
+          (if (= :accepted (get validation :status))
+            (p15-s23-lq-head-proof core node call (get context :nodes) (get context :bindings) (get context :types))
+            {:status :not-applicable})
           validation
           (if (= :accepted (get head :status)) (assoc validation :head-proof (get head :proof)) validation)]
     (if (= :rejected (get head :status))
@@ -10379,35 +10401,38 @@
          (= expected (get shape :type))
          (= :gravity.type/map (get expected :kind))
          (vector? (get expected :member-types))
-         true])
+         (= (* 2 (count parts)) (count (get expected :member-types)))])
        (loop
         [i 0 seen #{} selected nil]
-        (let
-         [part (get parts i) part-key (get part :key) coordinate (+ 1 (* 2 i))]
-         (if
-          (keyword? part-key)
-          (if
-           (contains? seen part-key)
-           {:status :rejected :reason :map-get-source-mismatch}
+        (if (= i (count parts))
+          (if (map? selected) {:status :accepted :part selected}
+            {:status :rejected :reason :map-get-private-first-entry-presence-required})
+          (let
+           [part (get parts i) part-key (get part :key) coordinate (+ 1 (* 2 i))]
            (if
-            (if (= coordinate (get part :coordinate))
-                              (= :gravity.type/keyword (get (get expected :member-types) (* 2 i))) false)
+            (keyword? part-key)
             (if
-             (= key part-key)
-             (let
-              [type (get (get part :shape) :type)]
+             (contains? seen part-key)
+             {:status :rejected :reason :map-get-source-mismatch}
+             (if
+              (if (= coordinate (get part :coordinate))
+                                (= :gravity.type/keyword (get (get expected :member-types) (* 2 i))) false)
               (if
-               (if (keyword? type)
-    (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/keyword
-                 :gravity.type/string :gravity.type/symbol} type) false)
-               (if
-                (= type (get (get expected :member-types) coordinate))
-                (recur (+ i 1) (conj seen part-key) part)
-                {:status :rejected :reason :map-get-source-mismatch})
-               {:status :rejected :reason :map-get-private-first-entry-presence-required}))
-             (recur (+ i 1) (conj seen part-key) selected))
-            {:status :rejected :reason :map-get-source-mismatch}))
-          {:status :rejected :reason :map-get-source-mismatch})))
+               (= key part-key)
+               (let
+                [type (get (get part :shape) :type)]
+                (if
+                 (if (keyword? type)
+      (contains? #{:gravity.type/nil :gravity.type/bool :gravity.type/integer :gravity.type/keyword
+                   :gravity.type/string :gravity.type/symbol} type) false)
+                 (if
+                  (= type (get (get expected :member-types) coordinate))
+                  (recur (+ i 1) (conj seen part-key) part)
+                  {:status :rejected :reason :map-get-source-mismatch})
+                 {:status :rejected :reason :map-get-private-first-entry-presence-required}))
+               (recur (+ i 1) (conj seen part-key) selected))
+              {:status :rejected :reason :map-get-source-mismatch}))
+            {:status :rejected :reason :map-get-source-mismatch}))))
        {:status :rejected :reason :map-get-source-mismatch})
       {:status :rejected :reason :map-get-source-mismatch})
      {:status :rejected :reason :map-get-private-first-entry-presence-required}))
@@ -10513,7 +10538,94 @@
      (p15-s23-pc-current-node argument-id nodes)
      source-work
      (p15-s23-pc-evidence-work [(get entry :argument-source) (get current :source)])]
-    source-work)
+    (if
+     (= :accepted (get source-work :status))
+     (if
+      (if (map? current) (if (p15-s23-pc-source-domain? (get entry :argument-source))
+                            (= (get entry :argument-source) (get current :source)) false) false)
+      (if (= :not-invoked (get entry :entry))
+       {:status :accepted, :row (assoc row :selection nil)}
+       (if (= :invoked (get entry :entry))
+        (let
+         [argument
+          (get entry :argument-shape)
+          outer
+          (get entry :selected-part)
+          vector
+          (get outer :shape)
+          vector-parts
+          (get vector :parts)
+          length
+          (if (vector? vector-parts) (count vector-parts) 0)]
+         (if
+          (if (vector? vector-parts)
+            (if (< 0 length)
+              (if (map? vector-type)
+                (if (= :gravity.type/vector (get vector-type :kind))
+                  (if (vector? (get vector-type :element-types))
+                    (if (map? map-type) (= :gravity.type/map (get map-type :kind)) false) false) false) false) false) false)
+          (let
+           [head
+            (get vector-parts 0)
+            map-shape
+            (get head :shape)
+            selected
+            (p15-s23-pc-key-part map-shape key map-type)
+            part
+            (get selected :part)]
+           (if
+            (= :accepted (get selected :status))
+            (if
+             (p15-s23-typed-all
+              [(= vector-type (get vector :type)) (= :vector (get vector :shape-kind))
+               (= length (count (get vector-type :element-types))) (= 0 (get head :coordinate))
+               (= nil (get head :key)) (= map-type (get (get vector-type :element-types) 0))])
+             (loop
+              [i 0 cursor {:source-kind :core :node-id argument-id} sources [] locations []]
+              (if
+               (= i 3)
+               (let
+                [leaf
+                 (p15-s23-pc-leaf cursor (get part :shape) nodes)]
+                (if
+                 (= :accepted (get leaf :status))
+                 {:status :accepted, :leaf-cursor cursor
+                  :shapes [argument vector map-shape] :parts [outer head part] :locations locations
+                  :row (assoc row :selection {:vector-coordinate 0 :key key :coordinate (get part :coordinate)
+                                               :part part :type (get leaf :type) :source-spine sources
+                                               :logical-path [outer-key 0 key]})}
+                 leaf))
+               (let
+                [family
+                 (get [:map :vector :map] i)
+                 demanded-key
+                 (get [outer-key nil key] i)
+                 shape
+                 (get [argument vector map-shape] i)
+                 selected-part
+                 (get [outer head part] i)
+                 child
+                 (p15-s23-pc-core-child cursor family demanded-key nodes)]
+                (if
+                 (= :accepted (get child :status))
+                 (if
+                  (if (= i 1) (= length (get (get child :location) :vector-length)) true)
+                  (let
+                   [position
+                    (p15-s23-pc-position cursor child shape selected-part nodes)]
+                   (if
+                    (= :accepted (get position :status))
+                    (recur (+ i 1) (get position :cursor) (conj sources (get position :source))
+                           (conj locations (get position :location)))
+                    position))
+                  {:status :rejected, :reason :map-get-source-mismatch})
+                 child))))
+             {:status :rejected, :reason :map-get-source-mismatch})
+            selected))
+          {:status :rejected, :reason :map-get-private-first-entry-presence-required}))
+        {:status :rejected, :reason :map-get-source-mismatch}))
+      {:status :rejected, :reason :map-get-source-mismatch})
+     source-work))
    {:status :rejected :reason :map-get-source-mismatch})))
 
 (defn p15-s23-pc-source-step [location shape nodes forms]
@@ -10752,7 +10864,79 @@
       {:status :not-applicable})))
 
 (defn p15-s23-pc-route [core node call nodes bindings]
-  (let [calls (get core :calls) edges (get core :call-edges)] {:status :rejected :reason :map-get-source-mismatch}))
+  (let [calls (get core :calls) edges (get core :call-edges)]
+    (if (if (vector? calls) (vector? edges) false)
+      (let [receiver (get (get call :argument-node-ids) 0)
+            outer (p15-s23-pc-unroll receiver core nodes bindings)]
+        (if (= :accepted (get outer :status))
+          (let [first-id (get outer :node-id)
+                first-node (get nodes first-id)
+                first-call (p15-s23-pe-one calls :core-node-id first-id)
+                first-edge (p15-s23-pe-one edges :call-core-node-id first-id)
+                first-bid (get first-call :operator-binding-id)
+                first-args (get first-call :argument-node-ids)]
+            (if (if (p15-s23-pc-id? first-bid)
+                  (if (vector? first-args) (= 1 (count first-args)) false)
+                  false)
+              (let [first-binding (get bindings first-bid)]
+                (if (if (= 'first (get first-binding :name))
+                      (p15-s23-lq-binding? first-binding (get core :module))
+                      false)
+                  (let [inner (p15-s23-pc-unroll (get first-args 0) core nodes bindings)]
+                    (if (= :accepted (get inner :status))
+                      (let [get-id (get inner :node-id)
+                            get-node (get nodes get-id)
+                            get-call (p15-s23-pe-one calls :core-node-id get-id)
+                            get-edge (p15-s23-pe-one edges :call-core-node-id get-id)
+                            get-bid (get get-call :operator-binding-id)
+                            get-args (get get-call :argument-node-ids)]
+                        (if (if (p15-s23-pc-id? get-bid)
+                              (if (vector? get-args)
+                                (if (= 2 (count get-args))
+                                  (if (p15-s23-pc-id? (get get-args 0))
+                                    (p15-s23-pc-id? (get get-args 1)) false)
+                                  false)
+                                false)
+                              false)
+                          (if (p15-s23-mg-binding? (get bindings get-bid) (get core :module))
+                            (let [owner-match?
+                                  (if (p15-s23-pc-id? (get (get node :evaluation) :owner-function-syntax-id))
+                                    (if (p15-s23-pc-id? (get (get first-node :evaluation) :owner-function-syntax-id))
+                                      (if (p15-s23-pc-id? (get (get get-node :evaluation) :owner-function-syntax-id))
+                                        (if (p15-s23-pc-id? (get first-edge :caller-function-syntax-id))
+                                          (if (p15-s23-pc-id? (get get-edge :caller-function-syntax-id))
+                                            (p15-s23-typed-all
+                                             [(= :call (get first-node :core-form) (get get-node :core-form))
+                                              (= false (= first-id get-id))
+                                              (= false (= first-id (get node :node-id)))
+                                              (= false (= get-id (get node :node-id)))
+                                              (p15-s23-pc-id? (get first-edge :caller-function-syntax-id))
+                                              (p15-s23-pc-id? (get get-edge :caller-function-syntax-id))
+                                              (p15-s23-pc-id? (get first-call :operator-node-id))
+                                              (p15-s23-pc-id? (get get-call :operator-node-id))
+                                              (map? first-edge) (map? get-edge)
+                                              (= (get (get node :evaluation) :owner-function-syntax-id)
+                                                 (get (get first-node :evaluation) :owner-function-syntax-id)
+                                                 (get (get get-node :evaluation) :owner-function-syntax-id)
+                                                 (get first-edge :caller-function-syntax-id)
+                                                 (get get-edge :caller-function-syntax-id))])
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)]
+                              (if owner-match?
+                                {:status :accepted :first-node-id first-id :first-call first-call :first-edge first-edge
+                                 :get-node-id get-id :get-call get-call :get-edge get-edge
+                                 :receiver-links (get outer :links) :vector-links (get inner :links)}
+                                {:status :rejected :reason :map-get-source-mismatch}))
+                            {:status :rejected :reason :map-get-source-mismatch})
+                          {:status :rejected :reason :map-get-source-mismatch}))
+                      inner))
+                  {:status :not-applicable}))
+              {:status :not-applicable}))
+          outer))
+      {:status :rejected :reason :map-get-source-mismatch})))
 
 (defn p15-s23-pc-form-source [form]
   (p15-s23-typed-source form))
@@ -15802,12 +15986,14 @@
          [checked
           (loop
            [i 0 family member-type]
-           (let [member (get members i)]
-                                            (if (if (= :gravity.type/keyword member) true (= :gravity.type/string member))
-                                              (if (if (= nil family) true (= family member))
-                                                (recur (+ i 1) member)
-                                                {:status :rejected :member-type family})
-                                              {:status :rejected :member-type family})))]
+           (if (= i width)
+             {:status :accepted, :member-type family}
+             (let [member (get members i)]
+               (if (if (= :gravity.type/keyword member) true (= :gravity.type/string member))
+                 (if (if (= nil family) true (= family member))
+                   (recur (+ i 1) member)
+                   {:status :rejected :member-type family})
+                 {:status :rejected :member-type family}))))]
          (if
           (= :accepted (get checked :status))
           (recur (+ side 1) (conj counts width) (get checked :member-type))
@@ -16429,17 +16615,27 @@
                                 (p15-s23-ni-type? type) false) false) false) false)))
       (recur tail (if (= :gravity.type/integer type) true integers?) nested? sets?)
       (if
-       (if (map? type) (if (= 3 (count type))
-                 (if (= :gravity.type/vector (get type :kind))
-                   (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
-       (let
-        [members (get type :element-types)]
+       (if (= depth 1) (if (map? type) (= :gravity.type/set (get type :kind)) false) false)
+       (let [leaf (p15-s23-kse-domain [type type])]
+         (if (= :accepted (get leaf :status))
+           (if (= :string-set (get leaf :comparison-domain))
+             {:status :rejected, :reason :vector-equality-operand-type-required,
+              :leaf-reason :keyword-set-equality-operand-type-required}
+             (recur tail integers? nested? true))
+           (assoc leaf :leaf-reason (get leaf :reason)
+             :reason :vector-equality-operand-type-required)))
+       (if
+        (if (map? type) (if (= 3 (count type))
+                  (if (= :gravity.type/vector (get type :kind))
+                    (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
         (let
-         [children (loop [i (- (count members) 1) out tail]
-                                       (if (< i 0) out
-                                         (recur (- i 1) (conj out [(get members i) (+ depth 1) false]))))]
-         (recur children integers? true sets?)))
-       {:status :rejected, :reason :vector-equality-operand-type-required})))))
+         [members (get type :element-types)]
+         (let
+          [children (loop [i (- (count members) 1) out tail]
+                                        (if (< i 0) out
+                                          (recur (- i 1) (conj out [(get members i) (+ depth 1) false]))))]
+          (recur children integers? true sets?)))
+       {:status :rejected, :reason :vector-equality-operand-type-required}))))))
   {:status :rejected, :reason :vector-equality-arity-mismatch}))
 
 (defn p15-s23-ve-source [core node call edge nodes bindings types module validation]
