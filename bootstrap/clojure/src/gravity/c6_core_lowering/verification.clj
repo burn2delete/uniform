@@ -89,21 +89,28 @@
         diagnostics)
      :status :complete}))
 
+(defn- validate-capability-proof! [source-path proof]
+  (doseq [[field id]
+          [[:every-executable-form-lowered? "C6-LOWERING-GAP"]
+           [:source-to-core-map-present? "C6-CORE-SHAPE"]
+           [:evaluation-order-preserved? "C6-EVAL-ORDER"]
+           [:origin-links-present? "C6-ORIGIN"]
+           [:effect-capability-unsafe-preserved? "C6-EFFECT-DROP"]
+           [:domain-boundaries-recorded? "C6-DOMAIN-BOUNDARY"]
+           [:core-verifier-passed? "C6-VERIFY"]
+           [:versioned-rule-invalidation? "C6-VERIFY"]
+           [:diagnostics-covered? "C6-VERIFY"]]]
+    (when-not (get proof field)
+      ((context/op-fn :c6-lowering-fail! diagnostics/c6-lowering-fail!)
+       id source-path {:stage :core-lowering}
+       {:missing-fields [field]}))))
+
 (defn c6-lowering-validate! [source-path artifact]
-  (let [proof (context/invoke-op :c6-lowering-capability-proof
-                                 c6-lowering-capability-proof artifact)]
-    (doseq [[field id]
-            [[:every-executable-form-lowered? "C6-LOWERING-GAP"]
-             [:source-to-core-map-present? "C6-CORE-SHAPE"]
-             [:evaluation-order-preserved? "C6-EVAL-ORDER"]
-             [:origin-links-present? "C6-ORIGIN"]
-             [:effect-capability-unsafe-preserved? "C6-EFFECT-DROP"]
-             [:domain-boundaries-recorded? "C6-DOMAIN-BOUNDARY"]
-             [:core-verifier-passed? "C6-VERIFY"]
-             [:versioned-rule-invalidation? "C6-VERIFY"]
-             [:diagnostics-covered? "C6-VERIFY"]]]
-      (when-not (get proof field)
-        ((context/op-fn :c6-lowering-fail! diagnostics/c6-lowering-fail!)
-         id source-path {:stage :core-lowering}
-         {:missing-fields [field]}))))
+  ;; Public validation always derives evidence from the artifact it receives.
+  ;; Assembly uses the private helper with its explicitly supplied proof;
+  ;; no proof is carried in dynamic state across validation calls.
+  (validate-capability-proof!
+   source-path
+   (context/invoke-op :c6-lowering-capability-proof
+                      c6-lowering-capability-proof artifact))
   :complete)
