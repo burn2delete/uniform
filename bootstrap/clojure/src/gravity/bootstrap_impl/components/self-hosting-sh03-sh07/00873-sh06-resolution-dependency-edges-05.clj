@@ -122,103 +122,132 @@
    {:arity 3
     :params ['analysis 'digest-requests 'resolved-digests]}})
 
-(defn sh06-resolution-boundary-fail!
-  [rule source-path missing-field observed facts]
-  (c5-resolution-fail!
-   rule source-path
-   {:source-span (source-span source-path 0)
-    :symbol (:symbol facts)
-    :syntax-id (:syntax-id facts)
-    :namespace (:namespace facts)
-    :profile (:profile facts)
-    :target (:target facts)
-    :candidate-bindings (:candidate-bindings facts)
-    :dependency-edge (:dependency-edge facts)}
-   {:severity :error
-    :profile (:profile facts)
-    :missing-fields [missing-field]
-    :facts (merge {:sh06-boundary :gravity-resolution-plan} facts)
-    :observed observed}))
+(declare
+ ^{:private true} resolution-stage-input
+ ^{:private true, :dynamic true} *sh06-resolution-operation-binding*
+ c-backend-canonical-value
+ c-backend-resolve-p15-s23-compiler-source-path
+ c-backend-stage2-plan-emitter-source-rule!
+ c5-resolution-fail!
+ p15-s23-c11-mir-digest
+ p15-s23-stage2-compiler-artifact-plan
+ p15-s23-stage2-compiler-artifact-semantic-input
+ p15-s23-stage2-compiler-artifact-source-path
+ p15-s23-stage2-runtime-execute-function
+ sh04-syntax-strip-host-metadata
+ sh06-resolution-binding-current!
+ sh06-resolution-boundary-fail!
+ sh06-resolution-build-binding!
+ ^{:private true} sh06-resolution-cached-binding
+ sh06-resolution-current-source-key
+ sh06-resolution-expected-source-byte-count
+ sh06-resolution-expected-source-content-hash
+ sh06-resolution-plan-identities
+ sh06-resolution-public-function-shapes
+ sh06-resolution-read-current-source!
+ sh06-resolution-resolve-source-path
+ sh06-resolution-source-relative-path
+ sha256-bytes-hex
+ sha256-hex
+ source-span)
 
-(defn sh06-resolution-resolve-source-path
-  []
-  (let [anchor (java.io.File.
-                (p15-s23-stage2-compiler-artifact-source-path))
-        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
-    (or
-     (loop [directory start]
-       (when directory
-         (let [candidate
-               (java.io.File. directory sh06-resolution-source-relative-path)]
-           (if (.isFile candidate)
-             (.getPath candidate)
-             (recur (.getParentFile directory))))))
-     sh06-resolution-source-relative-path)))
+(def
+ ^{:private true} resolution-stage-defaults
+ {:c5-resolution-fail! #'c5-resolution-fail!,
+  :p15-s23-stage2-compiler-artifact-plan
+  #'p15-s23-stage2-compiler-artifact-plan,
+  :source-span #'source-span,
+  :p15-s23-stage2-runtime-execute-function
+  #'p15-s23-stage2-runtime-execute-function,
+  :sh06-resolution-resolve-source-path
+  #'sh06-resolution-resolve-source-path,
+  :p15-s23-stage2-compiler-artifact-semantic-input
+  #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sha256-hex #'sha256-hex,
+  :c-backend-canonical-value #'c-backend-canonical-value,
+  :sh06-resolution-read-current-source!
+  #'sh06-resolution-read-current-source!,
+  :c-backend-resolve-p15-s23-compiler-source-path
+  #'c-backend-resolve-p15-s23-compiler-source-path,
+  :sh06-resolution-binding-current! #'sh06-resolution-binding-current!,
+  :sh06-resolution-current-source-key
+  #'sh06-resolution-current-source-key,
+  :sha256-bytes-hex #'sha256-bytes-hex,
+  :input #'resolution-stage-input,
+  :sh06-resolution-plan-identities #'sh06-resolution-plan-identities,
+  :sh06-resolution-build-binding! #'sh06-resolution-build-binding!,
+  :sh06-resolution-boundary-fail! #'sh06-resolution-boundary-fail!,
+  :c-backend-stage2-plan-emitter-source-rule!
+  #'c-backend-stage2-plan-emitter-source-rule!,
+  :p15-s23-stage2-compiler-artifact-source-path
+  #'p15-s23-stage2-compiler-artifact-source-path,
+  :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
 
-(defn sh06-resolution-read-current-source!
-  [request-source]
-  (let [source-path (sh06-resolution-resolve-source-path)
-        nio-path (.toPath (java.io.File. source-path))
-        nofollow (into-array java.nio.file.LinkOption
-                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-        attributes
-        (try
-          (java.nio.file.Files/readAttributes
-           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
-          (catch Exception error
-            (sh06-resolution-boundary-fail!
-             "C5-UNRESOLVED" request-source :pinned-resolution-source-readable
-             source-path {:cause-message (.getMessage error)})))
-        bytes
-        (try
-          (java.nio.file.Files/readAllBytes nio-path)
-          (catch Exception error
-            (sh06-resolution-boundary-fail!
-             "C5-UNRESOLVED" request-source :pinned-resolution-source-bytes
-             source-path {:cause-message (.getMessage error)})))
-        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
-    (when-not
-     (and attributes (.isRegularFile attributes)
-          (= (.size attributes) (alength bytes)))
-      (sh06-resolution-boundary-fail!
-       "C5-UNRESOLVED" request-source :exact-pinned-resolution-source
-       {:source-path source-path
-        :source-byte-count (alength bytes)
-        :source-content-hash content-hash}
-       {}))
-    {:source-path source-path
-     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
-     :source-byte-count (alength bytes)
-     :source-content-hash content-hash}))
+^{:line 100, :column 18}
+(defn- resolution-stage-operations [] resolution-stage-defaults)
 
-(defn sh06-resolution-read-pinned-source! [request-source]
-  (let [source (sh06-resolution-read-current-source! request-source)]
-    (when-not (= [sh06-resolution-expected-source-byte-count sh06-resolution-expected-source-content-hash]
-                 ((juxt :source-byte-count :source-content-hash) source))
-      (sh06-resolution-boundary-fail! "C5-UNRESOLVED" request-source
-        :exact-pinned-resolution-source (dissoc source :source-text) {}))
-    source))
+(defn-
+ resolution-stage-input
+ [field]
+ (case
+  field
+  :*sh06-resolution-operation-binding*
+  *sh06-resolution-operation-binding*
+  :sh06-resolution-cached-binding
+  sh06-resolution-cached-binding
+  :sh06-resolution-expected-source-byte-count
+  sh06-resolution-expected-source-byte-count
+  :sh06-resolution-expected-source-content-hash
+  sh06-resolution-expected-source-content-hash
+  :sh06-resolution-public-function-shapes
+  sh06-resolution-public-function-shapes
+  :sh06-resolution-source-relative-path
+  sh06-resolution-source-relative-path
+  ^{:line 104, :column 38}
+  (throw
+   ^{:line 104, :column 45}
+   (ex-info "Unknown resolution stage input" {:input field}))))
 
-(defn sh06-resolution-plan-identities
-  [plan]
-  (let [functions (:functions plan)
-        shapes
-        (into (sorted-map)
-              (map (fn [[name function]]
-                     [name (select-keys function [:arity :params])]))
-              functions)]
-    {:plan-semantic-hash
-     (p15-s23-c11-mir-digest
-      (p15-s23-stage2-compiler-artifact-semantic-input plan))
-     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
-     :function-count (count functions)
-     :function-names-hash
-     (p15-s23-c11-mir-digest (vec (keys functions)))
-     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
-     :public-function-hashes
-     (into (sorted-map)
-           (map (fn [name]
-                  [name (p15-s23-c11-mir-digest (get functions name))]))
-           (keys sh06-resolution-public-function-shapes))
-     :public-function-shapes
-     (select-keys shapes (keys sh06-resolution-public-function-shapes))}))
+(defn
+ sh06-resolution-boundary-fail!
+ [rule source-path missing-field observed facts]
+ (gravity.resolution/boundary-fail!
+  rule
+  source-path
+  missing-field
+  observed
+  facts
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-resolve-source-path
+ []
+ (gravity.resolution/resolve-source-path
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-read-current-source!
+ [request-source]
+ (gravity.resolution/read-current-source!
+  request-source
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-read-pinned-source!
+ [request-source]
+ (gravity.resolution/read-pinned-source!
+  request-source
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-plan-identities
+ [plan]
+ (gravity.resolution/plan-identities
+  plan
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
