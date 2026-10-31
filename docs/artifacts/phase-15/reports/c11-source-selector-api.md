@@ -154,3 +154,37 @@ lease or process operation is part of this conflict resolution. Publishing a
 changed successor requires the affected independent disposition and actual
 publication/CI gate checks. Normal PR CI and a later fresh coordinator
 integration preflight remain separate from local source validation.
+
+## Material macro-artifacts main successor
+
+Accepted source `609cc3c8` was composed with the three historical verifier
+census additions as `4e919402`. That tuple obtained a final conditional
+applicability PASS and successful configured CI. Its immediate merge preflight
+then failed the base identity check because main advanced to
+`71a63ce23755f6ca84f9af6c2f5a7ead95b233f0`. The failed preflight remains
+NONPASS; neither the prior CI nor the old-base disposition permits merging
+against that material new base.
+
+The new source merge `3cd79ed80a3c3808f0471dfbbf68dab8ca3a0aa4` has
+parents `4e919402` and that main. It preserves the incoming macro artifact
+extraction, retired semantic helper deletions, loader changes and configured
+separate required macro CI mode. Only the three reporting text conflicts need
+resolution; no Native contract or selector implementation changes.
+
+`pr574-macro-artifacts-composition.edn` pins the exact current ownership union
+and immutable predecessor review references. Current main's macro run-storage
+consumer now points to the macro stage; the union preserves that field and
+every other main ownership entry while adding only the accepted three header
+registrations. All Native453/Reader640/Syntax/macro/compiler-domain histories
+remain available unchanged. Older live-union tests now inspect their committed
+historical snapshots, and a new current-union control owns the live check.
+The reporting fingerprint is not a compiler migration or source-contract pin
+refresh, and all 180 whole-criterion states remain unassessed.
+
+The seven pure source/test blobs are still identical to accepted c15 and
+published d15/609. Other production and CI inputs must be conserved from
+actual main71a63, not relabelled as unchanged from the older physical runtime
+closure. The private final tuple binds a new static root/resource/loader
+equation for this material input change. Prior pure controls remain reusable
+only at matching unchanged dependencies; genuine Native/source authentication,
+runtime, PR446 and broader acceptance remain outside this increment.
