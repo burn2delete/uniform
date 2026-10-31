@@ -158,6 +158,9 @@
          ^:private sh06-resolution-artifact-identity-input-with-chunks
          ^:private sh06-resolution-envelope-summary-with-chunks)
 
+(declare sh06-resolution-boundary-keys)
+(defn- resolution-stage-system-property [name] (System/getProperty name))
+
 (def
  ^{:private true} resolution-stage-defaults
  {:c5-resolution-fail! #'c5-resolution-fail!,
@@ -184,6 +187,7 @@
   :reader-canonical-hash #'reader-canonical-hash,
   :sh06-resolution-artifact-identity-input
   #'sh06-resolution-artifact-identity-input,
+  :system-property #'resolution-stage-system-property,
   :sh06-resolution-read-current-source!
   #'sh06-resolution-read-current-source!,
   :c-backend-resolve-p15-s23-compiler-source-path
@@ -211,6 +215,7 @@
   :sh06-match-pattern-binding-paths #'sh06-match-pattern-binding-paths,
   :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
   :sh06-resolution-semantic-span #'sh06-resolution-semantic-span,
+  :p15-s23-c6c10-canonical-digest #'p15-s23-c6c10-canonical-digest,
   :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
 
 ^{:line 100, :column 18}
@@ -241,6 +246,12 @@
   sh06-resolution-special-symbols
   :sh06-resolution-type-symbols
   sh06-resolution-type-symbols
+  :sh06-resolution-boundary-keys
+  sh06-resolution-boundary-keys
+  :sh06-resolution-envelope-stage
+  sh06-resolution-envelope-stage
+  :sh06-resolution-sealed-artifact-kind
+  sh06-resolution-sealed-artifact-kind
   (throw (ex-info "Unknown resolution stage input" {:input field}))))
 
 (defn
