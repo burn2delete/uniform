@@ -367,6 +367,46 @@
                               (assoc module :target :wasm)
                               {:surface-form 1}))))))
 
+(deftest assembled-proof-is-not-reused-by-independent-validator
+  (let [stream [(syntax "ns" '(ns gravity.c6-test))
+                (syntax "value" '(def answer 42))]
+        proof-inputs (atom [])
+        nested-result (atom nil)
+        original-proof c6/c6-lowering-capability-proof
+        proof-operation
+        (fn [candidate]
+          (swap! proof-inputs conj candidate)
+          (let [proof (original-proof candidate)]
+            ;; Deliberately return an incomplete proof for the substituted
+            ;; artifact. The validator must observe and reject this result.
+            (if (= :forged (get-in candidate [:surface-to-core-map :status]))
+              (assoc proof :source-to-core-map-present? false)
+              proof)))
+        validation-operation
+        (fn [source-path artifact]
+          (let [substituted (assoc-in artifact
+                                      [:surface-to-core-map :status]
+                                      :forged)]
+            (reset! nested-result
+                    (try
+                      (c6/c6-lowering-validate! source-path substituted)
+                      :unexpected-success
+                      (catch clojure.lang.ExceptionInfo error
+                        (ex-data error))))
+            :complete))
+        result
+        (c6/with-operations
+          {:c6-lowering-capability-proof proof-operation
+           :c6-lowering-validate! validation-operation}
+          #(c6/c6-lowering-artifact "c6-test.gravity" module c5-artifact stream))]
+    (is (= :complete (get-in result [:capability-based-proof :status])))
+    (is (= "C6-CORE-SHAPE" (:id @nested-result))
+        "nested validation must reject the substituted artifact")
+    (is (= 2 (count @proof-inputs))
+        "the proof operation must receive both the assembled and substituted artifacts")
+    (is (= :forged
+           (get-in (second @proof-inputs) [:surface-to-core-map :status])))))
+
 (deftest lowering-engine-emits-core-products
   (let [forms ['(quote value)
                '(if condition then else)

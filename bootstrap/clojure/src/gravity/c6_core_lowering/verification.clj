@@ -6,12 +6,6 @@
             [gravity.c6-core-lowering.diagnostics :as diagnostics]
             [gravity.c6-core-lowering.lowering :as lowering]))
 
-;; C6 assembly computes a capability proof once per invocation and uses that
-;; freshly-produced value for both validation and artifact publication.  This
-;; dynamic binding is deliberately invocation-local: it is not an acceptance
-;; cache and cannot survive a changed input or compiler revision.
-(def ^:dynamic *assembly-proof* nil)
-
 (defn c6-core-verifier-report [flat-nodes domain-boundaries c5-artifact]
   (let [node-ids (set (map :node-id flat-nodes))
         child-ids
@@ -95,22 +89,28 @@
         diagnostics)
      :status :complete}))
 
+(defn- validate-capability-proof! [source-path proof]
+  (doseq [[field id]
+          [[:every-executable-form-lowered? "C6-LOWERING-GAP"]
+           [:source-to-core-map-present? "C6-CORE-SHAPE"]
+           [:evaluation-order-preserved? "C6-EVAL-ORDER"]
+           [:origin-links-present? "C6-ORIGIN"]
+           [:effect-capability-unsafe-preserved? "C6-EFFECT-DROP"]
+           [:domain-boundaries-recorded? "C6-DOMAIN-BOUNDARY"]
+           [:core-verifier-passed? "C6-VERIFY"]
+           [:versioned-rule-invalidation? "C6-VERIFY"]
+           [:diagnostics-covered? "C6-VERIFY"]]]
+    (when-not (get proof field)
+      ((context/op-fn :c6-lowering-fail! diagnostics/c6-lowering-fail!)
+       id source-path {:stage :core-lowering}
+       {:missing-fields [field]}))))
+
 (defn c6-lowering-validate! [source-path artifact]
-  (let [proof (or *assembly-proof*
-                  (context/invoke-op :c6-lowering-capability-proof
-                                     c6-lowering-capability-proof artifact))]
-    (doseq [[field id]
-            [[:every-executable-form-lowered? "C6-LOWERING-GAP"]
-             [:source-to-core-map-present? "C6-CORE-SHAPE"]
-             [:evaluation-order-preserved? "C6-EVAL-ORDER"]
-             [:origin-links-present? "C6-ORIGIN"]
-             [:effect-capability-unsafe-preserved? "C6-EFFECT-DROP"]
-             [:domain-boundaries-recorded? "C6-DOMAIN-BOUNDARY"]
-             [:core-verifier-passed? "C6-VERIFY"]
-             [:versioned-rule-invalidation? "C6-VERIFY"]
-             [:diagnostics-covered? "C6-VERIFY"]]]
-      (when-not (get proof field)
-        ((context/op-fn :c6-lowering-fail! diagnostics/c6-lowering-fail!)
-         id source-path {:stage :core-lowering}
-         {:missing-fields [field]}))))
+  ;; Public validation always derives evidence from the artifact it receives.
+  ;; Assembly uses the private helper with its explicitly supplied proof;
+  ;; no proof is carried in dynamic state across validation calls.
+  (validate-capability-proof!
+   source-path
+   (context/invoke-op :c6-lowering-capability-proof
+                      c6-lowering-capability-proof artifact))
   :complete)
