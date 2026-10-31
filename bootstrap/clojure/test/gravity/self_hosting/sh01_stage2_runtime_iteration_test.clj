@@ -18519,7 +18519,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [extent [0 1 3]]
       (let [{:keys [core nodes bindings types forms] :as input} (input-fn extent)
-            result (derive input) descriptor (:descriptor result) call (last (:calls core)) edge (last (:call-edges core))
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :inc-op descriptor)
                      :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
                      :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core))) :call-order {:increment 2}

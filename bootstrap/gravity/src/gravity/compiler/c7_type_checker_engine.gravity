@@ -13541,12 +13541,10 @@
                       {:status :rejected :reason type-reason})))
                 {:status :rejected :reason :keyword-set-contains-operand-type-required}))
             {:status :rejected :reason :keyword-set-contains-arity-mismatch})))
-      {:status :rejected :reason (if (vector? arguments)
+      {:status :rejected :reason (if (sh08-lc-native-view? arguments)
                                    (if (= :gravity.type/character (get arguments 1))
                                      :character-set-contains-operand-type-required
-                                     (if (= :gravity.type/string (get arguments 1))
-                                       :string-set-contains-operand-type-required
-                                       :keyword-set-contains-operand-type-required))
+                                     :keyword-set-contains-operand-type-required)
                                    :keyword-set-contains-operand-type-required)
        :type-check-reason (get ingress :reason)})))
 
