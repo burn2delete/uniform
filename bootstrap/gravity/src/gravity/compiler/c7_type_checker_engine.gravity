@@ -13451,10 +13451,10 @@
                       (if (loop [i 0] (if (= i n) true
                             (if (= :gravity.type/symbol (get members i)) (recur (+ i 1)) false)))
                         {:status :accepted :argument-types arguments :set-member-count n :membership-family :symbol}
-                        {:status :rejected :reason :symbol-set-contains-operand-type-required})))
+                        {:status :rejected :reason :symbol-set-contains-operand-type-required}))
                 {:status :rejected :reason :symbol-set-contains-operand-type-required})))
             {:status :rejected :reason :symbol-set-contains-operand-type-required}))
-    {:status :rejected :reason :keyword-set-contains-arity-mismatch})
+    {:status :rejected :reason :keyword-set-contains-arity-mismatch}))
 
 (defn sh08-ism-selected? [arguments]
   (if (if (vector? arguments) (= 2 (count arguments)) false)
@@ -13484,9 +13484,9 @@
                         (let [member (get members i)]
                           (if (keyword? member) (if (= :gravity.type/integer member) (recur (+ i 1)) false) false))))
                     {:status :accepted :argument-types arguments :set-member-count n :membership-family :integer}
-                    {:status :rejected :reason :integer-set-contains-operand-type-required})))
-            {:status :rejected :reason :integer-set-contains-operand-type-required}))
+                    {:status :rejected :reason :integer-set-contains-operand-type-required}))
         {:status :rejected :reason :integer-set-contains-operand-type-required}))
+      {:status :rejected :reason :integer-set-contains-operand-type-required})))
 
 (defn sh08-ksm-domain [arguments]
   ; Supported membership entry: validate the entire original type graph
@@ -13537,12 +13537,12 @@
                                       (if (= :gravity.type/character member) true (= :gravity.type/string member)) false) false)
                                   (recur 1 (if (= :gravity.type/character member) :character :string))
                                   {:status :rejected :reason (if (= :character family) :character-set-contains-operand-type-required
-                                                               (if (= :string family) :string-set-contains-operand-type-required type-reason))})))))
+                                                               (if (= :string family) :string-set-contains-operand-type-required type-reason))}))))))
                       {:status :rejected :reason type-reason})))
                 {:status :rejected :reason :keyword-set-contains-operand-type-required}))
-            {:status :rejected :reason :keyword-set-contains-arity-mismatch})))))
+            {:status :rejected :reason :keyword-set-contains-arity-mismatch})))
       {:status :rejected :reason :keyword-set-contains-operand-type-required
-       :type-check-reason (get ingress :reason)}))
+       :type-check-reason (get ingress :reason)})))
 
 (defn sh08-sysm-source-ids? [node call nodes bindings module]
   (if (sh08-sse-call-ids? node call)
@@ -13996,8 +13996,8 @@
                     types (get context :association-forms))))
               (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil))
             (sh08-mc-derive core node call edge (get context :lookup-nodes) (get context :ordering-bindings)
-              types (get context :association-forms)))
-      (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil)))))
+              types (get context :association-forms))))
+      (sh08-sm-failure "C7-VERIFY" :map-contains-source-mismatch nil :closed-membership-step-keys nil))))
 
 ; STD3/L2: classify independently established closed values. A Bool result
 ; supplies no occurrence, member, length, bounds, or range refinement.
@@ -15377,7 +15377,7 @@
                                 {:status :accepted :comparison-domain :keyword-set
                                  :operand-counts (get domain :operand-counts)}))
                             {:status :rejected :reason (get domain :reason)}))
-                        {:status :rejected :reason :nonnumeric-atomic-type-required})))
+                        {:status :rejected :reason :nonnumeric-atomic-type-required}))))
                 (if (if (= 2 (count type)) (= :gravity.type/nil-or (get type :kind)) false)
                   (let [value (get type :value-type)]
                     (if (if (keyword? value)
@@ -15387,7 +15387,7 @@
                       {:status :rejected :reason :nonnumeric-atomic-type-required}))
                   {:status :rejected :reason :nonnumeric-atomic-type-required}))
               {:status :rejected :reason :nonnumeric-atomic-type-required})))))
-    {:status :rejected :reason :binary-type-input-required})))
+    {:status :rejected :reason :binary-type-input-required}))
 
 (defn sh08-ane-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -15787,9 +15787,9 @@
                   {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                    :constraint (sh08-ane-constraint descriptor)})
                 (sh08-sm-failure "C7-VERIFY" :atomic-inequality-source-mismatch nil
-                  :exact-operator-left-right-source (get node :node-id))))
+                  :exact-operator-left-right-source (get node :node-id))))))
           (sh08-sm-failure "C7-VERIFY" :atomic-inequality-source-mismatch nil
-            :exact-operator-left-right-source (get node :node-id))))))))
+            :exact-operator-left-right-source (get node :node-id))))))
 
 (defn sh08-ane-node? [node context]
   (if (if (= :call (get node :core-form)) (if (vector? (get node :resolved-binding-ids)) (if (= 1 (count (get node :resolved-binding-ids))) (if (keyword? (first (get node :resolved-binding-ids))) true (if (string? (first (get node :resolved-binding-ids))) (= 71 (count (first (get node :resolved-binding-ids)))) false)) false) false) false)
@@ -16836,8 +16836,8 @@
                   (recur (+ side 1) (conj counts (count members)) (get checked :member-type))
                   {:status :rejected :reason (if (= :gravity.type/string (get checked :member-type))
                                               :string-set-equality-operand-type-required :keyword-set-equality-operand-type-required)}))
-              {:status :rejected :reason (if strings? :string-set-equality-operand-type-required :keyword-set-equality-operand-type-required)}))))
-    {:status :rejected :reason :keyword-set-equality-arity-mismatch})))
+              {:status :rejected :reason (if strings? :string-set-equality-operand-type-required :keyword-set-equality-operand-type-required)})))))
+    {:status :rejected :reason :keyword-set-equality-arity-mismatch}))
 
 (defn sh08-sse-ids? [ids width]
   (if (vector? ids) (if (<= (count ids) 6) (if (= (count ids) width)
@@ -16877,9 +16877,9 @@
                             (if (= :gravity.type/string (get members i)) (recur (+ i 1)) false)))
                       (recur (+ side 1) (conj domains :finite-string-set))
                       {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-operand-type-required}))
-                  {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-operand-type-required})))))
+                  {:status :rejected :comparison-domain :string-set-carrier :reason :string-set-carrier-equality-operand-type-required}))))))
       (sh08-kse-domain arguments))
-    (sh08-kse-domain arguments))))
+    (sh08-kse-domain arguments)))
 
 (defn sh08-kse-source [core node call edge nodes bindings types module validation]
   (if (sh08-sse-call-ids? node call)
@@ -17132,9 +17132,9 @@
                     {:status :rejected :reason :list-equality-pair-type-required})
                   (if (map? right)
                     {:status :rejected :reason :list-equality-pair-type-required}
-                    (recur tail seen))))))))
+                    (recur tail seen)))))))
         checked))
-    {:status :rejected :reason :list-equality-arity-mismatch})
+    {:status :rejected :reason :list-equality-arity-mismatch}))
 
 (defn sh08-le-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -17276,9 +17276,9 @@
             (if (if (map? header) (= (get types (get call :operator-node-id)) (sh08-le-finish header)) false)
               {:status :accepted}
               {:status :rejected :reason :list-equality-source-mismatch}))
-          domain)))
+          domain))
     {:status :rejected :reason :list-equality-source-mismatch})
-    {:status :rejected :reason :list-equality-arity-mismatch})
+    {:status :rejected :reason :list-equality-arity-mismatch}))
 
 (defn sh08-ve-domain [arguments]
   ; Positional types suffice for a value query; no constructor identity is used.
@@ -17304,7 +17304,7 @@
                             (= (if (map? a) (= :gravity.type/set (get a :kind)) false)
                                (if (map? b) (= :gravity.type/set (get b :kind)) false)) true) false)
                       (recur (+ i 1))
-                      {:status :rejected :reason :vector-equality-operand-type-required})))))
+                      {:status :rejected :reason :vector-equality-operand-type-required}))))))
           {:status :accepted})
         (let [frame (get pending (- (count pending) 1)) tail (subvec pending 0 (- (count pending) 1))
               type (get frame 0) depth (get frame 1) outer? (get frame 2) seen (get frame 3)]
@@ -17343,7 +17343,7 @@
                                     (recur (- i 1) (conj out [(get members i) (+ depth 1) false next-seen]))))]
                     (recur children integers? (if (> depth 0) true nested?) sets?)))
                 {:status :rejected :reason :vector-equality-operand-type-required}))))))
-    {:status :rejected :reason :vector-equality-arity-mismatch})))
+    {:status :rejected :reason :vector-equality-arity-mismatch}))
 
 (defn sh08-ve-source [core node call edge nodes bindings types module validation]
   ; Closed lexical callers supply this invocation's validated VE-domain result.
@@ -17594,9 +17594,9 @@
               (if integral?
                 (sh08-ie-derive (get context :ordering-core) node call edge
                   (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms))
-                (sh08-ae-derive (get context :ordering-core) node call edge
-                  (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))))))
-    (sh08-sm-failure "C7-VERIFY" :keyword-set-equality-source-mismatch nil :closed-equality-source-identities nil))))
+                  (sh08-ae-derive (get context :ordering-core) node call edge
+                    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms))))))))
+    (sh08-sm-failure "C7-VERIFY" :keyword-set-equality-source-mismatch nil :closed-equality-source-identities nil)))
 
 (defn sh08-cq-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -20931,11 +20931,11 @@
                            nil :canonical-parent-census nil)))
               (sh08-sm-failure "C7-ANNOTATION" (if get? :vector-get-literal-index-required :vector-nth-literal-index-required) nil
                        :literal-index-or-established-S-loop-invariant (get args 1)))
-            (sh08-sm-failure "C7-VERIFY" (if get? :vector-get-loop-call-source-mismatch :vector-nth-loop-call-source-mismatch) nil :authentic-operator-vector-slot-source (get node :node-id)))))
+            (sh08-sm-failure "C7-VERIFY" (if get? :vector-get-loop-call-source-mismatch :vector-nth-loop-call-source-mismatch) nil :authentic-operator-vector-slot-source (get node :node-id))))))
       (if get? (sh08-sm-failure "C7-ANNOTATION" :unsupported-vector-get-loop-operands nil
                          :normal-vector-and-integer-loop-slot (get call :core-node-id))
                       (sh08-vn-rejection call nodes types)))))
-  ))
+  )
 
 (defn sh08-vl-step [node types binding-types functions context]
   (let [views (loop [ids (keys (get context :prior-type-table {})) out types]
