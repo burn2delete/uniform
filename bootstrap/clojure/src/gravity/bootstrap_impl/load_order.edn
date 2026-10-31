@@ -1492,6 +1492,7 @@
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00880-sh06-resolution-artifact-verification-03.clj", :reader-line 153672, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-source-artifact-candidate"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00881-sh06-resolution-finalize-candidate.clj", :reader-line 153464, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-finalize-candidate"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00881-sh06-resolution-finalize-candidate-02.clj", :reader-line 153672, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-deserialize"}
+ {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/resolution-verifier-install.clj", :reader-line 1, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-artifact-verification"}
  {:resource "gravity/bootstrap_impl/components/compiler/00882-compiler-c5-stage0-legacy-source-artifact.clj", :reader-line 153687, :owner :compiler, :first-form "compiler-c5-stage0-legacy-source-artifact"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00883-sh06-resolution-slice-source.clj", :reader-line 153690, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-slice-source?"}
  {:resource "gravity/bootstrap_impl/components/compiler/00884-compiler-c5-resolution-source-artifact.clj", :reader-line 153699, :owner :compiler, :first-form "compiler-c5-resolution-source-artifact"}
