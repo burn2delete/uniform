@@ -7,163 +7,73 @@
   (sh07-core-with-fresh-construction resolution-artifact
     #(sh07-core-build-verified-artifact resolution-artifact authenticated-request %) invocation)))
 
-(defn- sh07-core-build-verified-artifact
-  [resolution-artifact authenticated-request construction]
-  (let [input-key (sh07-core-current-source-key)
-        captured @sh07-core-cached-binding
-        _ (when-not (= (second (:source input-key)) (:source-content-hash captured))
-            (throw (ex-info "SH-07 artifact started with a stale revision"
-                            {:id "C6-VERIFY" :stage :core-lowering
-                             :reason :checked-core-operation-revision-drift})))
-        artifact
-        (binding [*sh07-core-execution-binding* captured]
-  (let [run (sh07-core-run-with-construction
-             resolution-artifact authenticated-request construction)
-          core (:canonical-core-artifact run)
-          source-path
-          (sh07-core-source-path-from-resolution resolution-artifact)
-          boundary
-          {:slice :SH-07
-           :owner :gravity-source
-           :adapter-contract sh07-core-adapter-contract
-           :plan-binding
-           (dissoc captured :plan :source-path)
-           :authenticated-sh06-resolution-artifact resolution-artifact
-           :authenticated-core-request authenticated-request
-           :raw-template-result (:raw-template-result run)
-           :canonical-core-artifact core
-           :digest-requests (:digest-requests run)
-           :resolved-digests (:resolved-digests run)
-           :template-verification (:template-verification run)
-           :resolved-verification (:resolved-verification run)
-           :authenticated-envelope-descriptor
-           {:artifact :gravity/sh07-authenticated-envelope-descriptor
-            :semantic-artifact-id (:artifact-id core)
-            :source-revision-id
-            (get-in authenticated-request
-                    [:lineage :source-revision-id])
-            :authenticated-sh06-artifact-id
-            (get-in authenticated-request
-                    [:lineage :authenticated-sh06-artifact-id])
-            :sh06-semantic-projection-id
-            (get-in authenticated-request
-                    [:lineage :sh06-semantic-projection-id])}
-           :authenticated-envelope
-           {:artifact :gravity/sh07-authenticated-envelope
-            :semantic-artifact-id (:artifact-id core)
-            :authenticated-sh06-artifact-id
-            (get-in authenticated-request
-                    [:lineage :authenticated-sh06-artifact-id])
-            :actual-source-path source-path}
-           :target-source-reread? false
-           :clojure-adapter-residual? true
-           :self-hosted? false}
-          artifact-base
-          {:kind :gravity/sh07-core-artifact
-           :status :accepted
-           :slice :SH-07
-           :task "SH-07-B47"
-           :document-set ["L2" "L3" "L6" "L7" "L9" "C5" "C6"]
-           :governing-document sh07-core-governing-document
-           :artifact-id (:artifact-id core)
-           :sh06-resolution-artifact resolution-artifact
-           :gravity-core-boundary boundary
-           :provenance {:source-path source-path}
-           :pass
-           {:name :c6-gravity-core-lowering-b47
-            :input :authenticated-sh06-resolution
-            :output :canonical-core
-            :owner :gravity.checked-core}
-           :execution-boundary
-           {:gravity-owned
-            [:core-template-construction :template-verification
-             :control-flow-construction :control-flow-verification
-             :reference-construction :reference-verification
-             :var-reference-construction
-             :var-reference-verification
-             :call-construction :call-verification
-             :function-record-construction
-             :function-record-verification
-             :call-edge-construction
-             :call-edge-verification
-             :recursion-component-construction
-             :recursion-component-verification
-             :keyword-map-lookup-construction
-             :keyword-map-lookup-verification
-             :lexical-binding-construction
-             :lexical-binding-verification
-             :loop-binding-construction
-             :loop-binding-verification
-             :recur-target-construction
-             :recur-target-verification
-             :recur-transfer-construction
-             :recur-transfer-verification
-             :mutation-construction
-             :mutation-verification
-             :error-transfer-construction
-             :error-transfer-verification
-             :error-handler-construction
-             :error-handler-verification
-             :match-branch-construction
-             :match-branch-verification
-             :match-decision-skeleton-construction
-             :match-decision-skeleton-verification
-             :match-pattern-record-construction
-             :match-pattern-record-verification
-             :fragment-partition-validation
-             :fragment-ordered-lowering
-             :module-assembly-validation
-             :resolved-verification]
-            :clojure-seed-owned
-            [:plan-execution :sh06-projection-authentication
-             :digest-resolution :envelope-binding
-             :compatibility-routing
-             :fragment-envelope-construction
-             :final-artifact-binding]
-            :downstream-fact-statuses
-            {:C7 :pending :C8 :pending :C9 :pending :C10 :pending}
-            :pending-lowering-families
-            [:cross-file-module-linking
-             :incremental-fragment-cache
-             :parallel-fragment-lowering
-             :whole-program-execution
-             :alias-qualified-type-references
-             :alias-qualified-var-references
-             :alias-qualified-set-mutations
-             :external-qualified-var-references
-             :var-profile-legality-sh09
-             :keyword-default-value-lookup
-             :general-callable-keywords
-             :destructuring-bindings
-             :variadic-function-recur
-             :recur-type-compatibility
-             :higher-order-and-cross-module-recursion
-             :try-finally
-             :try-protected-sequencing
-             :try-handler-sequencing
-             :non-keyword-map-list-set-record-constructor-patterns
-             :variable-width-vector-patterns
-             :duplicate-pattern-binding-policy
-             :guard-patterns
-             :match-exhaustiveness
-             :match-result-type-join]
-            :sh07-complete? false
-            :self-hosted? false}
-           :capability-based-proof nil
-           :diagnostics []}
-          upstream-verification
-          (do (sh07-core-construction-check! construction)
-              (:report construction))
-          proof
-          (sh07-core-proof-from-checks
-           (sh07-core-verification-checks
-            artifact-base artifact-base upstream-verification))]
-    (assoc artifact-base :capability-based-proof proof)))]
-    (when-not (= input-key (sh07-core-current-source-key))
-      (throw (ex-info "SH-07 inputs changed during artifact construction"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :reason :checked-core-operation-revision-drift})))
-    artifact))
+(defn-
+ sh07-core-artifact-base
+ [resolution-artifact authenticated-request run captured source-path]
+ (gravity.checked-core/artifact-base
+  resolution-artifact
+  authenticated-request
+  run
+  captured
+  source-path
+  {:adapter-contract sh07-core-adapter-contract,
+   :governing-document sh07-core-governing-document}))
+
+(defn-
+ sh07-core-build-verified-artifact
+ [resolution-artifact authenticated-request construction]
+ (let
+  [input-key
+   (sh07-core-current-source-key)
+   captured
+   @sh07-core-cached-binding
+   _
+   (when-not
+    (= (second (:source input-key)) (:source-content-hash captured))
+    (throw
+     (ex-info
+      "SH-07 artifact started with a stale revision"
+      {:id "C6-VERIFY",
+       :stage :core-lowering,
+       :reason :checked-core-operation-revision-drift})))
+   artifact
+   (binding
+    [*sh07-core-execution-binding* captured]
+    (let
+     [run
+      (sh07-core-run-with-construction
+       resolution-artifact
+       authenticated-request
+       construction)
+      source-path
+      (sh07-core-source-path-from-resolution resolution-artifact)
+      artifact-base
+      (sh07-core-artifact-base
+       resolution-artifact
+       authenticated-request
+       run
+       captured
+       source-path)
+      upstream-verification
+      (do
+       (sh07-core-construction-check! construction)
+       (:report construction))
+      proof
+      (sh07-core-proof-from-checks
+       (sh07-core-verification-checks
+        artifact-base
+        artifact-base
+        upstream-verification))]
+     (assoc artifact-base :capability-based-proof proof)))]
+  (when-not
+   (= input-key (sh07-core-current-source-key))
+   (throw
+    (ex-info
+     "SH-07 inputs changed during artifact construction"
+     {:id "C6-VERIFY",
+      :stage :core-lowering,
+      :reason :checked-core-operation-revision-drift})))
+  artifact))
 
 (defn sh07-core-from-resolution-artifact
   ([resolution-artifact] (sh07-core-from-resolution-artifact resolution-artifact nil))
