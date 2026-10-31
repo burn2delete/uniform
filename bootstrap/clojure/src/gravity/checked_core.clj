@@ -53,6 +53,18 @@
      :admission :none,
      :input-boundary :owner-validated-native-core-data,
      :checks-legality-fact-presence? false},
+    verification-checks
+    {:arglists ([artifact expected upstream-verification operations]),
+     :operation-inputs
+     [:reader-canonical-hash
+      :sh07-core-error-handlers-coherent?
+      :sh07-core-error-transfers-coherent?
+      :sh07-core-exact-comparison-value
+      :sh07-core-match-products-coherent?],
+     :admission :none,
+     :input-boundary :owner-validated-native-data,
+     :authenticates-premises? false,
+     :grants-authority? false},
     current-plan-binding!
     {:arglists ([operations]),
      :operation-inputs
@@ -69,6 +81,21 @@
      :admission :none,
      :input-boundary :owner-validated-native-core-data,
      :checks-legality-fact-presence? false},
+    exact-comparison-value
+    {:arglists ([value operations]),
+     :operation-inputs [:sh07-core-exact-comparison-value],
+     :admission :none,
+     :input-boundary :owner-validated-native-data,
+     :authenticates-premises? false,
+     :grants-authority? false},
+    proof-from-checks
+    {:arglists ([checks _operations]),
+     :operation-inputs [],
+     :admission :none,
+     :input-boundary :owner-validated-native-data,
+     :authenticates-premises? false,
+     :grants-authority? false,
+     :legacy-proof-data-only? true},
     run-structural-request-for-test
     {:arglists [[authenticated-request operations]],
      :operation-inputs
@@ -264,6 +291,13 @@
     {:arglists [[resolution _operations]],
      :operation-inputs [],
      :admission :none},
+    artifact-identity-input
+    {:arglists ([artifact _operations]),
+     :operation-inputs [],
+     :admission :none,
+     :input-boundary :owner-validated-native-data,
+     :authenticates-premises? false,
+     :grants-authority? false},
     descendant-node-ids
     {:arglists ([node-by-id root-node-id _operations]),
      :operation-inputs [],
@@ -513,9 +547,13 @@
     :sh07-core-descendant-node-ids
     :sh07-core-digest-reference-ordinal
     :sh07-core-digest-requests
+    :sh07-core-error-handlers-coherent?
+    :sh07-core-error-transfers-coherent?
+    :sh07-core-exact-comparison-value
     :sh07-core-execute!
     :sh07-core-lineage-with-semantic-trace
     :sh07-core-macro-trace
+    :sh07-core-match-products-coherent?
     :sh07-core-neutral-value
     :sh07-core-plan-identities
     :sh07-core-projected-form-id
@@ -550,6 +588,7 @@
     :sh07-core-source-path
     :sh07-core-source-path-from-resolution
     :sh07-core-value-kind
+    :sh07-core-verification-checks
     :sha256-bytes-hex
     :with-execution-binding],
    :scoped-binding-operation :with-execution-binding,
@@ -601,7 +640,14 @@
       :sh07-core-source-map-order
       :sh07-core-source-occurrence-context
       :sh07-core-source-path-from-resolution],
-     :admission :none}},
+     :admission :none},
+    verification-report
+    {:arglists ([artifact expected upstream-verification operations]),
+     :operation-inputs [:sh07-core-verification-checks],
+     :admission :none,
+     :input-boundary :owner-validated-native-data,
+     :authenticates-premises? false,
+     :grants-authority? false}},
    :governing-contracts
    [D1
     D2
@@ -621,7 +667,8 @@
     C2
     B13
     L9
-    L7],
+    L7
+    C18],
    :seed-inputs
    [:*sh07-core-execution-binding*
     :sh07-core-cached-binding
@@ -654,7 +701,12 @@
     :handler-predicate-legality-fact-presence-and-proof
     :match-predicate-native-and-complete-core-validation
     :match-exhaustiveness-guard-type-and-legality-proof
-    :match-runtime-selection],
+    :match-runtime-selection
+    :verification-data-native-ingress-validation
+    :verification-data-premise-authentication
+    :verification-data-fresh-expected-reconstruction
+    :legacy-proof-data-authority
+    :verification-report-safe-public-diagnostic-projection],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -684,7 +736,10 @@
     :native-core-node-handler-transfer-and-reference-records
     :handler-descriptor-key-configuration
     :native-core-match-branch-pattern-skeleton-and-reference-records
-    :match-descriptor-key-configuration],
+    :match-descriptor-key-configuration
+    :native-candidate-expected-and-upstream-verification-data
+    :exact-decimal-and-native-collection-data
+    :caller-supplied-check-maps],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -710,7 +765,9 @@
      :error-transfer-structural-coherence
      :projection-verification-failure-carrier
      :typed-handler-structural-coherence
-     :match-structural-coherence],
+     :match-structural-coherence
+     :core-verification-check-data
+     :contained-verification-report-data],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -745,7 +802,12 @@
     :structural-typed-handler-coherence-result
     :match-guard-and-clause-projections
     :match-branch-descendants
-    :structural-match-coherence-result],
+    :structural-match-coherence-result
+    :identity-preimage-view
+    :exact-comparison-data
+    :core-check-catalog-map
+    :legacy-capability-proof-data
+    :private-verification-report-data],
    :clojure-seed-boundary? true,
    :contract-boundary
    :checked-core-supported-data-runtime-and-test-execution})
@@ -4798,6 +4860,299 @@
       (get patterns-by-match match-id)))
     match-by-id))))
 
+(defn
+ verification-checks
+ [artifact expected upstream-verification operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh07-core-error-handlers-coherent?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-error-handlers-coherent?)
+   sh07-core-error-transfers-coherent?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-error-transfers-coherent?)
+   sh07-core-exact-comparison-value
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-exact-comparison-value)
+   sh07-core-match-products-coherent?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-match-products-coherent?)
+   core
+   (get-in artifact [:gravity-core-boundary :canonical-core-artifact])
+   expected-core
+   (get-in expected [:gravity-core-boundary :canonical-core-artifact])
+   source-path
+   (get-in artifact [:provenance :source-path])
+   self-comparison?
+   (identical? artifact expected)
+   replay-equal?
+   (fn
+    [expected-value actual-value]
+    (or
+     self-comparison?
+     (=
+      (sh07-core-exact-comparison-value expected-value)
+      (sh07-core-exact-comparison-value actual-value))))]
+  {:recursion-components-replay?
+   (replay-equal?
+    (:recursion-components expected-core)
+    (:recursion-components core)),
+   :recur-transfers-replay?
+   (replay-equal?
+    (:recur-transfers expected-core)
+    (:recur-transfers core)),
+   :call-edges-replay?
+   (replay-equal? (:call-edges expected-core) (:call-edges core)),
+   :recur-targets-replay?
+   (replay-equal?
+    (:recur-targets expected-core)
+    (:recur-targets core)),
+   :match-branch-records-replay?
+   (and
+    (replay-equal?
+     (:match-branch-records expected-core)
+     (:match-branch-records core))
+    (sh07-core-match-products-coherent? core)),
+   :authoritative-products-replay?
+   (replay-equal?
+    (dissoc expected :capability-based-proof)
+    (dissoc artifact :capability-based-proof)),
+   :mutations-replay?
+   (replay-equal? (:mutations expected-core) (:mutations core)),
+   :match-decision-skeletons-replay?
+   (and
+    (replay-equal?
+     (:match-decision-skeletons expected-core)
+     (:match-decision-skeletons core))
+    (sh07-core-match-products-coherent? core)),
+   :wrapper-schema-current?
+   (= (set (keys expected)) (set (keys artifact))),
+   :authenticated-request-replays?
+   (=
+    (get-in
+     expected
+     [:gravity-core-boundary :authenticated-core-request])
+    (get-in
+     artifact
+     [:gravity-core-boundary :authenticated-core-request])),
+   :reference-uses-replay?
+   (replay-equal?
+    (:reference-uses expected-core)
+    (:reference-uses core)),
+   :error-handlers-replay?
+   (and
+    (replay-equal?
+     (:error-handlers expected-core)
+     (:error-handlers core))
+    (sh07-core-error-handlers-coherent? core)),
+   :keyword-lookups-replay?
+   (replay-equal?
+    (:keyword-lookups expected-core)
+    (:keyword-lookups core)),
+   :resolved-digests-replay?
+   (=
+    (get-in expected [:gravity-core-boundary :resolved-digests])
+    (get-in artifact [:gravity-core-boundary :resolved-digests])),
+   :stored-capability-proof-current?
+   (=
+    (:capability-based-proof expected)
+    (:capability-based-proof artifact)),
+   :canonical-core-replays? (replay-equal? expected-core core),
+   :wrapper-kind-current?
+   (= :gravity/sh07-core-artifact (:kind artifact)),
+   :provenance-retained?
+   (= source-path (get-in core [:provenance :actual-source-path])),
+   :upstream-verification-passed?
+   (= :passed (:status upstream-verification)),
+   :digest-sequence-replays?
+   (=
+    (get-in expected [:gravity-core-boundary :digest-requests])
+    (get-in artifact [:gravity-core-boundary :digest-requests])),
+   :calls-replay? (replay-equal? (:calls expected-core) (:calls core)),
+   :lexical-bindings-replay?
+   (replay-equal?
+    (:lexical-bindings expected-core)
+    (:lexical-bindings core)),
+   :module-replay?
+   (and
+    (replay-equal?
+     (:identity-preimage expected-core)
+     (:identity-preimage core))
+    (replay-equal?
+     (:module-assembly-manifest expected-core)
+     (:module-assembly-manifest core))
+    (=
+     (sh07-core-exact-comparison-value
+      (get-in core [:identity-preimage :module-assembly-manifest]))
+     (sh07-core-exact-comparison-value
+      (:module-assembly-manifest core)))),
+   :semantic-artifact-id-current?
+   (=
+    (:artifact-id artifact)
+    (:artifact-id core)
+    (reader-canonical-hash
+     {:domain :gravity/sh07-declared-digest-v1,
+      :purpose :sh07-core-artifact-id,
+      :preimage (:identity-preimage core)})),
+   :fragment-coverage-replay?
+   (replay-equal?
+    (:fragment-coverage expected-core)
+    (:fragment-coverage core)),
+   :function-records-replay?
+   (replay-equal?
+    (:function-records expected-core)
+    (:function-records core)),
+   :template-verification-passed?
+   (=
+    :passed
+    (get-in
+     artifact
+     [:gravity-core-boundary :template-verification :status])),
+   :declared-alias-table-replay?
+   (replay-equal?
+    (:declared-alias-table expected-core)
+    (:declared-alias-table core)),
+   :resolved-verification-passed?
+   (=
+    :passed
+    (get-in
+     artifact
+     [:gravity-core-boundary :resolved-verification :status])),
+   :module-assembly-manifest-replay?
+   (replay-equal?
+    (:module-assembly-manifest expected-core)
+    (:module-assembly-manifest core)),
+   :loop-bindings-replay?
+   (replay-equal?
+    (:loop-bindings expected-core)
+    (:loop-bindings core)),
+   :fragment-manifest-replay?
+   (replay-equal?
+    (:fragment-manifest expected-core)
+    (:fragment-manifest core)),
+   :match-pattern-records-replay?
+   (and
+    (replay-equal?
+     (:match-pattern-records expected-core)
+     (:match-pattern-records core))
+    (sh07-core-match-products-coherent? core)),
+   :gravity-template-replays?
+   (=
+    (get-in expected [:gravity-core-boundary :raw-template-result])
+    (get-in artifact [:gravity-core-boundary :raw-template-result])),
+   :control-flow-replays?
+   (replay-equal? (:control-flow expected-core) (:control-flow core)),
+   :var-references-replay?
+   (replay-equal?
+    (:var-references expected-core)
+    (:var-references core)),
+   :error-transfers-replay?
+   (and
+    (replay-equal?
+     (:error-transfers expected-core)
+     (:error-transfers core))
+    (sh07-core-error-transfers-coherent? core))}))
+
+(defn
+ proof-from-checks
+ [checks _operations]
+ (let
+  [failed
+   (vec
+    (for [[check passed?] checks :when (not (true? passed?))] check))]
+  (assoc
+   checks
+   :artifact
+   :gravity/sh07-core-capability-proof
+   :status
+   (if (empty? failed) :complete :failed)
+   :failed-checks
+   failed)))
+
+(defn
+ exact-comparison-value
+ [value operations]
+ (let
+  [sh07-core-exact-comparison-value
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-exact-comparison-value)]
+  (cond
+   (instance? java.math.BigDecimal value)
+   [:gravity/exact-big-decimal
+    (.toString (.unscaledValue ^java.math.BigDecimal value))
+    (.scale ^java.math.BigDecimal value)]
+   (map? value)
+   (into
+    {}
+    (map
+     (fn
+      [[key child]]
+      [(sh07-core-exact-comparison-value key)
+       (sh07-core-exact-comparison-value child)]))
+    value)
+   (vector? value)
+   (mapv sh07-core-exact-comparison-value value)
+   (set? value)
+   (into #{} (map sh07-core-exact-comparison-value) value)
+   (list? value)
+   (apply list (map sh07-core-exact-comparison-value value))
+   :else
+   value)))
+
+(defn
+ artifact-identity-input
+ [artifact _operations]
+ (get-in
+  artifact
+  [:gravity-core-boundary :canonical-core-artifact :identity-preimage]))
+
+(defn-
+ verification-report
+ [artifact expected upstream-verification operations]
+ (let
+  [sh07-core-verification-checks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-verification-checks)
+   source-path
+   (or
+    (get-in artifact [:provenance :source-path])
+    "<sh07-core-verification>")
+   checks
+   (if
+    (nil? expected)
+    {:contained-verification? false}
+    (try
+     (sh07-core-verification-checks
+      artifact
+      expected
+      upstream-verification)
+     (catch
+      InterruptedException
+      interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+     (catch Throwable _ {:contained-verification? false})))
+   failed
+   (vec
+    (for [[check passed?] checks :when (not (true? passed?))] check))
+   boundary
+   (:gravity-core-boundary artifact)]
+  {:artifact :gravity/sh07-core-artifact-verification,
+   :status (if (empty? failed) :passed :failed),
+   :checks checks,
+   :failed-checks failed,
+   :source-path source-path,
+   :template-verification (:template-verification boundary),
+   :resolved-verification (:resolved-verification boundary),
+   :upstream-verification upstream-verification}))
+
 (doseq
  [operation
   [#'build-plan-binding!
@@ -4870,7 +5225,12 @@
    #'match-pattern-record-coherent?
    #'match-clause
    #'match-guard-source-valid?
-   #'match-group-coherent?]]
+   #'match-group-coherent?
+   #'verification-checks
+   #'proof-from-checks
+   #'exact-comparison-value
+   #'artifact-identity-input
+   #'verification-report]]
  (alter-meta!
   operation
   assoc
