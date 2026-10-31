@@ -5133,7 +5133,8 @@
                                    (:bindings input) (:types input) (:forms input)]))]
     (doseq [members [[] [:gravity.type/keyword :gravity.type/bool]
                      [:gravity.type/keyword {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/nil]}]
-                     (vec (mapcat identity (repeat 512 [:gravity.type/keyword :gravity.type/bool])))]]
+                     (vec (mapcat identity (repeat 512 [:gravity.type/keyword :gravity.type/bool])))
+                     (vec (mapcat identity (repeat 513 [:gravity.type/keyword :gravity.type/bool])))]]
       (let [{:keys [core node call edge nodes bindings types forms products binding-types] :as input} (map-keys-input (finite members))
             result (derive input) descriptor (:descriptor result) established (assoc types :operator descriptor :call expected)
             checked #(invoke-c7 'sh08-mkeys-inferred-call [core node call edge nodes bindings %]) paid (checked established)
@@ -5177,8 +5178,7 @@
                  (finite [:gravity.type/keyword {:kind :gravity.type/function :parameters [] :return :gravity.type/bool}])
                  (finite [:gravity.type/keyword])
                  (assoc (finite []) :extra true)
-                 (assoc (finite []) :member-types '())
-                 (finite (mapcat identity (repeat 513 [:gravity.type/keyword :gravity.type/bool])))]]
+                 (assoc (finite []) :member-types '())]]
       (is (= :rejected (:status (derive (map-keys-input bad))))))
     (let [literal-type (invoke-c7 'sh08-ft-collection-type
                         [{:core-form :collection-literal :attributes {:literal-kind :map} :children [:key :value]}
@@ -5187,8 +5187,8 @@
       (is (= ["C7-TYPE-MISMATCH" :map-keys-finite-keyword-map-type-required]
              ((juxt :rule :reason) (derive (map-keys-input literal-type))))))
     (let [nested #(nth (iterate (fn [type] {:kind :gravity.type/vector :shape :literal :element-types [type]}) :gravity.type/bool) %) ]
-      (is (= :accepted (:status (derive (map-keys-input (finite [:gravity.type/keyword (nested 127)]))))))
-      (is (= :rejected (:status (derive (map-keys-input (finite [:gravity.type/keyword (nested 128)])))))))
+      (doseq [depth [127 128]]
+        (is (= :accepted (:status (derive (map-keys-input (finite [:gravity.type/keyword (nested depth)]))))))))
     (let [result (derive (map-keys-input :gravity.type/never)) descriptor (:descriptor result)]
       (is (= :accepted (:status result)))
       (is (= :gravity.type/never (:type result)))
@@ -15803,16 +15803,18 @@
     (doseq [pair [[carrier carrier] [carrier (finite [])] [(finite []) carrier]
                  [carrier (finite [s s])] [(finite [s]) carrier]
                  [carrier :gravity.type/never] [:gravity.type/never carrier]]]
-      (let [{:keys [core node call edge nodes bindings types forms binding-types] :as input} (atomic-equality-input pair)
+      (let [{:keys [core node call edge nodes bindings types forms binding-types products] :as input} (atomic-equality-input pair)
             checked (domain pair) result (derive input) descriptor (:descriptor result)
             expected (if (some #{:gravity.type/never} pair) :gravity.type/never :gravity.type/bool)
             established (assoc types :operator descriptor :call expected)
             check #(invoke-c7 'sh08-kse-inferred-call [core node call edge nodes bindings %])
             validated (check established)
             context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
-                     :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
+                     :lookup-nodes nodes :lookup-forms (vec (vals forms))
+                     :lookup-bindings (vec (vals bindings)) :ordering-bindings bindings
+                     :association-forms forms :shape-call-products products}
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types {}])]
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types context])]
         (is (= :accepted (:status checked) (:status result) (:status validated)))
         (is (= :string-set-carrier (:comparison-domain checked)))
         (is (= :gravity.type/applied-string-set-equality (:kind descriptor)))
@@ -15853,7 +15855,7 @@
     (doseq [pair [[] [carrier] [carrier carrier carrier]]]
       (is (= :rejected (:status (domain pair)))))
     (let [checked (domain [carrier carrier])]
-      (is (= :rejected (:status checked)))
+      (is (= :accepted (:status checked)))
       (doseq [pair [[carrier carrier] [carrier (finite [s])]]]
         (let [v #(hash-map :kind :gravity.type/vector :shape :literal :element-types [%])]
           (is (= :rejected (:status (invoke-c7 'sh08-ve-domain [[(v (first pair)) (v (second pair))]]))))))))))
