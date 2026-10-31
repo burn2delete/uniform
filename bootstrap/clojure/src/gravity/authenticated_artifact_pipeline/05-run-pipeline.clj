@@ -3,7 +3,9 @@
   "Build the requested earliest artifact and all of its authenticated parents.
 
   Accepts either a request map or a source path.  The map schema is closed:
-  `{:source-path string :target-stage stage :mode :fast|:fresh}`.  The result
+  `{:source-path string :target-stage stage :mode :fast|:fresh}` with optional
+  `:reader :development-current` and its owner-validated `:module-inputs`.
+  Omitted Reader selection retains the historical route. The result
   keeps both envelopes and the original bootstrap payload available:
   `:artifact` is the selected envelope, `:payload` is its existing artifact,
   and `:stage-artifacts` is the ordered stage map.
@@ -19,6 +21,8 @@
                                request))
          before (source-snapshot! source-path)
          actual-path (:canonical-path before)
+         reader-operation (reader-operation! actual-path request)
+         request (cond-> request reader-operation (assoc :reader-operation reader-operation))
          context (project-context actual-path)
          source-text (strict-source-text! actual-path (:bytes before))
          source-id (source-identity before context)
@@ -63,6 +67,7 @@
                                    source-text context previous request))]
                (recur (inc index) (conj previous built)))))
          _ (stable-source-after! actual-path before)
+         _ (stable-reader-after! actual-path request)
          selected (last artifacts)
          stage-map (into (array-map) (map (juxt :stage identity) artifacts))
          result-base {:kind :gravity/authenticated-artifact-pipeline-result
