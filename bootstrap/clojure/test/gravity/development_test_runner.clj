@@ -4,7 +4,8 @@
   The legacy catalog remains an independently reviewed compatibility oracle.
   Optional catalog and warm-worker queries validate the UEP projection.
   Explicit test selections do not require that admission metadata."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test])
@@ -304,6 +305,8 @@
    "  --fail-fast       stop after the first test failure or error\n"
    "  --timing-receipt FILE\n"
    "                    write non-authoritative machine-readable EDN timing telemetry\n"
+   "  --machine-result EDN\n"
+   "                    deliver one closed completion record to the parent request\n"
    "  --help            print this help without loading tests\n"
    "\n"
    "Qualified selectors resolve only within explicitly selected namespaces.\n"))
@@ -337,6 +340,13 @@
                           (selector-value argument (first tail))))
             (throw (ex-info "--timing-receipt requires a non-empty value"
                             {:type ::invalid-selector :option argument})))
+
+          (= argument "--machine-result")
+          (if (and (seq tail) (not (contains? options :machine-result)))
+            (recur (next tail)
+                   (assoc options :machine-result (edn/read-string (first tail))))
+            (throw (ex-info "--machine-result requires one unique delivery argument"
+                            {:id "DEV-RESULT-DELIVERY"})))
 
           (= argument "--namespace")
           (if (seq tail)
@@ -607,7 +617,15 @@
   (flush))
 
 (defn run-cli! [args]
-  (let [options (parse-args args)]
+  (let [options (parse-args args)
+        sink (if-let [delivery (:machine-result options)]
+               (result-delivery-sink delivery *machine-result-sink*)
+               *machine-result-sink*)]
+    (when (and (contains? options :machine-result)
+               (or (nil? (:machine-result options)) (:help? options) (:catalog? options) (:list? options)))
+      (throw (ex-info "Machine delivery requires an executed selection"
+                      {:id "DEV-RESULT-DELIVERY"})))
+    (binding [*machine-result-sink* sink]
     (cond
       (:help? options) (do (print usage-text) 0)
       (:catalog? options) (do (print-catalog) 0)
@@ -655,7 +673,7 @@
                               :exit-code exit-code}]
                   (when *machine-result-sink*
                     (*machine-result-sink* result))
-                  exit-code)))))))))
+                  exit-code))))))))))
 
 (defn- report-cli-error [^Throwable ex]
   (binding [*out* *err*]
