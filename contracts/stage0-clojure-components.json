@@ -194,6 +194,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/types.clj", "namespace": "gravity.types"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/c7_type_checker/inference.clj", "namespace": "gravity.c7-type-checker.inference", "owner": "sh-types"},
       "test": {"path": "bootstrap/clojure/test/gravity/c7_type_checker_test.clj", "namespace": "gravity.c7-type-checker-test", "registration": "bootstrap-free"}
+    },
+    {
+      "id": "effects-graph-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-effects",
+      "source": {"path": "bootstrap/clojure/src/gravity/effects.clj", "namespace": "gravity.effects"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj", "namespace": "gravity.c8-effect-checker.facts", "owner": "sh-effects"},
+      "test": {"path": "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj", "namespace": "gravity.c8-effect-checker-test", "registration": "bootstrap-free"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
