@@ -9,7 +9,62 @@
   (apply (var-get (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf))
          function arguments))
 
-(defn- producer-ledger-fixtures []
+(def ^:private module-stage-order
+  '[body-ma-context body-va-context body-ae-context body-nt-context body-vp-context
+    body-ip-context body-st-context body-mapp-context body-kp-context body-strp-context
+    body-listp-context body-setp-context body-symp-context body-boolp-context body-nilp-context
+    body-chp-context body-ane-context body-mc-context body-mg-context body-sc-context
+    body-lc-context body-lq-context body-lp-context body-cq-context body-vn-context
+    body-si-context body-mr-context body-lr-context body-ij-context body-nq-context
+    body-eh-source-products body-throw-joins body-derive-module-nodes body-eh-verify
+    body-tc-verify body-allowance-check])
+
+(defn- scripted-module-analysis [failure]
+  ;; Script only semantic child reports. The real Gravity parent still owns
+  ;; ordering, propagation, join validation, graph construction and effects.
+  (let [seam (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original (var-get seam) calls (atom [])]
+    (with-redefs-fn
+      {seam (fn [runtime plan callee args scope]
+              (cond
+                (= 'body-shape-valid? callee) (not= failure :shape)
+                (= 'body-index callee) {}
+                (= 'body-build-graph callee) {:functions {}}
+                (contains? '#{body-function-joins-valid? body-call-joins-with-foreign-valid?
+                              body-local-joins-valid?} callee) (not= failure :join)
+                (or (= 'body-is-context callee) (contains? (set module-stage-order) callee))
+                (let [failed? (= failure callee)]
+                  (swap! calls conj callee)
+                  (if failed?
+                    {:status :rejected :reason :selected-child-failure}
+                    {:status :accepted :context {:owner callee} :parameter-value-premise nil
+                     :nodes {} :groups {} :functions {} :rows []}))
+                :else (original runtime plan callee args scope)))}
+      (fn []
+        {:result (effect 'body-analyze-module
+                         [{:canonical-core-artifact {}
+                           :b47-context {:authenticated-core-request {}}}
+                          {} {}])
+         :calls @calls}))))
+
+(deftest module-analysis-preserves-child-order-and-short-circuits
+  (let [expected (vec (cons 'body-is-context module-stage-order))
+        complete (scripted-module-analysis nil)
+        join (scripted-module-analysis :join)]
+    (is (= :accepted (get-in complete [:result :status])))
+    (is (= expected (:calls complete)))
+    (doseq [[index failure] (map-indexed vector expected)]
+      (let [{:keys [result calls]} (scripted-module-analysis failure)]
+        (is (= :rejected (:status result)))
+        (is (= :selected-child-failure (:reason result)))
+        (is (= (subvec expected 0 (inc index)) calls))))
+    (is (= :rejected (get-in join [:result :status])))
+    (is (= :incoherent-function-or-call-body-type-origin-join
+           (get-in join [:result :reason])))
+    (is (= (vec (cons 'body-is-context (take 30 module-stage-order)))
+           (:calls join)))))
+
+(defn- producer-fixtures []
   (mapv (fn [index]
           (let [key (mapv #(str "sha256:" (format "%064x" (+ 5000 (* 2 index) %))) [0 1])]
             {:producer-sh06-artifact-id (first key) :producer-sh07-artifact-id (second key)
@@ -26,6 +81,7 @@
                   (swap! calls conj index)
                   (if (= failure index)
                     {:status :rejected :reason :selected-producer-failure
+                     :effect :retained-child-detail
                      :producer-module (:module-key entry) :producer-facts (:facts entry)}
                     {:status :accepted :graph {:producer-index index}}))
                 (original runtime plan callee args scope)))}
@@ -33,7 +89,7 @@
               :calls @calls}))))
 
 (deftest producer-analysis-propagates-child-results
-  (let [entries (producer-ledger-fixtures)
+  (let [entries (producer-fixtures)
         complete (scripted-producer-analysis entries nil)]
     (is (= :accepted (get-in complete [:result :status])))
     (is (= [0 1 2] (:calls complete)))
@@ -42,12 +98,21 @@
       (let [{:keys [result calls]} (scripted-producer-analysis entries failure)]
         (is (= :rejected (:status result)))
         (is (= :selected-producer-failure (:reason result)))
+        (is (= :retained-child-detail (:effect result)))
         (is (= (vec (range (inc failure))) calls))
         (is (= (:module-key (get entries failure)) (:producer-module result)))
-        (is (identical? (:facts (get entries failure)) (:producer-facts result)))))))
+        (is (identical? (:facts (get entries failure)) (:producer-facts result))))))
+    (let [duplicate (scripted-producer-analysis [(first entries) (first entries)] nil)]
+      (is (= :accepted (get-in duplicate [:result :status])))
+      (is (= [0 0] (:calls duplicate)))
+      (is (= 1 (count (get-in duplicate [:result :bank]))))
+      (is (= {:producer-index 0}
+             (get-in duplicate [:result :bank (:module-key (first entries)) :graph]))))
+    (is (= {:status :accepted :bank {}}
+           (:result (scripted-producer-analysis [] nil)))))
 
-(deftest producer-key-is-not-observed-before-child-rejection
-  (let [entries (producer-ledger-fixtures) callbacks (atom 0) realizations (atom 0)
+(deftest producer-key-domain-is-complete-before-child-execution-or-native-hashing
+  (let [entries (producer-fixtures) callbacks (atom 0) realizations (atom 0)
         opaque (proxy [Object] []
                  (hashCode [] (swap! callbacks inc) (throw (AssertionError. "producer key hash")))
                  (equals [_] (swap! callbacks inc) (throw (AssertionError. "producer key equality")))
@@ -55,10 +120,18 @@
         delayed (lazy-seq (swap! realizations inc) (list :must-not-realize))]
     (doseq [key [opaque delayed [opaque :id] [:id opaque] [:id delayed]]]
       (let [{:keys [result calls]}
-            (scripted-producer-analysis [(assoc (first entries) :module-key key)] 0)]
-        (is (= :selected-producer-failure (:reason result)))
+            (scripted-producer-analysis [(assoc (first entries) :module-key key)] nil)]
+        (is (= :untrusted-or-transitive-body-producer (:reason result)))
+        (is (= [] calls))
+        (is (not (contains? result :bank)))
+        (is (not (contains? result :producer-facts)))))
+    (doseq [key [nil 7 [:only-one]]]
+      (let [{:keys [result calls]}
+            (scripted-producer-analysis [(assoc (first entries) :module-key key)] nil)]
+        (is (= :accepted (:status result)))
         (is (= [0] calls))
-        (is (identical? (:facts (first entries)) (:producer-facts result)))))
+        (is (= 1 (count (:bank result))))
+        (is (contains? (:bank result) key))))
     (is (zero? @callbacks))
     (is (zero? @realizations))))
 
