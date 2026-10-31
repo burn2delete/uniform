@@ -25,12 +25,14 @@
     sh07-core-semantic-projection-id sh07-core-semantic-binding sh07-core-semantic-resolution
     sh07-core-semantic-var-reference sh07-core-semantic-mutation sh07-core-semantic-error-transfer
     sh07-core-semantic-error-handler sh07-core-semantic-node sh07-core-semantic-identity-preimage
-    sh07-core-resolve-digest-preimage! sh07-core-digest-requests sh07-core-resolve-result])
+    sh07-core-resolve-digest-preimage! sh07-core-digest-requests sh07-core-resolve-result
+    sh07-core-public-decimal-presentation sh07-core-canonical-artifact sh07-core-raise-diagnostic!
+    sh07-core-request-diagnostic!])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 46 (count publics)))
+    (is (= 50 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -325,6 +327,83 @@
     (let [error (caught #(core/resolve-result source :template [] []
                                             (assoc ops :sh07-core-execute! (fn [& _] {:status :rejected :reason :missing-digest}))))]
       (is (= ["C6-VERIFY" :missing-digest] ((juxt :id :reason) (ex-data error)))))))
+
+(deftest canonical-candidate-assembly-preserves-data-without-minting-proof
+  (let [ops (operations)
+        template {:artifact-id-request :artifact-id :provenance-binding-id-request :provenance-id
+                  :identity-preimage {:projection-binding :authenticated
+                                      :lineage {:authenticated-sh06-artifact-id :authenticated
+                                                :sh06-semantic-projection-id :semantic}}
+                  :nodes [{:node-id :node}] :provenance {:actual-source-path "actual.gravity"}
+                  :metadata {:unsafe-island :preserved}}
+        result (core/canonical-artifact template ops)]
+    (is (= result (b/sh07-core-canonical-artifact template)))
+    (is (= :gravity/sh07-canonical-core-artifact (:artifact result)))
+    (is (= :artifact-id (:artifact-id result)))
+    (is (= :provenance-id (:provenance-binding-id result)))
+    (is (not (contains? result :artifact-id-request)))
+    (is (not (contains? result :provenance-binding-id-request)))
+    (is (= :semantic (get-in result [:identity-preimage :projection-binding])
+           (get-in result [:identity-preimage :lineage :authenticated-sh06-artifact-id])))
+    (is (= (:provenance template) (:provenance result)))
+    (is (= (:metadata template) (:metadata result)))
+    (is (identical? (:nodes template) (:nodes result)))
+    (is (not (contains? result :capability-based-proof)))))
+
+(deftest decimal-presentation-is-an-explicit-view-over-unchanged-identity-data
+  (let [ops (operations) descriptor {:kind :gravity/arbitrary-decimal-literal :unscaled-value "1250" :scale 3}
+        decimal-node {:attributes {:literal-kind :decimal :value descriptor}}
+        ordinary-node {:attributes {:literal-kind :integer :value 7}}
+        candidate {:artifact-id :identity :identity-preimage {:nodes [decimal-node ordinary-node]}
+                   :nodes [decimal-node ordinary-node]}
+        result (core/public-decimal-presentation candidate ops)
+        value (get-in result [:nodes 0 :attributes :value])]
+    (is (instance? java.math.BigDecimal value))
+    (is (= 3 (.scale ^java.math.BigDecimal value)))
+    (is (= "1250" (str (.unscaledValue ^java.math.BigDecimal value))))
+    (is (= ordinary-node (get-in result [:nodes 1])))
+    (is (= descriptor (get-in candidate [:nodes 0 :attributes :value])))
+    (is (identical? (:identity-preimage candidate) (:identity-preimage result)))
+    (is (= :identity (:artifact-id result)))
+    (is (= result (b/sh07-core-public-decimal-presentation candidate)))
+    (is (.contains ^String (:doc (meta #'core/public-decimal-presentation)) "Do not use this view as an"))))
+
+(deftest lowering-diagnostic-carrier-preserves-source-facts-and-declared-id
+  (let [ops (operations) diagnostic {:rule "C6-VERIFY" :source-span {:source "actual.gravity" :byte-start 3}
+                                    :profile :meta :target :jvm :facts {:reason :unit}}
+        request {:purpose :sh07-core-diagnostic-id :preimage {:rule "C6-VERIFY" :facts {:reason :unit}}}
+        template {:diagnostics [diagnostic] :digest-requests [request]}
+        expected (assoc diagnostic :diagnostic-id-request
+                        (b/reader-canonical-hash {:domain :gravity/sh07-declared-digest-v1
+                                                  :purpose (:purpose request) :preimage (:preimage request)}))
+        failure (ex-data (caught #(core/raise-diagnostic! "ignored.gravity" template ops)))]
+    (is (= expected failure))
+    (is (= failure (ex-data (caught #(b/sh07-core-raise-diagnostic! "ignored.gravity" template)))))
+    (is (= "actual.gravity" (get-in failure [:source-span :source])))))
+
+(deftest request-diagnostic-carrier-retains-upstream-and-semantic-identities
+  (let [ops (operations) request {:provenance {:actual-source-path "actual.gravity"}
+                                 :lineage {:source-revision-id :source :sh06-artifact-id :semantic-alias
+                                           :authenticated-sh06-artifact-id :authenticated :sh06-semantic-projection-id :semantic}
+                                 :module {:namespace 'unit :profile :meta :target :jvm}}
+        facts {:reason :request-shape :input-schema 999}
+        failure (ex-data (caught #(core/request-diagnostic! request facts ops)))]
+    (is (= failure (ex-data (caught #(b/sh07-core-request-diagnostic! request facts)))))
+    (is (= ["C6-VERIFY" :error :core-lowering] ((juxt :rule :severity :stage) failure)))
+    (is (= {:source "actual.gravity"} (:source-span failure)))
+    (is (= {:syntax-id nil :form-id nil :core-node-id nil}
+           (select-keys failure [:syntax-id :form-id :core-node-id])))
+    (is (= [] (:generated-origin-chain failure)))
+    (is (= :authenticated (get-in failure [:facts :authenticated-sh06-artifact-id])))
+    (is (= :semantic (get-in failure [:facts :sh06-semantic-projection-id])))
+    (is (= facts (get-in failure [:facts :rule-specific])))
+    (is (true? (get-in failure [:facts :fail-closed])))
+    (is (= (b/reader-canonical-hash {:domain :gravity/sh07-request-diagnostic-v16
+                                    :source-revision-id :source :rule-specific facts})
+           (:diagnostic-id-request failure)))
+    (let [missing (ex-data (caught #(core/request-diagnostic! {} {} ops)))]
+      (is (= {:namespace nil :profile nil :target nil} (select-keys missing [:namespace :profile :target])))
+      (is (= :authenticated-core-request (get-in missing [:facts :reason]))))))
 
 (deftest module-and-source-contract-drift-reject-before-binding-publication
   ;; Real current source bytes with isolated compiler result ports. No admission.
