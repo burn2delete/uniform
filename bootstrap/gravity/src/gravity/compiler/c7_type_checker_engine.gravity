@@ -2923,17 +2923,17 @@
                                 false)
                               false)
                           (recur (get record :initializer-node-id) next-path (conj seen id))
-                          {:status :rejected :reason :ungrounded-loop-member-reference})
+                          {:status :rejected :reason :ungrounded-loop-member-reference}))
                         {:status :rejected :reason :incoherent-loop-member-reference})
                       (if (if (= mode :result) false
                             (if (= mode :literal-head)
                               (sh08-lsi-first-head? node (get env :forms))
                               (sh08-lsi-leaf? node (get env :forms) mode)))
                         {:status :accepted :path next-path :leaf id}
-                        {:status :rejected :reason :unsupported-loop-member-grounding}))))
+                        {:status :rejected :reason :unsupported-loop-member-grounding})))))
               {:status :rejected :reason :incoherent-loop-member-source})
             {:status :rejected :reason :unknown-loop-member-grounding})))
-      {:status :rejected :reason :incoherent-loop-member-source}))))
+      {:status :rejected :reason :incoherent-loop-member-source}))
 
 (defn sh08-lsi-path [start mode binding env]
   (sh08-lsi-path-from-seen start mode binding env #{}))
@@ -5308,8 +5308,8 @@
                           {:status :rejected :reason :private-self-entry-type-conflict
                            :expected selected :actual arguments :node entry-node :entry entry}
                           (recur (rest remaining) (rest remaining-edges) (conj entries entry)
-                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))
-                  {:status :rejected :reason :private-self-entry-census-mismatch}))))
+                            (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
+                  {:status :rejected :reason :private-self-entry-census-mismatch})))
       {:status :rejected :reason :private-self-entry-families-required}))))
 
 (defn sh08-ds? [proof]
@@ -5417,8 +5417,8 @@
                             {:status :rejected :reason :indexed-self-entry-type-conflict
                              :expected selected :actual arguments :entry entry}
                             (recur (rest remaining) (rest rows) (conj entries entry)
-                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count))))))
-                  {:status :rejected :reason :indexed-self-entry-census-mismatch}))))
+                              (if invoked? arguments selected) (if invoked? (+ normal-count 1) normal-count)))))))
+                  {:status :rejected :reason :indexed-self-entry-census-mismatch})))
       {:status :rejected :reason :indexed-self-entry-families-required}))))
 
 (defn sh08-ix-if-source? [core node nodes forms]
@@ -22072,7 +22072,7 @@
                                                                           (if (sh08-mr-binding? operator-binding module) true
                                                                             (if (sh08-ma-binding? operator-binding module) true
                                                                               (if (sh08-cq-binding? operator-binding module) true
-                                                                                (if (sh08-vn-binding? operator-binding module) true false)))))))))))))))))))))))))))))))
+                                                                                (if (sh08-vn-binding? operator-binding module) true false))))))))))))))))))))))))))))))
                     (recur (rest remaining) (rest remaining-edges) next-bindings
                       constraints diagnostics)
                     (if (map? intrinsic)
@@ -22197,7 +22197,7 @@
                              (conj diagnostics {:call call :rule "C7-ANNOTATION"
                                                 :reason :unsupported-nonlocal-call
                                                 :expected :supported-local-first-order-call
-                                                :actual (get edge :classification)})})))))))))))))
+                                                :actual (get edge :classification)})}))))))))))))))
 
 (defn sh08-ft-call-constraints
   [calls edges nodes type-table binding-types function-types]
@@ -22314,7 +22314,7 @@
                          (if (if (sh08-st-node? node context) true (if (sh08-ane-node? node context) true (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) true (if (sh08-boolp-node? node context) true (if (sh08-symp-node? node context) true (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) true (if (sh08-mapp-node? node context) true (if (sh08-kp-node? node context) true (if (sh08-strp-node? node context) true (sh08-ip-node? node context))))))))))
                            (if (sh08-st-node? node context)
                              (sh08-st-step node type-table binding-types function-result context)
-                             (if (sh08-ane-node? node context) (sh08-ane-step node type-table binding-types function-result context) (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) (if (sh08-chp-node? node context) (sh08-chp-step node type-table binding-types function-result context) (sh08-nilp-step node type-table binding-types function-result context)) (if (sh08-boolp-node? node context) (sh08-boolp-step node type-table binding-types function-result context) (if (sh08-symp-node? node context) (sh08-symp-step node type-table binding-types function-result context) (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) (if (sh08-listp-node? node context) (sh08-listp-step node type-table binding-types function-result context) (sh08-setp-step node type-table binding-types function-result context)) (if (sh08-mapp-node? node context) (sh08-mapp-step node type-table binding-types function-result context) (if (sh08-kp-node? node context) (sh08-kp-step node type-table binding-types function-result context) (if (sh08-strp-node? node context) (sh08-strp-step node type-table binding-types function-result context) (sh08-ip-step node type-table binding-types function-result context)))))))))
+                             (if (sh08-ane-node? node context) (sh08-ane-step node type-table binding-types function-result context) (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) (if (sh08-chp-node? node context) (sh08-chp-step node type-table binding-types function-result context) (sh08-nilp-step node type-table binding-types function-result context)) (if (sh08-boolp-node? node context) (sh08-boolp-step node type-table binding-types function-result context) (if (sh08-symp-node? node context) (sh08-symp-step node type-table binding-types function-result context) (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) (if (sh08-listp-node? node context) (sh08-listp-step node type-table binding-types function-result context) (sh08-setp-step node type-table binding-types function-result context)) (if (sh08-mapp-node? node context) (sh08-mapp-step node type-table binding-types function-result context) (if (sh08-kp-node? node context) (sh08-kp-step node type-table binding-types function-result context) (if (sh08-strp-node? node context) (sh08-strp-step node type-table binding-types function-result context) (sh08-ip-step node type-table binding-types function-result context))))))))))
                            (sh08-vp-step node type-table binding-types function-result context))
                          (sh08-nt-step node type-table binding-types function-result context))
                      (if (sh08-ae-node? node context)
@@ -22329,7 +22329,7 @@
                        (sh08-cq-step node type-table binding-types function-result context)
                        (if (sh08-mr-node? node context)
                          (sh08-mr-step node type-table binding-types function-result context)
-                         (sh08-ma-step node type-table binding-types function-result context))))))))))))
+                         (sh08-ma-step node type-table binding-types function-result context)))))))))))
                      (if lookup?
                      (sh08-kl-step node type-table binding-types function-result context) {}))
             node-type
@@ -22377,9 +22377,9 @@
            (if (= :rejected (get if-result :status))
              (conj lookup-issues (assoc if-result :node node
                :rule "C7-VERIFY"
-               :expected :source-bound-independent-list-if-join :actual (get node :node-id))) lookup-issues)))
+               :expected :source-bound-independent-list-if-join :actual (get node :node-id))) lookup-issues))
          (if (if (= :accepted (get lookup :status)) (map? (get lookup :local-private-product)) false)
-           (assoc private-products (get node :node-id) (get lookup :local-private-product)) private-products))))))
+           (assoc private-products (get node :node-id) (get lookup :local-private-product)) private-products)))))))
 
 (defn sh08-ft-infer-pass-products
   [nodes lexical-bindings definitions calls edges function-types
