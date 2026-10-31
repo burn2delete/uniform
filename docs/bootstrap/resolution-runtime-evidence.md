@@ -67,11 +67,12 @@ extraction also exposed an incorrectly auto-resolved legacy context keyword;
 its original gravity.bootstrap identity is restored before the passing paired
 artifact comparison.
 
-Local validation passed the complete current-source CI selection (24 tests,
+Local validation passed the initial current-source CI selection (24 tests,
 578 assertions), ownership/catalog/language selection (51/1037), source-version
 conservation (16/212), acceptance dependencies (14/402), and CI harness (11/101).
 After naming the existing shared cache lock, its focused policy regression
-passed 1/10. Changed-source lint reports zero blockers with 3505 unchanged
+passed 1/10. The added construction dependency regression passed 1/15.
+Changed-source lint reports zero blockers with 3505 unchanged
 baseline warnings. Structural docs (240/19), the full-language roadmap and the
 crosswalk projection pass. The new namespace cold-loads ten public APIs without
 loading bootstrap. The final candidate still requires independent acceptance,
