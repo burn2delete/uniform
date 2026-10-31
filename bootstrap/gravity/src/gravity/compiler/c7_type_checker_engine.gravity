@@ -5381,8 +5381,8 @@
             (let [base (get nodes (get (get body :children) 1))]
               (if (= :literal (get base :core-form))
                 (= {:literal-kind :boolean :value false} (get base :attributes)) false)) false)) false)
-    ; The source reservation pays four visits per call before this fixed-width
-    ; selection. A prior Bool/String/Keyword private family keeps its own rule.
+    ; The source census is paired with the fixed-width selection. A prior
+    ; Bool/String/Keyword private family keeps its own rule.
     (loop [calls (get census :calls) edges (get census :edges)]
       (if (= 0 (count calls)) false
         (let [call (first calls) edge (first edges) args (get call :argument-node-ids)]
@@ -5991,16 +5991,16 @@
 
 (defn sh08-qd-collection [form quote-id path children]
   (let [kind (get form :kind) value (get form :value)
-        parts (loop [remaining children values [] types [] size 1]
-                (if (= 0 (count remaining)) {:values values :types types :size size}
+        parts (loop [remaining children values [] types []]
+                (if (= 0 (count remaining)) {:values values :types types}
                   (let [child (first remaining)]
                     (recur (rest remaining) (conj values (get child :value))
-                      (conj types (get child :type)) (+ size (get child :shape-size))))))]
+                      (conj types (get child :type))))))]
     (if (sh08-qd-collection-value-valid? kind value (get parts :values))
       {:status :accepted
        :data {:origin {:kind :quoted-data :quote-core-node-id quote-id :form-id (get form :form-id)
                        :syntax-id (get form :syntax-id) :data-path path :child-form-ids (get form :child-form-ids)}
-              :kind kind :value value :children children :shape-size (get parts :size)
+              :kind kind :value value :children children
               :source (get (sh08-bm-source-node {} form) :source)
               :type (if (= kind :map) {:kind :gravity.type/map :member-types (get parts :types) :shape :literal}
                       {:kind (get {:list :gravity.type/list :vector :gravity.type/vector :set :gravity.type/set} kind)
@@ -6057,7 +6057,7 @@
        :data {:origin {:kind :quoted-data :quote-core-node-id quote-id :form-id (get form :form-id)
                        :syntax-id (get form :syntax-id) :data-path path :child-form-ids []}
               :kind kind :value value :type (sh08-primitive-type-from-literal-kind kind)
-              :source (get (sh08-bm-source-node {} form) :source) :children [] :shape-size 1}}
+              :source (get (sh08-bm-source-node {} form) :source) :children []}}
       (sh08-qd-failure "C7-VERIFY" :quoted-scalar-kind-value-mismatch form :exact-scalar-kind-value-and-zero-children value))))
 
 (defn sh08-qd-node-valid-data [node forms]
@@ -6136,7 +6136,7 @@
 (defn sh08-qd-shape [data node]
   (let [kind (get data :kind) children (get data :children)
         base {:status :accepted :type (get data :type) :data-origin (get data :origin)
-              :source (get data :source) :binding-links [] :shape-size (get data :shape-size)}]
+              :source (get data :source) :binding-links []}]
     (if (contains? #{:map :vector} kind)
       (loop [remaining children ordinal 0 parts []]
         (if (= (count remaining) 0) (assoc base :shape-kind kind :parts parts :constructor-origin :quoted-data)
@@ -18272,23 +18272,20 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/integer :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-cq-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-cq-derive [core node call edge nodes bindings types forms]
   ; STD3 cardinality observes the established outer collection, not members.
   (let [args (get call :argument-node-ids)]
     (if (= false (vector? args))
-      (assoc (sh08-sm-failure "C7-VERIFY" :collection-count-call-shape-required nil :argument-vector args) :work-count 1)
-      (let [work (+ 64 (count args) (count (get core :function-records)))]
-        (if (> work budget)
-          (assoc (sh08-sm-failure "C7-GENERIC" :collection-count-work-limit nil :remaining-type-join-units budget) :work-count work)
-          (if (= false (= 1 (count args)))
-            (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :collection-count-arity-mismatch nil :unary-count (count args)) :work-count work)
-            (if (= false (if (vector? (get node :children)) (= 2 (count (get node :children))) false))
-              (assoc (sh08-sm-failure "C7-VERIFY" :collection-count-call-shape-required nil :unary-call-children (get node :children)) :work-count work)
+      (sh08-sm-failure "C7-VERIFY" :collection-count-call-shape-required nil :argument-vector args)
+      (if (= false (= 1 (count args)))
+        (sh08-sm-failure "C7-TYPE-MISMATCH" :collection-count-arity-mismatch nil :unary-count (count args))
+        (if (= false (if (vector? (get node :children)) (= 2 (count (get node :children))) false))
+          (sh08-sm-failure "C7-VERIFY" :collection-count-call-shape-required nil :unary-call-children (get node :children))
               (let [header (sh08-cq-source core node call edge nodes bindings types (get core :module))
                     owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
                 (if (= header nil)
-                  (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :collection-count-operand-type-required nil
-                           :one-established-map-vector-list-or-set [(get types (get args 0) :gravity.type/unknown)]) :work-count work)
+                  (sh08-sm-failure "C7-TYPE-MISMATCH" :collection-count-operand-type-required nil
+                           :one-established-map-vector-list-or-set [(get types (get args 0) :gravity.type/unknown)])
                   (if (sh08-ft-all-true?
                         [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 2 (if (vector? ids) (count ids) 0))
                          (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
@@ -18302,8 +18299,8 @@
                                  (recur (+ i 1)) false))))])
                     (let [descriptor (sh08-cq-finish header)]
                       {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-                       :constraint (sh08-cq-constraint descriptor) :work-count work})
-                    (assoc (sh08-sm-failure "C7-VERIFY" :collection-count-source-mismatch nil :exact-operator-operand-source (get node :node-id)) :work-count work)))))))))))
+                       :constraint (sh08-cq-constraint descriptor)})
+                    (sh08-sm-failure "C7-VERIFY" :collection-count-source-mismatch nil :exact-operator-operand-source (get node :node-id))))))))))
 
 (defn sh08-cq-node? [node context]
   (if (= :call (get node :core-form))
@@ -18314,11 +18311,11 @@
   (let [header (sh08-cq-source core node call edge nodes bindings types (get core :module))]
     (if (map? header) (= (get types (get call :operator-node-id)) (sh08-cq-finish header)) false)))
 
-(defn sh08-cq-step [node types binding-types functions context budget]
+(defn sh08-cq-step [node types binding-types functions context]
   (sh08-cq-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
-    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
+    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))
 
 (defn sh08-vsl-binding? [binding module]
   (if (symbol? (get binding :name))
