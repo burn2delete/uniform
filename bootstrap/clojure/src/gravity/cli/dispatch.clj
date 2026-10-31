@@ -75,7 +75,8 @@
     (if (contains? special-commands command)
       (do
         (case command
-          "build" (build-invocation/run-declared-input-build! (vec arguments))
+          "build" (println (:json (build-invocation/success-json
+                                   (build-invocation/run-declared-input-build! (vec arguments)))))
           "help" (print (invoke resolve-operation 'p18-cli-help-text))
           "--help" (print (invoke resolve-operation 'p18-cli-help-text))
           "-h" (print (invoke resolve-operation 'p18-cli-help-text))
