@@ -125,8 +125,7 @@
 (deftest normal-granted-pair-and-distinct-same-key-occurrences
   (let [contents ["" "declared input text" (str "input " (char 0x03bb))]]
     (doseq [extension [".qst" ".gravity"] content contents copies [1 2]]
-      (let [original (fixture "granted" extension)
-            source (update original :text #(apply str (repeat copies %)))
+      (let [source (fixture (if (= copies 1) "granted" "repeated-granted") extension)
             requirements (policy [resource])
             arguments (command source [{:resource resource :content content}] requirements)
             observed (atom [])
@@ -151,35 +150,56 @@
       (normal-build! (command source [{:resource resource :content "new invocation return"}] requirements)
         (fn [artifact verify]
           (is (= "C2-HASH" (:id (failure-data #(verify saved)))))
+          (is (= "C2-HASH" (:id (failure-data
+                                  #(verify (assoc artifact :artifact-id "sha256:stale"))))))
           (doseq [changed [(assoc artifact :reader-extension-invocation-records [])
+                           (assoc-in artifact [:source-unit-record :bytes-hash] "sha256:stale")
                            (assoc-in artifact [:reader-extension-invocation-records 0 :invocations] [])
                            (update-in artifact [:reader-extension-invocation-records 0 :invocations] #(into % %))
                            (assoc-in artifact [:reader-extension-invocation-records 0 :policy] {})
                            (assoc-in artifact [:reader-extension-invocation-records 0 :handler] 'unregistered)
+                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :input-seed :datum] "other input")
                            (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :returned-seed :datum] "forged")
                            (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :payload-form-id] "other")
                            (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :implementation] "sha256:stale")
                            (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :policy-id] "sha256:stale")
+                           (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :input] "other input")
                            (assoc-in artifact [:reader-extension-invocation-records 0 :invocations 0 :invocation :request :source-content-hash] "sha256:stale")]]
             (is (= "C2-HASH" (:id (failure-data #(verify changed)))))
-            (is (= "C2-HASH" (:id (failure-data #(verify (rehash-c2 changed))))))))))))
+            (is (= "C2-HASH" (:id (failure-data #(verify (rehash-c2 changed)))))))))
+      ;; A different original source, even with the same resource and return,
+      ;; cannot admit a product built for the earlier source.
+      (normal-build! (command (fixture "changed-source" extension)
+                              [{:resource resource :content "original return"}] requirements)
+        (fn [_ verify]
+          (is (= "C2-HASH" (:id (failure-data #(verify saved))))))))))
 
 (deftest normal-complete-population-and-policy-refusals
   (doseq [extension [".qst" ".gravity"]]
     (let [source (fixture "granted" extension) requirements (policy [resource])
           inputs [{:resource resource :content "declared"}]
-          unknown (fixture "unknown" extension)
-          outside "#resource \"outside-explicit-grant\"\n"]
-      (doseq [[case text expected]
-              [[:unknown (:text unknown) "C2-HASH"]
-               [:resource-then-unknown (str (:text source) (:text unknown)) "C2-HASH"]
-               [:resource-then-outside-grant (str (:text source) outside) "L15-CONTRACT"]
+          arguments (command source inputs requirements)]
+      (is (= {:id "L15-CONTRACT" :reason :undeclared-input}
+             (select-keys (failure-data #(invocation/run-declared-input-build!
+                                          (command source [] requirements))) [:id :reason])))
+      ;; Keep source requirements and declared store entries intact; remove
+      ;; only the explicit host permission. Source DATA cannot restore it.
+      (is (= "T1003" (:id (failure-data
+                            #(invocation/run-declared-input-build!
+                               (into [(first arguments)]
+                                     (mapcat identity
+                                       (remove (fn [[flag _]] (= "--allow-read" flag))
+                                               (partition 2 (rest arguments))))))))))
+      (doseq [[case stem expected]
+              [[:unknown "unknown" "C2-HASH"]
+               [:resource-then-unknown "resource-unknown" "C2-HASH"]
+               [:resource-then-outside-grant "resource-outside-grant" "L15-CONTRACT"]
                ;; Fixed effectful policy enables resource only, not text.
-               [:disallowed-text-then-resource (:text (fixture "mixed-effect" extension)) "C2-HASH"]]]
+               [:disallowed-text-then-resource "mixed-effect" "C2-HASH"]]]
         (testing (str case extension)
           (let [consumed (atom 0)]
             (is (= expected (:id (failure-data
-                                  #(normal-build! (command (assoc source :text text) inputs requirements)
+                                  #(normal-build! (command (fixture stem extension) inputs requirements)
                                                   (fn [_ _] (swap! consumed inc)))))))
             ;; This counts verified consumer products, NOT provider reads.
             (is (zero? @consumed)))))

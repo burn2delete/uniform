@@ -44,6 +44,8 @@
           (if (= ::end v) result (recur (conj result v))))))))
 
 (deftest loader-and-real-entry-source-contract
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (nil? (find-ns 'gravity.reader.declared-input-acceptance-test)))
   (let [deps (edn/read-string (slurp "deps.edn"))]
     (is (excluded? deps))
     (is (not (excluded? (update deps :paths conj acceptance-root)))))
@@ -63,7 +65,9 @@
     (is (not (str/includes? (slurp path) "gravity.reader.declared-input-acceptance-test")))))
 
 (deftest fixture-pairs-and-whole-population-data
-  (doseq [stem ["granted" "disallowed" "undeclared-effect" "unknown" "mixed-effect" "mixed-unknown"]]
+  (doseq [stem ["granted" "disallowed" "undeclared-effect" "unknown" "mixed-effect" "mixed-unknown"
+               "normal-pure" "normal-unknown" "normal-effect"
+               "repeated-granted" "resource-unknown" "resource-outside-grant" "changed-source"]]
     (let [base (str "bootstrap/clojure/fixtures/reader-extension-binding/" stem)
           qst (slurp (str base ".qst")) gravity (slurp (str base ".gravity"))]
       (is (= qst gravity))
@@ -76,11 +80,58 @@
     (is (= [expected expected] (fixture-forms (str granted granted))))
     (is (= [:resource :unknown] (mapv first mixed)))
     (is (not= mixed (fixture-forms granted))))
+  (doseq [extension [".qst" ".gravity"]]
+    (let [root "bootstrap/clojure/fixtures/reader-extension-binding/"
+          text #(slurp (str root % extension))
+          granted (text "granted")]
+      (is (= (str granted granted) (text "repeated-granted")))
+      (is (= (str granted (text "unknown")) (text "resource-unknown")))
+      (is (= (conj (fixture-forms granted) [:resource "outside-explicit-grant"])
+             (fixture-forms (text "resource-outside-grant"))))
+      (is (not= granted (text "changed-source")))
+      (is (= (fixture-forms granted) (fixture-forms (text "changed-source"))))))
   (let [source (slurp "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00813-sh03-reader-canonical-identity.clj")
         constructor (subs source (.indexOf source "(defn reader-declared-input-build!"))]
     (is (< (.indexOf constructor "prepared (reader-resource-prepare!")
            (.indexOf constructor "requests (reader-resource-requests!")
            (.indexOf constructor "call-with-scope")))))
+
+(defn tamper-and-grant-definitions? [forms]
+  (let [tamper (definition forms 'normal-live-verifier-refuses-tampered-duplicate-missing-and-stale-records)
+        refusals (definition forms 'normal-complete-population-and-policy-refusals)
+        paths (set (map #(nth % 2) (calls tamper 'assoc-in)))
+        base [:reader-extension-invocation-records 0 :invocations 0]]
+    (and (every? paths [[:source-unit-record :bytes-hash]
+                       (conj base :input-seed :datum)
+                       (conj base :returned-seed :datum)
+                       (conj base :invocation :request :input)
+                       (conj base :invocation :request :source-content-hash)])
+         (some #{'(assoc artifact :artifact-id "sha256:stale")} (nodes tamper))
+         (some #{'(fixture "changed-source" extension)} (nodes tamper))
+         (some #{'(command source [] requirements)} (nodes refusals))
+         (some #{'(= "--allow-read" flag)} (nodes refusals))
+         (seq (calls refusals 'remove)))))
+
+(deftest explicit-original-input-and-permission-definitions
+  (is (tamper-and-grant-definitions? forms))
+  (doseq [[original replacement]
+          [[':bytes-hash ':unrelated]
+           ['(fixture "changed-source" extension) '(fixture "granted" extension)]
+           ['(= "--allow-read" flag) '(= "--unrelated" flag)]
+           ['(command source [] requirements) '(command source inputs requirements)]
+           ['(assoc artifact :artifact-id "sha256:stale") 'artifact]]]
+    (is (not (tamper-and-grant-definitions? (walk/postwalk-replace {original replacement} forms)))))
+  ;; Read conserved genuine pure definitions as DATA; never require their ns.
+  (let [pure (read-forms "bootstrap/clojure/test/gravity/reader/sealed_pure_integration_test.clj")
+        positive (definition pure 'normal-gravity-pure-text-pair)
+        negative (definition pure 'normal-gravity-pure-text-mixed-refusals)]
+    (is (seq (calls positive 'bootstrap/reader-pure-source-artifact)))
+    (is (seq (calls positive 'bootstrap/c3-reader-artifact-view)))
+    (is (some #{'[".qst" ".gravity"]} (nodes positive)))
+    (is (some #{'(:handler record)} (nodes positive)))
+    (is (some #{'(pure/policy-id)} (nodes positive)))
+    (is (some #{'["normal-unknown" "normal-effect"]} (nodes negative)))
+    (is (some #{"C2-EXTENSION"} (nodes negative)))))
 
 (let [report (run-tests)]
   (when (pos? (+ (:fail report) (:error report))) (System/exit 1)))

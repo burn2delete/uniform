@@ -1,0 +1,2 @@
+; Different original source with the same declared resource.
+#resource "bootstrap/clojure/fixtures/accepted/reader-extension-input.txt"

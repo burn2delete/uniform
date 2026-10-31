@@ -36,22 +36,29 @@ cover empty, ASCII and Unicode returns and one/two occurrences of the same key.
 Each occurrence must retain distinct form identity and the original source,
 span, input seed, returned seed, selected handler, policy and complete request.
 The same key has one declared store entry; occurrence identities remain distinct.
+Repeated occurrences now use the paired `repeated-granted` files themselves.
 
 Complete-population refusals include unknown tags, a valid resource followed by
 an unknown tail or a key outside the explicit grant, and text followed by a
 resource under the fixed resource-only policy. Existing `disallowed` and
 `undeclared-effect` fixtures exercise scope and effect-policy denial. The old
 text-only leaf-policy interpretation of `disallowed` is not exposed by this
-fixed normal API. Concatenated/repeated cases retain the fixture path but supply
-derived source text; they do not claim those bytes were read from the file.
+fixed normal API. Paired `resource-unknown` and `resource-outside-grant` files
+retain their own actual path and bytes. A separate refusal keeps the explicit
+permission and source requirements while omitting the declared store entry;
+it expects `L15-CONTRACT :undeclared-input`. Another removes only the explicit
+`--allow-read` argument and expects `T1003`; request data cannot restore authority.
 
 The only interposed Var is the existing private C2 consuming seam. Its wrapper
 always calls the unchanged original, forwards original authority/path/invocation
 and makes assertions while the real normal command owns the live context.
 Fresh verification is repeated. Missing/duplicate invocations, handler/policy,
 payload, request identity and returned-result tampering are submitted to the
-same original consumer, including public identity recomputation. A prior result
-is checked against a new invocation with a different original return. Equal
+same original consumer, including public identity recomputation. Source-byte
+hash, input-seed datum, request input and artifact-digest substitutions are
+explicit cases. A prior result is checked against a new invocation with a
+different original return and against the paired `changed-source` files with
+the same original return. Equal
 public data is not treated as proof of a stale receipt. After normal return,
 the public view must refuse to extend the expired effectful invocation.
 
@@ -86,10 +93,47 @@ unknown tail. It checks actual constructor preparation/request preflight order.
 These source checks do not establish runtime behavior. Existing inst/uuid,
 standard and pure implementations/tests/fixtures remain byte-conserved.
 
-Local validation: source/data checks passed 2 tests / 27 assertions; language
+Original frozen validation: source/data checks passed 2 tests / 27 assertions; language
 boundary passed 6 / 11; static lint reported zero errors and warnings. Both
 document structure validators and `git diff --check` passed. None of these
 checks loaded the new namespace or executed an actual target.
+
+## Current-main source reconciliation
+
+The original four-file definition commit is
+`dc334ab75a73f96cc1b7ad006ff5c963e9817bf8`, tree
+`f8da4747724a1a7b358c23c2ca7bf520720666ae`. Its missing physical checkout was
+recovered through managed worktree creation from that preserved Git commit.
+The recovery started clean at exactly that tree. A normal merge composes main
+`c1c994f3b251daf89305d3e2ed24a4af16aeccef`; the original four files are
+byte-conserved by that merge before the definition and paired-fixture additions.
+No production API or implementation is changed by this increment.
+
+The existing `sealed_pure_integration_test.clj` remains byte-conserved. Its
+`normal-gravity-pure-text-pair` definition calls the actual
+`reader-pure-source-artifact` and `c3-reader-artifact-view` routes for both
+extensions, checking policy, handler, seed/result and source tampering.
+`normal-gravity-pure-text-mixed-refusals` defines unknown and effectful tag
+refusals under the pure policy. These definitions remain UNRUN; their existence
+does not establish the canonical task's accepted authorization behavior.
+
+The inert checker reads those pure definitions as source data alongside this
+increment. It checks physical paired fixture populations and explicit
+source/input/result/digest, missing-input and missing-permission definitions,
+including negative mutations that remove required definitions. It neither
+loads either acceptance namespace nor executes their assertions. Unknown and
+disallowed population refusals have consumer-product assertions only; no causal
+provider counter or ambient-execution measurement is available through the
+supported API. Original receipt verification's lack of store reads remains a
+source fact, not a runtime measurement or a new observer API.
+
+Current local validation: inert source/data checks pass 3 tests / 66 assertions;
+language boundary passes 6 / 11; static lint has zero errors and warnings;
+both document validators and `git diff --check` pass. An additional default
+`cljfmt check` reports formatting differences for both Clojure files; checking
+their exact original frozen contents reports the same two-file baseline failure.
+Existing formatting is preserved outside this increment. No acceptance
+namespace, target or provider was loaded or executed by these checks.
 
 Future execution must first produce the real normal build artifact and live
 fresh-consumer facts from these definitions; neither model results nor a green
