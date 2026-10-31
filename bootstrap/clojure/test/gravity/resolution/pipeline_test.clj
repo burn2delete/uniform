@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 38 (count publics)))
+    (is (= 40 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -373,6 +373,72 @@
                      (assoc-in artifact [:incremental-invalidation-keys :invalidation-id] "other")]]
       (is (not= id (resolution/artifact-id changed ops))))))
 
+(deftest envelope-descriptor-retains-digest-lineage-and-actual-path-inputs
+  ;; Descriptor projection is DATA construction, not envelope authentication.
+  (let [base (operations) digests (atom []) properties (atom []) fields (atom [])
+        ops (assoc base
+                   :p15-s23-c6c10-canonical-digest
+                   (fn [path value]
+                     (swap! digests conj [path value])
+                     ((:reader-canonical-hash base) value))
+                   :input (fn [field] (swap! fields conj field) ((:input base) field))
+                   :system-property (fn [name]
+                                      (swap! properties conj name)
+                                      (str "observed-directory-" (count @properties))))
+        binding {:source-content-hash "source-hash" :source-byte-count 17
+                 :plan-semantic-hash "plan-hash" :functions-semantic-hash "functions-hash"
+                 :public-function-hashes {'sh06-build-resolution-template "builder-hash"}
+                 :public-function-shapes [['sh06-build-resolution-template 1]]}
+        summary {:artifact-id "semantic-product" :source-revision-id "source-revision"}
+        descriptor (resolution/envelope-descriptor source binding summary ops)
+        evidence ((:reader-canonical-hash base) (second (first @digests)))
+        sealed ((:reader-canonical-hash base) (second (nth @digests 2)))]
+    (is (= [[source {:domain :gravity/sh06-resolution-envelope-evidence-v1
+                     :summary summary :plan-semantic-hash "plan-hash"}]
+            [source {:domain :gravity/sh06-resolution-result-identity-v1
+                     :semantic-input {:summary summary}}]
+            [source {:resolution-result "semantic-product"}]] @digests))
+    (is (= ["user.dir" "user.dir"] @properties))
+    (is (= {:sh06-resolution-envelope-stage 1 :sh06-resolution-sealed-artifact-kind 1
+            :sh06-resolution-source-relative-path 1} (frequencies @fields)))
+    (is (= {:source-path source :workspace-root "observed-directory-1"
+            :invocation-root "observed-directory-2"} (:actual-path-provenance descriptor)))
+    (is (= :gravity/private-authenticated-envelope-descriptor (:artifact descriptor)))
+    (is (= 2 (:schema-version descriptor)))
+    (is (= "builder-hash" (get-in descriptor [:source-revision :builder-semantic-hash])))
+    (is (= "source-hash" (get-in descriptor [:source-revision :source-content-hash])))
+    (is (= (:public-function-shapes binding) (get-in descriptor [:source-revision :function-shapes])))
+    (is (= summary (get-in descriptor [:semantic-projections 0 :value])))
+    (is (= (count summary) (get-in descriptor [:semantic-projections 0 :entry-count])))
+    (is (= [evidence] (get-in descriptor [:fact-transitions 0 :evidence-ids])))
+    (is (= {evidence {:status :checked}} (get-in descriptor [:proof-composite :proof-certificate-table])))
+    (is (= "semantic-product" (get-in descriptor [:lineage 0 :semantic-id])))
+    (is (= sealed (get-in descriptor [:lineage 0 :artifact-id])))
+    (is (= evidence (get-in descriptor [:lineage 0 :verification-id])))
+    (is (= [evidence] (get-in descriptor [:reference-closure :fact-reference-ids])))
+    (is (= [evidence] (get-in descriptor [:reference-closure :proof-reference-ids])))
+    (is (= [] (get-in descriptor [:reference-closure :runtime-check-reference-ids])))
+    (is (= [:identity-subject-equality :digest-graph-reachability]
+           (get-in descriptor [:preservation :residual-checks])))
+    (let [failure (ex-info "digest refused" {:id "UNIT-DIGEST"})
+          calls-before @properties]
+      (is (identical? failure
+                      (caught #(resolution/envelope-descriptor
+                                source binding summary
+                                (assoc ops :p15-s23-c6c10-canonical-digest
+                                       (fn [& _] (throw failure)))))))
+      (is (= calls-before @properties)))))
+
+(deftest boundary-key-selection-adds-only-the-existing-module-carrier
+  (let [ops (operations) expected (input :sh06-resolution-boundary-keys)
+        ordinary {:authenticated-resolution-request {:artifact :gravity/sh06-ordinary-module-resolution-request}}]
+    (is (= expected (resolution/boundary-keys-for {} ops)))
+    (is (= expected (resolution/boundary-keys-for nil ops)))
+    (is (= expected (resolution/boundary-keys-for {:authenticated-resolution-request {:artifact :other}} ops)))
+    (is (= (conj expected :module-inputs) (resolution/boundary-keys-for ordinary ops)))
+    (is (= #{:supplied-key :module-inputs}
+           (resolution/boundary-keys-for ordinary (assoc ops :input (fn [_] #{:supplied-key})))))))
+
 (deftest actual-nested-bindings-emit-and-out-of-scope-binding-rejects
   (let [compile-fixture (fn [name]
                           (let [path (.getCanonicalPath
@@ -553,6 +619,14 @@
     (is (not (identical? @v copied)))
     (assert-interposition-misses #(with-redefs-fn {v copied} %))))
 
+(deftest descriptor-configuration-roots-invalidate-old-receipts
+  (doseq [name '[sh06-resolution-envelope-stage sh06-resolution-sealed-artifact-kind
+                sh06-resolution-boundary-keys]]
+    (let [v (seed-var name) original @v
+          replacement (if (set? original) (conj original :unit-extra) :unit-different)]
+      (is (not= original replacement))
+      (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
+
 (deftest equal-valued-configuration-cache-and-thread-bindings-invalidate-receipts
   (doseq [name ['sh06-resolution-source-relative-path 'sh06-resolution-expected-source-content-hash
                 'sh06-resolution-public-function-shapes 'sh06-resolution-cached-binding
@@ -609,7 +683,12 @@
                                (seed-var 'resolution-stage-defaults)
                                (seed-var 'resolution-stage-input)
                                (seed-var 'sh06-resolution-dependency-record)
-                               (seed-var 'source-span)]))]
+                               (seed-var 'source-span)
+                               (seed-var 'resolution-stage-system-property)
+                               (seed-var 'p15-s23-c6c10-canonical-digest)
+                               (seed-var 'sh06-resolution-envelope-stage)
+                               (seed-var 'sh06-resolution-sealed-artifact-kind)
+                               (seed-var 'sh06-resolution-boundary-keys)]))]
     ;; Isolate the existing readonly drift seam; no parent/owner admission runs.
     (with-redefs-fn
       {environment (fn [] (swap! reads inc) {})}
