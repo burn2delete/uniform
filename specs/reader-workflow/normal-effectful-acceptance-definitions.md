@@ -127,13 +127,53 @@ provider counter or ambient-execution measurement is available through the
 supported API. Original receipt verification's lack of store reads remains a
 source fact, not a runtime measurement or a new observer API.
 
-Current local validation: inert source/data checks pass 3 tests / 66 assertions;
+Frozen `dc838f78` validation: inert source/data checks pass 3 tests / 66 assertions;
 language boundary passes 6 / 11; static lint has zero errors and warnings;
 both document validators and `git diff --check` pass. An additional default
 `cljfmt check` reports formatting differences for both Clojure files; checking
 their exact original frozen contents reports the same two-file baseline failure.
 Existing formatting is preserved outside this increment. No acceptance
 namespace, target or provider was loaded or executed by these checks.
+
+## F1 live-consumer observation correction
+
+Independent review of `dc838f785433fd1cf36e9dedd1902693d1d1116d` requested one
+correction: the selected tamper test's rejection assertions and the helper's
+fresh verification assertions could all be skipped when the matching observer
+guard was false. The earlier positive test's separate counter did not protect
+selection of the tamper test alone. That review remains historical evidence,
+not acceptance of this successor.
+
+The shared `normal-build!` helper now counts only matching live-consumer visits
+and unconditionally asserts exactly one after every successful command return.
+The check is outside the conditional observer and covers both tamper callbacks,
+the saved baseline and other successful helper calls. Original consumer
+forwarding and candidate verification remain unchanged. This count describes
+live-consumer observations, never provider reads.
+
+The inert regression extracts only the observer closure and direct
+post-command assertion, and evaluates them over core data with a core observer.
+It never evaluates the command, project Var/redefinition map, acceptance test
+body, constructor or actual consumer. Removing the post-command assertion
+reproduces the old false-guard escape; the corrected assertion rejects both
+zero and duplicate visits and accepts exactly one. Original forwarding within
+the extracted closure is checked as core argument forwarding, with no claim of
+successful project-port execution or genuine acceptance.
+
+Semantic correction commit `1d1488cc7d12872f0905bb5f57a194f3ebc83ac1` is separate
+from strict formatting commit `99722d40bc34037b0994764f087e8465e0d2cc9d`.
+Pinned `cljfmt 0.13.4` now passes both owned Clojure files and configured
+`tools/ci`; the previous two-file default-format nonpass is resolved rather
+than waived. The two files are outside the configured formatting root, as the
+review confirmed. Full source-data reads before and after formatting preserve
+ordered forms, explicit metadata and exact string/regex literals, allowing
+only bijective renaming of reader-generated anonymous-function symbols.
+
+Successor checks pass 4 inert tests / 71 assertions, language boundary 6 / 11,
+static lint, document validators and diff checks. Fixture pairs, production
+APIs and the five production/pure source equations remain conserved. Actual
+acceptance execution, independent acceptance of this correction and broad task
+closure remain open; historical runtime holds and ACC09 evidence are unchanged.
 
 Future execution must first produce the real normal build artifact and live
 fresh-consumer facts from these definitions; neither model results nor a green
