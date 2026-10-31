@@ -6,6 +6,7 @@
   as diagnostics instead of pretending to be the final compiler."
   (:require [gravity.checked-core]
             [gravity.mir]
+            [gravity.lowering]
             [gravity.runtime]
             [gravity.backend.js]
             [gravity.backend.jvm]

@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/backend/js.clj"
+ {"bootstrap/clojure/src/gravity/lowering.clj"
+  {:namespace gravity.lowering :owner :master-coordinator :slice "SH-17"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-012-p15-s23-c14-policy-base-through-p15-s23-b2-c17-expected-source-content-hash.clj"
+   :test-path "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/backend/js.clj"
   {:namespace gravity.backend.js :owner :sh-target-js :slice "SH-00"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/backends/00767-c-backend-file-artifact.clj"
    :test-path "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"}
@@ -160,7 +164,8 @@
  {"bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj" {:owner :sh-reader, :source-path "bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj", :source-namespace gravity.c2-reader-product-projection.scalar-spans}, "bootstrap/clojure/test/gravity/c3_literal_indexes_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj", :source-namespace gravity.c3-literal-projection.indexes}, "bootstrap/clojure/test/gravity/c3_reader_expansions_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_reader_expansions.clj", :source-namespace gravity.c3-reader-expansions}, "bootstrap/clojure/test/gravity/c3_reader_lossless_span_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj", :source-namespace gravity.c3-literal-projection.spans}}
 
  :module-owners
- {"bootstrap/clojure/src/gravity/backend/js.clj" :sh-target-js
+ {"bootstrap/clojure/src/gravity/lowering.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/backend/js.clj" :sh-target-js
   "bootstrap/clojure/src/gravity/backend/jvm.clj" :sh-target-jvm
   "bootstrap/clojure/src/gravity/backend/wasm.clj" :sh-target-wasm
   "bootstrap/clojure/src/gravity/backend/c.clj" :sh-target-c
@@ -383,7 +388,9 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"
+  {:namespace gravity.lowering.pipeline-test :slice "SH-17" :owner :master-coordinator}
+  "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"
   {:namespace gravity.backend.js.pipeline-test :slice "SH-00" :owner :sh-target-js}
   "bootstrap/clojure/test/gravity/backend/jvm/pipeline_test.clj"
   {:namespace gravity.backend.jvm.pipeline-test :slice "SH-00" :owner :sh-target-jvm}
