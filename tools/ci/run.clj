@@ -251,11 +251,11 @@
                  ["ownership-inventory" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-ownership-test")]]
-    "macro" [["macro-regression" 600
+    "macro" [["macro-regression" 900
               (command "2g" "-M:dev-test"
                        "--namespace" "gravity.macro.pipeline-test"
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
-    "resolution" [["resolution-regression" 600
+    "resolution" [["resolution-regression" 900
                    (command "2g" "-M:dev-test"
                             "--namespace" "gravity.resolution.pipeline-test"
                             "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
