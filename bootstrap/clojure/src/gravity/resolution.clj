@@ -6,7 +6,12 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {match-pattern-binding-paths
+   {diagnostic-origin
+    {:arglists
+     ([source-path sh05-artifact request diagnostic operations]),
+     :operation-inputs
+     [:reader-canonical-hash :sh06-resolution-source-revision-id]},
+    match-pattern-binding-paths
     {:arglists ([pattern path operations]),
      :operation-inputs [:sh06-match-pattern-binding-paths]},
     definition-records
@@ -56,6 +61,25 @@
      ([rule source-path missing-field observed facts operations]),
      :operation-inputs [:c5-resolution-fail! :source-span]},
     request-overrides {:arglists ([module]), :operation-inputs []},
+    assemble-candidate
+    {:arglists
+     ([source-path
+       sh05-artifact
+       contextual?
+       module-inputs
+       request
+       binding
+       run
+       operations]),
+     :operation-inputs
+     [:input
+      :reader-canonical-hash
+      :sh06-resolution-artifact-identity-input-with-chunks
+      :sh06-resolution-envelope-summary-with-chunks
+      :sh06-resolution-product-identity-chunks
+      :sh06-resolution-product-projections
+      :sh06-resolution-sh02-descriptor],
+     :admission :none},
     let-loop-binding-paths
     {:arglists ([pattern path]), :operation-inputs []},
     product-projections
@@ -110,6 +134,20 @@
     definition-kind {:arglists ([form]), :operation-inputs []},
     boundary-keys-for
     {:arglists ([boundary operations]), :operation-inputs [:input]},
+    base-request
+    {:arglists ([source-path sh05-artifact overrides operations]),
+     :operation-inputs
+     [:parse-module
+      :sh06-resolution-analysis-inputs
+      :sh06-resolution-core-records
+      :sh06-resolution-definition-records
+      :sh06-resolution-dependency-edges
+      :sh06-resolution-envelope-id
+      :sh06-resolution-explicit-candidate-records
+      :sh06-resolution-import-binding-records
+      :sh06-resolution-import-records
+      :sh06-resolution-package
+      :sh06-resolution-source-revision-id]},
     artifact-identity-input
     {:arglists ([artifact operations]),
      :operation-inputs
@@ -140,6 +178,8 @@
      [:sh06-resolution-boundary-fail!
       :sh06-resolution-resolve-source-path
       :sha256-bytes-hex]},
+    module-request
+    {:arglists ([sh05-artifact base views]), :operation-inputs []},
     dependency-edges
     {:arglists ([source-path module imports overrides operations]),
      :operation-inputs [:source-span]},
@@ -178,29 +218,41 @@
     :p15-s23-stage2-compiler-artifact-semantic-input
     :p15-s23-stage2-compiler-artifact-source-path
     :p15-s23-stage2-runtime-execute-function
+    :parse-module
     :reader-canonical-hash
     :sh04-syntax-strip-host-metadata
     :sh06-fixed-vector-pattern?
     :sh06-let-loop-binding-paths
     :sh06-match-pattern-binding-paths
+    :sh06-resolution-analysis-inputs
     :sh06-resolution-artifact-identity-input
     :sh06-resolution-artifact-identity-input-with-chunks
     :sh06-resolution-binding-current!
     :sh06-resolution-boundary-fail!
     :sh06-resolution-build-binding!
     :sh06-resolution-core-record
+    :sh06-resolution-core-records
     :sh06-resolution-current-source-key
     :sh06-resolution-definition-kind
+    :sh06-resolution-definition-records
+    :sh06-resolution-dependency-edges
     :sh06-resolution-dependency-record
+    :sh06-resolution-envelope-id
     :sh06-resolution-envelope-summary-with-chunks
+    :sh06-resolution-explicit-candidate-records
     :sh06-resolution-identity-chunks
+    :sh06-resolution-import-binding-records
+    :sh06-resolution-import-records
     :sh06-resolution-order-compatibility
     :sh06-resolution-package
     :sh06-resolution-plan-identities
     :sh06-resolution-product-identity-chunks
+    :sh06-resolution-product-projections
     :sh06-resolution-read-current-source!
     :sh06-resolution-resolve-source-path
     :sh06-resolution-semantic-span
+    :sh06-resolution-sh02-descriptor
+    :sh06-resolution-source-revision-id
     :sh06-unique-match-binding-paths
     :sha256-bytes-hex
     :sha256-hex
@@ -218,7 +270,10 @@
    [D1 D2 D3 D9 L3 C1 C3 C4 C5 C15 TEST2 L2 L7 BOOT8],
    :seed-inputs
    [:*sh06-resolution-operation-binding*
+    :c5-resolution-diagnostic-ids
+    :c5-resolution-governing-document
     :known-source-profiles
+    :sh06-resolution-adapter-contract
     :sh06-resolution-all-core-symbols
     :sh06-resolution-boundary-keys
     :sh06-resolution-cached-binding
@@ -232,8 +287,8 @@
     :sh06-resolution-type-symbols],
    :unsupported
    [:canonical-c5-admission
-    :request-construction
-    :artifact-assembly
+    :authenticated-request-construction
+    :authenticated-artifact-assembly
     :descriptor-authentication
     :verification
     :legacy-c5-engine
@@ -262,10 +317,15 @@
     :resolved-analysis
     :identity-chunks
     :resolution-product-summary
-    :resolution-boundary],
+    :resolution-boundary
+    :verified-module-views
+    :resolver-run],
    :namespace gravity.resolution,
    :diagnostic-ownership
-   {:stage [:source-plan-boundary :host-containment],
+   {:stage
+    [:source-plan-boundary
+     :host-containment
+     :generated-origin-recovery],
     :catalog :existing-c5-catalog,
     :envelope-admission :existing-authenticated-envelope-owner,
     :resolution-semantics :gravity-source},
@@ -289,7 +349,11 @@
     :identity-preimages
     :envelope-summaries
     :private-envelope-descriptor
-    :boundary-key-set],
+    :boundary-key-set
+    :base-resolution-request
+    :ordinary-module-request
+    :private-candidate-products
+    :generated-diagnostic-origin],
    :clojure-seed-boundary? true,
    :contract-boundary
    :gravity-resolution-normalization-and-plan-runtime})
@@ -2234,12 +2298,395 @@
    (conj (input :sh06-resolution-boundary-keys) :module-inputs)
    (input :sh06-resolution-boundary-keys))))
 
+
+(defn
+ base-request
+ [source-path sh05-artifact overrides operations]
+ (let
+  [parse-module
+   (.valAt ^clojure.lang.ILookup operations :parse-module)
+   sh06-resolution-analysis-inputs
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-analysis-inputs)
+   sh06-resolution-core-records
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-core-records)
+   sh06-resolution-definition-records
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-definition-records)
+   sh06-resolution-dependency-edges
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-dependency-edges)
+   sh06-resolution-envelope-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-envelope-id)
+   sh06-resolution-explicit-candidate-records
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-explicit-candidate-records)
+   sh06-resolution-import-binding-records
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-import-binding-records)
+   sh06-resolution-import-records
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-import-records)
+   sh06-resolution-package
+   (.valAt ^clojure.lang.ILookup operations :sh06-resolution-package)
+   sh06-resolution-source-revision-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-source-revision-id)
+   forms
+   (mapv :form (:expanded-syntax-stream sh05-artifact))
+   module
+   (parse-module source-path forms)
+   imports
+   (sh06-resolution-import-records source-path module overrides)
+   explicit-definitions
+   (sh06-resolution-explicit-candidate-records
+    module
+    sh05-artifact
+    overrides)
+   analysis-inputs
+   (sh06-resolution-analysis-inputs module sh05-artifact overrides)
+   source-revision-id
+   (sh06-resolution-source-revision-id sh05-artifact)]
+  {:definitions
+   (vec
+    (concat
+     (sh06-resolution-definition-records module sh05-artifact)
+     explicit-definitions)),
+   :schema-version 1,
+   :import-bindings
+   (sh06-resolution-import-binding-records module imports overrides),
+   :lexical-scopes (:lexical-scopes analysis-inputs),
+   :references (:references analysis-inputs),
+   :imports imports,
+   :module
+   {:capabilities (vec (sort (:capabilities module))),
+    :c4-artifact-id (:artifact-id sh05-artifact),
+    :package (sh06-resolution-package (:module module)),
+    :exports (vec (:exports module)),
+    :source-revision-id source-revision-id,
+    :effects (vec (sort (:effects module))),
+    :safety (:safety module),
+    :target (:target module),
+    :namespace (:module module),
+    :profile (:profile module)},
+   :macro-expansion-binding
+   {:artifact :gravity/sh05-macro-expansion-binding,
+    :schema-version 1,
+    :c4-artifact-id (:artifact-id sh05-artifact),
+    :source-revision-id source-revision-id,
+    :macro-result-id (:expanded-syntax-stream-id sh05-artifact),
+    :authenticated-envelope-id
+    (sh06-resolution-envelope-id sh05-artifact)},
+   :dependency-edges
+   (sh06-resolution-dependency-edges
+    source-path
+    module
+    imports
+    overrides),
+   :provenance {:actual-source-path source-path},
+   :artifact :gravity/sh06-authenticated-c4-resolution-request,
+   :core-bindings (sh06-resolution-core-records)}))
+
+(defn
+ module-request
+ [sh05-artifact base views]
+ (let
+  [header
+   (first (:expanded-syntax-stream sh05-artifact))
+   imports
+   (mapv
+    (fn*
+     [p1__253#]
+     (->
+      p1__253#
+      (assoc :source-span (:span header))
+      (assoc-in
+       [:semantic-span :namespace-syntax-id]
+       (:syntax/id header))))
+    (:imports base))]
+  (assoc
+   base
+   :artifact
+   :gravity/sh06-ordinary-module-resolution-request
+   :schema-version
+   2
+   :namespace-source
+   {:semantic-span {:namespace-syntax-id (:syntax/id header)},
+    :source-span (:span header)}
+   :module-premises
+   views
+   :imports
+   imports)))
+
+(defn
+ diagnostic-origin
+ "Recover only the existing origin of an exact failed reference.\n  The caller has already authenticated the SH05 parent and request."
+ [source-path sh05-artifact request diagnostic operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-source-revision-id
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-source-revision-id)
+   references
+   (:references request)
+   syntax-stream
+   (:expanded-syntax-stream sh05-artifact)
+   facts
+   (:facts diagnostic)
+   details
+   (:rule-specific facts)
+   ordinal
+   (get-in facts [:semantic-span :ordinal])
+   reference-fields
+   [:name :qualifier :position :scope-chain]]
+  (when
+   (and
+    (= :c5-name-resolution (:diagnostic-family diagnostic))
+    (= :name-resolution (:stage diagnostic))
+    (not (contains? diagnostic :origin-chain))
+    (map? facts)
+    (map? details)
+    (vector? references)
+    (vector? syntax-stream)
+    (integer? ordinal)
+    (pos? ordinal)
+    (<= ordinal (count references)))
+   (let
+    [reference
+     (get references (dec ordinal))
+     candidates
+     (:candidate-bindings diagnostic)
+     candidate-count
+     (:candidate-count details)
+     source-span
+     (:source-span reference)
+     module
+     (:module request)
+     parent-binding
+     (:macro-expansion-binding request)]
+    (when
+     (and
+      (map? reference)
+      (map? source-span)
+      (every?
+       (fn* [p1__254#] (contains? details p1__254#))
+       reference-fields)
+      (=
+       (select-keys reference reference-fields)
+       (select-keys details reference-fields))
+      (integer? candidate-count)
+      (not (neg? candidate-count))
+      (vector? candidates)
+      (<= (count candidates) candidate-count)
+      (case
+       (:id diagnostic)
+       "C5-UNRESOLVED"
+       (case
+        (:reason details)
+        :no-legal-binding
+        (= 0 candidate-count (count candidates))
+        :malformed-core-binding-availability
+        (= 1 candidate-count (count candidates))
+        false)
+       "C5-ALIAS"
+       (= 0 candidate-count (count candidates))
+       "C5-AMBIGUOUS"
+       (<= 2 (count candidates) candidate-count)
+       ("C5-PRIVATE" "C5-CROSS-PROFILE" "C5-CAPABILITY" "C5-TARGET")
+       (= 1 candidate-count (count candidates))
+       false)
+      (= (:reason facts) (:reason details))
+      (= (:syntax-id diagnostic) (:syntax-id reference))
+      (= (:symbol diagnostic) (:symbol reference))
+      (= (:semantic-span facts) (:semantic-span reference))
+      (=
+       (:source-span diagnostic)
+       (assoc source-span :source source-path))
+      (=
+       source-path
+       (get-in request [:provenance :actual-source-path]))
+      (= (:namespace diagnostic) (:namespace module))
+      (= (:active-profile diagnostic) (:profile module))
+      (= (:target diagnostic) (:target module))
+      (=
+       (:artifact-id sh05-artifact)
+       (:c4-artifact-id module)
+       (:c4-artifact-id parent-binding)
+       (:c4-artifact-id facts))
+      (=
+       (:source-revision-id module)
+       (:source-revision-id parent-binding)
+       (:source-revision-id facts)
+       (sh06-resolution-source-revision-id sh05-artifact))
+      (=
+       (:expanded-syntax-stream-id sh05-artifact)
+       (:macro-result-id parent-binding)))
+     (let
+      [owners
+       (filterv
+        (fn
+         [syntax]
+         (and
+          (= source-span (:span syntax))
+          (=
+           (:syntax-id reference)
+           (reader-canonical-hash
+            {:domain :gravity/sh06-reference-syntax-v1,
+             :owner-syntax-id (:syntax/id syntax),
+             :ordinal ordinal,
+             :symbol (:symbol reference),
+             :position (:position reference)}))))
+        syntax-stream)]
+      (when
+       (= 1 (count owners))
+       (let
+        [origin (:origin (first owners))]
+        (when
+         (and
+          (vector? origin)
+          (some
+           (fn* [p1__255#] (= :generated (:kind p1__255#)))
+           origin))
+         origin)))))))))
+
+(defn
+ assemble-candidate
+ "Build unpublished candidate products before envelope/proof admission."
+ [source-path
+  sh05-artifact
+  contextual?
+  module-inputs
+  request
+  binding
+  run
+  operations]
+ (let
+  [input
+   (.valAt ^clojure.lang.ILookup operations :input)
+   reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-artifact-identity-input-with-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-artifact-identity-input-with-chunks)
+   sh06-resolution-envelope-summary-with-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-envelope-summary-with-chunks)
+   sh06-resolution-product-identity-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-product-identity-chunks)
+   sh06-resolution-product-projections
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-product-projections)
+   sh06-resolution-sh02-descriptor
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-sh02-descriptor)
+   analysis
+   (:resolved-analysis run)
+   projections
+   (sh06-resolution-product-projections analysis)
+   plan-binding
+   (dissoc binding :plan :source-text :input-key :reader-invocation)
+   boundary-base
+   (cond->
+    {:plan-binding plan-binding,
+     :template-verification (:template-verification run),
+     :raw-template-result (:raw-template-result run),
+     :clojure-adapter-residual? true,
+     :authenticated-resolution-request request,
+     :digest-requests (:digest-requests run),
+     :resolved-digests (:resolved-digests run),
+     :self-hosted? false,
+     :resolved-analysis analysis,
+     :slice :SH-06,
+     :raw-analysis (:raw-analysis run),
+     :resolved-verification (:resolved-verification run),
+     :adapter-contract (input :sh06-resolution-adapter-contract),
+     :target-source-reread? false,
+     :owner :gravity-source}
+    (not contextual?)
+    (assoc :module-inputs module-inputs))
+   artifact-base
+   (merge
+    {:sh05-macro-artifact sh05-artifact,
+     :capability-based-proof nil,
+     :diagnostics [],
+     :task "SH-06",
+     :artifact-id nil,
+     :document-set ["L3" "C5"],
+     :governing-document (input :c5-resolution-governing-document),
+     :execution-boundary
+     {:resolution-authority :gravity,
+      :gravity-module 'gravity.resolution,
+      :plan-runner :clojure-stage0,
+      :digest-resolver :clojure-stage0,
+      :envelope-binder :clojure-stage0,
+      :compatibility-adapter :clojure-stage0,
+      :self-hosted? false},
+     :status :accepted,
+     :slice :SH-06,
+     :kind :gravity/sh06-resolution-artifact,
+     :provenance
+     {:source-path source-path,
+      :source-revision-id
+      (get-in request [:module :source-revision-id])},
+     :gravity-resolution-boundary boundary-base,
+     :pass
+     {:name :sh06-gravity-name-resolution,
+      :input :authenticated-sh05-expanded-syntax,
+      :output :authenticated-sh06-namespace-analysis,
+      :preserves
+      [:source-spans
+       :syntax-ids
+       :macro-lineage
+       :profile
+       :target
+       :effects
+       :capabilities],
+      :rejects (input :c5-resolution-diagnostic-ids)}}
+    projections)
+   identity-chunks
+   (sh06-resolution-product-identity-chunks artifact-base)
+   artifact-id
+   (reader-canonical-hash
+    (sh06-resolution-artifact-identity-input-with-chunks
+     artifact-base
+     identity-chunks))
+   artifact-with-id
+   (assoc artifact-base :artifact-id artifact-id)
+   summary
+   (sh06-resolution-envelope-summary-with-chunks
+    artifact-with-id
+    identity-chunks)
+   descriptor
+   (sh06-resolution-sh02-descriptor source-path binding summary)]
+  {:artifact artifact-with-id, :descriptor descriptor}))
+
 (doseq
  [operation
   [#'analysis-inputs
    #'artifact-id
    #'artifact-identity-input
    #'artifact-identity-input-with-chunks
+   #'assemble-candidate
+   #'base-request
    #'binding-current!
    #'boundary-fail!
    #'boundary-keys-for
@@ -2252,6 +2699,7 @@
    #'definition-records
    #'dependency-edges
    #'dependency-record
+   #'diagnostic-origin
    #'envelope-descriptor
    #'envelope-id
    #'envelope-summary
@@ -2264,6 +2712,7 @@
    #'import-records
    #'let-loop-binding-paths
    #'match-pattern-binding-paths
+   #'module-request
    #'package-record
    #'plan-identities
    #'product-identity-chunks

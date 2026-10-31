@@ -193,7 +193,10 @@
      #'sh06-resolution-type-symbols
      #'sh06-resolution-boundary-keys
      #'sh06-resolution-envelope-stage
-     #'sh06-resolution-sealed-artifact-kind]))]
+     #'sh06-resolution-sealed-artifact-kind
+     #'c5-resolution-diagnostic-ids
+     #'c5-resolution-governing-document
+     #'sh06-resolution-adapter-contract]))]
  ^{:line 158, :column 1}
  (defn
   sh06-resolution-artifact-verification
