@@ -2,14 +2,43 @@
   "Isolated source model, not Gravity execution or provider authority."
   (:require [clojure.test :refer [deftest is]]))
 
-(defn- forms []
+(defn- source-forms [path]
   (binding [*read-eval* false]
     (with-open [reader (java.io.PushbackReader.
                        (java.io.StringReader.
-                        (slurp "bootstrap/gravity/src/gravity/reader.gravity")))]
+                        (slurp path)))]
       (loop [out []]
         (let [value (read {:eof ::end} reader)]
           (if (= ::end value) out (recur (conj out value))))))))
+
+(defn- forms []
+  (source-forms "bootstrap/gravity/src/gravity/reader.gravity"))
+
+(defn- definition [forms name]
+  (nth (first (filter #(and (seq? %) (= 'def (first %))
+                           (= name (second %))) forms)) 2))
+
+(deftest stage2-builtin-declarations-match-the-complete-seed-population
+  ;; Read source DATA only: no Bootstrap, Gravity compiler or runtime load.
+  (let [seed (second (definition
+                      (source-forms
+                       "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00516-defn-form.clj")
+                      'stage0-builtin-functions))
+        compiler (source-forms "bootstrap/gravity/p15_s23/compiler.gravity")
+        emitter (definition compiler 'p15-s23-stage2-plan-emitter)
+        runtime (definition compiler 'p15-s23-stage2-runtime-executor)
+        complete? (fn [functions]
+                    (and (= seed (set functions))
+                         (= (count functions) (count (set functions)))))]
+    (is (contains? seed 'build-read-declared-input))
+    (doseq [functions [(get-in emitter [:call-rules :builtin-functions])
+                       (get-in runtime [:builtin-rules :functions])]]
+      (is (complete? functions))
+      (is (= 1 (count (filter #{'build-read-declared-input} functions))))
+      (is (not (complete? (remove #{'build-read-declared-input} functions))))
+      (is (not (complete? (remove #{'get} functions))))
+      (is (not (complete? (conj functions 'build-read-declared-input))))
+      (is (not (complete? (conj functions 'unregistered-file-read)))))))
 
 (deftest handler-has-the-fixed-build-contract-and-one-original-builtin-occurrence
   (let [[module handler] (forms)
