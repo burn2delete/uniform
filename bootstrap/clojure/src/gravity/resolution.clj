@@ -114,6 +114,8 @@
     {:arglists ([_module imports overrides operations]),
      :operation-inputs
      [:reader-canonical-hash :sh06-resolution-package]},
+    verification-failure
+    {:arglists ([error]), :operation-inputs [], :admission :none},
     package-record {:arglists ([namespace]), :operation-inputs []},
     source-key
     {:arglists ([operations]),
@@ -197,6 +199,12 @@
       :sh06-resolution-plan-identities
       :sh06-resolution-read-current-source!
       :sha256-hex]},
+    verify
+    {:arglists ([artifact context operations]),
+     :operation-inputs
+     [:sh06-resolution-artifact-verification*
+      :sh06-resolution-contained-verification-failure],
+     :admission :none},
     import-records
     {:arglists ([source-path module overrides operations]),
      :operation-inputs [:sh06-resolution-dependency-record]},
@@ -218,6 +226,7 @@
     :p15-s23-stage2-compiler-artifact-semantic-input
     :p15-s23-stage2-compiler-artifact-source-path
     :p15-s23-stage2-runtime-execute-function
+    :p15-s23-stage2-sh02-descriptor-envelope-verify!
     :parse-module
     :reader-canonical-hash
     :sh04-syntax-strip-host-metadata
@@ -227,32 +236,45 @@
     :sh06-resolution-analysis-inputs
     :sh06-resolution-artifact-identity-input
     :sh06-resolution-artifact-identity-input-with-chunks
+    :sh06-resolution-artifact-verification*
+    :sh06-resolution-artifact-verification-bounded*
     :sh06-resolution-binding-current!
     :sh06-resolution-boundary-fail!
+    :sh06-resolution-boundary-keys-for
     :sh06-resolution-build-binding!
+    :sh06-resolution-carrier-validation
+    :sh06-resolution-component-validations
+    :sh06-resolution-contained-verification-failure
+    :sh06-resolution-context-plan-binding!
     :sh06-resolution-core-record
     :sh06-resolution-core-records
+    :sh06-resolution-current-binding!
     :sh06-resolution-current-source-key
     :sh06-resolution-definition-kind
     :sh06-resolution-definition-records
     :sh06-resolution-dependency-edges
     :sh06-resolution-dependency-record
     :sh06-resolution-envelope-id
+    :sh06-resolution-envelope-source-options
     :sh06-resolution-envelope-summary-with-chunks
     :sh06-resolution-explicit-candidate-records
     :sh06-resolution-identity-chunks
     :sh06-resolution-import-binding-records
     :sh06-resolution-import-records
+    :sh06-resolution-module-request
     :sh06-resolution-order-compatibility
     :sh06-resolution-package
     :sh06-resolution-plan-identities
     :sh06-resolution-product-identity-chunks
     :sh06-resolution-product-projections
     :sh06-resolution-read-current-source!
+    :sh06-resolution-request
     :sh06-resolution-resolve-source-path
+    :sh06-resolution-run-request!
     :sh06-resolution-semantic-span
     :sh06-resolution-sh02-descriptor
     :sh06-resolution-source-revision-id
+    :sh06-resolution-verify-sh05
     :sh06-unique-match-binding-paths
     :sha256-bytes-hex
     :sha256-hex
@@ -266,6 +288,7 @@
     :configuration
     :host-operations],
    :self-hosted? false,
+   :private-implementation [verify* verify-contained* verify-current*],
    :governing-contracts
    [D1 D2 D3 D9 L3 C1 C3 C4 C5 C15 TEST2 L2 L7 BOOT8],
    :seed-inputs
@@ -275,11 +298,14 @@
     :known-source-profiles
     :sh06-resolution-adapter-contract
     :sh06-resolution-all-core-symbols
+    :sh06-resolution-artifact-keys
     :sh06-resolution-boundary-keys
     :sh06-resolution-cached-binding
     :sh06-resolution-envelope-stage
+    :sh06-resolution-execution-boundary-contract
     :sh06-resolution-expected-source-byte-count
     :sh06-resolution-expected-source-content-hash
+    :sh06-resolution-pass-contract
     :sh06-resolution-public-function-shapes
     :sh06-resolution-sealed-artifact-kind
     :sh06-resolution-source-relative-path
@@ -290,7 +316,7 @@
     :authenticated-request-construction
     :authenticated-artifact-assembly
     :descriptor-authentication
-    :verification
+    :owner-admission-and-verifier-transactions
     :legacy-c5-engine
     :self-hosting
     :seed-retirement
@@ -319,13 +345,15 @@
     :resolution-product-summary
     :resolution-boundary
     :verified-module-views
-    :resolver-run],
+    :resolver-run
+    :candidate-or-published-artifact],
    :namespace gravity.resolution,
    :diagnostic-ownership
    {:stage
     [:source-plan-boundary
      :host-containment
-     :generated-origin-recovery],
+     :generated-origin-recovery
+     :artifact-verification-failure],
     :catalog :existing-c5-catalog,
     :envelope-admission :existing-authenticated-envelope-owner,
     :resolution-semantics :gravity-source},
@@ -353,7 +381,8 @@
     :base-resolution-request
     :ordinary-module-request
     :private-candidate-products
-    :generated-diagnostic-origin],
+    :generated-diagnostic-origin
+    :resolution-verification-report],
    :clojure-seed-boundary? true,
    :contract-boundary
    :gravity-resolution-normalization-and-plan-runtime})
@@ -2679,6 +2708,532 @@
    (sh06-resolution-sh02-descriptor source-path binding summary)]
   {:artifact artifact-with-id, :descriptor descriptor}))
 
+
+(defn-
+ verify-current*
+ [artifact construction? context operations]
+ (let
+  [input
+   (.valAt ^clojure.lang.ILookup operations :input)
+   p15-s23-stage2-sh02-descriptor-envelope-verify!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :p15-s23-stage2-sh02-descriptor-envelope-verify!)
+   reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-artifact-identity-input-with-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-artifact-identity-input-with-chunks)
+   sh06-resolution-boundary-keys-for
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-boundary-keys-for)
+   sh06-resolution-context-plan-binding!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-context-plan-binding!)
+   sh06-resolution-current-binding!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-current-binding!)
+   sh06-resolution-envelope-source-options
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-envelope-source-options)
+   sh06-resolution-envelope-summary-with-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-envelope-summary-with-chunks)
+   sh06-resolution-module-request
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-module-request)
+   sh06-resolution-product-identity-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-product-identity-chunks)
+   sh06-resolution-product-projections
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-product-projections)
+   sh06-resolution-request
+   (.valAt ^clojure.lang.ILookup operations :sh06-resolution-request)
+   sh06-resolution-run-request!
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-run-request!)
+   sh06-resolution-sh02-descriptor
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-sh02-descriptor)
+   sh06-resolution-verify-sh05
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-verify-sh05)
+   legacy?
+   (= :gravity.bootstrap/legacy context)
+   source-path
+   (or
+    (get-in artifact [:provenance :source-path])
+    "<sh06-resolution-artifact>")
+   boundary
+   (:gravity-resolution-boundary artifact)
+   analysis
+   (:resolved-analysis boundary)
+   sh05-artifact
+   (:sh05-macro-artifact artifact)
+   sh05-report
+   (try
+    (sh06-resolution-verify-sh05 sh05-artifact)
+    (catch Throwable _ {:status :failed}))
+   binding
+   (try
+    (if
+     legacy?
+     (sh06-resolution-current-binding! source-path)
+     (sh06-resolution-context-plan-binding! source-path context))
+    (catch Throwable _ nil))
+   expected-plan-binding
+   (when
+    binding
+    (dissoc binding :plan :source-text :input-key :reader-invocation))
+   replay
+   (when
+    (and binding (= :passed (:status sh05-report)))
+    (try
+     (let
+      [request
+       (if
+        legacy?
+        (sh06-resolution-module-request
+         source-path
+         sh05-artifact
+         (:module-inputs boundary))
+        (sh06-resolution-request source-path sh05-artifact context))
+       run
+       (sh06-resolution-run-request! source-path binding request)]
+      {:status :passed, :request request, :run run})
+     (catch
+      InterruptedException
+      interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+     (catch
+      Throwable
+      error
+      {:status :failed,
+       :contained-host-error (.getName (class error)),
+       :contained-diagnostic
+       (when
+        (instance? clojure.lang.ExceptionInfo error)
+        (:id (ex-data error)))})))
+   expected-request
+   (:request replay)
+   expected-run
+   (:run replay)
+   gravity-report
+   (or (:resolved-verification expected-run) {:status :failed})
+   projections
+   (when
+    (map? analysis)
+    (sh06-resolution-product-projections analysis))
+   identity-chunks
+   (sh06-resolution-product-identity-chunks artifact)
+   summary
+   (sh06-resolution-envelope-summary-with-chunks
+    artifact
+    identity-chunks)
+   expected-descriptor
+   (when
+    binding
+    (sh06-resolution-sh02-descriptor source-path binding summary))
+   envelope-ok?
+   (and
+    expected-descriptor
+    (=
+     expected-descriptor
+     (:authenticated-envelope-descriptor boundary))
+    (try
+     (p15-s23-stage2-sh02-descriptor-envelope-verify!
+      (:authenticated-envelope boundary)
+      (input :sh06-resolution-envelope-stage)
+      (input :sh06-resolution-sealed-artifact-kind)
+      expected-descriptor
+      source-path
+      (sh06-resolution-envelope-source-options binding))
+     true
+     (catch Throwable _ false)))
+   base-checks
+   (cond->
+    {:pass-contract-current?
+     (= (input :sh06-resolution-pass-contract) (:pass artifact)),
+     :governing-document-current?
+     (=
+      (input :c5-resolution-governing-document)
+      (:governing-document artifact)),
+     :exact-boundary-shape?
+     (=
+      (sh06-resolution-boundary-keys-for boundary)
+      (set (keys boundary))),
+     :digest-requests-current?
+     (and
+      expected-run
+      (= (:digest-requests expected-run) (:digest-requests boundary))),
+     :raw-analysis-current?
+     (and
+      expected-run
+      (= (:raw-analysis expected-run) (:raw-analysis boundary))),
+     :exact-artifact-shape?
+     (= (input :sh06-resolution-artifact-keys) (set (keys artifact))),
+     :exact-kind?
+     (= :gravity/sh06-resolution-artifact (:kind artifact)),
+     :raw-template-result-current?
+     (and
+      expected-run
+      (=
+       (:raw-template-result expected-run)
+       (:raw-template-result boundary))),
+     :document-set-current? (= ["L3" "C5"] (:document-set artifact)),
+     :invalidation-current?
+     (=
+      (:incremental-invalidation-keys projections)
+      (:incremental-invalidation-keys artifact)),
+     :namespace-analysis-current?
+     (=
+      (:namespace-analysis projections)
+      (:namespace-analysis artifact)),
+     :template-verification-current?
+     (and
+      expected-run
+      (=
+       (:template-verification expected-run)
+       (:template-verification boundary))),
+     :resolution-table-current?
+     (= (:resolution-table projections) (:resolution-table artifact)),
+     :execution-boundary-current?
+     (=
+      (input :sh06-resolution-execution-boundary-contract)
+      (:execution-boundary artifact)),
+     :resolved-verification-current?
+     (and
+      expected-run
+      (=
+       (:resolved-verification expected-run)
+       (:resolved-verification boundary))),
+     :artifact-identity-current?
+     (=
+      (:artifact-id artifact)
+      (reader-canonical-hash
+       (sh06-resolution-artifact-identity-input-with-chunks
+        artifact
+        identity-chunks))),
+     :fixed-boundary-contract?
+     (=
+      {:slice :SH-06,
+       :owner :gravity-source,
+       :adapter-contract (input :sh06-resolution-adapter-contract),
+       :target-source-reread? false,
+       :clojure-adapter-residual? true,
+       :self-hosted? false}
+      (select-keys
+       boundary
+       [:slice
+        :owner
+        :adapter-contract
+        :target-source-reread?
+        :clojure-adapter-residual?
+        :self-hosted?])),
+     :import-export-current?
+     (=
+      (:import-export-table projections)
+      (:import-export-table artifact)),
+     :cross-profile-current?
+     (=
+      (:cross-profile-edge-report projections)
+      (:cross-profile-edge-report artifact)),
+     :fresh-upstream-sh05-verification?
+     (= :passed (:status sh05-report)),
+     :trusted-artifact-carrier? true,
+     :lexical-scope-current?
+     (=
+      (:lexical-scope-graph projections)
+      (:lexical-scope-graph artifact)),
+     :accepted-diagnostics-empty? (empty? (:diagnostics artifact)),
+     :provenance-current?
+     (let
+      [source-revision-id
+       (get-in
+        boundary
+        [:authenticated-resolution-request
+         :module
+         :source-revision-id])]
+      (and
+       (=
+        {:source-path source-path,
+         :source-revision-id source-revision-id}
+        (:provenance artifact))
+       (=
+        source-path
+        (get-in
+         boundary
+         [:authenticated-resolution-request
+          :provenance
+          :actual-source-path])))),
+     :resolved-digests-current?
+     (and
+      expected-run
+      (=
+       (:resolved-digests expected-run)
+       (:resolved-digests boundary))),
+     :alias-table-current?
+     (= (:alias-table projections) (:alias-table artifact)),
+     :resolved-analysis-current?
+     (and
+      expected-run
+      (=
+       (:resolved-analysis expected-run)
+       (:resolved-analysis boundary))),
+     :binding-table-current?
+     (= (:binding-table projections) (:binding-table artifact)),
+     :fresh-gravity-request-replay? (= :passed (:status replay)),
+     :fresh-sh02-envelope-verified? envelope-ok?,
+     :plan-binding-current?
+     (and
+      expected-plan-binding
+      (= expected-plan-binding (:plan-binding boundary))),
+     :accepted-status? (= :accepted (:status artifact)),
+     :fresh-gravity-verification? (= :passed (:status gravity-report)),
+     :dependency-graph-current?
+     (= (:dependency-graph projections) (:dependency-graph artifact)),
+     :upstream-request-binding?
+     (and
+      (=
+       (:artifact-id sh05-artifact)
+       (get-in
+        boundary
+        [:authenticated-resolution-request :module :c4-artifact-id]))
+      (=
+       (:expanded-syntax-stream-id sh05-artifact)
+       (get-in
+        boundary
+        [:authenticated-resolution-request
+         :macro-expansion-binding
+         :macro-result-id]))),
+     :trusted-semantic-components? true,
+     :authenticated-resolution-request-current?
+     (and
+      expected-request
+      (=
+       expected-request
+       (:authenticated-resolution-request boundary)))}
+    (not legacy?)
+    (assoc
+     :resolution-plan-authority-current?
+     (boolean binding)
+     :external-binding-authority-current?
+     (boolean
+      (and
+       expected-request
+       (=
+        (:authority-id (:external-binding-authority context))
+        (reader-canonical-hash
+         [:gravity/sh07-b51-c5-external-binding-authority-v1
+          (dissoc
+           (:external-binding-authority context)
+           :authority-id)]))))))
+   base-failed
+   (->>
+    base-checks
+    (keep (fn [[key passed?]] (when-not passed? key)))
+    vec)
+   expected-embedded-proof
+   (assoc
+    base-checks
+    :embedded-capability-proof-current?
+    true
+    :artifact
+    :gravity/sh06-resolution-capability-proof
+    :status
+    (if (empty? base-failed) :complete :failed)
+    :failed-checks
+    base-failed)
+   embedded-proof-current?
+   (or
+    (and construction? (nil? (:capability-based-proof artifact)))
+    (= expected-embedded-proof (:capability-based-proof artifact)))
+   checks
+   (assoc
+    base-checks
+    :embedded-capability-proof-current?
+    embedded-proof-current?)
+   failed
+   (->> checks (keep (fn [[key passed?]] (when-not passed? key))) vec)]
+  {:artifact :gravity/sh06-resolution-artifact-verification,
+   :status (if (empty? failed) :passed :failed),
+   :checks checks,
+   :failed-checks failed,
+   :source-path source-path,
+   :gravity-verification gravity-report,
+   :upstream-verification sh05-report}))
+
+(defn-
+ verify*
+ [artifact construction? context operations]
+ (let
+  [input
+   (.valAt ^clojure.lang.ILookup operations :input)
+   sh06-resolution-artifact-verification-bounded*
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-artifact-verification-bounded*)
+   sh06-resolution-boundary-keys-for
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-boundary-keys-for)
+   sh06-resolution-carrier-validation
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-carrier-validation)
+   sh06-resolution-component-validations
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-component-validations)
+   legacy?
+   (= :gravity.bootstrap/legacy context)
+   aggregate-validation
+   (sh06-resolution-carrier-validation artifact)
+   carrier-ok?
+   (= :passed (:status aggregate-validation))
+   boundary
+   (when
+    (and carrier-ok? (map? artifact))
+    (:gravity-resolution-boundary artifact))
+   shape-checks
+   {:trusted-artifact-carrier? carrier-ok?,
+    :top-level-artifact-map? (and carrier-ok? (map? artifact)),
+    :exact-artifact-shape?
+    (and
+     carrier-ok?
+     (map? artifact)
+     (= (input :sh06-resolution-artifact-keys) (set (keys artifact)))),
+    :resolution-boundary-map? (map? boundary),
+    :exact-boundary-shape?
+    (and
+     (map? boundary)
+     (=
+      (sh06-resolution-boundary-keys-for boundary)
+      (set (keys boundary))))}
+   shape-failed
+   (->>
+    shape-checks
+    (keep (fn [[key passed?]] (when-not passed? key)))
+    vec)
+   component-validations
+   (when
+    (empty? shape-failed)
+    (sh06-resolution-component-validations artifact))
+   components-ok?
+   (and
+    component-validations
+    (every?
+     (fn* [p1__158#] (= :passed (:status p1__158#)))
+     (vals component-validations)))
+   preflight-checks
+   (assoc
+    shape-checks
+    :trusted-semantic-components?
+    (boolean components-ok?))
+   preflight-failed
+   (->>
+    preflight-checks
+    (keep (fn [[key passed?]] (when-not passed? key)))
+    vec)]
+  (if
+   (empty? preflight-failed)
+   (if
+    legacy?
+    (sh06-resolution-artifact-verification-bounded*
+     artifact
+     construction?)
+    (sh06-resolution-artifact-verification-bounded*
+     artifact
+     construction?
+     context))
+   {:upstream-verification nil,
+    :failed-checks preflight-failed,
+    :checks preflight-checks,
+    :source-path "<sh06-resolution-artifact>",
+    :gravity-verification nil,
+    :component-validations component-validations,
+    :status :failed,
+    :artifact :gravity/sh06-resolution-artifact-verification,
+    :carrier-validation aggregate-validation})))
+
+(defn
+ verification-failure
+ [error]
+ {:artifact :gravity/sh06-resolution-artifact-verification,
+  :status :failed,
+  :checks {:contained-host-resource-failure? false},
+  :failed-checks [:contained-host-resource-failure?],
+  :source-path "<sh06-resolution-artifact>",
+  :contained-host-error (.getName (class error)),
+  :gravity-verification nil,
+  :upstream-verification nil})
+
+(defn-
+ verify-contained*
+ [artifact construction? context operations]
+ (let
+  [sh06-resolution-artifact-verification*
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-artifact-verification*)
+   sh06-resolution-contained-verification-failure
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-contained-verification-failure)]
+  (try
+   (if
+    (= :gravity.bootstrap/legacy context)
+    (sh06-resolution-artifact-verification* artifact construction?)
+    (sh06-resolution-artifact-verification*
+     artifact
+     construction?
+     context))
+   (catch
+    InterruptedException
+    interrupted
+    (.interrupt (Thread/currentThread))
+    (throw interrupted))
+   (catch
+    StackOverflowError
+    error
+    (sh06-resolution-contained-verification-failure error))
+   (catch
+    OutOfMemoryError
+    error
+    (sh06-resolution-contained-verification-failure error))
+   (catch
+    AssertionError
+    error
+    (sh06-resolution-contained-verification-failure error))
+   (catch
+    LinkageError
+    error
+    (sh06-resolution-contained-verification-failure error))
+   (catch
+    Exception
+    error
+    (sh06-resolution-contained-verification-failure error)))))
+
+(defn
+ verify
+ "Check a published artifact using explicit owner operations; no publication authority."
+ [artifact context operations]
+ (verify-contained* artifact false context operations))
+
 (doseq
  [operation
   [#'analysis-inputs
@@ -2724,7 +3279,12 @@
    #'semantic-span
    #'source-key
    #'source-revision-id
-   #'unique-match-binding-paths]]
+   #'unique-match-binding-paths
+   #'verification-failure
+   #'verify
+   #'verify-current*
+   #'verify*
+   #'verify-contained*]]
  (alter-meta!
   operation
   assoc
