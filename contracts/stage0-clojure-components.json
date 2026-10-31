@@ -266,6 +266,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/lowering.clj", "namespace": "gravity.lowering"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-012-p15-s23-c14-policy-base-through-p15-s23-b2-c17-expected-source-content-hash.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
       "test": {"path": "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj", "namespace": "gravity.lowering.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "package-selection",
+      "kind": "production-stage-helper",
+      "owner": "sh-package-build",
+      "source": {"path": "bootstrap/clojure/src/gravity/package.clj", "namespace": "gravity.package"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/build/package_selection.clj", "namespace": "gravity.build.package-selection", "owner": "sh-package-build"},
+      "test": {"path": "bootstrap/clojure/test/gravity/package/pipeline_test.clj", "namespace": "gravity.package.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [

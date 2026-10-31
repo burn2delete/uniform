@@ -291,10 +291,18 @@
 (def ^:private lowering-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-012-p15-s23-c14-policy-base-through-p15-s23-b2-c17-expected-source-content-hash.clj")
 (def ^:private lowering-stage-test "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj")
 
+(def ^:private package-stage-path "bootstrap/clojure/src/gravity/package.clj")
+(def ^:private package-stage-consumer "bootstrap/clojure/src/gravity/build/package_selection.clj")
+(def ^:private package-policy-consumer "bootstrap/clojure/src/gravity/build/package_policy.clj")
+(def ^:private package-stage-test "bootstrap/clojure/test/gravity/package/pipeline_test.clj")
+
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {lowering-stage-path
+    (and (= {package-stage-path
+             {:namespace 'gravity.package :owner :sh-package-build :slice "SH-23"
+              :consumer-path package-stage-consumer :test-path package-stage-test}
+             lowering-stage-path
              {:namespace 'gravity.lowering :owner :master-coordinator :slice "SH-17"
               :consumer-path lowering-stage-consumer :test-path lowering-stage-test}
              js-source-stage-path
@@ -363,6 +371,9 @@
          (= :master-coordinator (get-in record [:module-owners lowering-stage-path]))
          (= {:namespace 'gravity.lowering.pipeline-test :slice "SH-17" :owner :master-coordinator}
             (get-in record [:standalone-test-owners lowering-stage-test]))
+         (= :sh-package-build (get-in record [:module-owners package-stage-path]))
+         (= {:namespace 'gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
+            (get-in record [:standalone-test-owners package-stage-test]))
          (= :sh-target-jvm (get-in record [:module-owners jvm-source-stage-path]))
          (= {:namespace 'gravity.backend.jvm.pipeline-test :slice "SH-00" :owner :sh-target-jvm}
             (get-in record [:standalone-test-owners jvm-source-stage-test]))
@@ -468,6 +479,11 @@
               "source" {"path" lowering-stage-path "namespace" "gravity.lowering"}
               "consumer" {"path" lowering-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
               "test" {"path" lowering-stage-test "namespace" "gravity.lowering.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "package-selection" "kind" "production-stage-helper" "owner" "sh-package-build"
+              "source" {"path" package-stage-path "namespace" "gravity.package"}
+              "consumer" {"path" package-stage-consumer "namespace" "gravity.build.package-selection" "owner" "sh-package-build"}
+              "test" {"path" package-stage-test "namespace" "gravity.package.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
 
@@ -1182,6 +1198,29 @@
                  (assoc-in record [:production-helper-associations lowering-stage-path :consumer-path] "forged.clj")]]
       (is (not (production-helper-registration-valid? bad contract))))
     (doseq [bad [(assoc-in contract ["production_helpers" index "owner"] "sh-effects")
+                 (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
+                 (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest package-helper-keeps-both-build-consumers-and-the-package-owner
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "package-selection")]
+    (is (not (neg? index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [package-stage-path package-stage-consumer package-policy-consumer package-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path package-stage-consumer)) "package/select-exact #'policy/decide"))
+    (is (str/includes? (slurp (path package-policy-consumer)) "package/decide-policy request"))
+    (doseq [bad [(assoc-in record [:module-owners package-stage-path] :sh-core)
+                 (assoc-in record [:production-helper-associations package-stage-path :test-path] "forged_test.clj")
+                 (update record :standalone-test-owners dissoc package-stage-test)
+                 (assoc-in record [:production-helper-associations package-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations package-stage-path :consumer-path] "forged.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" index "owner"] "sh-core")
                  (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
