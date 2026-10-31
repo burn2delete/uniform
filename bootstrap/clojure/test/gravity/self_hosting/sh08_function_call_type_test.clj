@@ -8316,10 +8316,7 @@
       (is (= [:integral-ordering-operand-type-mismatch] (mapv :reason (:diagnostics rejected))))
       (is (nil? (get-in rejected [:binding-types :parameter])))
       (is (zero? @visits)))
-    (let [record {:function-syntax-id :callee :function-core-node-id :callee-fn
-                  :definition-binding-id :callee-binding :body-core-node-id :call
-                  :parameter-binding-ids [:arg0] :fixed-arity 1}
-          function (assoc (:callee functions) :function-core-node-id :callee-fn :body-core-node-id :call
+    (let [function (assoc (:callee functions) :function-core-node-id :callee-fn :body-core-node-id :call
                           :parameter-binding-ids [:arg0] :parameters [{:binding-id :arg0 :type :gravity.type/unknown}]
                           :return :gravity.type/unknown)
           function-node {:node-id :callee-fn :core-form :fn :children [:call]
@@ -19546,7 +19543,7 @@
                                             [call] [edge] nodes established {} {}
                                             {:ordering-core core :ordering-bindings bindings})]
         (is (= [] (:diagnostics constraints)))
-        (is (= 0 (:compatibility-work-count constraints))))
+        (is (not (contains? constraints :compatibility-work-count))))
       (doseq [evidence [(apply pr359-descriptor-body 'body-bka-evidence evidence-args)
                         (apply pr359-descriptor-emit 'p15-s23-bka-evidence evidence-args)]]
         (is (= :accepted (:status evidence)))
