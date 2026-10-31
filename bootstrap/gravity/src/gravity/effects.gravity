@@ -9802,11 +9802,7 @@
    :construction :persistent-set :payload-evaluation :none :input-preserved? true
    :duplicates :gravity-keyword-value-equality :semantic-deduplication :before-provider-insertion
    :order :unspecified :normalization :none :allocation :normal-invocation-even-empty
-   :value-work {:model :gravity/keyword-vector-set-logical-content-work-v1
-                :formula :one-plus-two-n-plus-pairs-plus-n-plus-one-times-total-units
-                :representation :jvm-utf16-code-units :limit 65536
-                :validation :all-keyword-members-before-print-compare-hash-or-insert
-                :provider-cpu-bound :not-established}})
+   :validation :all-keyword-members-before-print-compare-hash-or-insert})
 
 (defn body-st-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -9858,16 +9854,12 @@
        :operation 'set :semantic-owner 'gravity.collections :intrinsic (if invoked? :gravity.collections/persistent-set-from-string-vector :gravity.collections/persistent-set-construction)
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-       :source-call call :source-edge edge :source-binding binding :argument-types arguments :operand-type-work (get validation :work-count)
+       :source-call call :source-edge edge :source-binding binding :argument-types arguments
        :construction-policy (if invoked? {:operation :persistent-set-from-string-vector :operand-evaluation :once :operand-position :non-tail
                          :construction :persistent-set :payload-evaluation :none :input-preserved? true
                          :duplicates :gravity-string-value-equality :order :unspecified :normalization :none
                          :allocation :normal-invocation-even-empty
-                         :value-work {:model :gravity/string-set-logical-content-work-v1
-                                      :formula :one-plus-two-n-plus-n-times-total-units-plus-pairs
-                                      :representation :jvm-utf16-code-units :limit 65536
-                                      :validation :all-string-members-before-hash
-                                      :provider-cpu-bound :not-established}}
+                         :validation :all-string-members-before-hash}
                               {:operation :persistent-set-construction :operand-evaluation :once :operand-position :non-tail
                                 :transfer :aborts-invocation :invocation :not-reached :allocation :normal-invocation-even-empty})
        :application (if invoked? :normal :not-invoked)
@@ -9881,7 +9873,7 @@
           (assoc descriptor :version :sh08-keyword-set-conversion-v1
             :intrinsic :gravity.collections/persistent-set-from-keyword-vector
             :input-policy {:version :sh08-keyword-vector-set-input-v1 :family :finite-homogeneous-keyword-vector
-                           :element-type :gravity.type/keyword :maximum-input-elements 1024
+                           :element-type :gravity.type/keyword
                            :output-type :gravity.type/set :output-refinements :none}
             :construction-policy (body-st-keyword-policy)
             :invalidation (conj (get descriptor :invalidation) :input-policy)) descriptor))
@@ -15609,7 +15601,7 @@
                       :bounds :zero-le-start-le-end-le-count :operand-evaluation :receiver-then-start-then-end-once
                       :input-preserved? true :payloads :inert :allocation :normal-invocation-even-empty-or-full
                       :index-conversion :exact-in-bounded-range :check-elision :not-authorized :runtime-guards :retained
-                      :value-work :logical-element-and-integer-units :integer-precision-bound :not-established
+                      :integer-precision-bound :not-established
                       :provider-cpu-bound :not-established :provider-heap-bound :not-established}
 
        :bounds-proof proof :safety :proven-safe
@@ -15884,7 +15876,7 @@
                                                :original-latin1-scalar-string-literal :original-ascii-string-literal) :order :original
                            :normalization :none :coercion :none :utf16-splitting :forbidden
                            :operand-evaluation :once :input-preserved? true
-                           :allocation :normal-invocation-even-empty :value-work :logical-character-units
+                           :allocation :normal-invocation-even-empty
                            :provider-cpu-bound :not-established :provider-heap-bound :not-established}
        :conversion-proof proof
        :storage-policy {:allocation :may-allocate-character-vector :condition :normal-invocation
