@@ -1,12 +1,12 @@
 (ns ci.progress-test
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
-            [ci.resolution-interval-test]
             [clojure.test :as test :refer [deftest is run-tests]]))
 
 (binding [*command-line-args* nil]
   (load-file "bootstrap/clojure/test/gravity/development_test_runner.clj")
-  (load-file "tools/ci/run.clj"))
+  (load-file "tools/ci/run.clj")
+  (load-file "tools/ci/resolution_interval_test.clj"))
 (require '[gravity.development-test-runner :as runner] '[ci.run :as ci])
 
 (defn writer-fixture [edge stage error]
