@@ -15543,7 +15543,7 @@
                          :count :equal :order :corresponding-values :leaves :original-values
                          :nil-bearing :compare-original-values :cross-family :actual-value-families
                          :nested-vector-versus-atomic :false
-                         :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}
+                         :identity :unobserved :payload-evaluation :none :mutation :none :numeric :unsupported}}
                      :inequality-policy {:operation :complement-of-binary-vector-value-equality
                             :domain :finite-persistent-vectors :members :recursive-vector-and-supported-atomic
                             :operand-evaluation :left-to-right-once :operand-position :non-tail
@@ -15552,7 +15552,7 @@
                             :numeric :unsupported :collections :finite-persistent-vectors :construction :none
                             :payload-evaluation :none :mutation :none :lowering :owned-equality-branch-complement
                             :entry-contract :type-conforming-typed-calls}
-                     :invalidation (conj (conj (conj (get header :invalidation) :vector-equality) :equality-domain) :value-policy)})]
+                     :invalidation (conj (conj (conj (get header :invalidation) :vector-equality) :equality-domain) :value-policy))]
                 (if (= :flat-integer-vector (get validation :vector-comparison-domain))
                   (assoc result
                     :vector-equality (assoc (get result :vector-equality)
@@ -17306,7 +17306,7 @@
 (defn sh08-ve-domain [arguments]
   ; Positional types suffice for a value query; no constructor identity is used.
   (if (if (vector? arguments) (= 2 (count arguments)) false)
-    (loop [pending [[(get arguments 1) 0 true #{}] [(get arguments 0) 0 true #{}]]
+    (loop [pending [[(get arguments 1) 0 true []] [(get arguments 0) 0 true []]]
            integers? false nested? false sets? false]
       (if (= 0 (count pending))
         (if (if sets? true integers?)
@@ -17358,7 +17358,10 @@
                     (if (= 3 (count type))
                       (if (= :gravity.type/vector (get type :kind))
                         (if (= :literal (get type :shape)) (vector? (get type :element-types)) false) false) false) false)
-                (if (contains? seen type)
+                (if (loop [ancestors seen]
+                      (if (= 0 (count ancestors)) false
+                        (if (bootstrap-native-identical? type (first ancestors)) true
+                          (recur (rest ancestors)))))
                   {:status :rejected :reason :vector-equality-cyclic-type}
                   (let [members (get type :element-types) next-seen (conj seen type)
                         children (loop [i (- (count members) 1) out tail]
@@ -18342,8 +18345,7 @@
                 {:status :rejected :reason :vector-slice-source-mismatch})
               {:status :rejected :reason :vector-slice-source-mismatch}))
           {:status :rejected :reason :vector-slice-source-mismatch}))
-        {:status :rejected :reason :vector-slice-source-mismatch}))
-      {:status :rejected :reason :vector-slice-source-mismatch})
+        {:status :rejected :reason :vector-slice-source-mismatch})))
 
 (defn sh08-vsl-let-first-body [core let-node slice-node nodes bindings forms]
   ; The original direct-first entry retains its inputs and proof.
