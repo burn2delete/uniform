@@ -37,9 +37,13 @@
     gravity.p15-native-plan-specialization-test])
 
 (def ^:private explicitly-selectable-test-namespaces
-  (into
-   '#{gravity.darwin-publication-test}
-   (:selectable-namespaces (component-dependencies/dependency-index))))
+  ;; Low-level process/custody users may load the runner from an isolated
+  ;; selected source view. Repository catalog discovery belongs to namespace
+  ;; selection, not namespace initialization. Retain one immutable snapshot.
+  (delay
+    (into
+     '#{gravity.darwin-publication-test}
+     (:selectable-namespaces (component-dependencies/dependency-index)))))
 
 (def ^:private dedicated-test-resource
   "gravity/self_hosting")
@@ -139,7 +143,7 @@
         dedicated (dedicated-test-namespaces)
         defaults (into (vec base-test-namespaces) dedicated)
         selectable
-        (into (set defaults) explicitly-selectable-test-namespaces)]
+        (into (set defaults) @explicitly-selectable-test-namespaces)]
     (loop [remaining arguments
            mode nil
            namespaces []
