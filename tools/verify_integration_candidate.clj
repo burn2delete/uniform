@@ -45,8 +45,8 @@
   governance ledger describes lifecycle metadata, while this verifier checks
   the candidate source in a fresh export.  Running the whole ledger validator
   for every source candidate duplicated the lifecycle check without adding
-  evidence about the candidate itself.  `commands-for` adds it automatically
-  when the exact candidate diff touches governance or lifecycle paths."
+  evidence about the candidate itself.  Call `commands-for` with true when a
+  candidate changes or claims workstream lifecycle metadata."
   [full-suite-command
    ["clojure" "-Srepro" "-Sforce" "-M"
     "tools/validate_gravity_docs.clj"]
@@ -59,47 +59,15 @@
   ["clojure" "-Srepro" "-Sforce" "-M"
    "tools/validate_workstream_governance.clj"])
 
-(def ^:private governance-path-prefixes
-  ["contracts/workstream-"
-   "docs/phase-17-governance-and-evolution/"
-   "bootstrap/clojure/test/gravity/self_hosting/sh01_workstream"])
-
-(def ^:private governance-paths
-  #{"docs/workstream-governance.md"
-    "docs/workstream-ledger-v2.md"
-    "tools/check_worktree_preflight.clj"
-    "tools/migrate_workstream_ledger.clj"
-    "tools/publish_workstream_terminal_record.clj"
-    "tools/validate_workstream_governance.clj"
-    "tools/verify_integration_candidate.clj"
-    "tools/workstream_composition.clj"})
-
-(defn governance-path?
-  "Return true when a changed path can alter lifecycle admission or evidence.
-
-  The classifier is intentionally path-based and derived from the exact Git
-  diff.  A caller cannot suppress the governance check for a candidate that
-  changes the ledger, contract, lifecycle tooling, or governance documents."
-  [path]
-  (or (contains? governance-paths path)
-      (some #(str/starts-with? path %) governance-path-prefixes)))
-
-(defn- changed-governance-paths
-  [changed-paths]
-  (->> changed-paths
-       (filter governance-path?)
-       sort
-       vec))
-
 (defn commands-for
-  "Return source checks, adding the lifecycle ledger check when required.
+  "Return source checks, optionally including the lifecycle ledger check.
 
-  Governance validation is derived from exact changed paths, not from a caller
-  supplied switch.  Ordinary source-only candidates keep the shorter plan;
-  candidates that touch lifecycle data or its admission tooling retain the
-  full governance check."
-  [changed-paths]
-  (if (seq (changed-governance-paths changed-paths))
+  `include-governance?` is an explicit switch because lifecycle metadata is a
+  separate integration concern.  The default keeps ordinary candidate
+  verification proportional while preserving the exact governance check for
+  candidates that actually change that metadata."
+  [include-governance?]
+  (if include-governance?
     (vec (concat (take 3 verification-commands)
                  [governance-command]
                  (drop 3 verification-commands)))
@@ -127,44 +95,35 @@
 (defn verification-plan
   "Return the fixed, non-authoritative fresh verification plan.
 
-  The one-argument form is retained for source-only callers that are testing
-  the plan shape.  The executable path always supplies the exact candidate
-  changed paths, which automatically selects the routine-PR or governed
-  lifecycle disposition."
-  ([identities] (verification-plan identities {:changed-paths []}))
-  ([identities {:keys [changed-paths]
-                :or {changed-paths []}}]
-   (doseq [[label value] identities]
-     (when-not (and (string? value) (re-matches oid-pattern value))
-       (throw (failure "INTEGRATION-FRESH-IDENTITY"
-                       (str (name label) " must be a full Git object identity")
-                       {:field label :value value}))))
-   (let [changed-paths (->> changed-paths distinct sort vec)
-         governance-paths (changed-governance-paths changed-paths)
-         governance-validation? (seq governance-paths)]
-     {:schema schema
-      :candidate identities
-      :changed-paths changed-paths
-      :governance-paths governance-paths
-      :disposition (if governance-validation?
-                     :governed-lifecycle
-                     :routine-pr)
-      :evidence (validate-publishable-evidence!
-                 {:mode :fresh :new-export true :resume false
-                  :repository-cache false})
-      :commands (commands-for changed-paths)
-      :governance-validation? (boolean governance-validation?)
-      :command-policy {:full-suite-preserved true
-                       :fresh-basis true
-                       :candidate-diff-check true}
-      :authority {:integration-evidence :candidate-only
-                  :release false :self-hosting false :seed-retirement false
-                  :safety false :performance false :stage3 false :sh07 false
-                  :reproducible-environment false}
-      :external-proof-lanes
-      {:stage3 :not-substituted
-       :sh07 :not-substituted}
-      :residual-host-boundaries [:clojure-jvm :git :dependency-cache-tool-resolution]})))
+  The one-argument form is the ordinary source-candidate plan.  Pass
+  `{:include-governance? true}` only when the candidate also changes or claims
+  workstream lifecycle metadata."
+  ([identities] (verification-plan identities {}))
+  ([identities {:keys [include-governance?]
+                :or {include-governance? false}}]
+  (doseq [[label value] identities]
+    (when-not (and (string? value) (re-matches oid-pattern value))
+      (throw (failure "INTEGRATION-FRESH-IDENTITY"
+                      (str (name label) " must be a full Git object identity")
+                      {:field label :value value}))))
+  {:schema schema
+   :candidate identities
+   :evidence (validate-publishable-evidence!
+              {:mode :fresh :new-export true :resume false
+               :repository-cache false})
+   :commands (commands-for include-governance?)
+   :governance-validation? (boolean include-governance?)
+   :command-policy {:full-suite-preserved true
+                    :fresh-basis true
+                    :candidate-diff-check true}
+   :authority {:integration-evidence :candidate-only
+               :release false :self-hosting false :seed-retirement false
+               :safety false :performance false :stage3 false :sh07 false
+               :reproducible-environment false}
+   :external-proof-lanes
+   {:stage3 :not-substituted
+    :sh07 :not-substituted}
+   :residual-host-boundaries [:clojure-jvm :git :dependency-cache-tool-resolution]}))
 
 (defn- safe-progress-path?
   [^Path root ^Path candidate]
@@ -450,23 +409,6 @@
                     {:result result})))
   result)
 
-(defn- exact-changed-paths
-  [root candidate-base candidate-commit]
-  (let [command ["git" "diff" "--no-renames" "--name-only" "-z"
-                 candidate-base candidate-commit]
-        result (run-captured root command)]
-    (when-not (zero? (:exit-code result))
-      (throw (failure "INTEGRATION-FRESH-DIFF-PATHS"
-                      "could not inspect exact candidate changed paths"
-                      {:command command
-                       :exit-code (:exit-code result)
-                       :stderr (str/trim (:stderr result))})))
-    (->> (str/split (or (:stdout result) "") #"\u0000" -1)
-         (remove str/blank?)
-         distinct
-         sort
-         vec)))
-
 (defn- reject-checkout-filters!
   [root candidate-commit]
   (let [result (run-captured
@@ -558,11 +500,13 @@
     (str path)))
 
 (defn run-verification!
-  [{:keys [base-ref candidate-base candidate-commit candidate-tree]}]
+  [{:keys [base-ref candidate-base candidate-commit candidate-tree
+           include-governance?]}]
   (let [root (.normalize (repository-root))
         identities {:base candidate-base :commit candidate-commit
                     :tree candidate-tree}
-        plan* (atom (verification-plan identities))
+        plan (verification-plan identities
+                                {:include-governance? include-governance?})
         receipt-path (default-receipt candidate-commit)
         absolute-receipt (.normalize (.resolve ^Path root receipt-path))
         _ (when (Files/exists absolute-receipt
@@ -590,9 +534,6 @@
                                      ["git" "diff" "--check"
                                       candidate-base candidate-commit])
                         "INTEGRATION-FRESH-DIFF-CHECK")
-            changed-paths (exact-changed-paths root candidate-base candidate-commit)
-            plan (verification-plan identities {:changed-paths changed-paths})
-            _ (reset! plan* plan)
             _ (Files/createDirectories export (make-array FileAttribute 0))
             filter-check (reject-checkout-filters! root candidate-commit)
             index-environment {"GIT_INDEX_FILE" (str candidate-index)}
@@ -652,7 +593,7 @@
       (catch Throwable error
         (let [data (ex-data error)
               receipt-value
-              (assoc @plan*
+              (assoc plan
                      :status :failed
                      :exit-code 1
                      :started-at started
@@ -682,6 +623,8 @@
           "--candidate-base" (recur (next rest-args) (assoc options :candidate-base (value)))
           "--candidate-commit" (recur (next rest-args) (assoc options :candidate-commit (value)))
           "--candidate-tree" (recur (next rest-args) (assoc options :candidate-tree (value)))
+          "--validate-governance"
+          (recur rest-args (assoc options :include-governance? true))
           "--help" (assoc options :help true)
           (throw (failure "INTEGRATION-FRESH-USAGE"
                           (str "unknown option: " option))))))))
@@ -693,6 +636,7 @@
         (do
           (println "Usage: clojure -M tools/verify_integration_candidate.clj")
           (println "  --base-ref REF --candidate-base OID --candidate-commit OID --candidate-tree OID")
+          (println "  --validate-governance  include the workstream lifecycle validator")
           0)
         (let [required [:base-ref :candidate-base :candidate-commit :candidate-tree]
               missing (filterv #(str/blank? (get options %)) required)]

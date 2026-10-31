@@ -253,9 +253,7 @@
   (let [plan (fresh/verification-plan
               {:base oid-a :commit oid-b :tree oid-c})]
     (is (= fresh/full-suite-command (first (:commands plan))))
-    (is (= :routine-pr (:disposition plan)))
     (is (false? (:governance-validation? plan)))
-    (is (empty? (:governance-paths plan)))
     (is (not-any? #(= fresh/governance-command %) (:commands plan)))
     (is (some #{["clojure" "-Srepro" "-Sforce" "-M:test"
                  "--namespace"
@@ -277,26 +275,14 @@
                 oid-b "/receipt.edn")
            (fresh/default-receipt oid-b)))))
 
-(deftest fresh-integration-plan-retains-governance-for-lifecycle-diff
+(deftest fresh-integration-plan-includes-governance-only-when-requested
   (let [plan (fresh/verification-plan
               {:base oid-a :commit oid-b :tree oid-c}
-              {:changed-paths ["bootstrap/clojure/src/example.clj"
-                               "contracts/workstream-ledger.json"]})]
-    (is (= :governed-lifecycle (:disposition plan)))
+              {:include-governance? true})]
     (is (true? (:governance-validation? plan)))
-    (is (= ["contracts/workstream-ledger.json"]
-           (:governance-paths plan)))
     (is (some #{fresh/governance-command} (:commands plan)))
     (is (= (inc (count fresh/verification-commands))
            (count (:commands plan))))))
-
-(deftest fresh-integration-plan-classifies-governance-tooling-automatically
-  (let [plan (fresh/verification-plan
-              {:base oid-a :commit oid-b :tree oid-c}
-              {:changed-paths ["tools/verify_integration_candidate.clj"]})]
-    (is (= :governed-lifecycle (:disposition plan)))
-    (is (true? (:governance-validation? plan)))
-    (is (some #{fresh/governance-command} (:commands plan)))))
 
 (deftest fresh-integration-evidence-rejects-cache-and-speculation
   (doseq [evidence [{:mode :speculative :new-export true

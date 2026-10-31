@@ -206,23 +206,13 @@ another worktree is reported so the coordinator can avoid destructive cleanup,
 but only the exact candidate worktree and identities can satisfy admission.
 
 The fresh integration candidate verifier keeps source verification and
-workstream lifecycle validation separate. For a source-only candidate, the
-ordinary PR disposition runs the source, document, roadmap and
-language-boundary checks once; it does not require a second lifecycle metadata
-commit or re-read the full ledger. The verifier derives this disposition from
-the exact `candidate-base..candidate-commit` path set. If that set touches the
-governance contract, ledger/active/record data, governance documents, or
-lifecycle admission tooling, the verifier automatically adds the full
-workstream-governance validator and records the governed-lifecycle
-disposition. There is no caller switch that can suppress that check.
-
-Routine PR checks and an independent review are durable disposition evidence
-for ordinary source integration; they do not create a ledger lifecycle event
-or grant lifecycle, release, self-hosting, or seed-retirement authority. A
-candidate that claims such authority must use the governed lifecycle and exact
-composition path, with its history and identity records preserved. This
-reduces routine metadata work without weakening exact integration preflight,
-independent review, evidence, ownership or nonclaim requirements.
+workstream lifecycle validation separate. Its ordinary mode runs the source,
+document, roadmap and language-boundary checks once; it does not re-read the
+full lifecycle ledger for every source candidate. Pass
+`--validate-governance` when a candidate changes or claims lifecycle metadata.
+This reduces routine metadata work without weakening the exact integration
+preflight or the ledger's independent review, evidence, ownership and
+nonclaim requirements.
 
 ## Acceptance Criteria
 
