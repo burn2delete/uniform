@@ -194,6 +194,22 @@
       "source": {"path": "bootstrap/clojure/src/gravity/types.clj", "namespace": "gravity.types"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/c7_type_checker/inference.clj", "namespace": "gravity.c7-type-checker.inference", "owner": "sh-types"},
       "test": {"path": "bootstrap/clojure/test/gravity/c7_type_checker_test.clj", "namespace": "gravity.c7-type-checker-test", "registration": "bootstrap-free"}
+    },
+    {
+      "id": "mir-control-flow",
+      "kind": "production-stage-helper",
+      "owner": "sh-mir",
+      "source": {"path": "bootstrap/clojure/src/gravity/mir.clj", "namespace": "gravity.mir"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj", "namespace": "gravity.bootstrap", "owner": "sh-mir"},
+      "test": {"path": "bootstrap/clojure/test/gravity/mir/pipeline_test.clj", "namespace": "gravity.mir.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "runtime-invocation",
+      "kind": "production-stage-helper",
+      "owner": "sh-runtime",
+      "source": {"path": "bootstrap/clojure/src/gravity/runtime.clj", "namespace": "gravity.runtime"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj", "namespace": "gravity.bootstrap", "owner": "sh-runtime"},
+      "test": {"path": "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj", "namespace": "gravity.runtime.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
