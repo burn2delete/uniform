@@ -1,9 +1,13 @@
 # Effectful Reader connection to the lexical build scope
 
-Conditional interface input: `aa03d20d938926a98b591e2b26c3b00e510e8bf9`,
-tree `827d44da0348744ac09bc7e46088371bdef9c0ce`. That issuer/bridge candidate
-is awaiting independent review; this note grants it no acceptance. The frozen
-pure Reader, CI oracle correction and effectful issuer branches are not edited.
+Interface input: `aa03d20d938926a98b591e2b26c3b00e510e8bf9`,
+tree `827d44da0348744ac09bc7e46088371bdef9c0ce`. Its independent source/model
+PASS receipt has SHA256
+`57bb900a4c46d1c941072eda4e0616ce214742c5e7682f635267085013525c07`
+(211 checks, 57 negative controls). That acceptance does not establish a
+normal producer or runtime capability. The separate module/callee amendment
+remains conditional on its affected review. The frozen pure Reader, CI oracle
+correction and effectful issuer branches are not edited.
 
 ## First actual source action
 
@@ -130,10 +134,58 @@ mixed-population definitions are preserved; no duplicate fixture set is added.
 No source above is claimed to be a working normal effectful constructor. No
 actual CLI, Bootstrap/Reader load, Gravity execution, provider IO, process,
 lease, probe, 6343 operation, publication or review dispatch was performed.
-The issuer candidate is unaccepted; the original genuine goal remains blocked.
+The issuer has only the source/model acceptance stated above; the original
+genuine goal remains blocked.
 
 Local validation: handler source models passed 2 tests / 11 assertions;
 language boundary passed 6 / 11; direct test-source lint reports no errors or
 warnings. Document and full-language roadmap structural validators passed.
 These checks do not compile a handler plan or establish the actual normal
 producer/form/request-to-scope connection.
+
+## Pure resource preparation source increment
+
+The successor to handler cut `ba461f4125d006380d653647d609b8e6fdfeedb0`
+adds actual Gravity definitions `reader-prepare-resources` and
+`reader-verify-resource-preparation` to the existing pure Reader source.
+Preparation invokes the original decoder, scanner and parser on original
+source bytes under a fixed, separate resource-only preparation policy. It
+derives every resource form, payload identity, span, raw spelling and decoded
+logical input before returning any population. Unknown tags, malformed payloads
+and empty logical inputs reject the entire preparation. Ordinary forms remain
+in the complete parsed graph. No resource handler is invoked.
+
+The pending product includes the original source unit, bytes, policy, tokens,
+parsed graph and complete resource population. It is not a C2 result, an
+invocation record, a resolved digest or authority to read. Verification freshly
+reconstructs it from the original unit and bytes and compares the complete
+product. A rejected preparation cannot verify, including against itself.
+No caller-supplied parsed graph, policy or population is a producer input.
+
+The existing plan builder and structural validator include exactly the three
+new semantic function names (including `reader-resource-forms`), alongside
+their historical `sh03-*` selection. Module and function effects/capabilities
+remain empty. Existing standard/pure policy validation does not admit this
+preparation policy, and ordinary `sh03-read-source-unit` does not gain resource
+execution. Pinned migration identities are unchanged and stale for this new
+source; development-current construction and migration acceptance remain
+separate under the governing development verification contract.
+
+The source models inject decoder/scanner/parser ports and execute only selected
+Gravity definitions as Clojure. They do not execute the actual Reader parser,
+compile a plan or run Gravity. With the frozen handler models they passed
+8 tests / 81 assertions, including full product mutation, original byte/unit
+changes, distinct occurrences, late invalid forms, payload legality, error propagation and the actual
+plan-builder selection expression. Language boundary passed 6 / 11; focused
+test lint has no errors or warnings; document and roadmap structural validators
+passed. This is local evidence, not independent acceptance.
+
+The normal command link is still unavailable. The next source changes must
+compile the separate effectful plan from `gravity.reader`, use the original live
+grant to preflight the entire freshly verified preparation, execute every
+original scoped handler occurrence, and join actual returned seeds into raw
+C2 result, digest, adapter and envelope construction. Fresh verification must
+repeat the original preparation and use the original issuer receipt lookup in
+verification mode. Those operations are not implemented or evidenced by this
+preparation cut. No actual provider/store read or held local runtime operation,
+publication, CI trigger, review dispatch or new worker occurred.

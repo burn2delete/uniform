@@ -55,8 +55,11 @@
         (into
          (sorted-map)
          (filter (fn [[function-name _]]
-                   (str/starts-with? (name function-name)
-                                     sh03-reader-function-prefix)))
+                   (or (str/starts-with? (name function-name)
+                                         sh03-reader-function-prefix)
+                       (contains? '#{reader-resource-forms reader-prepare-resources
+                                      reader-verify-resource-preparation}
+                                  function-name))))
          all-functions)
         module (assoc module-base :function-table selected-functions)
         emitter-binding

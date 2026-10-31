@@ -42,8 +42,11 @@
                    (= 4 (get-in functions [sh03-reader-verifier :arity]))) true)
             (every?
              (fn [[function-name function]]
-               (and (str/starts-with? (name function-name)
-                                      sh03-reader-function-prefix)
+               (and (or (str/starts-with? (name function-name)
+                                          sh03-reader-function-prefix)
+                        (contains? '#{reader-resource-forms reader-prepare-resources
+                                       reader-verify-resource-preparation}
+                                   function-name))
                     (= sh03-reader-function-keys
                        (set (keys function)))
                     (= function-name (:name function))
