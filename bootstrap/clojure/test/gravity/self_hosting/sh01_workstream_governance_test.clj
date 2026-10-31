@@ -253,6 +253,8 @@
   (let [plan (fresh/verification-plan
               {:base oid-a :commit oid-b :tree oid-c})]
     (is (= fresh/full-suite-command (first (:commands plan))))
+    (is (false? (:governance-validation? plan)))
+    (is (not-any? #(= fresh/governance-command %) (:commands plan)))
     (is (some #{["clojure" "-Srepro" "-Sforce" "-M:test"
                  "--namespace"
                  "gravity.self-hosting.sh01-language-boundary-test"]}
@@ -272,6 +274,15 @@
     (is (= (str "target/validation/integration-fresh-verification/"
                 oid-b "/receipt.edn")
            (fresh/default-receipt oid-b)))))
+
+(deftest fresh-integration-plan-includes-governance-only-when-requested
+  (let [plan (fresh/verification-plan
+              {:base oid-a :commit oid-b :tree oid-c}
+              {:include-governance? true})]
+    (is (true? (:governance-validation? plan)))
+    (is (some #{fresh/governance-command} (:commands plan)))
+    (is (= (inc (count fresh/verification-commands))
+           (count (:commands plan))))))
 
 (deftest fresh-integration-evidence-rejects-cache-and-speculation
   (doseq [evidence [{:mode :speculative :new-export true
