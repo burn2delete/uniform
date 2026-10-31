@@ -86,6 +86,12 @@
          #'sh06-resolution-semantic-span
          #'sh06-resolution-special-symbols
          #'sh06-resolution-type-symbols
+         #'gravity.resolution/dependency-record
+         #'gravity.resolution/explicit-candidate-records
+         #'gravity.resolution/import-binding-records
+         #'gravity.resolution/import-records
+         #'sh06-resolution-dependency-record
+         #'source-span
          #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
          #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*

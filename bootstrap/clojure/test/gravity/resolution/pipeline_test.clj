@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 20 (count publics)))
+    (is (= 24 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -128,6 +128,101 @@
     (is (= :first (:identity (resolution/candidate-for overrides 'one 'x))))
     (is (= :other (:identity (resolution/candidate-for overrides 'two 'x))))
     (is (nil? (resolution/candidate-for overrides 'one 'missing)))))
+
+(deftest dependency-records-preserve-explicit-boundary-facts
+  ;; Supplied declarations exercise record normalization, not module admission.
+  (let [ops (operations)
+        module {:module 'example.consumer :profile :meta :target :jvm}
+        required {:module 'example.library :alias 'library :refer ['value]
+                  :profile :core :effects #{:io/read} :capabilities #{:io/input}}
+        imported {:module 'foreign.library :alias 'foreign :kind :import
+                  :boundary :typed-ffi :visibility :private}
+        overrides {:candidate-bindings [{:namespace 'example.library :name 'value
+                                         :target :wasm :visibility :private
+                                         :capabilities #{:library/read}}
+                                        {:namespace 'example.library :name 'later
+                                         :target :llvm :visibility :public}]}
+        records (resolution/import-records source (assoc module :requires [required] :imports [imported]) overrides ops)
+        [namespace-record foreign-record] records]
+    (is (= ['example.library 'foreign.library] (mapv :namespace records)))
+    (is (= ['library 'foreign] (mapv :alias records)))
+    (is (= [:namespace :foreign] (mapv :kind records)))
+    (is (= :core (:profile namespace-record)))
+    (is (= [:wasm] (:targets namespace-record)))
+    (is (= [:library/read] (:capabilities namespace-record)))
+    (is (= [:io/read] (:effects namespace-record)))
+    (is (= :private (:visibility namespace-record)))
+    (is (= :pure-core-api (:boundary namespace-record)))
+    (is (= ['value] (:refer namespace-record)))
+    (is (= [:safe :boundary-checked] (mapv :safety records)))
+    (is (= :typed-ffi (:boundary foreign-record)))
+    (is (= :meta (:profile foreign-record)))
+    (is (= [:jvm] (:targets foreign-record)))
+    (is (= [0 1] (mapv #(get-in % [:semantic-span :dependency-ordinal]) records)))
+    (is (every? :foreign-record-complete? records))
+    (is (= (:source-span namespace-record) (:source-span foreign-record)))
+    (doseq [bad [(dissoc imported :alias) (dissoc imported :boundary)
+                 (assoc imported :module "not-a-symbol")]]
+      (is (false? (boolean (:foreign-record-complete?
+                           (resolution/dependency-record source module bad {} 0 ops))))))
+    (is (= records (resolution/import-records source (assoc module :requires [required] :imports [imported])
+                                             (into (array-map) (reverse (seq overrides))) ops)))
+    (is (not= (:dependency-artifact-id namespace-record)
+              (:dependency-artifact-id
+               (resolution/dependency-record source module (assoc required :boundary :schema) overrides 0 ops))))))
+
+(deftest import-and-explicit-bindings-retain-precedence-and-provenance
+  (let [ops (operations)
+        module {:module 'example.consumer :source-path source :profile :meta :target :jvm
+                :requires [{:refer ['referred]}] :imports []}
+        dependency {:namespace 'example.library :kind :namespace :refer ['referred]
+                    :profile :core :targets [:wasm] :visibility :private
+                    :effects [:io/read] :capabilities [:library/read] :safety :safe
+                    :source-span {:source source :form-index 0} :dependency-artifact-id "dependency-id"}
+        candidates [{:namespace 'example.library :name 'referred :visibility :public
+                     :target-set [:llvm] :capabilities [:candidate/read]}
+                    {:namespace 'example.library :name 'explicit :visibility :private}
+                    {:namespace 'example.library :name 'explicit :visibility :public}
+                    {:namespace 'other.library :name 'unrelated}]
+        bindings (resolution/import-binding-records module [dependency] {:candidate-bindings candidates} ops)
+        [referred explicit] bindings]
+    (is (= ['referred 'explicit] (mapv :name bindings)))
+    (is (= [:public :private] (mapv :visibility bindings)))
+    (is (= [:llvm] (:target-set referred)))
+    (is (= [:candidate/read] (:capabilities referred)))
+    (is (= [:library/read] (:capabilities explicit)))
+    (is (= [:core] (:profile-set referred)))
+    (is (= [:io/read] (:effects referred)))
+    (is (= :gravity.type/imported-var (:type-ref referred)))
+    (is (= {:name 'example.library :version "workspace"} (:package referred)))
+    (is (= [0 1] (mapv #(get-in % [:semantic-span :binding-ordinal]) bindings)))
+    (is (every? #(= :import (:binding-class %)) bindings))
+    (is (every? #(= "dependency-id" (:definition-artifact-id %)) bindings))
+    (is (every? #(= (:source-span dependency) (:source-span %)) bindings))
+    (is (= 2 (count (set (map :definition-syntax-id bindings)))))
+    (let [foreign (first (resolution/import-binding-records nil [(assoc dependency :kind :foreign)] {} ops))]
+      (is (= [:foreign :gravity.interop/foreign-value] ((juxt :kind :type-ref) foreign))))
+    (let [parent {:artifact-id "expanded-parent"}
+          overrides {:candidate-bindings [{:name 'referred :namespace 'example.library}
+                                          {:name 'local-candidate :kind :function}
+                                          {:name 'qualified :namespace 'other.library :profile :core
+                                           :target-set [:wasm] :effects [:io/read]
+                                           :capabilities [:library/read] :visibility :private}]}
+          explicit-records (resolution/explicit-candidate-records module parent overrides ops)
+          [local qualified] explicit-records]
+      (is (= ['local-candidate 'qualified] (mapv :name explicit-records)))
+      (is (= ['example.consumer 'other.library] (mapv :namespace explicit-records)))
+      (is (= [:function :var] (mapv :kind explicit-records)))
+      (is (= [[:meta] [:core]] (mapv :profile-set explicit-records)))
+      (is (= [[:jvm] [:wasm]] (mapv :target-set explicit-records)))
+      (is (= :private (:visibility qualified)))
+      (is (= [:io/read] (:effects qualified)))
+      (is (= [:library/read] (:capabilities qualified)))
+      (is (= [0 1] (mapv #(get-in % [:semantic-span :explicit-candidate]) explicit-records)))
+      (is (= :safe (:safety local)))
+      (is (not= (:definition-artifact-id local)
+                (:definition-artifact-id
+                 (first (resolution/explicit-candidate-records module {:artifact-id "changed-parent"} overrides ops))))))))
 
 (deftest actual-source-emits-bindings-and-rejects-an-unresolved-reference
   (let [artifact @real-artifact binding (real-binding) ops (operations)
@@ -344,7 +439,9 @@
         expected (set (concat (vals (ns-publics 'gravity.resolution))
                               [(seed-var 'resolution-stage-operations)
                                (seed-var 'resolution-stage-defaults)
-                               (seed-var 'resolution-stage-input)]))]
+                               (seed-var 'resolution-stage-input)
+                               (seed-var 'sh06-resolution-dependency-record)
+                               (seed-var 'source-span)]))]
     ;; Isolate the existing readonly drift seam; no parent/owner admission runs.
     (with-redefs-fn
       {environment (fn [] (swap! reads inc) {})}

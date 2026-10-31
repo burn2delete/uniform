@@ -22,6 +22,10 @@
       :sh06-resolution-boundary-fail!
       :sh06-resolution-build-binding!
       :sh06-resolution-current-source-key]},
+    dependency-record
+    {:arglists
+     ([source-path module dependency overrides ordinal operations]),
+     :operation-inputs [:reader-canonical-hash :source-span]},
     execute!
     {:arglists ([source-path binding function arguments operations]),
      :operation-inputs
@@ -50,6 +54,10 @@
      [:input
       :sh06-resolution-boundary-fail!
       :sh06-resolution-read-current-source!]},
+    import-binding-records
+    {:arglists ([_module imports overrides operations]),
+     :operation-inputs
+     [:reader-canonical-hash :sh06-resolution-package]},
     package-record {:arglists ([namespace]), :operation-inputs []},
     source-key
     {:arglists ([operations]),
@@ -65,6 +73,10 @@
     source-revision-id
     {:arglists ([sh05-artifact operations]),
      :operation-inputs [:reader-canonical-hash]},
+    explicit-candidate-records
+    {:arglists ([module sh05-artifact overrides operations]),
+     :operation-inputs
+     [:reader-canonical-hash :sh06-resolution-package :source-span]},
     resolve-source-path
     {:arglists ([operations]),
      :operation-inputs
@@ -90,6 +102,9 @@
       :sh06-resolution-plan-identities
       :sh06-resolution-read-current-source!
       :sha256-hex]},
+    import-records
+    {:arglists ([source-path module overrides operations]),
+     :operation-inputs [:sh06-resolution-dependency-record]},
     core-record
     {:arglists ([symbol kind ordinal operations]),
      :operation-inputs [:input :reader-canonical-hash]}},
@@ -112,6 +127,7 @@
     :sh06-resolution-core-record
     :sh06-resolution-current-source-key
     :sh06-resolution-definition-kind
+    :sh06-resolution-dependency-record
     :sh06-resolution-package
     :sh06-resolution-plan-identities
     :sh06-resolution-read-current-source!
@@ -158,7 +174,9 @@
     :resolution-requests
     :expanded-syntax
     :module-declarations
-    :core-catalog],
+    :core-catalog
+    :module-dependencies
+    :candidate-bindings],
    :namespace gravity.resolution,
    :diagnostic-ownership
    {:stage [:source-plan-boundary :host-containment],
@@ -172,7 +190,10 @@
     :declaration-records
     :core-binding-records
     :package-records
-    :upstream-references],
+    :upstream-references
+    :dependency-records
+    :import-binding-records
+    :explicit-declaration-records],
    :clojure-seed-boundary? true,
    :contract-boundary
    :gravity-resolution-normalization-and-plan-runtime})
@@ -920,6 +941,215 @@
      (= name (:name p1__152#))))
    (:candidate-bindings overrides))))
 
+
+(defn
+ dependency-record
+ [source-path module dependency overrides ordinal operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   source-span
+   (.valAt ^clojure.lang.ILookup operations :source-span)
+   namespace
+   (:module dependency)
+   alias
+   (:alias dependency)
+   referred
+   (vec (:refer dependency))
+   candidate
+   (or
+    (first
+     (filter
+      (fn* [p1__239#] (= namespace (:namespace p1__239#)))
+      (:candidate-bindings overrides)))
+    {})
+   declared-target
+   (or (:target candidate) (first (:target-set candidate)))
+   targets
+   (if declared-target [declared-target] [(:target module)])
+   foreign?
+   (= :import (:kind dependency))
+   semantic-span
+   {:dependency-ordinal ordinal, :namespace namespace, :alias alias}]
+  {:capabilities
+   (vec
+    (sort (or (:capabilities candidate) (:capabilities dependency)))),
+   :source-span (source-span source-path 0),
+   :foreign-record-complete?
+   (if
+    foreign?
+    (and
+     (symbol? namespace)
+     (symbol? alias)
+     (some? (:boundary dependency)))
+    true),
+   :boundary
+   (or
+    (:boundary dependency)
+    (when (= :core (:profile dependency)) :pure-core-api)),
+   :targets targets,
+   :alias alias,
+   :effects (vec (sort (:effects dependency))),
+   :safety (if foreign? :boundary-checked :safe),
+   :kind (if foreign? :foreign :namespace),
+   :semantic-span semantic-span,
+   :namespace namespace,
+   :visibility
+   (or (:visibility candidate) (:visibility dependency) :public),
+   :profile (or (:profile dependency) (:profile module)),
+   :dependency-artifact-id
+   (reader-canonical-hash
+    {:domain :gravity/sh06-dependency-artifact-v1,
+     :namespace namespace,
+     :profile (:profile dependency),
+     :targets targets,
+     :boundary (:boundary dependency)}),
+   :refer referred}))
+
+(defn
+ import-records
+ [source-path module overrides operations]
+ (let
+  [sh06-resolution-dependency-record
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-dependency-record)]
+  (mapv
+   (fn
+    [ordinal dependency]
+    (sh06-resolution-dependency-record
+     source-path
+     module
+     dependency
+     overrides
+     ordinal))
+   (range)
+   (concat (:requires module) (:imports module)))))
+
+(defn
+ import-binding-records
+ [_module imports overrides operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-package
+   (.valAt ^clojure.lang.ILookup operations :sh06-resolution-package)]
+  (vec
+   (mapcat
+    (fn
+     [ordinal dependency]
+     (let
+      [explicit
+       (filter
+        (fn*
+         [p1__240#]
+         (= (:namespace dependency) (:namespace p1__240#)))
+        (:candidate-bindings overrides))
+       names
+       (distinct (concat (:refer dependency) (map :name explicit)))
+       candidates-by-name
+       (group-by :name explicit)]
+      (map-indexed
+       (fn
+        [name-ordinal name]
+        (let
+         [candidate (first (get candidates-by-name name))]
+         {:capabilities
+          (or
+           (some-> candidate :capabilities vec)
+           (:capabilities dependency)),
+          :package (sh06-resolution-package (:namespace dependency)),
+          :source-span (:source-span dependency),
+          :name name,
+          :target-set
+          (or
+           (some-> candidate :target-set vec)
+           (:targets dependency)),
+          :type-ref
+          (if
+           (= :foreign (:kind dependency))
+           :gravity.interop/foreign-value
+           :gravity.type/imported-var),
+          :definition-artifact-id (:dependency-artifact-id dependency),
+          :effects (:effects dependency),
+          :safety (:safety dependency),
+          :kind (if (= :foreign (:kind dependency)) :foreign :var),
+          :semantic-span
+          {:dependency-ordinal ordinal,
+           :binding-ordinal name-ordinal,
+           :namespace (:namespace dependency),
+           :name name},
+          :definition-syntax-id
+          (reader-canonical-hash
+           {:domain :gravity/sh06-import-binding-syntax-v1,
+            :dependency-id (:dependency-artifact-id dependency),
+            :name name}),
+          :profile-set [(:profile dependency)],
+          :namespace (:namespace dependency),
+          :visibility
+          (or
+           (:visibility candidate)
+           (:visibility dependency)
+           :public),
+          :binding-class :import}))
+       names)))
+    (range)
+    imports))))
+
+(defn
+ explicit-candidate-records
+ [module sh05-artifact overrides operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-package
+   (.valAt ^clojure.lang.ILookup operations :sh06-resolution-package)
+   source-span
+   (.valAt ^clojure.lang.ILookup operations :source-span)
+   existing-import-names
+   (set (mapcat :refer (concat (:requires module) (:imports module))))]
+  (->>
+   (:candidate-bindings overrides)
+   (remove
+    (fn*
+     [p1__241#]
+     (contains? existing-import-names (:name p1__241#))))
+   (map-indexed
+    (fn
+     [ordinal candidate]
+     {:capabilities (vec (or (:capabilities candidate) [])),
+      :package
+      (sh06-resolution-package
+       (or (:namespace candidate) (:module module))),
+      :source-span (source-span (:source-path module) 0),
+      :name (:name candidate),
+      :target-set
+      (vec (or (:target-set candidate) [(:target module)])),
+      :type-ref :gravity.type/value,
+      :definition-artifact-id
+      (reader-canonical-hash
+       {:domain :gravity/sh06-explicit-candidate-artifact-v1,
+        :owner-artifact-id (:artifact-id sh05-artifact),
+        :ordinal ordinal,
+        :candidate candidate}),
+      :effects (vec (or (:effects candidate) [])),
+      :safety :safe,
+      :kind (or (:kind candidate) :var),
+      :semantic-span
+      {:explicit-candidate ordinal,
+       :name (:name candidate),
+       :namespace (:namespace candidate)},
+      :definition-syntax-id
+      (reader-canonical-hash
+       {:domain :gravity/sh06-explicit-candidate-v1,
+        :ordinal ordinal,
+        :candidate candidate}),
+      :profile-set [(or (:profile candidate) (:profile module))],
+      :namespace (or (:namespace candidate) (:module module)),
+      :visibility (or (:visibility candidate) :public),
+      :binding-class :namespace}))
+   vec)))
+
 (doseq
  [operation
   [#'binding-current!
@@ -931,8 +1161,12 @@
    #'current-plan-binding!
    #'definition-kind
    #'definition-records
+   #'dependency-record
    #'envelope-id
    #'execute!
+   #'explicit-candidate-records
+   #'import-binding-records
+   #'import-records
    #'package-record
    #'plan-identities
    #'read-current-source!

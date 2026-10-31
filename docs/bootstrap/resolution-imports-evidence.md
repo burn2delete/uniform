@@ -30,3 +30,10 @@ legacy C5 engine remain outside this increment. This work grants no complete
 resolution, authoritative migration, Reader admission, release, performance,
 self-hosting or seed-retirement support. The stacked prerequisite slices must
 clear their own integration gates before this successor can integrate.
+
+The stage cold-loads 24 public APIs without Bootstrap. Direct lint reports
+zero errors/warnings. Four focused tests passed 4 / 133, covering API metadata,
+dependency/import fields, candidate precedence, source origins and construction
+dependency drift. An initial test-reader delimiter error was corrected before
+that pass. The language boundary passed 6 / 11; final regression, artifact
+comparison and independent acceptance remain pending.
