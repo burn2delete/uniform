@@ -8,7 +8,7 @@ Authority transfer baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
 
 This is the sole editable Syntax implementation task ledger. The roadmap's
 [remaining work](../../docs/component-roadmaps/syntax.md#current-evidence-and-remaining-work)
-is a generated compatibility view. Order is display order, not a dependency
+is a navigation view. Order is display order, not a dependency
 edge. Stable IDs preserve the phase/title identity convention; legacy syntax/N
 labels remain unchanged display metadata, not new implementation names.
 Unchecked means not accepted complete. A checked task requires explicit

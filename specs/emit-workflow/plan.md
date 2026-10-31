@@ -32,45 +32,30 @@ IDs, display labels, exact evidence/status and concrete exit criteria. Keep the
 complete original migration task file as a frozen suffix with unchanged
 checkboxes. Workflow delivery stays separate from implementation completion.
 
-`tools/emit_task_projection.clj` uses the accepted shared pure parser and strict
-HTTPS-only policy unchanged. It accepts only --check or --write and validates
-all records before writing only its fixed roadmap table. No caller-selected
-paths, discovery, registry or syntax allowance is added. The focused test covers
-projection and structural/CLI rejection controls.
-
-Own seven files: roadmap, four workflow artifacts and focused tool/test. No
+Own the roadmap and four workflow artifacts. No
 compiler/runtime source/test, other package, mapping artifact or shared helper
 is edited. The source plan blob `d62412306c4a726aa9c077a1abd0b72158c55677`
 contains no Additional contract interfaces appendix; preserve B13/B14 and all
-original navigation without creating an appendix. Removing only added task
-navigation/markers must reconstruct the whole original roadmap, preserving
-selected-target, hosted, producer/admission, accounting, conformance,
-compatibility, wider-artifact and acceptance wording.
+original navigation without creating an appendix. Preserve selected-target,
+hosted, producer/admission, accounting, conformance, compatibility,
+wider-artifact and acceptance wording while linking the roadmap directly to the
+task ledger.
 
 ## Validation and evidence
 
 Run from repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/emit_task_projection.clj --write
-clojure -J-Xmx512m -M tools/emit_task_projection.clj --check
-clojure -J-Xmx512m -M tools/emit_task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-Compare exact original/current table/cells, five derived IDs, complete historical
-suffix, prior spec/plan navigation and reconstruction of the full original
-roadmap. Verify B13/B14 targets and absence of an invented appendix. Check five
-Markdown files for ASCII and file/heading links, including missing-file/heading
-negative controls. Exercise missing/duplicate IDs and markers, malformed records,
-title mismatch, explicit acceptance consistency, stale projections and unsupported
-links. Confirm strict shared arrow rejection. Isolated subprocess fixtures prove
-read-only checks, fixed-roadmap writes, extra-path rejection, non-dispatching
-helper loads and outside-sentinel preservation. Run whitespace and clean exact-
-base/head/tree integration preflight. These structural checks require no compiler
-semantic or emission suite and grant no artifact acceptance.
+Compare the preserved task criteria, historical suffix, prior navigation and
+reviewed appendix. Verify B13/B14 targets. Check the Markdown files for ASCII
+and file/heading links, then run whitespace and clean exact-base/head/tree
+integration preflight. These structural checks require no compiler semantic or
+emission suite and grant no artifact acceptance.
 
 ## Delivery and remaining work
 
@@ -81,6 +66,5 @@ repository gates. All five implementation outcomes remain Open.
 
 ## Names, callers and compatibility
 
-`emit-task-projection` follows semantic component entrypoints. No compiler or
 runtime API, wire/schema identity, diagnostic, manifest hash, target choice,
 admission policy or legacy source name changes. Planning IDs remain traceability.
