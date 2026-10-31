@@ -16983,8 +16983,8 @@
                                          :schema :gravity/string-character-vector-latin1-proof-v1
                                          :validated-domain :latin1-scalars :selection :failed-ascii-then-latin1)}
                               {:status :rejected :reason :string-character-vector-unsupported-text})))
-                    {:status :rejected :reason :string-character-vector-literal-required}))
-                  {:status :rejected :reason :string-character-vector-source-mismatch})
+                    {:status :rejected :reason :string-character-vector-literal-required})
+                  {:status :rejected :reason :string-character-vector-source-mismatch}))
           {:status :rejected :reason :string-character-vector-source-mismatch})
         {:status :rejected :reason :string-character-vector-arity-mismatch}))
 
