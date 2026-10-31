@@ -1823,16 +1823,6 @@
                "UEP-PLAN-CACHE" "Fast execution plan cache mode is invalid" {})))
   plan-value)
 
-(defn- exact-var-symbol
-  [namespace selector]
-  (let [namespace-symbol (symbol namespace)
-        test-symbol (symbol selector)
-        test-var (ns-resolve namespace-symbol test-symbol)]
-    (ensure! (and (var? test-var) (:test (meta test-var)))
-             "UEP-EXECUTOR-TEST" "Catalog selector does not resolve to a test var"
-             {:namespace namespace :selector selector})
-    test-var))
-
 (def ^:dynamic *resource-lease*
   "Explicit resource context required by the current-JVM fast adapter.
 
