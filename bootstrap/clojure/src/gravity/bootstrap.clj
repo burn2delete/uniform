@@ -6,6 +6,7 @@
   as diagnostics instead of pretending to be the final compiler."
   (:require [gravity.checked-core]
             [gravity.mir]
+            [gravity.runtime]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]

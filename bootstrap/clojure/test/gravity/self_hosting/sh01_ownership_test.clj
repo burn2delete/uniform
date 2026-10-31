@@ -256,11 +256,18 @@
 (def ^:private mir-stage-consumer
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj")
 (def ^:private mir-stage-test "bootstrap/clojure/test/gravity/mir/pipeline_test.clj")
+(def ^:private runtime-stage-path "bootstrap/clojure/src/gravity/runtime.clj")
+(def ^:private runtime-stage-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj")
+(def ^:private runtime-stage-test "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj")
 
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {mir-stage-path
+    (and (= {runtime-stage-path
+             {:namespace 'gravity.runtime :owner :sh-runtime :slice "SH-19"
+              :consumer-path runtime-stage-consumer :test-path runtime-stage-test}
+             mir-stage-path
              {:namespace 'gravity.mir :owner :sh-mir :slice "SH-12"
               :consumer-path mir-stage-consumer :test-path mir-stage-test}
              types-stage-path
@@ -303,6 +310,9 @@
          (= :sh-types (get-in record [:module-owners types-stage-path]))
          (= :sh-types (get-in record [:module-owners types-stage-test]))
          (= :sh-mir (get-in record [:module-owners mir-stage-path]))
+         (= :sh-runtime (get-in record [:module-owners runtime-stage-path]))
+         (= {:namespace 'gravity.runtime.pipeline-test :slice "SH-19" :owner :sh-runtime}
+            (get-in record [:standalone-test-owners runtime-stage-test]))
          (= {:namespace 'gravity.mir.pipeline-test :slice "SH-12" :owner :sh-mir}
             (get-in record [:standalone-test-owners mir-stage-test]))
          (= {:namespace 'gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
@@ -346,8 +356,38 @@
               "source" {"path" mir-stage-path "namespace" "gravity.mir"}
               "consumer" {"path" mir-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-mir"}
               "test" {"path" mir-stage-test "namespace" "gravity.mir.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "runtime-invocation" "kind" "production-stage-helper" "owner" "sh-runtime"
+              "source" {"path" runtime-stage-path "namespace" "gravity.runtime"}
+              "consumer" {"path" runtime-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-runtime"}
+              "test" {"path" runtime-stage-test "namespace" "gravity.runtime.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
+
+(deftest runtime-invocation-helper-has-an-explicit-consumer-and-test
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        helper-index (first (keep-indexed #(when (= "runtime-invocation" (get %2 "id")) %1)
+                                         (get contract "production_helpers")))]
+    (is (production-helper-registration-valid? record contract))
+    (is (integer? helper-index))
+    (doseq [relative [runtime-stage-path runtime-stage-consumer runtime-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path runtime-stage-path)))]
+        (is (= 'gravity.runtime (second (read reader))))))
+    (doseq [bad [(update record :module-owners dissoc runtime-stage-path)
+                 (assoc-in record [:module-owners runtime-stage-path] :master-coordinator)
+                 (assoc-in record [:standalone-test-owners runtime-stage-test :owner] :sh-core)
+                 (assoc-in record [:production-helper-associations runtime-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations runtime-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations runtime-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" helper-index "test" "registration"] "bootstrap-free")
+                 (assoc-in contract ["production_helpers" helper-index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
 
 (deftest mir-control-flow-helper-has-a-real-consumer-and-standalone-test
   (let [record (ownership-record)

@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/mir.clj"
+ {"bootstrap/clojure/src/gravity/runtime.clj"
+  {:namespace gravity.runtime :owner :sh-runtime :slice "SH-19"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj"
+   :test-path "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/mir.clj"
   {:namespace gravity.mir :owner :sh-mir :slice "SH-12"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj"
    :test-path "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"}
@@ -208,6 +212,7 @@
   "bootstrap/clojure/src/gravity/c10_safety_analysis.clj" :sh-safety
   "bootstrap/clojure/src/gravity/c11_mir.clj" :sh-mir
   "bootstrap/clojure/src/gravity/mir.clj" :sh-mir
+  "bootstrap/clojure/src/gravity/runtime.clj" :sh-runtime
   "bootstrap/clojure/src/gravity/c12_domain_ir.clj" :sh-domain-ir
   "bootstrap/clojure/src/gravity/c13_optimization.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/c14_lowering.clj" :master-coordinator
@@ -348,7 +353,9 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/mir/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/runtime/pipeline_test.clj"
+  {:namespace gravity.runtime.pipeline-test :slice "SH-19" :owner :sh-runtime}
+  "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"
   {:namespace gravity.mir.pipeline-test :slice "SH-12" :owner :sh-mir}
   "bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj"
   {:namespace gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
