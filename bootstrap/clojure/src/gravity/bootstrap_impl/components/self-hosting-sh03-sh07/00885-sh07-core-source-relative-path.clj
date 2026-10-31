@@ -57,7 +57,14 @@
  sh07-b11-guard-source-valid?
  sh07-b11-match-group-coherent?
  ^{:private true} sh07-b11-match-clause-keys
- ^{:private true} sh07-b11-match-pattern-record-keys)
+ ^{:private true} sh07-b11-match-pattern-record-keys
+ sh07-core-verification-checks
+ sh07-core-proof-from-checks
+ sh07-core-exact-comparison-value
+ sh07-core-artifact-identity-input
+ sh07-core-error-transfers-coherent?
+ sh07-core-error-handlers-coherent?
+ ^{:private true} sh07-core-verification-report)
 
 (declare
  sh07-core-build-form-tree
@@ -136,6 +143,7 @@
   :sh07-core-source-map-order #'sh07-core-source-map-order,
   :sh07-core-source-path-from-resolution
   #'sh07-core-source-path-from-resolution,
+  :sh07-core-exact-comparison-value #'sh07-core-exact-comparison-value,
   :sh07-core-semantic-error-handler #'sh07-core-semantic-error-handler,
   :sh07-core-semantic-var-reference #'sh07-core-semantic-var-reference,
   :sh07-b11-match-pattern-graph-complete?
@@ -155,6 +163,8 @@
   #'sh07-core-lineage-with-semantic-trace,
   :sh06-resolution-artifact-verification
   #'sh06-resolution-artifact-verification,
+  :sh07-core-error-transfers-coherent?
+  #'sh07-core-error-transfers-coherent?,
   :sh07-core-resolve-reference-vector!
   #'sh07-core-resolve-reference-vector!,
   :sh07-core-descendant-node-ids #'sh07-core-descendant-node-ids,
@@ -162,6 +172,7 @@
   #'sh07-b11-match-pattern-record-coherent?,
   :sh07-core-children #'sh07-core-children,
   :read-forms #'read-forms,
+  :sh07-core-verification-checks #'sh07-core-verification-checks,
   :sh07-core-projected-form-id #'sh07-core-projected-form-id,
   :sh07-core-value-kind #'sh07-core-value-kind,
   :reader-canonical-hash #'reader-canonical-hash,
@@ -218,12 +229,16 @@
   :sh07-b11-branch-tree #'sh07-b11-branch-tree,
   :c-backend-stage2-plan-emitter-source-rule!
   #'c-backend-stage2-plan-emitter-source-rule!,
+  :sh07-core-match-products-coherent?
+  #'sh07-core-match-products-coherent?,
   :sh07-b13-fragment-manifest #'sh07-b13-fragment-manifest,
   :sh07-b11-guard-source #'sh07-b11-guard-source,
   :p15-s23-stage2-compiler-artifact-source-path
   #'p15-s23-stage2-compiler-artifact-source-path,
   :sh07-core-authenticated-request #'sh07-core-authenticated-request,
   :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :sh07-core-error-handlers-coherent?
+  #'sh07-core-error-handlers-coherent?,
   :sh07-core-resolve-result #'sh07-core-resolve-result,
   :sh07-core-semantic-binding #'sh07-core-semantic-binding,
   :sh07-core-request-preflight! #'sh07-core-request-preflight!,

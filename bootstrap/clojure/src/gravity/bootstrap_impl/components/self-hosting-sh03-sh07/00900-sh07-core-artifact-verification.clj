@@ -190,7 +190,17 @@
  #'sh07-b11-guard-source-valid?
  #'sh07-b11-match-group-coherent?
  #'sh07-b11-match-clause-keys
- #'sh07-b11-match-pattern-record-keys]))]
+ #'sh07-b11-match-pattern-record-keys
+ #'gravity.checked-core/verification-checks
+ #'gravity.checked-core/proof-from-checks
+ #'gravity.checked-core/exact-comparison-value
+ #'gravity.checked-core/artifact-identity-input
+ #'gravity.checked-core/verification-report
+ #'sh07-core-verification-checks
+ #'sh07-core-proof-from-checks
+ #'sh07-core-exact-comparison-value
+ #'sh07-core-artifact-identity-input
+ #'sh07-core-verification-report]))]
  (defn
   sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))
