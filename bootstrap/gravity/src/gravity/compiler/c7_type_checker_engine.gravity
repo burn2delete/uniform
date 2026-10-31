@@ -10144,8 +10144,7 @@
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :private-map-keys-source-mismatch}))
                     {:status :rejected :reason :private-map-keys-source-mismatch}))
-                      {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))
-                  {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))
+                      {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))))
         {:status :rejected :reason :private-map-keys-source-mismatch})
     {:status :rejected :reason :private-map-keys-source-mismatch}))
 

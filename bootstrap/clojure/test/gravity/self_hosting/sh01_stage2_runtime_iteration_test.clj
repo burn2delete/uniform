@@ -1173,7 +1173,7 @@
       (is (= :gravity.type/string (get-in inference [:type-table :lookup])))
       (is (some #(seq (get-in % [:dependencies :operand-shape :call-links])) (:constraints inference))))
     (let [no-demand (invoke 'sh08-ft-infer-pass-with-context [[] [] [] [] [] {} {} {:shape-call-products products}])]
-      (is (zero? (:loop-work-count no-demand)))
+      (is (not (contains? no-demand :loop-work-count)))
       (is (nil? (get-in no-demand [:shape-call-context :calls]))))
     (let [clone-id #(keyword (str (name %) "-2"))
           source-ids [:builder-call :builder-operator :builder-argument]
