@@ -46,10 +46,10 @@
   ;; Exact outer shape and first branch: never search for a matching branch
   ;; somewhere later, which would silently accept reordered dispatch.
   (let [body (nnext form) expression (second body)]
-    (and (= 2 (count body)) (= '[context node budget] (first body))
+    (and (= 2 (count body)) (= '[context node] (first body))
          (seq? expression) (= 4 (count expression)) (= 'if (first expression))
          (= private-route-guard (second expression))
-         (= '(p15-s23-typed-compile-private-map-keys context node budget)
+         (= '(p15-s23-typed-compile-private-map-keys context node)
             (nth expression 2)))))
 
 (defn- replace-form [value before after]
@@ -67,8 +67,8 @@
                ['map? 'identity] ['keyword? 'identity] ['vector? 'identity]
                ['p15-s23-sse-ids? 'identity]
                ['p15-s23-typed-compile-private-map-keys 'p15-s23-typed-compile-map-keys]
-               ['(p15-s23-typed-compile-private-map-keys context node budget)
-                '(p15-s23-typed-compile-private-map-keys context node)]]]
+               ['(p15-s23-typed-compile-private-map-keys context node)
+                '(p15-s23-typed-compile-private-map-keys context context)]]]
         (let [changed (replace-form form before after)]
           (is (not= form changed) (str "mutation present: " before))
           (is (not (dedicated-private-first? changed)) (str before))))
@@ -104,5 +104,5 @@
       (is (= 1 (count (filter #{expected} (tree-seq coll? seq evidence))))))
     (is (= 1 (count (filter #{'(p15-s23-pmk-evidence core (get context :ledger) (get context :call-facts)
                                 node call edge (get context :nodes) (get context :bindings)
-                                (get context :types) (get context :forms) budget)}
+                                (get context :types) (get context :forms))}
                            (tree-seq coll? seq compile-private)))))))
