@@ -889,9 +889,7 @@
 
 (defn sh08-ft-product-vector? [core key-name]
   (if (contains? core key-name)
-    (if (vector? (get core key-name))
-      (<= (count (get core key-name)) 65536)
-      false)
+    (vector? (get core key-name))
     false))
 
 (defn sh08-ft-record-shape? [record expected]
@@ -2465,10 +2463,10 @@
 (defn sh08-ft-known? [value]
   (if (sh08-ft-unknown? value) false (sh08-ni-valid-view? value)))
 
-; L2/L5/C7: bounded loop typing over original canonical-core DATA.
-; Each index, parent-edge, target, slot, argument and ancestor visit consumes
-; one work unit, carried across inference rounds. Unknown stays unresolved;
-; Never means no normal return and contributes no payload return type.
+; L2/L5/C7: structural loop typing over original canonical-core DATA.
+; Each index, parent-edge, target, slot, argument and ancestor is checked
+; against the authenticated source records. Unknown stays unresolved; Never
+; means no normal return and contributes no payload return type.
 (defn sh08-lsi-id? [id]
   (if (keyword? id) true (if (string? id) (if (> (count id) 0) (<= (count id) 256) false) false)))
 
@@ -3403,7 +3401,7 @@
                 (if (= id nil) false (= false (contains? index id))) false)
             (recur (rest remaining) (assoc index id record))
             (sh08-ft-loop-kernel-failure :invalid-loop-record-index
-              nil :unique-nonmissing-record-key field id)))))
+              nil :unique-nonmissing-record-key field)))))
     (sh08-ft-loop-kernel-failure :invalid-loop-record-index nil :vector records)))
 
 (defn sh08-ft-loop-kernel-parent-index [records nodes]
@@ -3436,7 +3434,7 @@
       (if (= edge nil)
         {:status :accepted :target nil}
         (if (contains? seen current)
-          (sh08-ft-loop-kernel-failure :cyclic-loop-parent-edge current :acyclic-core nil current)
+          (sh08-ft-loop-kernel-failure :cyclic-loop-parent-edge current :acyclic-core nil)
           (let [owner (get nodes (get edge :owner))
                 kind (get owner :core-form)
                 body (get (get owner :attributes) :body-child-indexes)
@@ -3524,7 +3522,7 @@
       (let [id (first pending) node (get nodes id)
             binding (get (get node :attributes) :binding-id)]
         (if (contains? seen id)
-          (sh08-ft-loop-kernel-failure :cyclic-loop-initializer id :tree nil id)
+          (sh08-ft-loop-kernel-failure :cyclic-loop-initializer id :tree nil)
           (if (if (= :reference (get node :core-form))
                 (if (contains? all-slots binding)
                   (= false (contains? prior binding)) false)
@@ -3870,7 +3868,7 @@
                 controls))
             slots))
         prepared))
-    (sh08-ft-loop-kernel-failure :invalid-loop-type-tables nil :maps nil nil)))
+    (sh08-ft-loop-kernel-failure :invalid-loop-type-tables nil :maps nil)))
 (defn sh08-ft-ordered-child-types [children type-table]
   (loop [remaining children out []]
     (if (= 0 (count remaining)) out
@@ -4859,12 +4857,6 @@
           result)))))
 
 (defn sh08-ft-recursive-diagnostic [proof module]
-  (if (= :private-self-work-limit (get proof :reason))
-    (sh08-ft-diagnostic "C7-GENERIC" (get proof :node {}) module
-      :bounded-private-self-work (get proof :work-count) :private-self-work-limit {})
-  (if (= :declared-self-work-limit (get proof :reason))
-    (sh08-ft-diagnostic "C7-GENERIC" (get proof :node {}) module
-      :bounded-declared-self-work (get proof :work-count) :declared-self-work-limit {})
   (let [node (get proof :node)
         diagnostic
         (sh08-ft-diagnostic
@@ -4877,7 +4869,7 @@
          {})]
     (if (map? (get proof :component))
       (assoc diagnostic :recursive-component (get proof :component))
-      diagnostic)))))
+      diagnostic)))
 
 (defn sh08-ft-recursive-proof
   [nodes definitions bindings function-records calls edges recursion-components
@@ -6106,9 +6098,9 @@
                   executable (if (= :accepted (get checked :status))
                                (sh08-qd-executable-data (get checked :data) executable-forms) nil)
                   result (if (= executable nil) checked
-                           (assoc (sh08-qd-failure "C7-VERIFY" :quoted-payload-is-executable
+                           (sh08-qd-failure "C7-VERIFY" :quoted-payload-is-executable
                              (get forms (get (get executable :origin) :form-id)) :data-without-executable-nodes
-                             (get executable :origin))))]
+                             (get executable :origin)))]
               (if (= :accepted (get result :status))
                 (let [data (get result :data) type (get data :type)
                       premise {:core-node-id (get node :node-id) :source (get node :source)
@@ -6517,12 +6509,6 @@
         (recur (rest remaining) (if (= :try (get node :core-form))
           (conj out (assoc (sh08-eh-constraint node (get groups (get node :node-id)) types graph)
                       :profile (get (get core :module) :profile) :target (get (get core :module) :target))) out))))))
-
-(defn sh08-tc-error-work [node graph target]
-  (let [ids (if (= target nil) (get node :children) (conj (get node :children) target))
-        size (loop [remaining ids out 0]
-               (if (= 0 (count remaining)) out (recur (rest remaining) (+ out (count (get graph (first remaining) []))))))]
-    (+ 1 (count ids) (* (+ 2 (count ids)) (+ 1 size)))))
 
 (defn sh08-eh-groups [records bindings]
   (loop [remaining records groups {}]
@@ -8430,8 +8416,8 @@
     (if (sh08-lc-native-map? type) (= :gravity.type/list (get type :kind)) false)))
 
 (defn sh08-ssin-validate-types [arguments]
-  ; Type bookkeeping is not an admission allowance. Check the whole original
-  ; carrier before any member read, equality or result construction.
+  ; Check the whole original carrier before any member read, equality or result
+  ; construction.
   (let [checked (sh08-lc-validate-types arguments)]
     (if (= :accepted (get checked :status))
       (let [arguments (get (sh08-lc-native-arguments arguments) :arguments)]
@@ -8478,8 +8464,8 @@
     false))
 
 (defn sh08-syin-validate-types [arguments]
-  ; Type bookkeeping is not an admission allowance. Check the whole original
-  ; carrier before any member read, equality or result construction.
+  ; Check the whole original carrier before any member read, equality or result
+  ; construction.
   (let [checked (sh08-lc-validate-types arguments)]
     (if (= :accepted (get checked :status))
       (let [arguments (get (sh08-lc-native-arguments arguments) :arguments)]
@@ -8523,8 +8509,8 @@
     false))
 
 (defn sh08-ksin-validate-types [arguments]
-  ; Type bookkeeping is not an admission allowance. Check the whole original
-  ; carrier before any member read, equality or result construction.
+  ; Check the whole original carrier before any member read, equality or result
+  ; construction.
   (let [checked (sh08-lc-validate-types arguments)]
     (if (= :accepted (get checked :status))
       (let [arguments (get (sh08-lc-native-arguments arguments) :arguments)]
@@ -8628,7 +8614,7 @@
                               (recur (+ i 1))) false) false) false) false)))) false) false) false) false)) false))
 
 (defn sh08-pl-validation? [validation]
-  ; This is a closed semantic cell, not a transferable proof or cost report.
+  ; This is a closed semantic cell, not a transferable proof.
   (let [header (bootstrap-native-carrier-header validation) kind (get header 0)]
     (if (if (= :map kind) true
           (if (= :tree-map kind) (= :default-comparator (get header 4)) false))
@@ -9019,7 +9005,7 @@
           (if (= :tree-map kind) (= :default-comparator (get header 4)) false))
       (if (>= (get header 2) 0)
         ; These type schemas have at most three named fields. This is their
-        ; closed grammar, not an allowance on nested members.
+        ; closed grammar for nested members.
         (if (<= (get header 2) 3)
           (loop [fields (keys value)]
             (if (= 0 (count fields)) true
@@ -9465,7 +9451,6 @@
                              :payload-evaluation :none,
                              :bare-domain :not-refined,
                              :operand-order :left-then-right,
-                             :budget :full-worst-case-reservation,
                              :order :unobserved,
                              :domain :bare-set-against-independent-nonempty-keyword-anchor,
                              :operand-position :non-tail,
@@ -9499,10 +9484,7 @@
                             :runtime-policy
                             {:guard :existing-complete-both-set-census,
                              :selector-premise :type-conforming-nonempty-keyword-anchor,
-                             :maximum-input-elements 1024,
-                             :logical-work-limit 65536,
                              :member-uniqueness :before-cardinality,
-                             :reservation :full-worst-case,
                              :certificate :not-established},
                             :value-origin
                             {:kind :bare-keyword-anchor-set-value-equality,
@@ -9657,7 +9639,7 @@
   (if (if (map? node) (map? call) false)
     (if (sh08-ft-all-true? [(map? nodes) (map? bindings) (map? module)
                            (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
-  ; Fixed physical groups only: no profile or target traversal before reservation.
+  ; Fixed physical groups only: source shape precedes profile and target checks.
   (if (if (map? node) (map? call) false)
     (let [args (get call :argument-node-ids) children (get node :children)]
       (if (if (vector? args) (if (= 1 (count args)) (if (vector? children) (= 2 (count children)) false) false) false)
@@ -9857,7 +9839,7 @@
   (if (if (map? node) (map? call) false)
     (if (sh08-ft-all-true? [(map? nodes) (map? bindings) (map? module)
                            (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
-  ; Fixed physical groups only: no profile or target traversal before reservation.
+  ; Fixed physical groups only: source shape precedes profile and target checks.
   (if (if (map? node) (map? call) false)
     (let [args (get call :argument-node-ids) children (get node :children)]
       (if (if (vector? args) (if (= 1 (count args)) (if (vector? children) (= 2 (count children)) false) false) false)
@@ -10500,7 +10482,7 @@
                (get result :reason) nil :validated-complete-finite-keyword-key-map (get call :argument-node-ids))))))
 
 (defn sh08-mkeys-entry? [node call nodes bindings types module]
-  ; Routing only. Fresh budgeted source and binding reconstruction is admission.
+  ; Routing only. Source and binding reconstruction remain in the owning checker.
   (if (if (map? call) (vector? (get call :argument-node-ids)) false)
     (if (sh08-sse-ids? [(get call :operator-binding-id)] 1)
       (let [binding (get bindings (get call :operator-binding-id))]
@@ -10523,7 +10505,7 @@
   (if (if (map? node) (map? call) false)
     (if (sh08-ft-all-true? [(map? nodes) (map? bindings) (map? module)
                            (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
-  ; Fixed physical groups only: no profile or target traversal before reservation.
+  ; Fixed physical groups only: source shape precedes profile and target checks.
   (if (if (map? node) (map? call) false)
     (let [args (get call :argument-node-ids) children (get node :children)]
       (if (if (vector? args) (if (= 1 (count args)) (if (vector? children) (= 2 (count children)) false) false) false)
@@ -10714,7 +10696,7 @@
   (if (if (map? node) (map? call) false)
     (if (sh08-ft-all-true? [(map? nodes) (map? bindings) (map? module)
                            (map? (get node :source)) (map? (get node :evaluation)) (map? (get node :attributes))])
-  ; Fixed physical groups only: no profile or target traversal before reservation.
+  ; Fixed physical groups only: source shape precedes profile and target checks.
   (if (if (map? node) (map? call) false)
     (let [args (get call :argument-node-ids) children (get node :children)]
       (if (if (vector? args) (if (= 1 (count args)) (if (vector? children) (= 2 (count children)) false) false) false)
@@ -11225,11 +11207,11 @@
       (let [binding (get (get context :ordering-bindings) (first (get node :resolved-binding-ids)))
             module (get (get context :ordering-core) :module)]
         (if (if (symbol? (get binding :name)) (contains? '#{keys rest} (get binding :name)) false)
-          ; New Vector-rest membership and allocation are checked after reservation.
+          ; New Vector-rest membership and allocation are checked by this owner.
           (if (keyword? (get binding :binding-class))
             (if (contains? #{:lexical :namespace :import} (get binding :binding-class)) false true) true)
         (if (if (symbol? (get binding :name)) (= 'empty? (get binding :name)) false)
-          ; Profile membership is checked by the budgeted new-family builder.
+          ; Profile membership is checked by the owning new-family builder.
           (if (= :core (get binding :binding-class))
             (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false) false)
           (sh08-lq-binding? binding module)))) false) false))
@@ -11303,7 +11285,7 @@
       (let [view (sh08-pmk-type-view types (get context :prior-type-table {}))]
         (if (= :accepted (get view :status))
           (sh08-lq-derive core node call edge nodes bindings (get view :types) (get context :association-forms))
-          (sh08-sm-failure "C7-VERIFY" (get view :reason) nil :current-request-inference-types)))
+          (sh08-sm-failure "C7-VERIFY" (get view :reason) nil :current-request-inference-types nil)))
       (sh08-lq-derive core node call edge nodes bindings types (get context :association-forms)))))
 
 (defn sh08-sc-binding? [binding module]
@@ -11921,9 +11903,7 @@
                 {:status :rejected :reason :map-get-source-mismatch})))))))
 
 (defn sh08-pc-data-child [value family key]
-  (let [width (if (= :map family) (if (map? value) (count value) 0)
-                               (if (vector? value) (count value) 0))]
-    (if (= :map family)
+  (if (= :map family)
         (if (if (keyword? key) (if (map? value) true false) false)
           (loop [remaining (vec value) seen #{} found? false selected nil]
             (if (= 0 (count remaining))
@@ -11937,9 +11917,10 @@
                       (if (= key actual-key) (get entry 1) selected)))
                   {:status :rejected :reason :map-get-source-mismatch}))))
           {:status :rejected :reason :map-get-source-mismatch})
-        (if (if (= :vector family) (if (= 0 key) (if (vector? value) (if (< 0 width) true false) false) false) false)
-          {:status :accepted :value (get value 0) :vector-length width}
-          {:status :rejected :reason :map-get-source-mismatch}))))
+        (let [width (if (vector? value) (count value) 0)]
+          (if (if (= :vector family) (if (= 0 key) (if (vector? value) (if (< 0 width) true false) false) false) false)
+            {:status :accepted :value (get value 0) :vector-length width}
+            {:status :rejected :reason :map-get-source-mismatch}))))
 
 (defn sh08-pc-reanchor [quote-id selectors nodes]
       (if (if (sh08-pc-id? quote-id) (if (vector? selectors) true false) false)
@@ -12667,8 +12648,8 @@
                            :parent-call-facts) :parent-producer-rows :mutations :immutable-binding-links :incoming-arguments :source-spine))))
 
 (defn sh08-pc-descriptor-work [supplied expected]
-  ; Resource payment dominates schema tests and equality. Exact reconstruction
-  ; closes every nested row; no supplied field selects a route or table lookup.
+  ; Exact reconstruction dominates schema tests and equality. It closes every
+  ; nested row; no supplied field selects a route or table lookup.
   (let [walked (sh08-pc-evidence-work supplied)
         proof (get supplied :presence-proof)]
     (if (= :accepted (get walked :status))
@@ -13374,18 +13355,14 @@
       (if (= :rejected (get checked :status)) checked
         {:status :rejected :reason :map-get-source-mismatch}))))
 
-(defn sh08-mg-inferred-work [core node call edge nodes bindings types current-calls budget]
-  (let [candidate (sh08-pc-candidate core node call nodes types budget)
+(defn sh08-mg-inferred-work [core node call edge nodes bindings types current-calls]
+  (let [candidate (sh08-pc-candidate core node call nodes types)
         route (if (= :accepted (get candidate :status))
-                (let [r (sh08-pc-route core node call nodes bindings (- budget (get candidate :work-count)))]
-                  (assoc r :work-count (+ (get candidate :work-count) (get r :work-count)))) candidate)
-        used (get route :work-count)]
+                (sh08-pc-route core node call nodes bindings) candidate)]
     (if (= :accepted (get route :status))
-      (let [checked (sh08-pc-inferred-work route core node call edge nodes bindings types current-calls (- budget used))]
-        (assoc checked :work-count (+ used (get checked :work-count))))
+      (sh08-pc-inferred-work route core node call edge nodes bindings types current-calls)
       (if (= :not-applicable (get route :status))
-        (let [checked (sh08-pc-legacy-inferred-work core node call edge nodes bindings types current-calls (- budget used))]
-          (assoc checked :work-count (+ used (get checked :work-count))))
+        (sh08-pc-legacy-inferred-work core node call edge nodes bindings types current-calls)
         route))))
 
 (defn sh08-mg-inferred-call-valid? [core node call edge nodes bindings types]
@@ -13480,7 +13457,7 @@
     (let [items (get arguments 0) needle (get arguments 1)]
       (if (= :gravity.type/integer needle) true
         (if (= :gravity.type/never needle)
-          ; Descriptor field count is schema, not a collection-size quota.
+          ; Descriptor field count is part of the closed schema.
           ; Reject the wrong shape before any supplied map field can be read.
           (if (if (map? items) (= 3 (count items)) false)
             (if (if (= :gravity.type/set (get items :kind)) (= :literal (get items :shape)) false)
@@ -15589,8 +15566,8 @@
                       :numeric :same-established-generic-integer-leaves
                       :integer-cross-family :unsupported :nested-vectors :unsupported
                       :nil-bearing :compare-original-nonnumeric-values :cross-family :actual-nonnumeric-value-families)
-                    :invalidation (conj (conj (conj (get result :invalidation) :numeric-equality) :integral-type) :numeric-mode))
-                  result)))]
+                    :invalidation (conj (conj (conj (get result :invalidation) :numeric-equality) :integral-type) :numeric-mode)))
+                  result))]
                 (if (= :flat-keyword-set-vector (get validation :vector-comparison-domain))
                   (let [policy (assoc (get result :vector-equality)
                                  :version :sh08-flat-keyword-set-vector-inequality-v1
@@ -20001,7 +19978,7 @@
             header (if (= :accepted (get checked :status))
                      (sh08-nq-source core node call edge nodes bindings types (get core :module) (get checked :proof)) nil)]
         (if (= header nil)
-          (assoc (sh08-sm-failure (if (= :accepted (get checked :status)) "C7-VERIFY"
+          (sh08-sm-failure (if (= :accepted (get checked :status)) "C7-VERIFY"
                    (if (= :nonnegative-integer-quotient-zero-divisor (get checked :reason)) "STD5002" "STD5001"))
                    (if (= 2 (count args)) (get checked :reason :nonnegative-integer-quotient-source-mismatch) :nonnegative-integer-quotient-arity-mismatch)
                    nil {:operation 'quot :numeric-mode :proof-required :dividend :source-proven-nonnegative-Integer
@@ -20022,7 +19999,7 @@
                :constraint (sh08-nq-constraint descriptor)})
             (sh08-sm-failure "C7-VERIFY" :nonnegative-integer-quotient-source-mismatch nil :exact-operator-left-right-integer-source (get node :node-id)))))
       (sh08-sm-failure "C7-VERIFY" :nonnegative-integer-quotient-source-mismatch nil :closed-source-identities nil))
-      (sh08-sm-failure "C7-TYPE-MISMATCH" :nonnegative-integer-quotient-arity-mismatch nil :binary-integer-quotient nil)))))
+      (sh08-sm-failure "C7-TYPE-MISMATCH" :nonnegative-integer-quotient-arity-mismatch nil :binary-integer-quotient nil))))
 
 (defn sh08-nq-node? [node context]
   (if (= :call (get node :core-form))
@@ -20202,7 +20179,7 @@
       (= (get node :source) (sh08-ma-form-source form))])))
 
 (defn sh08-si-vector-origin [id loop-id expected core nodes types bindings forms parents seen]
-  ; Walk canonical references without a depth allowance. Reverse the collected
+  ; Walk canonical references with explicit cycle detection. Reverse the collected
   ; links only at the constructor to preserve inner-to-outer proof order.
   (loop [id id seen seen links []]
   (if (= false (sh08-si-path-id? id)) nil
@@ -20811,13 +20788,11 @@
       (sh08-sm-failure "C7-ANNOTATION" :vector-nth-selected-element-type-required nil :established-selected-member-type actual)
       (sh08-sm-failure "C7-VERIFY" :vector-nth-source-or-element-type-mismatch nil :authentic-call-and-established-selected-type actual)))))))))))
 
-(defn sh08-vn-derive [core node call edge nodes bindings types forms budget]
-  (let [args (get call :argument-node-ids) work (+ 64 (count args) (count (get core :function-records)))
+(defn sh08-vn-derive [core node call edge nodes bindings types forms]
+  (let [args (get call :argument-node-ids)
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :vector-nth-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-vn-source core node call edge nodes bindings types (get core :module))]
-        (if (= header nil) (assoc (sh08-vn-rejection call nodes types) :work-count work)
+    (let [header (sh08-vn-source core node call edge nodes bindings types (get core :module))]
+      (if (= header nil) (sh08-vn-rejection call nodes types)
           (if (sh08-ft-all-true?
                 [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner))
                  (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
@@ -20834,8 +20809,8 @@
                          (recur (+ i 1)) false))))])
             (let [descriptor (sh08-vn-finish header)]
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-vn-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :vector-nth-source-mismatch nil :exact-operator-vector-index-source (get node :node-id)) :work-count work)))))))
+               :constraint (sh08-vn-constraint descriptor)})
+            (sh08-sm-failure "C7-VERIFY" :vector-nth-source-mismatch nil :exact-operator-vector-index-source (get node :node-id)))))))
 
 (defn sh08-vn-node? [node context]
   (if (= :call (get node :core-form))
@@ -20970,18 +20945,17 @@
     result))
 
 
-(defn sh08-vn-step [node types binding-types functions context budget]
+(defn sh08-vn-step [node types binding-types functions context]
   (if (sh08-vl-index? node (get context :lookup-nodes) types)
     (sh08-vl-step node types binding-types functions context)
     (sh08-vn-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
-    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget)))
+    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms))))
 
 (defn sh08-vn-projection-type [demand]
-  (loop [current demand depth 0]
-    (if (> depth 128) nil
-      (if (map? (get current :next)) (recur (get current :next) (+ depth 1)) (get current :selected-type)))))
+  (loop [current demand]
+    (if (map? (get current :next)) (recur (get current :next)) (get current :selected-type))))
 
 (defn sh08-vn-projected? [shape demand]
   (if (= (get shape :type) (sh08-vn-projection-type demand))
@@ -20992,65 +20966,71 @@
                  (= (get demand :coordinate) (get link :coordinate)) (= (get demand :vector-type) (get link :vector-type))])
             true (recur (rest remaining)))))) false))
 
-(defn sh08-vn-project-close [shape demand link own-work own-size budget]
-  (let [work (+ own-work (get shape :call-join-work 0)) size (+ own-size (get shape :shape-size 0))
-        link (assoc link :query-core-node-id (get demand :query-core-node-id) :coordinate (get demand :coordinate)
-                         :vector-type (get demand :vector-type) :selected-type (get demand :selected-type) :application (get demand :application))
-        result (assoc shape :shape-size size :call-join-work work
-                 :vector-projection-links (conj (get shape :vector-projection-links []) link))]
-    (if (= :accepted (get shape :status))
-      (if (> work budget) (assoc (sh08-sm-failure "C7-GENERIC" :vector-nth-shape-work-limit nil :remaining-projection-work budget) :call-join-work work)
-        (if (if (= (get result :type) (sh08-vn-projection-type demand))
-              (if (<= size 65536) true false) false)
-          result (assoc (sh08-sm-failure "C7-ANNOTATION" :vector-nth-selected-shape-limit nil :bounded-selected-ancestry size) :call-join-work work)))
-      (assoc shape :call-join-work work))))
+(defn sh08-vn-project-close [shape demand link]
+  (if (= :accepted (get shape :status))
+    (if (= (get shape :type) (sh08-vn-projection-type demand))
+      (assoc shape :vector-projection-links
+        (conj (get shape :vector-projection-links [])
+          (assoc link :query-core-node-id (get demand :query-core-node-id)
+                 :coordinate (get demand :coordinate)
+                 :vector-type (get demand :vector-type)
+                 :selected-type (get demand :selected-type)
+                 :application (get demand :application))))
+      (sh08-sm-failure "C7-VERIFY" :vector-nth-selected-shape-type-mismatch nil
+        :selected-type (get demand :selected-type)))
+    shape))
 
-(defn sh08-vn-project-existing [shape demand budget depth]
-  (let [cases (sh08-sm-shape-cases shape) initial (+ 16 (count cases)) index (get demand :coordinate)
+(defn sh08-vn-project-existing [shape demand]
+  (let [cases (sh08-sm-shape-cases shape) index (get demand :coordinate)
         expected (get demand :vector-type) next (get demand :next)]
-    (if (> depth 128) (sh08-sm-failure "C7-ANNOTATION" :structural-shape-depth-limit nil :bounded-projection-depth depth)
-      (loop [remaining cases out [] used initial size 1]
-        (if (> used budget) (assoc (sh08-sm-failure "C7-GENERIC" :vector-nth-shape-work-limit nil :remaining-projection-work budget) :call-join-work used)
-        (if (= 0 (count remaining))
-          (let [selected (if (= 1 (count out)) (first out)
-                           {:status :accepted :shape-kind :alternatives :type (sh08-vn-projection-type demand)
-                            :source (get shape :source) :binding-links [] :alternatives out :shape-size size})]
-            (if (> (count out) 0)
-              (sh08-vn-project-close selected demand {:kind :established-vector-coordinate :input-evidence shape}
-                used 1 budget)
-              (sh08-sm-failure "C7-ANNOTATION" :vector-nth-selected-shape-required nil :established-vector-coordinate nil)))
-          (let [case (first remaining) parts (get case :parts) part (if (vector? parts) (get parts index) nil)
-                item (get part :shape) charge (+ 1 (if (vector? parts) (count parts) 0))]
-            (if (sh08-ft-all-true? [(= :vector (get case :shape-kind)) (= expected (get case :type))
-                   (vector? parts) (= (count (get expected :element-types)) (if (vector? parts) (count parts) nil))
-                   (= index (get part :coordinate)) (= :accepted (get item :status)) (= (get demand :selected-type) (get item :type))])
-              (let [projected (if (map? next) (sh08-vn-project-existing item next (- budget used charge) (+ depth 1)) item)]
-                (if (= :accepted (get projected :status))
-                  (let [values (sh08-sm-shape-cases-with-origins projected (get case :case-origins {}))]
-                    (recur (rest remaining) (sh08-ft-add-values-to-set values out)
-                           (+ used charge (if (map? next) (get projected :call-join-work 0) 0)) (+ size (get projected :shape-size 0))))
-                  (assoc projected :call-join-work (+ used charge (get projected :call-join-work 0)))))
-              (assoc (sh08-sm-failure "C7-ANNOTATION" :vector-nth-selected-shape-required nil :source-linked-vector-coordinate (get case :shape-kind))
-                     :call-join-work (+ used charge))))))))))
+    (loop [remaining cases out []]
+      (if (= 0 (count remaining))
+        (let [selected (if (= 1 (count out)) (first out)
+                         {:status :accepted :shape-kind :alternatives
+                          :type (sh08-vn-projection-type demand)
+                          :source (get shape :source) :binding-links [] :alternatives out})]
+          (if (> (count out) 0)
+            (sh08-vn-project-close selected demand
+              {:kind :established-vector-coordinate :input-evidence shape})
+            (sh08-sm-failure "C7-ANNOTATION" :vector-nth-selected-shape-required nil
+              :established-vector-coordinate nil)))
+        (let [case (first remaining) parts (get case :parts)
+              part (if (vector? parts) (get parts index) nil)
+              item (get part :shape)]
+          (if (sh08-ft-all-true?
+                [(= :vector (get case :shape-kind)) (= expected (get case :type))
+                 (vector? parts)
+                 (= (count (get expected :element-types)) (count parts))
+                 (= index (get part :coordinate)) (= :accepted (get item :status))
+                 (= (get demand :selected-type) (get item :type))])
+            (let [projected (if (map? next) (sh08-vn-project-existing item next) item)]
+              (if (= :accepted (get projected :status))
+                (let [values (sh08-sm-shape-cases-with-origins projected (get case :case-origins {}))]
+                  (recur (rest remaining) (sh08-ft-add-values-to-set values out)))
+                projected))
+            (sh08-sm-failure "C7-ANNOTATION" :vector-nth-selected-shape-required nil
+              :source-linked-vector-coordinate (get case :shape-kind))))))))
 
-(defn sh08-vn-project-data [data demand node budget depth]
+(defn sh08-vn-project-data [data demand node]
   (let [children (get data :children) child-count (if (vector? children) (count children) 0)
-        index (get demand :coordinate) expected (get demand :vector-type) work (+ 16 child-count)]
-    (if (> depth 128) (sh08-sm-failure "C7-ANNOTATION" :structural-shape-depth-limit nil :bounded-projection-depth depth)
-    (if (> work budget) (assoc (sh08-sm-failure "C7-GENERIC" :vector-nth-shape-work-limit nil :remaining-projection-work budget) :call-join-work work)
-      (if (sh08-ft-all-true? [(= :vector (get data :kind)) (= expected (get data :type)) (vector? children)
-             (= child-count (count (get expected :element-types)))
-             (if (integer? index) (if (<= 0 index) (< index child-count) false) false)
-             (= (get demand :selected-type) (get (get children index) :type))])
-        (let [selected-data (get children index)
-              selected (if (map? (get demand :next))
-                         (sh08-vn-project-data selected-data (get demand :next) node (- budget work) (+ depth 1))
-                         (sh08-qd-shape selected-data node))]
-          (sh08-vn-project-close selected demand {:kind :quoted-vector-coordinate :quote-node-id (get node :node-id)
-            :quote-source (get node :source) :vector-data-origin (get data :origin) :selected-data-origin (get selected-data :origin)}
-            work (+ 1 child-count) budget))
-        (assoc (sh08-sm-failure "C7-VERIFY" :vector-nth-vector-source-mismatch nil :exact-quoted-vector-coordinate (get data :origin))
-               :call-join-work work))))))
+        index (get demand :coordinate) expected (get demand :vector-type)]
+    (if (sh08-ft-all-true?
+          [(= :vector (get data :kind)) (= expected (get data :type)) (vector? children)
+           (= child-count (count (get expected :element-types)))
+           (if (integer? index) (if (<= 0 index) (< index child-count) false) false)
+           (= (get demand :selected-type) (get (get children index) :type))])
+      (let [selected-data (get children index)
+            selected (if (map? (get demand :next))
+                       (sh08-vn-project-data selected-data (get demand :next) node)
+                       (sh08-qd-shape selected-data node))]
+        (if (= :accepted (get selected :status))
+          (sh08-vn-project-close selected demand
+            {:kind :quoted-vector-coordinate :quote-node-id (get node :node-id)
+             :quote-source (get node :source) :vector-data-origin (get data :origin)
+             :selected-data-origin (get selected-data :origin)})
+          selected))
+      (sh08-sm-failure "C7-VERIFY" :vector-nth-vector-source-mismatch nil
+        :exact-quoted-vector-coordinate (get data :origin)))))
 
 (defn sh08-va-shape [node nodes types binding-types functions lexical bindings forms seen depth binding-shapes context]
   (let [id (get node :node-id) core (get context :source-core)
@@ -21060,120 +21040,147 @@
                 (if (= 0 (count ids)) out
                   (recur (rest ids) (if (contains? out (first ids)) out
                     (assoc out (first ids) (get (get context :prior-types) (first ids) :gravity.type/unknown))))))
-        budget (get context :budget-left 0)
-        result (if (if (= :gravity.type/set (get views (get args 0))) true (if (map? (get views (get args 0))) (= :gravity.type/set (get (get views (get args 0)) :kind)) false))
-                 (sh08-pl-derive core node call edge nodes bindings views forms budget)
-                 (sh08-va-derive core node call edge nodes bindings views forms budget))
-        descriptor (get result :descriptor) work (get result :work-count 0)
+        result (if (if (= :gravity.type/set (get views (get args 0))) true
+                    (if (map? (get views (get args 0)))
+                      (= :gravity.type/set (get (get views (get args 0)) :kind)) false))
+                 (sh08-pl-derive core node call edge nodes bindings views forms)
+                 (sh08-va-derive core node call edge nodes bindings views forms))
+        descriptor (get result :descriptor)
         demand (get context :vector-coordinate-demand)]
     (if (= :accepted (get result :status))
-      (if (contains? #{:sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1 :sh08-symbol-set-insertion-v2} (get descriptor :version))
+      (if (contains? #{:sh08-string-set-insertion-v2 :sh08-keyword-set-insertion-v1
+                       :sh08-symbol-set-insertion-v2} (get descriptor :version))
         (if (map? demand)
-          (assoc (sh08-sm-failure "C7-ANNOTATION" (if (= :sh08-symbol-set-insertion-v2 (get descriptor :version))
-            :symbol-set-insertion-positional-evidence-unsupported
-            (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version)) :keyword-set-insertion-positional-evidence-unsupported :string-set-insertion-positional-evidence-unsupported)) nil
-                   :bare-set-result (get descriptor :result-type)) :call-join-work work)
+          (sh08-sm-failure "C7-ANNOTATION"
+            (if (= :sh08-symbol-set-insertion-v2 (get descriptor :version))
+              :symbol-set-insertion-positional-evidence-unsupported
+              (if (= :sh08-keyword-set-insertion-v1 (get descriptor :version))
+                :keyword-set-insertion-positional-evidence-unsupported
+                :string-set-insertion-positional-evidence-unsupported))
+            nil :bare-set-result (get descriptor :result-type))
           {:status :accepted :shape-kind :scalar :type (get descriptor :result-type)
-           :node-id id :source (get node :source) :binding-links [] :shape-size 1 :call-join-work work
+           :node-id id :source (get node :source) :binding-links []
            :domain {:excluded-values []}})
         (if (= :not-invoked (get descriptor :application))
-        {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get node :source)
-         :binding-links [] :shape-size 1 :call-join-work work :vector-append-links [{:application descriptor}]}
-      (if (map? demand)
-        (let [index (get demand :coordinate) extent (get descriptor :input-extent)
-              appended? (= index extent)
-              selected-id (get args (if appended? 1 0))
-              child-context (if appended?
-                              (assoc context :vector-coordinate-demand (get demand :next))
-                              (assoc context :vector-coordinate-demand (assoc demand :vector-type (first (get descriptor :argument-types)))))
-              valid? (sh08-ft-all-true? [(= (get demand :vector-type) (get descriptor :result-type))
-                         (if (integer? index) (<= 0 index extent) false)
-                         (= (get demand :selected-type) (get (get (get descriptor :result-type) :element-types) index))])]
-          (if valid?
-            (let [selected (sh08-sm-shape-with-bindings selected-id nodes views binding-types functions lexical bindings forms
-                             (conj seen id) (+ depth 1) binding-shapes (assoc child-context :budget-left (- budget work)))]
-              (sh08-vn-project-close selected demand
-                {:kind :persistent-vector-append-coordinate :append-application descriptor
-                 :selection (if appended? :appended-value :original-prefix) :selected-node-id selected-id
-                 :selected-source (get (get nodes selected-id) :source)} work 1 budget))
-            (assoc (sh08-sm-failure "C7-VERIFY" :vector-append-projection-mismatch nil :exact-append-coordinate demand) :call-join-work work)))
-        (let [input (sh08-sm-shape-with-bindings (get args 0) nodes views binding-types functions lexical bindings forms
-                      (conj seen id) (+ depth 1) binding-shapes (assoc context :budget-left (- budget work)))
-              value (if (= :accepted (get input :status))
-                      (sh08-sm-shape-with-bindings (get args 1) nodes views binding-types functions lexical bindings forms
-                        (conj seen id) (+ depth 1) binding-shapes
-                        (assoc context :budget-left (- budget work (get input :call-join-work 0)))) input)
-              used (+ work (get input :call-join-work 0) (get value :call-join-work 0))
-              size (+ 1 (get input :shape-size 0) (get value :shape-size 0))
-              shape {:status :accepted :shape-kind :vector :node-id id :source (get node :source)
-                     :type (get descriptor :result-type) :binding-links [] :shape-size size :call-join-work used
-                     :vector-append-links [{:application descriptor :input-shape input :value-shape value}]}]
-          (if (= :accepted (get input :status))
-            (if (= :accepted (get value :status))
-              (if (if (= :vector (get input :shape-kind))
-                    (= (count (get input :parts)) (get descriptor :input-extent)) false)
-                (let [finished (sh08-sm-construct-cases
-                                 (assoc shape :parts (conj (get input :parts)
-                                   {:coordinate (get descriptor :input-extent) :value-node-id (get args 1) :shape value})))]
-                  (if (if (<= used budget) (if (<= size 65536) true false) false)
-                    finished (assoc (sh08-sm-failure "C7-GENERIC" :vector-append-shape-limit nil :bounded-append-evidence size) :call-join-work used)))
-                (assoc (sh08-sm-failure "C7-ANNOTATION" :vector-append-prefix-shape-required nil :established-vector-prefix input) :call-join-work used))
-              (assoc value :call-join-work used))
-            (assoc input :call-join-work used))))))
-      (assoc result :call-join-work work))))
-
+          {:status :accepted :shape-kind :scalar :type :gravity.type/never
+           :node-id id :source (get node :source) :binding-links []
+           :vector-append-links [{:application descriptor}]}
+          (if (map? demand)
+            (let [index (get demand :coordinate) extent (get descriptor :input-extent)
+                  appended? (= index extent)
+                  selected-id (get args (if appended? 1 0))
+                  child-context (if appended?
+                                 (assoc context :vector-coordinate-demand (get demand :next))
+                                 (assoc context :vector-coordinate-demand
+                                   (assoc demand :vector-type (first (get descriptor :argument-types)))))
+                  valid? (sh08-ft-all-true?
+                           [(= (get demand :vector-type) (get descriptor :result-type))
+                            (if (integer? index) (<= 0 index extent) false)
+                            (= (get demand :selected-type)
+                               (get (get (get descriptor :result-type) :element-types) index))])]
+              (if valid?
+                (let [selected (sh08-sm-shape-with-bindings selected-id nodes views binding-types functions lexical bindings forms
+                                (conj seen id) (+ depth 1) binding-shapes child-context)]
+                  (sh08-vn-project-close selected demand
+                    {:kind :persistent-vector-append-coordinate :append-application descriptor
+                     :selection (if appended? :appended-value :original-prefix)
+                     :selected-node-id selected-id
+                     :selected-source (get (get nodes selected-id) :source)}))
+                (sh08-sm-failure "C7-VERIFY" :vector-append-projection-mismatch nil
+                  :exact-append-coordinate demand)))
+            (let [input (sh08-sm-shape-with-bindings (get args 0) nodes views binding-types functions lexical bindings forms
+                           (conj seen id) (+ depth 1) binding-shapes context)
+                  value (if (= :accepted (get input :status))
+                          (sh08-sm-shape-with-bindings (get args 1) nodes views binding-types functions lexical bindings forms
+                            (conj seen id) (+ depth 1) binding-shapes context)
+                          input)
+                  shape {:status :accepted :shape-kind :vector :node-id id :source (get node :source)
+                         :type (get descriptor :result-type) :binding-links []
+                         :vector-append-links [{:application descriptor
+                                                :input-shape input :value-shape value}]}]
+              (if (= :accepted (get input :status))
+                (if (= :accepted (get value :status))
+                  (if (if (= :vector (get input :shape-kind))
+                        (= (count (get input :parts)) (get descriptor :input-extent)) false)
+                    (let [finished (sh08-sm-construct-cases
+                                    (assoc shape :parts (conj (get input :parts)
+                                      {:coordinate (get descriptor :input-extent) :value-node-id (get args 1) :shape value})))]
+                      finished)
+                    (sh08-sm-failure "C7-ANNOTATION" :vector-append-prefix-shape-required nil
+                      :established-vector-prefix input))
+                  value)
+                input)))))
+      result)))
 (defn sh08-vn-project-input [id nodes types binding-types functions lexical bindings forms seen depth binding-shapes context]
-  (let [demand (get context :vector-coordinate-demand) expected (get demand :vector-type) index (get demand :coordinate)
-        node (get nodes id) kind (get node :core-form) form (get forms (get (get node :source) :form-id))
-        type (get types id (get (get context :prior-types) id :gravity.type/unknown)) budget (get context :budget-left 0)
-        child-context (if (map? (get demand :next)) (assoc context :vector-coordinate-demand (get demand :next))
+  (let [demand (get context :vector-coordinate-demand)
+        expected (get demand :vector-type) index (get demand :coordinate)
+        node (get nodes id) kind (get node :core-form)
+        form (get forms (get (get node :source) :form-id))
+        type (get types id (get (get context :prior-types) id :gravity.type/unknown))
+        child-context (if (map? (get demand :next))
+                        (assoc context :vector-coordinate-demand (get demand :next))
                         (assoc context :vector-coordinate-demand nil))]
-    (if (> depth 128) (sh08-sm-failure "C7-ANNOTATION" :structural-shape-depth-limit nil :bounded-projection-depth depth)
-    (if (contains? seen id) (sh08-sm-failure "C7-VERIFY" :cyclic-constructor-evidence nil :acyclic-projection-origin id)
-    (if (= false (= expected type)) (sh08-sm-failure "C7-VERIFY" :vector-nth-projection-type-mismatch nil expected type)
-    (if (if (= kind :call) (sh08-va-binding? (get bindings (get (get (get context :calls) id) :operator-binding-id))
-                                                        (get (get context :source-core) :module)) false)
-      (sh08-va-shape node nodes types binding-types functions lexical bindings forms seen depth binding-shapes context)
-    (if (if (= kind :collection-literal) (= :vector (get (get node :attributes) :literal-kind)) false)
-      (let [children (get node :children) ids (get form :child-form-ids) child-count (if (vector? children) (count children) 0)
-            work (+ 32 (* 4 child-count)) selected-id (get children index) selected-node (get nodes selected-id)]
-        (if (> work budget) (assoc (sh08-sm-failure "C7-GENERIC" :vector-nth-shape-work-limit nil :remaining-projection-work budget) :call-join-work work)
-          (if (sh08-ft-all-true? [(vector? children) (vector? ids) (= :vector (get form :kind))
-                 (= (get node :source) (sh08-ma-form-source form))
-                 (= child-count (get (get node :attributes) :element-count) (count (get expected :element-types))
-                    (if (vector? ids) (count ids) nil))
-                 (if (integer? index) (if (<= 0 index) (< index child-count) false) false)
-                 (= (get demand :selected-type) (get (get expected :element-types) index))
-                 (= :left-to-right (get (get node :evaluation) :kind))
-                 (= (loop [i 0 out []] (if (= i child-count) out
-                      (recur (+ i 1) (conj out {:index i :core-node-id (get children i)})))) (get (get node :evaluation) :order))
-                 (loop [i 0] (if (= i child-count) true
-                   (let [child (get nodes (get children i)) source (get forms (get ids i))]
-                     (if (sh08-ft-all-true? [(= (get form :form-id) (get source :parent-form-id))
-                           (= (get child :source) (sh08-ma-form-source source))
-                           (= (get (get expected :element-types) i)
-                              (get types (get children i) (get (get context :prior-types) (get children i) :gravity.type/unknown)))])
-                       (recur (+ i 1)) false))))])
-            (let [selected (sh08-sm-shape-with-bindings selected-id nodes types binding-types functions lexical bindings forms
-                             (conj seen id) (+ depth 1) binding-shapes (assoc child-context :budget-left (- budget work)))]
-              (sh08-vn-project-close selected demand {:kind :evaluated-vector-coordinate :vector-node node
-                :source-child-form-ids ids :selected-node-id selected-id :selected-source (get selected-node :source)}
-                work (+ 1 child-count) budget))
-            (assoc (sh08-sm-failure "C7-VERIFY" :vector-nth-vector-source-mismatch nil :exact-vector-coordinate-source id) :call-join-work work))))
-    (if (= kind :quote)
-      (let [quoted (sh08-qd-node node forms) work (+ 32 (get quoted :work-count 0))]
-        (if (> work budget) (assoc (sh08-sm-failure "C7-GENERIC" :vector-nth-shape-work-limit nil :remaining-projection-work budget) :call-join-work work)
-          (if (= :accepted (get quoted :status))
-            (let [selected (sh08-vn-project-data (get quoted :data) demand node (- budget work) depth)]
-              (assoc selected :call-join-work (+ work (get selected :call-join-work 0))))
-            (assoc quoted :call-join-work work))))
-      (let [base-context (if (= kind :keyword-map-lookup) (assoc context :vector-coordinate-demand nil) context)
-            recovered (sh08-sm-shape-with-bindings-base id nodes types binding-types functions lexical bindings forms seen depth binding-shapes base-context)]
-        (if (= :accepted (get recovered :status))
-          (if (sh08-vn-projected? recovered demand) recovered
-            (let [projected (sh08-vn-project-existing recovered demand (- budget (get recovered :call-join-work 0)) depth)]
-              (assoc projected :call-join-work (+ (get recovered :call-join-work 0) (get projected :call-join-work 0)))))
-          recovered))))))))))
+    (if (contains? seen id)
+      (sh08-sm-failure "C7-VERIFY" :cyclic-constructor-evidence nil :acyclic-projection-origin id)
+      (if (= false (= expected type))
+        (sh08-sm-failure "C7-VERIFY" :vector-nth-projection-type-mismatch nil expected type)
+        (if (if (= kind :call)
+              (sh08-va-binding? (get bindings (get (get (get context :calls) id) :operator-binding-id))
+                                (get (get context :source-core) :module)) false)
+          (sh08-va-shape node nodes types binding-types functions lexical bindings forms seen depth binding-shapes context)
+          (if (if (= kind :collection-literal)
+                (= :vector (get (get node :attributes) :literal-kind)) false)
+            (let [children (get node :children) ids (get form :child-form-ids)
+                  child-count (if (vector? children) (count children) 0)
+                  selected-id (get children index)
+                  selected-node (get nodes selected-id)]
+              (if (sh08-ft-all-true?
+                    [(vector? children) (vector? ids) (= :vector (get form :kind))
+                     (= (get node :source) (sh08-ma-form-source form))
+                     (= child-count (get (get node :attributes) :element-count)
+                        (count (get expected :element-types))
+                        (if (vector? ids) (count ids) nil))
+                     (if (integer? index) (if (<= 0 index) (< index child-count) false) false)
+                     (= (get demand :selected-type) (get (get expected :element-types) index))
+                     (= :left-to-right (get (get node :evaluation) :kind))
+                     (= (loop [i 0 out []]
+                          (if (= i child-count) out
+                            (recur (+ i 1) (conj out {:index i :core-node-id (get children i)}))))
+                        (get (get node :evaluation) :order))
+                     (loop [i 0]
+                       (if (= i child-count) true
+                         (let [child (get nodes (get children i))
+                               source (get forms (get ids i))]
+                           (if (sh08-ft-all-true?
+                                 [(= (get form :form-id) (get source :parent-form-id))
+                                  (= (get child :source) (sh08-ma-form-source source))
+                                  (= (get (get expected :element-types) i)
+                                     (get types (get children i)
+                                       (get (get context :prior-types) (get children i)
+                                         :gravity.type/unknown)))])
+                             (recur (+ i 1)) false))))])
+                (let [selected (sh08-sm-shape-with-bindings selected-id nodes types binding-types functions lexical bindings forms
+                                 (conj seen id) (+ depth 1) binding-shapes child-context)]
+                  (sh08-vn-project-close selected demand
+                    {:kind :evaluated-vector-coordinate :vector-node node
+                     :source-child-form-ids ids :selected-node-id selected-id
+                     :selected-source (get selected-node :source)}))
+                (sh08-sm-failure "C7-VERIFY" :vector-nth-vector-source-mismatch nil
+                  :exact-vector-coordinate-source id)))
+            (if (= kind :quote)
+              (let [quoted (sh08-qd-node node forms)]
+                (if (= :accepted (get quoted :status))
+                  (sh08-vn-project-data (get quoted :data) demand node)
+                  quoted))
+              (let [base-context (if (= kind :keyword-map-lookup)
+                                   (assoc context :vector-coordinate-demand nil) context)
+                    recovered (sh08-sm-shape-with-bindings-base id nodes types binding-types functions lexical bindings forms
+                               seen depth binding-shapes base-context)]
+                (if (= :accepted (get recovered :status))
+                  (if (sh08-vn-projected? recovered demand)
+                    recovered
+                    (sh08-vn-project-existing recovered demand))
+                  recovered)))))))))
 
 (defn sh08-vn-shape [node nodes types binding-types functions lexical bindings forms seen depth binding-shapes context]
   (if (= :sh08-vector-nth-loop-v1 (get (get types (first (get node :children))) :version))
@@ -21184,20 +21191,20 @@
                 (if (= 0 (count ids)) out
                   (recur (rest ids) (if (contains? out (first ids)) out
                     (assoc out (first ids) (get (get context :prior-types) (first ids) :gravity.type/unknown))))))
-        result (sh08-vn-derive (get context :source-core) node call edge nodes bindings views forms (get context :budget-left 0))
-        descriptor (get result :descriptor) work (get result :work-count 0)]
+        result (sh08-vn-derive (get context :source-core) node call edge nodes bindings views forms)
+        descriptor (get result :descriptor)]
     (if (= :accepted (get result :status))
       (if (= :not-invoked (get descriptor :application))
         {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get node :source)
-         :binding-links [] :shape-size 1 :call-join-work work :vector-nth-selection {:application descriptor :projection-links []}}
+         :binding-links [] :vector-nth-selection {:application descriptor :projection-links []}}
         (let [demand {:query-core-node-id id :coordinate (get descriptor :index-value) :vector-type (first (get descriptor :argument-types))
                       :selected-type (get descriptor :selected-type) :application descriptor :next (get context :vector-coordinate-demand)}
               selected (sh08-sm-shape-with-bindings (first (get call :argument-node-ids)) nodes views binding-types functions lexical bindings forms
                          (conj seen id) (+ depth 1) binding-shapes
-                         (assoc context :vector-coordinate-demand demand :budget-left (- (get context :budget-left) work)))]
-          (assoc selected :call-join-work (+ work (get selected :call-join-work 0))
+                         (assoc context :vector-coordinate-demand demand))]
+          (assoc selected
             :vector-nth-selection {:application descriptor :projection-links (get selected :vector-projection-links)})))
-      (assoc result :call-join-work work)))))
+      result))))
 
 (defn sh08-sm-root-keyword-call-shape [node nodes types bindings forms context]
   ; A root scalar demand uses the independently established result type.
@@ -22183,28 +22190,19 @@
   (sh08-ft-call-constraints-with-context
    calls edges nodes type-table binding-types function-types {}))
 
-(defn sh08-ij-step [node types context budget]
+(defn sh08-ij-step [node types context]
   (let [children (get node :children)]
     (if (sh08-ft-unknown? (get types (first children)))
-      (if (< budget 1) {:status :rejected :reason :list-if-join-work-limit :work-count 1}
-        ; Preserve existing exact/Never branch seeds while a cold loop guard
-        ; is unresolved. Unequal List compatibility still needs its premise.
-        (let [legacy (if (if (vector? children) (= 3 (count children)) false)
-                       (sh08-ft-loop-kernel-normal-join
-                         [(get types (get children 1) :gravity.type/unknown)
-                          (get types (get children 2) :gravity.type/unknown)]) :gravity.type/unknown)]
-          (if (= legacy :gravity.type/unknown) {:status :deferred :work-count 1}
-            {:status :deferred :type legacy :work-count 1})))
+      (let [legacy (if (if (vector? children) (= 3 (count children)) false)
+                     (sh08-ft-loop-kernel-normal-join
+                       [(get types (get children 1) :gravity.type/unknown)
+                        (get types (get children 2) :gravity.type/unknown)]) :gravity.type/unknown)]
+        (if (= legacy :gravity.type/unknown) {:status :deferred}
+          {:status :deferred :type legacy}))
       (let [result (sh08-ij-derive (get context :ordering-core) node
                      (get context :lookup-nodes) types (get context :ordering-bindings)
-                     (get context :association-forms) budget)
-            ; A non-applicable fallback still visits the nominal and normal
-            ; return helpers. Precharge those two bounded member traversals.
-            work (+ (get result :work-count)
-                    (if (= :not-applicable (get result :status)) (* 2 (get result :type-work-count 0)) 0))]
-        (if (> work budget)
-          {:status :rejected :reason :list-if-join-work-limit :work-count work}
-          (assoc result :work-count work))))))
+                     (get context :association-forms))]
+        result))))
 
 (defn sh08-ft-source-join-context [context]
   (assoc context :ordering-operators (sh08-ft-index (get (get context :ordering-core) :calls) :operator-node-id)
@@ -22230,8 +22228,8 @@
                    (if (= 0 (count groups)) false (if (= true (get (first groups) :structural?)) true (recur (rest groups)))))))
         call-products (get context :shape-call-products)
         prepared (if (if demand? (> (count (get call-products :calls)) 0) false)
-                   (sh08-sm-call-context call-products (get context :prior-type-table {}) (get context :loop-work-left 65536))
-                   {:status :accepted :work-count 0 :budget-left (get context :loop-work-left 65536) :prior-types (get context :prior-type-table {})})
+                   (sh08-sm-call-context call-products (get context :prior-type-table {}))
+                   {:status :accepted :prior-types (get context :prior-type-table {})})
         prepared (assoc prepared :source-core (get context :ordering-core))
         context (assoc context :shape-call-context prepared)
         groups (sh08-sm-groups-with-call-context (get context :boolean-matches) prepared)
@@ -22246,7 +22244,6 @@
                          initial-binding-types function-types edges context)
          function-result function-types
          lookup-rows [] lookup-issues (if (= :rejected (get prepared :status)) [(assoc prepared :node {})] [])
-         lookup-work (get prepared :work-count 0)
          private-products initial-private-products]
     (if (= (count remaining) 0)
       (let [node-index
@@ -22264,12 +22261,11 @@
             call-result
             (sh08-ft-call-constraints-with-context
              calls edges node-index type-table definition-types
-             function-with-params (assoc context :loop-work-left (- (get context :loop-work-left 65536) lookup-work)))
+             function-with-params context)
             loop-result (if (map? (get context :loop-core))
                           (sh08-ft-loop-type-step (assoc (get context :loop-core) :loop-member-source
-                            {:forms (get context :association-forms) :bindings (get context :ordering-bindings) :nodes node-index}) type-table (get call-result :binding-types)
-                            (- (get context :loop-work-left 65536) lookup-work (get call-result :compatibility-work-count 0)))
-                          {:bindings (get call-result :binding-types) :constraints [] :issues [] :work-count 0})]
+                            {:forms (get context :association-forms) :bindings (get context :ordering-bindings) :nodes node-index}) type-table (get call-result :binding-types))
+                          {:bindings (get call-result :binding-types) :constraints [] :issues []})]
         {:pass {:type-table type-table
          :binding-shapes binding-shapes :shape-call-context prepared
          :binding-types (get loop-result :bindings (get call-result :binding-types))
@@ -22278,50 +22274,48 @@
          :constraints (sh08-ft-add-values-to-set
                         (sh08-ft-loop-constraints (get loop-result :constraints) node-index (get (get context :loop-core) :module))
                         (sh08-ft-add-values-to-set lookup-rows (get call-result :constraints)))
-         :loop-work-count (+ lookup-work (get call-result :compatibility-work-count 0) (get loop-result :work-count))
          :diagnostics (sh08-ft-add-values-to-set (sh08-ft-loop-diagnostics (get loop-result :issues) node-index)
                                                 (sh08-ft-add-values-to-set lookup-issues (get call-result :diagnostics)))} :products private-products})
       (let [context (assoc context :private-first-entry-products private-products)
             node (first remaining)
             conditional? (= :if (get node :core-form))
-            if-result (if conditional? (sh08-ij-step node type-table context
-                                         (- (get context :loop-work-left 65536) lookup-work)) {})
+            if-result (if conditional? (sh08-ij-step node type-table context) {})
             lookup? (= :keyword-map-lookup (get node :core-form))
             association? (if (if (sh08-lq-node? node context) true (sh08-lc-node? node context)) true (if (if (if (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) true (sh08-cqs-node? node context)) true (sh08-nq-node? node context)) true (sh08-sc-node? node context)) true (if (sh08-mg-node? node context) true (if (sh08-mc-node? node context) true (if (if (if (if (sh08-st-node? node context) true (if (sh08-ane-node? node context) true (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) true (if (sh08-boolp-node? node context) true (if (sh08-symp-node? node context) true (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) true (if (sh08-mapp-node? node context) true (if (sh08-kp-node? node context) true (if (sh08-strp-node? node context) true (sh08-ip-node? node context)))))))))) true (sh08-vp-node? node context)) true (sh08-nt-node? node context)) true (if (sh08-ae-node? node context) true (if (sh08-va-node? node context) true (if (sh08-si-node? node context) true (if (if (sh08-mr-node? node context) true (sh08-ma-node? node context)) true (if (sh08-cq-node? node context) true (sh08-vn-node? node context)))))))))))
             lookup (if association?
                      (if (if (if (sh08-lq-node? node context) true (sh08-lc-node? node context)) true (if (if (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) true (sh08-cqs-node? node context)) true (sh08-nq-node? node context)) true (sh08-sc-node? node context)))
                        (if (if (sh08-lq-node? node context) true (sh08-lc-node? node context))
                          (if (sh08-lq-node? node context)
-                           (sh08-lq-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
-                           (sh08-lc-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))
+                           (sh08-lq-step node type-table binding-types function-result context)
+                           (sh08-lc-step node type-table binding-types function-result context))
                          (if (if (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) true (sh08-cqs-node? node context)) true (sh08-nq-node? node context))
-                           (if (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) true (sh08-cqs-node? node context)) (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) (if (sh08-vsl-node? node context) (sh08-vsl-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (sh08-scv-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))) (sh08-cqs-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))) (sh08-nq-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))
-                           (sh08-sc-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))))
+                           (if (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) true (sh08-cqs-node? node context)) (if (if (sh08-vsl-node? node context) (sh08-vsl-node? node context) (sh08-scv-node? node context)) (if (sh08-vsl-node? node context) (sh08-vsl-step node type-table binding-types function-result context) (sh08-scv-step node type-table binding-types function-result context)) (sh08-cqs-step node type-table binding-types function-result context)) (sh08-nq-step node type-table binding-types function-result context))
+                           (sh08-sc-step node type-table binding-types function-result context)))
                      (if (sh08-mg-node? node context)
-                       (sh08-mg-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                       (sh08-mg-step node type-table binding-types function-result context)
                      (if (sh08-mc-node? node context)
-                       (sh08-mc-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                       (sh08-mc-step node type-table binding-types function-result context)
                      (if (if (if (if (sh08-st-node? node context) true (if (sh08-ane-node? node context) true (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) true (if (sh08-boolp-node? node context) true (if (sh08-symp-node? node context) true (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) true (if (sh08-mapp-node? node context) true (if (sh08-kp-node? node context) true (if (sh08-strp-node? node context) true (sh08-ip-node? node context)))))))))) true (sh08-vp-node? node context)) true (sh08-nt-node? node context))
                        (if (if (if (sh08-st-node? node context) true (if (sh08-ane-node? node context) true (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) true (if (sh08-boolp-node? node context) true (if (sh08-symp-node? node context) true (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) true (if (sh08-mapp-node? node context) true (if (sh08-kp-node? node context) true (if (sh08-strp-node? node context) true (sh08-ip-node? node context)))))))))) true (sh08-vp-node? node context))
                          (if (if (sh08-st-node? node context) true (if (sh08-ane-node? node context) true (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) true (if (sh08-boolp-node? node context) true (if (sh08-symp-node? node context) true (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) true (if (sh08-mapp-node? node context) true (if (sh08-kp-node? node context) true (if (sh08-strp-node? node context) true (sh08-ip-node? node context))))))))))
                            (if (sh08-st-node? node context)
-                             (sh08-st-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
-                             (if (sh08-ane-node? node context) (sh08-ane-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) (if (sh08-chp-node? node context) (sh08-chp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (sh08-nilp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))) (if (sh08-boolp-node? node context) (sh08-boolp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (if (sh08-symp-node? node context) (sh08-symp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) (if (sh08-listp-node? node context) (sh08-listp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (sh08-setp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))) (if (sh08-mapp-node? node context) (sh08-mapp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (if (sh08-kp-node? node context) (sh08-kp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (if (sh08-strp-node? node context) (sh08-strp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)) (sh08-ip-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))))))))))
-                           (sh08-vp-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))
-                         (sh08-nt-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work)))
+                             (sh08-st-step node type-table binding-types function-result context)
+                             (if (sh08-ane-node? node context) (sh08-ane-step node type-table binding-types function-result context) (if (if (sh08-chp-node? node context) true (sh08-nilp-node? node context)) (if (sh08-chp-node? node context) (sh08-chp-step node type-table binding-types function-result context) (sh08-nilp-step node type-table binding-types function-result context)) (if (sh08-boolp-node? node context) (sh08-boolp-step node type-table binding-types function-result context) (if (sh08-symp-node? node context) (sh08-symp-step node type-table binding-types function-result context) (if (if (sh08-listp-node? node context) true (sh08-setp-node? node context)) (if (sh08-listp-node? node context) (sh08-listp-step node type-table binding-types function-result context) (sh08-setp-step node type-table binding-types function-result context)) (if (sh08-mapp-node? node context) (sh08-mapp-step node type-table binding-types function-result context) (if (sh08-kp-node? node context) (sh08-kp-step node type-table binding-types function-result context) (if (sh08-strp-node? node context) (sh08-strp-step node type-table binding-types function-result context) (sh08-ip-step node type-table binding-types function-result context)))))))))
+                           (sh08-vp-step node type-table binding-types function-result context))
+                         (sh08-nt-step node type-table binding-types function-result context))
                      (if (sh08-ae-node? node context)
-                       (sh08-ae-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                       (sh08-ae-step node type-table binding-types function-result context)
                      (if (sh08-va-node? node context)
-                       (sh08-va-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                       (sh08-va-step node type-table binding-types function-result context)
                      (if (sh08-si-node? node context)
-                       (sh08-si-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                       (sh08-si-step node type-table binding-types function-result context)
                      (if (sh08-vn-node? node context)
-                       (sh08-vn-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                       (sh08-vn-step node type-table binding-types function-result context)
                      (if (sh08-cq-node? node context)
-                       (sh08-cq-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
+                       (sh08-cq-step node type-table binding-types function-result context)
                        (if (sh08-mr-node? node context)
-                         (sh08-mr-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))
-                         (sh08-ma-step node type-table binding-types function-result context (- (get context :loop-work-left 65536) lookup-work))))))))))))
+                         (sh08-mr-step node type-table binding-types function-result context)
+                         (sh08-ma-step node type-table binding-types function-result context))))))))))))
                      (if lookup?
                      (sh08-kl-step node type-table binding-types function-result context) {}))
             node-type
@@ -22334,31 +22328,16 @@
             (if (if lookup? true association?) (get lookup :type :gravity.type/unknown)
               (sh08-ft-infer-node-with-context
                node type-table binding-types function-result edges context)))
-            ; Cold VALUE evidence cannot borrow a declared call result while
-            ; one of its evaluated operands is still independently unresolved.
-            node-type (if (if (> (get context :cold-round-work 0) 0)
-                              (= false (contains? #{:fn :quote} (get node :core-form))) false)
-                        (if (= node-type :gravity.type/never) node-type
-                          (if (loop [children (get node :children)]
-                                (if (= 0 (count children)) true
-                                  (if (sh08-ft-known?
-                                        (if (if association? (if (= :accepted (get lookup :status))
-                                                              (= (first children) (first (get node :children))) false) false)
-                                          (get lookup :descriptor) (get type-table (first children))))
-                                    (recur (rest children)) false))) node-type :gravity.type/unknown)) node-type)
             ; Only this already-derived normal v2 access may advance its exact
-            ; immutable initializer bindings. Reserve both traversals first.
+            ; immutable initializer bindings.
             lexical-now? (if (= :accepted (get lookup :status))
                            (if (contains? #{:gravity.type/applied-vector-nth :gravity.type/applied-vector-get}
                                  (get (get lookup :descriptor) :kind))
                              (if (= :sh08-bounded-unit-step-v2
                                    (get (get (get (get (get lookup :descriptor) :bounds-proof) :loop-invariant) :range-proof) :version))
                                (if (sh08-ft-known? node-type) (= false (= :gravity.type/never node-type)) false) false) false) false)
-            lexical-work (if lexical-now? (* 2 (count lexical-bindings)) 0)
-            lexical-limit? (> (+ lookup-work (get lookup :work-count 0) (get if-result :work-count 0) lexical-work)
-                              (get context :loop-work-left 65536))
             next-binding-types
-            (if (if lexical-now? (= false lexical-limit?) false)
+            (if lexical-now?
               (let [selected (loop [records lexical-bindings out []]
                                (if (= 0 (count records)) out
                                  (let [record (first records)]
@@ -22379,19 +22358,14 @@
            function-result)
          (if (= :accepted (get if-result :status)) (conj lookup-rows (sh08-ij-row (get if-result :premise)))
            (if (= :accepted (get lookup :status)) (conj lookup-rows (get lookup :constraint)) lookup-rows))
-         (if (if lexical-now? lexical-limit? false)
-           (conj lookup-issues {:node node :rule "C7-GENERIC" :reason :bounded-unit-access-lexical-work-limit
-                               :expected :remaining-type-join-units
-                               :actual (- (get context :loop-work-left 65536) lookup-work)})
          (if (if (if lookup? true association?) (= :rejected (get lookup :status)) false)
            (conj lookup-issues (assoc lookup :node node))
            (if (= :rejected (get if-result :status))
              (conj lookup-issues (assoc if-result :node node
-               :rule (if (= :list-if-join-work-limit (get if-result :reason)) "C7-GENERIC" "C7-VERIFY")
+               :rule "C7-VERIFY"
                :expected :source-bound-independent-list-if-join :actual (get node :node-id))) lookup-issues)))
-         (+ lookup-work (get lookup :work-count 0) (get if-result :work-count 0) lexical-work)
          (if (if (= :accepted (get lookup :status)) (map? (get lookup :local-private-product)) false)
-           (assoc private-products (get node :node-id) (get lookup :local-private-product)) private-products)))))))
+           (assoc private-products (get node :node-id) (get lookup :local-private-product)) private-products))))))
 
 (defn sh08-ft-infer-pass-products
   [nodes lexical-bindings definitions calls edges function-types
@@ -22464,13 +22438,11 @@
         {:status :rejected :reason :list-return-declaration-required})
       {:status :rejected :reason :list-return-declaration-required})))
 
-(defn sh08-lr-derive [core record function nodes types bindings forms budget]
+(defn sh08-lr-derive [core record function nodes types bindings forms]
   (let [signature (get record :signature) declaration (get signature :return)
         declared (get declaration :type-id) body-id (get record :body-core-node-id)
-        actual (get types body-id :gravity.type/unknown)
-        base (+ 64 (if (vector? (get signature :parameters)) (count (get signature :parameters)) 0))]
-    (if (> base budget) {:status :rejected :reason :list-return-work-limit :work-count base}
-      (let [validation (sh08-lr-validate-types declared actual) work base]
+        actual (get types body-id :gravity.type/unknown)]
+      (let [validation (sh08-lr-validate-types declared actual)]
         (if (= :accepted (get validation :status))
           (let [fn-node (get nodes (get record :function-core-node-id)) body (get nodes body-id)
                 fn-form (get forms (get (get fn-node :source) :form-id))
@@ -22511,7 +22483,7 @@
                    (= (get body :source) (sh08-lr-source body-form))
                    (= (get record :definition-binding-id) (get definition-binding :binding-id))
                    (= (get record :definition-name) (get definition-binding :name))])
-              {:status :accepted :work-count work
+              {:status :accepted
                :premise {:version :sh08-homogeneous-list-return-v2 :relation (get validation :relation)
                          :function-id (get function :function-id) :function-core-node-id (get record :function-core-node-id)
                          :body-core-node-id body-id :actual-body-type actual :declared-return-type declared
@@ -22525,8 +22497,8 @@
                          :forgets (if (= :all-positional-elements-match (get validation :relation)) [:static-length] [])
                          :preserves [:value :actual-body-type :provenance :schema :ownership :linearity :regions :effects :allocation-obligations]
                          :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
-              {:status :rejected :reason :list-return-source-mismatch :work-count work}))
-          (assoc validation :work-count work))))))
+              {:status :rejected :reason :list-return-source-mismatch}))
+          validation))))
 
 (defn sh08-lr-row [premise]
   {:constraint-id-request {:domain :gravity/sh08-homogeneous-list-return-constraint-v2 :return-compatibility premise}
@@ -22572,47 +22544,39 @@
                  (assoc function :return next-type)
                  :return-conflict conflict)))))))
 
-(defn sh08-ft-update-function-returns-with-context [functions nodes types context budget]
+(defn sh08-ft-update-function-returns-with-context [functions nodes types context]
   (let [updated (sh08-ft-update-function-returns functions nodes types)
         active? (loop [ids (keys functions)]
                   (if (= 0 (count ids)) false
                     (if (= :sh07-list-return-declaration-v1 (get (get (get (get functions (first ids)) :signature) :return) :rule-version))
                       true (recur (rest ids)))))]
-    (if (= false active?) {:status :accepted :function-types updated :constraints [] :diagnostics [] :work-count 0}
+    (if (= false active?) {:status :accepted :function-types updated :constraints [] :diagnostics []}
       (let [core (get context :ordering-core) source-forms (get context :lookup-forms)
             source-bindings (get context :lookup-bindings)
-            base (+ (count functions) (count (get core :function-records)) (count source-forms) (count source-bindings))]
-        (if (> base budget)
-          {:status :rejected :function-types updated :constraints [] :work-count base
-           :diagnostics [{:node {} :rule "C7-GENERIC" :reason :list-return-work-limit :expected :remaining-type-join-units :actual budget}]}
-          (let [forms (if (map? source-forms) source-forms (sh08-ft-index source-forms :form-id))
-                bindings (if (map? source-bindings) source-bindings (sh08-ft-binding-index source-bindings))]
-            (loop [remaining (get core :function-records) out updated used base rows []]
-              (if (= 0 (count remaining))
-                {:status :accepted :function-types out :constraints rows :diagnostics [] :work-count used}
-                (let [record (first remaining) id (get record :function-syntax-id) function (get out id)
-                      declaration (get (get function :signature) :return)]
-                  (if (= :sh07-list-return-declaration-v1 (get declaration :rule-version))
-                    (let [body-id (get function :body-core-node-id) actual (get types body-id :gravity.type/unknown)
-                          checked (if (sh08-ft-unknown? actual)
-                                    (if (> (+ used 1) budget)
-                                      {:status :rejected :reason :list-return-work-limit :work-count 1}
-                                      {:status :deferred :work-count 1})
-                                    (sh08-lr-derive core record function nodes types bindings forms (- budget used)))
-                          total (+ used (get checked :work-count))
-                          premise (get checked :premise)]
-                      (if (contains? #{:accepted :deferred :homogeneous-list-return-incompatible}
-                            (if (= :rejected (get checked :status)) (get checked :reason) (get checked :status)))
-                        (recur (rest remaining)
-                          (assoc out id (assoc function :return-actual-type actual :return-compatibility premise
-                            :return-conflict (if (= :homogeneous-list-return-incompatible (get checked :reason))
-                                               {:function-id id :body-core-node-id body-id :expected (get declaration :type-id) :actual actual} nil)))
-                          total (if (= :accepted (get checked :status)) (conj rows (sh08-lr-row premise)) rows))
-                        {:status :rejected :function-types out :constraints rows :work-count total
-                         :diagnostics [{:node (get nodes body-id)
-                                        :rule (if (= :list-return-work-limit (get checked :reason)) "C7-GENERIC" "C7-VERIFY")
-                                        :reason (get checked :reason) :expected :authenticated-homogeneous-list-return :actual actual}]}))
-                    (recur (rest remaining) out used rows)))))))))))
+            forms (if (map? source-forms) source-forms (sh08-ft-index source-forms :form-id))
+            bindings (if (map? source-bindings) source-bindings (sh08-ft-binding-index source-bindings))]
+        (loop [remaining (get core :function-records) out updated rows []]
+          (if (= 0 (count remaining))
+            {:status :accepted :function-types out :constraints rows :diagnostics []}
+            (let [record (first remaining) id (get record :function-syntax-id) function (get out id)
+                  declaration (get (get function :signature) :return)]
+              (if (= :sh07-list-return-declaration-v1 (get declaration :rule-version))
+                (let [body-id (get function :body-core-node-id) actual (get types body-id :gravity.type/unknown)
+                      checked (if (sh08-ft-unknown? actual)
+                                {:status :deferred}
+                                (sh08-lr-derive core record function nodes types bindings forms))
+                      premise (get checked :premise)]
+                  (if (contains? #{:accepted :deferred :homogeneous-list-return-incompatible}
+                        (if (= :rejected (get checked :status)) (get checked :reason) (get checked :status)))
+                    (recur (rest remaining)
+                      (assoc out id (assoc function :return-actual-type actual :return-compatibility premise
+                        :return-conflict (if (= :homogeneous-list-return-incompatible (get checked :reason))
+                                           {:function-id id :body-core-node-id body-id :expected (get declaration :type-id) :actual actual} nil)))
+                      (if (= :accepted (get checked :status)) (conj rows (sh08-lr-row premise)) rows))
+                    {:status :rejected :function-types out :constraints rows
+                     :diagnostics [{:node (get nodes body-id) :rule "C7-VERIFY"
+                                    :reason (get checked :reason) :expected :authenticated-homogeneous-list-return :actual actual}]}))
+                (recur (rest remaining) out rows)))))))))
 
 (defn sh08-ft-first-return-conflict [function-types node-table]
   (loop [remaining (keys function-types)]
@@ -22626,137 +22590,59 @@
                  :node
                  (get node-table (get conflict :body-core-node-id))))))))
 
-(defn sh08-ft-parameter-slot-count [function-records]
-  (loop [remaining function-records total 0]
-    (if (= (count remaining) 0)
-      total
-      (recur
-       (rest remaining)
-       (+ total (count (get (first remaining) :parameter-binding-ids)))))))
-
-(defn sh08-ft-inference-round-bound
-  [node-sequence function-records calls lexical-bindings]
-  (+ 2
-     (count node-sequence)
-     (count function-records)
-     (sh08-ft-parameter-slot-count function-records)
-     (count calls)
-     (count lexical-bindings)))
-
 (defn sh08-ft-infer-acyclic-with-context
   [node-sequence node-table lexical-bindings definitions calls edges
-   function-types binding-types maximum-rounds context]
-  (loop [rounds-left maximum-rounds
-         round 1
+   function-types binding-types context]
+  (loop [
          current-functions function-types
          current-bindings binding-types
          current-types {}
          current-shapes {}
          current-private-products {}
          current-loop-products {}
-         source-context nil
-         loop-work-left (get context :loop-work-left 65536)]
-    (if (<= rounds-left 0)
-      {:convergence-status :nonconverged
-       :round-count (- round 1)
-       :round-bound maximum-rounds :type-join-work-left loop-work-left
-       :function-types current-functions
-       :binding-types current-bindings
-       :type-table {}
-       :constraints []
-       :diagnostics
-       [{:node {}
-         :rule "C7-GENERIC"
-         :reason :bounded-function-type-inference-nonconvergence
-         :expected :fixed-point-within-declared-round-bound
-         :actual maximum-rounds}]}
-      (let [cold-work (get context :cold-round-work 0)]
-      (if (> cold-work loop-work-left)
-        {:convergence-status :resource-limit :round-count (- round 1) :round-bound maximum-rounds
-         :type-join-work-left loop-work-left :function-types current-functions :binding-types current-bindings
-         :type-table {} :constraints []
-         :diagnostics [{:node {} :rule "C7-GENERIC" :reason :private-self-work-limit
-                        :expected :remaining-type-join-units :actual loop-work-left}]}
-      (let [loop-work-left (- loop-work-left cold-work)
-            source-context (if (= source-context nil) (sh08-ft-source-join-context context) source-context)
+         source-context nil]
+    (let [source-context (if (= source-context nil) (sh08-ft-source-join-context context) source-context)
             local-pass
             (sh08-ft-infer-pass-products-prepared
              node-sequence lexical-bindings definitions calls edges
-             current-functions current-bindings (assoc source-context :prior-type-table current-types :prior-binding-shapes current-shapes
-                                                               :loop-work-left loop-work-left) current-private-products)
+             current-functions current-bindings
+             (assoc source-context :prior-type-table current-types :prior-binding-shapes current-shapes)
+             current-private-products)
             raw-pass (get local-pass :pass)
             next-bindings (get raw-pass :binding-types)
-            exhausted? (> (get raw-pass :loop-work-count 0) loop-work-left)
-            returns (if exhausted?
-                      {:status :accepted :function-types (get raw-pass :function-types)
-                       :constraints [] :diagnostics [] :work-count 0}
-                      (sh08-ft-update-function-returns-with-context
-                        (sh08-ft-update-param-types (get raw-pass :function-types) next-bindings)
-                        node-table (get raw-pass :type-table) context
-                        (- loop-work-left (get raw-pass :loop-work-count 0))))
-            pass (if exhausted? raw-pass
-                   (assoc raw-pass
+            returns (sh08-ft-update-function-returns-with-context
+                      (sh08-ft-update-param-types (get raw-pass :function-types) next-bindings)
+                      node-table (get raw-pass :type-table) context)
+            pass (assoc raw-pass
                    :constraints (sh08-ft-add-values-to-set (get returns :constraints) (get raw-pass :constraints))
-                   :diagnostics (sh08-ft-add-values-to-set (get returns :diagnostics) (get raw-pass :diagnostics))
-                   :loop-work-count (+ (get raw-pass :loop-work-count 0) (get returns :work-count))))
-            next-functions (get returns :function-types)
-            return-conflict
-            (if exhausted? nil (sh08-ft-first-return-conflict next-functions node-table))]
-        (if exhausted?
-          (assoc pass :function-types next-functions :binding-types next-bindings :convergence-status :resource-limit
-            :round-count round :round-bound maximum-rounds :type-join-work-left (- loop-work-left (get pass :loop-work-count 0)))
-        (if (= :rejected (get returns :status))
+                   :diagnostics (sh08-ft-add-values-to-set (get returns :diagnostics) (get raw-pass :diagnostics)))
+            next-functions (get returns :function-types (get raw-pass :function-types))
+            return-conflict (if (= :rejected (get returns :status)) nil
+                              (sh08-ft-first-return-conflict next-functions node-table))
+            stable? (if (= next-functions current-functions)
+                      (if (= next-bindings current-bindings)
+                        (if (= current-types (get pass :type-table))
+                          (if (= current-shapes (get pass :binding-shapes))
+                            (= current-loop-products (get pass :loop-member-products)) false) false) false) false)]
+      (if (= :rejected (get returns :status))
+        (assoc pass :function-types next-functions :binding-types next-bindings :convergence-status :type-conflict)
+        (if (map? return-conflict)
           (assoc pass :function-types next-functions :binding-types next-bindings :convergence-status :type-conflict
-            :round-count round :round-bound maximum-rounds :type-join-work-left (- loop-work-left (get pass :loop-work-count 0)))
-        (if (= return-conflict nil)
-          (if (if (= next-functions current-functions)
-                (if (= next-bindings current-bindings)
-                  (if (if (> (count (get context :boolean-matches)) 0) true
-                        (if (map? (get context :loop-core)) true
-                          (if (map? (get context :ordering-core)) true (map? (get context :lookup-core)))))
-                    (if (= current-types (get pass :type-table))
-                      (if (= current-shapes (get pass :binding-shapes))
-                        (= current-loop-products (get pass :loop-member-products)) false) false) true) false)
-                false)
-            (assoc pass
-                   :function-types next-functions
-                   :binding-types next-bindings
-                   :convergence-status :converged
-                   :round-count round
-                   :round-bound maximum-rounds :type-join-work-left (- loop-work-left (get pass :loop-work-count 0)))
-            (recur
-             (- rounds-left 1)
-             (+ round 1)
-             next-functions
-             next-bindings
-             (get pass :type-table)
-             (get pass :binding-shapes)
-             (get local-pass :products)
-             (get pass :loop-member-products)
-             source-context
-             (- loop-work-left (get pass :loop-work-count 0))))
-          (assoc pass
-                 :function-types next-functions
-                 :binding-types next-bindings
-                 :convergence-status :type-conflict
-                 :round-count round
-                 :round-bound maximum-rounds
-                  :type-join-work-left (- loop-work-left (get pass :loop-work-count 0))
-                  :diagnostics
-                 (conj
-                  (get pass :diagnostics)
-                  {:node (get return-conflict :node)
-                   :rule "C7-TYPE-MISMATCH"
-                   :reason :function-result-type-mismatch
-                   :expected (get return-conflict :expected)
-                   :actual (get return-conflict :actual)})))))))))))
+            :diagnostics (conj (get pass :diagnostics)
+              {:node (get return-conflict :node) :rule "C7-TYPE-MISMATCH"
+               :reason :function-result-type-mismatch :expected (get return-conflict :expected)
+               :actual (get return-conflict :actual)}))
+          (if stable?
+            (assoc pass :function-types next-functions :binding-types next-bindings :convergence-status :converged)
+            (recur next-functions next-bindings (get pass :type-table) (get pass :binding-shapes)
+              (get local-pass :products) (get pass :loop-member-products) source-context)))))))
 
 (defn sh08-ft-infer-acyclic
   [node-sequence node-table lexical-bindings definitions calls edges
-   function-types binding-types maximum-rounds]
+   function-types binding-types]
   (sh08-ft-infer-acyclic-with-context
    node-sequence node-table lexical-bindings definitions calls edges
-   function-types binding-types maximum-rounds {}))
+   function-types binding-types {}))
 
 (defn sh08-ft-first-unknown-node [nodes type-table]
   (if (= (count nodes) 0)
@@ -23202,14 +23088,7 @@
         calls (get core :calls) edges (get core :call-edges)
         locals (get core :lexical-bindings) definitions (get core :definitions)]
     (if (= :rejected (get cut :status)) cut
-      (let [slots (sh08-ft-parameter-slot-count records)
-        arguments (loop [remaining calls total 0]
-                    (if (= 0 (count remaining)) total
-                      (recur (rest remaining) (+ total (count (get (first remaining) :argument-node-ids))))))
-        base (+ (* 4 (count sequence)) (* 3 (count records)) (* 2 slots)
-                (* 3 (count calls)) (count edges) arguments (* 2 (count locals)) (* 2 (count definitions))
-                (count forms) (count bindings) (count imports))]
-        (let [excluded (set (get cut :excluded-node-ids))
+      (let [excluded (set (get cut :excluded-node-ids))
               id (get record :function-syntax-id)
               selected-nodes (loop [remaining sequence out []]
                                (if (= 0 (count remaining)) out
@@ -23247,11 +23126,7 @@
                           (recur (rest ids) (rest types) (assoc out (first ids) (first types))))) seeds)
               quotes (sh08-qd-products selected-nodes forms (get core :module))]
           (if (if (= :rejected (get quotes :status)) true (> (count (get quotes :diagnostics)) 0))
-            {:status :rejected :reason
-             (if (loop [remaining (get quotes :diagnostics)]
-                   (if (= 0 (count remaining)) false
-                     (if (= :quoted-data-work-limit (get (first remaining) :reason)) true (recur (rest remaining)))))
-               :private-self-work-limit :private-self-quoted-data-required)
+            {:status :rejected :reason :private-self-quoted-data-required
              :quoted-products quotes :cut cut}
           (let [inferred (sh08-ft-infer-acyclic-with-context
                          selected-nodes nodes selected-locals selected-definitions
@@ -23268,10 +23143,9 @@
              :source-argument-call-node-ids (loop [remaining (get selected-calls :calls) out []]
                                               (if (= 0 (count remaining)) out
                                                 (recur (rest remaining) (conj out (get (first remaining) :core-node-id)))))}
-            {:status :rejected :reason (if (= :resource-limit (get inferred :convergence-status))
-                                        :private-self-work-limit :private-self-cold-inference-required)
+            {:status :rejected :reason :private-self-cold-inference-required
              :mode mode :cut cut :quoted-products quotes
-             :inference inferred}))))))))
+             :inference inferred})))))))
 
 (defn sh08-is-proof [shape products bindings module]
   (let [core (get shape :analysis-core) source-forms (get shape :analysis-source-forms)
@@ -23388,12 +23262,11 @@
         (if (= :rejected (get legacy-recursive-proof :status))
           (let [declared (sh08-ds-proof shape products bindings module)]
             (if (= :accepted (get declared :status)) declared
-              (if (= :declared-self-work-limit (get declared :reason)) declared
-                (let [inferred (sh08-is-proof shape products bindings module)]
-                  (if (if (= :accepted (get inferred :status)) true
-                        (= false (contains? #{:private-self-source-single-component-required
-                                              :private-self-source-census-or-capture :private-self-fixed-arity-required}
-                                   (get inferred :reason)))) inferred legacy-recursive-proof)))))
+              (let [inferred (sh08-is-proof shape products bindings module)]
+                (if (if (= :accepted (get inferred :status)) true
+                      (= false (contains? #{:private-self-source-single-component-required
+                                            :private-self-source-census-or-capture :private-self-fixed-arity-required}
+                                 (get inferred :reason)))) inferred legacy-recursive-proof))))
           legacy-recursive-proof)
         higher-order-proof
         (sh08-ft-higher-order-proof
@@ -23507,8 +23380,6 @@
                       combined-constraints (sh08-ft-add-values-to-set (get throw-products :constraints) base-constraints)
                       convergence
                       {:status (get inference :convergence-status)
-                       :round-count (get inference :round-count)
-                       :round-bound (get inference :round-bound)
                        :proof
                        :monotone-finite-type-fact-propagation}
                       identity-input-base
@@ -23723,7 +23594,7 @@
                 (sh08-ft-complete-function-skeletons
                  base-function-skeletons recursive-proof higher-order-proof)
                 quoted-products (sh08-qd-products (get shape :nodes) source-forms module)
-                handler-products (sh08-eh-source-products core-artifact source-forms bindings 65536)
+                handler-products (sh08-eh-source-products core-artifact source-forms bindings)
                 unprojected-inference
                 (sh08-ft-infer-acyclic-with-context
                  (get shape :nodes)
@@ -23736,31 +23607,22 @@
                  (sh08-eh-seed-bindings (sh08-ft-declaration-seeds function-skeletons (sh08-im-seeds imports (sh08-ft-inference-context
                   recursive? higher-order? recursive-proof
                   higher-order-proof function-skeletons))) (get handler-products :seeds {}))
-                 (+ (count (get core-artifact :match-pattern-records)) (sh08-ft-inference-round-bound
-                  (get shape :nodes)
-                  (get products :function-records)
-                  (get products :calls)
-                  (get products :lexical-bindings))
-                  (if (vector? (get core-artifact :loop-bindings)) (count (get core-artifact :loop-bindings)) 0))
                  (assoc (sh08-ft-context-proof
                   recursive? higher-order? recursive-proof higher-order-proof)
                    :boolean-matches (get products :boolean-matches) :quote-types (get quoted-products :type-table)
                    :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)
                    :lookup-core (if (> (count (get core-artifact :keyword-lookups)) 0) core-artifact nil)
                    :lookup-nodes nodes :lookup-forms source-forms :lookup-bindings bindings :ordering-core core-artifact
-                   :loop-work-left (- 65536 (if (sh08-rv? recursive-proof) (get recursive-proof :work-count) 0))
                    :shape-call-products (assoc products :module module)))
                 handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
-                direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
-                                (- 65536 (get handler-products :work-count 0)))
+                direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table))
                 throw-products (if (sh08-rv? recursive-proof)
                                  (assoc direct-throws :recursive-error-status :pending-sh09-recursive-body)
                                  (if (if (= :accepted (get direct-throws :status))
                                      (if (= [] (get unprojected-inference :diagnostics))
                                        (= nil (sh08-ft-first-unknown-node (get shape :nodes) (get unprojected-inference :type-table))) false) false)
                                  (sh08-tc-products-with-source-forms core-artifact (get unprojected-inference :type-table)
-                                   (get unprojected-inference :function-types) bindings direct-throws source-forms
-                                   (- 65536 (get direct-throws :work-count 0) (get handler-products :work-count 0))) direct-throws))
+                                   (get unprojected-inference :function-types) bindings direct-throws source-forms) direct-throws))
                 raw-inference (if (if (sh08-rv? recursive-proof) true (= 0 (count (get throw-products :throws)))) unprojected-inference
                   (assoc unprojected-inference
                     :type-table (sh08-th-type-map (get unprojected-inference :type-table) (get throw-products :throws))
@@ -23768,13 +23630,10 @@
                 raw-match-checks
                 (sh08-bm-checks (sh08-sm-groups-with-shapes
                                  (sh08-sm-groups-with-call-context (get products :boolean-matches)
-                                   (assoc (get raw-inference :shape-call-context {}) :budget-left (get raw-inference :type-join-work-left 0)))
+                                   (get raw-inference :shape-call-context {}))
                                  (get raw-inference :binding-shapes)) (get raw-inference :type-table)
                                 (get raw-inference :function-types) module)
-                match-checks (if (> (get raw-match-checks :call-join-work 0) (get raw-inference :type-join-work-left 0))
-                               (assoc raw-match-checks :diagnostics
-                                 (conj (get raw-match-checks :diagnostics) {:rule "C7-GENERIC" :reason :structural-call-join-work-limit
-                                   :node {} :expected :remaining-type-join-units :actual (get raw-inference :type-join-work-left 0)})) raw-match-checks)
+                match-checks raw-match-checks
                 unknown-node
                 (if (= (get raw-inference :convergence-status)
                        :converged)
@@ -23783,8 +23642,6 @@
                    (get raw-inference :type-table))
                   nil)
                 inference
-                (if (= :resource-limit (get unprojected-inference :convergence-status))
-                  raw-inference
                 (if (> (count (get handler-products :diagnostics)) 0)
                   (assoc raw-inference :diagnostics (get handler-products :diagnostics))
                 (if (> (count (get handler-types :diagnostics)) 0)
@@ -23806,7 +23663,7 @@
                      :reason :unsupported-or-unresolved-core-node-type
                      :expected :concrete-node-type-or-diagnostic
                      :actual :gravity.type/unknown}))
-                  raw-inference)))))))
+                  raw-inference))))))
                 functions
                 (sh08-ft-function-facts
                  (get inference :function-types)
