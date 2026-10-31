@@ -18438,8 +18438,7 @@
         input ((pr359-descriptor-helper (if (= family :ane) 'atomic-inequality-input 'atomic-equality-input)) arguments)
         {:keys [core node call edge nodes bindings types forms module]} input
         derived (apply pr359-descriptor-c7 (symbol (str "sh08-" stem "-derive"))
-                       (if (= family :bka) [core node call edge nodes bindings types forms]
-                         [core node call edge nodes bindings types forms 65536]))
+                       [core node call edge nodes bindings types forms])
         descriptor (:descriptor derived)
         context {:core core :nodes nodes :forms forms :bindings bindings
                  :types (assoc types :operator descriptor :call (:type derived))
