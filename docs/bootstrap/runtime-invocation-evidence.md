@@ -115,9 +115,11 @@ The failed static result is not waived or retried.
 The correction folds the two callback-binding lets into their existing body
 bindings, preserving evaluation order. No callback, guard, arity, record field
 or operation key changes. The conservation checker accounts explicitly for
-this binding-only folding. A producer at clean a8a7e039 with the working fix
-again emits the same paired output, formatting result and diagnostics; this
-new observation uses the actual main-3a4d5ea1 composition. The original before/
+this binding-only folding. A producer with the working fix over a8a7e039 again
+emits the same paired output, formatting result and diagnostics. This is a
+working-tree observation, not clean or committed-head execution. All twenty
+complete/text pairs, source hashes and declared plan IDs verify again, using
+the actual main-3a4d5ea1 composition. The original before/
 after records retain their earlier context. The corrected focused suite passes
 5 / 88, language passes 6 / 11, and all five changed Clojure paths pass full
 contextual lint with 3492 unchanged baseline warnings and zero blockers.
