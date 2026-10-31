@@ -128,3 +128,217 @@
             (is (= reason (:initializer-reason checked)))
             (is (not (contains? checked :work-count)))
             (is (zero? @started))))))))
+
+(defn- initializer-plan [instruction type]
+  (-> (:plan (fixture))
+      (assoc-in [:module-initialization :roots 0 :type] type)
+      (assoc-in [:module-initialization :initializers 0 :instruction] instruction)
+      (assoc-in [:functions 'getter :instructions 0 :type] type)))
+
+(deftest initializer-validation-has-no-work-or-depth-allowance
+  (let [items (vec (repeat 33000 {:op :literal :value true}))
+        instruction {:op :vector-literal :items items}
+        expected (vec (repeat 33000 true))
+        result (execute (initializer-plan instruction :gravity.type/vector))]
+    (is (= {:status :accepted :constructors {:vector-literal 1}}
+           (invoke 'runtime-validate-initializer instruction)))
+    (is (= :complete (:status result)))
+    (is (true? (= [expected expected] (:entrypoint-result result))))
+    (is (identical? (first (:entrypoint-result result)) (second (:entrypoint-result result))))
+    (is (= {"binding-modes" {:vector-literal 1}}
+           (get-in result [:module-initialization :validated-constructor-occurrences])))
+    (let [changed (assoc-in instruction [:items 32999] {:op :foreign})
+          checked (census (initializer-plan changed :gravity.type/vector))]
+      (is (= {:status :rejected :reason :unsupported-module-initializer} checked))
+      (is (= :rejected (:status (execute (initializer-plan changed :gravity.type/vector)))))))
+  (doseq [value [(nth (iterate vector :leaf) 130)
+                 (with-meta [true {:op :throw :value {:op :literal :value :inert}}] {:tag :inert})
+                 (with-meta (subvec [(Object.) :visible (Object.)] 1 2) {:view :inert})
+                 (sorted-map "data-key" :value)]]
+    (let [instruction {:op :quote :value value}
+          type (if (map? value) :gravity.type/map :gravity.type/vector)
+          result (execute (initializer-plan instruction type))]
+      (is (= {:status :accepted :constructors {}}
+             (invoke 'runtime-validate-initializer instruction)))
+      (is (= :complete (:status result)))
+      (is (identical? value (first (:entrypoint-result result))))
+      (is (identical? (meta value) (meta (first (:entrypoint-result result)))))
+      (is (= {"binding-modes" {}}
+             (get-in result [:module-initialization :validated-constructor-occurrences]))))))
+
+(defn- set-fixture-field! [value field-name replacement]
+  (let [field (.getDeclaredField (class value) field-name)]
+    (is (.trySetAccessible field))
+    (.set field value replacement)
+    value))
+
+(deftest initializer-native-preflight-precedes-field-access
+  (let [callbacks (atom 0)
+        deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign callback")))
+        foreign-map (java.lang.reflect.Proxy/newProxyInstance
+                     (.getClassLoader clojure.lang.IPersistentMap)
+                     (into-array Class [clojure.lang.IPersistentMap clojure.lang.IObj])
+                     (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny))))
+        opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
+        keyed (clojure.lang.PersistentArrayMap. (object-array [opaque :value]))
+        cycle (clojure.lang.PersistentArrayMap. (object-array [:self nil]))
+        metadata-cycle (with-meta [] {:self nil})
+        bad-view (clojure.lang.APersistentVector$SubVector. nil [true] 0 2)
+        view-cycle (clojure.lang.APersistentVector$SubVector. nil [] 0 0)]
+    (set-fixture-field! cycle "array" (object-array [:self cycle]))
+    (set-fixture-field! (meta metadata-cycle) "array" (object-array [:self metadata-cycle]))
+    (set-fixture-field! view-cycle "v" view-cycle)
+    (doseq [[instruction reason]
+            [[foreign-map :untrusted-map-class-or-comparator]
+             [{:op :quote :value foreign-map} :untrusted-map-class-or-comparator]
+             [{:op :quote :value keyed} :untrusted-scalar-class]
+             [{:op :quote :value (with-meta [:visible] {:hidden opaque})} :untrusted-scalar-class]
+             [{:op :quote :value cycle} :cyclic-carrier]
+             [{:op :quote :value metadata-cycle} :cyclic-carrier]
+             [{:op :quote :value bad-view} :invalid-vector-view-extent]
+             [{:op :quote :value view-cycle} :cyclic-vector-backing]]]
+      (is (= {:status :rejected :reason :unsupported-module-initializer :initializer-reason reason}
+             (invoke 'runtime-validate-initializer instruction))))
+    (is (zero? @callbacks)))
+  (is (= {:status :rejected :reason :unsupported-module-initializer}
+         (invoke 'runtime-validate-initializer {:op :quote :value :data :supplied-preflight {:status :passed}}))))
+
+(deftest initializer-domains-and-set-construction-remain-distinct
+  (let [values (mapv #(str "member-" %) (range 1025))
+        instruction {:op :set-literal :items (mapv #(hash-map :op :literal :value %) values)}
+        type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat 1025 :gravity.type/string))}]
+    (is (= {:status :accepted :constructors {:set-literal 1}}
+           (invoke 'runtime-validate-initializer instruction)))
+    (is (= :accepted (:status (census (initializer-plan instruction type))))))
+  (doseq [[value element duplicate-reason]
+          [[:same :gravity.type/keyword :duplicate-set-literal-keyword]
+           ["same" :gravity.type/string :duplicate-set-literal-string]]]
+    (let [items (vec (repeat 1025 {:op :literal :value value}))
+          invalid (assoc items 1024 {:op :literal :value true})]
+      (is (= {:status :rejected :reason :unsupported-module-initializer}
+             (invoke 'runtime-validate-initializer {:op :set-literal :items invalid})))
+      (is (= {:status :rejected :reason :unsupported-module-initializer :initializer-reason duplicate-reason}
+             (invoke 'runtime-validate-initializer {:op :set-literal :items items}))))
+    (let [value (if (= element :gravity.type/string) (apply str (repeat 80000 "x"))
+                    (keyword (apply str (repeat 80000 "x"))))
+          instruction {:op :set-literal :items [{:op :literal :value value}]}
+          evaluated (invoke 'p15-s23-runtime-evaluate-closed-instruction instruction {} "")]
+      (is (= {:status :accepted :constructors {:set-literal 1}}
+             (invoke 'runtime-validate-initializer instruction)))
+      (is (= [#{value} "" :normal] evaluated)))))
+
+(deftest set-literal-construction-has-no-width-or-content-allowance
+  (doseq [[family values constructor]
+          [[:gravity.type/integer (vec (range 1030)) 'runtime-construct-scalar-set]
+           [:gravity.type/string (mapv #(str "member-" %) (range 1030)) 'runtime-construct-scalar-set]
+           [:gravity.type/keyword (mapv #(keyword (str "member-" %)) (range 1030)) 'runtime-construct-scalar-set]
+           [:gravity.type/character (mapv char (range 1024 2054)) 'runtime-construct-character-set]]]
+    (let [instruction {:op :set-literal :items (mapv #(hash-map :op :literal :value %) values)}
+          type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat (count values) family))}
+          built (invoke constructor values)
+          actual (invoke 'p15-s23-runtime-evaluate-closed-instruction instruction {} "")]
+      (is (= :accepted (:status built)))
+      (is (= (count values) (:input-element-count built) (:insertions built)))
+      (is (true? (= (set values) (:value built))))
+      (is (true? (= [(set values) "" :normal] actual)))
+      (is (not-any? #(contains? built %) [:work-count :work-count-kind :representation-units :value-work-model]))
+      (if (contains? #{:gravity.type/string :gravity.type/keyword} family)
+        (let [plan (initializer-plan instruction type)
+              checked (census plan) result (execute plan)]
+          (is (= :accepted (:status checked)))
+          (is (= :complete (:status result)))
+          (is (true? (= [(set values) (set values)] (:entrypoint-result result))))
+          (is (identical? (first (:entrypoint-result result)) (second (:entrypoint-result result))))
+          (is (= {"binding-modes" {:set-literal 1}}
+                 (get-in result [:module-initialization :validated-constructor-occurrences])))
+          (is (= "" (:stdout result)))
+          (doseq [changed [(assoc-in plan [:module-initialization :roots 0 :type :element-types 1029] :gravity.type/unknown)
+                           (update-in plan [:module-initialization :roots 0 :type :element-types] pop)
+                           (assoc-in plan [:module-initialization :roots 0 :definition-source] nil)]]
+            (is (= :rejected (:status (census changed))))))
+        ;; Root initializer support is still only String/Keyword literal Sets.
+        (is (= :unsupported-module-initializer
+               (:reason (census (initializer-plan instruction type)))))))))
+
+(deftest set-literal-native-inputs-precede-member-access
+  (let [callbacks (atom 0)
+        deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign Set input callback")))
+        foreign-map (java.lang.reflect.Proxy/newProxyInstance
+                     (.getClassLoader clojure.lang.IPersistentMap)
+                     (into-array Class [clojure.lang.IPersistentMap clojure.lang.IObj])
+                     (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny))))
+        foreign-vector (java.lang.reflect.Proxy/newProxyInstance
+                        (.getClassLoader clojure.lang.IPersistentVector)
+                        (into-array Class [clojure.lang.IPersistentVector clojure.lang.IObj])
+                        (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny))))
+        opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
+        cycle (clojure.lang.PersistentArrayMap. (object-array [:self nil]))
+        invalid-view (clojure.lang.APersistentVector$SubVector. nil [] 0 1)
+        ir {:op :set-literal :items [{:op :literal :value :valid}]}
+        definition {:type {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/keyword]}}]
+    (set-fixture-field! cycle "array" (object-array [:self cycle]))
+    (doseq [constructor ['runtime-construct-scalar-set 'runtime-construct-character-set]
+            input [foreign-vector [foreign-map] [opaque] [cycle] invalid-view
+                   (with-meta [:valid] {:hidden opaque})]]
+      (let [result (invoke constructor input)]
+        (is (= :set-literal-native-data-required (:reason result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))))
+    (doseq [changed [foreign-map (assoc definition :type foreign-map)
+                    (assoc-in definition [:type :element-types] foreign-vector)
+                    (assoc-in definition [:type :element-types] [cycle])
+                    (with-meta definition {:hidden opaque})]]
+      (is (false? (invoke 'p15-s23-runtime-initializer-type? changed ir))))
+    (doseq [changed [(assoc ir :items foreign-vector)
+                    (assoc-in ir [:items 0 :value] opaque)
+                    (with-meta ir {:hidden opaque})]]
+      (is (false? (invoke 'p15-s23-runtime-initializer-type? definition changed)))
+      (is (= :invalid-local-runtime-instruction
+             (get-in (invoke 'p15-s23-runtime-evaluate-closed-instruction changed {} "") [0 :reason]))))
+    (is (zero? @callbacks))
+    (doseq [constructor ['runtime-construct-scalar-set 'runtime-construct-character-set]]
+      (let [value (if (= constructor 'runtime-construct-character-set) \a :valid)
+            input (vec (concat (repeat 1029 value) [opaque]))
+            result (invoke constructor input)]
+        ;; A late invalid member is rejected before the earlier duplicates compare.
+        (is (= :set-literal-native-data-required (:reason result)))
+        (is (= 0 (:comparison-attempts result) (:insertions result)))))
+    (is (zero? @callbacks))))
+
+(deftest runtime-set-conversion-validates-native-inputs
+  (let [callbacks (atom 0)
+        deny (fn [] (swap! callbacks inc) (throw (AssertionError. "foreign conversion callback")))
+        foreign (fn [interface]
+                  (java.lang.reflect.Proxy/newProxyInstance
+                   (.getClassLoader interface) (into-array Class [interface clojure.lang.IObj])
+                   (reify java.lang.reflect.InvocationHandler (invoke [_ _ _ _] (deny)))))
+        foreign-vector (foreign clojure.lang.IPersistentVector)
+        foreign-list (foreign clojure.lang.IPersistentList)
+        foreign-seqable (reify clojure.lang.Seqable (seq [_] (deny)))
+        opaque (proxy [Object] [] (hashCode [] (deny)) (equals [_] (deny)) (toString [] (deny)))
+        cycle (list :a :b)
+        bad-view (clojure.lang.APersistentVector$SubVector. nil [] 0 1)
+        functions ['runtime-convert-vector-set 'runtime-convert-keyword-list-set]
+        convert (fn [value] {:op :builtin-call :function 'set :args [{:op :literal :value value}]})]
+    (set-fixture-field! cycle "_rest" cycle)
+    (doseq [constructor functions
+            value [foreign-vector foreign-list foreign-seqable [opaque] (list opaque) cycle bad-view
+                   (with-meta [:valid] {:hidden opaque}) (with-meta '(:valid) {:hidden opaque})]]
+      (let [result (invoke constructor value)]
+        (is (= :set-conversion-native-data-required (:reason result)))
+        (is (= 0 (:insertions result)))))
+    (doseq [value [foreign-vector foreign-list foreign-seqable [opaque] cycle bad-view
+                   (with-meta [:valid] {:hidden opaque})]]
+      (is (= :set-conversion-native-data-required
+             (get-in (invoke 'p15-s23-runtime-evaluate-closed-instruction (convert value) {} "") [0 :reason]))))
+    (is (zero? @callbacks))
+    (doseq [[constructor value expected]
+            [['runtime-convert-vector-set (with-meta (subvec [(Object.) :a :a (Object.)] 1 3) {:tag :inert}) #{:a}]
+             ['runtime-convert-vector-set (with-meta ["a" "a"] {:tag :inert}) #{"a"}]
+             ['runtime-convert-keyword-list-set (with-meta '(:a :a :b) {:tag :inert}) #{:a :b}]]]
+      (let [metadata (meta value) result (invoke constructor value)]
+        (is (= :accepted (:status result)))
+        (is (= expected (:value result)))
+        (when (= constructor 'runtime-convert-keyword-list-set)
+          (is (= (count value) (:captured-element-count result))))
+        (is (identical? metadata (meta value)))))
+    (is (zero? @callbacks))))

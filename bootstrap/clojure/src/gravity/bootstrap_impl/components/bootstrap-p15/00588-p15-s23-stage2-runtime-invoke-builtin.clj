@@ -1,4 +1,5 @@
 (declare ^:private p15-s23-stage2-native-carrier-header)
+(declare ^:private p15-s23-stage2-hosted-native-data)
 
 (defn- p15-s23-stage2-bootstrap-native-identical?
   [plan left right]
@@ -35,6 +36,9 @@
   ([runtime plan callee args]
   (try
     (case callee
+      hosted-native-data-preflight
+      (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 1)
+          (p15-s23-stage2-hosted-native-data plan (nth args 0)))
       bootstrap-native-identical?
       (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 2)
           (p15-s23-stage2-bootstrap-native-identical? plan (nth args 0) (nth args 1)))

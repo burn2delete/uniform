@@ -167,7 +167,16 @@
   ([archive inventory selected]
    (let [modes (into {} (for [entry (remove str/blank? (str/split (slurp inventory) #"\u0000"))
                               :let [[header path] (str/split entry #"\t" 2)]]
-                          [path (first (str/split header #" "))]))]
+                          [path (first (str/split header #" "))]))
+         ;; Keep each requested owning context, but validate changed fragments
+         ;; against the base only when that exact path exists in the base.
+         selected (vec (distinct
+                        (concat
+                         (when (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
+                           [bootstrap])
+                         (when (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
+                           [facade])
+                         (filter #(contains? modes %) selected))))]
      (with-open [zip (ZipFile. (io/file archive))]
        (selected-plan! (fn [path]
                          (when-not (#{"100644" "100755"} (get modes path))

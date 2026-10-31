@@ -887,6 +887,7 @@
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00587-p15-s23-stage2-runtime-executor-rule-record-02.clj", :reader-line 87349, :owner :bootstrap-p15, :first-form "p15-s23-stage2-compiler-artifact-plan-context?"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-runtime-invoke-builtin.clj", :reader-line 87302, :owner :bootstrap-p15, :first-form "p15-s23-stage2-runtime-invoke-builtin"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-native-carrier-header.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-stage2-native-integer-magnitude-bits"}
+ {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-hosted-native-data.clj", :reader-line 1, :owner :bootstrap-p15, :first-form "p15-s23-hosted-native-view-reason"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00944-p15-s23-sh07-runtime-internal-builtins.clj", :reader-line 87520, :owner :bootstrap-p15, :first-form "p15-s23-sh07-runtime-invoke-compiler-internal-builtin"}
  {:resource "gravity/bootstrap_impl/components/bootstrap-p15/00944-p15-s23-sh07-runtime-internal-builtins-02.clj", :reader-line 87757, :owner :bootstrap-p15, :first-form "p15-s23-sh07-runtime-invoke-compiler-internal-builtin"}
  {:resource "gravity/bootstrap_impl/components/foundation/00589-p15s23stage2runtimerecursignal.clj", :reader-line 87522, :owner :foundation, :first-form "P15S23Stage2RuntimeRecurSignal"}

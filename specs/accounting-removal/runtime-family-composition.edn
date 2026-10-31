@@ -1,0 +1,62 @@
+{:kind :finite-runtime-family-composition
+ :owner :ACC-09
+ :base "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+ :ordered-inputs
+ [{:pr 446 :head "0d3061965f34322bf4e9ec03084b8e4614133689"}
+  {:pr 450 :head "99b84629bc9b4cb1c30c5f59777ae64f02cf65b0"}
+  {:pr 454 :head "93efcde35fce442d9e3ee289331ad421ee8dbe45"}
+  {:pr 462 :head "0cd2f29427ca67ae6127c7983eb51896b564f977"}]
+ :local-composition-parent "86b51b2789cf096fe2a40e0bcb30e393224d53f4"
+ :corrections [:preserve-both-accounting-evidence-histories
+               :retain-current-task-status-and-stable-ids
+               :correct-stale-initializer-limit-comment
+               :add-custom-seqable-zero-callback-control
+               :assert-list-capture-extent
+               :remove-unused-native-test-refer]
+ :source-reuse
+ {:runtime-forms {:source "0cd2f29427ca67ae6127c7983eb51896b564f977"
+                  :equal true :function-count 56
+                  :current-blob "08ecc5e14d40c3ec91f168b357604ba35968dea0"}
+  :native-components-and-test {:source "0d3061965f34322bf4e9ec03084b8e4614133689"
+                               :exact-blobs 4
+                               :test-namespace-change :unused-testing-refer-only
+                               :load-order :current-main-plus-one-original-entry}
+  :one-argument-interfaces [runtime-validate-initializer runtime-construct-scalar-set
+                           runtime-construct-character-set runtime-convert-vector-set
+                           runtime-convert-keyword-list-set]
+  :retired-api-references-in-bootstrap :absent
+  :dynamic-consumed-closure :not-established
+  :current-semantic-result-reuse :not-claimed}
+ :checks {:compiler-free-form-and-interface-audit :passed
+          :test-form-counts {:module-census 18 :runtime-iteration 602}
+          :language-boundary {:tests 6 :assertions 11 :fail 0 :error 0
+                              :source-state :before-unused-refer-correction}
+          :native-test-changed-file-lint {:errors 0 :warnings 0}
+          :diff-check :passed
+          :compiler-loaded-by-audit false
+          :runtime-tests :unrun
+          :new-controls :parsed-not-executed}
+ :first-ci {:head "9e40bc1406154eff15adb6bc1e6a90c1e762ecfa"
+            :run 40800178456
+            :static :one-unused-testing-refer-warning
+            :unchanged-baseline-warnings 3688
+            :portable-leaf :cancelled-during-setup-before-selectors}
+ :historical-receipts
+ [{:scope :initializer :tests 18 :assertions 1019
+   :sha256 "f37e8fe62804813bab26cad5ce58760753e2b211ccb0fedbef24d9053589f103"}
+  {:scope :set-literal :tests 22 :assertions 1234
+   :sha256 "2b2511df880adf45050461c5827c832ed0b5ca10013f46772d0cd8e6e852319b"}
+  {:scope :conversion-first :status :nonpass :tests 14 :passing-assertions 637 :fail 5
+   :sha256 "74608d20b88f04854f5b79f59ec2d2f5766856c1664bc28dc432817974f674dd"}
+  {:scope :conversion-corrected :tests 11 :assertions 451
+   :sha256 "c3e21a816e0921b525631cf774819b9f3467d091f3d727828ec1fd4fc2ed178a"
+   :other-selectors :three-retain-first-candidate-provenance}]
+ :holds {:native446-registration :original-operation-unknown-not-replayed
+         :dependency-incorporation :none-of-four-prs-merged
+         :current-main-runtime-validation :held
+         :pr513-review :unknown-untouched
+         :original22232 :terminal-and-cleanup-unknown
+         :process-inspection-eperm :held}
+ :main-integration-eligible false
+ :nonclaims [:whole-ACC09 :whole-plan-foreign-ingress :typed-lowering
+             :authenticated-runtime :public-runtime :C12 :release]}

@@ -212,7 +212,7 @@
 
 (def p15-s23-stage2-compiler-artifact-builtins
   '#{symbol? keyword? char? number? list? seq? vector? map? set? string?
-     contains? even? set sort-by-pr-str vec quot subvec integer? boolean? keys bootstrap-symbol-utf16-unit-count bootstrap-native-carrier-header bootstrap-native-identical?
+     contains? even? set sort-by-pr-str vec quot subvec integer? boolean? keys hosted-native-data-preflight bootstrap-symbol-utf16-unit-count bootstrap-native-carrier-header bootstrap-native-identical?
      sh07-canonical-text-compare sh07-declared-digest-hash
      sh07-observe-utf8-byte-count
      sh07-b51-admitted-executable-carrier-validation?})
