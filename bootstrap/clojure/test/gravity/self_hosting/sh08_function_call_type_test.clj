@@ -19408,24 +19408,35 @@
           receiver (with-meta (make-map :kind :gravity.type/set :shape :literal :element-types members)
                      {:inert :type-metadata})
           arguments (with-meta (subvec [nil receiver member] 1) {:inert :argument-view})
-          expected (cond-> {:status :accepted :work-count 3 :argument-types arguments :set-member-count 1}
-                     family (assoc :membership-family family))
-          result (invoke (symbol (str prefix "ksm-domain")) arguments 65536)]
+          unmetered? (= "sh08-" prefix)
+          expected (cond-> {:status :accepted :argument-types arguments :set-member-count 1}
+                     family (assoc :membership-family family)
+                     (not unmetered?) (assoc :work-count 3))
+          result (if unmetered?
+                   (invoke (symbol (str prefix "ksm-domain")) arguments)
+                   (invoke (symbol (str prefix "ksm-domain")) arguments 65536))]
       (is (= expected result))
       (is (identical? arguments (:argument-types result)))
-      (is (= result (invoke (symbol (str prefix "ksm-domain")) arguments 3)))
-      (is (= :rejected (:status (invoke (symbol (str prefix "ksm-domain")) arguments 2))))))
+      (when-not unmetered?
+        (is (= result (invoke (symbol (str prefix "ksm-domain")) arguments 3)))
+        (is (= :rejected (:status (invoke (symbol (str prefix "ksm-domain")) arguments 2)))))))
   (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
           arguments [[{:kind :gravity.type/set :shape :literal :element-types []} :gravity.type/never]
                      [:gravity.type/never :gravity.type/never]]]
-    (is (= {:status :accepted :work-count 2 :argument-types arguments
-            :set-member-count (when (map? (first arguments)) 0)}
-           (invoke (symbol (str prefix "ksm-domain")) arguments 65536))))
+    (let [expected {:status :accepted :argument-types arguments
+                    :set-member-count (when (map? (first arguments)) 0)}]
+      (is (= (if (= "sh08-" prefix) expected (assoc expected :work-count 2))
+             (if (= "sh08-" prefix)
+               (invoke (symbol (str prefix "ksm-domain")) arguments)
+               (invoke (symbol (str prefix "ksm-domain")) arguments 65536))))))
   (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
           arguments [[] [:gravity.type/set] [:gravity.type/set :gravity.type/symbol :gravity.type/symbol]
                      nil (list :gravity.type/set :gravity.type/symbol)]]
-    (is (= {:status :rejected :reason :keyword-set-contains-arity-mismatch :work-count 0}
-           (invoke (symbol (str prefix "ksm-domain")) arguments 65536)))))
+    (let [expected {:status :rejected :reason :keyword-set-contains-arity-mismatch}]
+      (is (= (if (= "sh08-" prefix) expected (assoc expected :work-count 0))
+             (if (= "sh08-" prefix)
+               (invoke (symbol (str prefix "ksm-domain")) arguments)
+               (invoke (symbol (str prefix "ksm-domain")) arguments 65536)))))))
 
 (deftest membership-root-preflight-rejects-before-foreign-callbacks
   (let [callbacks (atom []) opaque-callbacks (atom 0)
@@ -19448,8 +19459,10 @@
     (reset! callbacks [])
     (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
             arguments inputs
-            budget [0 1 2 65536]]
-      (let [result (invoke (symbol (str prefix "ksm-domain")) arguments budget)]
+            budget (if (= "sh08-" prefix) [nil] [0 1 2 65536])]
+      (let [result (if (= "sh08-" prefix)
+                     (invoke (symbol (str prefix "ksm-domain")) arguments)
+                     (invoke (symbol (str prefix "ksm-domain")) arguments budget))]
         (is (= :rejected (:status result)))
         (is (= :keyword-set-contains-operand-type-required (:reason result)))
         (is (keyword? (:type-check-reason result)))
@@ -19458,7 +19471,9 @@
     (doseq [[invoke prefix] [[pr359-prepend-c7 "sh08-"] [pr359-prepend-body "body-"] [pr359-prepend-emit "p15-s23-"]]
             member [:gravity.type/keyword :gravity.type/character :gravity.type/string :gravity.type/integer :gravity.type/symbol]]
       (let [members (assoc (vec (repeat 1024 member)) 1023 :gravity.type/unknown)
-            result (invoke (symbol (str prefix "ksm-domain")) [(finite members) member] 65536)]
+            result (if (= "sh08-" prefix)
+                     (invoke (symbol (str prefix "ksm-domain")) [(finite members) member])
+                     (invoke (symbol (str prefix "ksm-domain")) [(finite members) member] 65536))]
         (is (= :rejected (:status result)))
         (is (= :unsupported-type (:type-check-reason result)))))
     (is (empty? @callbacks))
