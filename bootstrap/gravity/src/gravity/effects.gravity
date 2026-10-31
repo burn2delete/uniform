@@ -7200,7 +7200,9 @@
                            (recur (rest remaining) (conj (conj out (get entry 0)) (get entry 1))))))]
             (recur next))
           (if (vector? value)
-            (recur (into tail value))
+            (recur (loop [remaining value out tail]
+                     (if (= 0 (count remaining)) out
+                       (recur (rest remaining) (conj out (first remaining))))))
             (if (if (= nil value) true
                   (if (boolean? value) true
                     (if (keyword? value) true
