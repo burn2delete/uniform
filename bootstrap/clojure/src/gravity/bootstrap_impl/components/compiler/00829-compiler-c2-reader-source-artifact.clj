@@ -31,11 +31,14 @@
     source-path source-text project-context precomputed-products candidate
     reader-source-path invocation standard-reader-options))
   ([source-path source-text project-context precomputed-products candidate reader-source-path invocation reader-options]
+   (when-not (= :passed (:status (p15-s23-trusted-carrier-validation reader-options :default-only)))
+     (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                      {:missing-fields [:native-reader-options]}))
    (when (and (reader-pure-text/options? reader-options)
               (not= :passed
                     (:status (p15-s23-trusted-carrier-validation
                               {:source-path source-path :source-text source-text
-                               :project-context project-context} :default-only))))
+                               :project-context project-context :reader-options reader-options} :default-only))))
      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                       {:missing-fields [:native-pure-text-construction-input]}))
    (when-not (or (= standard-reader-options reader-options)

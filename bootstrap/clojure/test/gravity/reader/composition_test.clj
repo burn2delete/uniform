@@ -34,6 +34,7 @@
 
 (defn- ports [calls]
   {:sh03-reader-internal-product-authority :synthetic-authority
+   :p15-s23-trusted-carrier-validation (fn [& _] {:status :passed})
    :sh03-c3-precomputed-c2-verify!
    (fn [& args] (swap! calls conj [:reverification args]))
    :sh04-syntax-registered-literal-registry
@@ -93,10 +94,11 @@
         (is (false? (admitted? {:pure-extension-results companion})))))))
 
 (deftest removing-view-guard-demonstrates-silent-drop-regression
-  (let [guard (nth view-body 3)
+  (let [guard (some #(when (= '(contains? c2-artifact :pure-extension-results) (second %)) %)
+                    (drop 3 view-body))
         _ (is (some #{:pure-extension-results} (tree-seq coll? seq guard)))
         mutant (binding [*ns* (the-ns 'gravity.reader.composition-test)]
-                 (eval (list* 'fn (nth view-body 2) (drop 4 view-body))))
+                 (eval (list* 'fn (nth view-body 2) (remove #{guard} (drop 3 view-body)))))
         calls (atom [])
         result (mutant (assoc artifact :pure-extension-results [:unsealed]) nil (ports calls))]
     ;; Without the guard the inherited whitelist drops the field. The real

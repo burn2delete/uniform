@@ -30,7 +30,8 @@
 
 (deftest pure-presence-refuses-before-standard-verification
   (let [arity (last precomputed-body)
-        guard (second arity)
+        guard (some #(when (= '(contains? c2-artifact :pure-extension-results) (second %)) %)
+                    (rest arity))
         _ (is (= 'when (first guard)))
         _ (is (= '(contains? c2-artifact :pure-extension-results) (second guard)))
         admission (modeled-admission guard)]
@@ -71,7 +72,8 @@
     (is (some #{'p15-s23-stage2-sh02-descriptor-envelope-verify!} nodes)))
   (let [view (source-definition "bootstrap/clojure/src/gravity/syntax.clj"
                                 'reader-artifact-view)
-        guard (nth view 3)
+        guard (some #(when (= '(contains? c2-artifact :pure-extension-results) (second %)) %)
+                    (drop 3 view))
         products (source-definition
                   (str components "self-hosting-sh03-sh07/00828-sh03-reader-internal-product-authority.clj")
                   'sh03-reader-precomputed-products-verify!)]

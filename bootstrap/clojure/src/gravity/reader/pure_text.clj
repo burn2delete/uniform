@@ -19,14 +19,41 @@
 (defn raw-policy? [policy]
   (= :gravity/sealed-pure-text-reader (:extension-policy policy)))
 
+(defn- marker-at?
+  ;; Inspect only fixed marker paths. Unsupported carriers select full native
+  ;; validation, without consulting their lookup/seq/hash/equality/meta methods.
+  ;; Standard Date/UUID values outside these paths retain their existing route.
+  [value path expected]
+  (if (empty? path)
+    (cond
+      (= ::present expected) true
+      (nil? value) false
+      (not (identical? (class expected) (class value))) true
+      (and (instance? clojure.lang.IObj value) (some? (meta value))) true
+      :else (= expected value))
+    (let [step (first path) tail (next path)]
+      (cond
+        (nil? value) false
+        (= ::each step)
+        (if (and (identical? clojure.lang.PersistentVector (class value))
+                 (nil? (meta value)))
+          (boolean (some #(marker-at? % tail expected) value))
+          true)
+        (and (contains? #{clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap}
+                        (class value))
+             (nil? (meta value))
+             ;; Check native keys before lookup can compare a colliding key.
+             (every? #(identical? clojure.lang.Keyword (class %)) (keys value)))
+        (and (contains? value step) (marker-at? (get value step) tail expected))
+        :else true))))
+
 (defn admission-required? [artifact]
-  (or (options? (get-in artifact [:source-unit-record :reader-options]))
-      (contains? (:gravity-reader-boundary artifact) :pure-text-reconstruction-input)
-      (some #(= 2 (:schema-version %)) (:reader-extension-invocation-records artifact))
-      (some #(= 'text (:tag %)) (:form-tree artifact))
-      (some #(contains? (:value %) :pure-text-record-id)
-            (get-in artifact [:gravity-reader-boundary :authenticated-envelope-descriptor
-                              :semantic-projections]))))
+  (or (marker-at? artifact [:source-unit-record :reader-options :extension-policy] (policy-id))
+      (marker-at? artifact [:gravity-reader-boundary :pure-text-reconstruction-input] ::present)
+      (marker-at? artifact [:reader-extension-invocation-records ::each :schema-version] 2)
+      (marker-at? artifact [:form-tree ::each :tag] 'text)
+      (marker-at? artifact [:gravity-reader-boundary :authenticated-envelope-descriptor
+                            :semantic-projections ::each :value :pure-text-record-id] ::present)))
 
 (defn- refuse! []
   (throw (ex-info "Invalid verified Gravity pure-text projection"
