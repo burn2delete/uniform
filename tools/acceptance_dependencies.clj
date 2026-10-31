@@ -155,8 +155,8 @@
               parsed (mapv #(re-matches #"- \[[ xX]\] `([^\s`]+)`(?: .*)?" %) rows)
               ids (mapv second parsed)]
           ;; Preserve literal existing IDs, including backend-llvm. Naming is
-          ;; not ownership: each component's projector validates its own exact
-          ;; population; this read-only census must not invent a prefix policy.
+          ;; not ownership: this read-only census must not invent a prefix
+          ;; policy or become a second task authority.
           (require! (and (seq ids) (every? some? parsed)
                          (= (count ids) (count (set ids))))
                     (str "Missing, duplicate or malformed implementation IDs: " component))

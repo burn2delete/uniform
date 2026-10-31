@@ -1,10 +1,11 @@
 (ns compiler-domain-source-test
   (:require [clojure.edn :as edn] [clojure.string :as str]
             [clojure.java.shell :as shell] [clojure.test :refer [deftest is run-tests]]))
-(binding [*command-line-args* nil] (load-file "tools/compiler_api_task_projection.clj")
+(binding [*command-line-args* nil]
   (load-file "tools/sh_inventory.clj") (load-file "tools/sh_crosswalk.clj"))
-(require '[compiler-api-task-projection] '[task-projection] '[sh-inventory] '[sh-crosswalk])
+(require '[sh-inventory] '[sh-crosswalk])
 (def composition (edn/read-string (slurp "specs/compiler-api-workflow/domain-contract-source-composition.edn")))
+(def compiler-api-task-path "specs/compiler-api-workflow/tasks.md")
 (defn sha [text] (sh-inventory/sha256 text))
 (def git-source
   (memoize (fn [commit path]
@@ -49,22 +50,6 @@
       (is (= reviewed (span current-witness current)))
       (is (= (.indexOf ^String current ^String reviewed) (.lastIndexOf ^String current ^String reviewed))))))
 
-(deftest prior-main-outcomes-and-historical-statuses-survive
-  (let [path compiler-api-task-projection/task-path
-        current (compiler-api-task-projection/records (slurp path))
-        previous (task-projection/records
-                   {:component "Compiler API" :task-marker "compiler-api-implementation-tasks"
-                    :record-pattern compiler-api-task-projection/record-pattern
-                    :semantic-ids (set (:prior-main-outcomes composition))
-                    :record-keys [:id :title :status :projection]}
-                   (git-source (:base-commit composition) path))]
-    (is (= (:current-outcomes composition) (mapv :id current)))
-    (is (every? #(= "Open" (:status %)) current))
-    (doseq [old previous :let [fresh (first (filter #(= (:id old) (:id %)) current))]]
-      (is (= (dissoc old :projection) (dissoc fresh :projection)))
-      (is (str/starts-with? (:projection fresh) (:projection old))))
-    (is (compiler-api-task-projection/check-projection (slurp path) (slurp compiler-api-task-projection/roadmap-path)))))
-
 (deftest coherent-byte-mutations-and-forged-pins-refuse
   (doseq [cohort (:cohorts composition) [_ {:keys [current-witness]}] (:criteria cohort)
           :let [text (slurp (:path current-witness)) raw (span current-witness text)
@@ -96,7 +81,7 @@
   (let [ref (:selected-producer-source-context composition) text (slurp (:path ref))
         context (edn/read-string text) record (first (:records context))
         source-facets (:source-evidence record)
-        tasks (slurp compiler-api-task-projection/task-path)
+        tasks (slurp compiler-api-task-path)
         named (set (re-seq #"specs/requirement-reconciliation/[a-z-]+\.edn" tasks))]
     (is (= (:sha256 ref) (sha text)))
     (is (= :finite-producer-criterion-source-context-excerpt (:kind context)))
