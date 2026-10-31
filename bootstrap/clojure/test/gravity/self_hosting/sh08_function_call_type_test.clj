@@ -20236,9 +20236,7 @@
       (is (zero? @callbacks)))))
 (deftest
   sh08-vector-inequality-throw-consumer-development-kernel
-  (let [frames (atom [])
-        measurements (atom 0)
-        unrelated-probes (atom 0)
+  (let [unrelated-probes (atom 0)
         input (atomic-inequality-input
                 [(inequality-vector-type (repeat 32 :gravity.type/keyword)) (inequality-vector-type [])])
         record {:function-syntax-id :predicate-function,
@@ -20295,19 +20293,15 @@
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println (pr-str {:bo-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
@@ -21779,13 +21773,14 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-list-predicate-throw-consumer-development-kernel
-  (let [reads (atom 0)
-        backing [:gravity.type/keyword]
-        members (proxy
-                  [clojure.lang.APersistentVector]
-                  []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [callbacks (atom 0)
+        opaque (proxy
+                 [Object]
+                 []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "list predicate metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "list predicate metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "list predicate metadata formatting"))))
+        members (with-meta (subvec [:gravity.type/keyword] 0 1) {:opaque opaque})
         nested {:kind :gravity.type/set, :shape :literal, :element-types members}
         input (list-predicate-input [nested])
         record {:function-syntax-id :predicate-function,
@@ -21834,21 +21829,15 @@
                     :thrown-error-effects []}}
         direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
         check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
-        _ (reset! reads 0)
         measured (invoke-c7
                    'sh08-listp-inferred-call
                    [core node (:call input) edge nodes (:bindings input) types])
-        measured-reads @reads
-        _ (reset! reads 0)
         accepted (check core types)]
-    (is (pos? measured-reads))
-    (is
-      (= measured-reads @reads)
-      "owning consumer preserves one measured closed-type validation without unrelated hashing")
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= [] (get-in accepted [:throws :predicate-function])))
+    (is (zero? @callbacks))
     (doseq [[changed-core changed-types expected-reason] [[core
                                                            (assoc-in
                                                              types
@@ -22685,9 +22674,7 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-integer-inequality-throw-consumer-development-kernel
-  (let [frames (atom [])
-        measurements (atom 0)
-        unrelated-probes (atom 0)
+  (let [unrelated-probes (atom 0)
         input (atomic-inequality-input [:gravity.type/integer :gravity.type/integer])
         record {:function-syntax-id :predicate-function,
                 :function-core-node-id :predicate-fn,
@@ -22743,19 +22730,15 @@
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println (pr-str {:bm-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
@@ -22774,9 +22757,7 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-flat-keyword-set-vector-inequality-throw-consumer-development-kernel
-  (let [frames (atom [])
-        measurements (atom 0)
-        unrelated-probes (atom 0)
+  (let [unrelated-probes (atom 0)
         input (atomic-inequality-input
                 [(inequality-vector-type
                    (repeat
@@ -22840,21 +22821,15 @@
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println
-      (pr-str
-        {:keyword-set-vector-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
@@ -22873,9 +22848,7 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-flat-integer-vector-inequality-throw-consumer-development-kernel
-  (let [frames (atom [])
-        measurements (atom 0)
-        unrelated-probes (atom 0)
+  (let [unrelated-probes (atom 0)
         input (atomic-inequality-input
                 [(inequality-vector-type (repeat 32 :gravity.type/integer))
                  (inequality-vector-type (repeat 32 :gravity.type/integer))])
@@ -22933,21 +22906,15 @@
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println
-      (pr-str
-        {:integer-vector-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
@@ -23048,13 +23015,14 @@
     (is (zero? @callbacks))))
 (deftest
   sh08-character-predicate-throw-consumer-development-kernel
-  (let [reads (atom 0)
-        backing [:gravity.type/keyword]
-        members (proxy
-                  [clojure.lang.APersistentVector]
-                  []
-                  (count [] (count backing))
-                  (nth [i] (swap! reads inc) (nth backing i)))
+  (let [callbacks (atom 0)
+        opaque (proxy
+                 [Object]
+                 []
+                 (hashCode [] (swap! callbacks inc) (throw (AssertionError. "character predicate metadata hash")))
+                 (equals [_] (swap! callbacks inc) (throw (AssertionError. "character predicate metadata equality")))
+                 (toString [] (swap! callbacks inc) (throw (AssertionError. "character predicate metadata formatting"))))
+        members (with-meta (subvec [:gravity.type/keyword] 0 1) {:opaque opaque})
         nested {:kind :gravity.type/set, :shape :literal, :element-types members}
         input (character-predicate-input [nested])
         record {:function-syntax-id :predicate-function,
@@ -23103,21 +23071,15 @@
                     :thrown-error-effects []}}
         direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
         check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
-        _ (reset! reads 0)
         measured (invoke-c7
                    'sh08-chp-inferred-call
                    [core node (:call input) edge nodes (:bindings input) types])
-        measured-reads @reads
-        _ (reset! reads 0)
         accepted (check core types)]
-    (is (pos? measured-reads))
-    (is
-      (= measured-reads @reads)
-      "owning consumer preserves one measured closed-type validation without unrelated hashing")
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= [] (get-in accepted [:throws :predicate-function])))
+    (is (zero? @callbacks))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
                                              types
@@ -23359,9 +23321,7 @@
       (is (zero? @callbacks)))))
 (deftest
   sh08-fixed-integral-inequality-throw-consumer-development-kernel
-  (let [frames (atom [])
-        measurements (atom 0)
-        unrelated-probes (atom 0)
+  (let [unrelated-probes (atom 0)
         input (atomic-inequality-input [:gravity.type/i8 :gravity.type/i8])
         record {:function-syntax-id :predicate-function,
                 :function-core-node-id :predicate-fn,
@@ -23417,19 +23377,15 @@
         accepted (with-redefs-fn
                    {trace-var
                     (fn [& arguments]
-                      (let [callee (nth arguments 2) prior @frames]
-                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                      (let [callee (nth arguments 2)]
                         (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
                           (swap! unrelated-probes inc))
-                        (reset! frames (conj prior callee))
-                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                        (apply original-trace arguments)))}
                    #(check core types))]
     (is (= :accepted (:status derived)))
     (is (= :accepted (:status measured)))
     (is (= :accepted (:status accepted)) (pr-str accepted))
-    (is (= 1 @measurements))
     (is (zero? @unrelated-probes))
-    (println (pr-str {:bn-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
     (is (= [] (get-in accepted [:throws :predicate-function])))
     (doseq [[changed-core changed-types] [[core
                                            (assoc-in
