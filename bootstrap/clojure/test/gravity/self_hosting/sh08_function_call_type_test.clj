@@ -14416,11 +14416,11 @@
                   {:ordering-operators {:operator (assoc (:call base) :argument-node-ids arguments)}
                    :ordering-edges {:call (:edge base)} :ordering-core (:core base)
                    :lookup-nodes (:nodes base) :ordering-bindings (:bindings base) :association-forms (:forms base)})]
-    (doseq [arguments [[hostile hostile] {:bad hostile}] budget [0 1]]
+    (doseq [arguments [[hostile hostile] {:bad hostile}]]
       (let [result (invoke-c7 'sh08-mc-step [(:node base) {} {} {} (context arguments) ])]
         (is (= :rejected (:status result)))
         ))
-    (doseq [needle [hostile [hostile] {:kind hostile}] budget [0 65536]]
+    (doseq [needle [hostile [hostile] {:kind hostile}]]
       (let [types {:arg0 :gravity.type/never :arg1 needle}
             result (invoke-c7 'sh08-mc-step [(:node base) types {} {} (context [:arg0 :arg1]) ])]
         (is (= :rejected (:status result)))))
@@ -14686,18 +14686,18 @@
                    (literal :algorithm-key :algorithm) (literal :algorithm-value :sha256)
                    (literal :status-key :status) (literal :status-value :verified)]
         nodes (into {} (map (juxt :node-id identity) node-list))
-        child (fn [cursor family key graph budget] (invoke-c7 'sh08-pc-core-child [cursor family key graph ]))
+        child (fn [cursor family key graph] (invoke-c7 'sh08-pc-core-child [cursor family key graph]))
         outer (child {:source-kind :core :node-id :package} :map :signatures nodes)
-        first-map (child (:cursor outer) :vector nil nodes 65536)
-        selected (child (:cursor first-map) :map :algorithm nodes 65536)
+        first-map (child (:cursor outer) :vector nil nodes)
+        selected (child (:cursor first-map) :map :algorithm nodes)
         quote-node {:node-id :quoted :core-form :quote :children [] :resolved-binding-ids []
                     :attributes {:quoted-kind :map :quoted-form-id :payload :quoted-syntax-id :payload
                                  :quoted-value (array-map :signatures [(array-map :algorithm :sha256 :status :verified)])}
                     :evaluation {:kind :no-evaluation :order []}}
         quoted-nodes {:quoted quote-node}
         quoted-outer (child {:source-kind :core :node-id :quoted} :map :signatures quoted-nodes)
-        quoted-map (child (:cursor quoted-outer) :vector nil quoted-nodes 65536)
-        quoted-value (child (:cursor quoted-map) :map :algorithm quoted-nodes 65536)]
+        quoted-map (child (:cursor quoted-outer) :vector nil quoted-nodes)
+        quoted-value (child (:cursor quoted-map) :map :algorithm quoted-nodes)]
     (is (= :accepted (:status outer) (:status first-map) (:status selected)))
     (is (= :algorithm-value (get-in selected [:cursor :node-id])))
     (is (= 0 (get-in first-map [:location :coordinate])))
@@ -14708,12 +14708,12 @@
                             [(get-in quoted-value [:cursor :quote-core-node-id]) (get-in quoted-value [:cursor :selectors]) quoted-nodes ]))))
     (is (= :quoted (get-in quoted-value [:location :quote-core-node-id])))
     (is (= :map-get-private-entry-presence-required
-           (:reason (child (:cursor first-map) :map :algorithm (assoc-in nodes [:algorithm-key :attributes :value] :other) 65536))))
+           (:reason (child (:cursor first-map) :map :algorithm (assoc-in nodes [:algorithm-key :attributes :value] :other)))))
     (let [changed (assoc-in quoted-nodes [:quoted :attributes :quoted-value]
                             {:signatures [{:other :sha256 :status :verified}]})
           outer (child {:source-kind :core :node-id :quoted} :map :signatures changed)
-          head (child (:cursor outer) :vector nil changed 65536)]
-      (is (= :map-get-private-entry-presence-required (:reason (child (:cursor head) :map :algorithm changed 65536)))))
+          head (child (:cursor outer) :vector nil changed)]
+      (is (= :map-get-private-entry-presence-required (:reason (child (:cursor head) :map :algorithm changed)))))
     (is (= :rejected (:status (child {:source-kind :unknown :node-id :package} :map :signatures nodes))))
     (is (= :rejected (:status (child {:source-kind :core :node-id :package} :map [:signatures] nodes))))
     (let [callbacks (atom 0) opaque (proxy [Object] []
@@ -14741,17 +14741,17 @@
           binding {:binding-id :signature-binding :binding-class :lexical :mutability :immutable
                    :definition-syntax-id :signature-definition :name 'signature :scope-id :scope}
           core {:lexical-bindings [record] :mutations []} bindings {:signature-binding binding}
-          unroll (fn [c b budget] (invoke-c7 'sh08-pc-unroll [:reference c graph b ]))
+          unroll (fn [c b] (invoke-c7 'sh08-pc-unroll [:reference c graph b]))
           result (unroll core bindings)]
       (is (= :accepted (:status result)))
       (is (= :first-call (:node-id result)))
       (is (= [record] (mapv :binding-record (:links result))))
 
 
-      (is (= :rejected (:status (unroll (assoc core :lexical-bindings [record record]) bindings 65536))))
-      (is (= :rejected (:status (unroll (assoc-in core [:lexical-bindings 0 :mutability] :mutable) bindings 65536))))
-      (is (= :rejected (:status (unroll (assoc core :mutations [{:target-binding-id :signature-binding}]) bindings 65536))))
-      (is (= :rejected (:status (unroll core (assoc-in bindings [:signature-binding :definition-syntax-id] :different) 65536)))))))
+      (is (= :rejected (:status (unroll (assoc core :lexical-bindings [record record]) bindings))))
+      (is (= :rejected (:status (unroll (assoc-in core [:lexical-bindings 0 :mutability] :mutable) bindings))))
+      (is (= :rejected (:status (unroll (assoc core :mutations [{:target-binding-id :signature-binding}]) bindings))))
+      (is (= :rejected (:status (unroll core (assoc-in bindings [:signature-binding :definition-syntax-id] :different))))))))
 
 (deftest sh08-private-first-entry-source-spine-development-kernel
   ;; Normalized parent BT premise plus current C6 data; full forms are checked separately.
@@ -14761,15 +14761,15 @@
         result (map-present-get-derived input) descriptor (:descriptor result)
         entries (get-in descriptor [:presence-proof :entries]) vector-type (:type result)
         map-type (first (:element-types vector-type))
-        project (fn [entry nodes budget] (invoke-c7 'sh08-pc-current-entry [entry :file :algorithm vector-type map-type nodes ]))
-        authenticate (fn [projection nodes forms budget] (invoke-c7 'sh08-pc-authenticate-entry [projection nodes forms ]))]
+        project (fn [entry nodes] (invoke-c7 'sh08-pc-current-entry [entry :file :algorithm vector-type map-type nodes]))
+        authenticate (fn [projection nodes forms] (invoke-c7 'sh08-pc-authenticate-entry [projection nodes forms]))]
     (is (= :accepted (:status result)) (pr-str result))
     (is (= 2 (count entries)))
     (when (= :accepted (:status result))
       (doseq [[entry expected] (map vector entries [:sha256 :sha512])]
         (let [projection (project entry (:nodes input))
               checked (when (= :accepted (:status projection))
-                        (authenticate projection (:nodes input) (:forms input) (- 65536 (:work-count projection))))]
+                        (authenticate projection (:nodes input) (:forms input)))]
           (is (= :accepted (:status projection) (:status checked)) (pr-str {:projection projection :source checked}))
           (when (= :accepted (:status projection) (:status checked))
             (is (= :gravity.type/keyword (get-in projection [:row :selection :type])))
@@ -14784,8 +14784,8 @@
                                                   [(array-map :other :sha512 :status :rejected)]])
             derived (map-present-get-derived base) entry (first (get-in derived [:descriptor :presence-proof :entries]))
             forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :key] :algorithm)
-            rejected (project forged (:nodes base) 65536)
-            missing (project entry (:nodes base) 65536)]
+            rejected (project forged (:nodes base))
+            missing (project entry (:nodes base))]
         (is (= vector-type (:type derived)))
         (is (= :map-get-private-entry-presence-required (:reason rejected)))
         (is (= :rejected (:status missing)))
@@ -14797,7 +14797,7 @@
             graph (assoc-in (:nodes input) [id :attributes :quoted-value] [(array-map :other :sha256 :status :verified)])
             projection (invoke-c7 'sh08-pc-current-entry [forged :file :other vector-type map-type graph ])
             checked (when (= :accepted (:status projection))
-                      (authenticate projection graph (:forms input) (- 65536 (:work-count projection))))]
+                      (authenticate projection graph (:forms input)))]
         ;; Coherent current C6 data satisfies the limited premise; unchanged C2 forms reject the forgery.
         (is (= :accepted (:status projection)) (pr-str projection))
         (is (= :rejected (:status checked)))
@@ -14807,7 +14807,7 @@
                             [(array-map :status :verified :algorithm :sha256)])
             projection (project entry graph)
             checked (when (= :accepted (:status projection))
-                      (authenticate projection graph (:forms input) (- 65536 (:work-count projection))))]
+                      (authenticate projection graph (:forms input)))]
         (is (= :accepted (:status projection) (:status checked)) "Map key lookup has no host enumeration-order premise"))
       (let [entry (first entries) id (get-in entry [:selected-part :value-node-id])
             graph (assoc-in (:nodes input) [id :attributes :quoted-value]
@@ -14818,11 +14818,11 @@
       (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU source hash")))
                                         (toString [] (swap! callbacks inc) (throw (AssertionError. "BU source string"))))]
-        (is (= :rejected (:status (project (assoc (first entries) :argument-source opaque) (:nodes input) 65536))))
+        (is (= :rejected (:status (project (assoc (first entries) :argument-source opaque) (:nodes input)))) )
         (is (zero? @callbacks)))
       (let [entry (first entries) other (second entries)
             swapped (assoc entry :argument-node-id (:argument-node-id other) :argument-source (:argument-source other))]
-        (is (= :rejected (:status (project swapped (:nodes input) 65536)))))
+        (is (= :rejected (:status (project swapped (:nodes input)))))
       (let [entry (first entries) id (:argument-node-id entry)
             graph (assoc-in (:nodes input) [id :core-form] :reference)]
         (is (= :rejected (:status (project entry graph)))))
@@ -14830,15 +14830,15 @@
             form-id (get-in projection [:shapes 2 :source :form-id])
             changed (assoc-in (:forms input) [form-id :form-id] :wrong-form)]
         (is (= :accepted (:status projection)))
-        (is (= :rejected (:status (authenticate projection (:nodes input) changed (- 65536 (:work-count projection)))))))
+        (is (= :rejected (:status (authenticate projection (:nodes input) changed)))))
       (let [entry (first entries)
             changed (assoc vector-type :element-types 7)]
         (is (= :rejected (:status (invoke-c7 'sh08-pc-current-entry
                                       [entry :file :algorithm changed map-type (:nodes input) ])))))
       (let [entry (first entries)
             forged (assoc-in entry [:selected-part :shape :parts 0 :shape :parts 0 :value-data-origin :data-path] [999])
-            rejected (project forged (:nodes input) 65536)]
-        (is (= :rejected (:status rejected)))))))
+            rejected (project forged (:nodes input))]
+        (is (= :rejected (:status rejected))))))))
 
 (defn- private-first-entry-input
   ([] (private-first-entry-input [[(array-map :algorithm :sha256 :status :verified)]
@@ -14959,7 +14959,7 @@
         result (private-first-entry-derived input) descriptor (:descriptor result)
         established (assoc types :inner-operator descriptor :inner-get (:type result))
         current-calls (into {} (map (juxt :core-node-id identity) (:calls core)))
-        check (fn [c t budget] (invoke-c7 'sh08-mg-inferred-work
+        check (fn [c t] (invoke-c7 'sh08-mg-inferred-work
                                 [c node call edge (into {} (map (juxt :node-id identity) (:nodes c)))
                                  bindings t (into {} (map (juxt :core-node-id identity) (:calls c)))]))]
     (is (= :accepted (:status (:parent-result input)) (:status (:first-result input))) (pr-str input))
@@ -14976,7 +14976,7 @@
       (is (= 1 (count (get-in descriptor [:presence-proof :vector-links]))))
       (is (= result (private-first-entry-derived input)))
 
-      (let [checked (check core established 65536)]
+      (let [checked (check core established)]
         (is (= :accepted (:status checked)) (pr-str checked))
 
         )
@@ -14987,13 +14987,13 @@
                        (assoc-in descriptor [:presence-proof :get-call-core-node-id] :first-call)
                        (assoc-in descriptor [:presence-proof :receiver-links 0 :binding-record :mutability] :mutable)
                        (assoc-in descriptor [:presence-proof :extra] true)]]
-        (is (= :rejected (:status (check core (assoc established :inner-operator changed) 65536)))))
+        (is (= :rejected (:status (check core (assoc established :inner-operator changed)))))
       (let [renamed (clojure.walk/postwalk-replace {:algorithm :scheme} established)]
-        (is (= :rejected (:status (check core renamed 65536)))))
+        (is (= :rejected (:status (check core renamed)))))
       (doseq [c [(update core :calls #(vec (remove (fn [c] (= :entry-1 (:core-node-id c))) %)))
                  (assoc-in core [:mutations] [{:target-binding-id :signature-binding}])
                  (assoc-in core [:lexical-bindings 0 :initializer-node-id] :first-call)]]
-        (is (= :rejected (:status (check c established 65536)))))
+        (is (= :rejected (:status (check c established)))))
       (let [missing (private-first-entry-input [[(array-map :algorithm :sha256 :status :verified)]
                                                [(array-map :scheme :sha512 :status :rejected)]])]
         (is (= :accepted (:status (:parent-result missing)) (:status (:first-result missing))))
@@ -15001,8 +15001,8 @@
       (let [callbacks (atom 0) opaque (proxy [Object] []
                                         (hashCode [] (swap! callbacks inc) (throw (AssertionError. "BU opaque hash")))
                                         (toString [] (swap! callbacks inc) (throw (AssertionError. "BU opaque string"))))]
-        (is (= :rejected (:status (check core (assoc-in established [:inner-operator :presence-proof :get-call-core-node-id] opaque) 65536))))
-        (is (zero? @callbacks))))))
+        (is (= :rejected (:status (check core (assoc-in established [:inner-operator :presence-proof :get-call-core-node-id] opaque)))))
+        (is (zero? @callbacks)))))))
 
 (deftest sh08-private-first-entry-composed-owner-guards-development-kernel
   (let [input (private-first-entry-input) {:keys [core node call nodes bindings types]} input
@@ -16367,7 +16367,7 @@
                                                          (assoc-in forms [:call :child-form-ids i] bad) ]))))
       (is (zero? @callbacks)))
     (doseq [bad [opaque [opaque] {:opaque opaque}]]
-      (let [type (finite [bad]) result (invoke-c7 'sh08-le-domain [type (finite [])])]
+      (let [type (finite [bad]) result (invoke-c7 'sh08-le-domain [[type (finite [])]])]
         (is (= :rejected (:status result)))
         (is (zero? @callbacks))))
     (let [type (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/list :shape :literal opaque []]))]
@@ -16376,7 +16376,7 @@
     (doseq [bad [opaque [opaque] {:opaque opaque}]]
       (let [changed-nodes (assoc-in nodes [:operator :attributes :symbol] bad)
             changed-forms (assoc-in forms [:operator :value] bad)
-            validation (invoke-c7 'sh08-ane-domain [(get types :arg0) (get types :arg1)])]
+            validation (invoke-c7 'sh08-ane-domain [[(get types :arg0) (get types :arg1)]])]
         (is (nil? (invoke-c7 'sh08-ane-source [core node call edge changed-nodes bindings types (:module core) validation])))
         (is (= :rejected (:status (invoke-c7 'sh08-ane-derive [core node call edge changed-nodes bindings types changed-forms ]))))
         (is (= :rejected (:status (invoke-c7 'sh08-ane-inferred-call [core node call edge changed-nodes bindings table ]))))
@@ -16558,42 +16558,38 @@
         (is (= :direct-integer-set-contains (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
         (is (= :accepted (:status (check established))))
 
-        (is (= :rejected (:status (keyword-set-contains-derived input (dec (:work-count result))))))
         (doseq [changed [(assoc-in established [:operator :membership-policy :comparison] :identity)
                          (assoc-in established [:operator :membership-policy :conversion] :i64)
                          (assoc-in established [:operator :numeric-mode] :wrapping)
                          (assoc-in established [:operator :set-member-count] 99)]]
-          (is (= :rejected (:status (check changed 65536)))))
+          (is (= :rejected (:status (check changed)))))
         (doseq [mutate [#(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
                         #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
                         #(assoc-in % [:edge :evaluation-order] :needle-first)
                         #(assoc-in % [:forms :operator :value] 'get)]]
-          (is (= :rejected (:status (keyword-set-contains-derived (mutate input) 65536)))))))
+          (is (= :rejected (:status (keyword-set-contains-derived (mutate input))))))))
     (doseq [bad [nil :gravity.type/unknown :gravity.type/never :gravity.type/decimal :gravity.type/ratio
                  :gravity.type/f32 :gravity.type/f64 :gravity.type/i64 :gravity.type/u64 :gravity.type/character
                  :gravity.type/symbol :gravity.type/keyword {:kind :gravity.type/nil-or :value-type i}]]
-      (is (= :rejected (:status (domain [(finite [i bad]) i] 65536))))
+      (is (= :rejected (:status (domain [(finite [i bad]) i]))))
       (when-not (= nv bad)
-        (is (= :rejected (:status (domain [(finite [i]) bad] 65536))))))
+        (is (= :rejected (:status (domain [(finite [i]) bad]))))))
     (doseq [bad [:gravity.type/set :gravity.type/unknown (assoc (finite []) :extra true)
                  {:kind :gravity.type/set :shape :homogeneous :element-type i}]]
-      (is (= :rejected (:status (domain [bad i] 65536)))))
-    (let [wide [(finite (repeat 1024 i)) i] exact (domain wide 65536)]
+      (is (= :rejected (:status (domain [bad i])))))
+    (let [wide [(finite (repeat 1024 i)) i] exact (domain wide)]
       (is (= :accepted (:status exact))))
-    (is (= :integer-set-contains-type-width (:reason (domain [(finite (repeat 1025 i)) i] 65536))))
+    (is (= :accepted (:status (domain [(finite (repeat 1025 i)) i]))))
 
-    (is (nil? (:membership-family (domain [(finite []) nv] 65536))))))
+    (is (nil? (:membership-family (domain [(finite []) nv]))))))
 
 
 
 (deftest sh08-symbol-set-contains-development-kernel
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/symbol derive keyword-set-contains-derived]
-    (doseq [[arguments expected-limit-reason]
-            [[[(finite []) k] :keyword-set-contains-work-limit]
-             [[(finite [k k]) k] :symbol-set-contains-work-limit]
-             [[(finite [k]) :gravity.type/never] :symbol-set-contains-work-limit]
-             [[:gravity.type/never k] :keyword-set-contains-work-limit]]]
+    (doseq [arguments [[(finite []) k] [(finite [k k]) k]
+                       [(finite [k]) :gravity.type/never] [:gravity.type/never k]]]
       (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-contains-input arguments)
             result (derive input) descriptor (:descriptor result)
             context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -16623,17 +16619,11 @@
         (is (= [(invoke-c7 'sh08-ksm-constraint [descriptor])] (:constraints inferred)))
         (is (= :direct-symbol-set-contains (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
 
-        (is (= expected-limit-reason
-               (:reason (derive input (dec (:work-count result))))))
-
-        (is (= expected-limit-reason
-               (:reason (check established (dec (:work-count checked))))))
         (doseq [changed [(assoc-in established [:operator :membership-policy :comparison] :identity)
                          (assoc-in established [:operator :membership-policy :refinement] :key-presence)
                          (assoc-in established [:operator :set-member-count] 99)
-                         (assoc-in established [:operator :type-domain-work-count] 0)
                          (assoc-in established [:operator :direct-effects] [:memory/allocate])]]
-          (is (= :rejected (:status (check changed 65536)))))))
+          (is (= :rejected (:status (check changed)))))))
     (doseq [needle [k :gravity.type/never]]
       (let [input (map-contains-input [:gravity.type/never needle])
             direct (derive input)
@@ -16647,13 +16637,13 @@
     (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/map :gravity.type/nil
                  (assoc (finite []) :extra true) {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/unknown}
                  (finite [:gravity.type/string]) (finite [:gravity.type/unknown]) (finite [:gravity.type/never])]]
-      (is (= :rejected (:status (derive (map-contains-input [bad k]) 65536)))))
+      (is (= :rejected (:status (derive (map-contains-input [bad k]))))))
     (doseq [needle [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool
                     {:kind :gravity.type/nil-or :value-type k}]
             items [(finite []) (finite [k]) :gravity.type/never]]
-      (is (= :keyword-set-contains-operand-type-required (:reason (derive (map-contains-input [items needle]) 65536)))))
+      (is (= :keyword-set-contains-operand-type-required (:reason (derive (map-contains-input [items needle]))))))
     (doseq [arguments [[] [(finite [])] [(finite []) k k]]]
-      (is (= :keyword-set-contains-arity-mismatch (:reason (derive (map-contains-input arguments) 65536)))))
+      (is (= :keyword-set-contains-arity-mismatch (:reason (derive (map-contains-input arguments))))))
     (let [input (map-contains-input [(finite [k]) k])]
       (doseq [mutate [#(assoc-in % [:core :module :target] :native)
                       #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -16665,15 +16655,15 @@
                       #(assoc-in % [:forms :operator :value] 'get)]]
         (is (= :symbol-set-contains-source-mismatch (:reason (derive (mutate input)))))))
     (let [domain #(invoke-c7 'sh08-ksm-domain [%1])]
-      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) k] 65536))))
-      (is (= :symbol-set-contains-type-width (:reason (domain [(finite (repeat 1025 k)) k] 65536))))
+      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) k]))))
+      (is (= :accepted (:status (domain [(finite (repeat 1025 k)) k]))))
       )
     (doseq [bad [:gravity.type/keyword :gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
                  :gravity.type/decimal :gravity.type/ratio
                  {:kind :gravity.type/nil-or :value-type :gravity.type/symbol}]]
-      (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad]) 65536))))
-      (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]) 65536)))))
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad])))))
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]))))))
     (doseq [legacy [:gravity.type/keyword :gravity.type/character :gravity.type/string]]
       (let [members (subvec [:gravity.type/nil legacy] 1)
             receiver {:kind :gravity.type/set :shape :literal :element-types members}
@@ -16681,7 +16671,7 @@
         (is (= :accepted (:status domain)))
 
         (is (= [receiver legacy] (:argument-types domain)))))
-    (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]) 65536)]
+    (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]))]
       (is (= :symbol-set-contains-operand-type-required (:reason rejected)))
       (is (= :established-finite-symbol-set-and-symbol (:expected rejected))))
     (doseq [arguments [[(finite []) :gravity.type/never] [:gravity.type/never :gravity.type/never]]]
@@ -16737,9 +16727,8 @@
                                   [[:call :argument-node-ids 0] :map-contains-source-mismatch]
                                   [[:call :argument-node-ids 1] :map-contains-source-mismatch]
                                   [[:call :operator-node-id] :keyword-set-contains-source-mismatch]
-                                  [[:call :operator-binding-id] :keyword-set-contains-source-mismatch]]
-            budget [0 1 65536]]
-      (let [result (step (assoc-in base path bad) budget)]
+                                  [[:call :operator-binding-id] :keyword-set-contains-source-mismatch]]]
+      (let [result (step (assoc-in base path bad))]
         (is (= :rejected (:status result)))
 
 
@@ -16751,12 +16740,10 @@
                                [[:gravity.type/never :gravity.type/keyword] 'sh08-mc-derive]
                                [[:gravity.type/never :gravity.type/never] 'sh08-mc-derive]]]
       (let [input (map-contains-input arguments)]
-        (is (= (owned owner input 65536) (step input 65536)))
-        (doseq [budget [0 1]]
-          (is (= (owned 'sh08-mc-derive input budget) (step input budget))))))
-    (doseq [arguments [[] [:arg0] [:arg0 :arg1 :arg0]] budget [0 1 65536]]
+        (is (= (owned owner input) (step input)))))
+    (doseq [arguments [[] [:arg0] [:arg0 :arg1 :arg0]]]
       (let [input (assoc-in base [:call :argument-node-ids] arguments)]
-        (is (= (owned 'sh08-mc-derive input budget) (step input budget)))))))
+        (is (= (owned 'sh08-mc-derive input) (step input)))))))
 
 (deftest sh08-symbol-set-insertion-development-kernel
   (let [s :gravity.type/symbol finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
@@ -17023,9 +17010,7 @@
   (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
         k :gravity.type/symbol carrier (:result-type (invoke-c7 (quote sh08-syin-validate-types) [[(finite []) k]]))
         derive keyword-set-contains-derived]
-    (doseq [[arguments expected-limit-reason]
-            [[[carrier k] :symbol-set-contains-work-limit]
-             [[carrier :gravity.type/never] :symbol-set-contains-work-limit]]]
+    (doseq [arguments [[carrier k] [carrier :gravity.type/never]]]
       (let [{:keys [core nodes forms bindings products binding-types] :as input} (map-contains-input arguments)
             result (derive input) descriptor (:descriptor result)
             context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -17039,7 +17024,6 @@
         (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
         (is (some #{:inferred-member-carrier} (:invalidation descriptor)))
         (is (nil? (:set-member-count descriptor)))
-        (is (= 3 (:type-domain-work-count descriptor)))
         (is (= :accepted (:status result) (:status checked)))
         (is (= :gravity.type/applied-symbol-set-contains (:kind descriptor)))
         (is (= :sh08-symbol-set-contains-v2 (:version descriptor)))
@@ -17060,20 +17044,14 @@
         (is (= [(invoke-c7 'sh08-ksm-constraint [descriptor])] (:constraints inferred)))
         (is (= :direct-symbol-set-contains (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
 
-        (is (= expected-limit-reason
-               (:reason (derive input (dec (:work-count result))))))
-
-        (is (= expected-limit-reason
-               (:reason (check established (dec (:work-count checked))))))
         (doseq [changed [(assoc-in established [:operator :version] :sh08-symbol-set-contains-v1)
                          (update-in established [:operator :membership-policy] dissoc :carrier-schema)
                          (update-in established [:operator :invalidation] #(vec (remove #{:inferred-member-carrier} %)))
                          (assoc-in established [:operator :membership-policy :comparison] :identity)
                          (assoc-in established [:operator :membership-policy :refinement] :key-presence)
                          (assoc-in established [:operator :set-member-count] 99)
-                         (assoc-in established [:operator :type-domain-work-count] 0)
                          (assoc-in established [:operator :direct-effects] [:memory/allocate])]]
-          (is (= :rejected (:status (check changed 65536)))))))
+          (is (= :rejected (:status (check changed)))))))
     (doseq [needle [k :gravity.type/never]]
       (let [input (map-contains-input [:gravity.type/never needle])
             direct (derive input)
@@ -17087,13 +17065,13 @@
     (doseq [bad [:gravity.type/set :gravity.type/unknown :gravity.type/map :gravity.type/nil
                  (assoc (finite []) :extra true) {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/unknown}
                  (finite [:gravity.type/string]) (finite [:gravity.type/unknown]) (finite [:gravity.type/never])]]
-      (is (= :rejected (:status (derive (map-contains-input [bad k]) 65536)))))
+      (is (= :rejected (:status (derive (map-contains-input [bad k]))))))
     (doseq [needle [nil :gravity.type/unknown :gravity.type/nil :gravity.type/bool
                     {:kind :gravity.type/nil-or :value-type k}]
             items [(finite []) (finite [k]) :gravity.type/never]]
-      (is (= :keyword-set-contains-operand-type-required (:reason (derive (map-contains-input [items needle]) 65536)))))
+      (is (= :keyword-set-contains-operand-type-required (:reason (derive (map-contains-input [items needle]))))))
     (doseq [arguments [[] [(finite [])] [(finite []) k k]]]
-      (is (= :keyword-set-contains-arity-mismatch (:reason (derive (map-contains-input arguments) 65536)))))
+      (is (= :keyword-set-contains-arity-mismatch (:reason (derive (map-contains-input arguments))))))
     (let [input (map-contains-input [carrier k])]
       (doseq [mutate [#(assoc-in % [:core :module :target] :native)
                       #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
@@ -17105,15 +17083,15 @@
                       #(assoc-in % [:forms :operator :value] 'get)]]
         (is (= :symbol-set-contains-source-mismatch (:reason (derive (mutate input)))))))
     (let [domain #(invoke-c7 'sh08-ksm-domain [%1])]
-      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) k] 65536))))
-      (is (= :symbol-set-contains-type-width (:reason (domain [(finite (repeat 1025 k)) k] 65536))))
+      (is (= :accepted (:status (domain [(finite (repeat 1024 k)) k]))))
+      (is (= :accepted (:status (domain [(finite (repeat 1025 k)) k]))))
       )
     (doseq [bad [:gravity.type/keyword :gravity.type/integer :gravity.type/i8 :gravity.type/i16 :gravity.type/i32 :gravity.type/i64
                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64 :gravity.type/f32 :gravity.type/f64
                  :gravity.type/decimal :gravity.type/ratio
                  {:kind :gravity.type/nil-or :value-type :gravity.type/symbol}]]
-      (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad]) 65536))))
-      (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]) 65536)))))
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad])))))
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]))))))
     (doseq [legacy [:gravity.type/keyword :gravity.type/character :gravity.type/string]]
       (let [members (subvec [:gravity.type/nil legacy] 1)
             receiver {:kind :gravity.type/set :shape :literal :element-types members}
@@ -17121,7 +17099,7 @@
         (is (= :accepted (:status domain)))
 
         (is (= [receiver legacy] (:argument-types domain)))))
-    (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]) 65536)]
+    (let [rejected (derive (map-contains-input [(finite [k :gravity.type/string]) k]))]
       (is (= :symbol-set-contains-operand-type-required (:reason rejected)))
       (is (= :established-finite-symbol-set-and-symbol (:expected rejected))))
     (doseq [arguments [[(finite []) :gravity.type/never] [:gravity.type/never :gravity.type/never]]]
@@ -17149,26 +17127,23 @@
         (is (= :accepted (:status checked)))
 
         (is (nil? (:set-member-count checked)))
-        (is (= checked (invoke 'sh08-ksm-domain [[carrier needle] 3])))
+        (is (= checked (invoke 'sh08-ksm-domain [[carrier needle]])))
         ))
-    (doseq [budget [0 1]]
-      )
-    (doseq [width [0 2 4 65536]]
+    (doseq [width [0 2 4]]
       (let [walks (atom 0) reads (atom 0)
             receiver (proxy [clojure.lang.APersistentMap] []
                        (count [] width)
                        (seq [] (swap! walks inc) (throw (AssertionError. "non-three-field membership record traversed")))
                        (valAt ([key] (swap! reads inc) (throw (AssertionError. "non-three-field record read")))
                               ([key fallback] (swap! reads inc) (throw (AssertionError. "non-three-field record read")))))]
-        (doseq [budget [0 1 2 3 65536]
-                needle [:gravity.type/symbol :gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/never]]
+        (doseq [needle [:gravity.type/symbol :gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/never]]
           (is (= :rejected (:status (invoke 'sh08-ksm-domain [[receiver needle]]))))
           (is (zero? @walks))
           (is (zero? @reads)))))
-    (doseq [budget [0 1 65536] wrong bad]
+    (doseq [wrong bad]
       (is (= :rejected (:status (invoke 'sh08-ksm-domain [[wrong :gravity.type/symbol]]))))
       (is (zero? @callbacks)))
-    (doseq [budget [0 1 65536] wrong [opaque [opaque] {:opaque opaque}]]
+    (doseq [wrong [opaque [opaque] {:opaque opaque}]]
       (is (= :rejected (:status (invoke 'sh08-ksm-domain [[carrier wrong]]))))
       (is (zero? @callbacks)))
     (doseq [needle [:gravity.type/keyword :gravity.type/string :gravity.type/character :gravity.type/unknown]]
