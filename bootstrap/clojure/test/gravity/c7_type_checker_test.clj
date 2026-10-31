@@ -173,19 +173,21 @@
 (deftest types-stage-contract-states-the-seed-data-boundary
   (let [contract (:gravity/namespace-contract (meta #'types/type-fact))
         publics (ns-publics 'gravity.types)]
-    (is (= :hosted-seed-type-products (:contract-boundary contract)))
-    (is (= 7 (count publics)))
+    (is (= :seed-type-products-and-current-gravity-runtime (:contract-boundary contract)))
+    (is (= 11 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= contract (:gravity/namespace-contract (meta (publics name)))))
       (is (= :none (:admission api)))
-      (is (true? (:seed-compatibility-data-only? api)))
+      (is (or (true? (:seed-compatibility-data-only? api))
+              (true? (:current-gravity-runtime-data-only? api))))
       (is (false? (:authenticates-inputs? api)))
       (is (false? (:proves-canonical-types? api)))
       (is (false? (:grants-authority? api))))
     (is (= [] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c7-type-checker.inference] (get-in contract [:dependency-direction :consumed-by])))
+    (is (= '[gravity.c7-type-checker.inference gravity.bootstrap]
+           (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (not (contains? (ns-aliases 'gravity.types) 'gravity.bootstrap)))
     (is (nil? (find-ns 'gravity.bootstrap)))))

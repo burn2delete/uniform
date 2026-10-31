@@ -1,10 +1,42 @@
 (ns gravity.types
-  "Existing hosted seed type-product builders. Canonical C7 remains Gravity-owned.")
+  "Seed type products and explicit current C7 runtime entry points. Semantics remain Gravity-owned.")
 
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {literal-type
+   {compile-plan
+    {:arglists ([emitter source-path source-text operations]),
+     :admission :none,
+     :current-gravity-runtime-data-only? true,
+     :operation-inputs [:compile-plan],
+     :authenticates-inputs? false,
+     :proves-canonical-types? false,
+     :grants-authority? false},
+    check-primitives
+    {:arglists ([runner plan core operations]),
+     :admission :none,
+     :current-gravity-runtime-data-only? true,
+     :operation-inputs [:execute-function],
+     :authenticates-inputs? false,
+     :proves-canonical-types? false,
+     :grants-authority? false},
+    verify-primitives
+    {:arglists ([runner plan core candidate operations]),
+     :admission :none,
+     :current-gravity-runtime-data-only? true,
+     :operation-inputs [:execute-function],
+     :authenticates-inputs? false,
+     :proves-canonical-types? false,
+     :grants-authority? false},
+    verify-function-result
+    {:arglists ([runner plan request candidate operations]),
+     :admission :none,
+     :current-gravity-runtime-data-only? true,
+     :operation-inputs [:execute-function],
+     :authenticates-inputs? false,
+     :proves-canonical-types? false,
+     :grants-authority? false},
+    literal-type
     {:arglists ([value]),
      :admission :none,
      :seed-compatibility-data-only? true,
@@ -55,7 +87,7 @@
      :grants-authority? false}},
    :dependency-direction
    {:requires [],
-    :consumed-by [gravity.c7-type-checker.inference],
+    :consumed-by [gravity.c7-type-checker.inference gravity.bootstrap],
     :forbids
     [gravity.bootstrap
      gravity.cli
@@ -66,7 +98,7 @@
    :unsupported
    [:native-ingress-authentication
     :callback-validation
-    :canonical-l5-c7-type-checking
+    :complete-canonical-l5-c7-type-checking
     :integer-width-proof
     :general-constraint-solving
     :profile-legality
@@ -82,20 +114,39 @@
    :artifact-inputs
    [:owner-supplied-native-hosted-core-node-views
     :explicit-type-classifier-callbacks
-    :type-fact-data],
+    :type-fact-data
+    :explicit-emitter-source-path-and-text
+    :compiler-plan-and-native-core-or-type-result-data
+    :explicit-compiler-and-runtime-operations],
    :namespace gravity.types,
    :diagnostic-ownership
    {:stage [],
     :upstream [:core-node-source-and-origin-data],
     :existing-c7-owner
-    [:typed-core-verification :type-diagnostic-decisions]},
+    [:typed-core-verification :type-diagnostic-decisions]
+    :propagated [:compiler-and-runtime-diagnostics :gravity-c7-diagnostics]},
    :artifact-outputs
    [:seed-literal-and-node-classifications
     :node-type-fact-data
     :type-environment-data
     :ordered-assignment-constraint-data
-    :function-signature-data],
-   :contract-boundary :hosted-seed-type-products})
+    :function-signature-data
+    :current-c7-executable-plan-data
+    :unauthenticated-primitive-typed-template
+    :c7-replay-report-data],
+   :contract-boundary :seed-type-products-and-current-gravity-runtime})
+
+(defn compile-plan [emitter source-path source-text operations]
+  ((:compile-plan operations) emitter source-path source-text))
+
+(defn check-primitives [runner plan core operations]
+  ((:execute-function operations) runner plan 'sh08-type-core-artifact [core]))
+
+(defn verify-primitives [runner plan core candidate operations]
+  ((:execute-function operations) runner plan 'sh08-verify-type-result [core candidate]))
+
+(defn verify-function-result [runner plan request candidate operations]
+  ((:execute-function operations) runner plan 'sh08-verify-function-type-result [request candidate]))
 
 (defn
  literal-type
@@ -290,7 +341,11 @@
 
 (doseq
  [operation
-  [#'literal-type
+  [#'compile-plan
+   #'check-primitives
+   #'verify-primitives
+   #'verify-function-result
+   #'literal-type
    #'node-operator
    #'node-type
    #'type-fact
