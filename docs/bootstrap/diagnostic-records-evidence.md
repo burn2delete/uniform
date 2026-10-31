@@ -130,10 +130,68 @@ session source test or restricted source/native path is rerun by this slice.
 
 ## Unsupported boundaries
 
-Legacy records still synthesize syntax IDs from the form index and carry the
-fixed hosted/JVM context. These are preserved compatibility data, not canonical
-C15 support for unavailable metadata or other profiles/targets. Redaction
-records are retained, not applied. The API does not sanitize secrets or define
+The earlier compatibility records synthesized syntax IDs from the form index
+and carried fixed hosted/JVM context. The phase-availability correction below
+removes those fabricated facts. Redaction records are retained, not applied.
+The API does not sanitize secrets or define
 safe public output. Stream verification, schema/catalog semantics, rendering,
 localization, generated-origin authentication, source admission, full compiler
 composition, migration, release, self-hosting and seed retirement remain open.
+
+## Phase availability correction
+
+The current source composes actual main
+b3f3390e32acc89842ddd3d432ed4f7c7c8648a6 with the earlier candidate
+2508a2efc2daa1213ac671480cb4e39a9d031f2a. The two metadata conflicts were
+resolved from complete parents: all main ownership forms remain unchanged,
+the one C15 dependency regression is appended, and only the Diagnostics map
+row is selected from the earlier candidate. Incoming implementations and CI
+policy are inherited unchanged. This is working-source evidence, not a claim
+that the earlier failed candidate passed. A later actual-main composition and
+fresh exact integration checks remain required.
+
+C15's availability rule and the Gravity C15 owner's context/primary predicates
+govern the correction. `diagnostic-record` accepts explicit optional `:profile`,
+`:target` and `:syntax-id`; absent values remain present as nil. It does not
+derive syntax identity from a form index. The native records facade and
+Bootstrap compatibility wrapper forward all three values. The source-artifact
+adapter supplies the parsed module's actual profile/target; its four synthetic
+diagnostic-system examples use `:compiler-diagnostics` and have no invented
+syntax identity. Its stream carries the same stage; the internal pass name
+remains unchanged.
+
+Native validation permits unavailable context/syntax only for `:read-source`
+and `:compiler-diagnostics`. Other stages require keyword profile/target and
+a nonempty string or keyword syntax ID. Missing keys and false/invalid values
+remain refusals. Validator and capability-report predicates agree; failed
+checks produce an incomplete report. A report still trusts legacy supplied
+redaction/golden labels and upstream status fields: it is not authentication,
+canonical C15 proof or publication authority. Diagnostic-system exception data
+keeps unavailable profile/target/syntax explicit and preserves the override's
+subject kind separately from the diagnostic stage.
+
+The original paired C8-UNDECLARED input has no profile, target or syntax ID.
+The corrected constructor retains the actual effect-check stage, complete
+upstream facts, span and primary artifact, with explicit nil context. Both
+legacy diagnostic IDs listed above remain unchanged and recompute. Native
+admission now correctly refuses each record with C15-SCHEMA / phase-context;
+forging its ID separately refuses with C15-ID / stable-id. Neither rejection
+is hidden by retagging the semantic stage or inventing context.
+
+Both input text/value pairs and their hashes are unchanged. Six complete and
+serialized record/bundle/forged-record pairs differ only by the three explicit
+context corrections. The new context refusals are intentional behavior changes;
+the historical twelve-record equality claim above does not describe this source.
+Earlier intermediate local captures that accepted nil at any stage are also
+superseded by the phase-aware validation. One new negative fixture initially
+expected location rejection after deleting the primary artifact; the existing
+ID check correctly ran first. The fixture now reidentifies the malformed input
+to exercise location validation separately; no production check was reordered.
+
+Focused tests cover early/system nil availability, semantic-stage refusal,
+known context forwarding through both wrappers, actual span variants, missing
+keys, malformed values, identity preimages and incomplete native reports.
+Bootstrap-free tests and Bootstrap carrier tests run in separate fresh JVMs.
+No cold-load guard, catalog count, source identity protocol or CI configuration
+is weakened. Full diagnostic binding, redaction, rendering, canonical schema,
+source admission and all broader unsupported boundaries remain open.

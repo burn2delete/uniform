@@ -8624,6 +8624,47 @@
                         (if (= :accepted (get (sh08-lc-validate-types (get validation :argument-types)) :status))
                           (= :accepted (get (sh08-lc-validate-types [(get validation :result-type)]) :status)) false)
                         false) false) false) false))) false) false) false) false)))
+
+(defn sh08-pl-insertion-policy [family]
+  (if (contains? '#{:symbol-set-insertion :keyword-set-insertion :string-set-insertion} family)
+    (let [insertion-common {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
+                            :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
+                            :normalization :none :locale :none :coercion :none
+                            :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
+                            :operand-evaluation :left-to-right-once :operand-position :non-tail :cardinality-analysis :none
+                            :domain-validation :complete-and-unique-before-hit-miss-or-construction
+                            :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
+          insertion-semantics
+          (if (= :symbol-set-insertion family)
+            (assoc insertion-common
+                   :member-domain :independently-established-symbol-only :member-equality :guarded-atomic-symbol-value
+                   :symbol-equality :original-namespace-and-name :resolution-authority :none
+                   :result-evidence :homogeneous-symbol-set-only :carrier-schema :gravity/homogeneous-symbol-set-type-v1)
+            (if (= :keyword-set-insertion family)
+              (assoc insertion-common
+                     :member-domain :independently-established-keyword-only :member-equality :guarded-atomic-keyword-value
+                     :result-evidence :bare-set-only)
+              (assoc insertion-common
+                     :member-domain :independently-established-string-only :member-equality :native-string-value
+                     :strings :exact-valid-scalar-sequence
+                     :result-evidence :homogeneous-string-set-only :carrier-schema :gravity/homogeneous-string-set-type-v1)))
+          storage-common {:input :preserved
+                          :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
+                          :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
+                          :physical-sharing :unpromised :enumeration :unobserved}
+          storage-policy
+          (assoc storage-common :representation
+                 (if (= :symbol-set-insertion family)
+                   :development-persistent-symbol-set
+                   (if (= :keyword-set-insertion family)
+                     :development-persistent-keyword-set
+                     :development-persistent-string-set)))
+          allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}]
+      {:insertion-semantics insertion-semantics
+       :allocation-policy allocation-policy
+       :storage-policy storage-policy})
+    nil))
+
 (defn sh08-pl-source [core node call edge nodes bindings types module validation]
   (if (sh08-pl-validation? validation)
 
@@ -8663,26 +8704,15 @@
            (= :accepted (get validation :status))] )
       (if (= :symbol-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
-          {:kind :gravity.type/applied-symbol-set-insertion :version :sh08-symbol-set-insertion-v2
+          (let [policy (sh08-pl-insertion-policy :symbol-set-insertion)]
+            {:kind :gravity.type/applied-symbol-set-insertion :version :sh08-symbol-set-insertion-v2
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-symbol-set-insertion
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
-                           :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
-                           :member-domain :independently-established-symbol-only :member-equality :guarded-atomic-symbol-value
-                           :symbol-equality :original-namespace-and-name :normalization :none :locale :none :coercion :none
-                           :resolution-authority :none
-                           :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
-                           :operand-evaluation :left-to-right-once :operand-position :non-tail
-                           :result-evidence :homogeneous-symbol-set-only :carrier-schema :gravity/homogeneous-symbol-set-type-v1 :cardinality-analysis :none
-                           :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                           :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
-       :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
-       :storage-policy {:representation :development-persistent-symbol-set :input :preserved
-                        :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
-                        :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
-                        :physical-sharing :unpromised :enumeration :unobserved}
+       :insertion-semantics (get policy :insertion-semantics)
+       :allocation-policy (get policy :allocation-policy)
+       :storage-policy (get policy :storage-policy)
        :input-extent (get validation :input-extent)
        :result-extent nil
        :result-type (get validation :result-type)
@@ -8690,28 +8720,18 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :set-member-domain :inferred-member-carrier :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+                      :callee-body :set-member-domain :inferred-member-carrier :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]}) nil)
         (if (= :keyword-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
-          {:kind :gravity.type/applied-keyword-set-insertion :version :sh08-keyword-set-insertion-v1
+          (let [policy (sh08-pl-insertion-policy :keyword-set-insertion)]
+            {:kind :gravity.type/applied-keyword-set-insertion :version :sh08-keyword-set-insertion-v1
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-keyword-set-insertion
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
-                           :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
-                           :member-domain :independently-established-keyword-only :member-equality :guarded-atomic-keyword-value
-                           :normalization :none :locale :none :coercion :none
-                           :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
-                           :operand-evaluation :left-to-right-once :operand-position :non-tail
-                           :result-evidence :bare-set-only :cardinality-analysis :none
-                           :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                           :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
-       :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
-       :storage-policy {:representation :development-persistent-keyword-set :input :preserved
-                        :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
-                        :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
-                        :physical-sharing :unpromised :enumeration :unobserved}
+       :insertion-semantics (get policy :insertion-semantics)
+       :allocation-policy (get policy :allocation-policy)
+       :storage-policy (get policy :storage-policy)
        :input-extent (get validation :input-extent)
        :result-extent nil
        :result-type (get validation :result-type)
@@ -8719,28 +8739,18 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+                      :callee-body :set-member-domain :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]}) nil)
         (if (= :string-set-insertion (get validation :collection-family))
         (if (if (= :jvm (get module :target)) (= arguments (get validation :argument-types)) false)
-          {:kind :gravity.type/applied-string-set-insertion :version :sh08-string-set-insertion-v2
+          (let [policy (sh08-pl-insertion-policy :string-set-insertion)]
+            {:kind :gravity.type/applied-string-set-insertion :version :sh08-string-set-insertion-v2
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-string-set-insertion
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
        :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
        :source-call call :source-edge edge :source-binding binding :argument-types arguments
-       :insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
-                           :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
-                           :member-domain :independently-established-string-only :member-equality :native-string-value
-                           :strings :exact-valid-scalar-sequence :normalization :none :locale :none :coercion :none
-                           :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
-                           :operand-evaluation :left-to-right-once :operand-position :non-tail
-                           :result-evidence :homogeneous-string-set-only :carrier-schema :gravity/homogeneous-string-set-type-v1 :cardinality-analysis :none
-                           :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                           :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
-       :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
-       :storage-policy {:representation :development-persistent-string-set :input :preserved
-                        :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
-                        :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
-                        :physical-sharing :unpromised :enumeration :unobserved}
+       :insertion-semantics (get policy :insertion-semantics)
+       :allocation-policy (get policy :allocation-policy)
+       :storage-policy (get policy :storage-policy)
        :input-extent (get validation :input-extent)
        :result-extent nil
        :result-type (get validation :result-type)
@@ -8748,7 +8758,7 @@
        :latent-effects [] :direct-effects (if invoked? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
        :profile (get module :profile) :target (get module :target)
        :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                      :callee-body :set-member-domain :inferred-member-carrier :private-entry-domain :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]} nil)
+                      :callee-body :set-member-domain :inferred-member-carrier :private-entry-domain :inserted-value :insertion-semantics :member-equality :allocation-policy :storage-policy :profile :target :evaluation-order]}) nil)
         {:kind :gravity.type/applied-list-prepend :version :sh08-list-prepend-v1
        :operation 'conj :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-list-prepend
        :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid

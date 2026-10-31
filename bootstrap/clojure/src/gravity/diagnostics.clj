@@ -18,7 +18,7 @@
             :throws :clojure.lang/exception-info}
     'stable-id {:arglists '([hash-text diagnostic]) :admission :none}
     'diagnostic-record
-    {:arglists '([source-span stable-id rule severity stage message-key source-path form-index primary-artifact facts remediation & {:keys [related origin-chain redactions lifecycle generated?]}])
+    {:arglists '([source-span stable-id rule severity stage message-key source-path form-index primary-artifact facts remediation & {:keys [related origin-chain redactions lifecycle generated? profile target syntax-id]}])
      :admission :none}}
    :artifact-inputs [:rule-id :human-message :structured-data :explicit-span-and-identity-operations
                      :native-seed-diagnostic-fields]
@@ -35,7 +35,8 @@
     :forbids ['gravity.bootstrap 'gravity.c15-diagnostics 'gravity.cli 'gravity.release]}
    :unsupported [:canonical-c15-conformance :untrusted-native-ingress :public-projection
                  :redaction-policy :canonical-map-encoding :migration :release :seed-retirement]
-   :legacy-record-context {:profile :hosted :target :jvm :syntax-id :form-index-derived}
+   :record-context {:profile :caller-supplied-or-nil :target :caller-supplied-or-nil
+                    :syntax-id :caller-supplied-or-nil}
    :supplied-redactions-applied? false
    :test-owner
    'gravity.diagnostics-test/base-exception-info-carrier-is-extracted-with-bootstrap-parity
@@ -63,12 +64,12 @@
 
 (defn diagnostic-record
   [source-span stable-id rule severity stage message-key source-path form-index primary-artifact facts remediation
-   & {:keys [related origin-chain redactions lifecycle generated?]}]
+   & {:keys [related origin-chain redactions lifecycle generated? profile target syntax-id]}]
   (let [diagnostic {:artifact :gravity/diagnostic :rule rule :severity severity :stage stage
                     :message-key message-key
                     :primary {:span (source-span source-path form-index)
-                              :syntax-id (str "c15-syntax-" form-index) :artifact primary-artifact}
-                    :related (vec related) :origin-chain (vec origin-chain) :profile :hosted :target :jvm
+                              :syntax-id syntax-id :artifact primary-artifact}
+                    :related (vec related) :origin-chain (vec origin-chain) :profile profile :target target
                     :involved-artifacts [primary-artifact] :facts facts :remediation (vec remediation)
                     :redactions (vec redactions) :lifecycle (or lifecycle :active) :generated? (true? generated?)}]
     (assoc diagnostic :diagnostic-id (stable-id diagnostic)

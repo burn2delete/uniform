@@ -98,3 +98,18 @@
       (is (true? (:bootstrap-hosted? contract)))
       (is (true? (:clojure-seed-boundary? contract)))
       (is (false? (:self-hosted? contract))))))
+
+(deftest bootstrap-record-wrapper-preserves-phase-context
+  (doseq [context [{} {:profile :kernel :target :llvm :syntax-id "caller-syntax-id"}]]
+    (let [arguments ["C15-FACTS" :info :c15 :facts "caller.gravity" 2
+                     "caller-artifact" {:fact :preserved} [{:kind :inspect}]]
+          options (mapcat identity context)
+          compatibility (apply bootstrap/c15-diagnostic-record (concat arguments options))
+          direct (apply diagnostics/diagnostic-record
+                        bootstrap/source-span bootstrap/c15-stable-diagnostic-id
+                        (concat arguments options))]
+      (is (= direct compatibility))
+      (is (= (:profile context) (:profile compatibility)))
+      (is (= (:target context) (:target compatibility)))
+      (is (contains? (:primary compatibility) :syntax-id))
+      (is (= (:syntax-id context) (get-in compatibility [:primary :syntax-id]))))))

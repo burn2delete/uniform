@@ -11,11 +11,12 @@
   (diagnostics/stable-id #(operations/invoke :sha256-hex digest/sha256-hex %) diagnostic))
 (defn diagnostic-record
   [rule severity stage message-key source-path form-index primary-artifact facts remediation
-   & {:keys [related origin-chain redactions lifecycle generated?]}]
+   & {:keys [related origin-chain redactions lifecycle generated? profile target syntax-id]}]
   (diagnostics/diagnostic-record
     source-span #(operations/invoke :c15-stable-diagnostic-id stable-id %)
     rule severity stage message-key source-path form-index primary-artifact facts remediation
-    :related related :origin-chain origin-chain :redactions redactions :lifecycle lifecycle :generated? generated?))
+    :related related :origin-chain origin-chain :redactions redactions :lifecycle lifecycle :generated? generated?
+    :profile profile :target target :syntax-id syntax-id))
 (defn catalog [configuration]
   {:artifact :gravity/diagnostic-catalog :status :complete
    :rules (mapv (fn [id] {:rule id :severity (if (= "C15-GOLDEN" id) :hint :error)

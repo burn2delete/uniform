@@ -1,7 +1,7 @@
 (ns sh-crosswalk-test
   (:require [clojure.test :refer [deftest is run-tests]] [clojure.string :as str] [clojure.edn :as edn]))
 (binding [*command-line-args* nil] (load-file "tools/sh_crosswalk.clj"))
-(require '[sh-inventory] '[sh-crosswalk])
+(require '[sh-inventory] '[sh-crosswalk] '[acceptance-dependencies])
 
 (deftest exact-original-inventory-and-negative-population-controls
   (let [source (slurp sh-inventory/plan-path) rows (sh-inventory/inventory source)
@@ -21,6 +21,38 @@
     (is (= 11 (:end-byte span)))
     (is (= 2 (:start-line span) (:end-line span)))
     (is (= "accepted" (:raw span)))))
+
+(deftest current-crosswalk-stores-each-source-payload-once
+  (let [source (sh-crosswalk/source-view)
+        normalized (sh-crosswalk/normalize-source-payloads source)
+        raw-spans (filter #(some (fn [entry] (= :raw (key entry))) %)
+                          (filter map? (tree-seq coll? seq source)))
+        refs (filter #(some (fn [entry] (= :source-snapshot-ref (key entry))) %)
+                     (filter map? (tree-seq coll? seq (dissoc normalized :source-snapshots))))
+        snapshots (:source-snapshots normalized)
+        recovered (map #(get snapshots (:source-snapshot-ref %)) refs)]
+    (is (seq raw-spans))
+    (is (= (count (distinct (map :raw raw-spans))) (count snapshots)))
+    (is (= (sort (map :raw raw-spans)) (sort recovered)))
+    (is (every? #(= (:source-snapshot-ref %)
+                   (sh-inventory/sha256 (get snapshots (:source-snapshot-ref %)))) refs))
+    (is (empty? (filter #(some (fn [entry] (= :raw (key entry))) %)
+                       (filter map? (tree-seq coll? seq (dissoc normalized :source-snapshots))))))))
+
+(deftest source-snapshot-integrity-fails-closed
+  (let [source (sh-crosswalk/normalize-source-payloads (sh-crosswalk/source-view))
+        reference (get-in source [:requirements 0 :acceptance-source :source-snapshot-ref])
+        forged (assoc source :source-snapshots
+                      (assoc (:source-snapshots source) reference "forged acceptance"))
+        missing (update source :source-snapshots dissoc reference)]
+    (is (thrown? Exception (sh-crosswalk/normalize-source-payloads
+                            (assoc-in (sh-crosswalk/source-view)
+                                      [:requirements 0 :acceptance-source :sha256] "forged"))))
+    (is (thrown? Exception (sh-crosswalk/normalize-source-payloads
+                            (assoc-in (sh-crosswalk/source-view)
+                                      [:requirements 0 :acceptance-source :raw] "forged"))))
+    (is (thrown? Exception (acceptance-dependencies/task-sh-view forged slurp)))
+    (is (thrown? Exception (acceptance-dependencies/task-sh-view missing slurp)))))
 
 (deftest literal-task-routing-does-not-depend-on-live-ledger-order
   (let [rows (sh-crosswalk/task-records "core")

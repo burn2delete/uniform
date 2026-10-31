@@ -99,7 +99,10 @@
            (:lowering-artifact-kind artifact)))
     (is (= :complete (get-in artifact [:diagnostic-schema :status])))
     (is (= 4 (count diagnostics)))
+    (is (every? #(= [:hosted :jvm nil]
+                   [(:profile %) (:target %) (get-in % [:primary :syntax-id])]) diagnostics))
     (is (= diagnostics (vec (sort-by :ordering-key diagnostics))))
+    (is (= :compiler-diagnostics (get-in artifact [:diagnostic-stream :stage])))
     (is (every? #(re-matches #"diag-[0-9a-f]{64}" (:diagnostic-id %))
                 diagnostics))
     (is (= 9 (count (get-in artifact [:diagnostic-catalog :rules]))))
@@ -135,7 +138,10 @@
               nil
               (catch clojure.lang.ExceptionInfo exception exception))]
         (is (some? error))
-        (is (= expected-id (:id (ex-data error))))))))
+        (is (= expected-id (:id (ex-data error))))
+        (is (every? #(and (contains? (ex-data error) %) (nil? (get (ex-data error) %)))
+                    [:profile :target :syntax-id]))
+        (is (= :compiler-diagnostics (:stage (ex-data error))))))))
 
 (deftest stage-records-preserve-identity-inputs-and-private-data
   (doseq [operation [#'diagnostics/diagnostic #'diagnostics/fail!
@@ -197,3 +203,84 @@
              {:c15-stable-diagnostic-id (constantly "custom-id")}
              #(c15/c15-diagnostic-record "C15-FACTS" :info :c15 :facts "given.qst" 0
                                         "artifact" {:fact :preserved} [{:kind :inspect}]))))))
+
+(deftest phase-context-is-explicit-and-never-fabricated
+  (let [span {:source "early.qst" :start-byte 3 :end-byte 8}
+        make-record (fn [& options]
+                      (c15/with-operations
+                        {:source-span (fn [_ _] span)}
+                        #(apply c15/c15-diagnostic-record
+                                "C15-FACTS" :error :read-source :reader.invalid "early.qst" 5
+                                "source-id" {:expected :delimiter} [{:kind :close-delimiter}]
+                                options)))
+        early (make-record)
+        known (make-record :profile :kernel :target :wasm :syntax-id "actual-syntax-id")]
+    (is (= span (get-in early [:primary :span])))
+    (doseq [record [early known]]
+      (is (contains? record :profile))
+      (is (contains? record :target))
+      (is (contains? (:primary record) :syntax-id)))
+    (is (= [nil nil nil] [(:profile early) (:target early) (get-in early [:primary :syntax-id])]))
+    (is (= [:kernel :wasm "actual-syntax-id"]
+           [(:profile known) (:target known) (get-in known [:primary :syntax-id])]))
+    ;; The legacy native ID protocol remains rule/stage/artifact/facts.
+    (is (= (:diagnostic-id early) (:diagnostic-id known)))
+    (is (= early (make-record :profile nil :target nil :syntax-id nil))))
+  (doseq [context [{:profile :kernel :target :llvm} {}]]
+    (let [artifact (c15/with-operations
+                     (operations (merge (dissoc module :profile :target) context))
+                     #(c15/compiler-c15-diagnostics-source-artifact "early.gravity" "source"))]
+      (doseq [record (get-in artifact [:diagnostic-stream :diagnostics])]
+        (is (= (:profile context) (:profile record)))
+        (is (= (:target context) (:target record)))
+        (is (contains? (:primary record) :syntax-id))
+        (is (= :compiler-diagnostics (:stage record)))
+        (is (nil? (get-in record [:primary :syntax-id])))))))
+
+(deftest native-validation-distinguishes-unavailable-and-missing-context
+  (let [artifact (c15/with-operations
+                   (operations (dissoc module :profile :target))
+                   #(c15/compiler-c15-diagnostics-source-artifact "early.gravity" "source"))
+        first-record [:diagnostic-stream :diagnostics 0]
+        ;; Reidentify each malformed record to reach location validation after
+        ;; the independent stable-ID check (artifact participates in that ID).
+        update-record (fn [f]
+                        (update-in artifact first-record
+                                   #(let [changed (f %)]
+                                      (assoc changed :diagnostic-id (c15/c15-stable-diagnostic-id changed)))))
+        rejection (fn [value]
+                    (try (c15/c15-diagnostics-validate! "early.gravity" value) nil
+                         (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+    (is (= :complete (c15/c15-diagnostics-validate! "early.gravity" artifact)))
+    (is (true? (:phase-context-valid? (c15/c15-diagnostics-capability-proof artifact))))
+    (is (true? (:locations-and-origins-linked? (c15/c15-diagnostics-capability-proof artifact))))
+    (doseq [field [:profile :target]]
+      (let [error (rejection (update-record #(dissoc % field)))]
+        (is (= "C15-SCHEMA" (:id error)))
+        (is (= [field] (:missing-fields error)))))
+    (doseq [invalid [(update-record #(update % :primary dissoc :syntax-id))
+                     (update-record #(assoc-in % [:primary :syntax-id] false))
+                     (update-record #(update % :primary dissoc :span))
+                     (update-record #(update % :primary dissoc :artifact))]]
+      (is (= "C15-SPAN" (:id (rejection invalid))))
+      (is (false? (:locations-and-origins-linked? (c15/c15-diagnostics-capability-proof invalid)))))
+    (doseq [stage [:read-source :compiler-diagnostics]]
+      (is (= :complete (c15/c15-diagnostics-validate! "early.gravity" (update-record #(assoc % :stage stage))))))
+    (doseq [stage [:effect-check :type-check :reader :c15-compiler-diagnostics]]
+      (let [invalid (update-record #(assoc % :stage stage))]
+        (is (= "C15-SCHEMA" (:id (rejection invalid))))
+        (is (false? (:phase-context-valid? (c15/c15-diagnostics-capability-proof invalid))))
+        (is (= :incomplete (:status (c15/c15-diagnostics-capability-proof invalid))))))
+    (let [semantic (update-record #(assoc % :stage :effect-check :profile :kernel :target :llvm))]
+      (is (= "C15-SPAN" (:id (rejection semantic))))
+      (is (true? (:phase-context-valid? (c15/c15-diagnostics-capability-proof semantic))))
+      (doseq [syntax-id [nil false "" 3]]
+        (is (= "C15-SPAN" (:id (rejection (assoc-in semantic (conj first-record :primary :syntax-id) syntax-id))))))
+      (doseq [syntax-id ["actual-syntax-id" :actual-syntax-id]]
+        (is (= :complete (c15/c15-diagnostics-validate!
+                           "early.gravity" (assoc-in semantic (conj first-record :primary :syntax-id) syntax-id)))))
+      (doseq [field [:profile :target] value [false "hosted" 3]]
+        (let [invalid (assoc-in semantic (conj first-record field) value)]
+          (is (= "C15-SCHEMA" (:id (rejection invalid))))
+          (is (false? (:phase-context-valid? (c15/c15-diagnostics-capability-proof invalid)))))))
+    (is (nil? (find-ns 'gravity.bootstrap)))))
