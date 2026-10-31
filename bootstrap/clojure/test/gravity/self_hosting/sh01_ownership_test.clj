@@ -178,7 +178,7 @@
       (is (= (+ 204 (count helper-paths)) (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
-      (is (= 17 (count support-paths)))
+      (is (= 16 (count support-paths)))
       (doseq [relative ["bootstrap/clojure/test/gravity/native_syntax_invocation_test.clj"
                         "bootstrap/clojure/test/gravity/reader_invocation_test.clj"]]
         (is (contains? support-paths relative))

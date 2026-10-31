@@ -79,8 +79,7 @@
    "bootstrap/clojure/fixtures/p15-native-plan-specialization/"]
   :coordinator-runner-integration-reservations
   ["bootstrap/clojure/test/gravity/project_structure_test_runner.clj"
-   "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"
-   "bootstrap/clojure/test/gravity/project_structure_test_runner_unit.clj"]
+   "bootstrap/clojure/test/gravity/project_structure_test_runner_test.clj"]
   :coordination-state
   ["docs/self-hosting-slice-backlog.md"
    "docs/self-hosting-slice-ownership.edn"]
