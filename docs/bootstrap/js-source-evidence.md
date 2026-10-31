@@ -74,6 +74,15 @@ in the explicit transformation before commit. Focused tests, captures and full
 source reconstruction pass on the corrected files. Gravity B6 execution parity
 has not been attempted or established; no model projection replaces execution.
 
+Independent review rejected b67d7a7ab5d331790b91753ed0c486998f1ad52f because
+the stage docstring still retained the node-limit text, despite the correctly
+changed wrapper and this report's claim. The extraction script had attempted
+to match escaped printed text against a raw multiline literal. The successor
+replaces that exact literal with the actual shape-only boundary, and the
+read-only transformation now reproduces it from immutable input. No algorithm,
+port, arity, output, refusal or authority rule changes. Prior acceptance and CI
+are not transferred; the successor requires fresh exact checks and acceptance.
+
 ## Unsupported boundaries
 
 No Node execution, tsc/typechecking, general MIR/domain lowering, plan legality

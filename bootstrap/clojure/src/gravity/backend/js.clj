@@ -125,9 +125,7 @@
       target)))
 
 (defn validate-plan!
-  "Apply the JS/TS-specific closed-surface rules after the shared stage2/C
-  packet has validated instruction shape.  Variadic println remains bounded by
-  the shared closed-plan node limit and lowers to ordered byte writes."
+  "Validate only the existing source-path/string and plan/map shape."
   [fail! source-path plan]
   ;; Source-path and plan remain explicit arguments so future target-specific
   ;; representation checks can fail at this boundary without changing callers.
