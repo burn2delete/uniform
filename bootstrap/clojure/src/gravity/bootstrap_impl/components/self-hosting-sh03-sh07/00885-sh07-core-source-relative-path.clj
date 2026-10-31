@@ -98,6 +98,15 @@
  sh07-core-semantic-mutation
  sh07-core-semantic-node)
 
+(declare
+ ^{:private true} checked-core-with-execution-binding
+ sh07-core-canonical-artifact
+ sh07-core-raise-diagnostic!
+ sh07-core-request-diagnostic!
+ sh07-core-request-preflight!
+ sh07-core-run-request-for-test
+ sh07-core-run-structural-request-for-test)
+
 (def
  ^{:private true} checked-core-stage-defaults
  {:p15-s23-stage2-compiler-artifact-plan
@@ -107,6 +116,7 @@
   :sh07-core-current-source-key #'sh07-core-current-source-key,
   :sh07-core-request-from-verified-upstream
   #'sh07-core-request-from-verified-upstream,
+  :sh07-core-canonical-artifact #'sh07-core-canonical-artifact,
   :sh07-core-resolve-reference! #'sh07-core-resolve-reference!,
   :sh07-core-source-map-order #'sh07-core-source-map-order,
   :sh07-core-source-path-from-resolution
@@ -120,8 +130,10 @@
   #'sh07-core-decimal-evidence-complete!,
   :sh07-core-resolve-digest-preimage!
   #'sh07-core-resolve-digest-preimage!,
+  :sh07-core-request-diagnostic! #'sh07-core-request-diagnostic!,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh07-core-run-request-for-test #'sh07-core-run-request-for-test,
   :sh07-core-lineage-with-semantic-trace
   #'sh07-core-lineage-with-semantic-trace,
   :sh06-resolution-artifact-verification
@@ -140,11 +152,14 @@
   :c-backend-resolve-p15-s23-compiler-source-path
   #'c-backend-resolve-p15-s23-compiler-source-path,
   :sh07-b13-alias-name #'sh07-b13-alias-name,
+  :sh07-core-run-structural-request-for-test
+  #'sh07-core-run-structural-request-for-test,
   :sh07-core-projection-binding-input
   #'sh07-core-projection-binding-input,
   :sh07-core-source-occurrence-context
   #'sh07-core-source-occurrence-context,
   :sh07-core-neutral-value #'sh07-core-neutral-value,
+  :with-execution-binding #'checked-core-with-execution-binding,
   :sh03-reader-host-character-value!
   #'sh03-reader-host-character-value!,
   :sh07-core-decimal-descriptor #'sh07-core-decimal-descriptor,
@@ -183,9 +198,13 @@
   #'p15-s23-stage2-compiler-artifact-source-path,
   :sh07-core-authenticated-request #'sh07-core-authenticated-request,
   :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :sh07-core-resolve-result #'sh07-core-resolve-result,
   :sh07-core-semantic-binding #'sh07-core-semantic-binding,
+  :sh07-core-request-preflight! #'sh07-core-request-preflight!,
   :sh03-reader-authenticated-envelope-options
   #'sh03-reader-authenticated-envelope-options,
+  :sh07-core-digest-requests #'sh07-core-digest-requests,
+  :sh07-core-raise-diagnostic! #'sh07-core-raise-diagnostic!,
   :sh07-core-macro-trace #'sh07-core-macro-trace,
   :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
 
@@ -301,3 +320,8 @@
  (gravity.checked-core/value-kind
   value
   (checked-core-stage-operations)))
+
+(defn-
+ checked-core-with-execution-binding
+ [core-binding f]
+ (binding [*sh07-core-execution-binding* core-binding] (f)))

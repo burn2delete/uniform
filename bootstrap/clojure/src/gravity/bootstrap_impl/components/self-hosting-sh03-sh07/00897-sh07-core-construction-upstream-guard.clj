@@ -190,7 +190,14 @@
  #'sh07-core-canonical-artifact
  #'sh07-core-public-decimal-presentation
  #'sh07-core-raise-diagnostic!
- #'sh07-core-request-diagnostic!]
+ #'sh07-core-request-diagnostic!
+ #'gravity.checked-core/request-preflight!
+ #'gravity.checked-core/run-structural-request-for-test
+ #'gravity.checked-core/run-request-for-test
+ #'sh07-core-request-preflight!
+ #'sh07-core-run-structural-request-for-test
+ #'sh07-core-run-request-for-test
+ #'checked-core-with-execution-binding]
     (filter var? (vals checked-core-stage-defaults))))
   (mapv
    (fn
