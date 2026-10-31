@@ -29,3 +29,38 @@ Historical Reader/migration/native-launch refusals are not retried or renewed.
 No authenticated Core artifact, full lowering, type/effect/safety completion,
 release, performance, migration, self-hosting or seed-retirement authority is
 claimed. This early document records scope and grants no acceptance.
+
+The six public APIs are source-path, plan-identities, build-plan-binding!,
+source-key, current-plan-binding! and execute!, with exact arities and operation
+inputs in namespace metadata. Fifteen callable ports and five scalar inputs
+remain explicit. Cache storage and the cached-binding reify/IPending holder
+remain separate Bootstrap objects. A lock alias names the same input cache cell;
+it introduces no new lock or cache.
+
+The first focused suite passes 8 tests / 383 assertions. All four complete
+before/after comparisons pass: current binding/plan, accepted Core var with
+resolved reference, foreign-var rejection and lexical-var rejection. The actual
+current source compiles 390 functions with source identity
+sha256:455f2d496e410ba8c5f4d17b2e4e558c6fb62306b614a6b9643107c8e1c82770
+and plan identity
+sha256:b614072c6258aa0d198fef8b217855577110a9fdc47242e6dbf3a38a71e099ce.
+The rejections retain C6-LOWERING-GAP / qualified-var-reference-deferred and
+C6-VERIFY / var-top-level-namespace-binding-required. These are real normalized
+Gravity kernel results; they are not authenticated Core source artifacts.
+
+The initial baseline probe assumed :form and a nested diagnostic vector; the
+existing kernel uses :core-form and top-level rejection facts. That probe
+nonpass and its initial binding remain history; the corrected probe's complete
+binding is equal to the initial binding. A scratch generator delimiter error and
+test-file delimiter errors were corrected before semantic tests. The intentional
+write followed a non-evaluating write-guard check and successful generated-source
+parse/load; no dry-run source mutation occurred. Direct source/test lint now
+passes with zero errors or warnings.
+
+Receipt qualification captures every stage, compatibility, operation, factory,
+input and configuration root after they are bound. The dynamic execution root
+is checked separately, while its scoped value is part of the receipt epoch.
+Equal-content plan bindings are semantic data and may reuse; changing the actual
+plan with unchanged advertised hashes must miss. Construction bookends also
+track the scoped execution binding and reject changed runtime inputs before
+later owner work. Current checks must not be treated as migration/pin renewal.
