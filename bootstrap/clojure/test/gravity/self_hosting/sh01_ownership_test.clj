@@ -240,10 +240,18 @@
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj")
 (def ^:private macro-stage-test "bootstrap/clojure/test/gravity/macro/pipeline_test.clj")
 
+(def ^:private resolution-stage-path "bootstrap/clojure/src/gravity/resolution.clj")
+(def ^:private resolution-stage-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-05.clj")
+(def ^:private resolution-stage-test "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")
+
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {macro-helper-path expected
+    (and (= {resolution-stage-path
+             {:namespace 'gravity.resolution :owner :sh-resolution :slice "SH-06"
+              :consumer-path resolution-stage-consumer :test-path resolution-stage-test}
+             macro-helper-path expected
              reader-helper-path
              {:namespace 'gravity.reader :owner :sh-reader :slice "SH-03"
               :consumer-path reader-helper-consumer :test-path reader-helper-test}
@@ -267,6 +275,9 @@
          (= :sh-macro (get-in record [:module-owners macro-stage-path]))
          (= {:namespace 'gravity.macro.pipeline-test :slice "SH-05" :owner :sh-macro}
             (get-in record [:standalone-test-owners macro-stage-test]))
+         (= :sh-resolution (get-in record [:module-owners resolution-stage-path]))
+         (= {:namespace 'gravity.resolution.pipeline-test :slice "SH-06" :owner :sh-resolution}
+            (get-in record [:standalone-test-owners resolution-stage-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
               "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
@@ -281,6 +292,11 @@
               "source" {"path" syntax-helper-path "namespace" "gravity.syntax"}
               "consumer" {"path" syntax-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-syntax"}
               "test" {"path" syntax-helper-test "namespace" "gravity.syntax.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "resolution-plan-runtime" "kind" "production-stage-helper" "owner" "sh-resolution"
+              "source" {"path" resolution-stage-path "namespace" "gravity.resolution"}
+              "consumer" {"path" resolution-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-resolution"}
+              "test" {"path" resolution-stage-test "namespace" "gravity.resolution.pipeline-test"
                       "registration" "standalone"}}
              {"id" "macro-plan-runtime" "kind" "production-stage-helper" "owner" "sh-macro"
               "source" {"path" macro-stage-path "namespace" "gravity.macro"}

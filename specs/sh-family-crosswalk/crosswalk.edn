@@ -12642,6 +12642,11 @@
  {:path "specs/sh-family-crosswalk/macro-artifacts-source-version.edn",
   :sha256
   "e495dc2fd6b2398d2f9f6da929038f6f491087650f37cdd9c8dc5c0970824f82"},
+ :resolution-runtime-source-version
+ {:path
+  "specs/sh-family-crosswalk/resolution-runtime-source-version.edn",
+  :sha256
+  "b3c48da9dc7d2457dd27619be4d30db165e26f5113090beddd4d6da75472fb56"},
  :syntax-pipeline-source-version
  {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn",
   :sha256
@@ -13266,7 +13271,7 @@
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
   :source-version-bridge
-  "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn",
+  "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn",
   :macro-artifacts-current-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -14353,6 +14358,12 @@
    "6f182237a61e553c07904d63bd73a309babe58154f7965b8b1a6cb6e66596465",
    :source-version-bridge
    "specs/sh-family-crosswalk/reader-assembly-source-version.edn"},
+  :resolution-runtime-predecessor-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"},
   :reader-assembly-predecessor-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -14487,7 +14498,19 @@
    :prior-current-main-qualification
    "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."},
   :qualification
-  "Actual macro artifacts and accepted Native header reporting composition only; preserve all predecessor histories and pending unassessed scope.",
+  "Native and resolution ownership source composition only; immutable predecessor projections remain pinned, all current states unassessed.",
+  :resolution-main-predecessor-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "5fe8f9a8d3b7297cd8613e48637528ec01fe0a35f58182a98a4dfa28bfaa8af7",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"},
+  :resolution-runtime-current-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "7e0d51192fd8ea2eae7f66dd0d9f20ef2971b77ad25dd923de817f79b9462c40",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"},
   :macro-artifacts-predecessor-review
   {:status :pending-source-version-review,
    :input-fingerprint
@@ -14495,7 +14518,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "5fe8f9a8d3b7297cd8613e48637528ec01fe0a35f58182a98a4dfa28bfaa8af7"},
+  "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -17908,6 +17931,11 @@
    :global-equivalence-owner "01a179ad-2198-7392-966a-1e3c31209027",
    :qualification
    "Original raw wording and historical checks remain provenance. Existing current direction retires project work/capacity-only refusals; it does not retire malformed/cyclic/tampered/stale rejection, intrinsic type/Unicode/index/arity/target constraints, semantic resource ownership, actual broker/heap/watchdog/capture/platform controls or external provider spending limits. OOM/timeout remains a resource failure. This SH view makes no new global facet/equivalence adjudication."}],
+ :resolution-runtime-composition-source-version
+ {:path
+  "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn",
+  :sha256
+  "f92591e9423b440c294b6aa560e015618686547c4719193cad449052a3ed02bc"},
  :source-digests
  {"docs/acceptance-dependencies.md"
   "fa5ead122185718d3384e0c473c66e93416adccafe50134bd85205b90f96054f",
@@ -18000,7 +18028,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "a6348c6b187c94df3f482d04c60460aabdeea048845e8573438a109105a141af",
+  "868180b50622c3646deaf1ff25a380eb996db868ae7c8a43f2faf8afbf1522ed",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -18067,7 +18095,7 @@
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/self-hosting-slice-ownership.edn"
-  "3cd79ed80a3c3808f0471dfbbf68dab8ca3a0aa4",
+  "c8fd8e437ef921041b181e2f09ee1a37d716d357",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "4325a9f46292472a7f984c5adfef81209874bb5c"},
  :scope-boundaries

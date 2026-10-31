@@ -180,6 +180,11 @@
               (command "2g" "-M:dev-test"
                        "--namespace" "gravity.macro.pipeline-test"
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
+    "resolution" [["resolution-regression" 600
+                   (command "2g" "-M:dev-test"
+                            "--namespace" "gravity.resolution.pipeline-test"
+                            "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
+                            "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
     "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable")]]
     "darwin-probe" [["darwin-host" 15 ["sw_vers"]]
                     ["darwin-kernel" 15 ["uname" "-a"]]
