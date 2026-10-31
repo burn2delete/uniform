@@ -6476,26 +6476,37 @@
                                           :body-vector-first-nonempty-complete-positional-type-required
                                           :body-list-query-operand-type-required)))))
                     {:status :skip})
-                  {:status :skip}))))
+                  {:status :skip})))))
         (body-failure (if (= 'keys name) :body-map-keys-source-mismatch
-                        (if (= 'rest name) :body-vector-rest-source-mismatch :body-vector-empty-source-mismatch))))))))
+                        (if (= 'rest name) :body-vector-rest-source-mismatch :body-vector-empty-source-mismatch)))))))
 
 (defn body-lq-context [request facts bindings]
   (if (map? request)
-    (let [core (get request :canonical-core-artifact)]
-      (if (if (map? core) (if (vector? (get core :calls)) (if (vector? (get core :nodes)) (vector? (get core :call-edges)) false) false) false)
+    (let [core (get request :canonical-core-artifact)
+          core-shape? (if (map? core)
+                        (if (vector? (get core :calls))
+                          (if (vector? (get core :nodes))
+                            (vector? (get core :call-edges)) false)
+                          false)
+                        false)]
+      (if core-shape?
         (let [present? (loop [remaining (get core :calls)]
-                         (if (= 0 (count remaining)) false
-                           (let [call (first remaining) bid (if (map? call) (get call :operator-binding-id) nil)]
+                         (if (= 0 (count remaining))
+                           false
+                           (let [call (first remaining)
+                                 bid (if (map? call) (get call :operator-binding-id) nil)]
                              (if (body-sse-ids? [bid] 1)
-                               (let [binding (get bindings bid) name (if (map? binding) (get binding :name) nil)]
+                               (let [binding (get bindings bid)
+                                     name (if (map? binding) (get binding :name) nil)]
                                  (if (if (symbol? name) (contains? '#{keys first rest empty?} name) false)
                                    (if (if (if (= 'keys name) true (= 'rest name))
                                          (if (keyword? (get binding :binding-class))
-                                           (if (contains? #{:lexical :namespace :import} (get binding :binding-class)) false true) true)
-                                       (if (= 'empty? name) (= :core (get binding :binding-class))
-                                         (body-lq-binding? binding (get core :module))))
-                                     true (recur (rest remaining)))
+                                           (if (contains? #{:lexical :namespace :import} (get binding :binding-class)) false true)
+                                           true)
+                                         (if (= 'empty? name) (= :core (get binding :binding-class))
+                                           (body-lq-binding? binding (get core :module))))
+                                     true
+                                     (recur (rest remaining)))
                                    (recur (rest remaining))))
                                :invalid-query-source))))]
           (if (= :invalid-query-source present?)
@@ -6509,23 +6520,31 @@
                         form-index (body-vemp-index forms :form-id)
                         call-index (body-vemp-index (get core :calls) :core-node-id)
                         edge-index (body-vemp-index (get core :call-edges) :call-core-node-id)]
-                    (if (body-all? [(= :accepted (get node-index :status)) (= :accepted (get form-index :status))
-                                    (= :accepted (get call-index :status)) (= :accepted (get edge-index :status))])
-                      (let [nodes (get node-index :index) calls (get call-index :index) edges (get edge-index :index)]
+                    (if (body-all? [(= :accepted (get node-index :status))
+                                    (= :accepted (get form-index :status))
+                                    (= :accepted (get call-index :status))
+                                    (= :accepted (get edge-index :status))])
+                      (let [nodes (get node-index :index)
+                            calls (get call-index :index)
+                            edges (get edge-index :index)]
                         (loop [remaining (get core :calls) checks {}]
                           (if (= 0 (count remaining))
                             {:status :accepted
                              :context {:forms (get form-index :index) :nodes nodes :calls calls
                                        :edges edges :bindings bindings :type-checks checks}}
-                            (let [result (body-lq-context-call core facts bindings nodes (get form-index :index) calls edges (first remaining))]
+                            (let [result (body-lq-context-call core facts bindings nodes
+                                                               (get form-index :index) calls edges
+                                                               (first remaining))]
                               (if (= :accepted (get result :status))
-                                (recur (rest remaining) (assoc checks (get (first remaining) :core-node-id) (get result :check)))
+                                (recur (rest remaining)
+                                       (assoc checks (get (first remaining) :core-node-id)
+                                              (get result :check)))
                                 (if (= :skip (get result :status))
                                   (recur (rest remaining) checks)
                                   result))))))
-                      (body-failure :body-query-physical-id-required)))))))
+                      (body-failure :body-query-physical-id-required))))))))
         (body-failure :body-query-core-shape-required)))
-    (body-failure :body-query-core-shape-required))))
+    (body-failure :body-query-core-shape-required)))
 
 (defn body-lq-call-valid? [core facts bindings node call edge nodes]
   (if (body-pmk-entry? node call nodes bindings (get facts :type-table) (get core :module))
@@ -7787,57 +7806,84 @@
       {:status :not-applicable})))
 
 (defn body-pc-route [core node call nodes bindings]
-  (let [calls (get core :calls) edges (get core :call-edges)]
+  (let [calls (get core :calls)
+        edges (get core :call-edges)]
     (if (if (vector? calls) (vector? edges) false)
       (let [receiver (get (get call :argument-node-ids) 0)
-            outer (body-pc-unroll receiver core nodes bindings)]
+            outer (body-pc-unroll receiver core nodes bindings)
+            first-id (get outer :node-id)
+            first-node (get nodes first-id)
+            first-call (body-pe-one calls :core-node-id first-id)
+            first-edge (body-pe-one edges :call-core-node-id first-id)
+            first-bid (get first-call :operator-binding-id)
+            first-args (get first-call :argument-node-ids)
+            first-call-valid? (if (body-pc-id? first-bid)
+                                (if (vector? first-args) (= 1 (count first-args)) false)
+                                false)
+            first-binding (get bindings first-bid)
+            first-binding-valid? (if (= 'first (get first-binding :name))
+                                   (body-lq-binding? first-binding (get core :module))
+                                   false)
+            inner (if first-call-valid?
+                    (body-pc-unroll (get first-args 0) core nodes bindings)
+                    {:status :not-applicable})
+            get-id (get inner :node-id)
+            get-node (get nodes get-id)
+            get-call (body-pe-one calls :core-node-id get-id)
+            get-edge (body-pe-one edges :call-core-node-id get-id)
+            get-bid (get get-call :operator-binding-id)
+            get-args (get get-call :argument-node-ids)
+            get-call-valid? (if (body-pc-id? get-bid)
+                              (if (vector? get-args)
+                                (if (= 2 (count get-args))
+                                  (if (body-pc-id? (get get-args 0))
+                                    (body-pc-id? (get get-args 1))
+                                    false)
+                                  false)
+                                false)
+                              false)
+            node-owner (get (get node :evaluation) :owner-function-syntax-id)
+            first-owner (get (get first-node :evaluation) :owner-function-syntax-id)
+            get-owner (get (get get-node :evaluation) :owner-function-syntax-id)
+            first-caller (get first-edge :caller-function-syntax-id)
+            get-caller (get get-edge :caller-function-syntax-id)
+            owner-valid? (body-all?
+                           [(body-pc-id? node-owner)
+                            (body-pc-id? first-owner)
+                            (body-pc-id? get-owner)
+                            (body-pc-id? first-caller)
+                            (body-pc-id? get-caller)
+                            (= :call (get first-node :core-form))
+                            (= :call (get get-node :core-form))
+                            (= false (= first-id get-id))
+                            (= false (= first-id (get node :node-id)))
+                            (= false (= get-id (get node :node-id)))
+                            (map? first-edge)
+                            (map? get-edge)
+                            (body-pc-id? (get first-call :operator-node-id))
+                            (body-pc-id? (get get-call :operator-node-id))
+                            (= node-owner first-owner)
+                            (= node-owner get-owner)
+                            (= first-caller get-caller)])]
         (if (= :accepted (get outer :status))
-          (let [first-id (get outer :node-id) first-node (get nodes first-id)
-                first-call (body-pe-one calls :core-node-id first-id)
-                first-edge (body-pe-one edges :call-core-node-id first-id)
-                first-bid (get first-call :operator-binding-id)
-                first-args (get first-call :argument-node-ids)]
-            (if (if (body-pc-id? first-bid) (if (vector? first-args) (= 1 (count first-args)) false) false)
-              (let [first-binding (get bindings first-bid)]
-                (if (if (= 'first (get first-binding :name)) (body-lq-binding? first-binding (get core :module)) false)
-                  (let [inner (body-pc-unroll (get first-args 0) core nodes bindings)]
-                    (if (= :accepted (get inner :status))
-                      (let [get-id (get inner :node-id) get-node (get nodes get-id)
-                            get-call (body-pe-one calls :core-node-id get-id)
-                            get-edge (body-pe-one edges :call-core-node-id get-id)
-                            get-bid (get get-call :operator-binding-id) get-args (get get-call :argument-node-ids)]
-                        (if (if (body-pc-id? get-bid) (if (vector? get-args) (if (= 2 (count get-args))
-                              (if (body-pc-id? (get get-args 0)) (body-pc-id? (get get-args 1)) false) false) false) false)
-                          (if (body-mg-binding? (get bindings get-bid) (get core :module))
-                            (if (if (body-pc-id? (get (get node :evaluation) :owner-function-syntax-id))
-                                (if (body-pc-id? (get (get first-node :evaluation) :owner-function-syntax-id))
-                                  (if (body-pc-id? (get (get get-node :evaluation) :owner-function-syntax-id))
-                                    (if (body-pc-id? (get first-edge :caller-function-syntax-id))
-                                      (if (body-pc-id? (get get-edge :caller-function-syntax-id))
-                                        (body-all?
-                                          [(= :call (get first-node :core-form) (get get-node :core-form))
-                                           (= false (= first-id get-id)) (= false (= first-id (get node :node-id)))
-                                           (= false (= get-id (get node :node-id)))
-                                           (map? first-edge) (map? get-edge)
-                                           (body-pc-id? (get first-call :operator-node-id))
-                                           (body-pc-id? (get get-call :operator-node-id))
-                                           (= (get (get node :evaluation) :owner-function-syntax-id)
-                                              (get (get first-node :evaluation) :owner-function-syntax-id)
-                                              (get (get get-node :evaluation) :owner-function-syntax-id)
-                                              (= (get first-edge :caller-function-syntax-id) (get get-edge :caller-function-syntax-id)))])
-                                        false) false) false) false) false)
-                              {:status :accepted
-                               :first-node-id first-id :first-call first-call :first-edge first-edge
-                               :get-node-id get-id :get-call get-call :get-edge get-edge
-                               :receiver-links (get outer :links) :vector-links (get inner :links)}
-                              {:status :rejected :reason :map-get-source-mismatch})
-                            {:status :rejected :reason :map-get-source-mismatch})
-                          {:status :rejected :reason :map-get-source-mismatch}))
-                      (assoc inner :status :not-applicable))
-                  {:status :not-applicable}))
-              {:status :not-applicable}))
+          (if first-call-valid?
+            (if first-binding-valid?
+              (if (= :accepted (get inner :status))
+                (if get-call-valid?
+                  (if (body-mg-binding? (get bindings get-bid) (get core :module))
+                    (if owner-valid?
+                      {:status :accepted
+                       :first-node-id first-id :first-call first-call :first-edge first-edge
+                       :get-node-id get-id :get-call get-call :get-edge get-edge
+                       :receiver-links (get outer :links) :vector-links (get inner :links)}
+                      {:status :rejected :reason :map-get-source-mismatch})
+                    {:status :rejected :reason :map-get-source-mismatch})
+                  {:status :rejected :reason :map-get-source-mismatch})
+                (assoc inner :status :not-applicable))
+              {:status :not-applicable})
+            {:status :not-applicable})
           {:status :not-applicable}))
-      {:status :rejected :reason :map-get-source-mismatch}))))
+      {:status :rejected :reason :map-get-source-mismatch})))
 
 (defn body-pc-form-source [form]
   (get (body-ma-form-node {} form) :source))
@@ -8145,8 +8191,8 @@
           (let [pair (first pairs) checked (body-pc-call-forms-work (get pair 0) (get pair 1) nodes forms)]
             (if (= :accepted (get checked :status))
               (recur (rest pairs))
-              checked)))))
-      projected))
+              checked))))
+      projected)))
 
 (defn body-pc-parent-rows-work [route parent first-descriptor core facts ledger parent-reference key]
   ; Supplied carrier references remain separate inputs and are rebuilt before comparison.
@@ -8476,8 +8522,8 @@
             (if (= :accepted (get checked :status))
               (if (= (get checked :value) (get item 3)) (recur (rest pending))
                 {:status :rejected :reason :map-get-source-mismatch})
-              checked)))))
-      {:status :rejected :reason :map-get-source-mismatch}))
+              checked))))
+      {:status :rejected :reason :map-get-source-mismatch})))
 
 (defn body-pc-links-current? [links expected core nodes bindings types]
   (if (body-pc-links-domain? links)
@@ -8804,71 +8850,99 @@
         {:status :rejected :reason :integer-set-contains-operand-type-required}))
     {:status :rejected :reason :integer-set-contains-operand-type-required}))
 
+(defn body-ksm-set-result [arguments items needle character? strings? type-reason schema?]
+  (if (if schema? (= :homogeneous (get items :shape)) false)
+    (if (if (body-ss-type? items)
+          (if strings? true (= :gravity.type/never needle))
+          false)
+      {:status :accepted :argument-types arguments :set-member-count nil :membership-family :string}
+      {:status :rejected :reason type-reason})
+    (let [set-type? (if schema?
+                     (if (= :gravity.type/set (get items :kind))
+                       (if (= :literal (get items :shape))
+                         (vector? (get items :element-types))
+                         false)
+                       false)
+                     false)]
+      (if set-type?
+        (let [members (get items :element-types)
+              n (count members)
+              initial-family (if character? :character (if strings? :string :keyword))]
+          (loop [i 0 family initial-family]
+            (if (= i n)
+              (if (= :character family)
+                {:status :accepted :argument-types arguments :set-member-count n :membership-family :character}
+                (if (= :string family)
+                  {:status :accepted :argument-types arguments :set-member-count n :membership-family :string}
+                  {:status :accepted :argument-types arguments :set-member-count n}))
+              (let [member (get members i)
+                    expected (if (= :character family)
+                               :gravity.type/character
+                               (if (= :string family) :gravity.type/string :gravity.type/keyword))]
+                (if (= expected member)
+                  (recur (+ i 1) family)
+                  (if (if (= i 0) (= :gravity.type/never needle) false)
+                    (if (= :gravity.type/character member)
+                      (recur 1 :character)
+                      (if (= :gravity.type/string member)
+                        (recur 1 :string)
+                        {:status :rejected :reason type-reason}))
+                    {:status :rejected
+                     :reason (if (= :character family)
+                               :character-set-contains-operand-type-required
+                               (if (= :string family)
+                                 :string-set-contains-operand-type-required
+                                 type-reason))}))))))
+        {:status :rejected :reason type-reason}))))
+
 (defn body-ksm-domain [arguments]
   ; Validate the complete input type graph before selecting a membership family.
   ; Inspecting a type graph is semantic validation, not a work reservation.
   (let [ingress (body-lc-validate-types arguments)]
     (if (= :accepted (get ingress :status))
-      (if (body-ism-selected? arguments)
-        (body-ism-domain arguments)
-        (if (body-sysm-selected? arguments)
-          (body-sysm-domain arguments)
-          (if (if (vector? arguments) (= 2 (count arguments)) false)
-            (let [items (get arguments 0) needle (get arguments 1)
-                  character? (= :gravity.type/character needle)
-                  strings? (= :gravity.type/string needle)
-                  allowed-needle? (if character? true
-                                   (if strings? true
-                                     (if (= :gravity.type/keyword needle) true (= :gravity.type/never needle))))
-                  type-reason (if character? :character-set-contains-operand-type-required
-                                (if strings? :string-set-contains-operand-type-required :keyword-set-contains-operand-type-required))
-                  schema? (if (map? items)
-                            (if (= 3 (count items))
-                              (loop [fields (keys items)]
-                                (if (= 0 (count fields)) true
-                                  (if (keyword? (first fields)) (recur (rest fields)) false))) false) false)]
-              (if allowed-needle?
-                (if (= :gravity.type/never items)
-                  (if character?
-                    {:status :accepted :argument-types arguments :set-member-count nil :membership-family :character}
-                    (if strings?
-                      {:status :accepted :argument-types arguments :set-member-count nil :membership-family :string}
-                      {:status :accepted :argument-types arguments :set-member-count nil}))
-                  (if (if schema? (= :homogeneous (get items :shape)) false)
-                    (if (if (body-ss-type? items) (if strings? true (= :gravity.type/never needle)) false)
-                      {:status :accepted :argument-types arguments :set-member-count nil :membership-family :string}
-                      {:status :rejected :reason type-reason})
-                    (let [set-type? (if schema?
-                                     (if (= :gravity.type/set (get items :kind))
-                                       (if (= :literal (get items :shape)) (vector? (get items :element-types)) false) false) false)]
-                      (if set-type?
-                        (let [members (get items :element-types) n (count members)
-                              initial-family (if character? :character (if strings? :string :keyword))]
-                          (loop [i 0 family initial-family]
-                            (if (= i n)
-                              (if (= :character family)
-                                {:status :accepted :argument-types arguments :set-member-count n :membership-family :character}
-                                (if (= :string family)
-                                  {:status :accepted :argument-types arguments :set-member-count n :membership-family :string}
-                                  {:status :accepted :argument-types arguments :set-member-count n}))
-                              (let [member (get members i)
-                                    expected (if (= :character family) :gravity.type/character
-                                               (if (= :string family) :gravity.type/string :gravity.type/keyword))]
-                                (if (= expected member)
-                                  (recur (+ i 1) family)
-                                  (if (if (= i 0) (= :gravity.type/never needle) false)
-                                    (if (= :gravity.type/character member)
-                                      (recur 1 :character)
-                                      (if (= :gravity.type/string member)
-                                        (recur 1 :string)
-                                        {:status :rejected :reason type-reason}))
-                                    {:status :rejected :reason (if (= :character family)
-                                                              :character-set-contains-operand-type-required
-                                                              (if (= :string family)
-                                                                :string-set-contains-operand-type-required type-reason))}))))))
-                        {:status :rejected :reason type-reason})))
-                {:status :rejected :reason :keyword-set-contains-operand-type-required}))
-            {:status :rejected :reason :keyword-set-contains-arity-mismatch}))))
+      (let [ism? (body-ism-selected? arguments)
+            sysm? (body-sysm-selected? arguments)]
+        (if ism?
+          (body-ism-domain arguments)
+          (if sysm?
+            (body-sysm-domain arguments)
+            (if (if (vector? arguments) (= 2 (count arguments)) false)
+              (let [items (get arguments 0)
+                    needle (get arguments 1)
+                    character? (= :gravity.type/character needle)
+                    strings? (= :gravity.type/string needle)
+                    allowed-needle? (if character?
+                                     true
+                                     (if strings?
+                                       true
+                                       (if (= :gravity.type/keyword needle)
+                                         true
+                                         (= :gravity.type/never needle))))
+                    type-reason (if character?
+                                  :character-set-contains-operand-type-required
+                                  (if strings?
+                                    :string-set-contains-operand-type-required
+                                    :keyword-set-contains-operand-type-required))
+                    schema? (if (map? items)
+                              (if (= 3 (count items))
+                                (loop [fields (keys items)]
+                                  (if (= 0 (count fields))
+                                    true
+                                    (if (keyword? (first fields))
+                                      (recur (rest fields))
+                                      false)))
+                                false)
+                              false)]
+                (if allowed-needle?
+                  (if (= :gravity.type/never items)
+                    (if character?
+                      {:status :accepted :argument-types arguments :set-member-count nil :membership-family :character}
+                      (if strings?
+                        {:status :accepted :argument-types arguments :set-member-count nil :membership-family :string}
+                        {:status :accepted :argument-types arguments :set-member-count nil}))
+                    (body-ksm-set-result arguments items needle character? strings? type-reason schema?))
+                  {:status :rejected :reason :keyword-set-contains-operand-type-required}))
+              {:status :rejected :reason :keyword-set-contains-arity-mismatch}))))
       {:status :rejected :reason :keyword-set-contains-operand-type-required
        :type-check-reason (get ingress :reason)})))
 
@@ -9468,66 +9542,103 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/set :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
+(defn body-st-selected-context [selected request facts bindings core node-index call-index edge-index]
+  (let [forms (body-path request [:b47-context :authenticated-core-request :forms])
+        form-index (if (vector? forms)
+                     (body-vemp-index forms :form-id)
+                     {:status :rejected})]
+    (if (vector? forms)
+      (if (= :accepted (get form-index :status))
+        (let [nodes (get node-index :index)]
+          (loop [remaining selected checks {}]
+            (if (= 0 (count remaining))
+              {:status :accepted
+               :context {:forms (get form-index :index)
+                         :nodes nodes
+                         :calls (get call-index :index)
+                         :edges (get edge-index :index)
+                         :bindings bindings
+                         :checks checks}}
+              (let [call (first remaining)
+                    node (get nodes (get call :core-node-id))
+                    lset? (body-lset-entry? node call nodes bindings (get facts :type-table) (get core :module))]
+                (if lset?
+                  (let [result (body-lset-evidence core (get facts :constraint-ledger)
+                                                 (get facts :call-type-facts) node call
+                                                 (get (get edge-index :index) (get call :core-node-id))
+                                                 nodes bindings (get facts :type-table))]
+                    (if (= :accepted (get result :status))
+                      (let [next-checks (assoc checks (get call :core-node-id) result)]
+                        (recur (rest remaining) next-checks))
+                      (body-failure :body-list-set-conversion-source-mismatch)))
+                  (if (body-vemp-ids? node call nodes bindings (get core :module))
+                    (let [args (get call :argument-node-ids)
+                          binding (get bindings (get call :operator-binding-id))
+                          source-valid? (if (body-nq-ids? node call nodes bindings (get core :module))
+                                          (body-st-binding? binding (get core :module))
+                                          false)]
+                      (if source-valid?
+                        (let [type (get (get facts :type-table) (first args) :gravity.type/unknown)
+                              validation (body-st-type-check [type])]
+                          (if (= :accepted (get validation :status))
+                            (let [next-checks (assoc checks (get call :core-node-id)
+                                                     {:argument-type type :validation validation})]
+                              (recur (rest remaining) next-checks))
+                            (body-failure :body-set-conversion-operand-type-required)))
+                        (body-failure :body-set-conversion-source-mismatch)))
+                    (body-failure :body-set-conversion-arity-mismatch)))))))
+        (body-failure :body-set-conversion-source-forms-required))
+      (body-failure :body-set-conversion-source-forms-required))))
+
 (defn body-st-context [request facts bindings]
-  (if (if (map? request) (if (map? facts) (map? bindings) false) false)
-    (let [core (get request :canonical-core-artifact)]
-      (if (if (map? core)
-            (body-all? [(vector? (get core :calls)) (vector? (get core :nodes))
-                        (vector? (get core :call-edges))]) false)
+  (let [request-valid? (if (map? request)
+                         (if (map? facts) (map? bindings) false)
+                         false)
+        core (get request :canonical-core-artifact)
+        core-valid? (if (map? core)
+                      (body-all? [(vector? (get core :calls))
+                                  (vector? (get core :nodes))
+                                  (vector? (get core :call-edges))])
+                      false)]
+    (if request-valid?
+      (if core-valid?
         (let [calls (get core :calls)
               node-index (body-vemp-index (get core :nodes) :node-id)
               call-index (body-vemp-index calls :core-node-id)
               edge-index (body-vemp-index (get core :call-edges) :call-core-node-id)]
-          (if (body-all? [(= :accepted (get node-index :status)) (= :accepted (get call-index :status))
-                         (= :accepted (get edge-index :status))])
+          (if (body-all? [(= :accepted (get node-index :status))
+                          (= :accepted (get call-index :status))
+                          (= :accepted (get edge-index :status))])
             (let [selected (loop [remaining calls out []]
-                             (if (= 0 (count remaining)) out
-                               (let [call (first remaining) bid (get call :operator-binding-id)]
+                             (if (= 0 (count remaining))
+                               out
+                               (let [call (first remaining)
+                                     bid (get call :operator-binding-id)]
                                  (if (body-sse-ids? [bid] 1)
-                                   (let [binding (get bindings bid) name (if (map? binding) (get binding :name) nil)
+                                   (let [binding (get bindings bid)
+                                         name (if (map? binding) (get binding :name) nil)
                                          candidate? (if (symbol? name)
                                                       (if (= 'set name)
                                                         (if (keyword? (get binding :binding-class))
-                                                          (if (contains? #{:lexical :namespace :import} (get binding :binding-class)) false true) true) false) false)]
-                                     (recur (rest remaining) (if candidate? (conj out call) out)))
+                                                          (if (contains? #{:lexical :namespace :import}
+                                                                         (get binding :binding-class))
+                                                            false
+                                                            true)
+                                                          true)
+                                                        false)
+                                                      false)]
+                                     (recur (rest remaining)
+                                            (if candidate? (conj out call) out)))
                                    :invalid-set-source))))]
               (if (= :invalid-set-source selected)
                 (body-failure :body-set-conversion-families-required)
-                (if (= 0 (count selected)) {:status :accepted :context nil}
-                  (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
-                    (if (vector? forms)
-                      (let [form-index (body-vemp-index forms :form-id) nodes (get node-index :index)]
-                        (if (= :accepted (get form-index :status))
-                          (loop [remaining selected checks {}]
-                            (if (= 0 (count remaining))
-                              {:status :accepted
-                               :context {:forms (get form-index :index) :nodes nodes :calls (get call-index :index)
-                                         :edges (get edge-index :index) :bindings bindings :checks checks}}
-                              (let [call (first remaining) node (get nodes (get call :core-node-id))]
-                                (if (body-lset-entry? node call nodes bindings (get facts :type-table) (get core :module))
-                                  (let [result (body-lset-evidence core (get facts :constraint-ledger) (get facts :call-type-facts)
-                                                 node call (get (get edge-index :index) (get call :core-node-id))
-                                                 nodes bindings (get facts :type-table))]
-                                    (if (= :accepted (get result :status))
-                                      (recur (rest remaining) (assoc checks (get call :core-node-id) result))
-                                      (body-failure :body-list-set-conversion-source-mismatch)))
-                                  (if (body-vemp-ids? node call nodes bindings (get core :module))
-                                    (let [args (get call :argument-node-ids) binding (get bindings (get call :operator-binding-id))]
-                                      (if (if (body-nq-ids? node call nodes bindings (get core :module))
-                                            (body-st-binding? binding (get core :module)) false)
-                                        (let [type (get (get facts :type-table) (first args) :gravity.type/unknown)
-                                              validation (body-st-type-check [type])]
-                                          (if (= :accepted (get validation :status))
-                                            (recur (rest remaining)
-                                              (assoc checks (get call :core-node-id) {:argument-type type :validation validation}))
-                                            (body-failure :body-set-conversion-operand-type-required)))
-                                        (body-failure :body-set-conversion-source-mismatch)))
-                                    (body-failure :body-set-conversion-arity-mismatch)))))
-                          (body-failure :body-set-conversion-source-forms-required)))
-                      (body-failure :body-set-conversion-source-forms-required)))))
+                (if (= 0 (count selected))
+                  {:status :accepted :context nil}
+                  (body-st-selected-context selected request facts bindings core
+                                            node-index call-index edge-index))))
             (body-failure :body-set-conversion-families-required)))
-        (body-failure :body-set-conversion-families-required)))
-    (body-failure :body-set-conversion-families-required)))))
+        (body-failure :body-set-conversion-families-required))
+      (body-failure :body-set-conversion-families-required))))
 
 (defn body-st-call-valid? [core facts bindings node call edge nodes]
   (if (body-lset-entry? node call nodes bindings (get facts :type-table) (get core :module))
@@ -9975,47 +10086,91 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
+(defn body-listp-source-groups? [core forms calls]
+  (loop [groups [[(get core :nodes) :node-id]
+                 [forms :form-id]
+                 [calls :core-node-id]
+                 [(get core :call-edges) :call-core-node-id]]]
+    (if (= 0 (count groups))
+      true
+      (if (loop [rows (get (first groups) 0)]
+            (if (= 0 (count rows))
+              true
+              (if (body-sse-ids? [(get (first rows) (get (first groups) 1))] 1)
+                (recur (rest rows))
+                false)))
+        (recur (rest groups))
+        false))))
+
+(defn body-listp-selected-context [selected core forms facts bindings]
+  (let [nodes (body-index (get core :nodes) :node-id)]
+    (loop [remaining selected checks {}]
+      (if (= 0 (count remaining))
+        {:status :accepted
+         :context {:forms (body-index forms :form-id)
+                   :nodes nodes
+                   :calls (body-index (get core :calls) :core-node-id)
+                   :edges (body-index (get core :call-edges) :call-core-node-id)
+                   :bindings bindings
+                   :checks checks}}
+        (let [call (first remaining)
+              args (get call :argument-node-ids)
+              node (get nodes (get call :core-node-id))
+              children (get node :children)
+              arity-valid? (if (vector? args)
+                             (if (= 1 (count args))
+                               (if (vector? children) (= 2 (count children)) false)
+                               false)
+                             false)]
+          (if arity-valid?
+            (if (body-listp-call-ids? node call)
+              (let [type (if (if (keyword? (first args))
+                               true
+                               (if (string? (first args))
+                                 (= 71 (count (first args)))
+                                 false))
+                           (get (get facts :type-table) (first args) :gravity.type/unknown)
+                           :gravity.type/unknown)
+                    validation (body-lc-validate-types [type])]
+                (if (= :accepted (get validation :status))
+                  (let [next-checks (assoc checks (get call :core-node-id)
+                                           {:argument-type type :validation validation})]
+                    (recur (rest remaining) next-checks))
+                  (body-failure :body-list-predicate-operand-type-required)))
+              (body-failure :body-list-predicate-source-identities-required))
+            (body-failure :body-list-predicate-arity-mismatch)))))))
+
 (defn body-listp-context [request facts bindings]
-  (let [core (get request :canonical-core-artifact) calls (get core :calls)
+  (let [core (get request :canonical-core-artifact)
+        calls (get core :calls)
         forms (body-path request [:b47-context :authenticated-core-request :forms])]
-    (if (= false (body-all? [(vector? calls) (vector? (get core :nodes)) (vector? (get core :call-edges))]))
+    (if (= false (body-all? [(vector? calls)
+                             (vector? (get core :nodes))
+                             (vector? (get core :call-edges))]))
       (body-failure :body-list-predicate-families-required)
       (let [selected (loop [remaining calls out []]
-                       (if (= 0 (count remaining)) out
-                         (let [call (first remaining)]
+                       (if (= 0 (count remaining))
+                         out
+                         (let [call (first remaining)
+                               binding-id (get call :operator-binding-id)
+                               binding (if (if (keyword? binding-id)
+                                             true
+                                             (if (string? binding-id)
+                                               (= 71 (count binding-id))
+                                               false))
+                                         (get bindings binding-id)
+                                         nil)]
                            (recur (rest remaining)
-                             (if (body-listp-binding? (if (if (keyword? (get call :operator-binding-id)) true (if (string? (get call :operator-binding-id)) (= 71 (count (get call :operator-binding-id))) false)) (get bindings (get call :operator-binding-id)) nil) (get core :module))
-                               (conj out call) out)))))]
-        (if (= 0 (count selected)) {:status :accepted :context nil}
-          (if (= false (vector? forms)) (body-failure :body-list-predicate-source-forms-required)
-            (if (loop [groups [[(get core :nodes) :node-id] [forms :form-id] [calls :core-node-id]
-                                  [(get core :call-edges) :call-core-node-id]]]
-                  (if (= 0 (count groups)) true
-                    (if (loop [rows (get (first groups) 0)]
-                          (if (= 0 (count rows)) true
-                            (if (body-sse-ids? [(get (first rows) (get (first groups) 1))] 1)
-                              (recur (rest rows)) false)))
-                      (recur (rest groups)) false)))
-              (let [nodes (body-index (get core :nodes) :node-id)]
-                (loop [remaining selected checks {}]
-                  (if (= 0 (count remaining))
-                    {:status :accepted
-                     :context {:forms (body-index forms :form-id) :nodes nodes :calls (body-index calls :core-node-id)
-                               :edges (body-index (get core :call-edges) :call-core-node-id) :bindings bindings :checks checks}}
-                    (let [call (first remaining) args (get call :argument-node-ids)
-                          children (get (if (if (keyword? (get call :core-node-id)) true (if (string? (get call :core-node-id)) (= 71 (count (get call :core-node-id))) false)) (get nodes (get call :core-node-id)) nil) :children)]
-                      (if (if (vector? args) (if (= 1 (count args))
-                            (if (vector? children) (= 2 (count children)) false) false) false)
-                        (if (body-listp-call-ids? (get nodes (get call :core-node-id)) call)
-                          (let [type (if (if (keyword? (first args)) true (if (string? (first args)) (= 71 (count (first args))) false)) (get (get facts :type-table) (first args) :gravity.type/unknown) :gravity.type/unknown)
-                                validation (body-lc-validate-types [type])]
-                            (if (= :accepted (get validation :status))
-                              (recur (rest remaining)
-                                (assoc checks (get call :core-node-id) {:argument-type type :validation validation}))
-                              (body-failure :body-list-predicate-operand-type-required)))
-                          (body-failure :body-list-predicate-source-identities-required))
-                        (body-failure :body-list-predicate-arity-mismatch)))))
-              (body-failure :body-list-predicate-source-identities-required)))))))))
+                                  (if (body-listp-binding? binding (get core :module))
+                                    (conj out call)
+                                    out)))))]
+        (if (= 0 (count selected))
+          {:status :accepted :context nil}
+          (if (vector? forms)
+            (if (body-listp-source-groups? core forms calls)
+              (body-listp-selected-context selected core forms facts bindings)
+              (body-failure :body-list-predicate-source-identities-required))
+            (body-failure :body-list-predicate-source-forms-required)))))))
 
 (defn body-listp-call-valid? [core facts bindings node call edge nodes]
   (if (if (vector? (get call :argument-node-ids)) (if (= 1 (count (get call :argument-node-ids))) (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
@@ -10708,6 +10863,53 @@
       (body-nilp-call-valid? core facts (get context :bindings) node (get (get context :calls) id)
                           (get (get context :edges) id) (get context :nodes)) false)))
 
+(defn body-ane-map-type-check [arguments type]
+  (let [size (count type)]
+    (if (= 3 size)
+      (let [kind (get type :kind)]
+        (if (= :gravity.type/list kind)
+          (let [domain (body-le-domain arguments)]
+            (if (= :accepted (get domain :status))
+              {:status :accepted :comparison-domain :list :list-domain domain}
+              {:status :rejected :reason (get domain :reason)}))
+          (if (= :gravity.type/vector kind)
+            (let [domain (body-ve-domain arguments)]
+              (if (= :accepted (get domain :status))
+                (if (= :flat-keyword-set-vector (get domain :comparison-domain))
+                  (assoc {:status :accepted
+                          :comparison-domain :vector
+                          :vector-integer-leaves? (get domain :integer-leaves?)}
+                    :vector-comparison-domain :flat-keyword-set-vector)
+                  (if (= :flat-integer-vector (get domain :comparison-domain))
+                    {:status :accepted :comparison-domain :vector
+                     :vector-comparison-domain :flat-integer-vector}
+                    {:status :accepted :comparison-domain :vector}))
+                {:status :rejected :reason (get domain :reason)}))
+            (if (= :gravity.type/set kind)
+              (let [domain (body-sse-domain arguments)]
+                (if (= :accepted (get domain :status))
+                  (if (= :string-set-carrier (get domain :comparison-domain))
+                    {:status :accepted :comparison-domain :string-set-carrier
+                     :operand-domains (get domain :operand-domains)}
+                    (if (= :string-set (get domain :comparison-domain))
+                      {:status :accepted :comparison-domain :string-set
+                       :operand-counts (get domain :operand-counts)}
+                      {:status :accepted :comparison-domain :keyword-set
+                       :operand-counts (get domain :operand-counts)}))
+                  {:status :rejected :reason (get domain :reason)}))
+              {:status :rejected :reason :nonnumeric-atomic-type-required}))))
+      (if (if (= 2 size)
+            (if (= :gravity.type/nil-or (get type :kind))
+              (let [value (get type :value-type)]
+                (if (keyword? value)
+                  (contains? #{:gravity.type/bool :gravity.type/character :gravity.type/string
+                               :gravity.type/symbol :gravity.type/keyword} value)
+                  false))
+              false)
+            false)
+        {:status :continue}
+        {:status :rejected :reason :nonnumeric-atomic-type-required}))))
+
 (defn body-ane-type-check [arguments]
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (loop [index 0 integral-type nil atomic-seen? false]
@@ -10731,47 +10933,11 @@
                 (recur (+ index 1) integral-type (if (= :gravity.type/never type) atomic-seen? true))
                 {:status :rejected :reason :nonnumeric-atomic-type-required}))
             (if (map? type)
-              (let [size (count type)]
-                (if (= 3 size)
-                  (let [kind (get type :kind)]
-                    (if (= :gravity.type/list kind)
-                      (let [domain (body-le-domain arguments)]
-                        (if (= :accepted (get domain :status))
-                          {:status :accepted :comparison-domain :list :list-domain domain}
-                          {:status :rejected :reason (get domain :reason)}))
-                      (if (= :gravity.type/vector kind)
-                        (let [domain (body-ve-domain arguments)]
-                          (if (= :accepted (get domain :status))
-                            (if (= :flat-keyword-set-vector (get domain :comparison-domain))
-                              (assoc {:status :accepted :comparison-domain :vector
-                                      :vector-integer-leaves? (get domain :integer-leaves?)}
-                                :vector-comparison-domain :flat-keyword-set-vector)
-                              (if (= :flat-integer-vector (get domain :comparison-domain))
-                                {:status :accepted :comparison-domain :vector :vector-comparison-domain :flat-integer-vector}
-                                {:status :accepted :comparison-domain :vector}))
-                            {:status :rejected :reason (get domain :reason)}))
-                        (if (= :gravity.type/set kind)
-                          (let [domain (body-sse-domain arguments)]
-                            (if (= :accepted (get domain :status))
-                              (if (= :string-set-carrier (get domain :comparison-domain))
-                                {:status :accepted :comparison-domain :string-set-carrier
-                                 :operand-domains (get domain :operand-domains)}
-                                (if (= :string-set (get domain :comparison-domain))
-                                  {:status :accepted :comparison-domain :string-set
-                                   :operand-counts (get domain :operand-counts)}
-                                  {:status :accepted :comparison-domain :keyword-set
-                                   :operand-counts (get domain :operand-counts)}))
-                              {:status :rejected :reason (get domain :reason)}))
-                          {:status :rejected :reason :nonnumeric-atomic-type-required})))
-                  (if (if (= 2 size)
-                        (if (= :gravity.type/nil-or (get type :kind))
-                          (let [value (get type :value-type)]
-                            (if (keyword? value)
-                              (contains? #{:gravity.type/bool :gravity.type/character :gravity.type/string
-                                           :gravity.type/symbol :gravity.type/keyword} value) false)) false) false)
-                    (recur (+ index 1) integral-type true)
-                    {:status :rejected :reason :nonnumeric-atomic-type-required})))
-              {:status :rejected :reason :nonnumeric-atomic-type-required}))))))
+              (let [checked (body-ane-map-type-check arguments type)]
+                (if (= :continue (get checked :status))
+                  (recur (+ index 1) integral-type true)
+                  checked))
+              {:status :rejected :reason :nonnumeric-atomic-type-required})))))
     {:status :rejected :reason :binary-type-input-required}))
 
 (defn body-ane-binding? [binding module]
@@ -11137,68 +11303,108 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
+(defn body-ane-core-identities? [core calls]
+  (if (loop [remaining calls]
+        (if (= 0 (count remaining))
+          true
+          (if (body-sse-ids? [(get (first remaining) :core-node-id)] 1)
+            (recur (rest remaining))
+            false)))
+    (if (loop [remaining (get core :nodes)]
+          (if (= 0 (count remaining))
+            true
+            (if (body-sse-ids? [(get (first remaining) :node-id)] 1)
+              (recur (rest remaining))
+              false)))
+      (loop [remaining (get core :call-edges)]
+        (if (= 0 (count remaining))
+          true
+          (if (body-sse-ids? [(get (first remaining) :call-core-node-id)] 1)
+            (recur (rest remaining))
+            false)))
+      false)
+    false))
+
+(defn body-ane-forms-valid? [forms]
+  (if (vector? forms)
+    (loop [remaining forms]
+      (if (= 0 (count remaining))
+        true
+        (if (body-sse-ids? [(get (first remaining) :form-id)] 1)
+          (recur (rest remaining))
+          false)))
+    false))
+
+(defn body-ane-selected-loop [selected forms facts bindings core]
+  (let [nodes (body-index (get core :nodes) :node-id)
+        form-index (body-index forms :form-id)
+        call-index (body-index (get core :calls) :core-node-id)
+        edge-index (body-index (get core :call-edges) :call-core-node-id)]
+    (loop [remaining selected checks {}]
+      (if (= 0 (count remaining))
+        {:status :accepted
+         :context {:forms form-index
+                   :nodes nodes
+                   :calls call-index
+                   :edges edge-index
+                   :bindings bindings
+                   :checks checks}}
+        (let [call (first remaining)
+              node (get nodes (get call :core-node-id))]
+          (if (body-sse-call-ids? node call)
+            (let [arguments (loop [ids (get call :argument-node-ids) out []]
+                              (if (= 0 (count ids))
+                                out
+                                (let [id (first ids)
+                                      type (if (body-sse-ids? [id] 1)
+                                             (get (get facts :type-table) id :gravity.type/unknown)
+                                             :gravity.type/unknown)]
+                                  (recur (rest ids) (conj out type)))))
+                  validation (body-ane-type-check arguments)]
+              (if (= :accepted (get validation :status))
+                (let [next-checks (assoc checks (get call :core-node-id)
+                                         {:argument-types arguments :validation validation})]
+                  (recur (rest remaining) next-checks))
+                (body-failure :body-atomic-inequality-operand-type-required)))
+            (body-failure :body-atomic-inequality-arity-mismatch)))))))
+
+(defn body-ane-selected-context [selected request facts bindings core]
+  (let [forms (body-path request [:b47-context :authenticated-core-request :forms])]
+    (if (body-ane-forms-valid? forms)
+      (body-ane-selected-loop selected forms facts bindings core)
+      (body-failure :body-atomic-inequality-source-forms-required))))
+
 (defn body-ane-context [request facts bindings]
-  (let [core (get request :canonical-core-artifact) calls (get core :calls)
+  (let [core (get request :canonical-core-artifact)
+        calls (get core :calls)
         forms (body-path request [:b47-context :authenticated-core-request :forms])]
-    (if (= false (body-all? [(vector? calls) (vector? (get core :nodes)) (vector? (get core :call-edges))]))
+    (if (= false (body-all? [(vector? calls)
+                             (vector? (get core :nodes))
+                             (vector? (get core :call-edges))]))
       (body-failure :body-atomic-inequality-families-required)
-      (if (if (loop [remaining calls]
-                (if (= 0 (count remaining)) true
-                  (if (if (keyword? (get (first remaining) :core-node-id)) true
-                        (if (string? (get (first remaining) :core-node-id)) (= 71 (count (get (first remaining) :core-node-id))) false))
-                    (recur (rest remaining)) false)))
-            (if (loop [remaining (get core :nodes)]
-                  (if (= 0 (count remaining)) true
-                    (if (if (keyword? (get (first remaining) :node-id)) true
-                          (if (string? (get (first remaining) :node-id)) (= 71 (count (get (first remaining) :node-id))) false))
-                      (recur (rest remaining)) false)))
-              (loop [remaining (get core :call-edges)]
-                (if (= 0 (count remaining)) true
-                  (if (if (keyword? (get (first remaining) :call-core-node-id)) true
-                        (if (string? (get (first remaining) :call-core-node-id)) (= 71 (count (get (first remaining) :call-core-node-id))) false))
-                    (recur (rest remaining)) false))) false) false)
+      (if (body-ane-core-identities? core calls)
         (let [selected (loop [remaining calls out []]
                          (if (= 0 (count remaining))
                            out
-                           (if (if (= nil (get (first remaining) :operator-binding-id)) true
-                                 (body-sse-ids? [(get (first remaining) :operator-binding-id)] 1))
-                             (let [call (first remaining)]
-                               (recur (rest remaining)
-                                 (if (body-ane-binding? (if (if (keyword? (get call :operator-binding-id)) true (if (string? (get call :operator-binding-id)) (= 71 (count (get call :operator-binding-id))) false)) (get bindings (get call :operator-binding-id)) nil) (get core :module))
-                                   (conj out call)
-                                   out)))
-                             nil)))]
-          (if (= selected nil)
+                           (let [call (first remaining)
+                                 binding-id (get call :operator-binding-id)
+                                 binding-valid? (if (= nil binding-id)
+                                                  true
+                                                  (body-sse-ids? [binding-id] 1))]
+                             (if binding-valid?
+                               (let [binding (if (body-sse-ids? [binding-id] 1)
+                                               (get bindings binding-id)
+                                               nil)
+                                     candidate? (body-ane-binding? binding (get core :module))]
+                                 (recur (rest remaining)
+                                        (if candidate? (conj out call) out)))
+                               nil))))]
+          (if (= nil selected)
             (body-failure :body-atomic-inequality-source-identities-required)
-            (if (= 0 (count selected)) {:status :accepted :context nil}
-              (if (= false (vector? forms)) (body-failure :body-atomic-inequality-source-forms-required)
-                (if (loop [remaining forms]
-                      (if (= 0 (count remaining)) true
-                        (if (if (keyword? (get (first remaining) :form-id)) true
-                              (if (string? (get (first remaining) :form-id)) (= 71 (count (get (first remaining) :form-id))) false))
-                          (recur (rest remaining)) false)))
-                  (let [nodes (body-index (get core :nodes) :node-id)]
-                    (loop [remaining selected checks {}]
-                      (if (= 0 (count remaining))
-                        {:status :accepted
-                         :context {:forms (body-index forms :form-id) :nodes nodes :calls (body-index calls :core-node-id)
-                                   :edges (body-index (get core :call-edges) :call-core-node-id) :bindings bindings :checks checks}}
-                        (let [call (first remaining)]
-                          (if (body-sse-call-ids? (get nodes (get call :core-node-id)) call)
-                            (let [arguments (loop [remaining (get call :argument-node-ids) out []]
-                                              (if (= 0 (count remaining)) out
-                                                (recur (rest remaining)
-                                                  (conj out (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false))
-                                                              (get (get facts :type-table) (first remaining) :gravity.type/unknown)
-                                                              :gravity.type/unknown)))))
-                                  validation (body-ane-type-check arguments)]
-                              (if (= :accepted (get validation :status))
-                                (recur (rest remaining)
-                                  (assoc checks (get call :core-node-id) {:argument-types arguments :validation validation}))
-                                (body-failure :body-atomic-inequality-operand-type-required)))
-                            (body-failure :body-atomic-inequality-arity-mismatch)))))
-                  (body-failure :body-atomic-inequality-source-forms-required)))))
-        (body-failure :body-atomic-inequality-source-identities-required)))))))
+            (if (= 0 (count selected))
+              {:status :accepted :context nil}
+              (body-ane-selected-context selected request facts bindings core))))
+        (body-failure :body-atomic-inequality-source-identities-required)))))
 
 (defn body-ane-call-valid? [core facts bindings node call edge nodes]
   (if (if (vector? (get call :argument-node-ids)) (if (= 2 (count (get call :argument-node-ids))) (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false)
