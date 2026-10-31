@@ -36,7 +36,13 @@
                       sh03-reader-tags-registered-shape? sh03-reader-pure-tags?
                       sh03-reader-policy-valid? sh03-record-by-id
                       sh03-reader-tag-payload-valid? reader-resource-forms
-                      reader-prepare-resources reader-verify-resource-preparation]]
+                      reader-prepare-resources reader-verify-resource-preparation
+                      reader-resource-policy reader-resource-returns-valid?
+                      reader-complete-resources reader-verify-resource-result
+                      sh03-construct-parsed-source-unit sh03-digest-requests
+                      sh03-semantic-extension-invocations sh03-semantic-extension-records
+                      sh03-extension-records-have-invocations? sh03-digest-request-summary
+                      sh03-digest-request-summaries]]
           (eval (get definitions name)))
         (doseq [[name value] ports] (intern n name value)))
       (run #(ns-resolve n %))
@@ -172,7 +178,9 @@
         selected? (binding [*ns* (the-ns 'gravity.reader.resource-preparation-test)]
                     (eval (list 'let ['sh03-reader-function-prefix "sh03-"] predicate)))
         expected '#{reader-resource-forms reader-prepare-resources
-                    reader-verify-resource-preparation}]
+                    reader-verify-resource-preparation reader-resource-policy
+                    reader-resource-returns-valid? reader-complete-resources
+                    reader-verify-resource-result}]
     (is (every? #(selected? [% {}]) expected))
     (is (selected? ['sh03-read-source-unit {}]))
     (doseq [other '[read-input reader-other stage1-read-source]]
@@ -181,3 +189,61 @@
                                 (keys definitions)))))
     (is (not-any? #(= 'build-read-declared-input %)
                   (tree-seq coll? seq (map definitions expected))))))
+
+(deftest actual-pure-raw-builder-and-verifier-bind-the-returned-seed-in-digest-preimages
+  (let [hash-id (str "sha256:" (apply str (repeat 64 "a")))
+        unit {:source-content-hash hash-id}
+        seed {:source-id hash-id :source-content-id hash-id :form-id "form/0"
+              :payload-form-id "form/1" :span span :datum "input"}
+        invocation {:form-id "form/0" :payload-form-id "form/1" :span span :raw [35 114]
+                    :input-seed seed :returned-seed (assoc seed :datum "actual return")
+                    :invocation {:handler 'gravity.reader/read-input :status :invoked}}
+        ports {'sh03-source-unit-valid? (constantly true)
+               'sh03-source-byte-vector-valid? (fn [_ bytes] (vector? bytes))
+               'sh03-sha256-id? #(= hash-id %)
+               'sh03-decode-source-bytes (fn [& _] {:status :accepted :characters []})
+               'sh03-scan-tokens (fn [& _] {:status :accepted :tokens []})
+               'sh03-parse-tokens (fn [& _] {:status :accepted :form-tree graph
+                                           :top-level-form-ids ["form/0"] :top-level-values []})
+               'sh03-filter-output-tokens (fn [tokens _] tokens)
+               'sh03-semantic-value-table (fn [& _] [])
+               'sh03-semantic-value-token-index (fn [& _] {})
+               'sh03-semantic-value-form-index (fn [& _] {})
+               'sh03-compact-token-records (fn [tokens _] tokens)
+               'sh03-compact-form-records (fn [_ raw] raw)
+               'sh03-literal-records (fn [& _] [])
+               'sh03-deferred-literal-records (fn [& _] [])
+               'sh03-source-map-record (fn [& _] {})
+               'sh03-accepted-semantic-template (fn [& _] {:top-level-form-ids ["form/0"]})
+               'sh03-semantic-source-unit (fn [u policy] (assoc u :reader-options policy))
+               'sh03-actual-provenance (fn [& _] {})
+               'sh03-top-level-records (fn [& _] [])
+               'sh03-top-level-value-references (fn [& _] [])
+               'sh03-bounds-record (fn [] {})
+               'sh03-execution-boundary-record (fn [] {})}]
+    (model ports
+      (fn [lookup]
+        (let [prepared ((lookup 'reader-prepare-resources) unit [1 2])
+              build (lookup 'reader-complete-resources)
+              verify (lookup 'reader-verify-resource-result)
+              raw (build unit [1 2] prepared [invocation])
+              record (first (:reader-extension-invocation-records raw))]
+          (is (= :accepted (:status raw)))
+          (is (= 3 (:schema-version record)))
+          (is (= [invocation] (:invocations record)))
+          (is (= [record] (get-in raw [:digest-requests 4 :preimage :records])))
+          (is (= [0 3] (get-in raw [:digest-requests 4 :depends-on])))
+          (is (= :accepted (:status (verify unit [1 2] prepared [invocation] raw))))
+          (doseq [changed [(assoc-in raw [:reader-extension-invocation-records 0 :invocations 0 :returned-seed :datum] "forged")
+                           (assoc-in raw [:reader-extension-invocation-records 0 :invocations 0 :input-seed :datum] "other")
+                           (assoc-in raw [:reader-extension-invocation-records 0 :invocations] [])
+                           (assoc-in raw [:digest-requests 4 :preimage :records] [])
+                           (assoc-in raw [:reader-extension-invocation-records 0 :handler] 'other)]]
+            (is (= :rejected (:status (verify unit [1 2] prepared [invocation] changed)))))
+          (doseq [changed [(assoc-in invocation [:returned-seed :source-id] "other")
+                           (assoc-in invocation [:input-seed :source-content-id] "other")
+                           (assoc invocation :form-id "other")
+                           (assoc invocation :payload-form-id "other")
+                           (assoc invocation :span {})]]
+            (is (= :rejected (:status (build unit [1 2] prepared [changed])))))
+          (is (= :rejected (:status (build unit [1 2] prepared [])))))))))

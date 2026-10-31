@@ -27,7 +27,9 @@
              sh03-read-source-unit
              sh03-verify-reader-result
              reader-prepare-resources
-             reader-verify-resource-preparation])
+             reader-verify-resource-preparation
+             reader-complete-resources
+             reader-verify-resource-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -5084,9 +5086,11 @@
                           (sh03-deferred-literal-records
                            forms form-value-index)
                           extension-records
+                          (if (= (get reader-policy :extension-policy) :gravity/declared-input-reader)
+                            (get parsed :resource-extension-records)
                           (if (= (get reader-policy :extension-policy) :gravity/sealed-pure-text-reader)
                             [(sh03-reader-sealed-text-record raw-forms reader-policy)]
-                            (sh03-reader-extension-invocation-records forms reader-policy))
+                            (sh03-reader-extension-invocation-records forms reader-policy)))
                           source-map
                           (sh03-source-map-record output-tokens forms)
                           semantic-template
@@ -5240,6 +5244,83 @@
      :status (if (= (get expected :status) :prepared)
                (if (= expected preparation) :accepted :rejected)
                :rejected)}))
+
+(defn reader-resource-policy []
+  {:artifact :gravity/sh03-reader-policy :schema-version 1
+   :retain-trivia true :enabled-reader-tags [[114 101 115 111 117 114 99 101]]
+   :extension-policy :gravity/declared-input-reader})
+
+(defn reader-resource-returns-valid? [source-unit resources invocations]
+  (if (= (count resources) (count invocations))
+    (loop [remaining resources returned invocations]
+      (if (= (count remaining) 0)
+        true
+        (let [resource (first remaining)
+              invocation (first returned)
+              seed (get invocation :input-seed)
+              result (get invocation :returned-seed)]
+          (if (if (= (get resource :form-id) (get invocation :form-id))
+                (if (= (get resource :payload-form-id) (get invocation :payload-form-id))
+                  (if (= (get resource :span) (get invocation :span))
+                    (if (= (get resource :raw) (get invocation :raw))
+                      (if (= (get seed :source-content-id)
+                             (get source-unit :source-content-hash))
+                        (if (sh03-sha256-id? (get seed :source-id))
+                          (if (= (get seed :form-id) (get resource :form-id))
+                            (if (= (get seed :payload-form-id) (get resource :payload-form-id))
+                              (if (= (get seed :span) (get resource :span))
+                                (if (string? (get seed :datum))
+                                  (if (string? (get result :datum))
+                                    (= result (assoc seed :datum (get result :datum)))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+            (recur (rest remaining) (rest returned))
+            false))))
+    false))
+
+; Invocations here are the actual scoped handler returns supplied by the
+; trusted host. This pure constructor grants no authority to those data. The
+; host and C2 consumer independently replay the original lexical issuer results.
+(defn reader-complete-resources [source-unit source-bytes preparation invocations]
+  (if (= (get (reader-verify-resource-preparation source-unit source-bytes preparation)
+              :status) :accepted)
+    (if (reader-resource-returns-valid? source-unit (get preparation :resources) invocations)
+      (let [policy (reader-resource-policy)
+            record {:artifact :gravity/reader-extension-invocation :schema-version 3
+                    :policy policy
+                    :tag {:kind :symbol :name-codepoints [114 101 115 111 117 114 99 101]}
+                    :tag-codepoints [114 101 115 111 117 114 99 101]
+                    :handler (quote gravity.reader/read-input)
+                    :handler-policy {:registered? true :enabled? true :input :syntax-seed
+                                     :output :syntax-seed :ambient-authority-denied? true}
+                    :build-effects #{:build/read-file} :capabilities #{:fs/read}
+                    :profiles #{:meta} :invocations invocations
+                    :status (if (> (count invocations) 0) :invoked :registered-not-invoked)}]
+        (sh03-construct-parsed-source-unit
+         source-unit source-bytes policy (get preparation :tokens)
+         (assoc (get preparation :parsed) :resource-extension-records [record])))
+      {:status :rejected :reason :resource-return-contract})
+    {:status :rejected :reason :resource-preparation-mismatch}))
+
+(defn reader-verify-resource-result [source-unit source-bytes preparation invocations result]
+  (let [expected (reader-complete-resources source-unit source-bytes preparation invocations)]
+    (if (if (= (get expected :status) :accepted) (= expected result) false)
+      {:artifact :gravity/sh03-reader-verification-report :schema-version 1
+       :status :accepted :verified? true :reader-result-status :accepted
+       :semantic-reader-template (get expected :semantic-reader-template)
+       :digest-requests (sh03-digest-request-summaries (get expected :digest-requests))
+       :diagnostics [] :bounds (sh03-bounds-record)
+       :execution-boundary (sh03-execution-boundary-record)}
+      {:status :rejected :verified? false :reason :resource-result-replay-mismatch})))
 
 ; Recur replaces the interpreter loop environment with just its outer source
 ; arguments plus the four loop locals. It does not retain a prior phase's let

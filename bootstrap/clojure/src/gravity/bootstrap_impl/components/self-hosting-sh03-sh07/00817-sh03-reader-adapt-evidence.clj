@@ -64,11 +64,12 @@
              source-path :complete-sh03-reader-deferment-projection
              gravity-deferred-projection
              {:expected-deferred-count (count deferred-records)}))
-        sealed? (reader-pure-text/raw-policy? (get-in result [:source-unit :reader-options]))
+        resource? (= (reader-resource-policy) (get-in result [:source-unit :reader-options]))
+        sealed? (or resource? (reader-pure-text/raw-policy? (get-in result [:source-unit :reader-options])))
         extension-records
         (if sealed?
-          (let [record (reader-pure-text/record! result)]
-            [(assoc record :tag 'text
+          (let [record (if resource? (reader-resource-record! result) (reader-pure-text/record! result))]
+            [(assoc record :tag (if resource? 'resource 'text)
                     :invocations
                     (mapv (fn [invocation]
                             ;; Project occurrence references; preserve the actual
@@ -175,4 +176,6 @@
    :token-id-projection-id (reader-canonical-hash token-id-map)
    :form-id-projection-id (reader-canonical-hash form-id-map)}
     (reader-pure-text/raw-policy? (get-in result [:source-unit :reader-options]))
-    (assoc :pure-text-record-id (reader-canonical-hash (reader-pure-text/record! result)))))
+    (assoc :pure-text-record-id (reader-canonical-hash (reader-pure-text/record! result)))
+    (= (reader-resource-policy) (get-in result [:source-unit :reader-options]))
+    (assoc :resource-record-id (reader-canonical-hash (reader-resource-record! result)))))

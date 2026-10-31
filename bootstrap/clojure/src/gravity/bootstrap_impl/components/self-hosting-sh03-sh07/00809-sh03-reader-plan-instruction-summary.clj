@@ -58,7 +58,9 @@
                    (or (str/starts-with? (name function-name)
                                          sh03-reader-function-prefix)
                        (contains? '#{reader-resource-forms reader-prepare-resources
-                                      reader-verify-resource-preparation}
+                                      reader-verify-resource-preparation reader-resource-policy
+                                      reader-resource-returns-valid? reader-complete-resources
+                                      reader-verify-resource-result}
                                   function-name))))
          all-functions)
         module (assoc module-base :function-table selected-functions)

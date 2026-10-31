@@ -39,6 +39,9 @@
  (str root "bootstrap-p15/00700-static-rebuild-token-009-p15-s23-stage2-closed-checked-core-verify-through-p15-s23-trusted-carrier-vector-classes.clj")
  '[p15-s23-trusted-carrier-map-classes])
 (install!
+ (str root "bootstrap-p15/00588-p15-s23-hosted-native-data.clj")
+ '[p15-s23-hosted-native-view-reason])
+(install!
  (str root "bootstrap-p15/00700-static-rebuild-token-010-p15-s23-trusted-carrier-set-classes-through-p15-s23-trusted-carrier-validation.clj")
  '[p15-s23-trusted-carrier-set-classes p15-s23-trusted-carrier-list-classes
    p15-s23-trusted-carrier-scalar-classes p15-s23-host-native-field
@@ -49,6 +52,12 @@
          sh03-reader-authenticated-envelope-options reader-pure-source-artifact
          p15-s23-sh02-stage-envelope-keys p15-s23-stage2-sh02-descriptor-envelope-verify!
          c2-reader-fail! source-span standard-reader-options)
+
+;; Original standard/pure ingress controls; resource ingress is a separate
+;; affected model and does not turn this historical family into a resource run.
+(defn reader-resource-admission-required? [_] false)
+(defn reader-resource-options? [_] false)
+(declare reader-resource-consume! reader-resource-context!)
 
 (install! (str root "self-hosting-sh03-sh07/00850-sh03-c3-precomputed-c2-verify.clj")
           '[sh03-c3-precomputed-c2-verify!])
@@ -94,7 +103,9 @@
 
 (defn- with-ports [calls fresh f]
   (let [validate p15-s23-trusted-carrier-validation
-        native (fn [data policy] (swap! calls conj :native-validation) (validate data policy))
+        native (fn [data policy]
+                 (swap! calls conj :native-validation)
+                 (validate data policy :strict-native))
         fail (fn [id _ _ facts] (throw (ex-info id (assoc facts :id id))))
         opaque (fn [& _] (swap! calls conj :opaque))
         ports {:p15-s23-trusted-carrier-validation native

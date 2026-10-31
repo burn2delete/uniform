@@ -45,7 +45,9 @@
                (and (or (str/starts-with? (name function-name)
                                           sh03-reader-function-prefix)
                         (contains? '#{reader-resource-forms reader-prepare-resources
-                                       reader-verify-resource-preparation}
+                                       reader-verify-resource-preparation reader-resource-policy
+                                       reader-resource-returns-valid? reader-complete-resources
+                                       reader-verify-resource-result}
                                    function-name))
                     (= sh03-reader-function-keys
                        (set (keys function)))
