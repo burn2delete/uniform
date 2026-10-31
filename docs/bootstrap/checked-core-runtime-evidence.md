@@ -64,3 +64,19 @@ Equal-content plan bindings are semantic data and may reuse; changing the actual
 plan with unchanged advertised hashes must miss. Construction bookends also
 track the scoped execution binding and reject changed runtime inputs before
 later owner work. Current checks must not be treated as migration/pin renewal.
+
+The initial broader selection reported two failures in 14 tests / 478
+assertions. Both reproduce unchanged on the abf3b0c7 baseline control (2 tests /
+14 assertions). One cache fixture selected the compiler file as its emitter
+then edited an unobserved emitter file; its two explicit source ports now point
+to the distinct fixture files. The other older artifact-construction model
+enters current owner admission with empty artifacts before its intended revision
+race. Its baseline nonpass remains recorded; no owner gate or historical refusal
+was bypassed to force that model through.
+
+The applicable runtime selection now passes 13 tests / 474 assertions, zero
+failures and errors: all nine new stage/runtime/receipt/construction tests plus
+four existing current-binding and normalized-kernel checks. This is not a full
+SH-07 artifact or migration run. CI adds a checked-core-runtime mode that runs
+those nine tests and the four existing checks in separate fresh processes.
+The older owner-gated artifact model is not counted as runtime evidence.
