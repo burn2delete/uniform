@@ -16553,7 +16553,7 @@
   (if
   (if (vector? arguments) (= 2 (count arguments)) false)
   (loop
-   [pending [[(get arguments 1) 0 true #{}] [(get arguments 0) 0 true #{}]] integers? false nested? false sets? false]
+   [pending [[(get arguments 1) 0 true []] [(get arguments 0) 0 true []]] integers? false nested? false sets? false]
    (if
     (= 0 (count pending))
     (if
