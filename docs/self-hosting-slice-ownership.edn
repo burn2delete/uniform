@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/lowering.clj"
+ {"bootstrap/clojure/src/gravity/effects.clj"
+  {:namespace gravity.effects :owner :sh-effects :slice "SH-09"
+   :consumer-path "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj"
+   :test-path "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj"}
+  "bootstrap/clojure/src/gravity/lowering.clj"
   {:namespace gravity.lowering :owner :master-coordinator :slice "SH-17"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-012-p15-s23-c14-policy-base-through-p15-s23-b2-c17-expected-source-content-hash.clj"
    :test-path "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"}
@@ -164,7 +168,8 @@
  {"bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj" {:owner :sh-reader, :source-path "bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj", :source-namespace gravity.c2-reader-product-projection.scalar-spans}, "bootstrap/clojure/test/gravity/c3_literal_indexes_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj", :source-namespace gravity.c3-literal-projection.indexes}, "bootstrap/clojure/test/gravity/c3_reader_expansions_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_reader_expansions.clj", :source-namespace gravity.c3-reader-expansions}, "bootstrap/clojure/test/gravity/c3_reader_lossless_span_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj", :source-namespace gravity.c3-literal-projection.spans}}
 
  :module-owners
- {"bootstrap/clojure/src/gravity/lowering.clj" :master-coordinator
+ {"bootstrap/clojure/src/gravity/effects.clj" :sh-effects
+  "bootstrap/clojure/src/gravity/lowering.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/backend/js.clj" :sh-target-js
   "bootstrap/clojure/src/gravity/backend/jvm.clj" :sh-target-jvm
   "bootstrap/clojure/src/gravity/backend/wasm.clj" :sh-target-wasm
