@@ -214,14 +214,6 @@
 ; boundaries, general record/union syntax, and list lowering remain later
 ; SH-08 work.
 
-(defn sh08-local-bounds-value []
-  {:maximum-core-nodes 65536
-   :maximum-node-children 1024
-   :maximum-carrier-nodes 1048576
-   :maximum-carrier-depth 128
-   :maximum-carrier-width 65536
-   :maximum-scalar-units 16777216})
-
 (defn sh08-vector-contains? [values value]
   (loop [remaining values]
     (if (= (count remaining) 0)
@@ -292,95 +284,11 @@
           false)))
     false))
 
-(defn sh08-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh08-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh08-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh08-max [left right]
-  (if (> left right) left right))
-
 (defn sh08-carrier-preflight [value]
-  (let [maximum-nodes
-        (get (sh08-local-bounds-value) :maximum-carrier-nodes)
-        maximum-depth
-        (get (sh08-local-bounds-value) :maximum-carrier-depth)
-        maximum-width
-        (get (sh08-local-bounds-value) :maximum-carrier-width)
-        maximum-scalar-units
-        (get (sh08-local-bounds-value) :maximum-scalar-units)]
-    (loop [frontier [[value 0]]
-           nodes 0
-           scalar-units 0
-           observed-depth 0
-           observed-width 0]
-      (if (= (count frontier) 0)
-        {:status :accepted
-         :nodes nodes
-         :scalar-units scalar-units
-         :maximum-depth observed-depth
-         :maximum-width observed-width}
-        (let [entry (first frontier)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :carrier-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :carrier-depth-bound}
-              (if (sh08-aggregate? current)
-                (let [width (sh08-aggregate-width current)]
-                  (if (> width maximum-width)
-                    {:status :rejected :reason :carrier-width-bound}
-                    (let [components
-                          (sh08-aggregate-components current)
-                          next-frontier
-                          (loop [remaining components
-                                 result (rest frontier)]
-                            (if (= (count remaining) 0)
-                              result
-                              (recur
-                               (rest remaining)
-                               (conj
-                                result
-                                [(first remaining) (+ depth 1)]))))]
-                      (recur
-                       next-frontier
-                       next-nodes
-                       scalar-units
-                       (sh08-max observed-depth depth)
-                       (sh08-max observed-width width)))))
-                (let [next-scalar-units
-                      (+ scalar-units (count (vec (str current))))]
-                  (if (> next-scalar-units maximum-scalar-units)
-                    {:status :rejected :reason :carrier-scalar-bound}
-                    (recur
-                     (rest frontier)
-                     next-nodes
-                     next-scalar-units
-                     (sh08-max observed-depth depth)
-                     observed-width)))))))))))
+  ; Carrier admission does not meter aggregate size.  Its callers perform
+  ; the concrete shape, identity, provenance, and Unicode checks that make a
+  ; value valid; this helper remains only as a compatibility status seam.
+  {:status :accepted})
 
 (defn sh08-origin-shape? [origin]
   (if (sh08-exact-keys?
@@ -2589,21 +2497,20 @@
         (if (= :literal (get type :shape))
           (if (vector? (get type :element-types)) (= 0 (count (get type :element-types))) false) false) false) false) false) false))
 
-(defn sh08-lsi-index [records field budget]
-  (if (if (vector? records) (<= (count records) 65536) false)
-    (loop [remaining records out {} work 0]
-      (if (= 0 (count remaining)) {:status :accepted :index out :work-count work}
-        (let [record (first remaining) fields (if (map? record) (count record) 0) cost (+ 4 fields)]
-          (if (> (+ work cost) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work cost)}
-            (if (if (map? record)
-                  (loop [keys (keys record)] (if (= 0 (count keys)) true
-                    (if (keyword? (first keys)) (recur (rest keys)) false))) false)
-              (let [id (get record field)]
-                (if (if (sh08-lsi-id? id) (= false (contains? out id)) false)
-                  (recur (rest remaining) (assoc out id record) (+ work cost))
-                  {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work cost)}))
-              {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work cost)})))))
-    {:status :rejected :reason :incoherent-loop-member-source :work-count 0}))
+(defn sh08-lsi-index [records field]
+  (if (vector? records)
+    (loop [remaining records out {}]
+      (if (= 0 (count remaining)) {:status :accepted :index out}
+        (let [record (first remaining)]
+          (if (if (map? record)
+                (loop [keys (keys record)] (if (= 0 (count keys)) true
+                  (if (keyword? (first keys)) (recur (rest keys)) false))) false)
+            (let [id (get record field)]
+              (if (if (sh08-lsi-id? id) (= false (contains? out id)) false)
+                (recur (rest remaining) (assoc out id record))
+                {:status :rejected :reason :incoherent-loop-member-source}))
+            {:status :rejected :reason :incoherent-loop-member-source}))))
+    {:status :rejected :reason :incoherent-loop-member-source}))
 
 (defn sh08-lsi-empty-constructor? [node forms]
   (let [source (get node :source) id (get source :form-id)]
@@ -2689,43 +2596,29 @@
    :parent-form-id (get form :parent-form-id) :scope-id (get form :scope-id) :child-form-ids (get form :child-form-ids)
    :source-span (get form :source-span) :origin-chain (get form :origin-chain) :generated-origin (get form :generated-origin)})
 
-(defn sh08-lsi-first-data-work [value budget]
+(defn sh08-lsi-first-data [value]
   ; Only first-order data carriers are traversed; lazy sequences are unsupported.
-  ; Reserve native container visits/comparison candidates before materialization.
-  (loop [pending [[value 0]] used 0]
-    (if (= 0 (count pending)) {:status :accepted :work-count used}
-      (if (>= used budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 1)}
-        (let [frame (get pending (- (count pending) 1)) value (get frame 0) depth (get frame 1)
-              tail (subvec pending 0 (- (count pending) 1))]
-          (if (> depth 128) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
-            (if (if (map? value) true (if (vector? value) true (if (set? value) true (list? value))))
-              (let [size (count value) width (if (map? value) (* 2 size) size)
-                    comparison (if (map? value) (+ (* size size) width)
-                                 (if (set? value) (+ (* size size) width) width))
-                    work (+ used 1 comparison)]
-                (if (> size 1024) {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}
-                  (if (> (+ work (count tail) width) budget)
-                    {:status :rejected :reason :loop-type-work-limit :work-count (+ work (count tail) width)}
-                    (let [items (if (map? value)
-                                  (loop [entries (vec value) out []]
-                                    (if (= 0 (count entries)) out
-                                      (let [entry (first entries)]
-                                        (recur (rest entries) (conj (conj out (get entry 0)) (get entry 1)))))) (vec value))]
-                      (recur (loop [remaining items out tail]
-                               (if (= 0 (count remaining)) out
-                                 (recur (rest remaining) (conj out [(first remaining) (+ depth 1)])))) work)))))
-              (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
-                    (if (symbol? value) true (if (string? value) true (if (number? value) true (char? value)))))))
-                ; Keyword atoms keep two visits without rendering a discarded name.
-                (let [work (+ used 2 (if (string? value) (count value)
-                                      (if (symbol? value) (count (str value)) 0)))]
-                  (if (> work budget) {:status :rejected :reason :loop-type-work-limit :work-count work}
-                    (recur tail work)))
-                {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 1)}))))))))
+  (loop [pending [value]]
+    (if (= 0 (count pending)) {:status :accepted}
+      (let [value (first pending) tail (rest pending)]
+        (if (if (map? value) true (if (vector? value) true (if (set? value) true (list? value))))
+          (let [items (if (map? value)
+                        (loop [entries (vec value) out []]
+                          (if (= 0 (count entries)) out
+                            (let [entry (first entries)]
+                              (recur (rest entries) (conj (conj out (get entry 0)) (get entry 1))))))
+                        (vec value))]
+            (recur (loop [remaining items out tail]
+                     (if (= 0 (count remaining)) out
+                       (recur (rest remaining) (conj out (first remaining)))))))
+          (if (if (= nil value) true (if (boolean? value) true (if (keyword? value) true
+                (if (symbol? value) true (if (string? value) true (if (number? value) true (char? value)))))))
+            (recur tail)
+            {:status :rejected :reason :unsupported-loop-member-grounding}))))))
 
 (defn sh08-lsi-first-ids? [ids]
-  ; Shape only. Reached IDs are checked individually after their visit is paid.
-  (if (vector? ids) (<= (count ids) 1024) false))
+  ; Shape only. Reached IDs are checked individually after their visit.
+  (vector? ids))
 
 (defn sh08-lsi-first-form? [form]
   (if (map? form)
@@ -2792,10 +2685,8 @@
                           (if (sh08-lsi-id? (get record :initializer-node-id))
                             (sh08-lsi-first-node? (get (get env :nodes) (get record :initializer-node-id))) false) false) false) false) false) true) false) false) false)) false)) false))
 
-(defn sh08-lsi-first-call-input [node env budget]
-  ; Prepay three fixed node/form projections: 3 * (32 + 24) + 8 units.
-  (if (> 176 budget) {:status :rejected :reason :loop-type-work-limit :work-count 176}
-    (let [result
+(defn sh08-lsi-first-call-input [node env]
+  (let [result
   (if (if (sh08-lsi-first-node? node)
         (if (keyword? (get (get (get env :core) :module) :profile))
           (keyword? (get (get (get env :core) :module) :target)) false) false)
@@ -2822,11 +2713,11 @@
                         (if (sh08-lsi-id? (get (get owner :child-form-ids) 0))
                           (sh08-lsi-id? (get (get owner :child-form-ids) 1)) false) false) false)
                   (let [ids (get owner :child-form-ids) op-form (get forms (get ids 0)) arg-form (get forms (get ids 1))
-                        raw (sh08-lsi-first-data-work [(sh08-lsi-first-node-data node) (sh08-lsi-first-node-data operator) (sh08-lsi-first-node-data arg)
+                        raw (sh08-lsi-first-data [(sh08-lsi-first-node-data node) (sh08-lsi-first-node-data operator) (sh08-lsi-first-node-data arg)
                               call edge binding (sh08-lsi-first-form-data owner) (sh08-lsi-first-form-data op-form)
                               (sh08-lsi-first-form-data arg-form)
                               {:profile (get (get (get env :core) :module) :profile)
-                               :target (get (get (get env :core) :module) :target)}] (- budget 176))]
+                               :target (get (get (get env :core) :module) :target)}])]
                     (if (= :accepted (get raw :status))
                       (if (if (sh08-lsi-first-form? op-form) (sh08-lsi-first-form? arg-form) false)
                         (if (if (symbol? (get binding :name)) (= 'first (get binding :name)) false)
@@ -2835,167 +2726,238 @@
                             (assoc raw :status :rejected :reason :unsupported-loop-member-grounding))
                           (assoc raw :status :rejected :reason :unsupported-loop-member-grounding))
                         (assoc raw :status :rejected :reason :unsupported-loop-member-grounding)) raw))
-                  {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0})
-                {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
-            {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
-        {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
-    {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0})]
-      (assoc result :work-count (+ 176 (get result :work-count))))))
+                  {:status :rejected :reason :unsupported-loop-member-grounding})
+                {:status :rejected :reason :unsupported-loop-member-grounding}))
+            {:status :rejected :reason :unsupported-loop-member-grounding}))
+        {:status :rejected :reason :unsupported-loop-member-grounding}))
+    {:status :rejected :reason :unsupported-loop-member-grounding})]
+    result))
 
-(defn sh08-lsi-first-caller [records owner budget]
-  (if (if (vector? records) (<= (count records) 65536) false)
-    (loop [remaining records used 0]
-      (if (= 0 (count remaining)) {:status :accepted :work-count used}
-        (if (> (+ used 3) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 3)}
-          (let [record (first remaining) syntax (get record :function-syntax-id) core (get record :function-core-node-id)]
-            (if (if (sh08-lsi-id? syntax) (sh08-lsi-id? core) false)
-              (if (= syntax owner) {:status :accepted :work-count (+ used 3)}
-                (recur (rest remaining) (+ used 3)))
-              {:status :rejected :reason :unsupported-loop-member-grounding :work-count (+ used 3)})))))
-    {:status :rejected :reason :unsupported-loop-member-grounding :work-count 0}))
+(defn sh08-lsi-first-caller [records owner]
+  (if (vector? records)
+    (loop [remaining records]
+      (if (= 0 (count remaining)) {:status :accepted}
+        (let [record (first remaining) syntax (get record :function-syntax-id) core (get record :function-core-node-id)]
+          (if (if (sh08-lsi-id? syntax) (sh08-lsi-id? core) false)
+            (if (= syntax owner) {:status :accepted}
+              (recur (rest remaining)))
+            {:status :rejected :reason :unsupported-loop-member-grounding}))))
+    {:status :rejected :reason :unsupported-loop-member-grounding}))
 
-(defn sh08-lsi-vector-first [node binding env seen budget]
-  (let [input (sh08-lsi-first-call-input node env budget) base (get input :work-count)]
+(defn sh08-lsi-vector-first [node binding env seen]
+  (let [input (sh08-lsi-first-call-input node env)]
     (if (= :accepted (get input :status))
-      (let [arg (get input :argument) owner (get input :owner) attrs (get arg :attributes)
-            children (get arg :children) forms (get env :forms) nodes (get env :nodes) types (get env :types)
-            arg-id (get arg :node-id) arg-type (get types arg-id :gravity.type/unknown)]
+      (let [arg (get input :argument)
+            owner (get input :owner)
+            attrs (get arg :attributes)
+            children (get arg :children)
+            forms (get env :forms)
+            nodes (get env :nodes)
+            types (get env :types)
+            arg-id (get arg :node-id)
+            arg-type (get types arg-id :gravity.type/unknown)]
         (if (if (= :collection-literal (get arg :core-form))
-              (if (if (> (count children) 0) (<= (count children) 1024) false)
-                (if (if (= :vector (get owner :kind))
-                      (if (vector? (get owner :value))
-                        (if (vector? (get attrs :source-value))
-                          (if (= (count children) (count (get owner :value)))
-                            (= (count children) (count (get owner :child-form-ids))) false) false) false) false)
-                (if (map? attrs) (if (= 3 (count attrs))
-                  (if (= :vector (get attrs :literal-kind))
-                    (if (integer? (get attrs :element-count)) (= (count children) (get attrs :element-count)) false) false) false) false) false) false) false)
+              (if (> (count children) 0)
+                (if (= :vector (get owner :kind))
+                  (if (vector? (get owner :value))
+                    (if (vector? (get attrs :source-value))
+                      (if (= (count children) (count (get owner :value)))
+                        (= (count children) (count (get owner :child-form-ids)))
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+              false)
           (let [ids (get owner :child-form-ids)
-                scanned (loop [i 0 out [] used base]
-                  (if (= i (count children)) {:status :accepted :work-count used :types out}
-                    (if (> (+ used 64) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used 64)}
-                      (let [child-id (get children i) source-id (if (< i (count ids)) (get ids i) nil)
-                            child (if (sh08-lsi-id? child-id) (get nodes child-id) nil)
-                            source (if (sh08-lsi-id? source-id) (get forms source-id) nil)
-                            raw (sh08-lsi-first-data-work [(sh08-lsi-first-node-data child) (sh08-lsi-first-form-data source)] (- budget used 64)) total (+ used 64 (get raw :work-count))]
-                        (if (= :accepted (get raw :status))
-                          (if (if (sh08-lsi-first-node? child) (sh08-lsi-first-form? source) false)
-                            (if (= (get owner :form-id) (get source :parent-form-id))
-                              (if (if (= (get child :source) (sh08-ma-form-source source))
-                                    (= (get (get owner :value) i) (get source :value)) false)
-                                (recur (+ i 1) (conj out (get types (get children i) :gravity.type/unknown)) total)
-                                {:status :rejected :reason :unsupported-loop-member-grounding :work-count total})
-                              {:status :rejected :reason :unsupported-loop-member-grounding :work-count total})
-                            {:status :rejected :reason :unsupported-loop-member-grounding :work-count total}) (assoc raw :work-count total))))))
-                used (get scanned :work-count)]
+                scanned
+                (loop [i 0 out []]
+                  (if (= i (count children))
+                    {:status :accepted :types out}
+                    (let [child-id (get children i)
+                          source-id (if (< i (count ids)) (get ids i) nil)
+                          child (if (sh08-lsi-id? child-id) (get nodes child-id) nil)
+                          source (if (sh08-lsi-id? source-id) (get forms source-id) nil)
+                          raw (sh08-lsi-first-data
+                               [(sh08-lsi-first-node-data child)
+                                (sh08-lsi-first-form-data source)])]
+                      (if (= :accepted (get raw :status))
+                        (if (if (sh08-lsi-first-node? child)
+                              (sh08-lsi-first-form? source)
+                              false)
+                          (if (= (get owner :form-id) (get source :parent-form-id))
+                            (if (if (= (get child :source) (sh08-ma-form-source source))
+                                  (= (get (get owner :value) i) (get source :value))
+                                  false)
+                              (recur (+ i 1)
+                                     (conj out (get types child-id :gravity.type/unknown)))
+                              {:status :rejected :reason :unsupported-loop-member-grounding})
+                            {:status :rejected :reason :unsupported-loop-member-grounding})
+                          {:status :rejected :reason :unsupported-loop-member-grounding})
+                        raw))))
+                cold-type {:kind :gravity.type/vector
+                           :shape :literal
+                           :element-types (get scanned :types)}
+                actual (sh08-lc-validate-types [arg-type])
+                cold (sh08-lc-validate-types [cold-type])]
             (if (= :accepted (get scanned :status))
-              (let [cold-type {:kind :gravity.type/vector :shape :literal :element-types (get scanned :types)}
-                    actual (sh08-lc-validate-types [arg-type])
-                    cold (sh08-lc-validate-types [cold-type])]
-                (if (if (= :accepted (get actual :status)) (= :accepted (get cold :status)) false)
-                  (let [raw (sh08-lsi-first-data-work [arg-type cold-type] (- budget used)) used (+ used (get raw :work-count))]
-                    (if (= :accepted (get raw :status))
-                      (if (if (= cold-type arg-type)
-                            (if (= :vector (get owner :kind))
-                              (if (= (count children) (count ids))
-                                (if (vector? (get attrs :source-value))
-                                  (if (vector? (get owner :value))
-                                    (if (= (count children) (count (get owner :value)))
-                                      (if (= (get attrs :source-value) (get owner :value))
-                                        (if (= (get arg :source) (sh08-ma-form-source owner))
-                                          (if (= [] (get arg :resolved-binding-ids))
-                                            (if (= :left-to-right (get (get arg :evaluation) :kind))
-                                              (= (get (get arg :evaluation) :order)
-                                                 (loop [i 0 out []] (if (= i (count children)) out
-                                                   (recur (+ i 1) (conj out {:index i :core-node-id (get children i)}))))) false) false) false) false) false) false) false) false) false) false)
+              (if (if (= :accepted (get actual :status))
+                    (= :accepted (get cold :status))
+                    false)
+                (let [raw (sh08-lsi-first-data [arg-type cold-type])]
+                  (if (= :accepted (get raw :status))
+                    (if (if (= cold-type arg-type)
+                          (if (= :vector (get owner :kind))
+                            (if (= (count children) (count ids))
+                              (if (vector? (get attrs :source-value))
+                                (if (vector? (get owner :value))
+                                  (if (= (count children) (count (get owner :value)))
+                                    (if (= (get attrs :source-value) (get owner :value))
+                                      (if (= (get arg :source) (sh08-ma-form-source owner))
+                                        (if (= [] (get arg :resolved-binding-ids))
+                                          (if (= :left-to-right (get (get arg :evaluation) :kind))
+                                            (= (get (get arg :evaluation) :order)
+                                               (loop [i 0 out []]
+                                                 (if (= i (count children))
+                                                   out
+                                                   (recur (+ i 1)
+                                                          (conj out {:index i :core-node-id (get children i)})))))
+                                            false)
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
                         (if (contains? seen arg-id)
-                          {:status :rejected :reason :circular-loop-member-grounding :work-count used}
-                          (let [head (sh08-lsi-path-from-seen (get children 0) :literal-head binding env (conj seen arg-id) (- budget used))
-                                used (+ used (get head :work-count) (count (get head :path [])))]
-                            (if (= :accepted (get head :status))
-                              (let [caller (sh08-lsi-first-caller (get (get env :core) :function-records)
-                                             (get (get node :evaluation) :owner-function-syntax-id) (- budget used))
-                                    used (+ used (get caller :work-count))]
-                                (if (= :accepted (get caller :status))
-                                  (let [reserved (+ used 64)
-                                        header (if (<= reserved budget) (sh08-lq-source (get env :core) node (get input :call) (get input :edge)
-                                                   nodes (get env :bindings) types (get (get env :core) :module) actual) nil)
-                                        used reserved
-                                        descriptor (if (map? header) (sh08-lq-finish header) nil)
-                                        compared (sh08-lsi-first-data-work (get types (get (get input :call) :operator-node-id)) (- budget used)) used (+ used (get compared :work-count))]
-                                    (if (= :accepted (get compared :status))
-                                      (if (if (= :sh08-vector-first-v1 (get descriptor :version))
-                                            (if (= :normal (get descriptor :application))
-                                              (if (= :gravity.type/symbol (get descriptor :result-type))
-                                                (if (sh08-si-call-forms? node nodes forms)
-                                                  (= descriptor (get types (get (get input :call) :operator-node-id))) false) false) false) false)
-                                        {:status :accepted :path (sh08-lsi-first-append [arg-id] (get head :path)) :leaf (get head :leaf) :work-count used}
-                                        {:status :rejected :reason :unsupported-loop-member-grounding :work-count used})
-                                      (assoc compared :work-count used))) (assoc caller :work-count used))) (assoc head :work-count used))))
-                        {:status :rejected :reason :unsupported-loop-member-grounding :work-count used}) (assoc raw :work-count used)))
-                  {:status :rejected :reason :unsupported-loop-member-grounding :work-count used})) scanned))
-          {:status :rejected :reason :unsupported-loop-member-grounding :work-count base})) input)))
-
-(defn sh08-lsi-path-from-seen [start mode binding env initial-seen budget]
-  (loop [id start path [] seen initial-seen work 0]
-    (if (> (+ work 16) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 16)}
-      (if (sh08-lsi-id? id)
-        (if (contains? seen id) {:status :rejected :reason :circular-loop-member-grounding :work-count (+ work 16)}
-          (let [node (get (get env :nodes) id) kind (get node :core-form)
-                actual-type (get (get env :types) id :gravity.type/unknown)
-                bid (get (get node :attributes) :binding-id) aliases (get env :aliases)
-                record (if (sh08-lsi-id? bid) (get aliases bid) nil)
-                next-path (conj path id) used (+ work 16)]
-            (if (if (if (= mode :member) true (= mode :literal-head)) (= :gravity.type/symbol actual-type)
-                  (if (= mode :result) (sh08-syc-type? actual-type)
-                    (if (= mode :initializer) (sh08-lsi-empty? actual-type)
-                      (if (sh08-lsi-empty? actual-type) true (sh08-syc-type? actual-type)))))
-              (if (if (keyword? kind) (if (sh08-lsi-id? (get node :node-id)) (= id (get node :node-id)) false) false)
+                          {:status :rejected :reason :circular-loop-member-grounding}
+                          (let [head (sh08-lsi-path-from-seen (get children 0) :literal-head
+                                                              binding env (conj seen arg-id))
+                                caller (sh08-lsi-first-caller
+                                        (get (get env :core) :function-records)
+                                        (get (get node :evaluation) :owner-function-syntax-id))
+                                header (if (= :accepted (get head :status))
+                                         (if (= :accepted (get caller :status))
+                                           (sh08-lq-source (get env :core) node (get input :call)
+                                             (get input :edge) nodes (get env :bindings) types
+                                             (get (get env :core) :module) actual)
+                                           nil)
+                                         nil)
+                                descriptor (if (map? header) (sh08-lq-finish header) nil)
+                                compared (sh08-lsi-first-data
+                                          (get types (get (get input :call) :operator-node-id)))]
+                            (if (if (if (= :accepted (get head :status))
+                                        (= :accepted (get caller :status))
+                                        false)
+                                  (= :accepted (get compared :status))
+                                  false)
+                              (if (if (= :sh08-vector-first-v1 (get descriptor :version))
+                                    (if (= :normal (get descriptor :application))
+                                      (if (= :gravity.type/symbol (get descriptor :result-type))
+                                        (if (sh08-si-call-forms? node nodes forms)
+                                          (= descriptor
+                                             (get types (get (get input :call)
+                                                             :operator-node-id)))
+                                          false)
+                                        false)
+                                      false)
+                                    false)
+                                {:status :accepted
+                                 :path (sh08-lsi-first-append [arg-id] (get head :path))
+                                 :leaf (get head :leaf)}
+                                {:status :rejected :reason :unsupported-loop-member-grounding})
+                              {:status :rejected :reason :unsupported-loop-member-grounding}))))
+                    {:status :rejected :reason :unsupported-loop-member-grounding}))
+                {:status :rejected :reason :unsupported-loop-member-grounding})
+              {:status :rejected :reason :unsupported-loop-member-grounding}))
+          {:status :rejected :reason :unsupported-loop-member-grounding}))
+      {:status :rejected :reason :unsupported-loop-member-grounding})))
+(defn sh08-lsi-path-from-seen [start mode binding env initial-seen]
+  (loop [id start path [] seen initial-seen]
+    (if (sh08-lsi-id? id)
+      (if (contains? seen id)
+        {:status :rejected :reason :circular-loop-member-grounding}
+        (let [node (get (get env :nodes) id)
+              kind (get node :core-form)
+              actual-type (get (get env :types) id :gravity.type/unknown)
+              bid (get (get node :attributes) :binding-id)
+              aliases (get env :aliases)
+              record (if (sh08-lsi-id? bid) (get aliases bid) nil)
+              next-path (conj path id)]
+          (if (if (if (= mode :member) true (= mode :literal-head))
+                (= :gravity.type/symbol actual-type)
+                (if (= mode :result) (sh08-syc-type? actual-type)
+                  (if (= mode :initializer) (sh08-lsi-empty? actual-type)
+                    (if (sh08-lsi-empty? actual-type) true (sh08-syc-type? actual-type)))))
+            (if (if (keyword? kind) (if (sh08-lsi-id? (get node :node-id)) (= id (get node :node-id)) false) false)
               (if (if (= mode :result) (= kind :call) false)
-                {:status :accepted :path next-path :leaf id :work-count used}
+                {:status :accepted :path next-path :leaf id}
                 (if (if (= mode :member) (= :call kind) false)
-                  (let [first (sh08-lsi-vector-first node binding env (conj seen id) (- budget used))
-                        total (+ used (get first :work-count) (count (get first :path [])))]
-                    (if (> total budget) {:status :rejected :reason :loop-type-work-limit :work-count total}
+                  (let [first (sh08-lsi-vector-first node binding env (conj seen id))]
                     (if (= :accepted (get first :status))
-                      (assoc first :path (sh08-lsi-first-append next-path (get first :path)) :work-count total)
-                      (assoc first :work-count total))))
-                (if (= kind :reference)
-                  (if (if (if (if (= mode :member) true (= mode :literal-head))
-                                  (sh08-lsi-first-reference? node env) true)
-                        (if (sh08-lsi-id? bid)
-                        (if (sh08-lsi-id? (get (get node :source) :form-id))
-                          (let [form (get (get env :forms) (get (get node :source) :form-id))
-                                source-binding (get (get env :bindings) bid)]
-                            (if (= [bid] (get node :resolved-binding-ids))
-                              (if (= (get node :binding-context) (get form :scope-id))
-                                (if (symbol? (get form :value))
-                                  (if (symbol? (get source-binding :name)) (= (get form :value) (get source-binding :name)) false) false) false) false)) false) false) false)
-                    (if (if (= mode :receiver) (= bid binding) false)
-                      {:status :accepted :path next-path :leaf id :origin :slot :work-count used}
-                      (if (if (map? record) (if (if (sh08-lsi-id? (get record :initializer-node-id))
-                          (if (sh08-lsi-id? (get record :definition-syntax-id))
-                            (if (sh08-lsi-id? (get record :binding-scope-id)) (= :immutable (get record :mutability)) false) false) false)
-                            (if (= bid (get record :binding-id))
-                              (let [source-binding (get (get env :bindings) bid)
-                                    initializer (get (get env :nodes) (get record :initializer-node-id))]
-                                (if (= (get record :definition-syntax-id) (get source-binding :definition-syntax-id))
-                                  (if (= (get record :binding-scope-id) (get source-binding :scope-id))
-                                    (if (= (get record :initializer-form-id) (get (get initializer :source) :form-id))
-                                      (= (get record :initializer-syntax-id) (get (get initializer :source) :syntax-id)) false) false) false)) false) false) false)
-                        (recur (get record :initializer-node-id) next-path (conj seen id) used)
-                        {:status :rejected :reason :ungrounded-loop-member-reference :work-count used}))
-                    {:status :rejected :reason :incoherent-loop-member-reference :work-count used})
-                  (if (if (= mode :result) false (if (= mode :literal-head) (sh08-lsi-first-head? node (get env :forms))
-                                                  (sh08-lsi-leaf? node (get env :forms) mode)))
-                    {:status :accepted :path next-path :leaf id :work-count used}
-                    {:status :rejected :reason :unsupported-loop-member-grounding :work-count used}))))
-              {:status :rejected :reason :incoherent-loop-member-source :work-count used})
-              {:status :rejected :reason :unknown-loop-member-grounding :work-count used})))
-        {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work 16)}))))
+                      (assoc first :path (sh08-lsi-first-append next-path (get first :path)))
+                      first))
+                  (if (= kind :reference)
+                    (if (if (if (if (= mode :member) true (= mode :literal-head))
+                                (sh08-lsi-first-reference? node env) true)
+                          (if (sh08-lsi-id? bid)
+                            (if (sh08-lsi-id? (get (get node :source) :form-id))
+                              (let [form (get (get env :forms) (get (get node :source) :form-id))
+                                    source-binding (get (get env :bindings) bid)]
+                                (if (= [bid] (get node :resolved-binding-ids))
+                                  (if (= (get node :binding-context) (get form :scope-id))
+                                    (if (symbol? (get form :value))
+                                      (if (symbol? (get source-binding :name))
+                                        (= (get form :value) (get source-binding :name)) false)
+                                      false)
+                                    false)
+                                  false))
+                              false)
+                            false)
+                          false)
+                      (if (if (= mode :receiver) (= bid binding) false)
+                        {:status :accepted :path next-path :leaf id :origin :slot}
+                        (if (if (map? record)
+                              (if (if (sh08-lsi-id? (get record :initializer-node-id))
+                                    (if (sh08-lsi-id? (get record :definition-syntax-id))
+                                      (if (sh08-lsi-id? (get record :binding-scope-id))
+                                        (= :immutable (get record :mutability)) false)
+                                      false)
+                                    false)
+                                (if (= bid (get record :binding-id))
+                                  (let [source-binding (get (get env :bindings) bid)
+                                        initializer (get (get env :nodes) (get record :initializer-node-id))]
+                                    (if (= (get record :definition-syntax-id)
+                                           (get source-binding :definition-syntax-id))
+                                      (if (= (get record :binding-scope-id) (get source-binding :scope-id))
+                                        (if (= (get record :initializer-form-id)
+                                               (get (get initializer :source) :form-id))
+                                          (= (get record :initializer-syntax-id)
+                                             (get (get initializer :source) :syntax-id))
+                                          false)
+                                        false)
+                                      false))
+                                  false)
+                                false)
+                              false)
+                          (recur (get record :initializer-node-id) next-path (conj seen id))
+                          {:status :rejected :reason :ungrounded-loop-member-reference})
+                        {:status :rejected :reason :incoherent-loop-member-reference})
+                      (if (if (= mode :result) false
+                            (if (= mode :literal-head)
+                              (sh08-lsi-first-head? node (get env :forms))
+                              (sh08-lsi-leaf? node (get env :forms) mode)))
+                        {:status :accepted :path next-path :leaf id}
+                        {:status :rejected :reason :unsupported-loop-member-grounding}))))
+              {:status :rejected :reason :incoherent-loop-member-source})
+            {:status :rejected :reason :unknown-loop-member-grounding})))
+      {:status :rejected :reason :incoherent-loop-member-source}))))
 
-(defn sh08-lsi-path [start mode binding env budget]
-  (sh08-lsi-path-from-seen start mode binding env #{} budget))
+(defn sh08-lsi-path [start mode binding env]
+  (sh08-lsi-path-from-seen start mode binding env #{}))
 
 (defn sh08-lsi-insertion [env node call edge types budget]
   (let [core (get env :core) args (get call :argument-node-ids) base (+ 66 (count (get core :function-records)))]
@@ -3218,59 +3180,54 @@
     (if (sh08-ni-atomic? type) {:relation :atomic-alternative :value-type type}
       (if (sh08-ni-type? type) {:relation :nil-or-identity :value-type (get type :value-type)} nil))))
 
-(defn sh08-ni-type-work [left right budget]
-  (if (< budget 4) {:status :rejected :reason :list-if-join-work-limit :work-count 4}
-    (let [a (sh08-ni-branch left) b (sh08-ni-branch right)
-          x (get a :value-type) y (get b :value-type) value (if (= x nil) y x)]
-      (if (if (sh08-ni-candidate? left right)
-            (if (map? a) (if (map? b)
-              (if (= value nil) false (if (= x nil) true (if (= y nil) true (= x y)))) false) false) false)
-        {:status :accepted :join-family :nil-or :type {:kind :gravity.type/nil-or :value-type value}
-         :branch-types [left right] :branch-compatibility [a b] :nil-type :gravity.type/nil :value-type value :work-count 4}
-        {:status :not-applicable :reason :independent-nil-or-atomic-required :work-count 4}))))
+(defn sh08-ni-type-join [left right]
+  (let [a (sh08-ni-branch left) b (sh08-ni-branch right)
+        x (get a :value-type) y (get b :value-type) value (if (= x nil) y x)]
+    (if (if (sh08-ni-candidate? left right)
+          (if (map? a) (if (map? b)
+            (if (= value nil) false (if (= x nil) true (if (= y nil) true (= x y)))) false) false) false)
+      {:status :accepted :join-family :nil-or :type {:kind :gravity.type/nil-or :value-type value}
+       :branch-types [left right] :branch-compatibility [a b] :nil-type :gravity.type/nil :value-type value}
+      {:status :not-applicable :reason :independent-nil-or-atomic-required})))
 
 (defn sh08-ij-atomic? [type]
   (if (keyword? type)
     (sh08-hl-type? {:kind :gravity.type/list :shape :homogeneous :element-type type}) false))
 
-(defn sh08-ij-element [type budget]
+(defn sh08-ij-element [type]
   (let [members (if (map? type) (get type :element-types) nil)
         finite? (if (map? type)
                   (if (= 3 (count type))
                     (if (= #{:kind :shape :element-types} (set (keys type)))
                       (= [:gravity.type/list :literal] [(get type :kind) (get type :shape)]) false) false) false)
-        width (if (if finite? (vector? members) false) (count members) 0)
-        work (+ 1 width)]
-    (if (> work budget) {:status :rejected :reason :list-if-join-work-limit :work-count work}
-      (if (if (map? type) (keyword? (get type :element-type)) false)
-        (if (sh08-hl-type? type)
-          {:status :accepted :element-type (get type :element-type) :relation :homogeneous-list-identity
-           :checked-member-count nil :work-count work}
-          {:status :not-applicable :reason :independent-list-element-required :work-count work})
-        (if (if finite? (if (vector? members) (<= width 1024) false) false)
-          (if (= width 0)
-            {:status :accepted :element-type nil :relation :empty-positional-list :checked-member-count 0 :work-count work}
-            (let [element (first members)]
-              (if (sh08-ij-atomic? element)
-                (if (loop [remaining members]
-                      (if (= 0 (count remaining)) true
-                        (if (= element (first remaining)) (recur (rest remaining)) false)))
-                  {:status :accepted :element-type element :relation :all-positional-elements-match
-                   :checked-member-count width :work-count work}
-                  {:status :not-applicable :reason :incompatible-list-elements :work-count work})
-                {:status :not-applicable :reason :independent-atomic-element-required :work-count work})))
-          {:status :not-applicable :reason :independent-list-element-required :work-count work})))))
+        width (if (if finite? (vector? members) false) (count members) 0)]
+    (if (if (map? type) (keyword? (get type :element-type)) false)
+      (if (sh08-hl-type? type)
+        {:status :accepted :element-type (get type :element-type) :relation :homogeneous-list-identity
+         :checked-member-count nil}
+        {:status :not-applicable :reason :independent-list-element-required})
+      (if (if finite? (vector? members) false)
+        (if (= width 0)
+          {:status :accepted :element-type nil :relation :empty-positional-list :checked-member-count 0}
+          (let [element (first members)]
+            (if (sh08-ij-atomic? element)
+              (if (loop [remaining members]
+                    (if (= 0 (count remaining)) true
+                      (if (= element (first remaining)) (recur (rest remaining)) false)))
+                {:status :accepted :element-type element :relation :all-positional-elements-match
+                 :checked-member-count width}
+                {:status :not-applicable :reason :incompatible-list-elements})
+              {:status :not-applicable :reason :independent-atomic-element-required})))
+        {:status :not-applicable :reason :independent-list-element-required}))))
 
-(defn sh08-ij-type-work [left right budget]
+(defn sh08-ij-type-join [left right]
   (if (sh08-ni-candidate? left right)
-    (sh08-ni-type-work left right budget)
-  (let [a (sh08-ij-element left budget)
-        b (if (= :accepted (get a :status))
-            (sh08-ij-element right (- budget (get a :work-count))) nil)
-        work (+ (get a :work-count) (get b :work-count 0))]
+    (sh08-ni-type-join left right)
+  (let [a (sh08-ij-element left)
+        b (if (= :accepted (get a :status)) (sh08-ij-element right) nil)]
     (if (= :rejected (get a :status)) a
       (if (= :accepted (get a :status))
-        (if (= :rejected (get b :status)) (assoc b :work-count work)
+        (if (= :rejected (get b :status)) b
           (if (= :accepted (get b :status))
             (let [x (get a :element-type) y (get b :element-type)
                   element (if (= x nil) y x)]
@@ -3279,19 +3236,19 @@
                  :branch-types [left right]
                  :branch-compatibility [(sh08-bm-project a [:element-type :relation :checked-member-count])
                                         (sh08-bm-project b [:element-type :relation :checked-member-count])]
-                 :element-type element :work-count work}
-                {:status :not-applicable :reason :incompatible-independent-list-elements :work-count work}))
-            {:status :not-applicable :reason (get b :reason) :work-count work}))
-        {:status :not-applicable :reason (get a :reason) :work-count work})))))
+                 :element-type element}
+                {:status :not-applicable :reason :incompatible-independent-list-elements}))
+            {:status :not-applicable :reason (get b :reason)}))
+        {:status :not-applicable :reason (get a :reason)}))))
 
 (defn sh08-ij-normal-type [left right]
   (if (if (sh08-ni-valid-view? left) (sh08-ni-valid-view? right) false)
   (if (= left right) left
     (if (= left :gravity.type/never) right
       (if (= right :gravity.type/never) left
-        (get (sh08-ij-type-work left right 65536) :type :gravity.type/unknown)))) :gravity.type/unknown))
+        (get (sh08-ij-type-join left right) :type :gravity.type/unknown)))) :gravity.type/unknown))
 
-(defn sh08-ij-derive [core node nodes types bindings forms budget]
+(defn sh08-ij-derive [core node nodes types bindings forms]
   (let [children (get node :children)]
     (if (if (= :if (get node :core-form)) (if (vector? children) (= 3 (count children)) false) false)
       (let [condition (get types (first children) :gravity.type/unknown)
@@ -3301,11 +3258,8 @@
               (if (sh08-ft-unknown? condition) true
                 (if (= left right) true
                   (if (= left :gravity.type/never) true (= right :gravity.type/never)))))
-          {:status :not-applicable :work-count 1}
-          (let [base (+ 64 (count (get core :function-records)) (count (get core :control-flow)))]
-            (if (> base budget) {:status :rejected :reason :list-if-join-work-limit :work-count base}
-              (let [validation (sh08-ij-type-work left right (- budget base))
-                    work (+ base (get validation :work-count))]
+          {:status :not-applicable}
+          (let [validation (sh08-ij-type-join left right)]
                 (if (= :accepted (get validation :status))
                   (let [owner (get (get node :evaluation) :owner-function-syntax-id)
                         function (loop [remaining (get core :function-records)]
@@ -3330,21 +3284,24 @@
                         branch-nodes (loop [remaining children out []]
                                        (if (= 0 (count remaining)) out
                                          (recur (rest remaining) (conj out (get nodes (first remaining))))))
-                        reference-work (loop [remaining branch-nodes used 0]
-                                         (if (= 0 (count remaining)) used
-                                           (recur (rest remaining)
-                                             (+ used (if (vector? (get (first remaining) :resolved-binding-ids))
-                                                       (* 2 (count (get (first remaining) :resolved-binding-ids))) 0)))))
-                        work (+ work reference-work)
-                        branch-bindings (if (> work budget) [] (loop [remaining branch-nodes out []]
-                                          (if (= 0 (count remaining)) out
-                                            (recur (rest remaining)
-                                              (conj out (loop [ids (if (vector? (get (first remaining) :resolved-binding-ids))
-                                                                    (get (first remaining) :resolved-binding-ids) []) records []]
-                                                          (if (= 0 (count ids)) records
-                                                            (recur (rest ids) (conj records (get bindings (first ids)))))))))))]
+                        branch-bindings
+                        (loop [remaining branch-nodes out []]
+                          (if (= 0 (count remaining))
+                            out
+                            (recur
+                             (rest remaining)
+                             (conj
+                              out
+                              (loop [ids (if (vector? (get (first remaining) :resolved-binding-ids))
+                                           (get (first remaining) :resolved-binding-ids) [])
+                                     records []]
+                                (if (= 0 (count ids))
+                                  records
+                                  (recur
+                                   (rest ids)
+                                   (conj records (get bindings (first ids))))))))))]
                     (if (sh08-ft-all-true?
-                          [(<= work budget) (map? function) (= owner (get function :function-syntax-id))
+                          [(map? function) (= owner (get function :function-syntax-id))
                            (= (get function :definition-binding-id) (get binding :binding-id))
                            (= (get function :definition-name) (get binding :name))
                            (= [:namespace :function (get (get core :module) :namespace)]
@@ -3372,7 +3329,7 @@
                                                                             (if (= 0 (count rows)) out
                                                                               (recur (rest rows) (conj out (get (first rows) :binding-id))))))])
                                    (recur (+ i 1)) false))))])
-                      {:status :accepted :work-count work :type (get validation :type)
+                      {:status :accepted :type (get validation :type)
                        :premise (let [premise {:version :sh08-list-if-join-v1 :relation :independent-homogeneous-list-join
                                  :if-core-node-id (get node :node-id) :source-node node
                                  :function-record function :definition-binding binding
@@ -3392,9 +3349,9 @@
                            (assoc premise :version :sh08-nil-if-join-v1
                              :relation :independent-nil-or-atomic-join :nil-type :gravity.type/nil :value-type (get validation :value-type))
                            (assoc premise :element-type (get validation :element-type))))}
-                      {:status :rejected :reason (if (> work budget) :list-if-join-work-limit :list-if-join-source-mismatch) :work-count work}))
-                  (assoc validation :work-count work :type-work-count (get validation :work-count))))))))
-      {:status :not-applicable :work-count 1})))
+                      {:status :rejected :reason :list-if-join-source-mismatch}))
+                  validation))))
+      {:status :not-applicable}))))
 
 (defn sh08-ij-row [premise]
   {:constraint-id-request {:domain (if (= :sh08-nil-if-join-v1 (get premise :version))
@@ -5890,7 +5847,7 @@
 
 ; L1/L2 quoted payloads are authenticated DATA, never executable core nodes.
 (defn sh08-qd-failure [rule reason form expected actual]
-  {:status :rejected :rule rule :reason reason :form form :expected expected :actual actual :work-count 1})
+  {:status :rejected :rule rule :reason reason :form form :expected expected :actual actual})
 
 (defn sh08-qd-scalar-valid? [kind value]
   (if (= kind :nil) (= value nil)
@@ -5914,55 +5871,88 @@
                          (recur (rest (rest remaining)) (assoc out (first remaining) (second remaining)))))) false) false)
         false))))
 
-(defn sh08-qd-data [forms id parent quote-id path seen depth budget]
-  (let [form (get forms id) kind (get form :kind) value (get form :value) ids (get form :child-form-ids)]
-    (if (if (> depth (get (sh08-local-bounds-value) :maximum-carrier-depth)) true
-          (if (<= budget 0) true (> (count ids) (get (sh08-local-bounds-value) :maximum-node-children))))
-      (assoc (sh08-qd-failure "C7-ANNOTATION" :quoted-data-work-limit form :bounded-quoted-data-tree
-                       {:depth depth :width (count ids) :remaining-work budget}) :work-count (if (<= budget 0) 0 1))
-      (if (sh08-ft-all-true?
-            [(map? form) (sh08-sha256-id? id) (= id (get form :form-id)) (= parent (get form :parent-form-id))
-             (sh08-sha256-id? (get form :syntax-id)) (vector? ids)
-             (<= (count ids) (get (sh08-local-bounds-value) :maximum-node-children))
-             (sh08-all-unique? ids []) (= false (contains? seen id))])
-        (if (contains? #{:list :vector :map :set} kind)
-          (loop [remaining ids ordinal 0 children [] values [] types [] used 1]
-            (if (= (count remaining) 0)
-              (if (sh08-qd-collection-value-valid? kind value values)
-                {:status :accepted :work-count used
-                 :data {:origin {:kind :quoted-data :quote-core-node-id quote-id :form-id id
-                                 :syntax-id (get form :syntax-id) :data-path path :child-form-ids ids}
-                        :kind kind :value value :children children :shape-size used
-                        :source (get (sh08-bm-source-node {} form) :source)
-                        :type (if (= kind :map) {:kind :gravity.type/map :member-types types :shape :literal}
-                                {:kind (get {:list :gravity.type/list :vector :gravity.type/vector :set :gravity.type/set} kind)
-                                 :element-types types :shape :literal})}}
-                (assoc (sh08-qd-failure "C7-VERIFY" :quoted-data-value-child-mismatch form :exact-ordered-data-children value) :work-count used))
-              (let [child (sh08-qd-data forms (first remaining) id quote-id (conj path ordinal) (conj seen id) (+ depth 1) (- budget used))]
-                (if (= :accepted (get child :status))
-                  (recur (rest remaining) (+ ordinal 1) (conj children (get child :data))
-                         (conj values (get (get child :data) :value)) (conj types (get (get child :data) :type))
-                         (+ used (get child :work-count))) (assoc child :work-count (+ used (get child :work-count 0)))))))
-          (if (contains? #{:decimal :ratio :integer} kind)
-            (if (if (= kind :integer) (integer? value) false)
-              (sh08-qd-scalar form quote-id path)
-              (sh08-qd-failure "C7-ANNOTATION" :unsupported-quoted-numeric-representation form :normalized-exact-integer value))
-            (if (contains? #{:nil :boolean :character :string :keyword :symbol} kind)
-              (sh08-qd-scalar form quote-id path)
-              (sh08-qd-failure "C7-ANNOTATION" :unsupported-quoted-data-kind form :first-order-immutable-data kind))))
-        (sh08-qd-failure "C7-VERIFY" :malformed-quoted-data-tree form :exact-acyclic-payload-parent-child-join id)))))
+(defn sh08-distinct-source-ids? [ids]
+  (if (vector? ids)
+    (loop [remaining ids observed #{}]
+      (if (= 0 (count remaining)) true
+        (let [id (first remaining)]
+          (if (sh08-sha256-id? id)
+            (if (contains? observed id) false
+              (recur (rest remaining) (conj observed id))) false))))
+    false))
+
+(defn sh08-qd-collection [form quote-id path children]
+  (let [kind (get form :kind) value (get form :value)
+        parts (loop [remaining children values [] types [] size 1]
+                (if (= 0 (count remaining)) {:values values :types types :size size}
+                  (let [child (first remaining)]
+                    (recur (rest remaining) (conj values (get child :value))
+                      (conj types (get child :type)) (+ size (get child :shape-size))))))]
+    (if (sh08-qd-collection-value-valid? kind value (get parts :values))
+      {:status :accepted
+       :data {:origin {:kind :quoted-data :quote-core-node-id quote-id :form-id (get form :form-id)
+                       :syntax-id (get form :syntax-id) :data-path path :child-form-ids (get form :child-form-ids)}
+              :kind kind :value value :children children :shape-size (get parts :size)
+              :source (get (sh08-bm-source-node {} form) :source)
+              :type (if (= kind :map) {:kind :gravity.type/map :member-types (get parts :types) :shape :literal}
+                      {:kind (get {:list :gravity.type/list :vector :gravity.type/vector :set :gravity.type/set} kind)
+                       :element-types (get parts :types) :shape :literal})}}
+      (sh08-qd-failure "C7-VERIFY" :quoted-data-value-child-mismatch form :exact-ordered-data-children value))))
+
+(defn sh08-qd-data [forms id parent quote-id path seen]
+  ; Continuations retain the original child order and ancestor IDs. Each
+  ; occurrence is derived here; no prior validation or derived type is input.
+  (loop [pending (list {:phase :visit :id id :parent parent :path path :seen seen}) result nil]
+    (if (= 0 (count pending)) result
+      (let [frame (first pending) tail (rest pending)]
+        (if (= :visit (get frame :phase))
+          (let [id (get frame :id) form (if (sh08-sha256-id? id) (get forms id) nil)
+                kind (get form :kind) value (get form :value) ids (get form :child-form-ids)]
+            (if (sh08-ft-all-true?
+                  [(map? form) (sh08-sha256-id? id) (= id (get form :form-id))
+                   (= (get frame :parent) (get form :parent-form-id))
+                   (sh08-sha256-id? (get form :syntax-id)) (sh08-distinct-source-ids? ids)
+                   (= false (contains? (get frame :seen) id))])
+              (if (contains? #{:list :vector :map :set} kind)
+                (recur (conj tail {:phase :children :form form :path (get frame :path)
+                                   :seen (conj (get frame :seen) id) :remaining ids :ordinal 0
+                                   :children [] :after-child? false}) nil)
+                (let [scalar (if (contains? #{:decimal :ratio :integer} kind)
+                               (if (if (= kind :integer) (integer? value) false)
+                                 (sh08-qd-scalar form quote-id (get frame :path))
+                                 (sh08-qd-failure "C7-ANNOTATION" :unsupported-quoted-numeric-representation
+                                   form :normalized-exact-integer value))
+                               (if (contains? #{:nil :boolean :character :string :keyword :symbol} kind)
+                                 (sh08-qd-scalar form quote-id (get frame :path))
+                                 (sh08-qd-failure "C7-ANNOTATION" :unsupported-quoted-data-kind
+                                   form :first-order-immutable-data kind)))]
+                  (if (= :accepted (get scalar :status)) (recur tail scalar) scalar)))
+              (sh08-qd-failure "C7-VERIFY" :malformed-quoted-data-tree
+                form :exact-acyclic-payload-parent-child-join id)))
+          (let [form (get frame :form) remaining (get frame :remaining)
+                children (if (get frame :after-child?) (conj (get frame :children) (get result :data))
+                             (get frame :children))]
+            (if (= 0 (count remaining))
+              (let [complete (sh08-qd-collection form quote-id (get frame :path) children)]
+                (if (= :accepted (get complete :status)) (recur tail complete) complete))
+              (let [ordinal (get frame :ordinal)
+                    resume (assoc frame :remaining (rest remaining) :ordinal (+ ordinal 1)
+                                        :children children :after-child? true)
+                    child {:phase :visit :id (first remaining) :parent (get form :form-id)
+                           :path (conj (get frame :path) ordinal) :seen (get frame :seen)}]
+                (recur (conj (conj tail resume) child) nil)))))))))
 
 (defn sh08-qd-scalar [form quote-id path]
   (let [kind (get form :kind) value (get form :value)]
     (if (if (= [] (get form :child-form-ids)) (sh08-qd-scalar-valid? kind value) false)
-      {:status :accepted :work-count 1
+      {:status :accepted
        :data {:origin {:kind :quoted-data :quote-core-node-id quote-id :form-id (get form :form-id)
                        :syntax-id (get form :syntax-id) :data-path path :child-form-ids []}
               :kind kind :value value :type (sh08-primitive-type-from-literal-kind kind)
               :source (get (sh08-bm-source-node {} form) :source) :children [] :shape-size 1}}
       (sh08-qd-failure "C7-VERIFY" :quoted-scalar-kind-value-mismatch form :exact-scalar-kind-value-and-zero-children value))))
 
-(defn sh08-qd-node-with-budget [node forms budget]
+(defn sh08-qd-node-valid-data [node forms]
   (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
         operator (get forms (get ids 0)) payload (get forms (get ids 1)) attrs (get node :attributes)]
     (if (sh08-ft-all-true?
@@ -5978,16 +5968,16 @@
            (= :no-evaluation (get (get node :evaluation) :kind)) (= [] (get (get node :evaluation) :order))
            (= attrs {:quoted-form-id (get payload :form-id) :quoted-syntax-id (get payload :syntax-id)
                      :quoted-kind (get payload :kind) :quoted-value (get payload :value)})])
-      (let [result (sh08-qd-data forms (get payload :form-id) (get owner :form-id) (get node :node-id) [] #{} 0 budget)]
+      (let [result (sh08-qd-data forms (get payload :form-id) (get owner :form-id) (get node :node-id) [] #{})]
         (if (if (= :accepted (get result :status))
               (= false (= :accepted (get (sh08-carrier-preflight (get result :data)) :status))) false)
-          (assoc (sh08-qd-failure "C7-ANNOTATION" :quoted-data-evidence-limit payload :bounded-quoted-data-evidence nil)
-                 :work-count (get result :work-count)) result))
-      (assoc (sh08-qd-failure "C7-VERIFY" :malformed-quote-owner-payload-join owner :exact-inert-quote-source-and-payload attrs)
-             :work-count 0))))
+          (sh08-qd-failure "C7-ANNOTATION" :quoted-data-evidence-invalid payload :finite-native-quoted-data-evidence nil) result))
+      (sh08-qd-failure "C7-VERIFY" :malformed-quote-owner-payload-join owner :exact-inert-quote-source-and-payload attrs))))
 
 (defn sh08-qd-node [node forms]
-  (sh08-qd-node-with-budget node forms (get (sh08-local-bounds-value) :maximum-core-nodes)))
+  (if (= :accepted (get (sh08-carrier-preflight [node forms]) :status))
+    (sh08-qd-node-valid-data node forms)
+    (sh08-qd-failure "C7-VERIFY" :malformed-quoted-data-tree {} :finite-native-quoted-data nil)))
 
 (defn sh08-qd-executable-data [data executable-forms]
   (if (contains? executable-forms (get (get data :origin) :form-id)) data
@@ -5996,31 +5986,28 @@
         (let [found (sh08-qd-executable-data (first remaining) executable-forms)]
           (if (= found nil) (recur (rest remaining)) found))))))
 
-(defn sh08-qd-products [nodes source-forms module]
-  (sh08-qd-products-with-budget nodes source-forms module (get (sh08-local-bounds-value) :maximum-core-nodes)))
-
-(defn sh08-qd-products-with-budget [nodes source-forms module budget]
+(defn sh08-qd-products-valid-data [nodes source-forms module]
   (let [forms (loop [remaining source-forms out {}]
                 (if (= (count remaining) 0) out
                   (recur (rest remaining) (assoc out (get (first remaining) :form-id) (first remaining)))))
         executable-forms (loop [remaining nodes out #{}]
                            (if (= (count remaining) 0) out
                              (recur (rest remaining) (conj out (get (get (first remaining) :source) :form-id)))))]
-    (loop [remaining nodes types {} constraints [] diagnostics [] used 0]
+    (loop [remaining nodes types {} constraints [] diagnostics []]
       (if (= (count remaining) 0)
-        {:type-table types :constraints constraints :work-count used
+        {:type-table types :constraints constraints
          :diagnostics (if (= :accepted (get (sh08-carrier-preflight constraints) :status)) diagnostics
-                        (conj diagnostics (sh08-bm-error "C7-ANNOTATION" :quoted-data-evidence-limit
-                                           (first (sh08-bm-select nodes :core-form :quote)) :bounded-quoted-data-ledger nil)))}
+                        (conj diagnostics (sh08-bm-error "C7-ANNOTATION" :quoted-data-evidence-invalid
+                                           (first (sh08-bm-select nodes :core-form :quote)) :finite-native-quoted-data-ledger nil)))}
         (let [node (first remaining)]
           (if (= :quote (get node :core-form))
-            (let [checked (sh08-qd-node-with-budget node forms (- budget used))
+            (let [checked (sh08-qd-node node forms)
                   executable (if (= :accepted (get checked :status))
                                (sh08-qd-executable-data (get checked :data) executable-forms) nil)
                   result (if (= executable nil) checked
                            (assoc (sh08-qd-failure "C7-VERIFY" :quoted-payload-is-executable
                              (get forms (get (get executable :origin) :form-id)) :data-without-executable-nodes
-                             (get executable :origin)) :work-count (get checked :work-count)))]
+                             (get executable :origin))))]
               (if (= :accepted (get result :status))
                 (let [data (get result :data) type (get data :type)
                       premise {:core-node-id (get node :node-id) :source (get node :source)
@@ -6035,12 +6022,19 @@
                                        :invalidation [:quote-owner :quote-operator :payload-form-syntax-ids :payload-kind-value
                                                       :payload-child-order :data-paths :no-executable-children-bindings-calls]
                                        :profile (get module :profile) :target (get module :target) :status :solved :diagnostics []})
-                    diagnostics (+ used (get result :work-count))))
+                    diagnostics))
                 (recur (rest remaining) types constraints
                   (conj diagnostics (sh08-bm-error (get result :rule) (get result :reason)
                                       (if (map? (get result :form)) (sh08-bm-source-node node (get result :form)) node)
-                                      (get result :expected) (get result :actual))) (+ used (get result :work-count 0)))))
-            (recur (rest remaining) types constraints diagnostics used)))))))
+                                      (get result :expected) (get result :actual)))))
+            (recur (rest remaining) types constraints diagnostics))))))))
+
+(defn sh08-qd-products [nodes source-forms module]
+  (if (= :accepted (get (sh08-carrier-preflight [nodes source-forms module]) :status))
+    (sh08-qd-products-valid-data nodes source-forms module)
+    {:type-table {} :constraints []
+     :diagnostics [(sh08-bm-error "C7-VERIFY" :malformed-quoted-data-tree
+                     {} :finite-native-quoted-data nil)]}))
 
 (defn sh08-qd-shape [data node]
   (let [kind (get data :kind) children (get data :children)
@@ -6068,22 +6062,21 @@
   {:status :rejected :constraints [] :throws {} :diagnostics
    [{:rule rule :reason reason :node node :expected expected :actual actual}]})
 
-(defn sh08-th-owners [core budget]
+(defn sh08-th-owners [core]
   (let [nodes (sh08-ft-node-index (get core :nodes))]
     (loop [pending (loop [ids (get core :root-core-node-ids) out []]
                      (if (= 0 (count ids)) out
                        (recur (rest ids) (conj out {:id (first ids) :owner nil}))))
-           owners {} work 0]
-      (if (= 0 (count pending)) {:status :accepted :owners owners :work-count work}
-        (if (>= work budget) (sh08-th-error "C7-GENERIC" :typed-throw-work-limit {} :bounded-source-visits work)
-          (let [entry (first pending) id (get entry :id) node (get nodes id) owner (get entry :owner)
-                child-owner (if (= :fn (get node :core-form)) (get (get node :source) :syntax-id) owner)]
-            (if (if (map? node) (= false (contains? owners id)) false)
-              (recur (loop [ids (get node :children) out (vec (rest pending))]
-                       (if (= 0 (count ids)) out
-                         (recur (rest ids) (conj out {:id (first ids) :owner child-owner}))))
-                     (assoc owners id owner) (+ work 1))
-              (sh08-th-error "C7-VERIFY" :typed-throw-owner-graph node :unique-rooted-node id))))))))
+           owners {}]
+      (if (= 0 (count pending)) {:status :accepted :owners owners}
+        (let [entry (first pending) id (get entry :id) node (get nodes id) owner (get entry :owner)
+              child-owner (if (= :fn (get node :core-form)) (get (get node :source) :syntax-id) owner)]
+          (if (if (map? node) (= false (contains? owners id)) false)
+            (recur (loop [ids (get node :children) out (vec (rest pending))]
+                     (if (= 0 (count ids)) out
+                       (recur (rest ids) (conj out {:id (first ids) :owner child-owner}))))
+                   (assoc owners id owner))
+            (sh08-th-error "C7-VERIFY" :typed-throw-owner-graph node :unique-rooted-node id)))))))
 
 (defn sh08-th-transfer-valid? [transfer node payload forms owner ordinal]
   (let [source (get node :source) form (get forms (get source :form-id)) ids (get form :child-form-ids)
@@ -6117,55 +6110,48 @@
            (get attrs :profile-error-lowering-legality) (get attrs :ownership-legality) (get attrs :safety-classification)])
        (= (sh08-bm-project transfer shared) (sh08-bm-project attrs shared))])))
 
-(defn sh08-th-products [core source-forms types budget]
+(defn sh08-th-products [core source-forms types]
   (let [nodes (get core :nodes) transfers (get core :error-transfers)
         throw-nodes (sh08-bm-select nodes :core-form :throw)]
     (if (= 0 (count throw-nodes))
       (if (if (= transfers nil) true (if (vector? transfers) (= [] transfers) false))
-        {:status :accepted :constraints [] :throws {} :diagnostics [] :work-count 0}
+        {:status :accepted :constraints [] :throws {} :diagnostics []}
         (sh08-th-error "C7-VERIFY" :typed-throw-transfer-census {} :no-extra-error-transfers transfers))
-      ; Precharge bounded indexing, census, projection and fixed-width joins.
-      ; The rooted walk and each transfer then consume their own visit.
-      (let [work (+ (* 6 (count nodes)) (count source-forms) (* 70 (count throw-nodes))
-                    (count (get core :call-edges)) (* 2 (count (get core :function-records))))
-            indexed (sh08-ft-node-index nodes) forms (sh08-ft-index source-forms :form-id)
-            owners (sh08-th-owners core (- budget work))]
-        (if (if (<= work budget) (= :accepted (get owners :status)) false)
+      (let [indexed (sh08-ft-node-index nodes) forms (sh08-ft-index source-forms :form-id)
+            owners (sh08-th-owners core)]
+        (if (= :accepted (get owners :status))
           (if (sh08-ft-all-true? [(vector? transfers) (= (count throw-nodes) (count (if (vector? transfers) transfers [])))
                  (sh08-ft-unique-records? (if (vector? transfers) transfers []) :core-node-id)
                  (= (set (keys (sh08-ft-node-index throw-nodes)))
                     (set (keys (sh08-ft-index (if (vector? transfers) transfers []) :core-node-id))))])
-            (loop [remaining transfers ordinal 0 rows [] thrown {} used (+ work (get owners :work-count))]
+            (loop [remaining transfers ordinal 0 rows [] thrown {}]
               (if (= 0 (count remaining))
-                {:status :accepted :constraints rows :throws thrown :diagnostics [] :work-count used}
-                (if (>= used budget) (sh08-th-error "C7-GENERIC" :typed-throw-work-limit {} :bounded-source-visits used)
-                  (let [transfer (first remaining) node (get indexed (get transfer :core-node-id))
-                        payload (get indexed (get transfer :value-core-node-id))
-                        owner (get (get owners :owners) (get node :node-id))
-                        type (get types (get payload :node-id) :gravity.type/unknown)
-                        occurring? (= false (= type :gravity.type/never))
-                        premise {:version :sh08-direct-typed-throw-v1 :source-transfer transfer :source-node node
-                                 :payload-node payload :payload-type type :owner-function-syntax-id owner
-                                 :normal-transfer? occurring? :result-type :gravity.type/never}]
-                    (if (sh08-th-transfer-valid? transfer node payload forms owner ordinal)
-                      (if (sh08-ft-known? type)
-                        (recur (rest remaining) (+ ordinal 1)
-                          (conj rows {:constraint-id-request {:domain :gravity/sh08-direct-typed-throw-v1 :premise premise}
-                            :kind :equality :producer-rule :sh08-direct-typed-throw-v1
-                            :lhs (get node :node-id) :rhs :gravity.type/never :dependencies premise
-                            :origin (get (get node :source) :origin-chain)
-                            :invalidation [:error-transfers :throw-source :payload-source :payload-type :function-owner :evaluation-order]
-                            :solution {:type :gravity.type/never :payload-type type :normal-transfer? occurring?}
-                            :profile (get (get core :module) :profile) :target (get (get core :module) :target)
-                            :status :solved :diagnostics []})
-                          (assoc thrown owner (if (if occurring? (= false (contains? (set (get thrown owner [])) type)) false)
-                                                (conj (get thrown owner []) type) (get thrown owner [])))
-                          (+ used 1))
-                        (sh08-th-error "C7-ANNOTATION" :typed-throw-payload-type-required payload :concrete-error-value type))
-                      (sh08-th-error "C7-VERIFY" :typed-throw-source-transfer-join node :exact-original-error-transfer transfer))))))
+                {:status :accepted :constraints rows :throws thrown :diagnostics []}
+                (let [transfer (first remaining) node (get indexed (get transfer :core-node-id))
+                      payload (get indexed (get transfer :value-core-node-id))
+                      owner (get (get owners :owners) (get node :node-id))
+                      type (get types (get payload :node-id) :gravity.type/unknown)
+                      occurring? (= false (= type :gravity.type/never))
+                      premise {:version :sh08-direct-typed-throw-v1 :source-transfer transfer :source-node node
+                               :payload-node payload :payload-type type :owner-function-syntax-id owner
+                               :normal-transfer? occurring? :result-type :gravity.type/never}]
+                  (if (sh08-th-transfer-valid? transfer node payload forms owner ordinal)
+                    (if (sh08-ft-known? type)
+                      (recur (rest remaining) (+ ordinal 1)
+                        (conj rows {:constraint-id-request {:domain :gravity/sh08-direct-typed-throw-v1 :premise premise}
+                          :kind :equality :producer-rule :sh08-direct-typed-throw-v1
+                          :lhs (get node :node-id) :rhs :gravity.type/never :dependencies premise
+                          :origin (get (get node :source) :origin-chain)
+                          :invalidation [:error-transfers :throw-source :payload-source :payload-type :function-owner :evaluation-order]
+                          :solution {:type :gravity.type/never :payload-type type :normal-transfer? occurring?}
+                          :profile (get (get core :module) :profile) :target (get (get core :module) :target)
+                          :status :solved :diagnostics []})
+                        (assoc thrown owner (if (if occurring? (= false (contains? (set (get thrown owner [])) type)) false)
+                                              (conj (get thrown owner []) type) (get thrown owner []))))
+                      (sh08-th-error "C7-ANNOTATION" :typed-throw-payload-type-required payload :concrete-error-value type))
+                    (sh08-th-error "C7-VERIFY" :typed-throw-source-transfer-join node :exact-original-error-transfer transfer))))
             (sh08-th-error "C7-VERIFY" :typed-throw-transfer-census {} :complete-unique-error-transfers transfers))
-          (if (= :rejected (get owners :status)) owners
-            (sh08-th-error "C7-GENERIC" :typed-throw-work-limit {} :bounded-source-visits work)))))))
+          owners))))
 
 (defn sh08-th-functions [functions thrown]
   (loop [remaining functions out []]
@@ -6185,25 +6171,22 @@
     (if (= 0 (count remaining)) true
       (if (= :gravity.type/never (get types (first remaining))) false (recur (rest remaining))))))
 
-(defn sh08-pmk-index-forms [forms budget]
-  (if (map? forms) {:status :accepted :work-count 0 :forms forms}
+(defn sh08-pmk-index-forms [forms]
+  (if (map? forms) {:status :accepted :forms forms}
     (if (vector? forms)
-      (let [work (* 3 (count forms))]
-        (if (> work budget) {:status :rejected :reason :private-map-keys-work-limit :work-count work}
-          (loop [remaining forms out {}]
-            (if (= 0 (count remaining)) {:status :accepted :work-count work :forms out}
-              (let [form (first remaining) id (get form :form-id)]
-                (if (if (map? form) (sh08-sse-ids? [id] 1) false)
-                  (if (contains? out id) {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}
-                    (recur (rest remaining) (assoc out id form)))
-                  {:status :rejected :reason :private-map-keys-source-mismatch :work-count work}))))))
-      {:status :rejected :reason :private-map-keys-source-mismatch :work-count 0})))
+      (loop [remaining forms out {}]
+        (if (= 0 (count remaining)) {:status :accepted :forms out}
+          (let [form (first remaining) id (get form :form-id)]
+            (if (if (map? form) (sh08-sse-ids? [id] 1) false)
+              (if (contains? out id) {:status :rejected :reason :private-map-keys-source-mismatch}
+                (recur (rest remaining) (assoc out id form)))
+              {:status :rejected :reason :private-map-keys-source-mismatch}))))
+      {:status :rejected :reason :private-map-keys-source-mismatch})))
 
-(defn sh08-pmk-check-with-forms [core node call edge nodes bindings types forms budget]
-  (let [indexed (sh08-pmk-index-forms forms budget) work (get indexed :work-count)]
+(defn sh08-pmk-check-with-forms [core node call edge nodes bindings types forms]
+  (let [indexed (sh08-pmk-index-forms forms)]
     (if (= :accepted (get indexed :status))
-      (let [result (sh08-pmk-inferred-call core node call edge nodes bindings types (get indexed :forms) (- budget work))]
-        (assoc result :work-count (+ work (get result :work-count)))) indexed)))
+      (sh08-pmk-inferred-call core node call edge nodes bindings types (get indexed :forms)) indexed)))
 
 (defn sh08-tc-scope-with-types [core thrown budget types]
   (let [nodes (sh08-ft-node-index (get core :nodes))
@@ -22669,26 +22652,22 @@
          (assoc result (get definition :binding-id) value))))))
 
 ; L5: a Map parameter forgets only independently checked member refinements.
-(defn sh08-mp-compatibility [core call edge callee index actual nodes bindings budget]
+(defn sh08-mp-compatibility [core call edge callee index actual nodes bindings]
   (let [parameter (get (get callee :parameters) index)]
     (if (if (= :gravity.type/map (get parameter :type))
           (if (map? actual) (= :gravity.type/map (get actual :kind)) false) false)
-      (let [records (get core :function-records) base (+ 32 (count records))
+      (let [records (get core :function-records)
             validation (sh08-lc-validate-types [actual])
-            work base
-            record (if (> base budget) nil
-                     (loop [remaining records]
-                       (if (= 0 (count remaining)) nil
-                         (if (= (get callee :function-id) (get (first remaining) :function-syntax-id))
-                           (first remaining) (recur (rest remaining))))))
+            record (loop [remaining records]
+                     (if (= 0 (count remaining)) nil
+                       (if (= (get callee :function-id) (get (first remaining) :function-syntax-id))
+                         (first remaining) (recur (rest remaining)))))
             declaration (get (get (get record :signature) :parameters) index)
             bid (get parameter :binding-id) binding (get bindings bid)
             type-binding (get bindings (get declaration :type-binding-id))
             argument-id (get (get call :argument-node-ids) index) argument (get nodes argument-id)
             node (get nodes (get call :core-node-id))]
-        (if (if (> base budget) true false)
-          {:status :rejected :reason :map-parameter-work-limit :work-count work}
-          (if (sh08-ft-all-true?
+        (if (sh08-ft-all-true?
                 [(= :accepted (get validation :status))
                  (sh08-ft-declaration-valid? declaration bindings)
                  (= ['Map :gravity.type/map] [(get declaration :type-symbol) (get declaration :type-id)])
@@ -22704,7 +22683,7 @@
                  (= (get call :core-node-id) (get edge :call-core-node-id) (get node :node-id))
                  (= (get call :argument-node-ids) (get edge :argument-core-node-ids) (vec (rest (get node :children))))
                  (= argument-id (get argument :node-id))])
-            {:status :accepted :work-count work
+            {:status :accepted
              :premise {:version :sh08-bare-map-parameter-v1 :relation :forget-map-member-refinement
                        :call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-index index
                        :actual-type actual :declared-type :gravity.type/map
@@ -22715,13 +22694,13 @@
                        :forgets [:key-value-member-types :static-entry-count]
                        :preserves [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations]
                        :profile (get (get core :module) :profile) :target (get (get core :module) :target)}}
-            {:status :rejected :reason :map-parameter-declaration-or-type-required :work-count work})))
-      {:status :not-applicable :work-count 0})))
+            {:status :rejected :reason :map-parameter-declaration-or-type-required})))
+      {:status :not-applicable})))
 
 ; L5: only an authenticated explicit bare List parameter can forget position.
-(defn sh08-lp-compatibility [core call edge callee index actual nodes bindings budget]
+(defn sh08-lp-compatibility [core call edge callee index actual nodes bindings]
   (if (= :gravity.type/map (get (get (get callee :parameters) index) :type))
-    (sh08-mp-compatibility core call edge callee index actual nodes bindings budget)
+    (sh08-mp-compatibility core call edge callee index actual nodes bindings)
   (let [parameter (get (get callee :parameters) index) expected (get parameter :type)
         homogeneous? (sh08-hl-type? expected)]
     (if (if (if homogeneous? true (= :gravity.type/list expected))
@@ -22729,21 +22708,17 @@
             (= [:gravity.type/list :literal #{:kind :shape :element-types}]
                [(get actual :kind) (get actual :shape) (set (keys actual))]) false) false)
       (let [records (get core :function-records)
-            base (+ 32 (count records) (if (if homogeneous? (vector? (get actual :element-types)) false) (count (get actual :element-types)) 0))
             validation (sh08-lc-validate-types [actual])
-            work base
-            record (if (> base budget) nil (loop [remaining records]
+            record (loop [remaining records]
                      (if (= 0 (count remaining)) nil
                        (if (= (get callee :function-id) (get (first remaining) :function-syntax-id))
-                         (first remaining) (recur (rest remaining))))))
+                         (first remaining) (recur (rest remaining)))))
             declaration (get (get (get record :signature) :parameters) index)
             bid (get parameter :binding-id) binding (get bindings bid)
             type-binding (get bindings (get declaration :type-binding-id))
             argument-id (get (get call :argument-node-ids) index) argument (get nodes argument-id)
             node (get nodes (get call :core-node-id))]
-        (if (if (> base budget) true false)
-          {:status :rejected :reason :list-parameter-work-limit :work-count work}
-          (if (sh08-ft-all-true?
+        (if (sh08-ft-all-true?
                 [(= :accepted (get validation :status))
                  (= :local-function (get edge :classification))
                  (= (get callee :function-id) (get edge :callee-function-syntax-id) (get record :function-syntax-id))
@@ -22764,7 +22739,7 @@
                  (= (get call :core-node-id) (get edge :call-core-node-id) (get node :node-id))
                  (= (get call :argument-node-ids) (get edge :argument-core-node-ids) (vec (rest (get node :children))))
                  (= argument-id (get argument :node-id))])
-            {:status :accepted :work-count work
+            {:status :accepted
              :premise (let [premise {:version :sh08-bare-list-parameter-v1 :relation :forget-positional-list-refinement
                        :call-core-node-id (get call :core-node-id) :argument-node-id argument-id :argument-index index
                        :actual-type actual :declared-type expected
@@ -22779,8 +22754,8 @@
                           (assoc premise :version :sh08-homogeneous-list-parameter-v1 :relation :all-positional-elements-match
                             :forgets [:static-length] :element-binding (get bindings (get declaration :element-binding-id))
                             :checked-element-type (get expected :element-type) :checked-element-count (count (get actual :element-types))) premise))}
-            {:status :rejected :reason (if homogeneous? :homogeneous-list-parameter-incompatible :list-parameter-declaration-required) :work-count work})))
-      {:status :not-applicable :work-count 0}))))
+            {:status :rejected :reason (if homogeneous? :homogeneous-list-parameter-incompatible :list-parameter-declaration-required)})))
+      {:status :not-applicable}))))
 
 (defn sh08-lp-pairs-adapted? [pairs]
   (loop [remaining pairs]
