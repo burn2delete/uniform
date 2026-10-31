@@ -4660,11 +4660,16 @@
       (let [args (get call :argument-node-ids) children (get node :children)
             operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
             binding (get bindings bid) receiver (get types (first args))
-            validation (body-lc-validate-types [receiver])
-            normal? (= false (= :gravity.type/never receiver))
-            receiver-valid? (if normal? (if (map? receiver) (= :gravity.type/map (get receiver :kind)) false) true)
-            domain-valid? (if normal? (body-mkeys-type? receiver) true)
-            nq-valid? (if (body-nq-ids? node call nodes bindings module)
+            validation (body-lc-validate-types [receiver])]
+        (if (= false (= :accepted (get validation :status)))
+          {:status :rejected :reason :map-keys-finite-keyword-map-type-required}
+          (if (if (= :gravity.type/never receiver) true
+                (if (map? receiver) (= :gravity.type/map (get receiver :kind)) false))
+            (let [normal? (= false (= :gravity.type/never receiver))]
+              (if (if normal? (body-mkeys-type? receiver) true)
+                (let [result-type (if normal? {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}
+                                      :gravity.type/never)]
+                  (if (if (body-nq-ids? node call nodes bindings module)
                         (if (map? edge)
                           (if (integer? (get edge :ordinal))
                             (if (>= (get edge :ordinal) 0)
@@ -4674,75 +4679,68 @@
                               false)
                             false)
                           false)
-                        false)]
-        (if (= false (= :accepted (get validation :status)))
-          {:status :rejected :reason :map-keys-finite-keyword-map-type-required}
-          (if (= false receiver-valid?)
-            {:status :rejected :reason :map-keys-finite-keyword-map-type-required}
-            (if (= false domain-valid?)
-              {:status :rejected :reason :map-keys-finite-keyword-map-type-required}
-              (if (= false nq-valid?)
-                {:status :rejected :reason :map-keys-source-mismatch}
-                (let [result-type (if normal? {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword} :gravity.type/never)
-                      caller (loop [remaining (get core :function-records)]
-                               (if (= 0 (count remaining)) nil
-                                 (let [record (first remaining)]
-                                   (if (if (map? record)
-                                         (body-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
-                                     (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
-                                       record (recur (rest remaining)))
-                                     :invalid-map-keys-owner))))
-                      expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
-                                     :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
-                                     :evaluation-order :operator-then-arguments :result-policy :call-result}
-                      expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
-                                     :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
-                                     :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
-                                     :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
-                                     :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
-                  (if (body-all?
-                        [(= false (= :invalid-map-keys-owner caller))
-                         (= :call (get node :core-form)) (= :reference (get operator :core-form))
-                         (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
-                             :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
-                         (= expected-call call) (= expected-edge edge) (body-mkeys-binding? binding module)
-                         (= 'keys (get binding :name))
-                         (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
-                         (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
-                             :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
-                         (contains? '#{keys gravity.core/keys} (get (get operator :attributes) :symbol))
-                         (= :operator-then-arguments (get (get node :evaluation) :kind))
-                         (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
-                            (get (get node :evaluation) :order))])
-                    {:status :accepted
-                     :descriptor {:kind :gravity.type/applied-map-keys :version :sh08-map-keys-v1
-                                  :operation 'keys :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-map-keys
-                                  :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
-                                  :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
-                                  :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
-                                  :query-policy (if normal? {:input :finite-keyword-key-persistent-map :operand-evaluation :once :operand-position :non-tail
+                        false)
+                    (let [caller (loop [remaining (get core :function-records)]
+                                   (if (= 0 (count remaining)) nil
+                                     (let [record (first remaining)]
+                                       (if (if (map? record)
+                                             (body-sse-ids? [(get record :function-syntax-id) (get record :function-core-node-id)] 2) false)
+                                         (if (= (get (get node :evaluation) :owner-function-syntax-id) (get record :function-syntax-id))
+                                           record (recur (rest remaining)))
+                                         :invalid-map-keys-owner))))
+                          expected-call {:core-node-id (get node :node-id) :operator-node-id (first children) :operator-binding-id bid
+                                         :argument-node-ids (vec (rest children)) :ordered-evaluation-node-ids children
+                                         :evaluation-order :operator-then-arguments :result-policy :call-result}
+                          expected-edge {:ordinal (get edge :ordinal) :call-core-node-id (get node :node-id)
+                                         :caller-function-syntax-id (get caller :function-syntax-id) :caller-function-core-node-id (get caller :function-core-node-id)
+                                         :callee-binding-id bid :callee-definition-syntax-id (get binding :definition-syntax-id)
+                                         :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids args
+                                         :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}]
+                      (if (body-all?
+                            [(= false (= :invalid-map-keys-owner caller))
+                             (= :call (get node :core-form)) (= :reference (get operator :core-form))
+                             (= {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
+                                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+                             (= expected-call call) (= expected-edge edge) (body-mkeys-binding? binding module)
+                             (= 'keys (get binding :name))
+                             (= [bid] (get node :resolved-binding-ids) (get operator :resolved-binding-ids))
+                             (= {:symbol (get (get operator :attributes) :symbol) :position :operator :binding-id bid :binding-class :core
+                                 :definition-syntax-id (get binding :definition-syntax-id)} (get operator :attributes))
+                             (contains? '#{keys gravity.core/keys} (get (get operator :attributes) :symbol))
+                             (= :operator-then-arguments (get (get node :evaluation) :kind))
+                             (= [{:index 0 :core-node-id (first children)} {:index 1 :core-node-id (get children 1)}]
+                                (get (get node :evaluation) :order))])
+                        {:status :accepted
+                         :descriptor {:kind :gravity.type/applied-map-keys :version :sh08-map-keys-v1
+                                      :operation 'keys :semantic-owner 'gravity.collections :intrinsic :gravity.collections/persistent-map-keys
+                                      :resolution :gravity.core-compatibility :operator-node-id (get operator :node-id) :operator-binding-id bid
+                                      :call-core-node-id (get node :node-id) :source (get node :source) :operator-source (get operator :source)
+                                      :source-call call :source-edge edge :source-binding binding :argument-types [receiver]
+                                      :query-policy (if normal? {:input :finite-keyword-key-persistent-map :operand-evaluation :once :operand-position :non-tail
                                                      :payload-evaluation :none :original :unchanged :order :unspecified
                                                      :provider-order :preserved :selection :each-stored-key-once :result-carrier :persistent-list :flow-refinement :none
                                                      :type-validation :entire-map-including-all-values}
                                                     {:operand-evaluation :once :operand-position :non-tail :invocation :not-reached})
-                                  :allocation-policy {:behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
-                                                      :effect :memory/allocate :empty-result :possible}
-                                  :storage-policy (if normal? {:representation :development-persistent-list :collection-construction :list-spine-copy
+                                      :allocation-policy {:behavior :possible-persistent-map-key-list-construction :condition :normal-operand-completion
+                                                          :effect :memory/allocate :empty-result :possible}
+                                      :storage-policy (if normal? {:representation :development-persistent-list :collection-construction :list-spine-copy
                                                        :copy :list-spine :stored-values :shallow-share :input-storage :not-retained :borrow :none
                                                        :lifetime :persistent-values :allocation :possible-even-empty
                                                        :provider-allocation-bound :not-established}
                                                       {:collection-construction :not-invoked})
-                                  :value-origin {:kind :map-value-keys :operation 'keys :operand-node-id (first args)}
-                                  :application (if normal? :normal :not-invoked) :latent-effects [:memory/allocate] :direct-effects (if normal? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
-                                  :parameter-types [receiver] :return result-type :result-type result-type
-                                  :profile (get module :profile) :target (get module :target)
-                                  :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
-                                                 :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy
-                                                 :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
-                    {:status :rejected :reason :map-keys-source-mismatch}))))))
+                                      :value-origin {:kind :map-value-keys :operation 'keys :operand-node-id (first args)}
+                                      :application (if normal? :normal :not-invoked) :latent-effects [:memory/allocate] :direct-effects (if normal? [:memory/allocate] []) :capabilities [] :thrown-error-effects []
+                                      :parameter-types [receiver] :return result-type :result-type result-type
+                                      :profile (get module :profile) :target (get module :target)
+                                      :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records
+                                                     :callee-body :operand-types :query-policy :storage-policy :value-origin :allocation-policy
+                                                     :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
+                        {:status :rejected :reason :map-keys-source-mismatch}))
+                    {:status :rejected :reason :map-keys-source-mismatch}))
+                {:status :rejected :reason :map-keys-finite-keyword-map-type-required}))
+            {:status :rejected :reason :map-keys-finite-keyword-map-type-required})))
       {:status :rejected :reason :map-keys-source-mismatch})
-    {:status :rejected :reason :map-keys-source-mismatch})
-  {:status :rejected :reason :map-keys-source-mismatch}))
+    {:status :rejected :reason :map-keys-source-mismatch}))
 
 (defn body-pmk-id-vector? [values]
   (if (vector? values)
