@@ -472,5 +472,162 @@
                  (parse (str shadow-require "\n(require '[foreign.library :as invented]) ::invented/value"))))
     (is (= before (set (map ns-name (all-ns)))))))
 
+(deftest literal-core-alias-declarations-follow-read-order-and-resolved-heads
+  (let [parse #(context/source-forms! "literal-alias.clj" (utf8 %))
+        before (set (map ns-name (all-ns))) ambient (ns-aliases *ns*)]
+    (doseq [declaration ["(alias 'late 'never.target)"
+                         "(clojure.core/alias 'late 'never.target)"
+                         "(link 'late 'never.target)"
+                         "(c/alias 'late 'never.target)"]]
+      (let [source (str "(ns never.literal (:refer-clojure :rename {alias link}) (:require [clojure.core :as c])) "
+                        declaration " (def key ::late/value) (def q `late/held) (def v #'late/held)")
+            ;; Bare alias is excluded by :rename above, so use the normal scope
+            ;; for that one case rather than silently granting it a declaration.
+            source (if (str/starts-with? declaration "(alias ")
+                     (str/replace source " :rename {alias link}" "") source)
+            forms (parse source)]
+        (is (= '(def key :never.target/value) (nth forms 2)))
+        (is (= '(def q (quote never.target/held)) (nth forms 3)))
+        (is (= '(def v (var late/held)) (nth forms 4)))))
+    (is (= :never.target/value
+           (last (parse "(ns never.same) (alias 'late 'never.target) (alias 'late 'never.target) ::late/value"))))
+    (is (= :never.target/value
+           (last (parse "(ns never.explicit) (def alias nil) (clojure.core/alias 'late 'never.target) ::late/value"))))
+    (doseq [source ["(ns never.before) ::late/value (alias 'late 'never.target)"
+                    "(ns never.reset) (alias 'late 'never.target) (ns never.reset2) ::late/value"
+                    "(ns never.local) (defn alias [& xs] nil) (alias 'late 'never.target) ::late/value"
+                    "(ns never.local) (def alias nil) (alias 'late 'never.target) ::late/value"
+                    "(ns never.foreign (:require [never.foreign-lib :refer [alias]])) (alias 'late 'never.target) ::late/value"
+                    "(ns never.excluded (:refer-clojure :exclude [alias])) (alias 'late 'never.target) ::late/value"
+                    "(ns never.renamed (:refer-clojure :rename {alias link})) (alias 'late 'never.target) ::late/value"
+                    "(ns never.local-link (:refer-clojure :rename {alias link})) (def link nil) (link 'late 'never.target) ::late/value"
+                    "(ns never.foreign-head (:require [never.foreign-lib :as c])) (c/alias 'late 'never.target) ::late/value"
+                    "(ns never.nested) (do (alias 'late 'never.target)) ::late/value"
+                    "(ns never.nested) (defn f [] (alias 'late 'never.target)) ::late/value"
+                    "(ns never.nested) (comment (alias 'late 'never.target)) ::late/value"
+                    "(ns never.conflict) (alias 'late 'never.one) (alias 'late 'never.two)"
+                    "(ns never.conflict (:require [never.one :as late])) (alias 'late 'never.two)"
+                    "(ns never.class) (alias 'String 'never.target)"
+                    "(ns never.unknown) ::unknown/value"]]
+      (is (thrown? Exception (parse source)) source))
+    (doseq [declaration ["(alias)" "(alias 'late)" "(alias 'late 'never.target 'extra)"
+                         "(alias late 'never.target)" "(alias 'late target)"
+                         "(alias (symbol \"late\") 'never.target)" "(alias 'late (identity 'never.target))"
+                         "(alias :late 'never.target)" "(alias '[late] 'never.target)"
+                         "(alias 'late/x 'never.target)" "(alias 'late 'never/target)"
+                         "(alias '^:private late 'never.target)"]]
+      (is (thrown? Exception (parse (str "(ns never.malformed) " declaration))) declaration))
+    (is (= before (set (map ns-name (all-ns)))))
+    (is (= ambient (ns-aliases *ns*)))
+    (is (nil? (find-ns 'never.target)))))
+
+(deftest top-level-alias-private-calls-retain-source-and-require-provenance
+  (let [make-plan (fn [target alias]
+                    {:paths ["owner.clj" "caller.clj"]
+                     :namespace-by-path {"owner.clj" target "caller.clj" 'never.alias-caller}
+                     :inputs {"owner.clj" (utf8 (str "(ns " target ") (defn- held [x] x) (defn- dead [x] x)"))
+                              "caller.clj" (utf8 (str "(ns never.alias-caller (:require [" target " :as original]))\n"
+                                                      "(alias '" alias " '" target ")\n"
+                                                      "(defn call [x] (#'" alias "/held x))\n"))}})
+        baseline (make-plan 'never.old-owner 'old)
+        current (make-plan 'never.current-owner 'late)]
+    (doseq [[plan target alias] [[baseline 'never.old-owner 'old] [current 'never.current-owner 'late]]]
+      (let [[{:keys [definition callers]} :as usages] (context/private-var-usages [plan])
+            call (first callers) findings (observe! plan)
+            resolved (context/resolve-private-usages findings usages)]
+        (is (= 1 (count usages)))
+        (is (= target (:namespace definition) (:namespace call)))
+        (is (= alias (:alias call)))
+        (is (= (symbol (str alias) "held") (:reference call)))
+        (is (= 'original (get-in call [:require :alias])))
+        (is (= (context/sha256 (get-in plan [:inputs "caller.clj"])) (:sha256 call) (get-in call [:require :sha256])))
+        (is (not-any? #(= :error (:level %)) findings))
+        (is (some #(= (str "Unused private var " target "/dead") (:message %)) (:findings resolved)))
+        (is (not-any? #(= (str "Unused private var " target "/held") (:message %)) (:findings resolved)))))
+    ;; A namespace alias does not load a library or invent require evidence.
+    (let [unrequired (update-in current [:inputs "caller.clj"]
+                                (constantly (utf8 "(ns never.alias-caller) (alias 'late 'never.current-owner) (defn call [x] (#'late/held x))")))]
+      (is (empty? (context/private-var-usages [unrequired]))))
+    (is (nil? (find-ns 'never.alias-caller)))
+    (is (nil? (find-ns 'never.current-owner)))))
+
+(deftest literal-alias-private-edges-are-not-retroactive-or-foreign-declarations
+  (let [owner 'never.ordered-owner
+        header "(ns never.ordered-caller (:require [never.ordered-owner :as original] [clojure.core :as c]))\n"
+        usages (fn [source]
+                 (context/private-var-usages
+                  [{:paths ["owner.clj" "caller.clj"]
+                    :inputs {"owner.clj" (utf8 "(ns never.ordered-owner) (defn- held [x] x)")
+                             "caller.clj" (utf8 source)}}]))
+        call "(defn call [x] (#'late/held x))\n"]
+    (doseq [declaration ["(def alias nil) (alias 'late 'never.ordered-owner)"
+                         "(defn alias [& xs] nil) (alias 'late 'never.ordered-owner)"
+                         "(do (alias 'late 'never.ordered-owner))"
+                         "(comment (alias 'late 'never.ordered-owner))"]]
+      (is (empty? (usages (str header declaration "\n" call)))))
+    (let [[{:keys [callers definition]}] (usages (str header call "(alias 'late 'never.ordered-owner)\n" call))]
+      (is (= owner (:namespace definition)))
+      (is (= 1 (count callers)))
+      (is (= 4 (:row (first callers)))))
+    (is (= owner (get-in (usages (str header "(c/alias 'late 'never.ordered-owner)\n" call)) [0 :definition :namespace])))
+    (is (empty? (usages (str header "(alias 'late 'never.ordered-owner)\n(ns never.reset-caller)\n" call))))))
+
+(deftest malformed-foreign-quote-carriers-are-refused-without-callbacks
+  ;; The public entry reads bytes, so foreign carriers cannot be read in.
+  ;; Exercise the private shape gate directly to guard its native-only cut.
+  (let [calls (atom 0)
+        callback (fn [] (swap! calls inc) (throw (AssertionError. "foreign seq")))
+        foreign (reify clojure.lang.ISeq
+                  (seq [_] (callback)) (first [_] (callback)) (next [_] (callback))
+                  (more [_] (callback)) (cons [_ _] (callback)) (count [_] (callback))
+                  (empty [_] (callback)) (equiv [_ _] (callback)))
+        bad-quote (clojure.lang.Cons. 'quote foreign)
+        check #'context/source-alias-pair!]
+    (doseq [form [foreign (list 'alias foreign '(quote never.target))
+                  (list 'alias bad-quote '(quote never.target))]]
+      (is (thrown? Exception (check form))))
+    (is (zero? @calls))))
+
+(deftest alias-declaration-head-and-drop-mutations-are-detected
+  (let [parse #(context/source-forms! "alias-mutant.clj" (utf8 %))
+        resolve-head @#'context/source-declaration-operation
+        local "(ns never.mutant) (def alias nil) (alias 'late 'never.target) ::late/value"
+        actual "(ns never.mutant) (alias 'late 'never.target) ::late/value"]
+    (is (thrown? Exception (parse local)))
+    (is (= :never.target/value (last (parse actual))))
+    (is (= :never.target/value
+           (with-redefs-fn {#'context/source-declaration-operation
+                            (fn [scope form] (if (= 'alias (when (seq? form) (first form)))
+                                               'alias (resolve-head scope form)))}
+             #(last (parse local)))))
+    (is (thrown? Exception
+                 (with-redefs-fn {#'context/source-declaration-operation
+                                  (fn [scope form] (let [operation (resolve-head scope form)]
+                                                     (when-not (= 'alias operation) operation)))}
+                   #(parse actual))))))
+
+(deftest actual-C13-compatibility-source-is-inert-and-keeps-late-Vars
+  (let [path (str context/source-root "gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj")
+        base (sh/sh "git" "show" (str "41ab1c357e4d96a510fae4cf5a46e903fe340510^:" path))
+        pinned (sh/sh "git" "show" (str "41ab1c357e4d96a510fae4cf5a46e903fe340510:" path))
+        current (context/local-bytes! path) before (set (map ns-name (all-ns)))
+        forms (context/source-forms! path current)
+        output (first (filter #(and (seq? %) (= 'output-id (second %))) forms))]
+    (is (zero? (:exit base)))
+    (is (zero? (:exit pinned)))
+    (is (= (:out pinned) (String. ^bytes current "UTF-8")))
+    (is (seq (context/source-forms! path (utf8 (:out base)))))
+    (is (= '(alias (quote bootstrap) (quote gravity.bootstrap)) (second forms)))
+    (is (= '(optimization/output-id (var bootstrap/p15-s23-c11-mir-digest)
+                                    (var bootstrap/p15-s23-c11-mir-path-neutral-value) output)
+           (last output)))
+    (is (= :gravity.bootstrap/value
+           (last (context/source-forms! path (utf8 (str (String. ^bytes current "UTF-8") "\n::bootstrap/value"))))))
+    (is (some #{path} (:paths (context/plan! context/local-bytes!))))
+    (is (= before (set (map ns-name (all-ns)))))
+    (is (nil? (find-ns 'gravity.bootstrap-c13-comparison)))
+    (is (nil? (find-ns 'gravity.bootstrap)))
+    (is (nil? (find-ns 'gravity.optimization)))))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

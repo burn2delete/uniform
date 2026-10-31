@@ -65,9 +65,7 @@
                       scope classes)))
           scope specs))
 
-(defn- source-reader-scope [scope form]
-  ;; Declarations are DATA. Never require a library or mutate a Namespace to
-  ;; teach the reader aliases; baseline and current inputs have separate scopes.
+(defn- source-declaration-operation [scope form]
   (let [head (when (seq? form) (first form))
         resolved-head (when (symbol? head)
                         ;; def is a compiler form, not a referred Var.
@@ -79,9 +77,41 @@
                               (when-not (contains? (:locals scope) head)
                                 (get-in scope [:refers head]))))
         operation (when (and resolved-head (= "clojure.core" (namespace resolved-head)))
-                    (symbol (name resolved-head)))
-        _ (when (contains? #{'refer 'use 'refer-clojure 'alias 'in-ns} operation)
+                    (symbol (name resolved-head)))]
+    operation))
+
+(defn- source-alias-pair! [form]
+  (let [quoted-symbol (fn [value]
+                        (when (and (or (identical? clojure.lang.PersistentList (class value))
+                                       ;; The quote reader emits a native Cons
+                                       ;; with a native one-element list tail.
+                                       (and (identical? clojure.lang.Cons (class value))
+                                            (identical? clojure.lang.PersistentList (class (.more ^clojure.lang.Cons value)))))
+                                   (= 2 (count value))
+                                   (identical? clojure.lang.Symbol (class (first value)))
+                                   (= 'quote (first value))
+                                   (identical? clojure.lang.Symbol (class (second value)))
+                                   (nil? (namespace (second value))) (nil? (meta (second value))))
+                          (second value)))
+        pair (when (and (identical? clojure.lang.PersistentList (class form)) (= 3 (count form)))
+               (mapv quoted-symbol (rest form)))]
+    (when-not (and pair (every? some? pair))
+      (throw (ex-info "Unsupported lint source alias declaration" {})))
+    pair))
+
+(defn- source-reader-scope [scope form]
+  ;; Declarations are DATA. Never require a library or mutate a Namespace to
+  ;; teach the reader aliases; baseline and current inputs have separate scopes.
+  (let [operation (source-declaration-operation scope form)
+        _ (when (contains? #{'refer 'use 'refer-clojure 'in-ns} operation)
             (throw (ex-info "Unsupported lint source scope declaration" {:operation operation})))
+        scope (if (= 'alias operation)
+                (let [[alias target] (source-alias-pair! form)
+                      existing (get-in scope [:aliases alias])]
+                  (when (or (contains? (:imports scope) alias)
+                            (and existing (not= existing target)))
+                    (throw (ex-info "Unsupported lint source alias conflict" {})))
+                  (assoc-in scope [:aliases alias] target)) scope)
         ns? (contains? #{'ns 'clojure.core/ns} operation)
         scope (if ns? (source-reader-defaults (second form)) scope)
         clauses (when ns? (filter seq? (drop 2 form)))
@@ -371,9 +401,11 @@
         (doseq [path paths :let [bytes (get inputs path) digest (sha256 bytes)]
                 :when (str/ends-with? path ".clj")]
           (loop [forms (source-forms! path bytes)
-                 current-ns (get namespace-by-path path 'gravity.bootstrap)]
+                 current-ns (get namespace-by-path path 'gravity.bootstrap)
+                 reader-scope (source-reader-defaults (ns-name *ns*))]
             (when-let [form (first forms)]
-              (let [operation (when (seq? form) (core-operation (first form)))
+              (let [operation (source-declaration-operation reader-scope form)
+                    next-reader-scope (source-reader-scope reader-scope form)
                     current-ns (if (= 'ns operation) (second form) current-ns)
                     specs (cond (= 'ns operation) (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
                                 (= 'require operation) (rest form))]
@@ -382,6 +414,9 @@
                   (swap! scopes assoc-in [current-ns :required target]
                          {:namespace target :alias alias :path path :row (:line (meta form)) :sha256 digest})
                   (when alias (swap! scopes assoc-in [current-ns :aliases alias] target)))
+                (when (= 'alias operation)
+                  (let [[alias target] (source-alias-pair! form)]
+                    (swap! scopes assoc-in [current-ns :aliases alias] target)))
                 (when (and (#{'def 'defonce 'defn 'defn- 'defmacro} operation) (symbol? (second form)))
                   (swap! scopes update-in [current-ns :defined] (fnil conj #{}) (second form)))
                 (let [{:keys [aliases required defined]} (get @scopes current-ns)]
@@ -398,7 +433,7 @@
                                        :reference reference :alias (when (contains? aliases prefix) prefix)
                                        :require (get required target)
                                        :sha256 digest})))
-                (recur (next forms) current-ns)))))))
+                (recur (next forms) current-ns next-reader-scope)))))))
     (let [by-name (group-by (juxt :namespace :name) @definitions)]
       (vec (for [[key definitions] by-name :when (= 1 (count definitions))
                  :let [callers (filterv #(= key ((juxt :namespace :name) %)) @calls)]

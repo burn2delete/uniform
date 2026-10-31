@@ -147,3 +147,90 @@ No warning allowance, source authentication change, original CI rerun,
 publication, affected review, actual target execution or modification of the
 separate frozen session/acceptance candidates is included. OWN routes review
 of this exact successor.
+
+## Literal top-level core alias declarations for main706
+
+The pinned main706 component
+`bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj`
+uses `(alias 'bootstrap 'gravity.bootstrap)` before late Var arguments to
+`optimization/output-id`. The actual component at main
+`41ab1c357e4d96a510fae4cf5a46e903fe340510` is unchanged here. Neither the
+alias nor the referenced compiler functions are executed by this tooling.
+
+The source basis is Accounting's unpushed union
+`4a5a755d6632d82b1445af943bc8c6e92ee46e8b`, tree
+`263b4a98eeccdce1a67329049fd79ec91a594374`, with ordered parents
+`226f7e6ad8fb45ca5d7325aceb4fd4ba1401f429` and that main706 commit.
+Disposition SHA256
+`4a4a3ca1a9bb2fafce225cc2a99e236809a1d7eefbd7d334ff4e80a438e75f6d`
+and blocker SHA256
+`5564da122fe7f509ef7b1879e0022e1dff525874bc134ae7c1d014c5fbdec0a2`
+record a failed combined inert Bootstrap plan. That broader applicability check
+was not a demonstrated configured changed-path CI failure; the eleven PR697
+paths did not themselves select Bootstrap component lint. No hosted run or
+publication is inferred or retried here.
+
+The donor tool is the complete accepted 03484/abfbd lineage, blob
+`1b8675959107f82dbd17af852965ac0fff5f2a52`, SHA256
+`04f7d72546f91c98b15b73191fd6794842c3c31e0260f68afaf8dfd21f752771`.
+This successor preserves that implementation except for literal alias support
+and its required private-call scope join. The configured cljfmt 0.13.4 contract
+is retained, not replaced with another formatter or semantic rewrite.
+
+The declaration-head resolver is extracted without changing its expression.
+Only a head resolved through the current source scope to clojure.core/alias
+can update aliases: bare unshadowed alias, explicit core qualification, a
+renamed core refer, or a declared alias for clojure.core. Local definitions,
+foreign refers, exclusions and shadowed renamed heads do not acquire core
+meaning. Declarations inside functions, do or comment do not update top-level
+scope. A declaration affects only later forms, and ns resets/input separation
+remain intact.
+
+Arguments must be exactly two quoted, unqualified native Symbols without
+Symbol metadata. Explicit `(quote name)` lists and the quote reader's native
+Cons/list-tail representation are supported; arbitrary sequence classes,
+foreign tails, computed values, extra/missing arguments, keywords, vectors and
+qualified symbol pairs refuse. Imported class names cannot be aliases in this
+bounded model. Repeating an identical binding is allowed; binding an existing
+alias to a different target refuses. Other previously unsupported scope forms,
+reader evaluation, tags and unknown auto-keyword aliases retain their refusals.
+Literal target names are recorded as source data; no target namespace is loaded,
+created or claimed to exist merely because it was named.
+
+Private Var usage analysis uses the same resolved declaration head and local
+read order, adding only the validated alias mapping. A call can resolve through
+that alias only when the existing source-required target is already present.
+An alias alone does not invent require evidence or suppress an otherwise
+unproved private warning. Original reference spelling, call row/column, caller
+source hash and actual require provenance remain. Passive late Var arguments
+in C13 remain `(var bootstrap/...)` forms, not resolved values or synthetic call
+edges. Source assembly/remapping, archive selection, executable-position walk,
+destructuring defaults, comment handling and warning classification do not
+change.
+
+The focused suite includes coherent old/current namespace and alias programs,
+source-backed private calls and retained dead helpers. Actual pre-main706 and
+current C13 source are read as data; the current complete inert Bootstrap plan
+succeeds without creating Bootstrap, optimization or C13 namespaces. Mutation
+controls detect treating a local alias call as core and dropping an actual
+alias declaration. Foreign shape-gate controls prove zero sequence callbacks.
+All earlier core/class/prefix-libspec, declaration-shadowing, private usage,
+current-error, archived-selection and read/tag refusal controls remain.
+
+The initial test edit had a delimiter/scope error. Its correction exposed the
+native Cons quote representation; a later test assertion incorrectly treated
+the warning resolver's result map as its findings vector. Those nonpasses are
+retained separately from corrected passing controls, rather than counted as
+implementation evidence. No component body, late Var semantics, Accounting
+fixture, diagnostic candidate or common publication worktree is changed.
+OWN routes one affected independent review after exact candidate freeze.
+
+Final focused controls pass 22 tests / 450 assertions; unchanged macro controls
+pass 6 / 90 and language boundary passes 6 / 11. Configured cljfmt 0.13.4
+`check tools/ci`, Kondo 2025.10.23 `--lint tools/ci`, both document validators
+and diff hygiene pass. Preservation equations retain the 38-form donor except
+the two justified scope/private-usage definitions, add two private helpers,
+and conserve every other form plus the assembly/archive/remapping byte span.
+The extracted declaration-head expression is form-equal to the donor. The
+source-proof helper's initial delimiter errors are retained separately from
+its corrected pass. These checks grant no target, runtime or hosted-CI credit.
