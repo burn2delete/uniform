@@ -231,17 +231,12 @@
         caller-function {:function-id caller :body-core-node-id (ids :loop-target) :parameters []
                          :return :gravity.type/string :latent-effects [:error/throw] :thrown-error-effects [:pending-sh09]}
         bindings (into self-bindings (map (juxt :binding-id identity) (:binding-table loop-core)))
-        c7-work (+ 32 (* 8 (count (:nodes core))) (* 8 (count (:calls core))) (* 4 (count (:call-edges core)))
-                   (* 4 (count bindings)) (* 4 (count (:function-records core)))
-                   (* 2 (reduce + (map (comp count :argument-node-ids) (:calls core))))
-                   (* (count (:calls core)) (count bindings)))
         facts (-> self-facts
                   (assoc :module (:module self-core) :constraint-ledger (:constraint-ledger loop-facts))
                   (update :type-table merge (:type-table loop-facts)
                           {(ids :result) :gravity.type/string (ids :branch) :gravity.type/string
                            (ids :loop-target) :gravity.type/string caller caller-function})
-                  (update :function-type-table conj caller-function)
-                  (assoc-in [:recursive-proof :work-count] c7-work))
+                  (update :function-type-table conj caller-function))
         derived (effects 'body-derive-module-nodes core facts {} 65536)
         graph (:nodes derived)
         checked (effects 'body-tc-verify core facts bindings graph {:active? true} 65536)
