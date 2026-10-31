@@ -11427,33 +11427,31 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/string :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-sc-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-sc-derive [core node call edge nodes bindings types forms]
   ; STD4 binary String concatenation allocates on normal invocation even
   ; for empty Strings. Other returning operands remain String under Never.
-  (let [args (get call :argument-node-ids) work (+ 64 (count args) (count (get core :function-records)))
-        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :string-concat-work-limit nil :remaining-type-join-units budget) :work-count work)
-      (let [header (sh08-sc-source core node call edge nodes bindings types (get core :module))]
-        (if (= header nil)
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
-                   (if (= 2 (count args)) :string-concat-operand-type-required :string-concat-arity-mismatch)
-                   nil :two-established-strings (sh08-ft-ordered-child-types args types)) :work-count work)
-          (if (sh08-ft-all-true?
-                [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
-                 (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
-                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
-                 (loop [i 0]
-                   (if (= i 3) true
-                     (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
-                       (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
-                             (= (get child :source) (sh08-ma-form-source form))
-                             (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
-                         (recur (+ i 1)) false))))])
-            (let [descriptor (sh08-sc-finish header)]
-              {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-sc-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :string-concat-source-mismatch nil :exact-operator-left-right-string-source (get node :node-id)) :work-count work)))))))
+  (let [args (get call :argument-node-ids)
+        owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
+        header (sh08-sc-source core node call edge nodes bindings types (get core :module))]
+    (if (= header nil)
+      (sh08-sm-failure "C7-TYPE-MISMATCH"
+        (if (= 2 (count args)) :string-concat-operand-type-required :string-concat-arity-mismatch)
+        nil :two-established-strings (sh08-ft-ordered-child-types args types))
+      (if (sh08-ft-all-true?
+            [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
+             (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
+                 :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes))
+             (loop [i 0]
+               (if (= i 3) true
+                 (let [form (get forms (get ids i)) child (get nodes (get (get node :children) i))]
+                   (if (sh08-ft-all-true? [(= (get owner :form-id) (get form :parent-form-id))
+                         (= (get child :source) (sh08-ma-form-source form))
+                         (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
+                     (recur (+ i 1)) false))))])
+        (let [descriptor (sh08-sc-finish header)]
+          {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
+           :constraint (sh08-sc-constraint descriptor)})
+        (sh08-sm-failure "C7-VERIFY" :string-concat-source-mismatch nil :exact-operator-left-right-string-source (get node :node-id))))))
 
 (defn sh08-sc-node? [node context]
   (if (= :call (get node :core-form))
@@ -11464,11 +11462,11 @@
   (let [header (sh08-sc-source core node call edge nodes bindings types (get core :module))]
     (if (map? header) (= (get types (get call :operator-node-id)) (sh08-sc-finish header)) false)))
 
-(defn sh08-sc-step [node types binding-types functions context budget]
+(defn sh08-sc-step [node types binding-types functions context]
   (sh08-sc-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
-    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
+    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))
 
 (defn sh08-mg-member-count [type]
   (if (if (map? type) (vector? (get type :member-types)) false) (count (get type :member-types)) 0))
@@ -11482,7 +11480,7 @@
   (if (= :gravity.type/map type) true
     (if (if (map? type) (= :gravity.type/map (get type :kind)) false)
       (let [members (get type :member-types)]
-        (if (if (vector? members) (<= (count members) 1024) false)
+        (if (vector? members)
           (loop [i 0]
             (if (= i (count members)) true
               (if (< (+ i 1) (count members))
@@ -11533,9 +11531,9 @@
   ; finite coordinates and selected type without inferring presence from types.
   (let [parts (get input :parts) type (get (get header :argument-types) 0) members (get type :member-types)]
     (if (if (= :normal (get header :application))
-          (if (vector? parts) (if (<= (count parts) 512)
+          (if (vector? parts)
             (sh08-ft-all-true? [(= :accepted (get input :status)) (= :map (get input :shape-kind))
-                  (= type (get input :type)) (vector? members) (= (* 2 (count parts)) (count members))]) false) false) false)
+                  (= type (get input :type)) (vector? members) (= (* 2 (count parts)) (count members))]) false) false)
       (loop [index 0 seen #{} selected nil]
         (if (= index (count parts)) selected
           (let [part (get parts index) key (get part :key) shape (get part :shape)]
@@ -11749,7 +11747,7 @@
                     (let [parts (get shape :parts)
                           actual (get types (get args (get census :parameter-index)))
                           members (get actual :member-types) supplied-members (get (get shape :type) :member-types)]
-                      (if (if (vector? parts) (if (<= (count parts) 512) (if (vector? members) (vector? supplied-members) false) false) false)
+                      (if (if (vector? parts) (if (vector? members) (vector? supplied-members) false) false)
                         (loop [i 0 seen #{} selected nil]
                           (if (= i (count parts)) {:status :accepted :types selected}
                             (let [part (get parts i) key (get part :key) coordinate (+ 1 (* 2 i))]
