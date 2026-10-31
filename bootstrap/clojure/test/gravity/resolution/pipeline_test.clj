@@ -754,6 +754,14 @@
     (is (not (identical? @v copied)))
     (assert-interposition-misses #(with-redefs-fn {v copied} %))))
 
+(deftest request-catalog-roots-invalidate-old-receipts
+  (doseq [name '[c5-resolution-diagnostic-ids c5-resolution-governing-document
+                sh06-resolution-adapter-contract]]
+    (let [v (seed-var name) original @v
+          replacement (if (set? original) (conj original :unit-extra) :unit-different)]
+      (is (not= original replacement))
+      (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
+
 (deftest descriptor-configuration-roots-invalidate-old-receipts
   (doseq [name '[sh06-resolution-envelope-stage sh06-resolution-sealed-artifact-kind
                 sh06-resolution-boundary-keys]]
@@ -823,7 +831,10 @@
                                (seed-var 'p15-s23-c6c10-canonical-digest)
                                (seed-var 'sh06-resolution-envelope-stage)
                                (seed-var 'sh06-resolution-sealed-artifact-kind)
-                               (seed-var 'sh06-resolution-boundary-keys)]))]
+                               (seed-var 'sh06-resolution-boundary-keys)
+                               (seed-var 'c5-resolution-diagnostic-ids)
+                               (seed-var 'c5-resolution-governing-document)
+                               (seed-var 'sh06-resolution-adapter-contract)]))]
     ;; Isolate the existing readonly drift seam; no parent/owner admission runs.
     (with-redefs-fn
       {environment (fn [] (swap! reads inc) {})}
@@ -831,12 +842,17 @@
          (is (every? (set (map first roots)) expected))
          (doseq [v expected]
            (let [original @v
-                 replacement (if (map? original) (reduce-kv assoc {} original)
-                                 (fn [& args] (apply original args)))
+                 replacement (cond (map? original) (reduce-kv assoc {} original)
+                                   (set? original) (into #{} (map identity) original)
+                                   (vector? original) (mapv identity original)
+                                   (string? original) (String. ^String original)
+                                   (keyword? original) :unit-different
+                                   :else (fn [& args] (apply original args)))
                  error (caught (fn []
                                  (with-redefs-fn {v replacement}
                                    (fn [] (check! source {} {} roots :gravity.bootstrap/unavailable)))))]
-             (is (= [:construction-parent-dependency-drift] (:missing-fields (ex-data error))))))
+             (is (= [:construction-parent-dependency-drift] (:missing-fields (ex-data error)))
+                 (str (:name (meta v)) " " (pr-str (ex-data error))))))
          (is (zero? @reads))))))
 
 (deftest invocation-rejection-precedes-binding-and-stage-work
