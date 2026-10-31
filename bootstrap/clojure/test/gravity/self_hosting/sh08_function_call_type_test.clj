@@ -4,65 +4,25 @@
             [clojure.walk :as walk]
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]
             [gravity.self-hosting.sh08-function-call-kernels-test :as kernels]))
 
-(defn- repository-root
-  []
-  (let [resource
-        (io/resource
-         "gravity/self_hosting/sh08_function_call_type_test.clj")]
-    (when-not resource
-      (throw
-       (ex-info
-        "SH-08 function/call test source is not on the classpath"
-        {:id "SH08-FUNCTION-TEST-SOURCE"})))
-    (loop [candidate (.getParent (.toPath (io/file (.toURI resource))))]
-      (cond
-        (nil? candidate)
-        (throw
-         (ex-info
-          "Repository root could not be located"
-          {:id "SH08-FUNCTION-REPOSITORY-ROOT"}))
-
-        (.isFile (.toFile (.resolve candidate "deps.edn")))
-        candidate
-
-        :else
-        (recur (.getParent candidate))))))
-
-(def ^:private root (delay (repository-root)))
 (def ^:private fixture-root
   "bootstrap/clojure/fixtures/self-hosting/sh-08")
-(def ^:private c7-source-relative-path
-  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity")
 
 (defn- path
   [relative]
-  (str (.resolve @root relative)))
+  (kernel-support/path relative))
+
+(def ^:private c7-plan kernel-support/c7-plan)
 
 (defn- fixture-path
   [family basename extension]
   (path (str fixture-root "/" family "/" basename extension)))
 
-(defn- compile-plan
-  []
-  (let [source-path (path c7-source-relative-path)
-        source-text (slurp source-path)
-        emitter
-        (:emitter
-         (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-          source-path :jvm))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan
-     emitter source-path source-text)))
-
-(def ^:private c7-plan (delay (compile-plan)))
-
 (defn- invoke-c7
   [function arguments]
-  (bootstrap/p15-s23-stage2-runtime-execute-function
-   {:engine :gravity-sh08-function-call-type-leaf
-    :compiler-artifact-plan? true}
-   @c7-plan function arguments))
+  (kernel-support/invoke-c7 function arguments))
 
 (defn- fixture-artifact
   [family basename extension]
@@ -2399,41 +2359,8 @@
       (is (= {:values [:read]} (:domain (invoke-c7 'sh08-sm-group-shape [alias-group alias-types bindings {}]))))
       (is (= :rejected (:status (invoke-c7 'sh08-sm-group-shape [(assoc-in group [:nodes qid :attributes :quoted-value] :forged) qtypes bindings {}])))))))
 
-(defn- integral-ordering-input [operation argument-types]
-  ;; Normalized DATA for the actual Gravity algorithms; no source admission.
-  (let [module {:namespace 'example.ordering :profile :meta :target :jvm :effects [] :capabilities []}
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        arguments (mapv #(keyword (str "arg" %)) (range (count argument-types)))
-        children (into [:operator] arguments)
-        binding {:binding-id :ordering-binding :binding-class :core :kind :var :name operation :namespace 'gravity.core
-                 :package {:name 'gravity/core :version "bootstrap-contract-v1"} :type-ref :gravity.type/core-var
-                 :safety :safe :effects [] :capabilities [] :profile-set [:meta] :target-set [:all]
-                 :definition-syntax-id :ordering-definition}
-        operator {:node-id :operator :core-form :reference :children [] :resolved-binding-ids [:ordering-binding]
-                  :attributes {:symbol operation :position :operator :binding-id :ordering-binding :binding-class :core
-                               :definition-syntax-id :ordering-definition} :source (source :operator) :evaluation {:order []}}
-        operands (mapv (fn [id] {:node-id id :core-form :reference :children [] :attributes {:binding-id id}
-                                 :source (source id) :evaluation {:order []}}) arguments)
-        node {:node-id :call :core-form :call :children children :resolved-binding-ids [:ordering-binding]
-              :attributes {:operator-child-index 0 :argument-count (count arguments) :argument-child-indexes (vec (range 1 (count children)))
-                           :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
-              :source (source :call) :evaluation {:owner-function-syntax-id nil :kind :operator-then-arguments
-                                                :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}}
-        call {:core-node-id :call :operator-node-id :operator :operator-binding-id :ordering-binding :argument-node-ids arguments
-              :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :result-policy :call-result}
-        edge {:ordinal 0 :call-core-node-id :call :caller-function-syntax-id nil :caller-function-core-node-id nil
-              :callee-binding-id :ordering-binding :callee-definition-syntax-id :ordering-definition
-              :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids arguments
-              :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
-        nodes (into [operator] (conj operands node))
-        core {:module module :nodes nodes :function-records [] :calls [call] :call-edges [edge]}
-        bindings {:ordering-binding binding}
-        types (zipmap arguments argument-types)]
-    {:module module :core core :node node :call call :edge edge :nodes (into {} (map (juxt :node-id identity) nodes))
-     :bindings bindings :types types :seeds types
-     :forms (into {} (map (fn [id] [id {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
-                                      :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
-                                      :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
+(def ^:private integral-ordering-input
+  kernel-support/integral-ordering-input)
 
 (defn- literal-string-vector-input [value]
   ;; Original literal occurrence in normalized DATA, not a source admission.
@@ -4954,23 +4881,8 @@
 
 
 
-(defn- nonnegative-integer-quotient-input [values]
-  (let [base (integral-ordering-input 'quot (vec (repeat (count values) :gravity.type/integer)))
-        input (reduce (fn [input [index value]]
-                        (let [id (keyword (str "arg" index))]
-                          (-> input
-                              (assoc-in [:nodes id :core-form] :literal)
-                              (assoc-in [:nodes id :resolved-binding-ids] [])
-                              (assoc-in [:nodes id :attributes] {:literal-kind :integer :value value})
-                              (assoc-in [:nodes id :evaluation] {:kind :value :order []})
-                              (assoc-in [:forms id :kind] :integer)
-                              (assoc-in [:forms id :value] value))))
-                      base (map-indexed vector values))
-        module (assoc (:module input) :effects [:memory/allocate])
-        nodes (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes]))]
-    (-> input (assoc :module module :binding-types (:types input))
-        (assoc-in [:core :module] module) (assoc-in [:core :nodes] nodes)
-        (assoc :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module module}))))
+(def ^:private nonnegative-integer-quotient-input
+  kernel-support/nonnegative-integer-quotient-input)
 
 (deftest sh08-nonnegative-integer-quotient-literal-development-kernel
   (kernels/run-sh08-nonnegative-integer-quotient-literal-development-kernel))
