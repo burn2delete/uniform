@@ -1076,9 +1076,9 @@
                                        [sequence nodes lexical [] [] [] {} binding-types {}]))))))
 
 (deftest sh08-pattern-alias-correlations-development-kernel
-  (let [scalar {:status :accepted :shape-kind :scalar :type :gravity.type/bool :domain {:values [true false]} :shape-size 1}
+  (let [scalar {:status :accepted :shape-kind :scalar :type :gravity.type/bool :domain {:values [true false]}}
         shape {:status :accepted :shape-kind :map :type {:kind :gravity.type/map}
-               :shape-size 5 :parts [{:key :a :coordinate 1 :shape scalar} {:key :b :coordinate 3 :shape scalar}]}
+               :parts [{:key :a :coordinate 1 :shape scalar} {:key :b :coordinate 3 :shape scalar}]}
         literal (fn [v] {:record {:pattern-kind :literal :pattern-value v} :form {:kind :boolean}})
         binding (fn [id] {:record {:pattern-kind :binding :pattern-binding-id id :path [id]}})
         pattern (fn [a b] {:record {:pattern-kind :map}
@@ -1090,7 +1090,7 @@
         extractions (get-in partition [:branches 2 :extractions])
         alias (fn [id] {:status :accepted :shape-kind :alternatives :type :gravity.type/bool
                         :alternatives (mapv :shape (filter #(= id (:binding-id %)) extractions))})
-        constructor {:status :accepted :shape-kind :vector :shape-size 3 :type {:kind :gravity.type/vector}
+        constructor {:status :accepted :shape-kind :vector :type {:kind :gravity.type/vector}
                      :parts [{:coordinate 0 :shape (alias :x)} {:coordinate 1 :shape (alias :y)}]}
         rebuilt (invoke-c7 'sh08-sm-construct-cases [constructor])
         pairs (fn [result] (mapv (fn [case] (mapv #(get-in % [:shape :domain :values 0]) (:parts case))) (:alternatives result)))
@@ -10348,8 +10348,7 @@
                                :domain {:values [(when (even? index) false)]}}}) (range) keys)]
     {:status :accepted :shape-kind :map :node-id :original-map :source {:form-id :original-map}
      :parts parts :type {:kind :gravity.type/map :shape :literal
-                        :member-types (vec (mapcat #(vector :gravity.type/keyword (get-in % [:shape :type])) parts))}
-     :shape-size (inc (* 2 (count parts)))}))
+                        :member-types (vec (mapcat #(vector :gravity.type/keyword (get-in % [:shape :type])) parts))}}))
 
 (deftest sh08-map-removal-transition-development-kernel
   (let [transition #(invoke-c7 'sh08-mr-transition [%1 %2])]
