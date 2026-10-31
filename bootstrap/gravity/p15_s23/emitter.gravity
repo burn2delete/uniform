@@ -11898,7 +11898,11 @@
   (let [ingress (p15-s23-lc-validate-types arguments)]
     (if (= :accepted (get ingress :status))
 
-  (if
+  (if (p15-s23-ism-selected? arguments)
+    (p15-s23-ism-domain arguments)
+    (if (p15-s23-sysm-selected? arguments)
+      (p15-s23-sysm-domain arguments)
+      (if
     (if (vector? arguments) (= 2 (count arguments)) false)
     (let
      [items
@@ -11965,7 +11969,7 @@
                                                           (if (= :string family) :string-set-contains-operand-type-required type-reason))}))))))
          {:status :rejected, :reason type-reason})))
       {:status :rejected, :reason :keyword-set-contains-operand-type-required}))
-    {:status :rejected, :reason :keyword-set-contains-arity-mismatch})
+      {:status :rejected, :reason :keyword-set-contains-arity-mismatch})))
       {:status :rejected, :reason :keyword-set-contains-operand-type-required, :type-check-reason (get ingress :reason)})))
 
 (defn p15-s23-sysm-source-ids? [node call nodes bindings module]
