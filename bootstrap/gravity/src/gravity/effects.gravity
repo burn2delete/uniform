@@ -4384,8 +4384,7 @@
 
 (defn body-lset-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-    (let []
-      (if (body-lset-ids? node call nodes bindings module)
+    (if (body-lset-ids? node call nodes bindings module)
       (let [args (get call :argument-node-ids) children (get node :children)
             operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
             binding (get bindings bid) receiver (get types (first args))
@@ -4461,7 +4460,7 @@
                     {:status :rejected :reason :list-set-conversion-source-mismatch}))
                 {:status :rejected :reason :list-set-conversion-source-mismatch})
             {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required})))
-      {:status :rejected :reason :list-set-conversion-source-mismatch}))
+      {:status :rejected :reason :list-set-conversion-source-mismatch})
     {:status :rejected :reason :list-set-conversion-source-mismatch}))
 
 (defn body-lset-constraint [descriptor]
@@ -4882,8 +4881,7 @@
 
 (defn body-pmk-source [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-    (let []
-      (if (body-mkeys-ids? node call nodes bindings module)
+    (if (body-mkeys-ids? node call nodes bindings module)
       (let [args (get call :argument-node-ids) children (get node :children)
             operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
             binding (get bindings bid) receiver (get types (first args))
@@ -4955,7 +4953,7 @@
                     {:status :rejected :reason :private-map-keys-source-mismatch}))
                 {:status :rejected :reason :private-map-keys-source-mismatch}))
             {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required})))
-      {:status :rejected :reason :private-map-keys-source-mismatch}))
+      {:status :rejected :reason :private-map-keys-source-mismatch})
     {:status :rejected :reason :private-map-keys-source-mismatch}))
 
 (defn body-pmk-parameter [census core node nodes bindings forms]
@@ -5912,8 +5910,7 @@
 
 (defn body-vemp-header [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
-    (let []
-      (if (body-vemp-ids? node call nodes bindings module)
+    (if (body-vemp-ids? node call nodes bindings module)
       (let [args (get call :argument-node-ids) children (get node :children)
             operator (get nodes (get call :operator-node-id)) bid (get call :operator-binding-id)
             binding (get bindings bid) receiver (get types (first args))
@@ -5982,7 +5979,7 @@
                   {:status :rejected :reason :vector-empty-source-mismatch}))
               {:status :rejected :reason :vector-empty-source-mismatch})
             {:status :rejected :reason :vector-empty-vector-type-required})))
-      {:status :rejected :reason :vector-empty-source-mismatch}))
+      {:status :rejected :reason :vector-empty-source-mismatch})
     {:status :rejected :reason :vector-empty-source-mismatch}))
 
 (defn body-vemp-constraint [descriptor]
