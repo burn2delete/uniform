@@ -2,7 +2,7 @@
 
 ## Declared contract boundary
 
-D1, D2, D3, D6, D8, D9, L13, STD1, STD2, STD3, STD5, STD20, BOOT8 and
+D1, D2, D3, D6, D8, D9, L13, STD1, STD2, STD3, STD5, STD6, STD8, STD20, BOOT8 and
 TEST2 govern this increment. Initial base is actual Effects main
 b2f4cbbc598ec1a0e1e3f38743ba2beffa708bd6, tree
 459f9bdb482056a3b7150fde799003ca3f777690. This scope declaration precedes
@@ -49,3 +49,49 @@ Acceptance requires focused positive/adversarial tests, body/wrapper/facet
 conservation, dependency/ownership registration, language boundary, relevant
 regressions, docs/roadmap/governance, exact contextual lint, independent review,
 own CI and clean exact current-main preflight. A draft PR starts at this scope.
+
+## Working-source evidence
+
+Draft PR726 starts at scope9f26be9a0 before implementation. Its before control
+completes with clean source before the extraction. The complete current source
+module compiles with90 functions and SHA-256
+4521f6f94bc4ab72b0fff377070a31af91c8eb2da80499f3a43df589be31c096.
+Both original request fixture modules compile completely with31 functions each.
+The fixture source paths/ids remain explicit unauthenticated test data; actual
+fixture file text, physical path, source hash and complete plans are retained
+separately. No fixture reference is promoted to canonical upstream authority.
+
+Each spelling produces vector update[10 99 30], lookup30 and checked-add
+Result42. Actual index3 and i64 maximum-plus-one requests reject STD3002 and
+STD5001. All five original accepted/rejected results pass source replay, and
+adding a forged field to each rejects STD10003. The stage preserves negative
+results as negative; replay success is data equality, not admission.
+
+Six complete/text before/after captures match: whole library plan, both fixture
+plans, both complete result/refusal/replay sets and all ten native metadata
+kind/default captures. All three source texts and SHA-256 hashes recompute;
+paired source result records are identical. The moved native body and arity
+conserve, the whole component including the adjacent facet conserves outside
+the wrapper, and Bootstrap adds only the stage require.
+
+The two explicit Var ports read each operation at its original call position.
+A native Clojure control confirms operator resolution precedes argument
+evaluation; the stage dereferences before evaluating arguments. The adversarial
+test changes the record operation during argument evaluation and observes the
+original writer for that write, then the changed writer for the next write.
+This refinement preserves existing lookup timing without changing library rules.
+
+The focused suite passes6/111. Affected source/carrier/Lowering tests pass14/267
+at the original Effects base; ownership33/1011, language6/11, docs240/19 and
+roadmap/governance pass. The new SH-22/sh-standard-library helper and nested
+standalone test preserve all primary component pairs, the53-entry leaf catalog
+and its hash, and the existing count formulas. No SH-22 or full library
+completion follows. Records use /tmp/uniform-standard-library-kernel-evidence/;
+control/verifier/log files use /tmp/uniform-standard-library-kernel-*.
+
+Actual main subsequently changes compiler emitter/runtime source through PR725.
+The final candidate must compose that actual source and rerun affected checks.
+Compiler plan identities for changed compiler inputs must be retained as new
+observations, rather than normalized into old identity equality. Committed lint,
+independent acceptance, own CI and exact clean current-main preflight remain
+required; all historical Reader/H6/native nonpasses remain separate and unretried.
