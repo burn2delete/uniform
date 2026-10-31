@@ -64,7 +64,13 @@
   ;; Explicit short-seam drift boundary. No namespace scan or missing roots;
   ;; later actual owner verification remains the acceptance authority.
   (mapv (fn [v] [v (var-get v)])
-        [#'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
+        [#'gravity.resolution/boundary-fail! #'gravity.resolution/resolve-source-path
+         #'gravity.resolution/read-current-source! #'gravity.resolution/read-pinned-source!
+         #'gravity.resolution/plan-identities #'gravity.resolution/build-plan-binding!
+         #'gravity.resolution/source-key #'gravity.resolution/binding-current!
+         #'gravity.resolution/current-plan-binding! #'gravity.resolution/execute!
+         #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
+         #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*
          #'sh07-proof-transaction-report #'sh07-proof-transaction-context!
          #'sh06-resolution-validate-c3! #'c3-syntax-validate! #'c3-artifact-id

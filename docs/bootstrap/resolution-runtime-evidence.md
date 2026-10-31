@@ -48,8 +48,13 @@ The receipt guard tracks stage, factory, operation, static configuration and
 cache Var roots without executing replaceable stage code. The legitimate
 dynamic operation binding keeps its original scope; its raw Var root is
 tracked, and its complete value is an epoch input so actual plan changes cannot
-hide behind unchanged advertised hashes. Cheap receipt qualification tests
-isolate the contained verifier and contextual admission. They do not establish
+hide behind unchanged advertised hashes.
+
+The existing construction drift seam also records explicit stage and factory
+Var dependencies, so unchanged compatibility forwarders cannot hide a changed
+implementation. It retains its original later owner-verification requirements.
+Cheap receipt qualification tests isolate the contained verifier and contextual
+admission. They do not establish
 semantic or source authority. Separate real source execution and verification
 supply that evidence. Interrupted lifetime tests isolate the Core prelude and
 exercise the production cleanup path without Core admission.

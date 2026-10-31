@@ -241,6 +241,30 @@
         (is (= 1 (get-in @ctx [:executions :sh06])))
         (is (= 1 (get-in @ctx [:reuses :sh06])))))))
 
+(deftest construction-short-seam-tracks-the-new-stage-dependencies
+  (let [environment (seed-var 'resolution-construction-environment)
+        roots-fn (seed-var 'resolution-construction-roots)
+        check! (seed-var 'resolution-construction-check!)
+        reads (atom 0)
+        expected (set (concat (vals (ns-publics 'gravity.resolution))
+                              [(seed-var 'resolution-stage-operations)
+                               (seed-var 'resolution-stage-defaults)
+                               (seed-var 'resolution-stage-input)]))]
+    ;; Isolate the existing readonly drift seam; no parent/owner admission runs.
+    (with-redefs-fn
+      {environment (fn [] (swap! reads inc) {})}
+      #(let [roots (roots-fn)]
+         (is (every? (set (map first roots)) expected))
+         (doseq [v expected]
+           (let [original @v
+                 replacement (if (map? original) (reduce-kv assoc {} original)
+                                 (fn [& args] (apply original args)))
+                 error (caught (fn []
+                                 (with-redefs-fn {v replacement}
+                                   (fn [] (check! source {} {} roots :gravity.bootstrap/unavailable)))))]
+             (is (= [:construction-parent-dependency-drift] (:missing-fields (ex-data error))))))
+         (is (zero? @reads))))))
+
 (deftest invocation-rejection-precedes-binding-and-stage-work
   (let [calls (atom 0) with-invocation (seed-var 'sh06-resolution-with-reader-invocation)]
     (with-redefs-fn
