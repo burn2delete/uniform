@@ -70,20 +70,36 @@
      {:metadata-value metadata-value})))
 
 (defn sh03-reader-host-values!
-  [source-path source-bytes source-content-id scalar-boundaries
-   form-tree semantic-index source-unit]
+  ([source-path source-bytes source-content-id scalar-boundaries
+    form-tree semantic-index source-unit]
+   (sh03-reader-host-values! source-path source-bytes source-content-id scalar-boundaries
+                            form-tree semantic-index source-unit nil))
+  ([source-path source-bytes source-content-id scalar-boundaries
+    form-tree semantic-index source-unit implementation]
+   (sh03-reader-host-values! source-path source-bytes source-content-id scalar-boundaries
+                            form-tree semantic-index source-unit implementation nil))
+  ([source-path source-bytes source-content-id scalar-boundaries
+    form-tree semantic-index source-unit implementation verified-result]
   (let [forms-by-id (into {} (map (juxt :form-id identity) form-tree))
+        sealed? (reader-pure-text/options? (:reader-options source-unit))
+        sealed-data (when sealed? (reader-pure-text/returned-data! verified-result))
+        pure? (reader-dispatch/pure-source? source-unit)
         tags (mapv #(symbol (sh03-reader-codepoints-text!
                              source-path (:tag-codepoints %)))
                    (filter #(= :tagged-literal (:kind %)) form-tree))
-        _ (when (seq tags)
-            (reader-dispatch/validate-standard-tags!
-             source-unit standard-reader-policy tags))]
+        _ (when (and (seq tags) (not sealed?))
+            (if pure?
+              (reader-dispatch/validate-pure-tags! source-unit tags)
+              (reader-dispatch/validate-standard-tags!
+               source-unit standard-reader-policy tags)))]
     (loop [remaining (reverse form-tree)
            values {}
            observations []]
       (if (empty? remaining)
-        {:values values :extension-dispatch-observations observations}
+        (if pure?
+          {:values values :extension-dispatch-observations []
+           :pure-extension-results observations}
+          {:values values :extension-dispatch-observations observations})
         (let [form (first remaining)
               kind (:kind form)
               child-values (mapv values (:children form))
@@ -97,8 +113,17 @@
                   (when-not (= 1 (count child-values))
                     (sh03-reader-boundary-fail!
                      source-path :sh03-reader-tag-payload form {}))
-                  (reader-dispatch/dispatch-standard-tag
-                   source-unit standard-reader-policy tag form (first child-values))))
+                  (if sealed?
+                    (let [datum (get sealed-data (:form-id form))
+                          value (sh03-reader-codepoints-text! source-path (:decoded-codepoints datum))]
+                      (when-not (= value (first child-values))
+                        (sh03-reader-boundary-fail! source-path :sealed-pure-text-payload form {}))
+                      {:value value})
+                  (if pure?
+                    (reader-dispatch/dispatch-pure-tag
+                     source-unit tag form (first child-values) implementation)
+                    (reader-dispatch/dispatch-standard-tag
+                     source-unit standard-reader-policy tag form (first child-values))))))
               value
               (case kind
                 (:nil :boolean :integer :ratio :decimal :string
@@ -153,8 +178,9 @@
                 (sh03-reader-boundary-fail!
                  source-path :sh03-reader-form-kind form {:kind kind}))]
           (recur (rest remaining) (assoc values (:form-id form) value)
-                 (cond-> observations dispatch-result
-                   (conj (:observation dispatch-result)))))))))
+                 (cond-> observations (and dispatch-result (not sealed?))
+                   (conj (if pure? (:pure-result dispatch-result)
+                             (:observation dispatch-result)))))))))))
 
 (defn sh03-reader-legacy-trivia-hash
   [token-ids tokens-by-id]
