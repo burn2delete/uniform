@@ -73,3 +73,6 @@
                     :redactions (vec redactions) :lifecycle (or lifecycle :active) :generated? (true? generated?)}]
     (assoc diagnostic :diagnostic-id (stable-id diagnostic)
            :ordering-key [rule stage primary-artifact form-index])))
+
+(doseq [operation [#'diagnostic #'fail! #'stable-id #'diagnostic-record]]
+  (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

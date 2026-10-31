@@ -138,6 +138,12 @@
         (is (= expected-id (:id (ex-data error))))))))
 
 (deftest stage-records-preserve-identity-inputs-and-private-data
+  (doseq [operation [#'diagnostics/diagnostic #'diagnostics/fail!
+                    #'diagnostics/stable-id #'diagnostics/diagnostic-record]]
+    (let [contract (:gravity/namespace-contract (meta operation))]
+      (is (= 'gravity.diagnostics (:namespace contract)))
+      (is (= (:arglists (meta operation))
+             (get-in contract [:public-api (:name (meta operation)) :arglists])))))
   (let [events (atom [])
         span {:source "actual.qst" :start-byte 7 :end-byte 12}
         origin [{:producer :macro :syntax-id "source-syntax"}]

@@ -63,11 +63,35 @@ selected C15 through the self-hosting runner, which refused the unowned namespac
 before execution. The correct existing bootstrap-free runner produced the
 reported result; no source failure was retried or reclassified.
 
-Independent source review accepts 6b23279418c1fb6787455c77411901437ccb9c04,
-tree 41ad2d4bdf944b2ddde1a1aa9d8f82bfd90dd2e8, conditionally on lint, final CI
-and clean integration preflight. This subsequent evidence-only update requires
-its own exact review; it changes no source or tests. Exact-head CI and clean
-current-main integration preflight remain required before integration.
+The first reviewer conditionally accepted source
+6b23279418c1fb6787455c77411901437ccb9c04, tree
+41ad2d4bdf944b2ddde1a1aa9d8f82bfd90dd2e8, and its evidence-only child
+61f227896379ddc69426ad9b442063b3f02c9777, tree
+f9d8f3019ce8ec33c1ee99cb843ac44abd614e08. The second review found a blocking
+metadata omission at 61f22789: the C15 component manifest did not yet list the
+new diagnostics source dependency or diagnostics/digest test dependencies.
+That exact candidate was not independently accepted for integration.
+
+The correction adds those existing component IDs, attaches the namespace
+contract to all four public Vars and checks each API's arity metadata. An
+ownership regression compares the manifest with the stage's declared Gravity
+dependencies and the test file's actual imports. No component count, catalog
+entry or registration changes. C15 now passes 6 / 95; ownership passes
+22 / 824; language passes 6 / 11. All six changed Clojure paths pass contextual
+lint against the original main base with zero warnings/errors. The preceding
+one-warning comparison remains historical evidence; no warning rule changed.
+
+A further producer run at clean 61f22789 with the working metadata correction
+again matches all twelve complete and serialized records, imported hashes and
+diagnostic IDs against the original before control. This is a working-source
+observation, not execution at the correction's later commit.
+
+Initial source CI 41212179123 is terminal cancelled: five jobs succeeded, six
+were cancelled and readiness was skipped. Actor, cause and descendant cleanup
+are not established. No manual cancellation or job retry is performed. The
+existing 61f22789 run 41212309115 remains a separate observation. The corrected
+candidate requires exact independent review, its own successful CI and clean
+current-main integration preflight before integration.
 
 ## Unsupported boundaries
 

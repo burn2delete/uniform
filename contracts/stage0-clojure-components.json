@@ -569,10 +569,13 @@
       },
       "direct_source_dependencies": [
         "compiler-verification-shared",
+        "diagnostics",
         "digest"
       ],
       "direct_test_dependencies": [
-        "c15-diagnostics"
+        "c15-diagnostics",
+        "diagnostics",
+        "digest"
       ],
       "canonical_pass_refs": [],
       "mapping_kind": "cross-cutting",
