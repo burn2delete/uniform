@@ -48,8 +48,7 @@ commit 909d7f032 with the new test untracked; after capture used the working
 extraction over that commit. These are ordinary development captures, not
 committed-head authority or migration bookends.
 
-Focused regressions pass (initially 5 tests/153 assertions; two additional
-interposition assertions added afterward). Ownership passes 25/888 and the
+Focused regressions pass 5 tests/155 assertions. Ownership passes 25/888 and the
 language gate passes 6/11. Documentation validates 240 documents and 19 phase
 indexes; roadmap and workstream governance validators pass. Independent exact
 candidate acceptance and successful final candidate CI remain required.
@@ -63,7 +62,22 @@ the complete helper/module ownership checks. No catalog counts changed.
 The first lint observation ran before the implementation commit, so its
 base-to-HEAD source mapping did not cover the working require-line insertion;
 two inherited Bootstrap warnings did not map. A third warning was a new unused
-test import, which was removed. Exact committed-range lint is still pending.
+test import, which was removed. Committed-range lint against main 41ab passes
+all eight changed Clojure/EDN paths: 3491 unchanged baseline warnings and zero
+blocking findings. The nonpassing working-tree observation remains at
+`/tmp/uniform-c-emission-working-lint-nonpass`; the passing committed receipt
+is `/tmp/uniform-c-emission-context-lint-56177c12`.
+
+## Main composition
+
+Source commit 56177c12a707945a86c097334391ece6c4cbdbe8 has tree
+2fae0b148ddc89773709ead6d8192ebbc17fe89c. Main advanced to
+aa503b03136033a3cc932f555dc1692978d3720e by removing an unused UEP test helper.
+A normal merge e23ccd37e0ba9c57e8df4625041bde6ebd893530 incorporates that
+single unrelated deletion without conflicts. All C emission source, tests and
+evidence remain byte-identical to 56177c12a. This composition does not claim to
+remedy any earlier CI failure. Final candidate review, checks and exact clean
+integration preflight must bind the final commit and current main separately.
 
 Reproduction:
 
