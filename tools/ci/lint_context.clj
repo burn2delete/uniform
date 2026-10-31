@@ -30,15 +30,41 @@
       (throw (ex-info "Unsupported lone CR in lint context source" {:path path})))
     text))
 
+(defn- source-reader-scope [scope form]
+  ;; Declarations are DATA. Never require a library or mutate a Namespace to
+  ;; teach the reader aliases; baseline and current inputs have separate scopes.
+  (let [operation (when (seq? form) (first form))
+        ns? (contains? #{'ns 'clojure.core/ns} operation)
+        scope (if ns? {:namespace (second form) :aliases {}} scope)
+        specs (cond ns? (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
+                    (contains? #{'require 'clojure.core/require} operation) (rest form))]
+    (reduce
+      (fn [scope spec]
+        (let [spec (if (and (seq? spec) (= 'quote (first spec))) (second spec) spec)]
+          (if (and (vector? spec) (symbol? (first spec)) (even? (count (rest spec))))
+            (let [options (apply hash-map (rest spec)) alias (or (:as options) (:as-alias options))]
+              (if (symbol? alias) (assoc-in scope [:aliases alias] (first spec)) scope))
+            scope)))
+      scope specs)))
+
 (defn source-forms! [path bytes]
-  (binding [*read-eval* false *data-readers* {}
-            *default-data-reader-fn* (fn [tag _] (throw (ex-info "Unsupported source tag" {:tag tag :path path})))]
+  (let [scope (atom {:namespace (ns-name *ns*) :aliases {}})
+        refuse-tag (fn [tag _] (throw (ex-info "Unsupported source tag" {:tag tag :path path})))
+        resolver (reify clojure.lang.LispReader$Resolver
+                   (currentNS [_] (:namespace @scope))
+                   (resolveAlias [_ alias] (get-in @scope [:aliases alias]))
+                   (resolveClass [_ _] nil)
+                   (resolveVar [_ _] nil))]
+  (binding [*read-eval* false *data-readers* {'inst #(refuse-tag 'inst %) 'uuid #(refuse-tag 'uuid %)}
+            *default-data-reader-fn* refuse-tag *reader-resolver* resolver]
     (with-open [reader (clojure.lang.LineNumberingPushbackReader.
                         (java.io.StringReader. (source-text! path bytes)))]
       (let [eof (Object.)]
         (loop [forms []]
           (let [form (read {:eof eof} reader)]
-            (if (identical? eof form) forms (recur (conj forms form)))))))))
+            (if (identical? eof form) forms
+              (do (swap! scope source-reader-scope form)
+                  (recur (conj forms form)))))))))))
 
 (defn manifest! [bytes]
   (with-open [reader (java.io.PushbackReader.

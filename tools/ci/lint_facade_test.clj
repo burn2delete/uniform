@@ -328,5 +328,62 @@
   (compare-private-programs! true "(let [{:keys [value] :or {unused (#'h/hidden x)}} {}] value)" 1
                              [:unused-private-var :unbound-destructuring-default]))
 
+(deftest source-reader-resolves-declared-aliases-without-loading-namespaces
+  (let [before (ns-aliases *ns*)
+        source (str "(ns fixture.reader-unloaded (:require [fixture.never-load :as native]\n"
+                    " [fixture.also-never-load :as-alias only]))\n"
+                    "(def values [::own ::native/value #::only{:key 1}])\n"
+                    "(require '[fixture.later-never-load :as later])\n"
+                    "(def later-value ::later/key)")
+        forms (context/source-forms! "fixture.clj" (utf8 source))]
+    (is (= [:fixture.reader-unloaded/own :fixture.never-load/value
+            {:fixture.also-never-load/key 1}]
+           (nth (nth forms 1) 2)))
+    (is (= :fixture.later-never-load/key (nth (nth forms 3) 2)))
+    (is (= before (ns-aliases *ns*)))
+    (doseq [namespace '[fixture.reader-unloaded fixture.never-load fixture.also-never-load fixture.later-never-load]]
+      (is (nil? (find-ns namespace)))))
+  (doseq [source ["(ns fixture.unknown) ::absent/key"
+                  ;; An ambient tool alias is not a declaration in the subject.
+                  "(ns fixture.unknown) ::context/key"
+                  "(ns fixture.first (:require [fixture.owner :as local])) (ns fixture.second) ::local/key"
+                  "'(ns fixture.quoted (:require [fixture.owner :as local])) ::local/key"]]
+    (is (thrown? Exception (context/source-forms! "unknown.clj" (utf8 source))))))
+
+(deftest source-reader-refuses-tags-and-reader-evaluation-before-side-effects
+  (let [effects (atom [])]
+    (binding [*data-readers* {'fixture/touch #(do (swap! effects conj %) %)}]
+      (doseq [source ["#fixture/touch 1" "#inst \"2026-10-31\""
+                      "#uuid \"00000000-0000-0000-0000-000000000000\""
+                      "#=(spit \"source-reader-must-not-write\" \"forbidden\")"]]
+        (is (thrown? Exception (context/source-forms! "refused.clj" (utf8 source))))))
+    (is (empty? @effects))
+    (is (not (.exists (io/file "source-reader-must-not-write"))))))
+
+(deftest baseline-current-alias-scopes-retain-private-call-provenance
+  (let [program
+        (fn [target alias]
+          {:paths ["owner.clj" "caller.clj"] :entrypoints #{"owner.clj" "caller.clj"}
+           :namespace-by-path {"owner.clj" target "caller.clj" 'fixture.alias-caller}
+           :inputs {"owner.clj" (utf8 (str "(ns " target ")\n(defn- held [x] x)\n(defn- dead [] nil)\n"))
+                    "caller.clj" (utf8 (str "(ns fixture.alias-caller (:require [" target " :as " alias "]))\n"
+                                            "(def fixture-key ::" alias "/once-fixtures)\n"
+                                            "(defn call [x] (#'" alias "/held x))\n"))}})
+        baseline (program 'fixture.baseline 'old)
+        current (program 'fixture.current 'native)]
+    (doseq [[plan target alias] [[baseline 'fixture.baseline 'old] [current 'fixture.current 'native]]]
+      (let [source (context/private-var-usages [plan])
+            resolved (context/resolve-private-usages (observe! plan) source)
+            calls (vec (mapcat :callers source))]
+        (is (= 1 (count calls)))
+        (is (= target (:namespace (first calls))))
+        (is (= alias (:alias (first calls))))
+        (is (= (context/sha256 (get-in plan [:inputs "caller.clj"])) (:sha256 (first calls))))
+        (is (= 1 (count (:resolved resolved))))
+        (is (some #(= :unused-private-var (:type %)) (:findings resolved)))))
+    (is (thrown? Exception
+                 (context/source-forms! "current-with-stale-alias.clj"
+                                        (utf8 "(ns fixture.current (:require [fixture.current :as native])) ::old/key"))))))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
