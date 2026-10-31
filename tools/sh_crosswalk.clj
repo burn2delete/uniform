@@ -1,6 +1,7 @@
 (ns sh-crosswalk
   "Source-bound SH routing projection. Task status is read only from component ledgers."
-  (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.pprint :as pp] [clojure.java.io :as io]))
+  (:require [clojure.edn :as edn] [clojure.string :as str] [clojure.pprint :as pp]
+            [clojure.java.io :as io] [clojure.walk :as walk]))
 (binding [*command-line-args* nil] (load-file "tools/sh_inventory.clj") (load-file "tools/acceptance_dependencies.clj"))
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
@@ -466,7 +467,7 @@
     (select-keys row [:id :component :path])))
 (defn review-fingerprint [result]
   (sh-inventory/sha256
-    (pr-str [(dissoc result :requirements :source-digests)
+    (pr-str [(dissoc result :requirements :source-digests :source-snapshots)
              (mapv #(dissoc % :mapping-review :coverage) (:requirements result))
              (dissoc (:source-digests result) "docs/acceptance-dependencies.md")
              (sh-inventory/sha256 (slurp "tools/acceptance_dependencies.clj"))])))
@@ -798,7 +799,7 @@
               (:requirements inventory))]
     (when-not (and (= 30 (count routes)) (every? #(= 6 (count %)) routes) (= 18 (count crows)))
       (throw (ex-info "Incomplete original routing population" {})))
-    {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
+    {:schema-version 2 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
      :pr574-macro-artifacts-composition
@@ -941,13 +942,81 @@
                                                      :mapping-review :independently-reviewed) rows)))
       (assoc-in [:scope-boundaries :missing-coverage]
                 "Exact source/routing mapping reviewed; changed inputs require successor review. Implementation coverage and current whole-criterion acceptance remain separate and unassessed."))))
-(defn build [] (adopt-review (source-view) mapping-review))
+
+(defn- map-has-key? [value key]
+  (some #(= key (clojure.core/key %)) value))
+
+(defn validate-source-snapshots!
+  "Validate a normalized projection without consulting mutable source files."
+  [result]
+  (let [snapshots (:source-snapshots result)]
+    (when-not (map? snapshots)
+      (throw (ex-info "Normalized crosswalk lacks source snapshots" {})))
+    (doseq [[reference raw] snapshots]
+      (when-not (and (string? reference) (string? raw)
+                     (= reference (sh-inventory/sha256 raw)))
+        (throw (ex-info "Source snapshot digest or payload is invalid"
+                        {:source-snapshot-ref reference}))))
+    (doseq [node (tree-seq coll? seq (dissoc result :source-snapshots))
+            :when (and (map? node) (map-has-key? node :source-snapshot-ref))
+            :let [reference (:source-snapshot-ref node)]]
+      (when-not (contains? snapshots reference)
+        (throw (ex-info "Source snapshot reference is missing"
+                        {:source-snapshot-ref reference :path (:path node)}))))
+    (when (some #(and (map? %) (map-has-key? % :raw))
+                (tree-seq coll? seq (dissoc result :source-snapshots)))
+      (throw (ex-info "Normalized crosswalk retains an inline source payload" {})))
+    result))
+
+(defn normalize-source-payloads
+  "Store each emitted source span once and retain locators on every reference.
+  The raw bytes are keyed by their content digest; a span's own path, offsets,
+  lines, commit and digest remain on the referencing record."
+  [result]
+  (if (map-has-key? result :source-snapshots)
+    (let [snapshots (into (sorted-map)
+                          (map (fn [[reference snapshot]]
+                                 [reference (if (map? snapshot) (:raw snapshot) snapshot)])
+                               (:source-snapshots result)))]
+      (validate-source-snapshots!
+        (assoc result :schema-version 2 :source-snapshots snapshots)))
+    (let [snapshots (atom (sorted-map))
+          normalized
+          (walk/postwalk
+            (fn [value]
+              (if (and (map? value) (map-has-key? value :raw))
+                (let [raw (:raw value)]
+                  (when-not (string? raw)
+                    (throw (ex-info "Source snapshot must contain text bytes" {})))
+                  (let [digest (sh-inventory/sha256 raw)]
+                    (when (and (:sha256 value) (not= digest (:sha256 value)))
+                      (throw (ex-info "Source span digest does not match its bytes"
+                                      {:path (:path value)})))
+                    (swap! snapshots assoc digest raw)
+                    (assoc (dissoc value :raw) :source-snapshot-ref digest)))
+                value))
+            result)]
+      (validate-source-snapshots!
+        (assoc normalized :schema-version 2 :source-snapshots @snapshots)))))
+
+(defn normalize-existing-projection []
+  (let [projection (edn/read-string (slurp output-path))]
+    (when-not (= :sh-family-derived-crosswalk (:kind projection))
+      (throw (ex-info "Cannot normalize an unrelated SH projection" {})))
+    (let [normalized (normalize-source-payloads projection)]
+      ;; Representation-only normalization still authenticates the complete
+      ;; source-bound view; it may not launder a forged route or disposition.
+      (acceptance-dependencies/task-sh-view normalized slurp)
+      normalized)))
+
+(defn build []
+  (normalize-source-payloads (adopt-review (source-view) mapping-review)))
 
 (defn rollup [result]
   (str "# SH acceptance rollup\n\nGenerated by tools/sh_crosswalk.clj; read-only. Edit component task authorities,\nnot this view. Source criteria and sequence IDs are provenance, not additive\nimplementation tasks. Mapping/graph reviewed at c6c80530; implementation and\ncurrent whole-criterion acceptance remain separate and unassessed.\n\n"
        "Original source: " original-baseline ". Task authority amendment: " baseline ".\n\n"
        "Source-version adoption: " (name (get-in result [:mapping-review :status])) ". The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.\n\n"
-       "Every requirement retains its complete acceptance/context text, source bytes,\nlines and SHA256 in original-inventory.edn and crosswalk.edn. Current acceptance\nis unassessed unless an exact scoped task receipt explicitly establishes it.\n\n"
+       "Every requirement retains its complete acceptance/context text, source\nlocators, lines and SHA256; crosswalk.edn stores each distinct source payload once\nin its source-snapshots table and references it by content digest. Current\nacceptance is unassessed unless an exact scoped task receipt explicitly establishes it.\n\n"
        "SH03-SH29 additionally retain the original [shared completion rule](../../docs/self-hosting-milestone-completion-plan.md#three-boundaries-and-one-shared-completion-rule): actual owning execution, rejection/preservation/composition and applicable independently accepted migration evidence. SH00-SH02 keep their historical baseline/process scope.\n\n"
        (apply str
          (for [rows (partition-by :milestone (:requirements result))
@@ -999,12 +1068,18 @@
                         {:path path :source-commit commit}))))))
 
 (defn run [args]
-  (let [result (build)]
+  (let [normalize? (contains? #{["--normalize"] ["--normalize-check"]} (vec args))
+        result (if normalize? (normalize-existing-projection) (build))]
     (case (vec args)
       ["--write"] (do (validate-pinned-sources! result git-source)
                        (spit output-path (with-out-str (pp/pprint result))) (spit rollup-path (rollup result)))
+      ["--normalize"] (do (spit output-path (with-out-str (pp/pprint result)))
+                          (spit rollup-path (rollup result)))
       ["--check"] (when-not (and (= result (edn/read-string (slurp output-path))) (= (rollup result) (slurp rollup-path)))
                     (throw (ex-info "Stale SH projection" {})))
-      (throw (ex-info "Usage: clojure -M tools/sh_crosswalk.clj --write|--check" {})))
+      ["--normalize-check"] (when-not (and (= result (edn/read-string (slurp output-path)))
+                                            (= (rollup result) (slurp rollup-path)))
+                               (throw (ex-info "Stale normalized SH projection" {})))
+      (throw (ex-info "Usage: clojure -M tools/sh_crosswalk.clj --write|--normalize|--check|--normalize-check" {})))
     (println "SH projection:180 criteria,18 sequence rows; review state" (get-in result [:mapping-review :status]) "; implementation acceptance unchanged.")))
 (when (seq *command-line-args*) (run *command-line-args*))

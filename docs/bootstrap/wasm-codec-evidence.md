@@ -162,6 +162,39 @@ current-base reconstruction pass. These remain working composition checks,
 not committed-head authority bookends. Final exact acceptance, full semantic
 CI and clean current-main integration preflight are still required.
 
+## Compiler and type-checker parent
+
+Candidate d82cc1cd82e9e7d585139bbf40e5390065226908, tree
+434671c9af1769379d91f9da748af46f3ecf5a28, passed all ten enabled jobs in
+CI 41232679238 against main 79f285f. Tested merge
+ee666eda80ff3ae147e7b9ad6f6c21dfc8cc339a has those exact parents and tree.
+Verified receipts record Macro 16/293 and Resolution 54/2307, exit zero under
+the configured 900-second host watchdog. Resolution elapsed 668.737 seconds;
+this is not an old-600-second pass. Receipt manifest digests are
+c485ed877118604e9a723e452bb6decdb3b4d45635ee4375ceaeccd1fccd8b24
+(Macro), 586f7d113754d552d58e5ccaa4b711eacb18dc5a99cff9ec1a01c0bafc18465a
+(Resolution), and 0dc322d4e799178376344de7a6eeec354b7a7a6610b472801b344340bed7ce51
+(Bootstrap). That green belongs only to its exact source/base; no merge used it
+after main advanced.
+
+The actual new main parent is 1fa559ab38ae8059f7c2e47cb3d2e927cb60b041, tree
+d886151ee4fd6a2eea5b774f438f6e5cf8442f5b. It includes PRs 709, 712, 713 and
+714: core-form deduplication, normalized crosswalk payloads, separated C7
+quotient kernels and shared persistent-set policy construction. The
+conflict-free composition preserves all seventeen incoming paths unchanged.
+Wasm/LLVM bodies, tests, consumers, registrations and namespace rows remain
+byte-identical to d82cc1cd.
+
+Fresh Wasm/LLVM plus normalized C7 quotient tests pass 14/291, ownership
+26/905, language 6/11, documentation 240/19 and roadmap/governance. The C7
+selection executes only normalized development data, without authenticated
+source-composition or restricted migration tests. Fresh production matches all
+three original complete/text captures and both binaries; source hashes, plan
+IDs, B4 data identities and five-file current-base reconstruction pass. These
+are working composition checks, not committed-head authority bookends. Final
+exact acceptance, full semantic CI and clean current-main preflight remain
+required; no prior green is transferred.
+
 ## Unsupported boundaries
 
 Data emission and integer decoding do not authenticate MIR or B1 packets,
