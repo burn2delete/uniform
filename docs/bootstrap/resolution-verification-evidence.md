@@ -81,3 +81,12 @@ map does not recursively replace the dependencies of another supplied callback.
 Language boundary passes 6 / 11, documentation 240 documents / 19 phase indexes,
 and roadmap structural validation passes. Current regression, independent
 acceptance and integration evidence must still be recorded before merge.
+
+The replacement full affected regression on source 977aee30 passes 50 tests /
+2033 assertions, zero failures and zero errors. It includes the final private
+root assertions, actual public verification and proof tampering, owner/replay/
+envelope refusal, native carriers, invocation selection and existing unmetered
+resolution tests. The source algorithms and tests are unchanged by subsequent
+evidence-only documentation commits. This is development and integration-test
+evidence; independent acceptance, current-main composition and final CI/preflight
+remain separate requirements.
