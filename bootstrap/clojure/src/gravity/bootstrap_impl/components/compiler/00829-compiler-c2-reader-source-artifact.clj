@@ -34,7 +34,8 @@
    (when-not (= :passed (:status (p15-s23-trusted-carrier-validation reader-options :default-only)))
      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                       {:missing-fields [:native-reader-options]}))
-   (when (and (reader-pure-text/options? reader-options)
+   (when (and (or (reader-pure-text/options? reader-options)
+                  (reader-resource-options? reader-options))
               (not= :passed
                     (:status (p15-s23-trusted-carrier-validation
                               {:source-path source-path :source-text source-text
@@ -45,7 +46,11 @@
                  (and (= (assoc standard-reader-options :extension-policy (reader-pure-text/policy-id))
                          reader-options)
                       (nil? precomputed-products) (nil? candidate)
-                      (some? invocation) (string? reader-source-path)))
+                      (some? invocation) (string? reader-source-path))
+                 (and (reader-resource-options? reader-options)
+                      (nil? precomputed-products) (nil? candidate)
+                      (some? invocation) (string? reader-source-path)
+                      (reader-resource-context! source-path source-text project-context)))
      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                       {:missing-fields [:fixed-pure-text-current-source-construction]}))
    (when invocation
@@ -68,13 +73,15 @@
             (apply sh03-reader-precomputed-products-verify!
              (cond-> [candidate source-path source-text project-context precomputed-products]
                invocation (conj invocation)))
-            (c2-reader-products source-path source-text
-                                reader-options project-context reader-source-path))
+            (if (reader-resource-options? reader-options)
+              (reader-resource-products! source-path source-text reader-options project-context)
+              (c2-reader-products source-path source-text
+                                  reader-options project-context reader-source-path)))
           source-unit (:source-unit products)
           token-stream (:token-stream products)
           form-tree (:form-tree products)
           top-level-form-ids (:root-form-ids products)
-          records (:parsed-records products)
+          _records (:parsed-records products)
           forms (:parsed-values products)
           _ (validate-ns-syntax! source-path forms)
           module-context (reader-module-context forms)
@@ -254,7 +261,12 @@
                               :output :syntax-seed}])
                   (assoc-in [:gravity-reader-boundary :pure-text-reconstruction-input]
                             {:source-text source-text :project-context project-context}))
-              artifact)]
+              (if (reader-resource-options? reader-options)
+                (assoc-in artifact [:reader-extension-policy :extensions]
+                          [{:tag 'resource :handler 'gravity.reader/read-input
+                            :build-effects #{:build/read-file} :capabilities #{:fs/read}
+                            :profiles #{:meta} :output :syntax-seed}])
+                artifact))]
       (assoc artifact :artifact-id (c2-reader-artifact-id artifact)))
      (catch clojure.lang.ExceptionInfo ex
        (c2-reader-remap-exception! source-path ex)))))

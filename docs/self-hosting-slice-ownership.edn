@@ -140,6 +140,7 @@
   "bootstrap/gravity/src/gravity/backend/w5_b14_backend_conformance_verifier.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/bootstrap/diagnostics.gravity" :master-coordinator
   "bootstrap/gravity/src/gravity/bootstrap/reader.gravity" :sh-reader
+  "bootstrap/gravity/src/gravity/reader.gravity" :sh-reader
   "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity" :sh-syntax
   "bootstrap/gravity/src/gravity/checked_core.gravity" :sh-core
   "bootstrap/gravity/src/gravity/effects.gravity" :sh-effects

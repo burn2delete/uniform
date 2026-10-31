@@ -170,7 +170,37 @@
  #'sh07-core-descendant-node-ids
  #'sh07-b9-handler-group-coherent?
  #'sh07-core-error-handlers-coherent?
- #'sh07-b9-handler-descriptor-keys]))]
+ #'sh07-b9-handler-descriptor-keys
+ #'gravity.checked-core/match-branch-tree
+ #'gravity.checked-core/match-products-coherent?
+ #'gravity.checked-core/match-guard-source
+ #'gravity.checked-core/match-guard-valid?
+ #'gravity.checked-core/match-pattern-graph-complete?
+ #'gravity.checked-core/match-pattern-record-coherent?
+ #'gravity.checked-core/match-clause
+ #'gravity.checked-core/match-guard-source-valid?
+ #'gravity.checked-core/match-group-coherent?
+ #'sh07-b11-branch-tree
+ #'sh07-core-match-products-coherent?
+ #'sh07-b11-guard-source
+ #'sh07-b11-guard-valid?
+ #'sh07-b11-match-pattern-graph-complete?
+ #'sh07-b11-match-pattern-record-coherent?
+ #'sh07-b11-clause
+ #'sh07-b11-guard-source-valid?
+ #'sh07-b11-match-group-coherent?
+ #'sh07-b11-match-clause-keys
+ #'sh07-b11-match-pattern-record-keys
+ #'gravity.checked-core/verification-checks
+ #'gravity.checked-core/proof-from-checks
+ #'gravity.checked-core/exact-comparison-value
+ #'gravity.checked-core/artifact-identity-input
+ #'gravity.checked-core/verification-report
+ #'sh07-core-verification-checks
+ #'sh07-core-proof-from-checks
+ #'sh07-core-exact-comparison-value
+ #'sh07-core-artifact-identity-input
+ #'sh07-core-verification-report]))]
  (defn
   sh07-core-artifact-verification
   ([artifact] (sh07-core-artifact-verification artifact nil))

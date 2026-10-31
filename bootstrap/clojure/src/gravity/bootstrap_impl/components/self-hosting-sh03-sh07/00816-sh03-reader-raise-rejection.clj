@@ -126,6 +126,7 @@
 (defn sh03-reader-sh02-descriptor
   [source-path project-context resolved summary]
   (let [binding (:plan-binding resolved)
+        resource-functions (:resource-functions resolved)
         projection-name :reader-product-identities
         fact-name :reader-product-binding
         identity-name :reader-result
@@ -162,14 +163,18 @@
       :source-byte-count (:source-byte-count binding)
       :plan-semantic-hash (:plan-semantic-hash binding)
       :functions-semantic-hash (:functions-semantic-hash binding)
-      :builder-function sh03-reader-entrypoint
-      :builder-semantic-hash (:entrypoint-semantic-hash binding)
+      :builder-function (if resource-functions 'reader-complete-resources sh03-reader-entrypoint)
+      :builder-semantic-hash (if resource-functions (:builder-semantic-hash resource-functions)
+                                (:entrypoint-semantic-hash binding))
       :function-shapes
+      (if resource-functions
+        {'reader-complete-resources {:arity 4 :semantic-hash (:builder-semantic-hash resource-functions)}
+         'reader-verify-resource-result {:arity 5 :semantic-hash (:verifier-semantic-hash resource-functions)}}
       {sh03-reader-entrypoint {:arity 3}
        sh03-reader-verifier
        (cond-> {:arity 4}
          (= :gravity/sh03-current-source-reader-plan-binding (:artifact binding))
-         (assoc :semantic-hash (:verifier-semantic-hash binding)))}}
+         (assoc :semantic-hash (:verifier-semantic-hash binding)))})}
      :projection-contract
      {:contract-kind :gravity/sh03-reader-product-envelope-contract
       :contract-version 1
