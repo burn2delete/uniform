@@ -14062,9 +14062,10 @@
      (contains? (set (get binding :target-set)) :all)]) false))
 
 (defn sh08-st-source [core node call edge nodes bindings types module validation]
-  (if (if (vector? (get call :argument-node-ids))
+  (if (if (sh08-lc-native-view? (get core :function-records))
+        (if (vector? (get call :argument-node-ids))
         (if (= 1 (count (get call :argument-node-ids)))
-          (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false)
+          (if (vector? (get node :children)) (= 2 (count (get node :children))) false) false) false) false)
   (if (loop [remaining (conj (conj (conj (conj (conj (get call :argument-node-ids) (get call :operator-node-id)) (get call :operator-binding-id)) (get node :node-id)) (get (get node :source) :form-id)) (get (get node :source) :syntax-id))] (if (= 0 (count remaining)) (loop [remaining (get node :children)] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) (let [children (get node :children) operator (get nodes (get call :operator-node-id))
         bid (get call :operator-binding-id) binding (get bindings bid) args (get call :argument-node-ids)
         arguments (sh08-ft-ordered-child-types args types)
