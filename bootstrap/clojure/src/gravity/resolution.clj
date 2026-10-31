@@ -37,6 +37,9 @@
     {:arglists
      ([source-path module dependency overrides ordinal operations]),
      :operation-inputs [:reader-canonical-hash :source-span]},
+    identity-chunks
+    {:arglists ([values operations]),
+     :operation-inputs [:reader-canonical-hash]},
     execute!
     {:arglists ([source-path binding function arguments operations]),
      :operation-inputs
@@ -55,12 +58,28 @@
     request-overrides {:arglists ([module]), :operation-inputs []},
     let-loop-binding-paths
     {:arglists ([pattern path]), :operation-inputs []},
+    product-projections
+    {:arglists ([analysis operations]),
+     :operation-inputs
+     [:reader-canonical-hash :sh06-resolution-order-compatibility]},
     plan-identities
     {:arglists ([plan operations]),
      :operation-inputs
      [:input
       :p15-s23-c11-mir-digest
       :p15-s23-stage2-compiler-artifact-semantic-input]},
+    envelope-summary-with-chunks
+    {:arglists ([artifact chunks]), :operation-inputs []},
+    envelope-summary
+    {:arglists ([artifact operations]),
+     :operation-inputs
+     [:sh06-resolution-envelope-summary-with-chunks
+      :sh06-resolution-product-identity-chunks]},
+    artifact-id
+    {:arglists ([artifact operations]),
+     :operation-inputs
+     [:reader-canonical-hash
+      :sh06-resolution-artifact-identity-input]},
     read-pinned-source!
     {:arglists ([request-source operations]),
      :operation-inputs
@@ -82,10 +101,21 @@
     core-records
     {:arglists ([operations]),
      :operation-inputs [:input :sh06-resolution-core-record]},
+    artifact-identity-input-with-chunks
+    {:arglists ([artifact chunks operations]),
+     :operation-inputs [:reader-canonical-hash]},
     unique-match-binding-paths
     {:arglists ([pattern path operations]),
      :operation-inputs [:sh06-match-pattern-binding-paths]},
     definition-kind {:arglists ([form]), :operation-inputs []},
+    artifact-identity-input
+    {:arglists ([artifact operations]),
+     :operation-inputs
+     [:sh06-resolution-artifact-identity-input-with-chunks
+      :sh06-resolution-product-identity-chunks]},
+    product-identity-chunks
+    {:arglists ([artifact operations]),
+     :operation-inputs [:sh06-resolution-identity-chunks]},
     source-revision-id
     {:arglists ([sh05-artifact operations]),
      :operation-inputs [:reader-canonical-hash]},
@@ -146,6 +176,8 @@
     :sh06-fixed-vector-pattern?
     :sh06-let-loop-binding-paths
     :sh06-match-pattern-binding-paths
+    :sh06-resolution-artifact-identity-input
+    :sh06-resolution-artifact-identity-input-with-chunks
     :sh06-resolution-binding-current!
     :sh06-resolution-boundary-fail!
     :sh06-resolution-build-binding!
@@ -153,8 +185,12 @@
     :sh06-resolution-current-source-key
     :sh06-resolution-definition-kind
     :sh06-resolution-dependency-record
+    :sh06-resolution-envelope-summary-with-chunks
+    :sh06-resolution-identity-chunks
+    :sh06-resolution-order-compatibility
     :sh06-resolution-package
     :sh06-resolution-plan-identities
+    :sh06-resolution-product-identity-chunks
     :sh06-resolution-read-current-source!
     :sh06-resolution-resolve-source-path
     :sh06-resolution-semantic-span
@@ -209,7 +245,9 @@
     :module-dependencies
     :candidate-bindings
     :patterns
-    :shadow-policy],
+    :shadow-policy
+    :resolved-analysis
+    :identity-chunks],
    :namespace gravity.resolution,
    :diagnostic-ownership
    {:stage [:source-plan-boundary :host-containment],
@@ -230,7 +268,10 @@
     :lexical-scopes
     :references
     :pattern-binding-paths
-    :dependency-edges],
+    :dependency-edges
+    :resolution-products
+    :identity-preimages
+    :envelope-summaries],
    :clojure-seed-boundary? true,
    :contract-boundary
    :gravity-resolution-normalization-and-plan-runtime})
@@ -1827,9 +1868,222 @@
       (walk-form form [] syntax :expression))))
    {:lexical-scopes @scopes, :references @references})))
 
+
+(defn
+ product-projections
+ [analysis operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-order-compatibility
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-order-compatibility)
+   compatibility-resolutions
+   (mapv
+    (fn*
+     [p1__239#]
+     (assoc
+      p1__239#
+      :resolution-kind
+      (sh06-resolution-order-compatibility
+       (:resolution-order p1__239#))))
+    (:resolution-table analysis))]
+  {:resolution-table compatibility-resolutions,
+   :incremental-invalidation-keys
+   {:artifact :gravity/c5-incremental-invalidation-keys,
+    :status :stable,
+    :inputs (:incremental-invalidation-inputs analysis),
+    :invalidation-id
+    (reader-canonical-hash
+     {:domain :gravity/sh06-invalidation-identity-v1,
+      :inputs (:incremental-invalidation-inputs analysis)})},
+   :import-export-table
+   {:artifact :gravity/c5-import-export-table,
+    :status :complete,
+    :imports (:dependency-records analysis),
+    :exports (:exports analysis)},
+   :dependency-graph
+   (assoc
+    (:dependency-graph analysis)
+    :artifact
+    :gravity/c5-module-dependency-graph
+    :status
+    :complete),
+   :binding-table
+   {:artifact :gravity/c5-binding-table,
+    :status :complete,
+    :bindings (:binding-table analysis),
+    :resolution-table compatibility-resolutions},
+   :cross-profile-edge-report
+   {:artifact :gravity/c5-cross-profile-edge-report,
+    :status :complete,
+    :records (:cross-profile-edge-report analysis)},
+   :lexical-scope-graph
+   {:artifact :gravity/c5-lexical-scope-graph,
+    :status :complete,
+    :scopes (:lexical-scope-graph analysis)},
+   :alias-table
+   {:artifact :gravity/c5-alias-table,
+    :status :complete,
+    :aliases (:alias-table analysis)},
+   :namespace-analysis
+   (assoc analysis :artifact :gravity/namespace-analysis)}))
+
+(defn
+ identity-chunks
+ [values operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)]
+  (mapv
+   (fn
+    [chunk-index chunk]
+    {:chunk-index chunk-index,
+     :entry-count (count chunk),
+     :chunk-id
+     (reader-canonical-hash
+      {:domain :gravity/sh06-resolution-identity-chunk-v1,
+       :chunk-index chunk-index,
+       :entries (vec chunk)})})
+   (range)
+   (partition-all 16 values))))
+
+(defn
+ product-identity-chunks
+ [artifact operations]
+ (let
+  [sh06-resolution-identity-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-identity-chunks)]
+  {:binding-id-chunks
+   (sh06-resolution-identity-chunks
+    (mapv :binding-id (get-in artifact [:binding-table :bindings]))),
+   :resolution-chunks
+   (sh06-resolution-identity-chunks
+    (mapv
+     (fn* [p1__240#] (dissoc p1__240# :source-span))
+     (:resolution-table artifact)))}))
+
+(defn
+ artifact-identity-input-with-chunks
+ [artifact chunks operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)]
+  {:task (:task artifact),
+   :upstream-syntax-stream-id
+   (get-in artifact [:sh05-macro-artifact :expanded-syntax-stream-id]),
+   :analysis-artifact-id
+   (get-in
+    artifact
+    [:gravity-resolution-boundary :resolved-analysis :artifact-id]),
+   :invalidation-id
+   (get-in artifact [:incremental-invalidation-keys :invalidation-id]),
+   :source-revision-id
+   (get-in
+    artifact
+    [:gravity-resolution-boundary
+     :authenticated-resolution-request
+     :module
+     :source-revision-id]),
+   :dependency-graph-id
+   (reader-canonical-hash
+    {:domain :gravity/sh06-dependency-graph-v1,
+     :nodes (get-in artifact [:dependency-graph :nodes]),
+     :edges
+     (mapv
+      (fn* [p1__241#] (dissoc p1__241# :source-span))
+      (get-in artifact [:dependency-graph :edges]))}),
+   :slice (:slice artifact),
+   :kind (:kind artifact),
+   :resolution-chunks (:resolution-chunks chunks),
+   :binding-id-chunks (:binding-id-chunks chunks),
+   :domain :gravity/sh06-resolution-artifact-v1,
+   :adapter-contract
+   (get-in artifact [:gravity-resolution-boundary :adapter-contract]),
+   :upstream-trace-id
+   (get-in artifact [:sh05-macro-artifact :macro-expansion-trace-id]),
+   :upstream-artifact-id
+   (get-in artifact [:sh05-macro-artifact :artifact-id])}))
+
+(defn
+ artifact-identity-input
+ [artifact operations]
+ (let
+  [sh06-resolution-artifact-identity-input-with-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-artifact-identity-input-with-chunks)
+   sh06-resolution-product-identity-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-product-identity-chunks)]
+  (sh06-resolution-artifact-identity-input-with-chunks
+   artifact
+   (sh06-resolution-product-identity-chunks artifact))))
+
+(defn
+ artifact-id
+ [artifact operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh06-resolution-artifact-identity-input
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-artifact-identity-input)]
+  (reader-canonical-hash
+   (sh06-resolution-artifact-identity-input artifact))))
+
+(defn
+ envelope-summary-with-chunks
+ [artifact chunks]
+ {:reference-count (count (:resolution-table artifact)),
+  :binding-count (count (get-in artifact [:binding-table :bindings])),
+  :artifact-id (:artifact-id artifact),
+  :analysis-artifact-id
+  (get-in
+   artifact
+   [:gravity-resolution-boundary :resolved-analysis :artifact-id]),
+  :source-revision-id
+  (get-in
+   artifact
+   [:gravity-resolution-boundary
+    :authenticated-resolution-request
+    :module
+    :source-revision-id]),
+  :slice :SH-06,
+  :resolution-chunks (:resolution-chunks chunks),
+  :binding-id-chunks (:binding-id-chunks chunks),
+  :dependency-edge-count
+  (count (get-in artifact [:dependency-graph :edges])),
+  :upstream-artifact-id
+  (get-in artifact [:sh05-macro-artifact :artifact-id])})
+
+(defn
+ envelope-summary
+ [artifact operations]
+ (let
+  [sh06-resolution-envelope-summary-with-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-envelope-summary-with-chunks)
+   sh06-resolution-product-identity-chunks
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh06-resolution-product-identity-chunks)]
+  (sh06-resolution-envelope-summary-with-chunks
+   artifact
+   (sh06-resolution-product-identity-chunks artifact))))
+
 (doseq
  [operation
   [#'analysis-inputs
+   #'artifact-id
+   #'artifact-identity-input
+   #'artifact-identity-input-with-chunks
    #'binding-current!
    #'boundary-fail!
    #'build-plan-binding!
@@ -1842,15 +2096,20 @@
    #'dependency-edges
    #'dependency-record
    #'envelope-id
+   #'envelope-summary
+   #'envelope-summary-with-chunks
    #'execute!
    #'explicit-candidate-records
    #'fixed-vector-pattern?
+   #'identity-chunks
    #'import-binding-records
    #'import-records
    #'let-loop-binding-paths
    #'match-pattern-binding-paths
    #'package-record
    #'plan-identities
+   #'product-identity-chunks
+   #'product-projections
    #'read-current-source!
    #'read-pinned-source!
    #'request-overrides

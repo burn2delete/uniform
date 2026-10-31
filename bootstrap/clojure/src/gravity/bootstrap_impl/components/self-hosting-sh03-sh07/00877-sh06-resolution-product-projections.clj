@@ -1,135 +1,59 @@
 
 
-(defn sh06-resolution-product-projections
-  [analysis]
-  (let [compatibility-resolutions
-        (mapv #(assoc % :resolution-kind
-                      (sh06-resolution-order-compatibility
-                       (:resolution-order %)))
-              (:resolution-table analysis))]
-    {:namespace-analysis
-     (assoc analysis :artifact :gravity/namespace-analysis)
-     :binding-table
-     {:artifact :gravity/c5-binding-table
-      :status :complete
-      :bindings (:binding-table analysis)
-      :resolution-table compatibility-resolutions}
-     :alias-table
-     {:artifact :gravity/c5-alias-table
-      :status :complete :aliases (:alias-table analysis)}
-     :import-export-table
-     {:artifact :gravity/c5-import-export-table
-      :status :complete
-      :imports (:dependency-records analysis)
-      :exports (:exports analysis)}
-     :lexical-scope-graph
-     {:artifact :gravity/c5-lexical-scope-graph
-      :status :complete :scopes (:lexical-scope-graph analysis)}
-     :dependency-graph
-     (assoc (:dependency-graph analysis)
-            :artifact :gravity/c5-module-dependency-graph
-            :status :complete)
-     :cross-profile-edge-report
-     {:artifact :gravity/c5-cross-profile-edge-report
-      :status :complete
-      :records (:cross-profile-edge-report analysis)}
-     :incremental-invalidation-keys
-     {:artifact :gravity/c5-incremental-invalidation-keys
-      :status :stable
-      :inputs (:incremental-invalidation-inputs analysis)
-      :invalidation-id
-      (reader-canonical-hash
-       {:domain :gravity/sh06-invalidation-identity-v1
-        :inputs (:incremental-invalidation-inputs analysis)})}
-     :resolution-table compatibility-resolutions}))
+(defn
+ sh06-resolution-product-projections
+ [analysis]
+ (gravity.resolution/product-projections
+  analysis
+  (resolution-stage-operations)))
 
-(defn sh06-resolution-identity-chunks
-  [values]
-  (mapv
-   (fn [chunk-index chunk]
-     {:chunk-index chunk-index
-      :entry-count (count chunk)
-      :chunk-id
-      (reader-canonical-hash
-       {:domain :gravity/sh06-resolution-identity-chunk-v1
-        :chunk-index chunk-index :entries (vec chunk)})})
-   (range)
-   (partition-all 16 values)))
+(defn
+ sh06-resolution-identity-chunks
+ [values]
+ (gravity.resolution/identity-chunks
+  values
+  (resolution-stage-operations)))
 
-(defn- sh06-resolution-product-identity-chunks [artifact]
-  {:binding-id-chunks
-   (sh06-resolution-identity-chunks
-    (mapv :binding-id (get-in artifact [:binding-table :bindings])))
-   :resolution-chunks
-   (sh06-resolution-identity-chunks
-    (mapv #(dissoc % :source-span) (:resolution-table artifact)))})
+(defn-
+ sh06-resolution-product-identity-chunks
+ [artifact]
+ (gravity.resolution/product-identity-chunks
+  artifact
+  (resolution-stage-operations)))
 
-(defn- sh06-resolution-artifact-identity-input-with-chunks
-  [artifact chunks]
-  {:domain :gravity/sh06-resolution-artifact-v1
-   :kind (:kind artifact)
-   :slice (:slice artifact)
-   :task (:task artifact)
-   :adapter-contract
-   (get-in artifact [:gravity-resolution-boundary :adapter-contract])
-   :analysis-artifact-id
-   (get-in artifact [:gravity-resolution-boundary :resolved-analysis
-                     :artifact-id])
-   :source-revision-id
-   (get-in artifact [:gravity-resolution-boundary
-                     :authenticated-resolution-request :module
-                     :source-revision-id])
-   :upstream-artifact-id
-   (get-in artifact [:sh05-macro-artifact :artifact-id])
-   :upstream-syntax-stream-id
-   (get-in artifact [:sh05-macro-artifact :expanded-syntax-stream-id])
-   :upstream-trace-id
-   (get-in artifact [:sh05-macro-artifact :macro-expansion-trace-id])
-   :binding-id-chunks
-   (:binding-id-chunks chunks)
-   :resolution-chunks
-   (:resolution-chunks chunks)
-   :dependency-graph-id
-   (reader-canonical-hash
-    {:domain :gravity/sh06-dependency-graph-v1
-     :nodes (get-in artifact [:dependency-graph :nodes])
-     :edges (mapv #(dissoc % :source-span)
-                  (get-in artifact [:dependency-graph :edges]))})
-   :invalidation-id
-   (get-in artifact [:incremental-invalidation-keys :invalidation-id])})
+(defn-
+ sh06-resolution-artifact-identity-input-with-chunks
+ [artifact chunks]
+ (gravity.resolution/artifact-identity-input-with-chunks
+  artifact
+  chunks
+  (resolution-stage-operations)))
 
-(defn sh06-resolution-artifact-identity-input [artifact]
-  (sh06-resolution-artifact-identity-input-with-chunks
-   artifact (sh06-resolution-product-identity-chunks artifact)))
+(defn
+ sh06-resolution-artifact-identity-input
+ [artifact]
+ (gravity.resolution/artifact-identity-input
+  artifact
+  (resolution-stage-operations)))
 
-(defn sh06-resolution-artifact-id
-  [artifact]
-  (reader-canonical-hash
-   (sh06-resolution-artifact-identity-input artifact)))
+(defn
+ sh06-resolution-artifact-id
+ [artifact]
+ (gravity.resolution/artifact-id
+  artifact
+  (resolution-stage-operations)))
 
-(defn- sh06-resolution-envelope-summary-with-chunks
-  [artifact chunks]
-  {:slice :SH-06
-   :artifact-id (:artifact-id artifact)
-   :analysis-artifact-id
-   (get-in artifact [:gravity-resolution-boundary :resolved-analysis
-                     :artifact-id])
-   :upstream-artifact-id (get-in artifact [:sh05-macro-artifact :artifact-id])
-   :source-revision-id
-   (get-in artifact [:gravity-resolution-boundary
-                     :authenticated-resolution-request :module
-                     :source-revision-id])
-   :binding-count (count (get-in artifact [:binding-table :bindings]))
-   :reference-count (count (:resolution-table artifact))
-   :dependency-edge-count (count (get-in artifact [:dependency-graph :edges]))
-   :binding-id-chunks
-   (:binding-id-chunks chunks)
-   :resolution-chunks
-   (:resolution-chunks chunks)})
+(defn-
+ sh06-resolution-envelope-summary-with-chunks
+ [artifact chunks]
+ (gravity.resolution/envelope-summary-with-chunks artifact chunks))
 
-(defn sh06-resolution-envelope-summary [artifact]
-  (sh06-resolution-envelope-summary-with-chunks
-   artifact (sh06-resolution-product-identity-chunks artifact)))
+(defn
+ sh06-resolution-envelope-summary
+ [artifact]
+ (gravity.resolution/envelope-summary
+  artifact
+  (resolution-stage-operations)))
 
 (defn sh06-resolution-sh02-descriptor
   [source-path binding summary]
