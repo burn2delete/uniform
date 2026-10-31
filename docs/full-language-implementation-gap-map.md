@@ -32,6 +32,14 @@ stage or slice gates and do not advance the `0/240` full-language count or
 prove a seedless release. The canonical report is
 `docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md`.
 
+The default output of `clojure -M tools/validate_full_language_roadmap.clj`
+states structural claim validation separately from that dated,
+non-authoritative snapshot: it prints the observation date and separates public
+fixture reachability from completion admission. The reported `0/240` is not a
+current execution measure because v1 completion admission is disabled. The
+command does not refresh the dated coverage report or infer completion from
+fixture counts; `--self-test` remains the focused overclaim guard.
+
 ## Completion Rule
 
 Do not mark any full-language task complete unless all of these are true:
