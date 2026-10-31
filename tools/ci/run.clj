@@ -184,6 +184,10 @@
                  ["ownership-inventory" 90
                   (command "512m" "-M:test" "--namespace"
                            "gravity.self-hosting.sh01-ownership-test")]]
+    "macro" [["macro-regression" 600
+              (command "2g" "-M:dev-test"
+                       "--namespace" "gravity.macro.pipeline-test"
+                       "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
     "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable")]]
     "darwin-probe" [["darwin-host" 15 ["sw_vers"]]
                     ["darwin-kernel" 15 ["uname" "-a"]]

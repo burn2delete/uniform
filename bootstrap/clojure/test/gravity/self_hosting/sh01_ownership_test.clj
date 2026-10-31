@@ -173,9 +173,9 @@
       (is (= all-direct-stage0-tests
              (set/union actual-stage0-tests support-test-paths (set (keys auxiliary)))))
       (is (empty? (set/intersection actual-stage0-tests support-paths)))
-      (is (= (+ 108 (count helper-paths)) (count actual-stage0-paths)))
+      (is (= (+ 110 (count helper-paths)) (count actual-stage0-paths)))
       (is (= actual-stage0-paths declared-stage0-paths))
-      (is (= (+ 202 (count helper-paths)) (count module-owners)))
+      (is (= (+ 204 (count helper-paths)) (count module-owners)))
       (is (every? keyword? (vals module-owners))))
     (testing "coordinator support paths stay reserved outside paired Stage0"
       (is (= 17 (count support-paths)))
@@ -209,11 +209,11 @@
               (get-in record [:coordinator-owned :integration-surfaces])
               :when (str/starts-with? module "bootstrap/gravity/src/")]
         (is (= :master-coordinator (get module-owners module)) module)))
-    (testing "reserved Stage0 ids cover exactly the 54 source components"
+    (testing "reserved Stage0 ids cover exactly the 55 source components"
       (let [reserved (:reserved-leaf-modules record)
             primary-sources (set/difference actual-stage0-sources helper-paths)
             expected-ids (set (map stage0-component-id primary-sources))]
-        (is (= 54 (count reserved)))
+        (is (= 55 (count reserved)))
         (is (= expected-ids (set (keys reserved))))
         (doseq [source primary-sources
                 :let [id (stage0-component-id source)
@@ -223,7 +223,7 @@
 
 (def ^:private macro-helper-path "bootstrap/clojure/src/gravity/macro_run_storage.clj")
 (def ^:private macro-helper-consumer
-  "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj")
+  "bootstrap/clojure/src/gravity/macro.clj")
 (def ^:private macro-helper-test
   "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj")
 (def ^:private reader-helper-path "bootstrap/clojure/src/gravity/reader.clj")
@@ -235,6 +235,10 @@
 (def ^:private syntax-helper-consumer
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj")
 (def ^:private syntax-helper-test "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj")
+(def ^:private macro-stage-path "bootstrap/clojure/src/gravity/macro.clj")
+(def ^:private macro-stage-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00857-sh05-macro-source-relative-path.clj")
+(def ^:private macro-stage-test "bootstrap/clojure/test/gravity/macro/pipeline_test.clj")
 
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
@@ -245,7 +249,10 @@
               :consumer-path reader-helper-consumer :test-path reader-helper-test}
              syntax-helper-path
              {:namespace 'gravity.syntax :owner :sh-syntax :slice "SH-04"
-              :consumer-path syntax-helper-consumer :test-path syntax-helper-test}}
+              :consumer-path syntax-helper-consumer :test-path syntax-helper-test}
+             macro-stage-path
+             {:namespace 'gravity.macro :owner :sh-macro :slice "SH-05"
+              :consumer-path macro-stage-consumer :test-path macro-stage-test}}
             (:production-helper-associations record))
          (= :sh-macro (get-in record [:module-owners macro-helper-path]))
          (= {:namespace 'gravity.self-hosting.macro-run-storage-test
@@ -257,9 +264,12 @@
          (= :sh-syntax (get-in record [:module-owners syntax-helper-path]))
          (= {:namespace 'gravity.syntax.pipeline-test :slice "SH-04" :owner :sh-syntax}
             (get-in record [:standalone-test-owners syntax-helper-test]))
+         (= :sh-macro (get-in record [:module-owners macro-stage-path]))
+         (= {:namespace 'gravity.macro.pipeline-test :slice "SH-05" :owner :sh-macro}
+            (get-in record [:standalone-test-owners macro-stage-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
-              "consumer" {"path" macro-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
+              "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
               "test" {"path" macro-helper-test "namespace" "gravity.self-hosting.macro-run-storage-test"
                       "registration" "standalone"}}
              {"id" "reader-artifact-assembly" "kind" "production-stage-helper" "owner" "sh-reader"
@@ -271,8 +281,27 @@
               "source" {"path" syntax-helper-path "namespace" "gravity.syntax"}
               "consumer" {"path" syntax-helper-consumer "namespace" "gravity.bootstrap" "owner" "sh-syntax"}
               "test" {"path" syntax-helper-test "namespace" "gravity.syntax.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "macro-plan-runtime" "kind" "production-stage-helper" "owner" "sh-macro"
+              "source" {"path" macro-stage-path "namespace" "gravity.macro"}
+              "consumer" {"path" macro-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-macro"}
+              "test" {"path" macro-stage-test "namespace" "gravity.macro.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
+
+(deftest macro-runtime-helper-joins-real-stage-consumer-and-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [macro-stage-path macro-stage-consumer macro-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path macro-stage-consumer)) "(clojure.core/require 'gravity.macro)"))
+    (is (str/includes? (slurp (path macro-stage-consumer)) "gravity.macro/build-plan-binding!"))
+    (doseq [bad [(assoc-in record [:module-owners macro-stage-path] :master-coordinator)
+                 (assoc-in record [:production-helper-associations macro-stage-path :consumer-path] "forged.clj")
+                 (update record :standalone-test-owners dissoc macro-stage-test)]]
+      (is (not (production-helper-registration-valid? bad contract))))))
 
 (deftest production-helper-joins-real-source-consumer-and-existing-standalone-test
   (require 'gravity.bootstrap-free-leaf-test-runner)
@@ -285,7 +314,10 @@
       (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-path)))]
         (is (= 'gravity.macro-run-storage (second (read reader)))))
       (with-open [reader (java.io.PushbackReader. (io/reader (path macro-helper-consumer)))]
-        (is (= '(require '[gravity.macro-run-storage :as macro-run-storage]) (read reader)))))
+        (let [consumer (read reader)]
+          (is (= 'gravity.macro (second consumer)))
+          (is (some #{'[gravity.macro-run-storage :as macro-run-storage]}
+                    (rest (last consumer)))))))
     (is (str/includes? (slurp (path macro-helper-consumer)) "(macro-run-storage/exact? runs)"))
     (is (not (.exists (path "bootstrap/clojure/test/gravity/macro_run_storage_test.clj"))))
     (doseq [bad [(assoc-in record [:module-owners macro-helper-path] :master-coordinator)
@@ -433,7 +465,7 @@
                          (var-get
                           (ns-resolve runner-ns
                                       'excluded-top-level-test-files)))))]
-          (is (= 52 (count catalog)))
+          (is (= 53 (count catalog)))
           (is (= expected (set (map :test-path catalog))))
           (is (true? (validate!)))
           (is (every? symbol? (map :namespace catalog)))
