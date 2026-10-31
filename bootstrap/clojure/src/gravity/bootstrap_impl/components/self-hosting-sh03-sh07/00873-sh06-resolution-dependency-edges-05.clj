@@ -183,6 +183,8 @@
   :sh06-resolution-boundary-fail! #'sh06-resolution-boundary-fail!,
   :c-backend-stage2-plan-emitter-source-rule!
   #'c-backend-stage2-plan-emitter-source-rule!,
+  :sh06-resolution-dependency-record
+  #'sh06-resolution-dependency-record,
   :p15-s23-stage2-compiler-artifact-source-path
   #'p15-s23-stage2-compiler-artifact-source-path,
   :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
