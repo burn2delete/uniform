@@ -15,9 +15,7 @@
              sh08-verify-type-result
              sh08-function-type-boundary-policy
              sh08-function-type-core-artifact
-             sh08-function-type-core-artifact-with-work-policy
              sh08-verify-function-type-result
-             sh08-verify-function-type-result-with-work-policy
              sh08-record-union-type-boundary-policy
              sh08-record-union-type-core-artifact
              sh08-verify-record-union-type-result
@@ -23547,9 +23545,7 @@
          current-private-products {}
          current-loop-products {}
          source-context nil
-         loop-work-left (let [budget (get context :loop-work-left 65536)
-                              allowance (get context :type-inference-work-allowance 65536)]
-                          (if (< budget allowance) budget allowance))]
+         loop-work-left (get context :loop-work-left 65536)]
     (if (<= rounds-left 0)
       {:convergence-status :nonconverged
        :round-count (- round 1)
@@ -24392,25 +24388,6 @@
   (if (= (count records) 0) false
     (if (contains? (first records) :signature) true (sh08-ft-any-signature? (rest records)))))
 
-(defn sh08-ft-work-allowance [options]
-  ; Trusted invocation options only, never source/Core/proof authority. Native
-  ; entry enumeration avoids hashing or printing an untyped option key/value.
-  (if (map? options)
-    (if (= 0 (count options)) 65536
-      (if (= 1 (count options))
-        (let [entry (first (vec options)) key (get entry 0) value (get entry 1)]
-          (if (keyword? key)
-            (if (= :type-inference-work-allowance key)
-              (if (integer? value) (if (> value 0) value nil) nil) nil) nil)) nil)) nil))
-
-(defn sh08-ft-effective-work-policy [allowance]
-  ; One cumulative ordinary-inference pool per module invocation, not a total
-  ; import-graph/C7/throw-analysis budget or a host CPU/heap/RSS bound.
-  {:type-inference-work-allowance allowance :scope :ordinary-inference-invocation})
-
-(defn sh08-ft-invalid-work-policy []
-  {:status :rejected :diagnostics [{:rule "C7-GENERIC" :reason :invalid-type-inference-work-policy}]})
-
 (defn sh08-ft-finish-function-type-core
   [core-artifact imports products module recursive-proof higher-order-proof nodes recursive? higher-order? inference quoted-products match-checks throw-products final-functions]
             (if (> (count (get inference :diagnostics)) 0)
@@ -24604,7 +24581,7 @@
                            :higher-order-functions :records :unions
                            :protocols :generics :casts :dynamic-boundaries]})))
 
-(defn sh08-ft-function-type-core-artifact-with-imports-and-allowance [core-artifact bindings source-forms imports allowance]
+(defn sh08-ft-function-type-core-artifact-with-imports [core-artifact bindings source-forms imports]
   (if (map? core-artifact)
     (let [shape (sh08-validate-core-shape core-artifact)
           module (if (map? (get core-artifact :module))
@@ -24702,8 +24679,7 @@
                    :imported-functions imports :loop-core (sh08-ft-loop-working-core core-artifact bindings)
                    :lookup-core (if (> (count (get core-artifact :keyword-lookups)) 0) core-artifact nil)
                    :lookup-nodes nodes :lookup-forms source-forms :lookup-bindings bindings :ordering-core core-artifact
-                   :type-inference-work-allowance allowance
-                   :loop-work-left (- allowance (if (sh08-rv? recursive-proof) (get recursive-proof :work-count) 0))
+                   :loop-work-left (- 65536 (if (sh08-rv? recursive-proof) (get recursive-proof :work-count) 0))
                    :shape-call-products (assoc products :module module)))
                 handler-types (sh08-eh-type-checks (get handler-products :groups {}) (get unprojected-inference :type-table) nodes)
                 direct-throws (sh08-th-products core-artifact source-forms (get unprojected-inference :type-table)
@@ -24799,9 +24775,6 @@
      [(sh08-ft-diagnostic
        "C7-VERIFY" {} {} :sh07-canonical-core-map core-artifact
        :sh07-shaped-core-map-required {})]}));
-
-(defn sh08-ft-function-type-core-artifact-with-imports [core-artifact bindings source-forms imports]
-  (sh08-ft-function-type-core-artifact-with-imports-and-allowance core-artifact bindings source-forms imports 65536))
 
 (defn sh08-function-type-boundary-policy []
   {:verification-boundary
@@ -25052,7 +25025,7 @@
                     :authentic-complete-imported-function-type (get failure :actual) (get failure :reason) {})]
    :pending [:imported-body-effects :imported-effect-legality :runtime-linking]})
 
-(defn sh08-im-producers-with-allowance [requests memo active retained allowance]
+(defn sh08-im-producers [requests memo active retained]
   (loop [remaining requests current memo producers {}]
     (if (= (count remaining) 0) {:status :accepted :memo current :producers producers}
       (let [request (first remaining)
@@ -25061,7 +25034,7 @@
           (if (let [matches (sh08-bm-select retained :artifact-id id)]
                 (if (= 1 (count matches))
                   (= (first matches) (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact])) false))
-          (let [derived (sh08-im-derive-with-allowance request current active allowance) result (get derived :result)]
+          (let [derived (sh08-im-derive request current active) result (get derived :result)]
             (if (= :accepted (get result :status))
               (recur (rest remaining) (get derived :memo) (assoc producers id {:request request :result result}))
               (assoc (sh08-im-failure
@@ -25070,9 +25043,6 @@
                      :producer-sh06-artifact-id id :memo (get derived :memo))))
           (assoc (sh08-im-failure "C7-VERIFY" :undeclared-module-type-producer id) :memo current))
           (assoc (sh08-im-failure "C7-VERIFY" :duplicate-or-invalid-module-type-producer id) :memo current))))))
-
-(defn sh08-im-producers [requests memo active retained]
-  (sh08-im-producers-with-allowance requests memo active retained 65536))
 
 (defn sh08-im-inputs-check [inputs]
   (if (sh08-exact-keys? inputs #{:artifact :schema-version :module-requests})
@@ -25083,7 +25053,7 @@
       (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil))
     (sh08-im-failure "C7-VERIFY" :malformed-module-type-inputs nil)))
 
-(defn sh08-im-derive-with-allowance [request memo active allowance]
+(defn sh08-im-derive [request memo active]
   (let [id (sh08-im-path request [:b47-context :artifact-id]) previous (get memo id)
         resolution (if (if (map? previous) true (contains? active id))
                      {} (sh08-ft-authenticated-core request))
@@ -25098,40 +25068,27 @@
               input-check (if (= :accepted (get checked :status)) (sh08-im-inputs-check inputs)
                             (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound checked))
               producers (if (= :accepted (get input-check :status))
-                          (sh08-im-producers-with-allowance (get inputs :module-requests) memo (assoc active id true)
+                          (sh08-im-producers (get inputs :module-requests) memo (assoc active id true)
                             (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact
-                                                  :gravity-resolution-boundary :module-inputs :module-artifacts]) allowance) input-check)
+                                                  :gravity-resolution-boundary :module-inputs :module-artifacts])) input-check)
               imports (if (= :accepted (get producers :status))
                         (sh08-im-imports request resolution (get producers :producers)) producers)
               result (if (= :accepted (get imports :status))
                        (sh08-im-result
-                         (sh08-ft-function-type-core-artifact-with-imports-and-allowance
+                         (sh08-ft-function-type-core-artifact-with-imports
                            (get resolution :core) (get resolution :binding-table)
-                           (sh08-im-path request [:b47-context :authenticated-core-request :forms]) (get imports :imports) allowance)
+                           (sh08-im-path request [:b47-context :authenticated-core-request :forms]) (get imports :imports))
                          (get imports :imports))
                        (sh08-im-rejected-result request imports))
               next (get producers :memo memo)]
           {:result result :memo (assoc next id {:request request :result result})})
         {:result (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" (get resolution :reason) (get resolution :reason))) :memo memo})))))
 
-(defn sh08-im-derive [request memo active]
-  (sh08-im-derive-with-allowance request memo active 65536))
-
-(defn sh08-function-type-core-artifact-with-allowance [request allowance]
-  (let [result (get (sh08-im-derive-with-allowance request {} {} allowance) :result)]
+(defn sh08-function-type-core-artifact [request]
+  (let [result (get (sh08-im-derive request {} {}) :result)]
     (if (if (= :accepted (get result :status)) (= :direct-imported-functions-types-only (get result :scope)) false)
       (if (= :accepted (get (sh08-carrier-preflight result) :status)) result
         (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :imported-type-result-carrier-limit nil))) result)))
-
-(defn sh08-function-type-core-artifact [request]
-  (sh08-function-type-core-artifact-with-allowance request 65536))
-
-(defn sh08-function-type-core-artifact-with-work-policy [request options]
-  (let [allowance (sh08-ft-work-allowance options)]
-    (if (= nil allowance)
-      {:effective-work-policy nil :result (sh08-ft-invalid-work-policy)}
-      {:effective-work-policy (sh08-ft-effective-work-policy allowance)
-       :result (sh08-function-type-core-artifact-with-allowance request allowance)})))
 
 (defn sh08-ft-local-verification-checks [expected]
   (if (= :private-inferred-monomorphic-named-self-value (get expected :scope))
@@ -25207,16 +25164,6 @@
      :checks (sh08-ft-verification-checks expected)
      :expected expected
      :candidate candidate}))
-
-(defn sh08-verify-function-type-result-with-work-policy [request candidate options]
-  (let [allowance (sh08-ft-work-allowance options)]
-    (if (= nil allowance)
-      {:effective-work-policy nil :verification (sh08-ft-invalid-work-policy)}
-      (let [expected (sh08-function-type-core-artifact-with-allowance request allowance)]
-        {:effective-work-policy (sh08-ft-effective-work-policy allowance)
-         :verification {:artifact :gravity/sh08-function-type-verification
-                        :status (if (= expected candidate) :passed :rejected)
-                        :checks (sh08-ft-verification-checks expected) :expected expected :candidate candidate}}))))
 
 ; SH-08 records/unions is an early leaf over the authenticated B47 checked-core
 ; interface.  A named source definition carries a closed descriptor family as
