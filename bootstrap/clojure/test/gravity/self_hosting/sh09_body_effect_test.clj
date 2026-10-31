@@ -9622,7 +9622,7 @@
         (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
         (is (some #{:inferred-member-carrier} (:invalidation descriptor)))
         (is (nil? (:set-member-count descriptor)))
-        (is (= 3 (:type-domain-work-count descriptor)))
+        (is (not (contains? descriptor :type-domain-work-count)))
         (is (= :accepted (:status result) (:status context) (:status graph)) (pr-str graph))
         (is (true? (valid facts)))
         (is (= #{} (:direct record) (:transitive record)))

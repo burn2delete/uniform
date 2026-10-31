@@ -36613,7 +36613,7 @@ else
         (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
         (is (some #{:inferred-member-carrier} (:invalidation descriptor)))
         (is (nil? (:set-member-count descriptor)))
-        (is (= 3 (:type-domain-work-count descriptor)))
+        (is (not (contains? descriptor :type-domain-work-count)))
         (is (= :accepted (:status result)))
         (is (= :complete (:status lowered)) (pr-str lowered))
         (is (= {:op :builtin-call :function 'contains? :args [{:op :local :name 'left} {:op :local :name 'right}]} (:value lowered)))
@@ -36906,7 +36906,7 @@ else
         (is (= [carrier :gravity.type/symbol] (:argument-types descriptor) (:parameter-types descriptor)))
         (is (= :gravity.type/bool (:result-type descriptor) (:return descriptor) (:result-type fact) (get-in facts [:type-table id])))
         (is (= :normal (:application descriptor)))
-        (is (= 3 (:type-domain-work-count descriptor)))
+        (is (not (contains? descriptor :type-domain-work-count)))
         (is (nil? (:set-member-count descriptor)))
         (is (= :gravity/homogeneous-symbol-set-type-v1 (get-in descriptor [:membership-policy :carrier-schema])))
         (is (= [:original-namespace-and-name :none :none :none :jvm-utf16-symbol-display-for-work-only]
