@@ -186,7 +186,11 @@
      #'sh06-resolution-expected-source-byte-count
      #'sh06-resolution-expected-source-content-hash
      #'sh06-resolution-public-function-shapes
-     #'sh06-resolution-source-relative-path]))]
+     #'sh06-resolution-source-relative-path
+     #'known-source-profiles
+     #'sh06-resolution-all-core-symbols
+     #'sh06-resolution-special-symbols
+     #'sh06-resolution-type-symbols]))]
  ^{:line 158, :column 1}
  (defn
   sh06-resolution-artifact-verification

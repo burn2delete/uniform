@@ -19,7 +19,7 @@
                                       (-> s (str/replace path label) (str/replace lexical label)))
                                     (str s) roots)]
                       ;; Unknown absolute paths and URL credentials are not artifact data.
-                      (-> s (str/replace #"(?i)https?://[^\s\"<>]+" "<url-redacted>")
+                      (-> s (str/replace #"(?i)[a-z][a-z0-9+.-]*://[^\s\"<>]+" "<url-redacted>")
                           (str/replace #"(?<![\w$])/(?:[^\s\"\]\[{}(),:]+)" "<external-path>"))))
         bounded (fn [file cap]
                   (when (> (.length file) cap) (throw (ex-info "Capture size exceeded" {:id :capture-limit})))
