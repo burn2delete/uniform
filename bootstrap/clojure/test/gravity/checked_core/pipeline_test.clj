@@ -20,12 +20,15 @@
     sh07-core-parameter-binding-paths sh07-core-lineage-with-semantic-trace sh07-core-lineage
     sh07-core-projection-binding-input sh07-b13-alias-name sh07-b13-fragment-record
     sh07-b13-fragment-manifest sh07-b13-binding-order sh07-b13-fragment-coverage
-    sh07-b13-module-assembly-manifest])
+    sh07-b13-module-assembly-manifest sh07-core-request-from-verified-upstream sh07-core-authenticated-request
+    sh07-core-digest-reference-ordinal sh07-core-resolve-reference! sh07-core-resolve-reference-vector!
+    sh07-core-semantic-projection-id sh07-core-semantic-binding sh07-core-semantic-resolution
+    sh07-core-semantic-var-reference])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 30 (count publics)))
+    (is (= 38 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -34,7 +37,7 @@
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= :none (:admission api)))
       (is (= contract (:gravity/namespace-contract (meta (publics name))))))
-    (is (= '#{source-occurrence-context projected-source-mismatch lineage-with-semantic-trace}
+    (is (= '#{source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream}
            (set (keys (:private-implementation contract)))))
     (doseq [[name api] (:private-implementation contract)
             :let [v (ns-resolve 'gravity.checked-core name)]]
@@ -176,6 +179,72 @@
     (is (= first-input (core/projection-binding-input (assoc request :projection-binding :new :provenance {:source-path "/b"}) ops)))
     (is (not= first-input (core/projection-binding-input (assoc-in request [:forms 0 :value] 2) ops)))))
 
+(deftest request-gateway-preserves-context-and-invocation-dispatch
+  ;; Dispatch model only; real paired source evidence exercises the owner.
+  (let [calls (atom []) request :unit-c5-artifact report :unit-owner-report
+        ops (assoc (operations)
+                   :sh07-core-authenticated-request (fn [& args] [:recursive (vec args)])
+                   :sh07-core-source-path-from-resolution (constantly source)
+                   :sh03-reader-authenticated-envelope-options (fn [& args] (swap! calls conj [:reader (vec args)]))
+                   :sh06-resolution-artifact-verification (fn [& args] (swap! calls conj [:owner (vec args)]) report)
+                   :sh07-core-request-from-verified-upstream (fn [& args] [:constructed (vec args)]))]
+    (is (= [:recursive [request :gravity.bootstrap/legacy]] (core/authenticated-request request ops)))
+    (is (= [:recursive [request :context nil]] (core/authenticated-request request :context ops)))
+    (doseq [[context invocation expected] [[:gravity.bootstrap/legacy nil [request]]
+                                           [:context nil [request :context]]
+                                           [:context {:reader :unit} [request :context {:reader :unit}]]]]
+      (reset! calls [])
+      (is (= [:constructed [request report]] (core/authenticated-request request context invocation ops)))
+      (is (= (if invocation [[:reader [source invocation]] [:owner expected]] [[:owner expected]]) @calls)))
+    (reset! calls [])
+    (let [error (caught #(core/authenticated-request request nil {:reader :unit} ops))]
+      (is (= ["C6-VERIFY" [:sh06-context]] ((juxt :id :missing-fields) (ex-data error))))
+      (is (= [[:reader [source {:reader :unit}]]] @calls)))
+    (let [error (ex-info "owner failed" {:id "UNIT-OWNER"})]
+      (is (identical? error (caught #(core/authenticated-request request :context nil
+                                                    (assoc ops :sh06-resolution-artifact-verification (fn [& _] (throw error))))))))))
+
+(deftest private-request-constructor-retains-all-upstream-premises
+  (let [construct (ns-resolve 'gravity.checked-core 'request-from-verified-upstream)
+        valid {:kind :gravity/sh06-resolution-artifact :capability-based-proof {:status :complete}}
+        ops (assoc (operations) :sh07-core-source-path-from-resolution (constantly source))]
+    (is (true? (:private (meta construct))))
+    (doseq [[artifact report] [[(assoc valid :kind :forged) {:status :passed}]
+                               [valid {:status :rejected}]
+                               [(dissoc valid :capability-based-proof) {:status :passed}]
+                               [(assoc-in valid [:capability-based-proof :status] :incomplete) {:status :passed}]]]
+      (is (= ["C6-VERIFY" [:fresh-authenticated-sh06-resolution]]
+             ((juxt :id :missing-fields) (ex-data (caught #(construct artifact report ops)))))))))
+
+(deftest digest-reference-schema-and-index-legality-retain-their-existing-meaning
+  (let [ops (operations) digest (str "sha256:" (apply str (repeat 64 "a")))
+        reference {:artifact :gravity/sh07-internal-digest-reference :schema-version 1 :authority :sh07-digest-resolver :ordinal 0}]
+    (is (= 0 (core/digest-reference-ordinal reference ops)))
+    (is (= 123456789012345678901234567890N
+           (core/digest-reference-ordinal (assoc reference :ordinal 123456789012345678901234567890N) ops)))
+    (is (= [digest digest] (core/resolve-reference-vector! source [reference reference] [digest] ops)))
+    (doseq [bad [(assoc reference :extra true) (assoc reference :authority :forged)
+                 (assoc reference :schema-version 2) (assoc reference :ordinal -1)
+                 (assoc reference :ordinal 0.0) nil]]
+      (is (nil? (core/digest-reference-ordinal bad ops)))
+      (is (= "C6-VERIFY" (:id (ex-data (caught #(core/resolve-reference! source bad [digest] ops)))))))
+    (doseq [[ref values] [[(assoc reference :ordinal 1) [digest]] [reference ["not-a-sha256"]] [reference []]]]
+      (is (= "C6-VERIFY" (:id (ex-data (caught #(core/resolve-reference! source ref values ops)))))))))
+
+(deftest semantic-reference-normalization-preserves-the-existing-identity-boundary
+  (let [ops (operations) input {:binding-id :binding :upstream-binding-id :upstream
+                                :definition-artifact-id :owner :authenticated-sh06-artifact-id :authenticated
+                                :attributes {:sh06-semantic-projection-id :semantic} :unrelated :preserved}
+        result (core/semantic-var-reference nil input ops)]
+    (is (= :semantic (core/semantic-projection-id input ops)))
+    (is (= (b/sh07-core-semantic-var-reference nil input) result))
+    (is (= :binding (:upstream-binding-id result)))
+    (is (= :semantic (:definition-artifact-id result) (:authenticated-sh06-artifact-id result)))
+    (is (= :preserved (:unrelated result)))
+    (is (= :explicit (:definition-artifact-id (core/semantic-binding :explicit input ops))))
+    (is (= :binding (:upstream-binding-id (core/semantic-resolution input ops))))
+    (is (= {:binding-id :binding} (core/semantic-binding :semantic {:binding-id :binding} ops)))))
+
 (deftest module-and-source-contract-drift-reject-before-binding-publication
   ;; Real current source bytes with isolated compiler result ports. No admission.
   (let [binding (b/sh07-core-current-binding!)
@@ -255,7 +324,7 @@
 
 (deftest every-stage-operation-and-compatibility-root-invalidates-receipts
   (let [private-stages (map #(ns-resolve 'gravity.checked-core %)
-                           '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace])
+                           '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream])
         vars (set (concat (vals (ns-publics 'gravity.checked-core)) private-stages
                          (map seed-var projection-compatibility-names) (filter var? (vals (operations)))
                          (map seed-var '[checked-core-stage-operations sh07-core-source-path sh07-core-plan-identities
@@ -303,7 +372,7 @@
 
 (deftest construction-roots-detect-the-new-runtime-inputs-before-owner-work
   (let [expected (set (concat (vals (ns-publics 'gravity.checked-core))
-                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace])
+                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace request-from-verified-upstream])
                               (map seed-var projection-compatibility-names)
                               (filter var? (vals (operations)))
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input
