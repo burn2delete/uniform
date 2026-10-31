@@ -1002,11 +1002,243 @@
       (reset! (:released? lease) false)
       (throw throwable))))
 
+(def ^:private ^:dynamic *process-custody* nil)
+
+(def ^:private quarantined-leases (atom {}))
+
+(defn retain-process-start-custody!
+  "Register BEFORE native start. A pending or thrown start has unknown creation.
+  This is cooperative in-JVM custody, not a startup watchdog or OS containment."
+  []
+  (when *process-custody*
+    (let [custody (atom {:launch-state :pending :creation-coverage :unknown
+                         :owner-thread-id (.getId (Thread/currentThread))
+                         :process nil :owned nil :result nil})]
+      (swap! *process-custody* conj custody)
+      custody)))
+
+(defn- require-start-owner! [custody]
+  (when-not (= (:owner-thread-id @custody) (.getId (Thread/currentThread)))
+    (fail! "SH01-PROCESS-OWNERSHIP" "Process startup belongs to its retaining thread" {})))
+
+(defn record-started-process!
+  "Keep the actual returned Process even if token retention subsequently throws."
+  [custody process]
+  (when custody
+    (require-start-owner! custody)
+    (swap! custody assoc :launch-state :returned :process process))
+  process)
+
+(defn record-started-ownership! [custody owned]
+  (when custody
+    (require-start-owner! custody)
+    (when-not (and (= :returned (:launch-state @custody))
+                   (identical? (:process @custody) (:process owned))
+                   (= (:owner-thread-id @custody) (:owner-thread-id owned))
+                   (nil? (:owned @custody)))
+      (fail! "SH01-PROCESS-OWNERSHIP" "Startup token must retain its returned Process once" {}))
+    (swap! custody assoc :owned owned))
+  owned)
+
+(defn record-process-start-error! [custody error]
+  (when custody
+    (require-start-owner! custody)
+    (swap! custody #(assoc % :launch-state (if (:process %) :retention-threw :start-threw)
+                           :start-error error)))
+  error)
+
+(defn retained-start-token
+  "Reuse a token only for this exact returned Process in the current lease scope."
+  [process]
+  (when *process-custody*
+    (when-let [custody (some #(when (identical? process (:process @%)) %) @*process-custody*)]
+      (require-start-owner! custody)
+      (:owned @custody))))
+
+(defn retain-process-custody!
+  "Retains the normal runner's ownership token within an active with-lease.
+  Outside that scope the normal process API is unchanged."
+  [owned]
+  (when *process-custody*
+    (if-let [custody (some #(when (identical? (:process owned) (:process @%)) %)
+                           @*process-custody*)]
+      (do
+        (require-start-owner! custody)
+        (when-not (identical? owned (:owned @custody))
+          (fail! "SH01-PROCESS-OWNERSHIP" "Process wait must use its startup token" {}))
+        custody)
+      (let [custody (atom {:owned owned :result nil})]
+        (swap! *process-custody* conj custody)
+        custody))))
+
+(defn record-process-result!
+  "Records actual terminal observations without inferring descendant coverage."
+  [custody result]
+  (when custody (swap! custody assoc :result result))
+  result)
+
+(defn- terminal-process-custody?
+  [custody]
+  (let [{:keys [result launch-state process owned start-error] :as record} @custody]
+    (and (or (not (contains? record :launch-state))
+             (and (= :returned launch-state) (instance? Process process)
+                  (some? owned) (nil? start-error)))
+         (true? (:root-exited? result))
+         (false? (:cleanup-root-alive? result))
+         (true? (:tracked-owned-processes-terminal? result))
+         (false? (:capture-failed? result))
+         (every? (fn [stream]
+                   (and (#{:complete :truncated}
+                         (get result (keyword (str stream "-capture-status"))))
+                        (nil? (get result (keyword (str stream "-capture-error"))))
+                        (false? (get result (keyword (str stream "-capture-forced-close?"))))))
+                 ["stdout" "stderr"]))))
+
+(defn- throw-disposition-errors!
+  [errors observation]
+  (let [cause-with (fn [predicate error]
+                     (loop [error error seen #{}]
+                       (when (and error (not (contains? seen error)))
+                         (if (predicate error) error
+                             (recur (.getCause ^Throwable error) (conj seen error))))))
+        fatal? #(or (instance? VirtualMachineError %) (instance? ThreadDeath %)
+                    (instance? LinkageError %))
+        primary (or (some #(cause-with fatal? %) errors) (first errors))]
+    (when (some #(cause-with (fn [error] (instance? InterruptedException error)) %) errors)
+      (.interrupt (Thread/currentThread)))
+    (when primary
+      (doseq [error errors :when (and (not (identical? primary error))
+                                      (not (cause-with #(identical? primary %) error)))]
+        (.addSuppressed ^Throwable primary error))
+      ;; Preserve actual objects locally on the thrown error; never encode
+      ;; these linear handles as a published receipt or auto-release them.
+      (.addSuppressed ^Throwable primary
+                      (ex-info "Resource disposition observation"
+                               {:id "SH01-BROKER-DISPOSITION" :observation observation}))
+      (throw primary))))
+
+
 (defn with-lease
-  "Runs `thunk` while holding exactly one reviewed host-wide resource lease."
-  [options resource-class thunk]
-  (let [lease (acquire! options resource-class)]
-    (try
-      (thunk)
-      (finally
-        (release! lease)))))
+  "Runs `thunk` while holding exactly one reviewed host-wide resource lease.
+
+  The optional fourth argument observes actual result/error and resource
+  disposition after the release attempt or quarantine decision. Raw lease and
+  process registry objects remain local. This is not telemetry, durable custody,
+  or an exit guard for a one-shot parent. The legacy three-argument path is
+  unchanged."
+  ([options resource-class thunk]
+   (let [lease (acquire! options resource-class)]
+     (try
+       (thunk)
+       (finally
+         (release! lease)))))
+  ([options resource-class thunk observe!]
+   (when-not (ifn? observe!)
+     (fail! "SH01-BROKER-DISPOSITION" "Disposition observer must be callable" {}))
+   (let [processes (atom [])
+         lease-result (try {:lease (acquire! options resource-class)}
+                           (catch Throwable error {:error error}))
+         lease (:lease lease-result)
+         operation (if lease
+                     (binding [*process-custody* processes]
+                       (try {:returned? true :value (thunk) :error nil}
+                            (catch Throwable error {:returned? false :value nil :error error})))
+                     {:returned? false :value nil :error (:error lease-result)})
+         terminal (when lease
+                    (try {:complete? (every? terminal-process-custody? @processes)}
+                         (catch Throwable error {:error error})))
+         disposition
+         (cond
+           (nil? lease)
+           {:state :acquire-failed :release-attempted? false :receipt nil
+            :error (:error lease-result) :parent-exit-custody :not-established}
+
+           (:complete? terminal)
+           (try
+             {:state :released :release-attempted? true :receipt (release! lease)
+              :error nil :parent-exit-custody :not-required-for-this-released-lease}
+             (catch Throwable error
+               (swap! quarantined-leases assoc (:released? lease)
+                      {:lease lease :processes processes :release-error error})
+               {:state :release-failed :release-attempted? true :receipt nil
+                :error error :parent-exit-custody :unsupported-in-JVM-only}))
+
+           :else
+           (do
+             (swap! quarantined-leases assoc (:released? lease)
+                    {:lease lease :processes processes :assessment-error (:error terminal)})
+             {:state :quarantined :release-attempted? false :receipt nil :error (:error terminal)
+              :parent-exit-custody :unsupported-in-JVM-only}))
+         observation {:resource-class resource-class :lease lease :processes processes
+                      :operation operation :disposition disposition}
+         observer-error (try (observe! observation) nil (catch Throwable error error))
+         errors (vec (distinct (remove nil? [(:error operation) (:error disposition) observer-error])))]
+     (throw-disposition-errors! errors observation)
+     (:value operation)))
+  ([options resource-class thunk finalize-owned-resources! observe!]
+   (when-not (and (ifn? finalize-owned-resources!) (ifn? observe!))
+     (fail! "SH01-BROKER-OWNED-RESOURCE" "Resource finalizer and observer must be callable" {}))
+   (let [processes (atom [])
+         interrupted? (volatile! false)
+         remember-interrupt! #(when (.isInterrupted (Thread/currentThread)) (vreset! interrupted? true))
+         lease-result (try {:lease (acquire! options resource-class)} (catch Throwable error {:error error}))
+         lease (:lease lease-result)
+         operation (if lease
+                     (binding [*process-custody* processes]
+                       (try {:returned? true :value (thunk) :error nil}
+                            (catch Throwable error {:returned? false :value nil :error error})))
+                     {:returned? false :value nil :error (:error lease-result)})
+         _ (remember-interrupt!)
+         terminal (when lease
+                    (try {:complete? (every? terminal-process-custody? @processes)}
+                         (catch Throwable error {:error error})))
+         resources (if lease
+                     (try
+                       (let [value (finalize-owned-resources!
+                                    {:lease lease :processes processes :operation operation :terminal terminal})]
+                         (when-not (and (map? value)
+                                        (contains? #{:not-acquired :released :quarantined :release-failed} (:state value))
+                                        (boolean? (:release-attempted? value))
+                                        (contains? value :custody)
+                                        (or (nil? (:error value)) (instance? Throwable (:error value)))
+                                        (case (:state value)
+                                          :released (and (true? (:release-attempted? value)) (nil? (:error value)))
+                                          :not-acquired (nil? (:error value))
+                                          :release-failed (instance? Throwable (:error value))
+                                          :quarantined true false))
+                           (fail! "SH01-BROKER-OWNED-RESOURCE" "Invalid owned resource disposition" {:value value}))
+                         value)
+                       (catch Throwable error
+                         {:state :quarantined :release-attempted? :unknown :error error
+                          :custody finalize-owned-resources! :receipt nil}))
+                     {:state :not-acquired :release-attempted? false :error nil :custody nil :receipt nil})
+         _ (remember-interrupt!)
+         reusable? (and (:complete? terminal) (nil? (:error resources))
+                        (contains? #{:not-acquired :released} (:state resources)))
+         disposition
+         (cond
+           (nil? lease) {:state :acquire-failed :release-attempted? false :receipt nil
+                         :error (:error lease-result) :parent-exit-custody :not-established}
+           reusable? (try
+                       {:state :released :release-attempted? true :receipt (release! lease)
+                        :error nil :parent-exit-custody :not-required-for-this-released-lease}
+                       (catch Throwable error
+                         {:state :release-failed :release-attempted? true :receipt nil
+                          :error error :parent-exit-custody :unsupported-in-JVM-only}))
+           :else {:state :quarantined :release-attempted? false :receipt nil
+                  :error (or (:error terminal) (:error resources)) :parent-exit-custody :unsupported-in-JVM-only})
+         _ (remember-interrupt!)
+         observation {:resource-class resource-class :lease lease :processes processes
+                      :operation operation :terminal terminal :owned-resources resources :disposition disposition}
+         _ (when (and lease (not= :released (:state disposition)))
+             (swap! quarantined-leases assoc (:released? lease)
+                    {:lease lease :processes processes :owned-resources resources
+                     :finalize-owned-resources! finalize-owned-resources! :observation observation}))
+         observer-error (try (observe! observation) nil (catch Throwable error error))
+         errors (vec (distinct (remove nil? [(:error operation) (:error terminal) (:error resources)
+                                             (:error disposition) observer-error])))]
+     (try
+       (throw-disposition-errors! errors observation)
+       (:value operation)
+       (finally
+         (when @interrupted? (.interrupt (Thread/currentThread))))))))
