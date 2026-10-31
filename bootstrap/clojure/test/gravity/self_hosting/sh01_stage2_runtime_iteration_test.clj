@@ -26721,7 +26721,7 @@
         (is (= :same-established-generic-integer-leaves (get-in policy [:equality-policy :numeric])))
         (is (= :sh08-vector-keyword-set-leaf-equality-v1 (get-in policy [:keyword-set-leaf-equality :version])))
         (is (= :sh08-keyword-set-equality-v1 (get-in policy [:keyword-set-leaf-equality :equality-version])))
-        (is (= :owned-pair-equality-with-remaining-vector-allowance
+        (is (= :owned-pair-equality-after-domain-validation
                (get-in policy [:keyword-set-leaf-equality :comparison-validation])))
         (is (not (contains? (get-in policy [:keyword-set-leaf-equality]) :budget)))
         (is (= :none (get-in policy [:keyword-set-leaf-equality :per-leaf-reset])))

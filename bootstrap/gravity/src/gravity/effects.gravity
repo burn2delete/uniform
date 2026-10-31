@@ -11458,7 +11458,7 @@
                             :comparison :guarded-atomic-keyword-leaf :order :unobserved
                             :domain-validation :owned-self-equality-before-any-vector-result
                             :member-uniqueness :validated-before-any-vector-result
-                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
+                            :comparison-validation :owned-pair-equality-after-domain-validation
                             :per-leaf-reset :none
                             :identity :unobserved :payload-evaluation :none :mutation :none :construction :none})
                         policy (if (get validation :vector-integer-leaves?)
@@ -13742,7 +13742,7 @@
                             :comparison :guarded-atomic-keyword-leaf :order :unobserved
                             :domain-validation :owned-self-equality-before-any-vector-result
                             :member-uniqueness :validated-before-any-vector-result
-                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
+                            :comparison-validation :owned-pair-equality-after-domain-validation
                             :per-leaf-reset :none
                             :identity :unobserved :payload-evaluation :none :mutation :none :construction :none}
                          :invalidation [:calls :call-edges :binding-table :source-forms :type-table :lexical-bindings :definitions :function-records

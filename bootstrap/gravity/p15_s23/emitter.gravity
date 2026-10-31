@@ -12970,7 +12970,7 @@
                             :comparison :guarded-atomic-keyword-leaf :order :unobserved
                             :domain-validation :owned-self-equality-before-any-vector-result
                             :member-uniqueness :validated-before-any-vector-result
-                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
+                            :comparison-validation :owned-pair-equality-after-domain-validation
                             :per-leaf-reset :none
                             :identity :unobserved :payload-evaluation :none :mutation :none :construction :none
                             :provider-cpu-bound :not-established})
@@ -15256,7 +15256,7 @@
                             :comparison :guarded-atomic-keyword-leaf :order :unobserved
                             :domain-validation :owned-self-equality-before-any-vector-result
                             :member-uniqueness :validated-before-any-vector-result
-                            :comparison-validation :owned-pair-equality-with-remaining-vector-allowance
+                            :comparison-validation :owned-pair-equality-after-domain-validation
                             :per-leaf-reset :none
                             :identity :unobserved :payload-evaluation :none :mutation :none :construction :none
                             :provider-cpu-bound :not-established}
