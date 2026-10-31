@@ -13541,7 +13541,13 @@
                       {:status :rejected :reason type-reason})))
                 {:status :rejected :reason :keyword-set-contains-operand-type-required}))
             {:status :rejected :reason :keyword-set-contains-arity-mismatch})))
-      {:status :rejected :reason :keyword-set-contains-operand-type-required
+      {:status :rejected :reason (if (vector? arguments)
+                                   (if (= :gravity.type/character (get arguments 1))
+                                     :character-set-contains-operand-type-required
+                                     (if (= :gravity.type/string (get arguments 1))
+                                       :string-set-contains-operand-type-required
+                                       :keyword-set-contains-operand-type-required))
+                                   :keyword-set-contains-operand-type-required)
        :type-check-reason (get ingress :reason)})))
 
 (defn sh08-sysm-source-ids? [node call nodes bindings module]
@@ -15332,7 +15338,7 @@
   (if (if (vector? arguments) (= 2 (count arguments)) false)
     (loop [index 0 integral-type nil atomic-seen? false]
       (if (= index 2)
-        (if (if (= nil integral-type) atomic-seen? false)
+        (if (if (= nil integral-type) false atomic-seen?)
           {:status :rejected :reason :unsupported-inequality-type-pair}
           (if (= nil integral-type)
             {:status :accepted}
@@ -15758,8 +15764,9 @@
               validation (sh08-ane-domain arguments)
               owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)]
           (if (= false (= :accepted (get validation :status)))
-            (sh08-sm-failure "C7-TYPE-MISMATCH" (get validation :reason) nil
-              :two-supported-values-with-applicable-binary-equality arguments)
+            (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :atomic-inequality-operand-type-required nil
+                     :two-supported-values-with-applicable-binary-equality arguments)
+              :type-check-reason (get validation :reason))
             (let [header (sh08-ane-source core node call edge nodes bindings types (get core :module) validation)]
               (if (if (if (map? header) (if (vector? ids) (if (= 3 (count ids)) (loop [remaining ids] (if (= 0 (count remaining)) true (if (if (keyword? (first remaining)) true (if (string? (first remaining)) (= 71 (count (first remaining))) false)) (recur (rest remaining)) false))) false) false) false)
                     (if (if (= :list (get validation :comparison-domain))
@@ -15823,7 +15830,7 @@
                       (= (get descriptor :result-type) (get types (get node :node-id))) false) false)
                 {:status :accepted}
                 {:status :rejected :reason :atomic-inequality-source-mismatch}))
-            {:status :rejected :reason (get validation :reason)
+            {:status :rejected :reason :atomic-inequality-operand-type-required
              :type-check-reason (get validation :reason)}))
         {:status :rejected :reason :atomic-inequality-source-mismatch})
       {:status :rejected :reason :atomic-inequality-arity-mismatch})))
