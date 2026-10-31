@@ -777,8 +777,7 @@
     (is (= (c7-invoke 'sh08-tc-products [core types functions bindings (assoc direct :throws {}) ])
            (assoc direct :throws {})))
     (is (= "C7-GENERIC" (-> (c7-invoke 'sh08-tc-products [core types functions bindings direct ]) :diagnostics first :rule)))
-    (let [cost (:work-count result)]
-      (is (= :accepted (:status (c7-invoke 'sh08-tc-products [core types functions bindings direct ])))))
+    (is (= :accepted (:status (c7-invoke 'sh08-tc-products [core types functions bindings direct ]))))
     (let [direct (assoc direct :work-count 17)
           baseline (:work-count result)
           accepted (c7-invoke 'sh08-tc-products [core types functions bindings direct ])]
@@ -2182,9 +2181,8 @@
     (assoc data :core core :working working :nodes nodes :forms forms :checked checked :rows rows :quotes quotes :context context)))
 
 (deftest unquoted-empty-symbol-set-loop-development-kernel
-  (let [{:keys [core working nodes forms types bindings checked rows empty-type carrier]} (unquoted-symbol-set-loop-data)
-        node (nodes :value-init)
-        invoke #(c7-invoke 'sh08-ft-loop-type-step [% types {}])]
+  (let [{:keys [core nodes forms types bindings checked rows empty-type carrier]} (unquoted-symbol-set-loop-data)
+        node (nodes :value-init)]
     (is (= empty-type (c7-invoke 'sh08-ft-infer-node-nominal [node {} {} {} [] {}])))
     (is (true? (c7-invoke 'sh08-lsi-leaf? [node forms :initializer])))
     (is (true? (c7-invoke 'sh08-lsi-leaf? [node forms :receiver])))

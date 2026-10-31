@@ -456,7 +456,7 @@
     (is (true? (get (:active accepted) :dependency-module)))
     (is (= 4 (count producer-args) (count inference-args))))
   (doseq [resolution [{:status :rejected :reason :normalized-authentication-rejection}]]
-    (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
+    (let [{:keys [result calls memo]} (normalized-import-derive resolution)
           diagnostic (get-in result [:result :diagnostics 0])]
       (is (= :rejected (get-in result [:result :status])))
       (is (= :normalized-authentication-rejection (:reason diagnostic)))
@@ -2579,7 +2579,8 @@
 (deftest sh08-literal-vector-slice-development-kernel
   (doseq [[values start end] [[[65 66 67] 1 2] [[] 0 0] [[65 66 67] 0 3] [[65 66 67] 3 3]
                             [[-5 0 999999999999999999999999999999999999N] 0N 3N]
-                            [(vec (range 1024)) 1 1023]]]
+                            [(vec (range 1024)) 1 1023]
+                            [(vec (range 1025)) 1 1024]]]
     (let [{:keys [core node call edge nodes bindings types forms]} (literal-vector-slice-input values start end)
           derive #(invoke-c7 'sh08-vsl-derive [core node call edge nodes bindings %1 %2 ])
           result (derive types forms) descriptor (:descriptor result)
@@ -3694,7 +3695,6 @@
           (let-vector-slice-first-established (let-vector-count-slice-first-input text start nil))
           call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
           edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
-          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) call edge nodes bindings types forms ])
           check #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings %1 ])
           measured (check types) witness (get-in slice [:descriptor :bounds-proof :source-forms])]
       (is (= :accepted (:status slice) (:status query) (:status measured)))
@@ -3749,7 +3749,6 @@
           (let-vector-slice-first-established (let-vector-slice-first-input value start end))
           call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
           edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
-          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) call edge nodes bindings types forms ])
           check #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings %1 ])
           measured (check types)
           context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -3908,7 +3907,6 @@
           (let-vector-slice-first-membership-established (let-vector-slice-first-membership-input value members start end nil))
           call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
           edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
-          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) call edge nodes bindings types forms ])
           check #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) call edge nodes bindings %1 ])
           measured (check types)
           context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -4068,7 +4066,6 @@
           slice-call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
           slice-edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
           bridge (invoke-c7 'sh08-vsl-let-equality-body [core (nodes :slice-let) (nodes :slice-call) nodes bindings types forms ])
-          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) slice-call slice-edge nodes bindings types forms ])
           checked #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) slice-call slice-edge nodes bindings %1 ])
           measured (checked types)
           context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -4463,7 +4460,6 @@
           slice-call (first (filter #(= :slice-call (:core-node-id %)) (:calls core)))
           slice-edge (first (filter #(= :slice-call (:call-core-node-id %)) (:call-edges core)))
           bridge (invoke-c7 'sh08-vsl-let-equality-body [core (nodes :slice-let) (nodes :slice-call) nodes bindings types forms ])
-          derive #(invoke-c7 'sh08-vsl-derive [core (nodes :slice-call) slice-call slice-edge nodes bindings types forms ])
           checked #(invoke-c7 'sh08-vsl-inferred-call [core (nodes :slice-call) slice-call slice-edge nodes bindings %1 ])
           measured (checked types)
           context {:ordering-core core :lookup-nodes nodes :lookup-forms (vec (vals forms))
@@ -4659,9 +4655,6 @@
                     #(assoc-in % [:types :call :element-types] [])
                     #(assoc-in % [:nodes :slice-end :core-form] :reference)]]
       (is (= :rejected (:status (vector-slice-derived (mutate base))))))
-    (let [short (vector-slice-derived base)]
-
-      )
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                    (hashCode [] (swap! callbacks inc) (throw (AssertionError. "slice proof hash")))
                                    (equals [_] (swap! callbacks inc) (throw (AssertionError. "slice proof equality")))
@@ -4807,8 +4800,7 @@
                  (equals [_] (swap! callbacks inc) (throw (AssertionError. "Latin1 proof equality callback")))
                  (toString [] (swap! callbacks inc) (throw (AssertionError. "Latin1 proof formatting callback"))))]
     (doseq [path [[:nodes :arg0 :source :form-id] [:forms :call :child-form-ids 1]
-                  [:nodes :arg0 :attributes :value] [:forms :arg0 :value]]
-            budget [0 65536]]
+                  [:nodes :arg0 :attributes :value] [:forms :arg0 :value]]]
       (is (= :rejected (:status (literal-string-vector-derived (assoc-in input path opaque)))))
       (is (zero? @callbacks))))
   (doseq [value ["\u0100" "\u00ffe\u0301" "\uD83D\uDE00" "\uD800" "\uDC00"]]
@@ -4910,10 +4902,7 @@
         (is (= :rejected (:status (literal-string-vector-derived input)))))
       (is (= :accepted (:status (literal-string-vector-derived base))))
       (is (zero? @callbacks)))
-    (let [visits (atom 0) hostile (reify clojure.lang.Counted (count [_] 4096)
-                                      clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved function scan"))))]
-
-      (is (zero? @visits)))))
+    ))
 
 (deftest sh08-ascii-string-vector-edge-ordinal-development-kernel
   (let [input (literal-string-vector-input "sha256:")
@@ -5057,7 +5046,7 @@
       (is (= :gravity.type/applied-vector-empty (:kind descriptor)))
       (is (= :sh08-vector-empty-v1 (:version descriptor)))))
   (doseq [type [{:kind :gravity.type/list :shape :literal :element-types []} :gravity.type/never]]
-    (let [{:keys [core node call edge nodes bindings module] :as input} (list-query-input 'empty? [type])
+    (let [{:keys [node call edge nodes bindings module] :as input} (list-query-input 'empty? [type])
           result (list-query-derived input) normal? (not= :gravity.type/never type)
           expected-type (if normal? :gravity.type/bool :gravity.type/never)
           expected {:kind :gravity.type/applied-list-query :version :sh08-list-query-v1
@@ -6033,6 +6022,7 @@
         (is (= :sh08-list-parameter-compatibility-v2 (:compatibility-rule-version row)))
         (is (= :sh08-homogeneous-list-parameter-v1 (:version premise)))
         (is (= :all-positional-elements-match (:relation premise)))
+        (is (= :accepted (:status checked)))
         (is (= [actual actual type type] [(:argument pair) (:actual-type premise) (:chosen pair) (:declared-type premise)]))
         (is (= [s (count members) [:static-length]] [(:checked-element-type premise) (:checked-element-count premise) (:forgets premise)]))
         (is (true? (invoke-c7 'sh08-ft-signature-valid? [signature 1 bindings])))
@@ -6263,6 +6253,7 @@
     (is (not= (:argument pair) (:chosen pair)))
     (is (= [:positional-element-types :static-length] (:forgets premise)))
     (is (= [:value :provenance :schema :ownership :linearity :regions :profile :memory-obligations] (:preserves premise)))
+    (is (= :accepted (:status (scan))))
     (is (= [0 :argument :parameter declaration] [(:argument-index premise) (:argument-node-id premise) (:parameter-binding-id premise) (:declaration premise)]))
     (doseq [value [:gravity.type/list :gravity.type/never]]
       (let [result (bare-list-parameter-constraints (bare-list-parameter-input value))]
@@ -7437,7 +7428,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (character-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (character-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :character-predicate-arity-mismatch (:reason (character-predicate-derived malformed))))
@@ -7595,7 +7585,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (nil-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (nil-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :nil-predicate-arity-mismatch (:reason (nil-predicate-derived malformed))))
@@ -7698,7 +7687,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (boolean-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (boolean-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :boolean-predicate-arity-mismatch (:reason (boolean-predicate-derived malformed))))
@@ -7801,7 +7789,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (symbol-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (symbol-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :symbol-predicate-arity-mismatch (:reason (symbol-predicate-derived malformed))))
@@ -7903,7 +7890,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (set-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (set-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :set-predicate-arity-mismatch (:reason (set-predicate-derived malformed))))
@@ -7995,7 +7981,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (map-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (map-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :map-predicate-arity-mismatch (:reason (map-predicate-derived malformed))))
@@ -8085,7 +8070,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (keyword-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (keyword-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :keyword-predicate-arity-mismatch (:reason (keyword-predicate-derived malformed))))
@@ -8175,7 +8159,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (string-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (string-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :string-predicate-arity-mismatch (:reason (string-predicate-derived malformed))))
@@ -8260,7 +8243,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (integer-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (integer-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :integer-predicate-arity-mismatch (:reason (integer-predicate-derived malformed))))
@@ -8439,7 +8421,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (vector-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (vector-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :vector-predicate-arity-mismatch (:reason (vector-predicate-derived malformed))))
@@ -10468,10 +10449,7 @@
         (is (= [] (get-in result [:descriptor :direct-effects])))
         (is (nil? (get-in result [:descriptor :transition])))
         (is (nil? (get-in result [:descriptor :result-shape])))))
-    (let [{:keys [core node nodes types binding-types bindings forms products]} input
-          context (assoc (invoke-c7 'sh08-sm-call-context [products types ]) :source-core core :budget-left 1)
-          result (invoke-c7 'sh08-ma-derive [node nodes types binding-types {} [] bindings forms #{} 0 {} context])]
-      )))
+  ))
 
 (defn- collection-count-input [kind empty?]
   (let [base (map-association-input :unused :gravity.type/bool empty?)
@@ -10783,8 +10761,7 @@
                (positional (vec (repeat 8192 :gravity.type/unknown))) (positional [opaque])]]
     (doseq [type types]
       (let [{:keys [core node call edge nodes bindings forms] :as input} (list-count-input type)
-            types (:types input) result (list-count-derived input) descriptor (:descriptor result)
-            derive #(invoke-c7 'sh08-cq-derive [core node call edge nodes bindings types forms])]
+            types (:types input) result (list-count-derived input) descriptor (:descriptor result)]
         (is (= :accepted (:status result)) (pr-str (dissoc result :descriptor :constraint)))
         (is (= :gravity.type/integer (:type result) (:return descriptor) (:result-type descriptor)))
         (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:thrown-error-effects descriptor)))
@@ -10953,7 +10930,6 @@
              [(positional (vec (repeat 1030 s))) s (positional (vec (repeat 1031 s)))]]]
       (let [{:keys [core node call edge nodes bindings types forms] :as input} (list-prepend-input receiver value)
             result (list-prepend-derived input) descriptor (:descriptor result)
-            check #(invoke-c7 'sh08-pl-derive [core node call edge nodes bindings types forms])
             facts (invoke-c7 'sh08-ft-call-facts-with-context [[call] [edge] nodes (assoc types :operator descriptor :call expected) {} (:module core) {}])]
         (is (= :accepted (:status result)) (pr-str result))
         (is (= expected (:type result) (:result-type descriptor) (:return descriptor)))
@@ -11092,8 +11068,7 @@
                     #(-> % (assoc-in [:types :input] :gravity.type/never) (assoc-in [:types :value] :gravity.type/unknown))]]
       (is (= :rejected (:status (vector-append-derived (mutate input))))))
     (is (= :vector-append-arity-mismatch (:reason (vector-append-derived (assoc-in input [:products :calls 0 :argument-node-ids] [:input])))))
-    (let [{:keys [core node call edge nodes bindings types forms]} input
-          result (vector-append-derived input)]
+    (let [result (vector-append-derived input)]
       (is (= :accepted (:status result)))
       (is (= (:type result) (:result-type (:descriptor result)))))))
 
@@ -11203,9 +11178,7 @@
     (is (= 0 (get-in shape [:vector-nth-selection :projection-links 0 :coordinate])))
     (is (= :input (get-in shape [:vector-nth-selection :projection-links 0 :vector-node :node-id])))
     (is (= :proven-safe (get-in shape [:vector-nth-selection :application :bounds-proof :outcome])))
-    (when (= :accepted (:status shape))
-
-      )))
+    ))
 
 (defn- vector-nth-unrelated-shape-input []
   (let [base (vector-nth-shape-input) quoted (quoted-data-input {"unrelated" 1} 12000)
@@ -11306,9 +11279,7 @@
       (doseq [link (:vector-projection-links shape)]
         (is (= :proven-safe (get-in link [:application :bounds-proof :outcome])))
         (is (= :not-authorized (get-in link [:application :bounds-proof :check-elision]))))
-      (when (= :accepted (:status shape))
-
-        ))))
+      )))
 
 (defn- vector-append-projection-input [index unrelated?]
   (let [base (vector-append-input [:gravity.type/integer] :gravity.type/keyword)
@@ -11415,9 +11386,6 @@
       (is (= 'conj (get-in link [:append-application :operation])))
       (is (= (:call-core-node-id (get-in link [:append-application :source-edge])) :append-call))
       (is (= (if (zero? index) :input :value) (:selected-node-id link)))
-      (when (= :accepted (:status shape))
-
-        )
       (doseq [changed [(assoc-in input [:types :append-call :element-types 1] :gravity.type/string)
                        (assoc-in input [:nodes :append-call :evaluation :order] [])
                        (assoc-in input [:forms :value :parent-form-id] :sibling)
@@ -11441,9 +11409,7 @@
       (is (= (if (< index 2) 2 1) (count links)))
       (is (= :second-append (get-in (last links) [:append-application :call-core-node-id])))
       (when nested? (is (= {:values [:done]} (:domain shape))))
-      (when (= :accepted (:status shape))
-
-        )))
+      ))
   (let [{:keys [core nodes types binding-types bindings forms products]} (vector-append-projection-input 0 false)
         context (assoc (invoke-c7 'sh08-sm-call-context [products types ]) :source-core core)
         shape (invoke-c7 'sh08-va-shape [(nodes :append-call) nodes types binding-types {} [] bindings forms #{} 0 {} context])]
@@ -13535,7 +13501,7 @@
 
 (deftest sh08-two-and-three-function-chains-reach-one-consistent-pass
   (doseq [function-count [2 3]]
-    (let [{:keys [nodes node-table function-records definitions
+    (let [{:keys [nodes node-table definitions
                   calls edges function-types call-node-ids]}
           (synthetic-chain-input function-count)
           result
@@ -15827,7 +15793,7 @@
     (doseq [pair [[carrier carrier] [carrier (finite [])] [(finite []) carrier]
                  [carrier (finite [s s])] [(finite [s]) carrier]
                  [carrier :gravity.type/never] [:gravity.type/never carrier]]]
-      (let [{:keys [core node call edge nodes bindings types forms products binding-types] :as input} (atomic-equality-input pair)
+      (let [{:keys [core node call edge nodes bindings types forms binding-types] :as input} (atomic-equality-input pair)
             checked (domain pair) result (derive input) descriptor (:descriptor result)
             expected (if (some #{:gravity.type/never} pair) :gravity.type/never :gravity.type/bool)
             established (assoc types :operator descriptor :call expected)
@@ -15957,16 +15923,7 @@
                          (assoc-in descriptor [:inequality-policy :operand-evaluation] :right-to-left)
                          (assoc descriptor :operand-type-work 0)]]
           (is (= :rejected (:status (check (assoc established :operator changed))))))))
-    (doseq [bad [:gravity.type/set :gravity.type/unknown (finite [:gravity.type/keyword])
-                 (assoc carrier :extra true) (assoc carrier :element-type :gravity.type/keyword)
-                 (finite [s :gravity.type/character]) (finite [:gravity.type/never])]]
-      (doseq [pair (if (= bad (finite [:gravity.type/keyword]))
-                    [[carrier bad] [bad carrier]]
-                    [[carrier bad] [bad carrier] [:gravity.type/never bad] [bad :gravity.type/never]])]
-        ))
-    (let [v #(hash-map :kind :gravity.type/vector :shape :literal :element-types [%])]
-      (doseq [pair [[(v carrier) (v carrier)] [(v carrier) (v (finite [s]))]]]
-        ))))
+  ))
 
 (defn- list-predicate-input [argument-types]
   (let [input (integral-ordering-input 'list? argument-types)]
@@ -16063,7 +16020,6 @@
           hostile (reify clojure.lang.Counted (count [_] 2048)
                          clojure.lang.Seqable (seq [_] (swap! visits inc) (throw (AssertionError. "unreserved predicate traversal"))))
           input (list-predicate-input [:gravity.type/keyword])
-          shape (assoc-in input [:core :function-records] hostile)
           malformed (assoc-in input [:call :argument-node-ids] hostile)
           type (list-predicate-input [{:kind :gravity.type/vector :shape :literal :element-types hostile}])]
       (is (= :list-predicate-arity-mismatch (:reason (list-predicate-derived malformed))))
@@ -16115,8 +16071,7 @@
 
 (deftest sh08-list-equality-development-kernel
   (let [finite #(hash-map :kind :gravity.type/list :shape :literal :element-types (vec %))
-        derive (fn [{:keys [core node call edge nodes bindings types forms]}]
-                 (invoke-c7 'sh08-le-derive [core node call edge nodes bindings types forms ]))
+        derive list-equality-derived
         k :gravity.type/keyword s :gravity.type/string
         pairs [[(finite []) (finite [])] [(finite [k s]) (finite [s k])]
                [(finite [(finite [s :gravity.type/nil]) :gravity.type/bool])
@@ -16183,8 +16138,7 @@
                   [(finite [s (finite [])]) (finite [k s s])]
                   [(finite [(finite [s (finite [])])]) (finite [(finite [k s])])]]]
       (is (= :list-equality-pair-type-required (:reason (derive (atomic-equality-input pair))))))
-    (let [wide (finite (repeat 1024 k)) deep (nth (iterate #(finite [%]) k) 128)
-          huge (finite (repeat 1024 wide))]
+    (let [wide (finite (repeat 1024 k)) deep (nth (iterate #(finite [%]) k) 128)]
       (doseq [type [wide deep]]
         (let [result (invoke-c7 'sh08-le-domain [[type type] ])]
           (is (= :accepted (:status result)))
@@ -16218,7 +16172,7 @@
              [node (assoc call :core-node-id bad)] [(assoc node :node-id bad) call]
              [(assoc node :children [bad :arg0 :arg1]) call] [(assoc node :children [:operator bad :arg1]) call]
              [(assoc node :children [:operator :arg0 bad]) call]
-             [(assoc-in node [:source :form-id] bad) call] [(assoc-in node [:source :syntax-id] bad) call]] budget [0 65536]]
+             [(assoc-in node [:source :form-id] bad) call] [(assoc-in node [:source :syntax-id] bad) call]]]
       (is (= :rejected (:status (invoke-c7 'sh08-le-derive [core changed-node changed-call edge nodes bindings types forms ]))))
       (is (= :rejected (:status (invoke-c7 'sh08-le-inferred-call [core changed-node changed-call edge nodes bindings table ]))))
       (is (= :rejected (:status (invoke-c7 'sh08-ae-step [changed-node table {} {}
@@ -16264,10 +16218,7 @@
         derive (fn [{:keys [core node call edge nodes bindings types forms]}]
                  (invoke-c7 'sh08-ane-derive [core node call edge nodes bindings types forms ]))
         k :gravity.type/keyword s :gravity.type/string
-        pairs [[(finite []) (finite [])] [(finite [k s]) (finite [s k])]
-               [(finite [(finite [s :gravity.type/nil]) :gravity.type/bool])
-                (finite [(finite [k :gravity.type/bool]) :gravity.type/nil])]
-               [(finite []) (finite [(finite [s])])]]]
+        pairs (take 4 (list-inequality-type-pairs))]
     (doseq [pair pairs]
       (let [{:keys [core node call edge nodes forms bindings products binding-types module] :as input} (atomic-inequality-input pair)
             result (derive input) descriptor (:descriptor result)
@@ -16339,7 +16290,7 @@
                   [(finite [s (finite [])]) (finite [k s s])]
                   [(finite [(finite [s (finite [])])]) (finite [(finite [k s])])]]]
       (is (= :list-equality-pair-type-required (:type-check-reason (derive (atomic-inequality-input pair))))))
-    ))
+  ))
 
 
 
@@ -16365,7 +16316,7 @@
              [node (assoc call :core-node-id bad)] [(assoc node :node-id bad) call]
              [(assoc node :children [bad :arg0 :arg1]) call] [(assoc node :children [:operator bad :arg1]) call]
              [(assoc node :children [:operator :arg0 bad]) call]
-             [(assoc-in node [:source :form-id] bad) call] [(assoc-in node [:source :syntax-id] bad) call]] budget [0 65536]]
+             [(assoc-in node [:source :form-id] bad) call] [(assoc-in node [:source :syntax-id] bad) call]]]
       (is (= :rejected (:status (invoke-c7 'sh08-ane-derive [core changed-node changed-call edge nodes bindings types forms ]))))
       (is (= :rejected (:status (invoke-c7 'sh08-ane-inferred-call [core changed-node changed-call edge nodes bindings table ]))))
       (is (= :rejected (:status (invoke-c7 'sh08-ane-step [changed-node table {} {}
@@ -16379,9 +16330,6 @@
       (let [type (finite [bad]) result (invoke-c7 'sh08-le-domain [[type (finite [])]])]
         (is (= :rejected (:status result)))
         (is (zero? @callbacks))))
-    (let [type (clojure.lang.PersistentArrayMap. (object-array [:kind :gravity.type/list :shape :literal opaque []]))]
-
-      (is (zero? @callbacks)))
     (doseq [bad [opaque [opaque] {:opaque opaque}]]
       (let [changed-nodes (assoc-in nodes [:operator :attributes :symbol] bad)
             changed-forms (assoc-in forms [:operator :value] bad)
@@ -16739,8 +16687,7 @@
                                   [[:call :operator-binding-id] :keyword-set-contains-source-mismatch]]]
       (let [result (step (assoc-in base path bad))]
         (is (= :rejected (:status result)))
-
-
+        (is (= expected-full (:reason result)))
         (is (zero? @callbacks))))
     (doseq [[arguments owner] [[[(finite [:gravity.type/symbol]) :gravity.type/symbol] 'sh08-ksm-derive]
                                [[:gravity.type/never :gravity.type/symbol] 'sh08-ksm-derive]
@@ -21348,7 +21295,7 @@
         (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
 (deftest
   sh08-private-map-keys-throw-source-index-budget-development-kernel
-  (let [{:keys [core nodes bindings types forms node call edge]} (private-map-keys-input)
+  (let [{:keys [core bindings types forms node call edge]} (private-map-keys-input)
         callers (mapv
                   (fn [entry edge]
                     (let [id (:caller-function-core-node-id edge) body (:core-node-id entry)]
@@ -23350,7 +23297,15 @@
         prior (invoke-c7 'sh08-nq-inferred-call [core qnode qcall qedge nodes bindings types])
         scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) types])
         owners (invoke-c7 'sh08-th-owners [core])]
-    (is (= :accepted (:status derived) (:status measured) (:status accepted)) (pr-str accepted))
+    (is
+      (= :accepted
+         (:status derived)
+         (:status measured)
+         (:status accepted)
+         (:status prior)
+         (:status scoped)
+         (:status owners))
+      (pr-str accepted))
     (is (= [] (get-in accepted [:throws :scaling-function])))
     (doseq [candidate [(update-in types [:scale-operator] dissoc :kind)
                        (assoc-in types [:scale-operator :kind] nil)
