@@ -17790,7 +17790,7 @@
               {:status :rejected :reason (if (if (map? right-literal) (= 0 (get right-literal :value)) false)
                                            :nonnegative-integer-quotient-zero-divisor :nonnegative-integer-quotient-proof-required)}))
           {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch})
-        {:status :rejected :reason :nonnegative-integer-quotient-arity-mismatch})))
+        {:status :rejected :reason :nonnegative-integer-quotient-arity-mismatch}))
 
 (defn p15-s23-nq-source [core node call edge nodes bindings types module proof]
   (if (if (map? edge) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false)
