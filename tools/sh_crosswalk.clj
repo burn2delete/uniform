@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "3cd79ed80a3c3808f0471dfbbf68dab8ca3a0aa4", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "c8fd8e437ef921041b181e2f09ee1a37d716d357", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -673,7 +673,7 @@
 
 (def pr574-predecessor-review macro-runtime-predecessor-review)
 
-(def mapping-review
+(def resolution-main-predecessor-review
   (assoc macro-artifacts-current-review
          :input-fingerprint "5fe8f9a8d3b7297cd8613e48637528ec01fe0a35f58182a98a4dfa28bfaa8af7"
          :macro-artifacts-current-review (select-keys macro-artifacts-current-review [:status :input-fingerprint :source-version-bridge])
@@ -684,6 +684,35 @@
          :previous-Native-review (:previous-review (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn")))
          :source-version-bridge "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"
          :qualification "Actual macro artifacts and accepted Native header reporting composition only; preserve all predecessor histories and pending unassessed scope."))
+
+(defn git-source [commit path]
+  (let [process (.start (doto (ProcessBuilder. ^java.util.List ["git" "show" (str commit ":" path)])
+                         (.redirectErrorStream true)))
+        text (slurp (.getInputStream process))]
+    (when-not (zero? (.waitFor process))
+      (throw (ex-info "Pinned local Git source unavailable; no projection written" {:path path :source-commit commit})))
+    text))
+
+(def resolution-runtime-current-review
+  (:mapping-review (edn/read-string
+                    (git-source "a83255c9de9158c6925b97637cd5d64cbdb71892"
+                                "specs/sh-family-crosswalk/crosswalk.edn"))))
+
+(def resolution-runtime-predecessor-review
+  (:resolution-runtime-predecessor-review resolution-runtime-current-review))
+
+(def mapping-review
+  (assoc resolution-main-predecessor-review
+         :input-fingerprint "f16680ce6e29658f827e6a50a5bd13fd3c90241aeb01614e4465422c40533f8e"
+         :source-version-bridge "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
+         :resolution-main-predecessor-review
+         (select-keys resolution-main-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :resolution-runtime-current-review
+         (select-keys resolution-runtime-current-review
+                      [:status :input-fingerprint :source-version-bridge])
+         :resolution-runtime-predecessor-review resolution-runtime-predecessor-review
+         :qualification "Native and resolution ownership source composition only; immutable predecessor projections remain pinned, all current states unassessed."))
 
 (defn source-view []
   (let [inventory (edn/read-string (slurp "specs/sh-family-crosswalk/original-inventory.edn"))
@@ -778,6 +807,12 @@
      {:path "specs/sh-family-crosswalk/pr574-composition-source-version.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-composition-source-version.edn"))}
      :pr574-conflict-composition-source-version
      {:path "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn" :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn"))}
+     :resolution-runtime-source-version
+     {:path "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"))}
+     :resolution-runtime-composition-source-version
+     {:path "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"))}
      :macro-artifacts-source-version
      {:path "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"
       :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"))}
@@ -962,14 +997,6 @@
       (when-not (= expected (sh-inventory/sha256 (read-version commit path)))
         (throw (ex-info "Source differs from its applying Git pin; preserve lineage before regeneration"
                         {:path path :source-commit commit}))))))
-
-(defn git-source [commit path]
-  (let [process (.start (doto (ProcessBuilder. ^java.util.List ["git" "show" (str commit ":" path)])
-                         (.redirectErrorStream true)))
-        text (slurp (.getInputStream process))]
-    (when-not (zero? (.waitFor process))
-      (throw (ex-info "Pinned local Git source unavailable; no projection written" {:path path :source-commit commit})))
-    text))
 
 (defn run [args]
   (let [result (build)]
