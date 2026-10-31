@@ -5449,7 +5449,8 @@
         (is (= [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/character :gravity.type/character]}]
                (:argument-types descriptor)))
         (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
-        (is (= [2 1] ((juxt :construction-work :result-count) descriptor)))
+        (is (= 1 (:result-count descriptor)))
+        (is (not (contains? descriptor :construction-work)))
         (is (= :list-spine (get-in descriptor [:storage-policy :copy])))
         (is (= :sh08-vector-rest-v1 (:producer-rule row)))
         (is (= [:direct-vector-rest [:memory/allocate]] ((juxt :dispatch :effects) fact)))
@@ -14109,7 +14110,8 @@
 
         (is (= :finite-persistent-vectors (get-in descriptor [:inequality-policy :domain])))
         (is (= :unsupported (get-in descriptor [:inequality-policy :numeric])))
-        (is (= :both-complete-domains-before-value-comparison (get-in record [:type-domain :validation])))
+        (is (= :equal (get-in record [:equality-policy :count])))
+        (is (not (contains? record :type-domain)))
         (is (= [] (:direct-effects descriptor) (:latent-effects descriptor) (:capabilities descriptor)))
         (is (= (if (some #{:gravity.type/never} pair) :gravity.type/never :gravity.type/bool) (:type result)))
         (is (= record (get-in result [:constraint :solution :vector-equality])))
@@ -15911,7 +15913,9 @@
         (is (= expected (:type result) (:result-type descriptor)))
         (is (not (contains? validation :operand-counts)))
         (is (not (contains? (:string-set-equality descriptor) :operand-counts)))
-        (is (= :not-established (get-in descriptor [:string-set-equality :type-domain :static-cardinality]) (get-in descriptor [:string-set-equality :type-domain :operand-extent])))
+        (is (= [:independently-established-string-sets :both-complete-before-result]
+               ((juxt :domain :domain-validation) (get-in descriptor [:string-set-equality :equality-policy]))))
+        (is (not (contains? (:string-set-equality descriptor) :type-domain)))
         (is (= :left-to-right-once (get-in descriptor [:inequality-policy :operand-evaluation])))
         (is (= :non-tail (get-in descriptor [:inequality-policy :operand-position])))
         (is (= :owned-equality-branch-complement (get-in descriptor [:inequality-policy :lowering])))
