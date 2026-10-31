@@ -235,7 +235,7 @@
         (p15-s23-sh07-runtime-invoke-compiler-internal-builtin
          runtime plan instruction args public-invocation-scope)
         (p15-s23-stage2-runtime-invoke-builtin
-         runtime plan function args)))))
+         runtime plan function args instruction public-invocation-scope)))))
 
 (defn- p15-s23-stage2-runtime-execute-generic-builtin-call
   [runtime plan env instruction function]

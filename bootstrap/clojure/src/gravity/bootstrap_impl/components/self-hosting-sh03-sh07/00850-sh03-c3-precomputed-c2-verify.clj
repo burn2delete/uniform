@@ -4,7 +4,8 @@
   ([candidate source-path c2-artifact]
    (sh03-c3-precomputed-c2-verify! candidate source-path c2-artifact nil))
   ([candidate source-path c2-artifact invocation]
-  (when (reader-pure-text/admission-required? c2-artifact)
+  (when (or (reader-pure-text/admission-required? c2-artifact)
+            (reader-resource-admission-required? c2-artifact))
     (when-not (= :passed (:status (p15-s23-trusted-carrier-validation c2-artifact :default-only)))
       (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                        {:missing-fields [:native-pure-text-admission-input]})))
@@ -34,6 +35,8 @@
         (when-not (= fresh c2-artifact)
           (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                            {:missing-fields [:pure-text-fresh-reader-product-equality]})))))
+  (when (reader-resource-admission-required? c2-artifact)
+    (reader-resource-consume! candidate source-path c2-artifact invocation))
   (let [context (sh03-reader-verification-invocation! source-path invocation)
         boundary (:gravity-reader-boundary c2-artifact)
         envelope (:authenticated-envelope boundary)

@@ -177,3 +177,143 @@
                          (let [entry (.getEntry zip path)]
                            (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
                            (with-open [input (.getInputStream zip entry)] (.readAllBytes input)))) selected)))))
+
+(defn- core-operation [value]
+  (when (and (symbol? value) (contains? #{nil "clojure.core"} (namespace value)))
+    (symbol (name value))))
+
+(defn- require-spec [value]
+  (let [spec (if (and (seq? value) (= 'quote (core-operation (first value)))) (second value) value)]
+    (when (and (vector? spec) (symbol? (first spec)) (even? (count (rest spec))))
+      (let [options (apply hash-map (rest spec))]
+        (when-not (contains? options :as-alias)
+          {:namespace (first spec) :alias (:as options)})))))
+
+(declare ^:private call-references)
+
+(defn- binding-references [bindings locals aliases]
+  ;; The compiler's data-only expansion puts used :or defaults in executable
+  ;; initializers and leaves unused defaults/binding syntax out of the walk.
+  (loop [pairs (partition 2 (clojure.core/destructure bindings)) locals locals calls []]
+    (if-let [[name expression] (first pairs)]
+      (recur (next pairs) (conj locals name)
+             (into calls (call-references expression locals aliases)))
+      {:locals locals :calls calls})))
+
+(defn- function-references [tail locals aliases]
+  (let [[locals tail] (if (symbol? (first tail)) [(conj locals (first tail)) (rest tail)] [locals tail])
+        tail (drop-while #(or (string? %) (map? %)) tail)
+        arities (if (vector? (first tail)) [tail] tail)]
+    (mapcat (fn [[parameters & body]]
+              (when (vector? parameters)
+                ;; Simple parameters are all bound before the function's
+                ;; sequential destructuring let, including later parameters.
+                (let [locals (into locals (remove #{'&} (filter symbol? parameters)))
+                      patterns (remove symbol? parameters)
+                      {:keys [locals calls]} (binding-references (vec (mapcat #(vector % nil) patterns)) locals aliases)]
+                  (concat calls (mapcat #(call-references % locals aliases) body))))) arities)))
+
+(defn- call-references
+  ([form] (call-references form #{} {}))
+  ([form locals aliases]
+   (let [head (when (seq? form) (first form))
+         qualified-head (if (and (symbol? head) (namespace head)
+                                 (= 'clojure.core (get aliases (symbol (namespace head)))))
+                          (symbol "clojure.core" (name head)) head)
+         core (core-operation qualified-head)
+         operation (when-not (and (symbol? head) (nil? (namespace head))
+                                  (contains? locals head) (not (#{'quote 'var} core))) core)
+         walk #(call-references % locals aliases)]
+     (cond
+       (#{'quote 'var 'comment} operation) []
+       (= 'case operation)
+       (let [clauses (drop 2 form)]
+         (concat (walk (second form))
+                 (mapcat walk (map second (partition 2 clauses)))
+                 (when (odd? (count clauses)) (walk (last clauses)))))
+       (#{'let 'let* 'loop 'loop* 'with-open 'with-local-vars} operation)
+       (let [{:keys [locals calls]} (binding-references (second form) locals aliases)]
+         (concat calls (mapcat #(call-references % locals aliases) (drop 2 form))))
+       (#{'fn 'fn*} operation) (function-references (rest form) locals aliases)
+       (#{'defn 'defn- 'defmacro} operation) (function-references (drop 2 form) locals aliases)
+       (= 'letfn operation)
+       (let [functions (second form) locals (into locals (map first functions))]
+         (concat (mapcat #(function-references (rest %) locals aliases) functions)
+                 (mapcat #(call-references % locals aliases) (drop 2 form))))
+       (#{'if-let 'if-some 'when-let 'when-some} operation)
+       (let [body (drop 2 form)
+             {bound :locals calls :calls} (binding-references (second form) locals aliases)]
+         (concat calls
+                 (if (#{'if-let 'if-some} operation)
+                   (concat (call-references (first body) bound aliases) (walk (second body)))
+                   (mapcat #(call-references % bound aliases) body))))
+       (= 'catch operation)
+       (mapcat #(call-references % (conj locals (nth form 2)) aliases) (drop 3 form))
+       ;; Unknown core macros may contain data/bindings. Retain warnings rather
+       ;; than invent executable positions for an unsupported expansion.
+       (and operation (:macro (meta (ns-resolve 'clojure.core operation)))
+            (not (#{'when 'when-not 'if-not 'and 'or 'cond 'condp 'assert 'lazy-seq
+                    'binding 'dosync 'locking 'with-redefs 'with-local-vars} operation))) []
+       :else
+       (concat
+        (when (and (seq? form) (seq? head) (= 'var (core-operation (first head))) (= 2 (count head)))
+          (let [reference (second head)]
+            (when (and (symbol? reference) (namespace reference))
+              [{:reference reference :row (:line (meta form)) :col (:column (meta form))}])))
+        (when (coll? form) (mapcat walk form)))))))
+
+(defn private-var-usages
+  "Non-evaluating, source-backed direct Var call edges in the actual lint inputs.
+  Each group has the same namespace lifetime as one linter/context input."
+  [groups]
+  (let [definitions (atom []) calls (atom [])]
+    (doseq [{:keys [paths inputs namespace-by-path]} groups]
+      (let [scopes (atom {})]
+        (doseq [path paths :let [bytes (get inputs path) digest (sha256 bytes)]
+                :when (str/ends-with? path ".clj")]
+          (loop [forms (source-forms! path bytes)
+                 current-ns (get namespace-by-path path 'gravity.bootstrap)]
+            (when-let [form (first forms)]
+              (let [operation (when (seq? form) (core-operation (first form)))
+                    current-ns (if (= 'ns operation) (second form) current-ns)
+                    specs (cond (= 'ns operation) (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
+                                (= 'require operation) (rest form))]
+                (when (= 'ns operation) (swap! scopes assoc current-ns {:aliases {} :required {} :defined #{}}))
+                (doseq [{target :namespace alias :alias} (keep require-spec specs)]
+                  (swap! scopes assoc-in [current-ns :required target]
+                         {:namespace target :alias alias :path path :row (:line (meta form)) :sha256 digest})
+                  (when alias (swap! scopes assoc-in [current-ns :aliases alias] target)))
+                (when (and (#{'def 'defonce 'defn 'defn- 'defmacro} operation) (symbol? (second form)))
+                  (swap! scopes update-in [current-ns :defined] (fnil conj #{}) (second form)))
+                (let [{:keys [aliases required defined]} (get @scopes current-ns)]
+                  (when (and (#{'defn 'defn-} operation) (symbol? (second form))
+                             (or (= 'defn- operation) (:private (meta (second form)))))
+                    (swap! definitions conj {:namespace current-ns :name (second form)
+                                             :path path :row (:line (meta form)) :sha256 digest}))
+                  (doseq [{:keys [reference row col]} (call-references form (or defined #{}) aliases)
+                          :let [prefix (symbol (namespace reference)) target (get aliases prefix prefix)]
+                          :when (and (contains? required target) (not= current-ns target)
+                                     (every? pos-int? [row col]))]
+                    (swap! calls conj {:namespace target :name (symbol (name reference))
+                                       :caller-namespace current-ns :path path :row row :col col
+                                       :reference reference :alias (when (contains? aliases prefix) prefix)
+                                       :require (get required target)
+                                       :sha256 digest})))
+                (recur (next forms) current-ns)))))))
+    (let [by-name (group-by (juxt :namespace :name) @definitions)]
+      (vec (for [[key definitions] by-name :when (= 1 (count definitions))
+                 :let [callers (filterv #(= key ((juxt :namespace :name) %)) @calls)]
+                 :when (seq callers)]
+             {:definition (first definitions) :callers callers})))))
+
+(defn resolve-private-usages [findings usages]
+  (reduce (fn [result finding]
+            (if-let [usage (when (and (= :unused-private-var (:type finding)) (= :warning (:level finding)))
+                             (some (fn [{:keys [definition] :as usage}]
+                                     (when (and (= (:path definition) (:filename finding))
+                                                (= (:row definition) (:row finding))
+                                                (= (str "Unused private var " (:namespace definition) "/" (:name definition))
+                                                   (:message finding))) usage)) usages))]
+              (update result :resolved conj (assoc usage :finding finding))
+              (update result :findings conj finding)))
+          {:findings [] :resolved []} findings))
