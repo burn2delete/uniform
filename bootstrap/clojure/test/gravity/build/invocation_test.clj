@@ -296,10 +296,13 @@
           exception [(AssertionError. "injected Error")
                      (IllegalStateException. "wrapped Error" (LinkageError. "injected link"))
                      (java.util.concurrent.CancellationException. "cancel")
+                     (IllegalStateException. "wrapped cancellation"
+                                             (java.util.concurrent.CancellationException. "cancel"))
                      (java.io.InterruptedIOException. "interrupted I/O")
                      (java.nio.channels.ClosedByInterruptException.)]]
     (let [result (failing-cli-model exception stage arguments)]
       (is (identical? exception (:escaped result)))
+      (is (false? (:interrupted-on-escape? result)))
       (is (empty? (:exits result)))
       (is (empty? (:stdout result)))
       (is (empty? (:stderr result)))))
@@ -323,3 +326,51 @@
         (is (empty? (:exits result)))
         (is (empty? (:stderr result))))
       (finally (when-not was-interrupted? (Thread/interrupted))))))
+
+(deftest deeper-causal-interruption-is-restored-before-control-flow-escapes
+  (doseq [stage [:constructor :resolver]
+          middle [(Error. "fatal")
+                  (java.util.concurrent.CancellationException. "cancel")]]
+    (let [was-interrupted? (.isInterrupted (Thread/currentThread))
+          interrupt (InterruptedException. "deeper interrupt")
+          _ (.initCause middle interrupt)
+          exception (IllegalStateException. "original wrapper" middle)]
+      (try
+        (let [result (failing-cli-model exception stage arguments)]
+          (is (identical? exception (:escaped result)))
+          (is (:interrupted-on-escape? result))
+          (is (identical? middle (.getCause exception)))
+          (is (identical? interrupt (.getCause middle)))
+          (is (empty? (:exits result)))
+          (is (empty? (:stdout result)))
+          (is (empty? (:stderr result))))
+        (finally (when-not was-interrupted? (Thread/interrupted)))))))
+
+(deftest cyclic-causes-finish-inspection-and-preserve-control-flow
+  (doseq [stage [:constructor :resolver]
+          kind [:ordinary :fatal :cancellation :interrupt]]
+    (let [was-interrupted? (.isInterrupted (Thread/currentThread))
+          exception (IllegalStateException. "original cyclic wrapper")
+          cause (case kind
+                  :ordinary (IllegalStateException. "ordinary cycle")
+                  :fatal (Error. "fatal cycle")
+                  :cancellation (java.util.concurrent.CancellationException. "cancel cycle")
+                  :interrupt (InterruptedException. "interrupt cycle"))]
+      (.initCause exception cause)
+      (.initCause cause exception)
+      (try
+        (let [result (failing-cli-model exception stage arguments)]
+          (is (identical? cause (.getCause exception)))
+          (is (identical? exception (.getCause cause)))
+          (is (empty? (:stdout result)))
+          (if (= :ordinary kind)
+            (do
+              (is (nil? (:escaped result)))
+              (is (= [4] (:exits result)))
+              (is (= "T1004" (get (json/read-strict-json (:stderr result)) "code"))))
+            (do
+              (is (identical? exception (:escaped result)))
+              (is (= (= :interrupt kind) (:interrupted-on-escape? result)))
+              (is (empty? (:exits result)))
+              (is (empty? (:stderr result))))))
+        (finally (when-not was-interrupted? (Thread/interrupted)))))))

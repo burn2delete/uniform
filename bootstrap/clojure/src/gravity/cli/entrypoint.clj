@@ -13,19 +13,20 @@
   ;; Preserve control flow, even when a loader wrapped the original cause.
   (when (.isInterrupted (Thread/currentThread)) (throw exception))
   (let [seen (java.util.IdentityHashMap.)]
-    (loop [cause exception]
-      (when (and cause (not (.containsKey seen cause)))
-        (.put seen cause true)
-        (when (instance? InterruptedException cause)
-          (.interrupt (Thread/currentThread))
-          (throw exception))
-        (when (or (instance? Error cause)
-                  (instance? java.util.concurrent.CancellationException cause)
-                  (and (instance? java.io.InterruptedIOException cause)
-                       (not (instance? java.net.SocketTimeoutException cause)))
-                  (instance? java.nio.channels.ClosedByInterruptException cause))
-          (throw exception))
-        (recur (.getCause ^Throwable cause)))))
+    (loop [cause exception propagate? false interrupted? false]
+      (if (and cause (not (.containsKey seen cause)))
+        (do
+          (.put seen cause true)
+          (recur (.getCause ^Throwable cause)
+                 (or propagate? (instance? Error cause)
+                     (instance? java.util.concurrent.CancellationException cause)
+                     (and (instance? java.io.InterruptedIOException cause)
+                          (not (instance? java.net.SocketTimeoutException cause)))
+                     (instance? java.nio.channels.ClosedByInterruptException cause))
+                 (or interrupted? (instance? InterruptedException cause))))
+        (do
+          (when interrupted? (.interrupt (Thread/currentThread)))
+          (when (or propagate? interrupted?) (throw exception))))))
   (let [{:keys [json exit-code]} (build-invocation/diagnostic-json exception)]
     (binding [*out* *err*] (println json))
     (exit! exit-code)))
