@@ -15628,7 +15628,7 @@
                          :domain-validation :both-complete-before-result
                          :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
-                         :collection-construction :none}
+                         :collection-construction :none :provider-cpu-bound :not-established}
                               :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
                               :entry-contract :type-conforming-typed-calls)
                             :operand-domains (get validation :operand-domains)}
@@ -15654,7 +15654,7 @@
                          :domain-validation :both-complete-before-result
                          :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
-                         :collection-construction :none}
+                         :collection-construction :none :provider-cpu-bound :not-established}
                               :strings :exact-valid-scalar-sequence :normalization :none :locale :none :conversion :none :numeric :unsupported
                               :entry-contract :type-conforming-typed-calls)
                             :operand-counts (get validation :operand-counts)}
@@ -15680,7 +15680,7 @@
                          :domain-validation :both-complete-before-result
                          :member-uniqueness :validated-before-cardinality
                          :identity :unobserved :payload-evaluation :none :mutation :none
-                         :collection-construction :none}
+                         :collection-construction :none :provider-cpu-bound :not-established}
                             :operand-counts (get validation :operand-counts)}
                          :inequality-policy {:operation :complement-of-binary-keyword-set-value-equality
                             :domain :finite-persistent-keyword-sets :members :keyword-only
