@@ -93,8 +93,8 @@
   caller's manifest; runtime semantics (the formatting function itself) come
   from the compiled Gravity source artifact."
   [runtime function args operations]
-  (let [{:keys [executor-fail! execute-function]} operations]
-  (let [artifact-plan (:runtime-artifact-plan runtime)
+  (let [{:keys [executor-fail! execute-function]} operations
+        artifact-plan (:runtime-artifact-plan runtime)
         definition (get-in artifact-plan [:functions function])]
     (when-not (and (map? artifact-plan) (map? definition))
       (executor-fail!
@@ -120,12 +120,10 @@
      function
      args)))
 
-)
-
 (defn execute-plan
   [runtime plan operations]
-  (let [{:keys [fail! execute-instructions]} operations]
-  (let [main-function (get-in plan [:functions (:entrypoint plan)])
+  (let [{:keys [fail! execute-instructions]} operations
+        main-function (get-in plan [:functions (:entrypoint plan)])
         params (:params main-function)
         result (atom nil)
         stdout
@@ -154,8 +152,6 @@
      :instruction-summary (:instruction-summary plan)
 	     :effect-summary (:effect-summary plan)
 	     :status :complete}))
-
-)
 
 (doseq [operation [#'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

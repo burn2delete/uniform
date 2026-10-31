@@ -99,6 +99,36 @@ Full changed-file contextual lint, docs/roadmap/governance checks, independent
 acceptance, final exact-head CI and clean current-main integration preflight
 remain required before integration.
 
+## Review and static-check correction
+
+Both independent reviews conditionally accept source
+a8a7e039732e9b4e424998b8a0f18590c6281d1c, tree
+19cf22c450603ec9c01437034fa38e157fbe09a6, against main 3a4d5ea1. Its static
+CI job in run 41218360925 fails changed-file lint on two newly redundant nested
+let expressions, at runtime.clj lines 97 and 128. The other seven static
+commands pass. The tested merge is 55637a8854f17aa22f722eb812e9bd3c422538a4,
+parents 3a4d5ea1 and a8a7e039, with that exact candidate tree. All retained static
+receipt hashes verify; SHA256SUMS hashes to
+e2c4a064393f00b021991a4fb4480bacfd41252aaa3fd5c7445c9ed6516fe9d0.
+The failed static result is not waived or retried.
+
+The correction folds the two callback-binding lets into their existing body
+bindings, preserving evaluation order. No callback, guard, arity, record field
+or operation key changes. The conservation checker accounts explicitly for
+this binding-only folding. A producer at clean a8a7e039 with the working fix
+again emits the same paired output, formatting result and diagnostics; this
+new observation uses the actual main-3a4d5ea1 composition. The original before/
+after records retain their earlier context. The corrected focused suite passes
+5 / 88, language passes 6 / 11, and all five changed Clojure paths pass full
+contextual lint with 3492 unchanged baseline warnings and zero blockers.
+Docs validate 240 / 19; roadmap and governance pass. No lint/configuration,
+runner, watchdog, cache, source-authority or admission rule changes.
+
+The corrected exact commit requires independent review, its own successful CI
+and a clean current-main integration preflight before integration. The initial
+review does not confer acceptance on an unreviewed correction or waive a failed
+check.
+
 ## Unsupported boundaries
 
 This is temporary Clojure invocation machinery for existing compiled plans.
