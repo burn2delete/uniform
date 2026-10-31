@@ -13930,7 +13930,6 @@
           pass #(invoke-c7 'sh08-ft-infer-pass-with-context
                            [sequence % [] [] [] {} seeds (assoc context :loop-work-left %2)])
           result (pass lexical 65536)
-          v1-work (:loop-work-count result)
           current-type (get-in result [:type-table :stored-ref])]
       (is (= selected-type (get-in result [:type-table :read])))
       (is (= (if addition? selected-type :gravity.type/unknown) current-type))
@@ -13938,13 +13937,16 @@
       (is (= :gravity.type/string (get-in result [:type-table :unvisited-ref])))
       (when addition?
         (let [mutable (pass (assoc-in lexical [0 :mutability] :mutable) 65536)
-              wrong (pass (assoc-in lexical [0 :initializer-node-id] :future) 65536)
-              low (pass lexical (dec v1-work))]
+              wrong (pass (assoc-in lexical [0 :initializer-node-id] :future) 65536)]
           (is (= :gravity.type/unknown (get-in mutable [:type-table :stored-ref])
-                 (get-in wrong [:type-table :stored-ref])))
-          (is (= :bounded-unit-access-lexical-work-limit (get-in low [:diagnostics 0 :reason])))
-          (is (= v1-work (:loop-work-count low)))
-          (is (= :gravity.type/unknown (get-in low [:type-table :stored-ref])))))
+                 (get-in wrong [:type-table :stored-ref])))))
+      (when addition?
+        (let [unrelated (mapv (fn [i] {:binding-id (keyword (str "unrelated-" i))
+                                       :initializer-node-id :future :mutability :immutable}) (range 64))
+              padded (pass (into lexical unrelated) 65536)]
+          (is (= selected-type (get-in padded [:type-table :stored-ref])))
+          (is (= [] (:diagnostics padded)))
+          (is (= (:loop-work-count result) (:loop-work-count padded)))))
       (when addition?
         (let [pending (invoke-c7 'sh08-ft-infer-pass-with-context
                                  [[(nodes :nth-op) (nodes :nth-vector) (nodes :read) reference]
