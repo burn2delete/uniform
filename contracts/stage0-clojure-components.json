@@ -220,6 +220,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj", "namespace": "gravity.optimization.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "llvm-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-llvm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/llvm.clj", "namespace": "gravity.backend.llvm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-llvm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj", "namespace": "gravity.backend.llvm.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "c-emission",
       "kind": "production-stage-helper",
       "owner": "sh-target-c",

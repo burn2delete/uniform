@@ -267,6 +267,10 @@
 (def ^:private optimization-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj")
 (def ^:private optimization-stage-test "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj")
 
+(def ^:private llvm-data-stage-path "bootstrap/clojure/src/gravity/backend/llvm.clj")
+(def ^:private llvm-data-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_llvm/005-lowering-reconstruction-and-builder.clj")
+(def ^:private llvm-data-stage-test "bootstrap/clojure/test/gravity/backend/llvm/pipeline_test.clj")
+
 (def ^:private c-emission-stage-path "bootstrap/clojure/src/gravity/backend/c.clj")
 (def ^:private c-emission-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-023-p15-s23-b2-c17-operation-expression-through-p15-s23-b2-c17-discard-cast-records.clj")
 (def ^:private c-emission-stage-test "bootstrap/clojure/test/gravity/backend/c/pipeline_test.clj")
@@ -277,6 +281,9 @@
     (and (= {c-emission-stage-path
              {:namespace 'gravity.backend.c :owner :sh-target-c :slice "SH-18"
               :consumer-path c-emission-stage-consumer :test-path c-emission-stage-test}
+             llvm-data-stage-path
+             {:namespace 'gravity.backend.llvm :owner :sh-target-llvm :slice "SH-18"
+              :consumer-path llvm-data-stage-consumer :test-path llvm-data-stage-test}
              optimization-stage-path
              {:namespace 'gravity.optimization :owner :sh-optimization :slice "SH-16"
               :consumer-path optimization-stage-consumer :test-path optimization-stage-test}
@@ -325,6 +332,9 @@
          (= :sh-core (get-in record [:module-owners core-stage-path]))
          (= :sh-types (get-in record [:module-owners types-stage-path]))
          (= :sh-types (get-in record [:module-owners types-stage-test]))
+         (= :sh-target-llvm (get-in record [:module-owners llvm-data-stage-path]))
+         (= {:namespace 'gravity.backend.llvm.pipeline-test :slice "SH-18" :owner :sh-target-llvm}
+            (get-in record [:standalone-test-owners llvm-data-stage-test]))
          (= :sh-target-c (get-in record [:module-owners c-emission-stage-path]))
          (= {:namespace 'gravity.backend.c.pipeline-test :slice "SH-18" :owner :sh-target-c}
             (get-in record [:standalone-test-owners c-emission-stage-test]))
@@ -388,6 +398,11 @@
               "source" {"path" optimization-stage-path "namespace" "gravity.optimization"}
               "consumer" {"path" optimization-stage-consumer "namespace" "gravity.bootstrap-c13-comparison" "owner" "sh-optimization"}
               "test" {"path" optimization-stage-test "namespace" "gravity.optimization.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "llvm-data" "kind" "production-stage-helper" "owner" "sh-target-llvm"
+              "source" {"path" llvm-data-stage-path "namespace" "gravity.backend.llvm"}
+              "consumer" {"path" llvm-data-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-target-llvm"}
+              "test" {"path" llvm-data-stage-test "namespace" "gravity.backend.llvm.pipeline-test"
                       "registration" "standalone"}}
              {"id" "c-emission" "kind" "production-stage-helper" "owner" "sh-target-c"
               "source" {"path" c-emission-stage-path "namespace" "gravity.backend.c"}
@@ -941,6 +956,30 @@
                  (assoc-in record [:production-helper-associations optimization-stage-path :namespace] 'gravity.forged)
                  (assoc-in record [:production-helper-associations optimization-stage-path :consumer-path] "forged.clj")
                  (assoc-in record [:production-helper-associations optimization-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" helper-index "test" "registration"] "bootstrap-free")
+                 (assoc-in contract ["production_helpers" helper-index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest llvm-data-helper-has-a-real-consumer-and-standalone-test
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        helper-index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "llvm-data")]
+    (is (not (neg? helper-index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [llvm-data-stage-path llvm-data-stage-consumer llvm-data-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path llvm-data-stage-path)))]
+        (is (= 'gravity.backend.llvm (second (read reader))))))
+    (doseq [bad [(update record :module-owners dissoc llvm-data-stage-path)
+                 (assoc-in record [:module-owners llvm-data-stage-path] :master-coordinator)
+                 (assoc-in record [:standalone-test-owners llvm-data-stage-test :owner] :sh-core)
+                 (assoc-in record [:production-helper-associations llvm-data-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations llvm-data-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations llvm-data-stage-path :test-path] "forged_test.clj")]]
       (is (not (production-helper-registration-valid? bad contract))))
     (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "master-coordinator")
                  (assoc-in contract ["production_helpers" helper-index "test" "registration"] "bootstrap-free")

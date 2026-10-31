@@ -79,6 +79,43 @@ evidence remain byte-identical to 56177c12a. This composition does not claim to
 remedy any earlier CI failure. Final candidate review, checks and exact clean
 integration preflight must bind the final commit and current main separately.
 
+## Subsequent current-main composition
+
+Candidate 03eb176e15d39106029b403129cecd8d4b8e50f0 (tree
+98ff6310212ed8758002711bf1cb0b2ff73ff575) remains failed historical evidence:
+CI 41227412790 timed out Macro at 600 seconds, exit 124. The other nine enabled
+jobs passed. Its receipt manifest verifies at
+`/tmp/uniform-c-emission-ci-macro-41227412790-nonpass`, SHA256SUMS digest
+8d9b81e7490592aedfdc69a759996bdad1ee4b092a14ca1fc7957335815ee204.
+The log has no completed test summary or active test identifier. Cause and
+process cleanup remain unknown. That head was not rerun or credited as passing.
+
+Main subsequently integrated LLVM data and PR 711's CI selection/host-watchdog
+policy. The actual incoming parent is 79f285f30350362ca4ea8fb99bf0159014c32139,
+tree 8c7e1c22ab679c458b22cb6ab4d9690abfc35d8d. Its CI files are preserved
+byte-for-byte, with no authored CI delta relative to that parent. Its Macro and
+Resolution child watchdogs are 900 seconds and its workflow job limit is 20
+minutes. This source-changing slice requires full semantic selection. Neither
+the new policy nor a future result supplies evidence that the old head passed
+its old bound or that the old timeout's cause was repaired.
+
+Five require/registration/document conflicts are resolved from the complete
+parents. LLVM remains helper index 10 and C follows at 11; both ownership
+adversarial tests survive. C stage, test and all three consumers remain
+byte-identical to 03eb176e. LLVM stage, test, four consumers and evidence remain
+byte-identical to main. The primary inventory counts do not change.
+
+Fresh combined C/LLVM focused tests pass 11/221, ownership 26/905, language
+6/11, documentation 240/19 and roadmap/governance. A fresh working producer
+matches all four original complete/text capture pairs, with source hashes and
+plan identities recomputed. Whole-source reconstruction against actual main
+79f285f passes all five files. These are ordinary working composition checks,
+not committed-head authority bookends. The composition script is
+`/tmp/uniform-c-emission-compose.clj`; its read-only reconstruction is
+`/tmp/uniform-c-emission-main-79f2-reconstruction.log`. The final exact commit
+still requires independent acceptance, its own CI and clean current-main
+integration preflight. No prior green is transferred.
+
 Reproduction:
 
 ```bash

@@ -8,6 +8,7 @@
             [gravity.mir]
             [gravity.runtime]
             [gravity.backend.c]
+            [gravity.backend.llvm]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]
