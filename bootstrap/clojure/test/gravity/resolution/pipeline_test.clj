@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 44 (count publics)))
+    (is (= 46 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -737,7 +737,8 @@
          (is (= 2 (get-in @ctx [:reuses :sh06])))))))
 
 (deftest every-stage-and-operation-var-invalidates-old-receipts
-  (let [stage-vars (set (vals (ns-publics 'gravity.resolution)))
+  (let [stage-vars (set (concat (vals (ns-publics 'gravity.resolution))
+                                [#'resolution/verify-current* #'resolution/verify* #'resolution/verify-contained*]))
         vars (set (concat stage-vars
                          (filter var? (vals (operations)))
                          [(seed-var 'resolution-stage-operations)]))]
@@ -822,7 +823,8 @@
         check! (seed-var 'resolution-construction-check!)
         reads (atom 0)
         expected (set (concat (vals (ns-publics 'gravity.resolution))
-                              [(seed-var 'resolution-stage-operations)
+                              [#'resolution/verify-current* #'resolution/verify* #'resolution/verify-contained*
+                               (seed-var 'resolution-stage-operations)
                                (seed-var 'resolution-stage-defaults)
                                (seed-var 'resolution-stage-input)
                                (seed-var 'sh06-resolution-dependency-record)
@@ -894,3 +896,115 @@
     (is (true? (second observed)))
     (is (= {:open? false :cleanup-complete? true :retained-receipt-count 0}
            (select-keys @cleanup [:open? :cleanup-complete? :retained-receipt-count])))))
+
+(deftest verifier-preflight-refuses-opaque-carriers-before-semantic-inspection
+  (let [callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) 7)
+                 (equals [_] (swap! callbacks conj :equals) false)
+                 (toString [] (swap! callbacks conj :print) "opaque"))
+        ops (assoc (operations)
+                   :sh06-resolution-artifact-verification-bounded*
+                   (fn [& _] (swap! callbacks conj :semantic-verification)))]
+    (doseq [value [opaque {:untrusted opaque} [opaque]]]
+      (let [report (#'resolution/verify* value false :gravity.bootstrap/legacy ops)]
+        (is (= :failed (:status report)))
+        (is (false? (get-in report [:checks :trusted-artifact-carrier?])))
+        (is (nil? (:gravity-verification report)))
+        (is (nil? (:upstream-verification report)))))
+    (is (empty? @callbacks))))
+
+(deftest verifier-preflight-retains-shape-and-component-order
+  ;; Isolated admission port records dispatch only, never owner acceptance.
+  (let [calls (atom [])
+        boundary (zipmap ((:sh06-resolution-boundary-keys-for (operations)) {}) (repeat nil))
+        artifact (assoc (zipmap @(seed-var 'sh06-resolution-artifact-keys) (repeat nil))
+                        :gravity-resolution-boundary boundary)
+        ops (assoc (operations)
+                   :sh06-resolution-component-validations
+                   (fn [_] (swap! calls conj :components) {:unit {:status :passed}})
+                   :sh06-resolution-artifact-verification-bounded*
+                   (fn [& args] (swap! calls conj [:semantic args]) unit-report))]
+    (is (= :failed (:status (#'resolution/verify* (dissoc artifact :kind) false :gravity.bootstrap/legacy ops))))
+    (is (empty? @calls))
+    (is (= unit-report (#'resolution/verify* artifact false :gravity.bootstrap/legacy ops)))
+    (is (= [:components [:semantic (list artifact false)]] @calls))
+    (reset! calls [])
+    (is (= unit-report (#'resolution/verify* artifact true {:context :unit} ops)))
+    (is (= [:components [:semantic (list artifact true {:context :unit})]] @calls))
+    (reset! calls [])
+    (let [report (#'resolution/verify* artifact false :gravity.bootstrap/legacy
+                                    (assoc ops :sh06-resolution-component-validations
+                                           (fn [_] (swap! calls conj :components) {:unit {:status :failed}})))]
+      (is (= :failed (:status report)))
+      (is (= [:trusted-semantic-components?] (:failed-checks report)))
+      (is (= [:components] @calls)))))
+
+(deftest verifier-contained-failures-preserve-the-original-host-boundary
+  (doseq [error [(Exception. "unit") (AssertionError. "unit")
+                 (LinkageError. "unit") (StackOverflowError. "unit")
+                 (OutOfMemoryError. "unit")]]
+    (let [ops (assoc (operations) :sh06-resolution-artifact-verification*
+                     (fn [& _] (throw error)))
+          report (#'resolution/verify-contained* {} false :gravity.bootstrap/legacy ops)]
+      (is (= (resolution/verification-failure error) report))
+      (is (= :failed (:status report)))
+      (is (= [(:contained-host-error report) [:contained-host-resource-failure?]]
+             [(.getName (class error)) (:failed-checks report)]))))
+  (let [error (InterruptedException. "unit")
+        observed (try
+                   (#'resolution/verify-contained* {} false :gravity.bootstrap/legacy
+                                                (assoc (operations) :sh06-resolution-artifact-verification*
+                                                       (fn [& _] (throw error))))
+                   (catch InterruptedException caught [caught (.isInterrupted (Thread/currentThread))])
+                   (finally (Thread/interrupted)))]
+    (is (identical? error (first observed)))
+    (is (true? (second observed)))))
+
+(deftest verifier-requires-fresh-replay-current-products-and-public-proof
+  (let [artifact @real-artifact
+        verify (fn [value construction? ops]
+                 ((seed-var 'sh06-resolution-with-reader-invocation)
+                  source invocation
+                  #(#'resolution/verify-contained* value construction? :gravity.bootstrap/legacy ops)))
+        ops (operations)]
+    (is (= :passed (:status (verify artifact false ops))))
+    (is (= :passed (:status ((seed-var 'sh06-resolution-with-reader-invocation)
+                             source invocation #(resolution/verify artifact :gravity.bootstrap/legacy ops)))))
+    (is (= '([artifact context operations]) (:arglists (meta #'resolution/verify))))
+    (is (nil? ((ns-publics 'gravity.resolution) 'verify-current*)))
+    (is (nil? ((ns-publics 'gravity.resolution) 'verify*)))
+    (is (nil? ((ns-publics 'gravity.resolution) 'verify-contained*)))
+    (let [without-proof (assoc artifact :capability-based-proof nil)]
+      (is (= :passed (:status (verify without-proof true ops))))
+      (let [report (verify without-proof false ops)]
+        (is (= :failed (:status report)))
+        (is (= [:embedded-capability-proof-current?] (:failed-checks report)))))
+    (doseq [[path value expected]
+            [[[:artifact-id] "sha256:changed" :artifact-identity-current?]
+             [[:provenance :source-revision-id] "changed" :provenance-current?]
+             [[:gravity-resolution-boundary :raw-template-result] {} :raw-template-result-current?]
+             [[:gravity-resolution-boundary :authenticated-envelope] {} :fresh-sh02-envelope-verified?]
+             [[:capability-based-proof :status] :failed :embedded-capability-proof-current?]]]
+      (let [report (verify (assoc-in artifact path value) false ops)]
+        (is (= :failed (:status report)))
+        (is (some #{expected} (:failed-checks report)))))
+    (doseq [[key replacement expected]
+            [[:sh06-resolution-verify-sh05 (fn [& _] {:status :failed}) :fresh-upstream-sh05-verification?]
+             [:sh06-resolution-run-request! (fn [& _] (throw (ex-info "unit replay refusal" {:id "C5-UNRESOLVED"})))
+              :fresh-gravity-request-replay?]
+             [:p15-s23-stage2-sh02-descriptor-envelope-verify! (fn [& _] (throw (ex-info "unit envelope refusal" {})))
+              :fresh-sh02-envelope-verified?]]]
+      (let [report (with-redefs-fn {(get ops key) replacement} #(verify artifact false ops))]
+        (is (= :failed (:status report)))
+        (is (some #{expected} (:failed-checks report)))))))
+
+(deftest verifier-configuration-roots-invalidate-old-receipts
+  (doseq [name '[sh06-resolution-artifact-keys sh06-resolution-pass-contract
+                sh06-resolution-execution-boundary-contract]]
+    (let [v (seed-var name) original @v
+          replacement (cond (map? original) (reduce-kv assoc {} original)
+                            (set? original) (into #{} (map identity) original))]
+      (is (= original replacement))
+      (is (not (identical? original replacement)))
+      (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
