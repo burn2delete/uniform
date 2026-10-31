@@ -432,5 +432,45 @@
       (is (= before (set (map ns-name (all-ns)))))
       (is (= 'never.prefix (second (first forms)))))))
 
+(deftest declaration-heads-respect-prior-source-bindings
+  (let [parse #(context/source-forms! "head-scope.clj" (utf8 %))
+        shadow-require (str "(ns never.shadow (:refer-clojure :exclude [require]))\n"
+                            "(defn require [& xs] nil)\n"
+                            "(require '[foreign.library :refer [map]])\n(def v `map)")
+        shadow-import (str "(ns never.shadow (:refer-clojure :exclude [import]))\n"
+                           "(defn import [& xs] nil)\n"
+                           "(import 'foreign.init.MustNotLoad)\n(def v `MustNotLoad)")
+        before (set (map ns-name (all-ns)))]
+    (is (= '(def v (quote clojure.core/map)) (last (parse shadow-require))))
+    (is (= '(def v (quote never.shadow/MustNotLoad)) (last (parse shadow-import))))
+    (is (= '(def v (quote clojure.core/map))
+           (last (parse (str "(ns never.bound (:refer-clojure :exclude [require])) (def require identity)\n"
+                             "(require '[foreign.library :refer [map]]) (def v `map)")))))
+    (is (= '(def v (quote never.bound/MustNotLoad))
+           (last (parse (str "(ns never.bound (:refer-clojure :exclude [import])) (def import identity)\n"
+                             "(import 'foreign.init.MustNotLoad) (def v `MustNotLoad)")))))
+    (is (= '(def v (quote clojure.core/map))
+           (last (parse (str "(ns never.referred (:refer-clojure :exclude [require])"
+                             " (:require [foreign.api :refer [require]]))\n"
+                             "(require '[foreign.library :refer [map]]) (def v `map)")))))
+    (is (= '(def v (quote never.referred/MustNotLoad))
+           (last (parse (str "(ns never.referred (:refer-clojure :exclude [import])"
+                             " (:require [foreign.api :refer [import]]))\n"
+                             "(import 'foreign.init.MustNotLoad) (def v `MustNotLoad)")))))
+    ;; Explicit core declarations work even when their bare names are local.
+    (is (= :clojure.set/value
+           (last (parse (str shadow-require "\n(clojure.core/require '(clojure [set :as s])) ::s/value")))))
+    (is (= '(def q (quote foreign.init.MustNotLoad))
+           (last (parse (str shadow-import "\n(clojure.core/import 'foreign.init.MustNotLoad) (def q `MustNotLoad)")))))
+    (is (= :clojure.set/value
+           (last (parse (str "(ns never.renamed (:refer-clojure :rename {require need}))\n"
+                             "(need '(clojure [set :as s])) ::s/value")))))
+    (is (= :clojure.set/value
+           (last (parse (str "(ns never.core-alias (:require [clojure.core :as c]))\n"
+                             "(c/require '(clojure [set :as s])) ::s/value")))))
+    (is (thrown? Exception
+                 (parse (str shadow-require "\n(require '[foreign.library :as invented]) ::invented/value"))))
+    (is (= before (set (map ns-name (all-ns)))))))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

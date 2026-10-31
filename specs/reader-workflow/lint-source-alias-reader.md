@@ -109,3 +109,41 @@ including archived selection, private-call analysis, provenance hashes and
 warning mapping. No original CI rerun, independent rereview, publication,
 actual Bootstrap/Reader/Gravity/CLI execution or session/Accounting change is
 part of this successor. OWN routes the affected rereview after source freeze.
+
+## F3: declaration heads follow source bindings
+
+Independent review of `947797c3329260018e6becd707363598175124b0` resolved F1/F2
+and requested one P2 correction, F3. Receipt SHA256
+`90f2a3f75ff9a355636932438c13cf4954507116884c50784691172211abf0fa`
+records 74 qualified checks. A local function named `require` was mistakenly
+treated as a core declaration, inventing a foreign refer for a later syntax
+quote. A local `import` call similarly invented a class identity. Neither call
+was a declaration or authority to change scope.
+
+This isolated successor changes only declaration-head classification. Bare
+heads resolve through prior local names and explicit/core refers. Qualified
+heads use source aliases or their explicit namespace. Only resolved core
+declarations update reader scope; local and foreign-referred calls do not.
+The compiler form `def` remains a declaration independently of the core Var
+table, so variable-bound local calls are tracked too. Renamed core declarations,
+explicit `clojure.core/require` and `clojure.core/import`, and an explicitly
+declared core alias retain their data-scope behavior. No source is evaluated.
+
+Focused controls pass 16 tests / 351 assertions. Added controls cover both
+original F3 reproductions, variable-bound and foreign-referred heads, explicit
+and renamed/aliased core declarations, and refusal of an alias invented by a
+local call. The F1/F2 controls and baseline/current reset, private-call,
+dead-helper, current-error and source-mapping controls remain passing.
+Both actual runner byte pins and form counts remain verified by inert reads.
+Static lint reports zero errors/warnings; the boundary gate passes 6 / 11.
+
+The initial local attempt lacked a nil guard on unresolved heads. Its
+correction then exposed the missing special-form `def` classification in one
+existing refusal test. Those nonpasses are retained separately from the final
+passing run. The source-check artifact retains the exact original F3 strings
+and before/after returned forms. Core/import/prefix helpers and all code from
+`manifest!` through EOF remain byte-conserved against the reviewed parent.
+No warning allowance, source authentication change, original CI rerun,
+publication, affected review, actual target execution or modification of the
+separate frozen session/acceptance candidates is included. OWN routes review
+of this exact successor.

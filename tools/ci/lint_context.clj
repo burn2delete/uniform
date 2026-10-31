@@ -69,8 +69,17 @@
   ;; Declarations are DATA. Never require a library or mutate a Namespace to
   ;; teach the reader aliases; baseline and current inputs have separate scopes.
   (let [head (when (seq? form) (first form))
-        operation (when (and (symbol? head) (contains? #{nil "clojure.core"} (namespace head)))
-                    (symbol (name head)))
+        resolved-head (when (symbol? head)
+                        ;; def is a compiler form, not a referred Var.
+                        (cond (= 'def head) 'clojure.core/def
+                              (namespace head)
+                              (let [prefix (symbol (namespace head))]
+                                (symbol (str (get (:aliases scope) prefix prefix)) (name head)))
+                              :else
+                          (when-not (contains? (:locals scope) head)
+                            (get-in scope [:refers head]))))
+        operation (when (and resolved-head (= "clojure.core" (namespace resolved-head)))
+                    (symbol (name resolved-head)))
         _ (when (contains? #{'refer 'use 'refer-clojure 'alias 'in-ns} operation)
             (throw (ex-info "Unsupported lint source scope declaration" {:operation operation})))
         ns? (contains? #{'ns 'clojure.core/ns} operation)
