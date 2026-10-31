@@ -195,3 +195,32 @@ separately rejects C15-ID. No context is invented or semantic stage retagged.
 This is a native data handoff, not canonical source authentication or a fresh
 frontend/C7/C8 bridge. All observations above describe working composition;
 the later committed head needs exact lint, independent review and its own CI.
+
+## Lowering main composition
+
+Diagnostics-base candidate c510ba7a44c316fe766e605df17fe8deac9e93f8 received
+both independent acceptances and own CI41248057516 succeeded in all ten
+enabled jobs with two skips. This is historical green for its Diagnostics
+base; it does not transfer to this composition.
+
+Actual main is now13012158ec3cff4e0f8aa7468f7f33d4a066e946, tree
+22e79703f29a2a2bab3195d11fa8bfdde31f3a9a, containing integrated Lowering
+PR722. A normal merge has three actual metadata conflicts. Reconstructing
+four complete parent files preserves Lowering's constructors, comparison gates,
+ports, master-coordinator ownership, standalone tests and evidence unchanged.
+Effects still adds only its original implementation/consumer/test, registration,
+namespace row and evidence: eight paths differ from actual main. Its negative
+registration test locates its real helper id; count/catalog formulas do not change.
+
+Fresh isolated C8/C15 tests pass15/352; incoming Lowering passes6/100.
+Ownership passes32/995, language6/11, docs240/19 and roadmap/governance pass.
+All22 original complete/text C8 captures, all six imported input hashes and
+original Core/provenance/C5 joins verify:43 nodes/one function per spelling,
+unchanged84cbbcc0 fingerprint and real C8-UNDECLARED refusals. Three original
+bodies/arities, three forwarders and the other eight C8 implementation files
+remain conserved. Fresh native C8-to-C15 data handoff verifies both new input
+hashes and ten complete/text record/refusal pairs against prior controls.
+Actual semantic stages, spans, facts and legacy identities survive; missing
+context rejects C15-SCHEMA and forged identity rejects C15-ID. Final committed
+lint, independent acceptance, own CI and clean actual-main integration preflight
+remain required. No canonical admission or complete Effects claim follows.

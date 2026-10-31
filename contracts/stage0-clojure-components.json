@@ -260,6 +260,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj", "namespace": "gravity.backend.js.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "lowering-reconstruction",
+      "kind": "production-stage-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/lowering.clj", "namespace": "gravity.lowering"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-c14-b1-authority-token-012-p15-s23-c14-policy-base-through-p15-s23-b2-c17-expected-source-content-hash.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
+      "test": {"path": "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj", "namespace": "gravity.lowering.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "effects-graph-data",
       "kind": "production-stage-helper",
       "owner": "sh-effects",
