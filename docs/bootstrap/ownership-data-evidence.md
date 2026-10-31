@@ -100,6 +100,36 @@ review, successful candidate CI and a clean current-main integration preflight
 are required before integration. This slice does not waive the failed effects
 or diagnostics candidates or the separate unavailable Source-Core readiness.
 
+## Current-main composition and checks
+
+Source b14f6af7ca9eabbb6b6e5d526473226afeec5fbe, tree
+5bf801e817906f713f3d1beda5e7b72e49bc6f2c, receives conditional acceptance
+from both independent reviewers. Focused tests pass 5 / 127; ownership
+registration passes 23 / 854; language passes 6 / 11; the C9 leaf regression
+passes 4 / 94 with unchanged catalog count 53 and catalog hash
+c29a49033c0514f4e84d5de019939a519b456134a7623b4b25404ec8274fada7.
+All seven changed Clojure paths pass contextual lint: 3490 unchanged baseline
+warnings and zero blockers. Docs validate 240 / 19; roadmap and governance pass.
+
+Main advances through the independently integrated runtime slice to
+6d1ed9e58fdcf4c8668c49fc43cbdf26b20184cb, tree
+29864483dc74caf5a6bbe00995724fa1f31cd1fc. A normal merge composes that actual
+main revision. Four genuine conflicts in Bootstrap requires and shared
+registration files are resolved by retaining both stages, preserving the
+runtime helper at index 8 and appending ownership at index 9. Runtime source,
+tests and evidence remain identical to main; the nine ownership algorithms
+and their tests remain identical to b14. Only their common association and
+require surfaces compose. No CI runner, workflow, watchdog, cache, source
+authority pin or diagnostic policy changes.
+
+Fresh working-composition tests pass both stage suites together: 10 / 215.
+Registration passes 24 / 871 and language passes 6 / 11. These execute the
+current Gravity normalized ownership kernel through the integrated runtime
+wrappers without authenticated source/Core composition. Original paired
+evidence keeps its earlier production context. The final composition requires
+its own independent review, contextual lint against actual main, successful CI
+and clean integration preflight; acceptance of b14 alone is insufficient.
+
 ## Unsupported boundaries
 
 This is partial temporary Clojure organization. Canonical C9 check/verify,
