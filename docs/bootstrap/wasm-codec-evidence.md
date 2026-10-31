@@ -195,6 +195,22 @@ are working composition checks, not committed-head authority bookends. Final
 exact acceptance, full semantic CI and clean current-main preflight remain
 required; no prior green is transferred.
 
+## Unused seed-proof projection parent
+
+Main advanced to f2bfea387b60077a64e0dcbf2573c6afad0126e9, tree
+7ede33bfb5e239bdc1b51a8067b9a87f33ce05cc, through PR 708. The conflict-free
+composition of d00ca397decdce4e6b0077a3666ce090b2a93d1f preserves both incoming
+semantic-mid files exactly; stage source, tests, consumers and registrations
+remain unchanged. Fresh focused regressions pass 14/291, ownership 26/905,
+language 6/11, documentation 240/19 and roadmap/governance. Fresh complete
+captures, deterministic identities and five-file current-base reconstruction
+pass. The initial producer launch omitted the test classpath and failed before
+execution; the corrected explicit classpath launch and verifier pass, with both
+logs retained under /tmp/uniform-wasm-codec-main-f2bf. No production change or
+authority substitution was involved. These working checks do not transfer CI
+or acceptance to a new commit. Exact independent review, final committed lint,
+full semantic CI and clean current-main integration preflight remain required.
+
 ## Unsupported boundaries
 
 Data emission and integer decoding do not authenticate MIR or B1 packets,
