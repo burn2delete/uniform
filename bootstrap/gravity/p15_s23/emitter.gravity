@@ -10097,7 +10097,7 @@
 
 (defn p15-s23-pc-reanchor [quote-id selectors nodes]
   (if
-  (if (p15-s23-pc-id? quote-id) (if (vector? selectors) (<= (count selectors) 3) false) false)
+  (if (p15-s23-pc-id? quote-id) (vector? selectors) false)
   (let
    [node (p15-s23-pc-current-node quote-id nodes) attrs (get node :attributes)
               value (get attrs :quoted-value)]
@@ -10225,7 +10225,7 @@
    :syntax-id (get form :syntax-id) :data-path path :child-form-ids (get form :child-form-ids)})
 
 (defn p15-s23-pc-quoted-parent [quote-id path nodes forms]
-  (if (if (p15-s23-pc-id? quote-id) (if (vector? path) (<= (count path) 2) false) false)
+  (if (if (p15-s23-pc-id? quote-id) (vector? path) false)
     (let [node
     (get nodes quote-id)
     attrs
