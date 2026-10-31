@@ -210,6 +210,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/runtime.clj", "namespace": "gravity.runtime"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00593-p15-s23-stage2-runtime-execute-function.clj", "namespace": "gravity.bootstrap", "owner": "sh-runtime"},
       "test": {"path": "bootstrap/clojure/test/gravity/runtime/pipeline_test.clj", "namespace": "gravity.runtime.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "safety-records",
+      "kind": "production-stage-helper",
+      "owner": "sh-safety",
+      "source": {"path": "bootstrap/clojure/src/gravity/safety.clj", "namespace": "gravity.safety"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj", "namespace": "gravity.bootstrap", "owner": "sh-safety"},
+      "test": {"path": "bootstrap/clojure/test/gravity/safety/pipeline_test.clj", "namespace": "gravity.safety.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [

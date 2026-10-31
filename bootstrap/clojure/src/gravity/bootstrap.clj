@@ -7,6 +7,7 @@
   (:require [gravity.checked-core]
             [gravity.mir]
             [gravity.runtime]
+            [gravity.safety]
             [gravity.types]
             [gravity.resolution]
             [gravity.macro-run-storage :as macro-run-storage]

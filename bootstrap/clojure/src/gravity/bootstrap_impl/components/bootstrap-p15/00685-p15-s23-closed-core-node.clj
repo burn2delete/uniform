@@ -88,59 +88,11 @@
 
 (defn p15-s23-closed-core-child-obligation-refs
   [node node-by-id capability-proof-by-node-capability]
-  (mapv
-   (fn [node-id]
-     (let [child (get node-by-id node-id)
-           outcome (get-in child [:safety :outcome])]
-       {:node-id node-id
-        :outcome outcome
-        :safety-proof-id
-        (or (get-in child [:safety :proof :proof-id]) :not-applicable)
-        :runtime-check-id
-        (or (get-in child [:safety :check :check-id]) :not-applicable)
-        :capability-proof-ids
-        (mapv #(get-in capability-proof-by-node-capability
-                       [[node-id %] :proof-id])
-              (sort-by pr-str (:capabilities child)))}))
-   (:operands node)))
+  (gravity.safety/child-obligation-refs node node-by-id capability-proof-by-node-capability))
 
 (defn p15-s23-closed-core-rederive-proven-safety
   [source-content-hash nodes authority-evidence]
-  (let [capability-proof-by-node-capability
-        (into {}
-              (map (fn [proof]
-                     [[(:core-node-id proof) (:capability proof)] proof]))
-              (p15-s23-checked-core-capability-proof-records
-               nodes authority-evidence))]
-    (loop [remaining nodes
-           normalized []
-           final-node-by-id {}]
-      (if-let [node (first remaining)]
-        (let [node
-              (if (= :proven-safe (get-in node [:safety :outcome]))
-                (let [proof
-                      (if (and (empty? (:effects node))
-                               (empty? (:capabilities node)))
-                        (p15-s23-closed-core-pure-safety-proof
-                         source-content-hash (:path node)
-                         (:source-operation node) (:source node)
-                         (:profile node) (:type node) (:effects node)
-                         (:capabilities node) (:ownership node)
-                         (get-in node [:safety :basis]))
-                        (p15-s23-closed-core-structural-safety-proof
-                         source-content-hash (:path node)
-                         (:source-operation node) (:source node)
-                         (:profile node) (:type node) (:effects node)
-                         (:capabilities node) (:ownership node)
-                         (get-in node [:safety :basis])
-                         (p15-s23-closed-core-child-obligation-refs
-                          node final-node-by-id
-                          capability-proof-by-node-capability)))]
-                  (assoc-in node [:safety :proof] proof))
-                node)]
-          (recur (next remaining) (conj normalized node)
-                 (assoc final-node-by-id (:node-id node) node)))
-        normalized))))
+  (gravity.safety/rederive-proven-safety #'p15-s23-checked-core-capability-proof-records #'p15-s23-closed-core-pure-safety-proof #'p15-s23-closed-core-structural-safety-proof #'p15-s23-closed-core-child-obligation-refs source-content-hash nodes authority-evidence))
 
 (defn p15-s23-closed-core-shared-owner-domain-id
   [nodes]
