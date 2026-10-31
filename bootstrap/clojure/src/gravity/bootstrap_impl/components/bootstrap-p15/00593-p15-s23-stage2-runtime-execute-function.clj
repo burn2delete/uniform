@@ -2,10 +2,13 @@
 
 (defn- p15-s23-stage2-runtime-execute-function-scoped
   [runtime plan callee args public-invocation-scope]
+  (declared-reader-bridge/native-scope! public-invocation-scope)
   (let [public-invocation-scope
         (p15-s23-stage2-module-entry-scope! plan callee args public-invocation-scope)]
-  (p15-s23-sh07-b51-assert-scoped-function-entry!
-   runtime plan callee args (if (p15-s23-stage2-module-scope? public-invocation-scope) nil public-invocation-scope))
+  (if (declared-reader-bridge/registered-scope? public-invocation-scope)
+    (declared-reader-bridge/assert-function-entry! runtime plan callee args public-invocation-scope)
+    (p15-s23-sh07-b51-assert-scoped-function-entry!
+     runtime plan callee args (if (p15-s23-stage2-module-scope? public-invocation-scope) nil public-invocation-scope)))
   (let [definition (get-in plan [:functions callee])
         params (:params definition)
         instructions (:instructions definition)]

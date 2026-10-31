@@ -1,6 +1,7 @@
 (ns gravity.cli.dispatch
   "Bootstrap command routing over explicitly injected operations."
-  (:require [gravity.cli.commands.bootstrap :as bootstrap-commands]
+  (:require [gravity.build.invocation :as build-invocation]
+            [gravity.cli.commands.bootstrap :as bootstrap-commands]
             [gravity.cli.commands.compiler :as compiler-commands]
             [gravity.cli.commands.platform :as platform-commands]
             [gravity.cli.compile-command :as compile-command]))
@@ -13,7 +14,7 @@
 (def ^:private special-commands
   #{"help" "--help" "-h" "--version" "version"
     "--assert-seedless-release" "assert-seedless-release"
-    "test" "self-host" "compile" "check" "run" "run-compiled"})
+    "test" "self-host" "compile" "check" "run" "run-compiled" "build"})
 
 (defn- invoke
   [resolve-operation operation & arguments]
@@ -74,6 +75,8 @@
     (if (contains? special-commands command)
       (do
         (case command
+          "build" (println (:json (build-invocation/success-json
+                                   (build-invocation/run-declared-input-build! (vec arguments)))))
           "help" (print (invoke resolve-operation 'p18-cli-help-text))
           "--help" (print (invoke resolve-operation 'p18-cli-help-text))
           "-h" (print (invoke resolve-operation 'p18-cli-help-text))
