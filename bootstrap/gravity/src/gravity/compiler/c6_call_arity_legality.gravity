@@ -77,8 +77,8 @@
     (> (count value) maximum)
     false))
 
-(defn sh07-b48-id-vector? [values maximum]
-  (if (sh07-b48-bounded-vector? values maximum)
+(defn sh07-b48-id-vector-valid? [values]
+  (if (vector? values)
     (loop [remaining values]
       (if (= (count remaining) 0)
         true
@@ -153,28 +153,26 @@
             (if (sh07-b48-id? (get record :body-core-node-id))
               (if (sh07-b48-nonnegative-integer?
                    (get record :fixed-arity))
-                (if (<= (get record :fixed-arity) 1024)
-                  (if (= (get record :fixed-arity)
-                         (count (get record :parameter-binding-ids)))
-                    (if (sh07-b48-id-vector?
-                         (get record :parameter-binding-ids) 1024)
-                      (if (sh07-b48-member?
-                           [:named-top-level :anonymous]
-                           (get record :definition-kind))
-                        (if (if (= (get record :definition-binding-id) nil)
+                (if (= (get record :fixed-arity)
+                       (count (get record :parameter-binding-ids)))
+                  (if (sh07-b48-id-vector-valid?
+                       (get record :parameter-binding-ids))
+                    (if (sh07-b48-member?
+                         [:named-top-level :anonymous]
+                         (get record :definition-kind))
+                      (if (if (= (get record :definition-binding-id) nil)
+                            true
+                            (sh07-b48-id?
+                             (get record :definition-binding-id)))
+                        (if (if (= (get record :definition-core-node-id)
+                                   nil)
                               true
                               (sh07-b48-id?
-                               (get record :definition-binding-id)))
-                          (if (if (= (get record :definition-core-node-id)
-                                     nil)
+                               (get record :definition-core-node-id)))
+                          (if (if (= (get record :definition-name) nil)
                                 true
-                                (sh07-b48-id?
-                                 (get record :definition-core-node-id)))
-                            (if (if (= (get record :definition-name) nil)
-                                  true
-                                  (symbol? (get record :definition-name)))
-                              true
-                              false)
+                                (symbol? (get record :definition-name)))
+                            true
                             false)
                           false)
                         false)
@@ -229,12 +227,12 @@
     (if (sh07-b48-id? (get record :core-node-id))
       (if (sh07-b48-id? (get record :operator-node-id))
         (if (sh07-b48-id? (get record :operator-binding-id))
-          (if (sh07-b48-id-vector?
-               (get record :argument-node-ids) 1024)
+          (if (sh07-b48-id-vector-valid?
+               (get record :argument-node-ids))
             (if (= (+ 1 (count (get record :argument-node-ids)))
                    (count (get record :ordered-evaluation-node-ids)))
-              (if (sh07-b48-id-vector?
-                   (get record :ordered-evaluation-node-ids) 1025)
+              (if (sh07-b48-id-vector-valid?
+                   (get record :ordered-evaluation-node-ids))
                 (if (= (get record :operator-node-id)
                        (first (get record :ordered-evaluation-node-ids)))
                   (if (= :operator-then-arguments
@@ -300,10 +298,10 @@
                         true
                         (sh07-b48-id?
                          (get record :callee-function-core-node-id)))
-                    (if (sh07-b48-id-vector?
-                         (get record :argument-core-node-ids) 1024)
-                      (if (sh07-b48-id-vector?
-                           (get record :ordered-evaluation-node-ids) 1025)
+                    (if (sh07-b48-id-vector-valid?
+                         (get record :argument-core-node-ids))
+                      (if (sh07-b48-id-vector-valid?
+                           (get record :ordered-evaluation-node-ids))
                         (if (= :operator-then-arguments
                                (get record :evaluation-order))
                           (sh07-b48-member?
@@ -1308,7 +1306,6 @@
    :input-domain :gravity/sh07-b47-canonical-core-v16
    :maximum-functions 4096
    :maximum-calls 65536
-   :maximum-arguments 1024
    :index-strategy :bounded-linear-indexes
    :accepted-arity-kinds [:zero :one :fixed-multi]
    :nonlocal-classification :pending-nonlocal
