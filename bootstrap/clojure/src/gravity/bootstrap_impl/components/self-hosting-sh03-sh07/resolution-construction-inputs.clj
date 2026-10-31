@@ -64,7 +64,76 @@
   ;; Explicit short-seam drift boundary. No namespace scan or missing roots;
   ;; later actual owner verification remains the acceptance authority.
   (mapv (fn [v] [v (var-get v)])
-        [#'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
+        [#'gravity.resolution/boundary-fail! #'gravity.resolution/resolve-source-path
+         #'gravity.resolution/read-current-source! #'gravity.resolution/read-pinned-source!
+         #'gravity.resolution/plan-identities #'gravity.resolution/build-plan-binding!
+         #'gravity.resolution/source-key #'gravity.resolution/binding-current!
+         #'gravity.resolution/current-plan-binding! #'gravity.resolution/execute!
+         #'gravity.resolution/candidate-for
+         #'gravity.resolution/core-record
+         #'gravity.resolution/core-records
+         #'gravity.resolution/definition-kind
+         #'gravity.resolution/definition-records
+         #'gravity.resolution/envelope-id
+         #'gravity.resolution/package-record
+         #'gravity.resolution/request-overrides
+         #'gravity.resolution/semantic-span
+         #'gravity.resolution/source-revision-id
+         #'known-source-profiles
+         #'sh06-resolution-all-core-symbols
+         #'sh06-resolution-core-record
+         #'sh06-resolution-definition-kind
+         #'sh06-resolution-semantic-span
+         #'sh06-resolution-special-symbols
+         #'sh06-resolution-type-symbols
+         #'gravity.resolution/dependency-record
+         #'gravity.resolution/explicit-candidate-records
+         #'gravity.resolution/import-binding-records
+         #'gravity.resolution/import-records
+         #'sh06-resolution-dependency-record
+         #'source-span
+         #'gravity.resolution/analysis-inputs
+         #'gravity.resolution/dependency-edges
+         #'gravity.resolution/fixed-vector-pattern?
+         #'gravity.resolution/let-loop-binding-paths
+         #'gravity.resolution/match-pattern-binding-paths
+         #'gravity.resolution/unique-match-binding-paths
+         #'sh06-fixed-vector-pattern?
+         #'sh06-let-loop-binding-paths
+         #'sh06-match-pattern-binding-paths
+         #'sh06-unique-match-binding-paths
+         #'sh06-resolution-artifact-identity-input
+         #'sh06-resolution-artifact-identity-input-with-chunks
+         #'sh06-resolution-envelope-summary-with-chunks
+         #'sh06-resolution-identity-chunks
+         #'sh06-resolution-order-compatibility
+         #'sh06-resolution-product-identity-chunks
+         #'gravity.resolution/artifact-id
+         #'gravity.resolution/artifact-identity-input
+         #'gravity.resolution/artifact-identity-input-with-chunks
+         #'gravity.resolution/envelope-summary
+         #'gravity.resolution/envelope-summary-with-chunks
+         #'gravity.resolution/identity-chunks
+         #'gravity.resolution/product-identity-chunks
+         #'gravity.resolution/product-projections
+         #'resolution-stage-system-property
+         #'sh06-resolution-boundary-keys
+         #'sh06-resolution-envelope-stage
+         #'sh06-resolution-sealed-artifact-kind
+         #'sh06-resolution-source-relative-path
+         #'gravity.resolution/boundary-keys-for
+         #'gravity.resolution/envelope-descriptor
+         #'c5-resolution-diagnostic-ids
+         #'c5-resolution-governing-document
+         #'sh06-resolution-adapter-contract
+         #'sh06-resolution-product-projections
+         #'sh06-resolution-sh02-descriptor
+         #'gravity.resolution/assemble-candidate
+         #'gravity.resolution/base-request
+         #'gravity.resolution/diagnostic-origin
+         #'gravity.resolution/module-request
+         #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
+         #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*
          #'sh07-proof-transaction-report #'sh07-proof-transaction-context!
          #'sh06-resolution-validate-c3! #'c3-syntax-validate! #'c3-artifact-id

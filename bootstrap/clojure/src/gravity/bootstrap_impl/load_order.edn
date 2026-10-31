@@ -1474,10 +1474,7 @@
  {:resource "gravity/bootstrap_impl/semantic_late/150856-sh05-verification-install.clj", :reader-line 150856, :metadata-symbol sh05-macro-artifact-verification*, :metadata-line 150856, :metadata-column 1}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00870-sh06-resolution-special-symbols.clj", :reader-line 151466, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-special-symbols"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00871-sh06-resolution-dependency-record.clj", :reader-line 151660, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-dependency-record"}
- {:resource "gravity/bootstrap_impl/semantic_late/151848-sh06-resolution-inputs-parameter-names.clj", :reader-line 151848, :metadata-symbol sh06-resolution-analysis-inputs, :metadata-line 151848, :metadata-column 1}
- {:resource "gravity/bootstrap_impl/semantic_late/151848-sh06-resolution-inputs-traversal.clj", :reader-line 151848, :metadata-symbol sh06-resolution-analysis-inputs, :metadata-line 151848, :metadata-column 1}
  {:resource "gravity/bootstrap_impl/semantic_late/151848-sh06-resolution-inputs-install.clj", :reader-line 151848, :metadata-symbol sh06-resolution-analysis-inputs, :metadata-line 151848, :metadata-column 1}
- {:resource "gravity/bootstrap_impl/semantic_late/151848-sh06-resolution-inputs-cleanup.clj", :reader-line 151848, :metadata-symbol sh06-resolution-analysis-inputs, :metadata-line 151848, :metadata-column 1}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges.clj", :reader-line 152115, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-dependency-edges"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-02.clj", :reader-line 152350, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-source-proof-bytes!"}
  {:resource "gravity/bootstrap_impl/components/self-hosting-sh03-sh07/00873-sh06-resolution-dependency-edges-03.clj", :reader-line 152532, :owner :self-hosting-sh03-sh07, :first-form "sh06-resolution-b51-callsite-census!"}
