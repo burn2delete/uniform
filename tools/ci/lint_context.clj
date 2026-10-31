@@ -50,14 +50,14 @@
 (defn- source-reader-defaults [namespace]
   {:namespace namespace :aliases {} :locals #{} :refers (source-core-refers [])
    :imports (into {} (map (fn [[name type]] [name (symbol (.getName ^Class type))])
-                         clojure.lang.RT/DEFAULT_IMPORTS))})
+                          clojure.lang.RT/DEFAULT_IMPORTS))})
 
 (defn- source-reader-imports [scope specs]
   (reduce (fn [scope spec]
             (let [spec (if (and (seq? spec) (= 'quote (first spec))) (second spec) spec)
                   classes (if (symbol? spec) [spec]
-                            (when (and (sequential? spec) (every? symbol? spec))
-                              (map #(symbol (str (first spec) "." %)) (rest spec))))]
+                              (when (and (sequential? spec) (every? symbol? spec))
+                                (map #(symbol (str (first spec) "." %)) (rest spec))))]
               (when-not (seq classes)
                 (throw (ex-info "Unsupported lint source import" {:spec spec})))
               (reduce (fn [scope name]
@@ -76,8 +76,8 @@
                               (let [prefix (symbol (namespace head))]
                                 (symbol (str (get (:aliases scope) prefix prefix)) (name head)))
                               :else
-                          (when-not (contains? (:locals scope) head)
-                            (get-in scope [:refers head]))))
+                              (when-not (contains? (:locals scope) head)
+                                (get-in scope [:refers head]))))
         operation (when (and resolved-head (= "clojure.core" (namespace resolved-head)))
                     (symbol (name resolved-head)))
         _ (when (contains? #{'refer 'use 'refer-clojure 'alias 'in-ns} operation)
@@ -90,8 +90,8 @@
         scope (if-let [refer (first (filter #(= :refer-clojure (first %)) clauses))]
                 (assoc scope :refers (source-core-refers (rest refer))) scope)
         scope (source-reader-imports scope
-                (if ns? (mapcat rest (filter #(= :import (first %)) clauses))
-                    (when (contains? #{'import 'clojure.core/import} operation) (rest form))))
+                                     (if ns? (mapcat rest (filter #(= :import (first %)) clauses))
+                                         (when (contains? #{'import 'clojure.core/import} operation) (rest form))))
         locals (cond (contains? #{'def 'defonce 'defn 'defn- 'defmacro} operation) [(second form)]
                      (= 'declare operation) (rest form))
         _ (when (some #(contains? (:imports scope) %) locals)
@@ -100,20 +100,20 @@
         specs (cond ns? (mapcat rest (filter #(and (seq? %) (= :require (first %))) (drop 2 form)))
                     (contains? #{'require 'clojure.core/require} operation) (rest form))]
     (reduce
-      (fn [scope spec]
-        (if (and (vector? spec) (symbol? (first spec)) (even? (count (rest spec))))
-            (let [options (apply hash-map (rest spec)) alias (or (:as options) (:as-alias options))
-                  _ (when (= :all (:refer options))
-                      (throw (ex-info "Unsupported lint source refer-all declaration" {:spec spec})))
-                  _ (when (some #(contains? (:imports scope) (get (:rename options) % %)) (:refer options))
-                      (throw (ex-info "Unsupported lint source class shadowing" {:spec spec})))
-                  scope (if (symbol? alias) (assoc-in scope [:aliases alias] (first spec)) scope)]
-              (reduce (fn [scope name]
-                        (assoc-in scope [:refers (get (:rename options) name name)]
-                                  (symbol (str (first spec)) (str name))))
-                      scope (:refer options)))
-            scope))
-      scope (mapcat source-libspecs specs))))
+     (fn [scope spec]
+       (if (and (vector? spec) (symbol? (first spec)) (even? (count (rest spec))))
+         (let [options (apply hash-map (rest spec)) alias (or (:as options) (:as-alias options))
+               _ (when (= :all (:refer options))
+                   (throw (ex-info "Unsupported lint source refer-all declaration" {:spec spec})))
+               _ (when (some #(contains? (:imports scope) (get (:rename options) % %)) (:refer options))
+                   (throw (ex-info "Unsupported lint source class shadowing" {:spec spec})))
+               scope (if (symbol? alias) (assoc-in scope [:aliases alias] (first spec)) scope)]
+           (reduce (fn [scope name]
+                     (assoc-in scope [:refers (get (:rename options) name name)]
+                               (symbol (str (first spec)) (str name))))
+                   scope (:refer options)))
+         scope))
+     scope (mapcat source-libspecs specs))))
 
 (defn source-forms! [path bytes]
   (let [scope (atom (source-reader-defaults (ns-name *ns*)))
@@ -128,16 +128,16 @@
                      (if (contains? (:locals @scope) name)
                        (symbol (str (:namespace @scope)) (str name))
                        (get-in @scope [:refers name]))))]
-  (binding [*read-eval* false *data-readers* {'inst #(refuse-tag 'inst %) 'uuid #(refuse-tag 'uuid %)}
-            *default-data-reader-fn* refuse-tag *reader-resolver* resolver]
-    (with-open [reader (clojure.lang.LineNumberingPushbackReader.
-                        (java.io.StringReader. (source-text! path bytes)))]
-      (let [eof (Object.)]
-        (loop [forms []]
-          (let [form (read {:eof eof} reader)]
-            (if (identical? eof form) forms
-              (do (swap! scope source-reader-scope form)
-                  (recur (conj forms form)))))))))))
+    (binding [*read-eval* false *data-readers* {'inst #(refuse-tag 'inst %) 'uuid #(refuse-tag 'uuid %)}
+              *default-data-reader-fn* refuse-tag *reader-resolver* resolver]
+      (with-open [reader (clojure.lang.LineNumberingPushbackReader.
+                          (java.io.StringReader. (source-text! path bytes)))]
+        (let [eof (Object.)]
+          (loop [forms []]
+            (let [form (read {:eof eof} reader)]
+              (if (identical? eof form) forms
+                  (do (swap! scope source-reader-scope form)
+                      (recur (conj forms form)))))))))))
 
 (defn manifest! [bytes]
   (with-open [reader (java.io.PushbackReader.
