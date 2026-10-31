@@ -59,9 +59,25 @@ preflight/authority/native form. Only final consumer whitespace is normalized.
 
 Focused tests pass 6/66. Ownership passes 25/888 and the language gate passes
 6/11. Documentation validates 240 documents and 19 phase indexes; roadmap and
-workstream governance pass. Committed contextual lint, independent exact
-acceptance, successful final CI and a clean current-main integration preflight
-remain pending.
+workstream governance pass. Independent source review accepts the initial
+candidate conditionally. Final exact acceptance, corrected committed lint,
+successful final CI and a clean current-main integration preflight remain
+pending.
+
+Initial source commit 9a68855a78f11581dac5132df0db54d7cd5e6695 has tree
+ee3ef04bb9056af65734824a7b00f88d91adfbba. Exact committed lint found nine
+unused local bindings: eight ports unused in one operation-rejection arity
+and one inherited current-position binding whose expression was already
+unused. The correction prefixes only those local names with underscore and
+updates their declared arglists. It retains every expression, Var port,
+callback, argument position and wrapper. Both original/extracted and
+original/corrected five-file pairs match, source/plan/data identities verify,
+six-source reconstruction passes, and corrected focused tests pass 6/66.
+The working correction was produced over 9a68855a7; it is not an authority
+bookend. Initial local lint remains in
+`/tmp/uniform-llvm-data-initial-lint-nonpass`. The initial candidate's static
+CI is also nonpassing and must remain historical evidence; no configuration,
+timeout, executor or warning waiver is introduced.
 
 The first producer and baseline test stopped at an extra test-file delimiter;
 no capture completed. A temporary registration-generation command also stopped

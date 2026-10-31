@@ -33,16 +33,16 @@
   {:arglists
    ([operation-rejection-port
      block-labels-port
-     supported-opcodes-port
-     signed-i64?-port
-     forward-opcodes-port
-     operation-reference-allowed?-port
-     scalar-types-port
-     comparison-opcodes-port
+     _supported-opcodes-port
+     _signed-i64?-port
+     _forward-opcodes-port
+     _operation-reference-allowed?-port
+     _scalar-types-port
+     _comparison-opcodes-port
      operations
      operation]
-    [operation-rejection-port
-     block-labels-port
+    [_operation-rejection-port
+     _block-labels-port
      supported-opcodes-port
      signed-i64?-port
      forward-opcodes-port
@@ -192,11 +192,11 @@
            false))))
 
 (defn operation-rejection
-  ([operation-rejection-port block-labels-port supported-opcodes-port signed-i64?-port forward-opcodes-port operation-reference-allowed?-port scalar-types-port comparison-opcodes-port operations operation]
+  ([operation-rejection-port block-labels-port _supported-opcodes-port _signed-i64?-port _forward-opcodes-port _operation-reference-allowed?-port _scalar-types-port _comparison-opcodes-port operations operation]
    (let [block-order (vec (distinct (map :block-id operations)))]
      (operation-rejection-port
       operations operation (block-labels-port block-order))))
-  ([operation-rejection-port block-labels-port supported-opcodes-port signed-i64?-port forward-opcodes-port operation-reference-allowed?-port scalar-types-port comparison-opcodes-port operations operation block-labels]
+  ([_operation-rejection-port _block-labels-port supported-opcodes-port signed-i64?-port forward-opcodes-port operation-reference-allowed?-port scalar-types-port comparison-opcodes-port operations operation block-labels]
    (let [opcode (:opcode operation)
         source-operation (:source-operation operation)
         operands (:operands operation)
@@ -268,7 +268,7 @@
       (let [[left-id right-id] operands
             left (get by-id left-id)
             right (get by-id right-id)
-            current-position (get position-by-id (:op-id operation))]
+            _current-position (get position-by-id (:op-id operation))]
         (cond
           (not= opcode source-operation)
           :source-operation-opcode-parity
