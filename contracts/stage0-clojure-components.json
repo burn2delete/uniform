@@ -202,6 +202,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/mir.clj", "namespace": "gravity.mir"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj", "namespace": "gravity.bootstrap", "owner": "sh-mir"},
       "test": {"path": "bootstrap/clojure/test/gravity/mir/pipeline_test.clj", "namespace": "gravity.mir.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "ownership-data",
+      "kind": "production-stage-helper",
+      "owner": "sh-ownership",
+      "source": {"path": "bootstrap/clojure/src/gravity/ownership.clj", "namespace": "gravity.ownership"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00694-p15-s23-closed-core-persistent-aliasing-valid.clj", "namespace": "gravity.bootstrap", "owner": "sh-ownership"},
+      "test": {"path": "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj", "namespace": "gravity.ownership.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [

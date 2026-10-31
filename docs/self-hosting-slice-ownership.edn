@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/mir.clj"
+ {"bootstrap/clojure/src/gravity/ownership.clj"
+  {:namespace gravity.ownership :owner :sh-ownership :slice "SH-10"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00694-p15-s23-closed-core-persistent-aliasing-valid.clj"
+   :test-path "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/mir.clj"
   {:namespace gravity.mir :owner :sh-mir :slice "SH-12"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00739-p15-s23-c11-mir-validate-terminator.clj"
    :test-path "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"}
@@ -132,7 +136,8 @@
  {"bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj" {:owner :sh-reader, :source-path "bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj", :source-namespace gravity.c2-reader-product-projection.scalar-spans}, "bootstrap/clojure/test/gravity/c3_literal_indexes_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj", :source-namespace gravity.c3-literal-projection.indexes}, "bootstrap/clojure/test/gravity/c3_reader_expansions_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_reader_expansions.clj", :source-namespace gravity.c3-reader-expansions}, "bootstrap/clojure/test/gravity/c3_reader_lossless_span_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj", :source-namespace gravity.c3-literal-projection.spans}}
 
  :module-owners
- {"bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
+ {"bootstrap/clojure/src/gravity/ownership.clj" :sh-ownership
+  "bootstrap/gravity/src/gravity/backend/b10_workflow_graph_backend_design.gravity" :sh-target-workflow
   "bootstrap/gravity/src/gravity/backend/b11_query_relational_backend_design.gravity" :sh-target-query
   "bootstrap/gravity/src/gravity/backend/b12_mobile_backend_design.gravity" :sh-target-mobile
   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity" :master-coordinator
@@ -348,7 +353,9 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/mir/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/ownership/pipeline_test.clj"
+  {:namespace gravity.ownership.pipeline-test :slice "SH-10" :owner :sh-ownership}
+  "bootstrap/clojure/test/gravity/mir/pipeline_test.clj"
   {:namespace gravity.mir.pipeline-test :slice "SH-12" :owner :sh-mir}
   "bootstrap/clojure/test/gravity/checked_core/pipeline_test.clj"
   {:namespace gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
