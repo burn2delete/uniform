@@ -1107,11 +1107,11 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [invoke (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         {:keys [context products bindings binding-types functions]} (returned-map-shape-kernel-data)
-        prepared (invoke 'sh08-sm-call-context [products {} 65536])
+        prepared (invoke 'sh08-sm-call-context [products {}])
         work-context {:lookup-core (:core context) :lookup-nodes (:nodes context) :lookup-forms (:forms context)
                       :lookup-bindings bindings :shape-call-context prepared}
-        step #(invoke 'sh08-kl-step [(get-in context [:nodes :lookup]) (:types context) binding-types functions %1 %2])
-        result (step work-context 65536)]
+        step #(invoke 'sh08-kl-step [(get-in context [:nodes :lookup]) (:types context) binding-types functions %1])
+        result (step work-context)]
     (is (= (:call-edges products)
            (invoke 'sh08-ft-build-call-edges [(vec (vals (:nodes context))) (:definitions products) (vec (vals bindings))
                                              (:calls products) (vec (vals (:function-index products)))])))
@@ -1120,8 +1120,6 @@
     (is (= :gravity.type/string (:type result)))
     (is (= 1 (count (get-in result [:constraint :dependencies :operand-shape :call-links]))))
     (is (= :present (get-in result [:constraint :solution :presence])))
-    (is (= :accepted (:status (step work-context (:work-count result)))))
-    (is (= :keyword-lookup-type-work-limit (:reason (step work-context (dec (:work-count result))))))
     (doseq [changed [(assoc-in work-context [:shape-call-context :edges :builder-call :callee-function-core-node-id] :caller-fn)
                      (assoc-in work-context [:shape-call-context :edges :builder-call :callee-definition-syntax-id] :builder-def-syntax)
                      (assoc-in work-context [:shape-call-context :definitions 0 :value-node-id] :caller-fn)
@@ -1131,27 +1129,23 @@
                      (assoc-in work-context [:lookup-nodes :builder-operator :attributes :symbol] 'forged)
                      (assoc-in work-context [:lookup-forms :builder-call-form :child-form-ids] [:builder-argument-form :builder-operator-form])
                      (assoc-in work-context [:lookup-forms :vector-form :parent-form-id] :caller-fn-form)]]
-      (let [failed (step changed 65536)]
-        (is (= :rejected (:status failed)))
-        (is (pos? (:work-count failed)))))
+      (let [failed (step changed)]
+        (is (= :rejected (:status failed)))))
     (let [same-types (-> work-context
                          (assoc-in [:lookup-nodes :vector-left :attributes :value] :other)
                          (assoc-in [:lookup-forms :vector-left-form :value] :other))
-          missing (step same-types 65536)]
+          missing (step same-types)]
       (is (= :gravity.type/nil (:type missing)))
       (is (= :absent (get-in missing [:constraint :solution :presence]))))
     (let [changed (assoc-in work-context [:shape-call-context :edges :builder-call :classification] :nonlocal-or-nonfunction)
-          failed (step changed 65536)]
+          failed (step changed)]
       (is (= ["C7-ANNOTATION" :unsupported-nonlocal-return-shape] ((juxt :rule :reason) failed))))
     (let [changed (assoc-in work-context [:shape-call-context :recursion-components] [{:function-syntax-ids [:builder-syntax]}])
-          failed (step changed 65536)]
+          failed (step changed)]
       (is (= :unsupported-recursive-return-shape (:reason failed))))
     (let [duplicate (update products :calls conj (first (:calls products)))
-          failed (invoke 'sh08-sm-call-context [duplicate {} 65536])]
+          failed (invoke 'sh08-sm-call-context [duplicate {}])]
       (is (= :duplicate-structural-call-record (:reason failed))))
-    (let [initial (:work-count prepared)]
-      (is (= (dissoc prepared :budget-left) (dissoc (invoke 'sh08-sm-call-context [products {} initial]) :budget-left)))
-      (is (= :structural-call-index-work-limit (:reason (invoke 'sh08-sm-call-context [products {} (dec initial)])))))
     (let [types (dissoc (:types context) :vector :vector-left :vector-right)
           prior (:types context)
           data [(get-in context [:nodes :builder-call]) (:nodes context) types binding-types functions [] bindings (:forms context) #{} 0 {}
@@ -1160,9 +1154,6 @@
       (is (= :accepted (:status shape)))
       (is (= :map (:shape-kind shape)))
       (is (= :key (get-in shape [:parts 0 :key]))))
-    (let [shape (invoke 'sh08-sm-shape-with-bindings [:builder-call (:nodes context) (:types context) binding-types functions [] bindings (:forms context)
-                                                    #{} 129 {} prepared])]
-      (is (= :structural-shape-depth-limit (:reason shape))))
     (let [changed (-> work-context
                       (assoc-in [:shape-call-context :function-records :builder-syntax :body-core-node-id] :vector-right)
                       (assoc-in [:lookup-nodes :builder-fn :children] [:vector-right])
@@ -1170,7 +1161,7 @@
                       (assoc-in [:lookup-forms :vector-right-form :parent-form-id] :builder-fn-form))
           failed (invoke 'sh08-kl-step [(get-in context [:nodes :lookup])
                                         (assoc (:types context) :vector-right (get-in context [:types :vector]))
-                                        {:builder-parameter (get-in context [:types :vector])} functions changed 65536])]
+                                        {:builder-parameter (get-in context [:types :vector])} functions changed])]
       (is (= ["C7-ANNOTATION" :unestablished-structural-return-shape] ((juxt :rule :reason) failed))))
     (let [nodes (mapv (:nodes context) [:lookup-key :builder-operator :builder-argument :builder-call :lookup :caller-fn :caller-def
                                        :vector-left :vector-right :vector :builder-fn :builder-def])
@@ -1205,22 +1196,18 @@
           second-edge (-> (first (:call-edges products)) (assoc :ordinal 1) (update :call-core-node-id clone-id)
                           (update :argument-core-node-ids #(mapv clone-id %)) (update :ordered-evaluation-node-ids #(mapv clone-id %)))
           products (-> products (update :calls conj second-call) (update :call-edges conj second-edge))
-          prepared (invoke 'sh08-sm-call-context [products {} 65536])
+          prepared (invoke 'sh08-sm-call-context [products {}])
           vector-node {:node-id :sibling-vector :core-form :collection-literal :children [:builder-call :builder-call-2]
                        :attributes {:literal-kind :vector :element-count 2} :source {:form-id :sibling-form :syntax-id :sibling-syntax}}
           nodes (assoc nodes :sibling-vector vector-node)
           forms (assoc forms :sibling-form {:form-id :sibling-form :syntax-id :sibling-syntax :kind :vector
                                             :child-form-ids [:builder-call-form :builder-call-form-2]})
           types (assoc (:types context) :builder-call-2 (get-in context [:types :vector]))
-          join-work (get-in result [:constraint :dependencies :operand-shape :call-join-work])
           shape #(invoke 'sh08-sm-shape-with-bindings [:sibling-vector nodes types binding-types functions [] bindings %1 #{} 0 {}
-                                                     (assoc prepared :budget-left %2)])
-          narrow (shape forms join-work)
-          failed-source (shape (assoc-in forms [:sibling-form :child-form-ids 1] :missing-form) (* 2 join-work))]
-      (is (= :structural-call-join-work-limit (:reason narrow)))
-      (is (= (* 2 join-work) (:call-join-work narrow)))
+                                                     prepared])
+          failed-source (shape (assoc-in forms [:sibling-form :child-form-ids 1] :missing-form))]
       (is (= :constructor-child-source-mismatch (:reason failed-source)))
-      (is (= (* 2 join-work) (:call-join-work failed-source))))))
+      )))
 
 (deftest current-gravity-keyword-map-lookup-c8-development-kernel
   (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
@@ -1743,7 +1730,7 @@
             functions (cond-> (assoc-in functions [(fid 2) :body-core-node-id] (id 22))
                         scrutinee? (assoc-in [(fid 1) :return] :gravity.type/bool))
             direct (assoc-in direct [:throws (fid 2)] [:gravity.type/bool])
-            result (c7 'sh08-tc-products core types functions bindings direct 65536)
+            result (c7 'sh08-tc-products core types functions bindings direct)
             facts {:type-table types :constraint-ledger (:constraints result)
                    :function-type-table (c7 'sh08-th-functions (vec (vals functions)) (:throws result))}
             scope (c8 'body-tc-scope core (:throws direct) 65536)
@@ -1771,11 +1758,10 @@
                      (update core :nodes #(mapv (fn [n] (if (= (:node-id n) (id 22)) (assoc-in n [:evaluation :order] []) n)) %))]]
           (is (false? (c8 'body-graph-equations-valid? bad facts {} graph))))
         (is (= :rejected (:status (c8 'body-derive-nodes (assoc-in core [:match-branch-records 0 :branch-core-node-id] :forged) facts))))
-        (is (= "C7-GENERIC" (get-in (c7 'sh08-tc-products core types functions bindings direct 1) [:diagnostics 0 :rule])))
         (is (= :rejected (:status (c8 'body-tc-verify core facts binding-index graph joined 1))))
         (doseq [bad [(update core :nodes #(mapv (fn [n] (if (= (:node-id n) (id 22)) (assoc n :core-form :unknown) n)) %))
                      (assoc core :recursion-components [{:function-syntax-ids [(fid 2)]}])]]
-          (is (= :rejected (:status (c7 'sh08-tc-products bad types functions bindings direct 65536))))
+          (is (= :rejected (:status (c7 'sh08-tc-products bad types functions bindings direct))))
           (is (= :rejected (:status (c8 'body-tc-verify bad facts binding-index graph joined 65536)))))))))
 
 (defn- rebuild-boolean-match-kernel-data [data context]
@@ -9813,7 +9799,7 @@
            'gravity.self-hosting.sh09-body-effect-test)
   (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
         upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-set-input)
-        derive (fn [input] ((ns-resolve upstream 'set-conversion-derived) input 65536)) c7 (ns-resolve upstream 'invoke-c7)
+        derive (fn [input] ((ns-resolve upstream 'set-conversion-derived) input)) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -9900,7 +9886,7 @@
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input ((ns-resolve upstream 'list-set-input) :gravity.type/never)
         {:keys [core nodes forms bindings types module call edge]} input
-        result ((ns-resolve upstream 'set-conversion-derived) input 65536) descriptor (:descriptor result)
+        result ((ns-resolve upstream 'set-conversion-derived) input) descriptor (:descriptor result)
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -14430,7 +14416,7 @@
                   {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/string))}
                   :gravity.type/never]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -14552,7 +14538,7 @@
                   {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 3 :gravity.type/keyword))}
                   :gravity.type/never]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -14616,7 +14602,7 @@
         c7 (ns-resolve upstream 'invoke-c7) body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
         input (input-fn [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}])
         {:keys [core node call edge nodes forms bindings types module]} input
-        result (derive input 65536) descriptor (:descriptor result)
+        result (derive input) descriptor (:descriptor result)
         typed (assoc types :operator descriptor :call (:type result))
         facts {:type-table typed :function-type-table [] :call-type-facts [(c7 'sh08-st-call-fact [descriptor module])]
                :constraint-ledger [(c7 'sh08-st-constraint [descriptor])]}
@@ -14645,7 +14631,7 @@
     (is (= :accepted (:status checked)))
     (doseq [mutate mutations]
       (let [{:keys [core node call edge nodes bindings types module] :as changed} (mutate input)]
-        (is (= :rejected (:status (derive changed 65536))))
+        (is (= :rejected (:status (derive changed))))
         (is (= :rejected (:status (c7 'sh08-st-inferred-call [core node call edge nodes bindings (merge typed types)]))))
         (let [validation (c7 'sh08-st-type-work [[(:arg0 types)]])]
           (is (nil? (c7 'sh08-st-source [core node call edge nodes bindings types module validation])))
@@ -14665,7 +14651,7 @@
         (is (false? (body 'body-st-call-valid? core (assoc checked-facts :constraint-ledger [row]) bindings node call edge nodes)))
         (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :ledger [row]) :call 65536))))))
     (let [changed-forms (assoc-in forms [:call :child-form-ids] [opaque :arg0])]
-      (is (= :rejected (:status (derive (assoc input :forms changed-forms) 65536))))
+      (is (= :rejected (:status (derive (assoc input :forms changed-forms)))))
       (is (false? (body 'body-st-call-valid? core (assoc-in checked-facts [:set-conversion-context :forms] changed-forms) bindings node call edge nodes)))
       (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :forms changed-forms) :call 65536)))))
     (is (zero? @callbacks))))
@@ -14814,7 +14800,7 @@
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -14933,7 +14919,7 @@
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -15052,7 +15038,7 @@
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -15174,7 +15160,7 @@
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -15303,7 +15289,7 @@
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -15418,7 +15404,7 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input ((ns-resolve upstream 'character-predicate-input) [:gravity.type/map])
-        result ((ns-resolve upstream 'character-predicate-derived) input 65536)
+        result ((ns-resolve upstream 'character-predicate-derived) input)
         c7 (ns-resolve upstream 'invoke-c7)
         descriptor (:descriptor result)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -15461,7 +15447,7 @@
                            (update-in [:core :nodes] #(mapv restore-node %))
                            (assoc-in [:edge :ordinal] 1) (assoc-in [:core :call-edges 0 :ordinal] 1)))
         derive (ns-resolve upstream 'character-predicate-derived) c7 (ns-resolve upstream 'invoke-c7)
-        first-result (derive base 65536) second-result (derive second-input 65536)
+        first-result (derive base) second-result (derive second-input)
         descriptor (:descriptor first-result) second-descriptor (:descriptor second-result)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -15523,7 +15509,7 @@
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -15665,7 +15651,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [family families [left right] [[family family] [family :gravity.type/never] [:gravity.type/never family]]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -15795,7 +15781,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -16013,7 +15999,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [[left right] pairs]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -16130,7 +16116,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -16338,7 +16324,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [left supported right supported]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -16459,7 +16445,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -16508,7 +16494,7 @@
         c7 (ns-resolve upstream 'invoke-c7) body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
         input (input-fn [:gravity.type/keyword {:kind :gravity.type/nil-or :value-type :gravity.type/string}])
         {:keys [core node call edge nodes forms bindings types module]} input
-        result (derive input 65536) descriptor (:descriptor result)
+        result (derive input) descriptor (:descriptor result)
         typed (assoc types :operator descriptor :call (:type result))
         facts {:type-table typed :function-type-table [] :call-type-facts [(c7 'sh08-ane-call-fact [descriptor module])]
                :constraint-ledger [(c7 'sh08-ane-constraint [descriptor])]}
@@ -16537,9 +16523,9 @@
     (is (= :accepted (:status checked)))
     (doseq [mutate mutations]
       (let [{:keys [core node call edge nodes bindings types module] :as changed} (mutate input)]
-        (is (= :rejected (:status (derive changed 65536))))
+        (is (= :rejected (:status (derive changed))))
         (is (= :rejected (:status (c7 'sh08-ane-inferred-call [core node call edge nodes bindings (merge typed types)]))))
-        (let [validation (c7 'sh08-ane-type-work [[(:arg0 types) (:arg1 types)] 65536])]
+        (let [validation (c7 'sh08-ane-domain [[(:arg0 types) (:arg1 types)]])]
           (is (nil? (c7 'sh08-ane-source [core node call edge nodes bindings types module validation])))
           (is (nil? (body 'body-ane-source core node call edge nodes bindings types module validation)))
           (is (nil? (lower 'p15-s23-ane-source core node call edge nodes bindings types module validation))))
@@ -16557,7 +16543,7 @@
         (is (false? (body 'body-ane-call-valid? core (assoc checked-facts :constraint-ledger [row]) bindings node call edge nodes)))
         (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :ledger [row]) :call 65536))))))
     (let [changed-forms (assoc-in forms [:call :child-form-ids] [opaque :arg0 :arg1])]
-      (is (= :rejected (:status (derive (assoc input :forms changed-forms) 65536))))
+      (is (= :rejected (:status (derive (assoc input :forms changed-forms)))))
       (is (false? (body 'body-ane-call-valid? core (assoc-in checked-facts [:atomic-inequality-context :forms] changed-forms) bindings node call edge nodes)))
       (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :forms changed-forms) :call 65536)))))
     (let [other-call (assoc call :core-node-id :other :operator-node-id opaque)
@@ -16602,7 +16588,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [left supported right supported]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -16712,7 +16698,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -16784,7 +16770,7 @@
                 forms (cond-> forms (not transfer?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id :arg0 :kind :string :value "stop")))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id :arg0 :recur-form-id :arg0 :recur-syntax-id :arg0
                           :target-id :loop :target-kind :loop :argument-node-ids [] :arity 0 :tail-position true
@@ -16936,7 +16922,7 @@
                   {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}
                   {:kind :gravity.type/nil-or :value-type :gravity.type/string}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -17061,7 +17047,7 @@
                   {:kind :gravity.type/nil-or :value-type :gravity.type/string}
                   {:kind :gravity.type/nil-or :value-type :gravity.type/keyword}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -17185,7 +17171,7 @@
                   :gravity.type/keyword :gravity.type/nil :gravity.type/never
                   {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/keyword))}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -17273,7 +17259,7 @@
     (doseq [type [:gravity.type/keyword :gravity.type/nil :gravity.type/never
                   {:kind :gravity.type/vector :shape :literal :element-types (vec (repeat 7 :gravity.type/keyword))}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -18533,7 +18519,7 @@
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [extent [0 1 3]]
       (let [{:keys [core nodes bindings types forms] :as input} (input-fn extent)
-            result (derive input 65536) descriptor (:descriptor result) call (last (:calls core)) edge (last (:call-edges core))
+            result (derive input) descriptor (:descriptor result) call (last (:calls core)) edge (last (:call-edges core))
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :inc-op descriptor)
                      :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
                      :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core))) :call-order {:increment 2}
@@ -18579,7 +18565,7 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [input [(complete (source 1 false)) (complete (source 3 true)) (complete (alias (source 3 false)))]]
-      (let [{:keys [core nodes bindings types forms]} input descriptor (:descriptor (derive input 65536))
+      (let [{:keys [core nodes bindings types forms]} input descriptor (:descriptor (derive input))
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :nth-op descriptor)
                      :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
                      :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core))) :call-order {:read 2}
@@ -18632,7 +18618,7 @@
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))]
     (doseq [input [(complete (source 1)) (complete (source 3)) (complete (alias (source 3)))]]
-      (let [{:keys [core nodes bindings types forms]} input descriptor (:descriptor (derive input 65536))
+      (let [{:keys [core nodes bindings types forms]} input descriptor (:descriptor (derive input))
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :nth-op descriptor)
                      :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
                      :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core))) :call-order {:read 2}
@@ -18924,7 +18910,7 @@
               (is (zero? @visits)))))))
     (doseq [base [(nth-source 3 false) (get-source 3)]]
       (let [{:keys [core nodes bindings types forms] :as input} (complete (convert base :increment))
-            descriptor (:descriptor (access-derive input 65536)) id (:call-core-node-id descriptor)
+            descriptor (:descriptor (access-derive input)) id (:call-core-node-id descriptor)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :nth-op descriptor)
                      :calls (into {} (map (juxt :core-node-id identity) (:calls core)))
                      :edges (into {} (map (juxt :call-core-node-id identity) (:call-edges core))) :call-order {:read 2}
@@ -23180,7 +23166,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [[left right] pairs]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -23296,7 +23282,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -23442,7 +23428,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [[left right] pairs]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -23579,8 +23565,8 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'atomic-equality-input)
-        derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input]
-                                   ((ns-resolve upstream 'invoke-c7) 'sh08-ve-derive [core node call edge nodes bindings types forms budget])))
+        derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input]
+                                   ((ns-resolve upstream 'invoke-c7) 'sh08-ve-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -23609,7 +23595,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -23682,7 +23668,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -24123,7 +24109,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -24373,7 +24359,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -26268,7 +26254,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [[left right] pairs]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -26358,8 +26344,8 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'atomic-equality-input)
-        derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input]
-                                   ((ns-resolve upstream 'invoke-c7) 'sh08-ve-derive [core node call edge nodes bindings types forms budget])))
+        derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input]
+                                   ((ns-resolve upstream 'invoke-c7) 'sh08-ve-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -26388,7 +26374,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -26463,7 +26449,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -27733,7 +27719,7 @@
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [[left right] pairs]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -27849,7 +27835,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -27893,7 +27879,7 @@
 (deftest current-gravity-string-set-equality-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'atomic-equality-input) derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-kse-derive [core node call edge nodes bindings types forms budget])))
+        input-fn (ns-resolve upstream 'atomic-equality-input) derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-kse-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -27922,7 +27908,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -28398,8 +28384,8 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (fn [types] ((ns-resolve upstream 'list-prepend-input) (first types) (second types)))
-        derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input]
-                                  ((ns-resolve upstream 'invoke-c7) 'sh08-pl-derive [core node call edge nodes bindings types forms budget])))
+        derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input]
+                                  ((ns-resolve upstream 'invoke-c7) 'sh08-pl-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -28428,7 +28414,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -29033,7 +29019,7 @@
             {:keys [core node nodes forms bindings types module call edge]} input
             derive (if inequality? 'sh08-ane-derive 'sh08-kse-derive)
             fact (if inequality? 'sh08-ane-call-fact 'sh08-kse-call-fact) constraint (if inequality? 'sh08-ane-constraint 'sh08-kse-constraint)
-            result (c7 derive [core node call edge nodes bindings types forms 65536]) descriptor (:descriptor result)
+            result (c7 derive [core node call edge nodes bindings types forms]) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0} :call-facts {:call (c7 fact [descriptor module])}
                      :ledger [(c7 constraint [descriptor])] :locals {:arg0 'left :arg1 'right} :parameter-types types}
@@ -29111,7 +29097,7 @@
 (deftest current-gravity-string-set-carrier-equality-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'atomic-equality-input) derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-kse-derive [core node call edge nodes bindings types forms budget])))
+        input-fn (ns-resolve upstream 'atomic-equality-input) derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-kse-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -29140,7 +29126,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -29213,7 +29199,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -29276,7 +29262,7 @@
                         (assoc-in [:edge :ordinal] 1) (assoc-in [:core :call-edges 0 :ordinal] 1))
             inputs [primary sibling]
             results (mapv (fn [{:keys [core node call edge nodes bindings types forms]}]
-                            (c7 derive [core node call edge nodes bindings types forms 65536])) inputs)
+                            (c7 derive [core node call edge nodes bindings types forms])) inputs)
             descriptors (mapv :descriptor results)
             core (-> (:core primary) (assoc :nodes (vec (mapcat #(vals (:nodes %)) inputs)))
                      (assoc :calls (mapv :call inputs) :call-edges (mapv :edge inputs)))
@@ -29537,7 +29523,7 @@
                   {:kind :gravity.type/map :shape :literal :member-types [:gravity.type/keyword :gravity.type/bool]}
                   {:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}]]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [type])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -30097,7 +30083,7 @@
 (deftest current-gravity-list-equality-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'atomic-equality-input) derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-le-derive [core node call edge nodes bindings types forms budget])))
+        input-fn (ns-resolve upstream 'atomic-equality-input) derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-le-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -30126,7 +30112,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -30508,7 +30494,7 @@
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -30977,7 +30963,7 @@
         refresh (fn [input] (assoc-in input [:core :nodes] (mapv #(get (:nodes input) (:node-id %)) (get-in input [:core :nodes]))))
         run (fn [owner input budget]
               (let [arguments (args (refresh input) budget)]
-                (case owner :c7 (c7 'sh08-vsl-let-first-membership-body arguments)
+                (case owner :c7 (c7 'sh08-vsl-let-first-membership-body (pop arguments))
                             :c8 (apply c8 'body-vsl-let-first-membership-body arguments)
                             :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-let-first-membership-body arguments))))]
     (doseq [value ["a" [65 66]] members [[] (vec "ab")] owner [:c7 :c8 :emitter]]
@@ -31119,7 +31105,7 @@
         args (fn [input budget] [(:core input) (get-in input [:nodes :slice-let]) (get-in input [:nodes :slice-call])
                                 (:nodes input) (:bindings input) (:forms input) budget])
         run (fn [owner input budget]
-              (case owner :c7 (c7 'sh08-vsl-let-first-body (args input budget))
+              (case owner :c7 (c7 'sh08-vsl-let-first-body (pop (args input budget)))
                           :c8 (apply c8 'body-vsl-let-first-body (args input budget))
                           :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-let-first-body (args input budget))))]
     (doseq [value ["abc" [65 66 67]] owner [:c7 :c8 :emitter]]
@@ -31430,7 +31416,7 @@
                                 (:nodes input) (:bindings input) (:types input) (:forms input) budget])
         run (fn [owner input budget]
               (case owner
-                :c7 (c7 'sh08-vsl-let-equality-body (args input budget))
+                :c7 (c7 'sh08-vsl-let-equality-body (pop (args input budget)))
                 :c8 (apply c8 'body-vsl-let-equality-body (args input budget))
                 :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-let-equality-body (args input budget))))]
     (doseq [value ["sha256:abcd" [65 66 67]] owner [:c7 :c8 :emitter]]
@@ -31466,7 +31452,7 @@
         args (fn [input budget] [(:core input) (get-in input [:nodes :slice-let]) (get-in input [:nodes :prefix-if]) (:nodes input) (:forms input) budget])
         run (fn [owner input budget]
               (case owner
-                :c7 (c7 'sh08-vsl-prefix-if (args input budget))
+                :c7 (c7 'sh08-vsl-prefix-if (pop (args input budget)))
                 :c8 (apply c8 'body-vsl-prefix-if (args input budget))
                 :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-prefix-if (args input budget))))]
     (doseq [value ["sha256:abcd" [65 66 67]] owner [:c7 :c8 :emitter]]
@@ -31538,7 +31524,7 @@
                                 (:nodes input) (:bindings input) (:types input) (:forms input) budget])
         run (fn [owner input budget]
               (case owner
-                :c7 (c7 'sh08-vsl-let (args input budget))
+                :c7 (c7 'sh08-vsl-let (pop (args input budget)))
                 :c8 (apply c8 'body-vsl-let (args input budget))
                 :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-let (args input budget))))]
     (doseq [value ["sha256:abcd" [65 66 67]] owner [:c7 :c8 :emitter]]
@@ -31723,7 +31709,7 @@ else
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         emit (fn [name args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name args))
         base (input "sha256:0af" "sha256:" 7 10)
-        owners [[c7 'sh08-vsl-let-equality-body] [(fn [name args] (apply c8 name args)) 'body-vsl-let-equality-body]
+        owners [[(fn [name args] (c7 name (pop args))) 'sh08-vsl-let-equality-body] [(fn [name args] (apply c8 name args)) 'body-vsl-let-equality-body]
                 [emit 'p15-s23-vsl-let-equality-body]]]
     (doseq [[invoke helper] owners id [:gate-slice-call :argument-slice-call]]
       (let [run (fn [{:keys [core nodes bindings types forms]} budget]
@@ -31792,7 +31778,7 @@ else
         emit (fn [name args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name args))
         base (input "sha256:0af" 7 10)
         function-binding (get-in base [:nodes :parameter-entry-operator :attributes :binding-id])
-        owners [[c7 'sh08-vsl-let-call-body] [(fn [name args] (apply c8 name args)) 'body-vsl-let-call-body]
+        owners [[(fn [name args] (c7 name (pop args))) 'sh08-vsl-let-call-body] [(fn [name args] (apply c8 name args)) 'body-vsl-let-call-body]
                 [emit 'p15-s23-vsl-let-call-body]]]
     (doseq [[invoke helper] owners]
       (let [run (fn [{:keys [core nodes bindings forms]} budget]
@@ -31886,7 +31872,7 @@ else
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         emit (fn [name args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name args))
-        owners [[c7 'sh08-vsl-proof 'sh08-vsl-parameter]
+        owners [[(fn [name args] (c7 name (pop args))) 'sh08-vsl-proof 'sh08-vsl-parameter]
                 [(fn [name args] (apply c8 name args)) 'body-vsl-proof 'body-vsl-parameter]
                 [emit 'p15-s23-vsl-proof 'p15-s23-vsl-parameter]]]
     (doseq [[invoke proof helper] owners]
@@ -32023,7 +32009,7 @@ else
               (let [{:keys [core node call nodes bindings types forms]} base
                     arguments [core (nodes :slice-call) (first (filter #(= :slice-call (:core-node-id %)) (:calls core))) nodes bindings types forms budget]]
                 (case owner
-                  :c7 (c7 'sh08-vsl-proof arguments)
+                  :c7 (c7 'sh08-vsl-proof (pop arguments))
                   :c8 (apply c8 'body-vsl-proof arguments)
                   :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-proof arguments))))]
     (doseq [[owner prefix] [[:c7 "sh08"] [:c8 "body"] [:emitter "p15-s23"]] input inputs]
@@ -32076,7 +32062,7 @@ else
               (let [{:keys [core node call edge nodes bindings types forms]} base
                     arguments [core node call nodes bindings types forms budget]]
                 (case owner
-                  :c7 (c7 'sh08-vsl-proof arguments)
+                  :c7 (c7 'sh08-vsl-proof (pop arguments))
                   :c8 (apply c8 'body-vsl-proof arguments)
                   :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan 'p15-s23-vsl-proof arguments))))]
     (doseq [owner [:c7 :c8 :emitter] text ["" "0af" (apply str (repeat 1024 "a"))]]
@@ -32185,7 +32171,7 @@ else
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         invoke (fn [owner prefix suffix arguments]
                  (let [name (symbol (str prefix suffix))]
-                   (case owner :c7 (c7 name arguments) :c8 (apply c8 name arguments)
+                   (case owner :c7 (c7 name (pop arguments)) :c8 (apply c8 name arguments)
                          :emitter (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name arguments))))]
     (doseq [[owner prefix] [[:c7 "sh08"] [:c8 "body"] [:emitter "p15-s23"]]]
       (let [{:keys [core nodes bindings types forms] :as base} (input "0af" 1 nil)
@@ -32571,7 +32557,7 @@ else
         args (fn [input budget] [(get-in input [:nodes :call]) (:nodes input) (:types input) (:forms input) budget])
         run (fn [owner input budget]
               (case owner
-                :c7 (c7 'sh08-vsl-literal (args input budget))
+                :c7 (c7 'sh08-vsl-literal (pop (args input budget)))
                 :c8 (apply c8 'body-vsl-literal (args input budget))
                 :emitter (lower 'p15-s23-vsl-literal (args input budget))))]
     (is (instance? clojure.lang.PersistentHashMap (:forms base)))
@@ -33464,7 +33450,7 @@ else
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -33750,8 +33736,8 @@ else
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (fn [types] ((ns-resolve upstream 'list-prepend-input) (first types) (second types)))
-        derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input]
-                                  ((ns-resolve upstream 'invoke-c7) 'sh08-pl-derive [core node call edge nodes bindings types forms budget])))
+        derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input]
+                                  ((ns-resolve upstream 'invoke-c7) 'sh08-pl-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -33780,7 +33766,7 @@ else
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -35339,7 +35325,7 @@ else
         left-local {:op :local :name 'left} right-local {:op :local :name 'right}]
     (doseq [[left right] pairs]
       (let [{:keys [core nodes forms bindings types module call edge] :as input} (input-fn [left right])
-            result (derive input 65536) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call (:type result))
                      :calls {:call call} :edges {:call edge} :call-order {:call 0}
@@ -35545,7 +35531,7 @@ else
 (deftest current-gravity-list-inequality-transfer-fence-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
-        input-fn (ns-resolve upstream 'atomic-inequality-input) derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-ane-derive [core node call edge nodes bindings types forms budget])))
+        input-fn (ns-resolve upstream 'atomic-inequality-input) derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input] ((ns-resolve upstream 'invoke-c7) 'sh08-ane-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -35574,7 +35560,7 @@ else
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -35935,8 +35921,8 @@ else
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (fn [types] ((ns-resolve upstream 'list-prepend-input) (first types) (second types)))
-        derive (fn [input budget] (let [{:keys [core node call edge nodes bindings types forms]} input]
-                                  ((ns-resolve upstream 'invoke-c7) 'sh08-pl-derive [core node call edge nodes bindings types forms budget])))
+        derive (fn [input] (let [{:keys [core node call edge nodes bindings types forms]} input]
+                                  ((ns-resolve upstream 'invoke-c7) 'sh08-pl-derive [core node call edge nodes bindings types forms])))
         c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -35965,7 +35951,7 @@ else
                 forms (cond-> forms (not recur?) (assoc :payload (assoc base-form :form-id :payload :syntax-id :payload :parent-form-id slot :kind :string :value payload)))
                 input (-> input (assoc :nodes nodes :forms forms) (assoc-in [:core :nodes] (vec (vals nodes)))
                           (update :types assoc :payload :gravity.type/string))
-                result (derive input 65536) descriptor (:descriptor result)
+                result (derive input) descriptor (:descriptor result)
                 target {:target-id :loop :target-kind :loop :binding-ids [] :arity 0}
                 transfer {:recur-core-node-id slot :recur-form-id slot :recur-syntax-id slot :target-id :loop :target-kind :loop
                           :argument-node-ids [] :arity 0 :tail-position true :evaluation-order :arguments-left-to-right
@@ -36363,7 +36349,7 @@ else
              ['set-predicate-input 'set-predicate-derived "setp" :gravity.type/bool]
              ['list-predicate-input 'list-predicate-derived "listp" :gravity.type/bool]]]
       (let [input ((ns-resolve upstream input-name) [carrier]) derive (ns-resolve upstream derive-name)
-            result (if (= family "lc") (derive input) (derive input 65536)) descriptor (:descriptor result)
+            result (derive input) descriptor (:descriptor result)
             {:keys [core node nodes forms bindings types module call edge]} input
             context {:core core :nodes nodes :forms forms :bindings bindings
                      :types (assoc types :operator descriptor :call expected)
