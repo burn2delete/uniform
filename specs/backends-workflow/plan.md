@@ -50,20 +50,9 @@ and complete Remaining tasks paragraph as one source block. Do not invent
 individual-clause IDs or split acceptance questions from evidence/decision/
 integration context. Keep the original migration tasks file as a frozen suffix.
 
-`tools/backends_task_projection.clj` reuses shared record/region and relative-
-link helpers unchanged. It checks the exact family key set and key/heading pairs,
-record syntax, explicit acceptance consistency and all evidence file targets.
-It generates each original paragraph in its existing marked family region;
-relative links resolve from the ledger and rebase to the same target. All current
-links keep their spelling because both document directories have the same depth.
-The all-open summary is generated from record statuses. Later non-Open statuses
-render locally and use a neutral summary without implying release acceptance.
-
-The wrapper accepts only --check or --write, validates all input before writing
-only its fixed roadmap and adds no registry, discovery or caller-selected path.
-Own seven files: roadmap, four workflow artifacts, focused projector/test.
-No shared helper or other component file changes. Preserve the entire reviewed
-Additional contract interfaces appendix as an exact suffix from plan blob
+Own the roadmap and four workflow artifacts. No shared helper or other component
+file changes. Preserve the entire reviewed Additional contract interfaces
+appendix as an exact suffix from plan blob
 `1b2a18bbc06d4379f7373c3bdaa619de7f89631a`. No backend family, provider or
 compiler execution is part of this transfer.
 
@@ -72,27 +61,16 @@ compiler execution is part of this transfer.
 Run from repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/backends_task_projection.clj --write
-clojure -J-Xmx512m -M tools/backends_task_projection.clj --check
-clojure -J-Xmx512m -M tools/backends_task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-Compare fifteen original literal keys, headings and full paragraph bytes, Open
-statuses, complete historical suffix, prior contract/family navigation and the
-reviewed appendix. Remove only added authority navigation/markers and reconstruct
-the entire original roadmap, preserving all selected-target/future-family and
-artifact-acceptance wording. Check fifteen relative evidence links from both
-contexts and five Markdown documents for ASCII/file/heading links, including
-missing-file/heading negatives. Test duplicate/missing keys/markers, key/heading
-mismatch, malformed records, absent acceptance questions, status disagreement,
-stale projections, bad links and symlink escapes. Subprocess controls prove
-read-only checks, fixed-roadmap writes, extra-path rejection, helper non-dispatch
-and outside-sentinel preservation. Run whitespace and clean exact-base/head/tree
-integration preflight. Structural checks require no compiler semantic suite and
-confer no backend acceptance.
+Compare the preserved task criteria, Open statuses, historical suffix, prior
+contract/family navigation and reviewed appendix. Check the Markdown documents
+for ASCII and file/heading links, then run whitespace and clean
+exact-base/head/tree integration preflight. Structural checks require no
+compiler semantic suite and confer no backend acceptance.
 
 ## Delivery and remaining work
 
@@ -104,7 +82,6 @@ adds no future family or new prerequisite to the selected compiler recipe.
 
 ## Names, callers and compatibility
 
-`backends-task-projection` is a semantic component entrypoint. No compiler/backend
 API, wire/schema identity, diagnostic, manifest hash, selected target, runtime
 provider, grant or admission policy changes. Historical planning IDs remain
 traceability and literal family keys remain compatible.

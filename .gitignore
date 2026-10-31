@@ -1,5 +1,8 @@
 .cpcache/
 .cpcache-bootstrap.lock
 .workstream-ledger.lock
+# Validation logs and command captures are local run output. Durable evidence
+# stays under docs/artifacts/ or remains tracked when a historical record names
+# the exact target path.
+target/validation/
 target/development-loop-batches/
-target/validation/integration-fresh-verification/
