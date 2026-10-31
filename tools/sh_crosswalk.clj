@@ -5,7 +5,7 @@
 (require '[sh-inventory] '[acceptance-dependencies])
 (def baseline "254a5b50ea5e2825c424248c9216802cc866c0fd")
 (def applying-source-pins
-  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "ffb3cbac042c3755f2296b98223e586486abca59", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
+  {"bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md" "4325a9f46292472a7f984c5adfef81209874bb5c", "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md" "bffefedfada9e3312e68e0a28a69d71db459d0e2", "docs/component-roadmaps/build.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "docs/component-roadmaps/compiler-api.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "docs/component-roadmaps/reader.md" "2e0292c61603aad200df397e397e94e3c7d24818", "docs/self-hosting-slice-ownership.edn" "7591d0604d1de7944d15927d9ac2f8473701bac6", "specs/build-workflow/tasks.md" "3bd7e21145dfe5d71f45375f6e787b384d361e2e", "specs/compiler-api-workflow/tasks.md" "f25e6f571e610587da8142f5b0fc33e7806d440e", "specs/reader-workflow/tasks.md" "2e0292c61603aad200df397e397e94e3c7d24818"})
 (def pinned-evidence-hashes
   {"docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
  "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6",
@@ -655,12 +655,20 @@
          (select-keys syntax-pipeline-predecessor-review
                       [:status :input-fingerprint :source-version-bridge])))
 
-(def mapping-review
+(def macro-artifacts-predecessor-review
   (assoc macro-runtime-predecessor-review
          :input-fingerprint "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048"
          :source-version-bridge "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
          :macro-runtime-predecessor-review
          (select-keys macro-runtime-predecessor-review
+                      [:status :input-fingerprint :source-version-bridge])))
+
+(def mapping-review
+  (assoc macro-artifacts-predecessor-review
+         :input-fingerprint "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86"
+         :source-version-bridge "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"
+         :macro-artifacts-predecessor-review
+         (select-keys macro-artifacts-predecessor-review
                       [:status :input-fingerprint :source-version-bridge])))
 
 (defn source-view []
@@ -750,6 +758,9 @@
     {:schema-version 1 :kind :sh-family-derived-crosswalk :authority :read-only-acceptance-rollup
      :applying-task-source-commit baseline :original-inventory-commit original-baseline
      :applying-source-pins applying-source-pins
+     :macro-artifacts-source-version
+     {:path "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"
+      :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"))}
      :macro-runtime-source-version
      {:path "specs/sh-family-crosswalk/macro-runtime-source-version.edn"
       :sha256 (sh-inventory/sha256 (slurp "specs/sh-family-crosswalk/macro-runtime-source-version.edn"))}

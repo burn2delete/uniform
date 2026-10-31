@@ -12638,6 +12638,10 @@
    {:state :no-whole-milestone-completion-claim},
    :evidence-qualification
    "Owning test/source/doc locations are exact inspected bytes at the task baseline, not executed or accepted results; missing full closure and current applicability remain explicit."}],
+ :macro-artifacts-source-version
+ {:path "specs/sh-family-crosswalk/macro-artifacts-source-version.edn",
+  :sha256
+  "e495dc2fd6b2398d2f9f6da929038f6f491087650f37cdd9c8dc5c0970824f82"},
  :syntax-pipeline-source-version
  {:path "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn",
   :sha256
@@ -12707,7 +12711,7 @@
     "Build PKG5 task-interface successor; predecessor acceptance retained as history. Changed task acceptance and source pins need independent exact-source review. All180 whole-criterion acceptance states remain unassessed."},
    :scope :finite-task-interface-and-source-conservation-only},
   :source-version-bridge
-  "specs/sh-family-crosswalk/macro-runtime-source-version.edn",
+  "specs/sh-family-crosswalk/macro-artifacts-source-version.edn",
   :reader-assembly-source-version
   "specs/sh-family-crosswalk/reader-assembly-source-version.edn",
   :macro-runtime-predecessor-review
@@ -13205,8 +13209,14 @@
    "Composed Reader and Build task source pins; both predecessor histories are retained. Changed composition awaits independent review; all180 whole-criterion implementation assessments stay unassessed."},
   :qualification
   "Normal Reader fixture ownership and current Build task source pins composed; both predecessor source/review histories retained. Changed exact composition awaits independent review; no implementation acceptance or mapping promotion.",
+  :macro-artifacts-predecessor-review
+  {:status :pending-source-version-review,
+   :input-fingerprint
+   "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048",
+   :source-version-bridge
+   "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048"},
+  "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86"},
  :accepted-current-scoped-evidence
  [{:task-id
    "reader/finite-remaining-work/lexical-products-and-origins-closure",
@@ -16696,7 +16706,7 @@
   "docs/self-hosting-slice-backlog.md"
   "0705f2941a7b2b5146fbefefe6deef0e4fbd80020240c0d7af6e85f0579891c8",
   "docs/self-hosting-slice-ownership.edn"
-  "c742e291bf3aa0f85ad8c80b95b215680f2fa36a0dd218add9261e9c684845f4",
+  "c9adcfcf7887c37721e95cd7fb6cfb15e77ab35765f1fd28c880212816306772",
   "specs/auth-workflow/tasks.md"
   "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256",
   "specs/backends-workflow/tasks.md"
@@ -16763,7 +16773,7 @@
   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md"
   "bffefedfada9e3312e68e0a28a69d71db459d0e2",
   "docs/self-hosting-slice-ownership.edn"
-  "ffb3cbac042c3755f2296b98223e586486abca59",
+  "7591d0604d1de7944d15927d9ac2f8473701bac6",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "4325a9f46292472a7f984c5adfef81209874bb5c"},
  :scope-boundaries

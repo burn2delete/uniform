@@ -240,22 +240,52 @@
   (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/macro-runtime-source-version.edn"))
         {:keys [path before after]} (:source-file bridge)
         previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
-        current (edn/read-string (slurp path))
+        current (edn/read-string (sh-crosswalk/git-source (:commit after) path))
         conserved (reduce-kv (fn [record section added-path]
                                (update record section dissoc added-path))
                              current (:added-entries bridge))
         view (sh-crosswalk/build)]
     (is (= previous conserved))
     (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
-    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
     (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
-    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (is (= (:commit after) (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/macro-artifacts-source-version.edn")) [:source-file :before :commit])))
     (is (= (:predecessor-input-fingerprint bridge)
            (:input-fingerprint sh-crosswalk/macro-runtime-predecessor-review)))
     (is (= (select-keys sh-crosswalk/macro-runtime-predecessor-review
                         [:status :input-fingerprint :source-version-bridge])
            (get-in view [:mapping-review :macro-runtime-predecessor-review])))
     (is (= (get-in view [:macro-runtime-source-version :path])
+           (get-in view [:mapping-review :macro-artifacts-predecessor-review :source-version-bridge])))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= :source-conservation-only (:authority bridge)))
+    (is (= 180 (count (:requirements view))))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (doseq [wrong [(:commit before) "0000000000000000000000000000000000000000"]]
+      (is (thrown? Exception
+                   (sh-crosswalk/validate-pinned-sources!
+                    {:applying-source-pins {path wrong}
+                     :source-digests {path (:sha256 after)}} sh-crosswalk/git-source))))))
+
+(deftest macro-artifacts-source-version-conserves-only-helper-consumer
+  (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/macro-artifacts-source-version.edn"))
+        {:keys [path before after]} (:source-file bridge)
+        change (:changed-entry bridge)
+        entry [(:section change) (:path change) (:field change)]
+        previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
+        current (edn/read-string (slurp path))
+        view (sh-crosswalk/build)]
+    (is (= previous (assoc-in current entry (:before change))))
+    (is (= (:after change) (get-in current entry)))
+    (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
+    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (is (= (:predecessor-input-fingerprint bridge)
+           (:input-fingerprint sh-crosswalk/macro-artifacts-predecessor-review)))
+    (is (= (select-keys sh-crosswalk/macro-artifacts-predecessor-review
+                       [:status :input-fingerprint :source-version-bridge])
+           (get-in view [:mapping-review :macro-artifacts-predecessor-review])))
+    (is (= (get-in view [:macro-artifacts-source-version :path])
            (get-in view [:mapping-review :source-version-bridge])))
     (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
     (is (= :source-conservation-only (:authority bridge)))
