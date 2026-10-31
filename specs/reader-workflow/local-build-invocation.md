@@ -2,9 +2,10 @@
 
 This successor implements the host-entry edge selected in
 [the issuer contract](hermetic-input-issuer.md). Parent
-`283edcfe195e6bcd2b8131bd2f4c888bcb80a5b6` remains frozen history. This cut
-changes no Reader production, Stage2 builtin, function-scope routing, Native/Set
-implementation or source builtin registration. Contracts: T1, C2, L12, L15,
+`283edcfe195e6bcd2b8131bd2f4c888bcb80a5b6` remains frozen history. The initial
+host-entry commit `80ff09ca` changed no Reader/Stage2 production. Its historical
+pending-bridge statements below are qualified by the subsequent implementation
+section. Reader production remains untouched. Contracts: T1, C2, L12, L15,
 SAFE10, PKG2, PKG6 and D9.
 
 ## Actual entry and command authority
@@ -110,6 +111,50 @@ legality. Accounting/Reader writer and composition agreement remain required.
 No empty-effect compiler-internal IO route or ambient grant fallback is used.
 
 ## Model evidence and limits
+
+### Subsequent fixed bridge source under closed agreement
+
+Accounting agreement SHA256
+`316a24d91e9566a5c8af0b9cc41aee74ba89a31d8e18411389c79d50aebcb4c0`
+designated this engineer as single bridge writer. Preservation commit
+`f4ab55a9c511237e23dd5c53e00c23e15feecb85` first composed six differing
+Native/Set paths from ACC09 `9e733a37`; all 14 agreement pins then matched
+exact modes/blobs. This is source conservation, not fresh execution or
+acceptance. Other incoming source and the new host entry were preserved.
+
+The new `gravity.build.reader-bridge` implements private lexical identity scope,
+whole request/grant preflight, original runtime/plan identity and fresh native
+snapshot checks, approved handler instruction membership, host-selected current
+form and construction/verification mode, original-result capture and private
+receipt lookup. Source fields cannot select mode or supply authority. The
+issuer's default native input schema stays strict; the private plan snapshot
+schema additionally admits native symbol-keyed tables, immutable numeric and
+character literals and native PersistentList source forms. Foreign callbacks,
+metadata and cycles remain refused.
+
+`00590` forwards original instruction and scope without reevaluating arguments.
+`00588` retains the agreed three/four/six-argument compatibility and one fixed
+case. `00593` checks native scope shape before module lookup, then authenticates
+privately registered Reader scopes separately from B51, module and nil routes.
+These changes do not treat Native representation validation as grant authority.
+
+The fixed name and String/effect/capability contract are in `00516`.
+Compile-time legality is checked in the Clojure seed `00576` and owning Gravity
+emitter: `:meta`, `:jvm`, declared `:build/read-file` and `:fs/read` are required.
+The provider also records the service effect `:filesystem/read`. No
+empty-effect compiler-internal route is used, and existing provenance and
+Native/Set code remain preserved outside the named bridge delta.
+
+The private scope creator requires an already-authenticated original Reader
+plan and form requests from trusted host integration. It does not authenticate
+an arbitrary plan because its hash or metadata looks correct. That actual
+normal Reader producer/handler/form-to-scope connection is still missing.
+Accordingly the outer command's fixed link still reports
+`:reader-effectful-bridge-unavailable`; no host read is relabeled a Gravity
+handler result. Compatibility with a genuine complete Reader plan and normal
+integration remains unverified. The injected bridge models are not that result.
+
+### Evidence boundary
 
 Tests inject the fixed private Reader link or observe the issuer; no callback
 is accepted by the production command. These command/entry models cover native

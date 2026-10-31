@@ -23,13 +23,17 @@
 (defn- freeze
   "Validate native carriers before protocols/equality/hash/lookup; copy all
   containers so caller-owned native backing arrays cannot mutate retained data."
-  ([value] (freeze value (java.util.IdentityHashMap.)))
-  ([value ^java.util.IdentityHashMap ancestors]
+  ([value] (freeze value (java.util.IdentityHashMap.) #{clojure.lang.Keyword}))
+  ([value ancestors] (freeze value ancestors #{clojure.lang.Keyword}))
+  ([value ^java.util.IdentityHashMap ancestors key-classes]
    (let [kind (class value)
-         collection? (contains? #{clojure.lang.PersistentArrayMap
+         plan-data? (contains? key-classes clojure.lang.Symbol)
+         native-list? (and plan-data? (contains? #{clojure.lang.PersistentList
+                                                  clojure.lang.PersistentList$EmptyList} kind))
+         collection? (or native-list? (contains? #{clojure.lang.PersistentArrayMap
                                  clojure.lang.PersistentHashMap
                                  clojure.lang.PersistentVector
-                                 clojure.lang.PersistentHashSet} kind)]
+                                 clojure.lang.PersistentHashSet} kind))]
      (cond
        collection?
        (do
@@ -38,16 +42,28 @@
          (.put ancestors value true)
          (try
            (cond
+             native-list?
+             (loop [remaining value out []]
+               (cond
+                 (or (nil? remaining) (= clojure.lang.PersistentList$EmptyList (class remaining)))
+                 (apply list out)
+                 (= clojure.lang.PersistentList (class remaining))
+                 (do (when (some? (meta remaining)) (refuse! :native-carrier))
+                     (recur (.next ^clojure.lang.PersistentList remaining)
+                            (conj out (freeze (.first ^clojure.lang.PersistentList remaining)
+                                              ancestors key-classes))))
+                 :else (refuse! :native-carrier)))
+
              (or (= kind clojure.lang.PersistentArrayMap)
                  (= kind clojure.lang.PersistentHashMap))
              (reduce (fn [out [key item]]
-                       (when-not (= clojure.lang.Keyword (class key))
+                       (when-not (contains? key-classes (class key))
                          (refuse! :native-key))
-                       (assoc out (freeze key ancestors) (freeze item ancestors)))
+                       (assoc out (freeze key ancestors key-classes) (freeze item ancestors key-classes)))
                      {} value)
              (= kind clojure.lang.PersistentVector)
-             (mapv #(freeze % ancestors) value)
-             :else (into #{} (map #(freeze % ancestors)) value))
+             (mapv #(freeze % ancestors key-classes) value)
+             :else (into #{} (map #(freeze % ancestors key-classes)) value))
            (finally (.remove ancestors value))))
 
        (= kind String)
@@ -67,7 +83,10 @@
        (or (= kind clojure.lang.Keyword) (= kind clojure.lang.Symbol))
        (do (when (some? (meta value)) (refuse! :native-carrier)) value)
 
-       (or (nil? value) (contains? #{Boolean Long} kind)) value
+       (or (nil? value) (contains? #{Boolean Long} kind)
+           (and plan-data? (contains? #{Integer Short Byte Double Float Character
+                                       clojure.lang.BigInt java.math.BigInteger
+                                       java.math.BigDecimal clojure.lang.Ratio} kind))) value
        :else (refuse! :native-carrier)))))
 
 (defn- fields! [value fields]

@@ -910,6 +910,23 @@
                :expected-arity expected-arity
                :actual-arity (count arguments)))))
 
+(defn p15-s23-compile-build-read-call [emitter module locals arguments]
+  (if (= 1 (count arguments))
+    (if (if (= :meta (get module :profile))
+          (if (= :jvm (get module :target))
+            (if (contains? (get module :effects) :build/read-file)
+              (contains? (get module :capabilities) :fs/read) false) false) false)
+      (let [args (p15-s23-compile-forms
+                  emitter (assoc module :p15-s23-sh07-child-index-base 1) locals arguments [])]
+        (if (p15-s23-compiler-complete? args)
+          (p15-s23-compiler-result
+            {:op :builtin-call :function (quote build-read-declared-input)
+             :args (get args :value)}) args))
+      (p15-s23-compiler-error "L15-CONTRACT" {:reason :read-legality}))
+    (p15-s23-compiler-error "L2-BUILTIN-ARITY"
+      {:function (quote build-read-declared-input)
+       :expected-arity 1 :actual-arity (count arguments)})))
+
 (defn p15-s23-compile-call
   [emitter module locals form]
   (let [callee (first form)
@@ -1011,6 +1028,8 @@
                   (p15-s23-compile-internal-builtin-call
                    emitter module locals callee arguments internal-arity)
                   (if (contains? builtin-functions callee)
+                  (if (= callee (quote build-read-declared-input))
+                    (p15-s23-compile-build-read-call emitter module locals arguments)
                   (let [args
                         (p15-s23-compile-forms
                          emitter
@@ -1021,7 +1040,7 @@
                        (hash-map :op (get call-rules :builtin-op)
                                  :function callee
                                  :args (get args :value)))
-                      args))
+                      args)))
                   (if (contains? (get module :function-table) callee)
                     (let [args
                           (p15-s23-compile-forms

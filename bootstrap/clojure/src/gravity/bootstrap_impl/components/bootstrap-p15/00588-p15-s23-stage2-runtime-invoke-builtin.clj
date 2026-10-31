@@ -1,3 +1,4 @@
+(require '[gravity.build.reader-bridge :as declared-reader-bridge])
 (declare ^:private p15-s23-stage2-native-carrier-header)
 (declare ^:private p15-s23-stage2-hosted-native-data)
 
@@ -34,8 +35,13 @@
   ([plan callee args]
    (p15-s23-stage2-runtime-invoke-builtin nil plan callee args))
   ([runtime plan callee args]
+   (p15-s23-stage2-runtime-invoke-builtin runtime plan callee args nil nil))
+  ([runtime plan callee args instruction public-invocation-scope]
   (try
     (case callee
+      build-read-declared-input
+      (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 1)
+          (declared-reader-bridge/read! runtime plan instruction args public-invocation-scope))
       hosted-native-data-preflight
       (do (p15-s23-stage2-runtime-assert-exact-arity! plan callee args 1)
           (p15-s23-stage2-hosted-native-data plan (nth args 0)))
