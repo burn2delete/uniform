@@ -6516,7 +6516,7 @@
         (is (= :rejected (:status (map-get-derived (mutate input))))))
       (is (= :accepted (:status (map-get-derived input)))))
     (let [input (map-get-input [(m (vec (repeat 1024 s))) s s])]
-      (is (= :accepted (:status (map-get-derived input))))))
+      (is (= :accepted (:status (map-get-derived input)))))))
 
 (defn- map-contains-input [argument-types]
   (let [input (integral-ordering-input 'contains? argument-types)]
@@ -6596,10 +6596,6 @@
     (let [domain #(invoke-c7 'sh08-ksm-domain [%1])]
       (is (= :accepted (:status (domain [(finite (repeat 1024 k)) k]))) )
       (is (= :accepted (:status (domain [(finite (repeat 1025 k)) k])))))))
-
-)
-
-
 
 (deftest sh08-keyword-set-contains-dispatch-guard-development-kernel
   (let [calls (atom 0) hostile (proxy [Object] []
@@ -6854,10 +6850,8 @@
         (is (= expected (:result-type descriptor) (get-in result [:type-table id])))
         (is (= [{:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword}] (:argument-types descriptor)))
         (is (= [:memory/allocate] (:direct-effects descriptor) (:latent-effects descriptor)))
-        (is (= [1024 :bounded-prepaid-first-rest :all-physical-keywords-before-equality-or-hash]
-               ((juxt :maximum-input-elements :traversal :domain-validation) (:runtime-census-policy descriptor))))
-        (is (= [65536 :cumulative-capture-plus-remaining-keyword-dedup]
-               ((juxt :limit :accounting) (:runtime-work-policy descriptor))))
+        (is (= :possible (get-in descriptor [:allocation-policy :empty-result])))
+        (is (= :none (get-in descriptor [:storage-policy :borrow])))
         (is (not (contains? descriptor :input-element-count)))
         (is (not (contains? descriptor :result-count)))
         (is (= :temporary-snapshot-and-output-storage (get-in descriptor [:storage-policy :copy])))
@@ -6982,7 +6976,7 @@
         (if (and invoked? (pos? (count (:element-types type))))
           (do
             (is (= {:version :sh08-keyword-vector-set-input-v1 :family :finite-homogeneous-keyword-vector
-                    :element-type :gravity.type/keyword :maximum-input-elements 1024
+                    :element-type :gravity.type/keyword
                     :output-type :gravity.type/set :output-refinements :none} (:input-policy descriptor)))
             (is (= :sh08-keyword-vector-set-construction-v1 (get-in descriptor [:construction-policy :version])))
             (is (= :gravity-keyword-value-equality (get-in descriptor [:construction-policy :duplicates]))))
@@ -11052,7 +11046,7 @@
           (is (= :gravity.type/never (:type result)))
           (is (= [] (get-in result [:descriptor :direct-effects]))))
         (when (= status :deferred)
-          (is (= :gravity.type/unknown (:type result)))))))
+          (is (= :gravity.type/unknown (:type result))))))))
 
 (deftest sh08-vector-append-development-kernel
   (doseq [[elements value] [[[] :gravity.type/keyword]
@@ -12185,7 +12179,7 @@
 
 (defn- bounded-unit-addition-completed [input]
   (reduce (fn [out call]
-            (let [result (bounded-unit-addition-derived out)]
+            (let [result (bounded-unit-addition-derived out (:core-node-id call))]
               (-> out (update :step-results (fnil conj []) result)
                   (assoc-in [:types (:operator-node-id call)] (:descriptor result)))))
           input (filter #(contains? '#{inc +} (:operator-binding-id %)) (get-in input [:core :calls]))))
@@ -12193,7 +12187,7 @@
 (deftest sh08-bounded-unit-addition-development-kernel
   (doseq [extent [0 1 3 1024]]
     (let [{:keys [core nodes bindings types] :as input} (bounded-unit-addition-input (bounded-successor-input extent) :increment)
-          result (bounded-unit-addition-derived input)
+          result (bounded-unit-addition-derived input :increment)
           descriptor (:descriptor result) proof (:range-proof descriptor)]
       (is (= :accepted (:status result)) (pr-str result))
       (when (= :accepted (:status result))
@@ -12207,7 +12201,7 @@
         (is (true? (invoke-c7 'sh08-si-step-forms-valid? [proof core nodes (:forms input)])))
         (is (= :sh08-bounded-unit-addition-v1 (get-in result [:constraint :producer-rule])))
         (is (= :numeric-unit-addition (get-in result [:constraint :lhs :projection])))
-        ))))
+        )))
   (let [base (bounded-unit-addition-input (bounded-successor-two-backedges (bounded-successor-input 3)) :increment)
         {:keys [core nodes bindings types forms] :as input} (bounded-unit-addition-completed base)
         descriptors (mapv :descriptor (:step-results input))]
@@ -12252,7 +12246,7 @@
                      (assoc-in input [:core :recur-transfers] [])
                      (assoc-in input [:nodes :exit :attributes :binding-id] :other)
                      (assoc-in input [:forms :less-op :value] '<=)]]
-      (is (= :rejected (:status (bounded-unit-addition-derived changed)))))
+      (is (= :rejected (:status (bounded-unit-addition-derived changed :increment)))))
     )
   (doseq [base [(vector-loop-nth-input 3 false) (vector-loop-get-input 3)]]
     (let [input (bounded-unit-addition-completed (bounded-unit-addition-input base :increment))
@@ -12270,7 +12264,7 @@
                              (assoc-in [:forms :increment-unit :value] 2))
                      (assoc-in base [:types :increment-unit] :gravity.type/never)]]
       (doseq [id [:increment :increment-2]]
-        (let [result (bounded-unit-addition-derived changed)]
+        (let [result (bounded-unit-addition-derived changed id)]
           (is (= :rejected (:status result)) (pr-str [id (:reason result)])))))))
 
 (defn- bounded-unit-addition-cold-two-loops []
@@ -14256,7 +14250,7 @@
     (is (= {:status :accepted :comparison-domain :flat-integer-vector}
            (select-keys (invoke-c7 'sh08-ve-domain [[(v [i i]) (v [i i])]])
                         [:status :comparison-domain])))
-    (is (= :accepted (:status (invoke-c7 'sh08-ve-domain [[:gravity.type/never :gravity.type/never]])))))
+    (is (= :accepted (:status (invoke-c7 'sh08-ve-domain [[:gravity.type/never :gravity.type/never]]))))))
 
 
 (defn- inequality-keyword-set-type [members]
@@ -14416,7 +14410,7 @@
       (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad])))))
       (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k])))))
     (is (= :rejected (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])]]))))
-))))
+)))
 
 
 
@@ -15050,7 +15044,7 @@
       (is (= :not-applicable (:status (invoke-c7 'sh08-pc-candidate [core node call changed-nodes types ])))))
     (is (zero? @callbacks))
     (doseq [legacy [(private-entry-get-input) (map-present-get-input :file)]]
-      (is (= {:status :not-applicable :work-count 0}
+      (is (= {:status :not-applicable}
              (invoke-c7 'sh08-pc-candidate [(:core legacy) (:node legacy) (:call legacy) (:nodes legacy) (:types legacy) ]))))
     (is (= :accepted (:status (invoke-c7 'sh08-pc-candidate [core node call nodes types ]))))))
 
@@ -19694,30 +19688,29 @@
 
 
 (defn cold-metadata-input []
-  ;; Normalized metadata only. Legacy non-quote fields satisfy the unchanged API.
+  ;; Only the three metadata fields below are part of the cold-evidence view.
   (let [record {:function-syntax-id :function :parameter-binding-ids []}
-        cut {:mode :entries :excluded-node-ids [] :work-count 0}
+        cut {:mode :entries :excluded-node-ids []}
         core {:function-records [record] :calls [] :call-edges [] :nodes []
               :lexical-bindings [] :definitions []}
         input {:mode :entries :cut cut :source-argument-call-node-ids []
-               :source-preparation-work-count 4 :quoted-products {:work-count 97}
-               :inference {:round-count 1 :round-bound 2} :work-count 11}
+               :source-preparation {:status :accepted}
+               :quoted-products {:status :accepted}
+               :inference {:status :converged}}
         cold (invoke-c7 'sh08-is-cold-evidence [input])]
     {:core core :facts {:imported-function-types []} :record record :bindings [] :forms []
      :input input :cold cold :cut cut}))
 
-(defn cold-metadata-invalid-inputs [cold]
-  [(assoc cold :quote-work-count 0) (assoc cold :quote-work-count 1) (assoc cold :quote-work-count nil)
-   (assoc cold :mode :body) (assoc-in cold [:cut :excluded-node-ids] [:forged])
-   (assoc cold :source-argument-call-node-ids [:forged])
-   (dissoc cold :source-argument-call-node-ids) (assoc cold :unknown-field true)])
+(defn cold-metadata-invalid-inputs [input]
+  [(assoc input :quote-work-count 0) (assoc input :quote-work-count 1)
+   (assoc input :quote-work-count nil) (assoc input :unknown-field true)])
 
 (deftest cold-quote-metadata-production-development-kernel
-  (let [{:keys [input cold cut]} (cold-metadata-input)]
-
-    (is (not (contains? cold :quote-work-count)))
-    (doseq [value [nil 0 1 97]]
-      )))
+  (let [{:keys [input cold cut]} (cold-metadata-input)
+        expected {:mode :entries :cut cut :source-argument-call-node-ids []}]
+    (is (= expected cold))
+    (doseq [variant (cold-metadata-invalid-inputs input)]
+      (is (= expected (invoke-c7 'sh08-is-cold-evidence [variant]))))))
 
 (deftest record-union-descriptor-rows-have-no-count-quota
   ;; Normalized descriptor DATA exercises the owning closed-family checker.
@@ -19842,3 +19835,3576 @@
                   {:kind :gravity.type/list :shape :literal :element-types [opaque]}]]
       (is (= :rejected (:status (check [type])))))
     (is (empty? @callbacks))))
+
+
+;; Semantic controls restored from the baseline against the unmetered C7 API.
+;; Accounting-only forms and allowances remain excluded.
+(deftest
+  bare-keyword-anchor-throw-consumer-development-kernel
+  (doseq [anchor-index [0 1]]
+    (let [anchor {:kind :gravity.type/set,
+                  :shape :literal,
+                  :element-types (vec (repeat 1030 :gravity.type/keyword))}
+          input (atomic-equality-input (assoc [:gravity.type/set :gravity.type/set] anchor-index anchor))
+          record {:function-syntax-id :predicate-function,
+                  :function-core-node-id :predicate-fn,
+                  :body-core-node-id :call,
+                  :fixed-arity 0,
+                  :parameter-binding-ids []}
+          function {:node-id :predicate-fn,
+                    :core-form :fn,
+                    :children [:call],
+                    :attributes {},
+                    :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                    :evaluation {:kind :function-creation, :order []}}
+          ordered (mapv
+                    #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                    (get-in input [:core :nodes]))
+          node (last ordered)
+          call (:call input)
+          edge (assoc
+                 (:edge input)
+                 :caller-function-syntax-id
+                 :predicate-function
+                 :caller-function-core-node-id
+                 :predicate-fn)
+          core (assoc
+                 (:core input)
+                 :nodes
+                 (conj ordered function)
+                 :function-records
+                 [record]
+                 :call-edges
+                 [edge]
+                 :root-core-node-ids
+                 [:predicate-fn])
+          nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+          derived (pr359-descriptor-c7
+                    'sh08-bka-derive
+                    core
+                    node
+                    call
+                    edge
+                    nodes
+                    (:bindings input)
+                    (:types input)
+                    (:forms input))
+          descriptor (:descriptor derived)
+          types (assoc (:types input) :operator descriptor :call :gravity.type/bool)
+          bindings (vec (vals (:bindings input)))
+          functions {:predicate-function
+                     {:function-id :predicate-function,
+                      :body-core-node-id :call,
+                      :parameters [],
+                      :return :gravity.type/bool,
+                      :latent-effects [],
+                      :capabilities [],
+                      :thrown-error-effects []}}
+          direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+          scope (pr359-descriptor-c7 'sh08-tc-scope-with-types core (:throws direct) types)
+          check #(pr359-descriptor-c7 'sh08-tc-products core % functions bindings direct)
+          accepted (check types)]
+      (is (= :accepted (:status derived) (:status accepted)))
+      (is (= :accepted (:status scope)))
+      (is (true? (:active? scope)))
+      (is (contains? (:scope scope) :predicate-function))
+      (is (= [] (get-in accepted [:throws :predicate-function])))
+      (is (= [] (:diagnostics accepted)))
+      (doseq [changed [(assoc-in descriptor [:source :syntax-id] :forged)
+                       (assoc-in descriptor [:equality-policy :identity] :observed)]]
+        (let [changed-types (assoc types :operator changed)
+              own (pr359-descriptor-c7
+                    'sh08-bka-inferred-call
+                    core
+                    node
+                    call
+                    edge
+                    nodes
+                    (:bindings input)
+                    changed-types)
+              rejected (check changed-types)]
+          (is (= :rejected (:status own)))
+          (is (= :bare-keyword-anchor-set-equality-source-mismatch (:reason own)))
+          (is (= :rejected (:status rejected)))
+          (is
+            (=
+              ["C7-VERIFY" :unsupported-or-incoherent-throwing-call-component]
+              ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
+(deftest
+  sh08-ascii-string-vector-scoped-consumer-development-kernel
+  (let [input (literal-string-vector-input "sha256:")
+        record {:function-syntax-id :vec-function,
+                :function-core-node-id :vec-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :vec-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :vec-form, :syntax-id :vec-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        node-list (mapv
+                    #(assoc-in % [:evaluation :owner-function-syntax-id] :vec-function)
+                    (get-in input [:core :nodes]))
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :vec-function
+               :caller-function-core-node-id
+               :vec-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj node-list function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:vec-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        node (nodes :call)
+        call (:call input)
+        derived (invoke-c7
+                  'sh08-scv-derive
+                  [core node call edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        functions {:vec-function
+                   {:function-id :vec-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return (:type derived),
+                    :latent-effects [:memory/allocate],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:vec-function []}, :constraints [], :diagnostics []}
+        check #(invoke-c7 'sh08-tc-products [core % functions (vec (vals (:bindings input))) direct])
+        own #(invoke-c7 'sh08-scv-inferred-call [core node call edge nodes (:bindings input) %])
+        measured (own types)
+        accepted (check types)
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) types])
+        owners (invoke-c7 'sh08-th-owners [core])]
+    (is (= :accepted (:status derived) (:status measured) (:status accepted)))
+    (doseq [candidate [(update-in types [:operator] dissoc :kind)
+                       (assoc-in types [:operator :kind] nil)
+                       (assoc-in types [:operator :kind] (Object.))
+                       (assoc-in types [:operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :operator nil)
+                       (assoc-in types [:operator :conversion-proof :scalar-count] 1)
+                       (assoc-in types [:operator :storage-policy :allocation] :none)]]
+      (is (= :rejected (:status (own candidate))))
+      (is (= :rejected (:status (check candidate)))))
+    (let [callbacks (atom 0)
+          opaque (proxy
+                   [Object]
+                   []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "ASCII scoped hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "ASCII scoped equality"))))
+          candidate (assoc-in types [:operator :kind] opaque)]
+      (is (= :rejected (:status (own candidate))))
+      (is (= :rejected (:status (check candidate))))
+      (is (= :accepted (:status (check types))))
+      (is (zero? @callbacks)))))
+(deftest
+  sh08-atomic-inequality-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        hashes (atom 0)
+        frames (atom [])
+        type-reads (atom 0)
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        backing {:kind :gravity.type/nil-or, :value-type :gravity.type/string}
+        observe (fn [key fallback]
+                  (swap! reads inc)
+                  (when (some #{'sh08-ane-type-work} @frames) (swap! type-reads inc))
+                  (get backing key fallback))
+        nested (proxy
+                 [clojure.lang.APersistentMap]
+                 []
+                 (count [] 2)
+                 (valAt ([key] (observe key nil)) ([key fallback] (observe key fallback)))
+                 (seq [] (seq backing))
+                 (iterator [] (.iterator backing))
+                 (assoc [key value] (assoc backing key value))
+                 (without [key] (dissoc backing key))
+                 (empty [] {})
+                 (containsKey [key] (contains? backing key))
+                 (entryAt [key] (find backing key))
+                 (hasheq
+                   []
+                   (swap! hashes inc)
+                   (throw (AssertionError. "unrelated probe hashed nullable atomic type")))
+                 (hashCode
+                   []
+                   (swap! hashes inc)
+                   (throw (AssertionError. "unrelated probe hashed nullable atomic type"))))
+        input (atomic-inequality-input
+                [nested {:kind :gravity.type/nil-or, :value-type :gravity.type/keyword}])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        _ (reset! reads 0)
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 2 @type-reads) "The nullable carrier has two field reads during owning validation")
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println
+      (pr-str
+        {:bl-type-visit-breakdown
+         {:all-member-reads @reads,
+          :owning-validation-reads @type-reads,
+          :owning-measurements @measurements,
+          :unrelated-probes @unrelated-probes,
+          :hashes @hashes}}))
+    (is (zero? @hashes))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-vector-slice-scoped-consumer-development-kernel
+  (let [input (vector-slice-input "sha256:abcd" 0 7)
+        record {:function-syntax-id :slice-function,
+                :function-core-node-id :slice-fn,
+                :body-core-node-id :slice-call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :slice-fn,
+                  :core-form :fn,
+                  :children [:slice-call],
+                  :attributes {},
+                  :source {:form-id :slice-form, :syntax-id :slice-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        node-list (mapv
+                    #(assoc-in % [:evaluation :owner-function-syntax-id] :slice-function)
+                    (get-in input [:core :nodes]))
+        edges (mapv
+                #(assoc % :caller-function-syntax-id :slice-function :caller-function-core-node-id :slice-fn)
+                (get-in input [:core :call-edges]))
+        core (assoc
+               (:core input)
+               :nodes
+               (conj node-list function)
+               :function-records
+               [record]
+               :call-edges
+               edges
+               :root-core-node-ids
+               [:slice-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        node (nodes :slice-call)
+        call (:call input)
+        edge (second edges)
+        input (vector-slice-established (assoc input :core core :nodes nodes))
+        child-call (first (:calls core))
+        child-edge (first edges)
+        derived (invoke-c7
+                  'sh08-vsl-derive
+                  [core node call edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :slice-operator (:descriptor derived) :slice-call (:type derived))
+        functions {:slice-function
+                   {:function-id :slice-function,
+                    :body-core-node-id :slice-call,
+                    :parameters [],
+                    :return (:type derived),
+                    :latent-effects [:memory/allocate],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:slice-function []}, :constraints [], :diagnostics []}
+        check #(invoke-c7 'sh08-tc-products [core % functions (vec (vals (:bindings input))) direct])
+        own #(invoke-c7 'sh08-vsl-inferred-call [core node call edge nodes (:bindings input) %])
+        measured (own types)
+        accepted (check types)
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) types])
+        owners (invoke-c7 'sh08-th-owners [core])
+        prior (invoke-c7
+                'sh08-scv-inferred-call
+                [core (nodes :call) child-call child-edge nodes (:bindings input) types])]
+    (is (= :accepted (:status derived) (:status measured) (:status accepted) (:status prior)))
+    (doseq [candidate [(update-in types [:slice-operator] dissoc :kind)
+                       (assoc-in types [:slice-operator :kind] nil)
+                       (assoc-in types [:slice-operator :kind] (Object.))
+                       (assoc-in types [:slice-operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :slice-operator nil)
+                       (assoc-in types [:slice-operator :bounds-proof :result-count] 1)
+                       (assoc-in types [:operator :conversion-proof :scalar-count] 1)]]
+      (is (= :rejected (:status (own candidate))))
+      (is (= :rejected (:status (check candidate)))))
+    (let [callbacks (atom 0)
+          opaque (proxy
+                   [Object]
+                   []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "slice scoped hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "slice scoped equality"))))
+          candidate (assoc-in types [:slice-operator :kind] opaque)]
+      (is (= :rejected (:status (own candidate))))
+      (is (= :rejected (:status (check candidate))))
+      (is (= :accepted (:status (check types))))
+      (is (zero? @callbacks)))))
+(deftest
+  sh08-vector-inequality-throw-consumer-development-kernel
+  (let [frames (atom [])
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        input (atomic-inequality-input
+                [(inequality-vector-type (repeat 32 :gravity.type/keyword)) (inequality-vector-type [])])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println (pr-str {:bo-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-vector-first-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        backing [:gravity.type/character]
+        members backing
+        foreign (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (swap! reads inc) (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i))
+                  (seq [] (swap! reads inc) (seq backing)))
+        nested {:kind :gravity.type/vector, :shape :literal, :element-types members}
+        input (list-query-input 'first [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-lq-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/character,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-vf-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        _ (reset! reads 0)
+        accepted (check core types)]
+    (is
+      (=
+        {:status :rejected, :reason :malformed-type}
+        (invoke-c7 'sh08-lc-validate-types [[(assoc nested :element-types foreign)]])))
+    (is (zero? @reads) "native rejection precedes foreign count, indexing and traversal")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (is (= {:status :accepted} measured))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-policy :payload-evaluation]
+                                             :execute)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-vf-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-symbol-set-insertion-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/symbol]}
+        input (list-prepend-input nested :gravity.type/symbol)
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-pl-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/set,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-syin-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in types [:operator :equality-policy :identity] :observed)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-syin-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-symbol-set-contains-throw-consumer-development-kernel
+  (let [backing [:gravity.type/symbol]
+        members (subvec (into [:gravity.type/nil] backing) 1)
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (map-contains-input [nested :gravity.type/symbol])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-ksm-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ksm-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :gravity.type/bool (:type derived)))
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :membership-policy :comparison]
+                                             :identity)]
+                                          [core
+                                           (assoc-in
+                                             types
+                                             [:arg0 :element-types]
+                                             [:gravity.type/symbol :gravity.type/string])]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ksm-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-symbol-predicate-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        backing [:gravity.type/keyword]
+        members (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (symbol-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (symbol-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        _ (reset! reads 0)
+        measured (invoke-c7
+                   'sh08-symp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        measured-reads @reads
+        _ (reset! reads 0)
+        accepted (check core types)]
+    (is (pos? measured-reads))
+    (is
+      (= measured-reads @reads)
+      "owning consumer preserves one measured closed-type validation without unrelated hashing")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-symp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-string-set-insertion-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/string]}
+        input (list-prepend-input nested :gravity.type/string)
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-pl-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/set,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ssin-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in types [:operator :equality-policy :identity] :observed)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ssin-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-string-set-inequality-throw-consumer-development-kernel
+  (let [frames (atom [])
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        input (atomic-inequality-input
+                [(inequality-keyword-set-type (repeat 32 :gravity.type/string))
+                 (inequality-keyword-set-type [])])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println (pr-str {:bp-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-string-set-equality-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/string]}
+        input (atomic-equality-input [nested nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-kse-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-kse-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in types [:operator :equality-policy :identity] :observed)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-kse-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-string-set-contains-throw-consumer-development-kernel
+  (let [backing [:gravity.type/string]
+        members (subvec (into [:gravity.type/nil] backing) 1)
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (map-contains-input [nested :gravity.type/string])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-ksm-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ksm-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :gravity.type/bool (:type derived)))
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :membership-policy :comparison]
+                                             :identity)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ksm-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-string-set-contains-development-kernel
+  (let [finite #(hash-map :kind :gravity.type/set :shape :literal :element-types (vec %))
+        k :gravity.type/string
+        carrier {:kind :gravity.type/set, :shape :homogeneous, :element-type :gravity.type/string}
+        derive keyword-set-contains-derived]
+    (doseq [arguments [[(finite []) k]
+                       [(finite [k k]) k]
+                       [(finite [k]) :gravity.type/never]
+                       [:gravity.type/never k]
+                       [carrier k]
+                       [carrier :gravity.type/never]]]
+      (let [{:keys [core nodes forms bindings products binding-types], :as input} (map-contains-input
+                                                                                    arguments)
+            result (derive input)
+            descriptor (:descriptor result)
+            context {:ordering-core core,
+                     :lookup-nodes nodes,
+                     :lookup-forms (vec (vals forms)),
+                     :lookup-bindings (vec (vals bindings)),
+                     :shape-call-products products}
+            inferred (invoke-c7
+                       'sh08-ft-infer-acyclic-with-context
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types context])
+            established (assoc (:types input) :operator descriptor)
+            check #(invoke-c7
+                    'sh08-ksm-inferred-call
+                    [core (:node input) (:call input) (:edge input) nodes bindings %])
+            checked (check established)]
+        (is (= :accepted (:status result) (:status checked)))
+        (is (= :gravity.type/applied-string-set-contains (:kind descriptor)))
+        (is (= :sh08-string-set-contains-v2 (:version descriptor)))
+        (is (= arguments (:argument-types descriptor) (:parameter-types descriptor)))
+        (is
+          (=
+            (if (some #{:gravity.type/never} arguments) :gravity.type/never :gravity.type/bool)
+            (:type result)))
+        (is (= 'gravity.collections (:semantic-owner descriptor)))
+        (is (= 'contains? (:operation descriptor)))
+        (is (= :gravity.collections/string-set-membership (:intrinsic descriptor)))
+        (is (= :jvm-utf16-code-units (get-in descriptor [:membership-policy :representation-unit-policy])))
+        (is
+          (=
+            (:membership-policy descriptor)
+            (get-in (invoke-c7 'sh08-ksm-constraint [descriptor]) [:solution :membership-policy])))
+        (is
+          (=
+            []
+            (:direct-effects descriptor)
+            (:latent-effects descriptor)
+            (:capabilities descriptor)
+            (:thrown-error-effects descriptor)))
+        (is (= :guarded-atomic-string-leaf (get-in descriptor [:membership-policy :comparison])))
+        (is
+          (=
+            :none
+            (get-in descriptor [:membership-policy :construction])
+            (get-in descriptor [:membership-policy :refinement])))
+        (is (= :converged (:convergence-status inferred)))
+        (is (= [] (:diagnostics inferred)))
+        (is (= descriptor (get-in inferred [:type-table :operator])))
+        (is (= [(invoke-c7 'sh08-ksm-constraint [descriptor])] (:constraints inferred)))
+        (is
+          (=
+            :direct-string-set-contains
+            (:dispatch (invoke-c7 'sh08-ksm-call-fact [descriptor (:module input)]))))
+        (doseq [changed [(assoc-in established [:operator :version] :sh08-string-set-contains-v1)
+                         (assoc-in established [:operator :membership-policy :carrier-schema] :forged)
+                         (assoc-in established [:operator :membership-policy :comparison] :identity)
+                         (assoc-in established [:operator :membership-policy :refinement] :key-presence)
+                         (assoc-in established [:operator :set-member-count] 99)
+                         (assoc-in established [:operator :direct-effects] [:memory/allocate])]]
+          (is (= :rejected (:status (check changed)))))))
+    (doseq [needle [k :gravity.type/never]]
+      (let [input (map-contains-input [:gravity.type/never needle])
+            direct (derive input)
+            context {:ordering-core (:core input),
+                     :ordering-operators {:operator (:call input)},
+                     :ordering-edges {:call (:edge input)},
+                     :lookup-nodes (:nodes input),
+                     :ordering-bindings (:bindings input),
+                     :association-forms (:forms input)}
+            routed (invoke-c7 'sh08-mc-step [(:node input) (:types input) {} {} context])]
+        (is (= :gravity.type/never (:type direct) (:type routed)))
+        (is (= :not-invoked (get-in direct [:descriptor :application])))
+        (is
+          (=
+            (if (= :gravity.type/string needle)
+              :gravity.type/applied-string-set-contains
+              :gravity.type/applied-map-contains)
+            (get-in routed [:descriptor :kind])))))
+    (doseq [bad [:gravity.type/set
+                 :gravity.type/unknown
+                 :gravity.type/map
+                 :gravity.type/nil
+                 (assoc (finite []) :extra true)
+                 (assoc carrier :extra true)
+                 (assoc carrier :element-type :gravity.type/keyword)
+                 (finite [:gravity.type/character])
+                 (finite [:gravity.type/unknown])
+                 (finite [:gravity.type/never])]]
+      (is (= :string-set-contains-operand-type-required (:reason (derive (map-contains-input [bad k]))))))
+    (doseq [needle [nil
+                    :gravity.type/unknown
+                    :gravity.type/nil
+                    :gravity.type/bool
+                    {:kind :gravity.type/nil-or, :value-type k}]
+            items [(finite []) (finite [k]) :gravity.type/never]]
+      (is
+        (=
+          :keyword-set-contains-operand-type-required
+          (:reason (derive (map-contains-input [items needle]))))))
+    (doseq [arguments [[] [(finite [])] [(finite []) k k]]]
+      (is (= :keyword-set-contains-arity-mismatch (:reason (derive (map-contains-input arguments))))))
+    (let [input (map-contains-input [(finite [k]) k])]
+      (doseq [mutate [#(assoc-in % [:core :module :target] :native)
+                      #(assoc-in % [:bindings :ordering-binding :binding-class] :namespace)
+                      #(assoc-in % [:bindings :ordering-binding :effects] [:io/write])
+                      #(assoc-in % [:call :extra] true)
+                      #(assoc-in % [:edge :evaluation-order] :needle-first)
+                      #(assoc-in % [:node :evaluation :order] [])
+                      #(assoc-in % [:forms :arg0 :parent-form-id] :sibling)
+                      #(assoc-in % [:forms :operator :value] 'get)]]
+        (is (= :string-set-contains-source-mismatch (:reason (derive (mutate input)))))))
+    (doseq [bad [:gravity.type/character
+                 :gravity.type/keyword
+                 :gravity.type/integer
+                 :gravity.type/i8
+                 :gravity.type/i16
+                 :gravity.type/i32
+                 :gravity.type/i64
+                 :gravity.type/u8
+                 :gravity.type/u16
+                 :gravity.type/u32
+                 :gravity.type/u64
+                 :gravity.type/f32
+                 :gravity.type/f64
+                 :gravity.type/decimal
+                 :gravity.type/ratio
+                 {:kind :gravity.type/nil-or, :value-type :gravity.type/string}]]
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k]) bad])))))
+      (is (= :rejected (:status (derive (map-contains-input [(finite [k bad]) k]))))))
+    (is (= :accepted (:status (invoke-c7 'sh08-kse-domain [[(finite [k]) (finite [k])]]))))))
+(deftest
+  sh08-string-predicate-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/nil-or, :value-type :gravity.type/string}
+        input (string-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (string-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-strp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-strp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-set-predicate-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        backing [:gravity.type/keyword]
+        members (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (set-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (set-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        _ (reset! reads 0)
+        measured (invoke-c7
+                   'sh08-setp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        measured-reads @reads
+        _ (reset! reads 0)
+        accepted (check core types)]
+    (is (pos? measured-reads))
+    (is
+      (= measured-reads @reads)
+      "owning consumer preserves one measured closed-type validation without unrelated hashing")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-setp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-set-conversion-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/vector,
+                :shape :literal,
+                :element-types (vec (repeat 16 :gravity.type/string))}
+        input (set-conversion-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (set-conversion-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/set,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-st-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :construction-policy :order]
+                                             :input-order)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-st-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-private-map-keys-throw-source-index-budget-development-kernel
+  (let [{:keys [core nodes bindings types forms node call edge]} (private-map-keys-input)
+        callers (mapv
+                  (fn [entry edge]
+                    (let [id (:caller-function-core-node-id edge) body (:core-node-id entry)]
+                      {:node
+                       {:node-id id,
+                        :core-form :fn,
+                        :children [body],
+                        :attributes {},
+                        :resolved-binding-ids [],
+                        :source
+                        {:form-id id,
+                         :syntax-id (:caller-function-syntax-id edge),
+                         :semantic-span nil,
+                         :origin-chain [],
+                         :generated-origin nil},
+                        :evaluation {:kind :function-creation, :order []}},
+                       :body body,
+                       :id id}))
+                  (rest (:calls core))
+                  (rest (:call-edges core)))
+        core (-> core
+              (update :nodes into (mapv :node callers))
+              (assoc :root-core-node-ids (into [:helper-def] (map :id callers)))
+              (update
+                :function-records
+                (fn [records]
+                  (mapv
+                    (fn [record]
+                      (if-let [caller (first (filter #(= (:id %) (:function-core-node-id record)) callers))]
+                        (assoc
+                          record
+                          :body-core-node-id
+                          (:body caller)
+                          :parameter-binding-ids
+                          []
+                          :fixed-arity
+                          0)
+                        record))
+                    records))))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        result (invoke-c7 'sh08-mkeys-derive [core node call edge nodes bindings types forms])
+        expected (:type result)
+        callee (assoc
+                 (invoke-c7
+                   'sh08-ft-function-type-skeleton
+                   [(first (:function-records core)) (:module core)])
+                 :return
+                 expected)
+        types (reduce
+                (fn [out entry] (assoc out (:operator-node-id entry) callee (:core-node-id entry) expected))
+                (assoc types :operator (:descriptor result) :present-get expected :helper-fn callee)
+                (rest (:calls core)))
+        functions (into
+                    {:helper-form callee}
+                    (map
+                      (fn [caller] [(:id caller)
+                                    {:function-id (:id caller),
+                                     :body-core-node-id (:body caller),
+                                     :parameters [],
+                                     :return expected,
+                                     :latent-effects [:memory/allocate],
+                                     :capabilities [],
+                                     :thrown-error-effects []}])
+                      callers))
+        bindings (vec (vals bindings))
+        source-forms (vec (vals forms))
+        direct {:status :accepted, :throws {:helper-form []}, :constraints [], :diagnostics []}
+        check #(invoke-c7
+                'sh08-tc-products-with-source-forms
+                [core types functions bindings direct source-forms])
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) types])
+        owners (invoke-c7 'sh08-th-owners [core])
+        accepted (check)]
+    (is (= :accepted (:status result) (:status scoped) (:status owners)))
+    (is (true? (:active? scoped)))
+    (is (= :accepted (:status accepted)) (pr-str (select-keys accepted [:status :diagnostics])))
+    (is (= [] (get-in accepted [:throws :helper-form])))))
+(deftest
+  sh08-private-entry-vector-get-scoped-consumer-development-kernel
+  (let [base (private-entry-vector-get-input [[\a] [\b]])
+        callers (mapv
+                  (fn [i]
+                    (let [owner (keyword (str "caller-" i))]
+                      {:node-id owner,
+                       :core-form :fn,
+                       :children [(keyword (str "entry-" i))],
+                       :attributes {},
+                       :resolved-binding-ids [],
+                       :source {:form-id owner, :syntax-id owner},
+                       :evaluation {:kind :function-creation, :order []}}))
+                  [0 1])
+        records (mapv
+                  (fn [record]
+                    (if (= :helper-form (:function-syntax-id record))
+                      record
+                      (assoc
+                        record
+                        :body-core-node-id
+                        (if (= :caller-0 (:function-syntax-id record)) :entry-0 :entry-1)
+                        :fixed-arity
+                        0
+                        :parameter-binding-ids
+                        [])))
+                  (get-in base [:core :function-records]))
+        core (assoc
+               (:core base)
+               :nodes
+               (into (get-in base [:core :nodes]) callers)
+               :function-records
+               records
+               :root-core-node-ids
+               [:helper-def :caller-0 :caller-1])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (-> base
+               (assoc :core core :nodes nodes)
+               (assoc-in
+                 [:products :function-index]
+                 (into {} (map (juxt :function-syntax-id identity) records))))
+        result (map-present-get-derived input)
+        type (:type result)
+        descriptor (:descriptor result)
+        types (assoc (:types input) :operator descriptor :present-get type :entry-0 type :entry-1 type)
+        functions (into
+                    {}
+                    (map
+                      (fn [record] [(:function-syntax-id record)
+                                    {:function-id (:function-syntax-id record),
+                                     :body-core-node-id (:body-core-node-id record),
+                                     :parameters
+                                     (if (= :helper-form (:function-syntax-id record))
+                                       [{:binding-id :span-binding,
+                                         :type (get-in input [:binding-types :span-binding])}]
+                                       []),
+                                     :return type,
+                                     :latent-effects [],
+                                     :capabilities [],
+                                     :thrown-error-effects []}])
+                      records))
+        bindings (vec (vals (:bindings input)))
+        calls (into {} (map (juxt :core-node-id identity) (:calls core)))
+        direct {:status :accepted, :throws {:helper-form []}, :constraints [], :diagnostics []}
+        check #(invoke-c7 'sh08-tc-products [core % functions bindings direct])
+        own (invoke-c7
+              'sh08-mg-inferred-work
+              [core (:node input) (:call input) (:edge input) nodes (:bindings input) types calls])
+        visits (atom {})
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (swap! visits update (nth arguments 2) (fnil inc 0))
+                      (apply original-trace arguments))}
+                   #(check types))]
+    (is (= 34 (count (:nodes core))))
+    (is
+      (= :accepted (:status result) (:status own) (:status accepted))
+      (pr-str {:derived result, :measured own, :consumer accepted}))
+    (when (= :accepted (:status result) (:status own) (:status accepted))
+      (is (= [] (get-in accepted [:throws :helper-form])))
+      (is
+        (= 1 (get @visits 'sh08-mg-inferred-work 0) (get @visits 'sh08-pe-finish 0))
+        "The owning consumer measures and reconstructs the private result once")
+      (is
+        (= 6 (get @visits 'sh08-lc-validate-types 0))
+        "Three selected Vector representations are validated at each of two entries")
+      (is (zero? (get @visits 'sh08-io-descriptor 0)) "Map get skips the unrelated IO probe")
+      (is
+        (zero? (get @visits 'sh08-mg-inferred-call-valid? 0))
+        "The validated result is reused by the scoped consumer")
+      (let [changed (assoc-in types [:operator :version] :sh08-map-get-present-v1)]
+        (is (= :rejected (:status (check changed))))))))
+(deftest
+  sh08-nonnegative-integer-quotient-scoped-consumer-development-kernel
+  (let [input (nonnegative-integer-quotient-input [127 10])
+        record {:function-syntax-id :numeric-function,
+                :function-core-node-id :numeric-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :numeric-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :numeric-form, :syntax-id :numeric-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        node-list (mapv
+                    #(assoc-in % [:evaluation :owner-function-syntax-id] :numeric-function)
+                    (get-in input [:core :nodes]))
+        node (last node-list)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :numeric-function
+               :caller-function-core-node-id
+               :numeric-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj node-list function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:numeric-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        derive (invoke-c7
+                 'sh08-nq-derive
+                 [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derive) :call (:type derive))
+        bindings (vec (vals (:bindings input)))
+        functions {:numeric-function
+                   {:function-id :numeric-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/integer,
+                    :latent-effects [:memory/allocate],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:numeric-function []}, :constraints [], :diagnostics []}
+        check #(invoke-c7 'sh08-tc-products [core % functions bindings direct])
+        own #(invoke-c7 'sh08-nq-inferred-call [core node (:call input) edge nodes (:bindings input) %])
+        measured (own types)
+        accepted (check types)]
+    (is (= :accepted (:status derive) (:status measured) (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :numeric-function])))
+    (doseq [candidate [(update-in types [:operator] dissoc :kind)
+                       (assoc-in types [:operator :kind] nil)
+                       (assoc-in types [:operator :kind] (Object.))
+                       (assoc-in types [:operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :operator :gravity.type/integer)
+                       (assoc types :operator nil)
+                       (assoc-in types [:operator :numeric-mode] :wrapping)
+                       (assoc-in types [:operator :range-proof :divisor :value] 0)
+                       (assoc-in types [:operator :storage-policy :allocation] :none)
+                       (assoc-in types [:operator :range-proof :source-forms 2 :parent-form-id] :sibling)]]
+      (is (= :rejected (:status (own candidate))))
+      (is (= :rejected (:status (check candidate)))))))
+(deftest
+  sh08-nil-predicate-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        backing [:gravity.type/keyword]
+        members (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (nil-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (nil-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        _ (reset! reads 0)
+        measured (invoke-c7
+                   'sh08-nilp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        measured-reads @reads
+        _ (reset! reads 0)
+        accepted (check core types)]
+    (is (pos? measured-reads))
+    (is
+      (= measured-reads @reads)
+      "owning consumer preserves one measured closed-type validation without unrelated hashing")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-nilp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-map-predicate-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/map,
+                :shape :literal,
+                :member-types
+                [:gravity.type/keyword
+                 {:kind :gravity.type/vector,
+                  :shape :literal,
+                  :element-types
+                  [{:kind :gravity.type/list,
+                    :shape :literal,
+                    :element-types (vec (repeat 16 :gravity.type/keyword))}]}]}
+        input (map-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (map-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-mapp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-mapp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-list-predicate-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        backing [:gravity.type/keyword]
+        members (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (list-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (list-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        _ (reset! reads 0)
+        measured (invoke-c7
+                   'sh08-listp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        measured-reads @reads
+        _ (reset! reads 0)
+        accepted (check core types)]
+    (is (pos? measured-reads))
+    (is
+      (= measured-reads @reads)
+      "owning consumer preserves one measured closed-type validation without unrelated hashing")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types expected-reason] [[core
+                                                           (assoc-in
+                                                             types
+                                                             [:operator :query-semantics :refinement]
+                                                             :integer)
+                                                           :list-predicate-source-mismatch]
+                                                          [core
+                                                           (assoc types :arg0 :gravity.type/unknown)
+                                                           :list-predicate-operand-type-required]
+                                                          [(assoc-in core [:calls 0 :argument-node-ids] [])
+                                                           types
+                                                           :list-predicate-arity-mismatch]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-listp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))
+        (is (= expected-reason (:reason own) (get-in rejected [:diagnostics 0 :reason])))))))
+(deftest
+  sh08-list-inequality-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/list, :shape :literal, :element-types [:gravity.type/string]}
+        input (atomic-inequality-input [nested nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-ane-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :list-equality :equality-policy :identity]
+                                             :observed)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-list-equality-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/list, :shape :literal, :element-types [:gravity.type/string]}
+        input (atomic-equality-input [nested nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-le-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-le-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in types [:operator :equality-policy :identity] :observed)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-le-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-keyword-vector-set-conversion-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        hashes (atom 0)
+        frames (atom [])
+        type-reads (atom 0)
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        backing [:gravity.type/keyword]
+        members (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (count backing))
+                  (nth
+                    [i]
+                    (swap! reads inc)
+                    (when (some #{'sh08-st-type-work} @frames) (swap! type-reads inc))
+                    (nth backing i))
+                  (hasheq
+                    []
+                    (swap! hashes inc)
+                    (throw (AssertionError. "unrelated probe hashed Keyword Vector type")))
+                  (hashCode
+                    []
+                    (swap! hashes inc)
+                    (throw (AssertionError. "unrelated probe hashed Keyword Vector type"))))
+        nested {:kind :gravity.type/vector, :shape :literal, :element-types members}
+        input (set-conversion-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (set-conversion-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/set,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-st-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        _ (reset! reads 0)
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-st-type-work callee) (swap! measurements inc))
+                        (when (= 'sh08-io-descriptor callee) (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is
+      (= 1 @type-reads @measurements)
+      "One owning validation read and call; structural comparisons are separate")
+    (is (zero? @unrelated-probes))
+    (println
+      (pr-str
+        {:bk-type-visit-breakdown
+         {:all-member-reads @reads,
+          :owning-validation-reads @type-reads,
+          :owning-measurements @measurements,
+          :unrelated-probes @unrelated-probes,
+          :hashes @hashes}}))
+    (is (zero? @hashes))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :construction-policy :order]
+                                             :input-order)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-st-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-keyword-set-insertion-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/keyword]}
+        input (list-prepend-input nested :gravity.type/keyword)
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-pl-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/set,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ksin-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in types [:operator :equality-policy :identity] :observed)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ksin-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-keyword-set-inequality-throw-consumer-development-kernel
+  (let [frames (atom [])
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        input (atomic-inequality-input
+                [(inequality-keyword-set-type (repeat 32 :gravity.type/keyword))
+                 (inequality-keyword-set-type [])])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println (pr-str {:bp-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-keyword-set-equality-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/keyword]}
+        input (atomic-equality-input [nested nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-kse-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-kse-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in types [:operator :equality-policy :identity] :observed)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-kse-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-keyword-set-contains-throw-consumer-development-kernel
+  (let [backing [:gravity.type/keyword]
+        members (subvec (into [:gravity.type/nil] backing) 1)
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (map-contains-input [nested :gravity.type/keyword])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-ksm-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ksm-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :gravity.type/bool (:type derived)))
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :membership-policy :comparison]
+                                             :identity)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ksm-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-keyword-predicate-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/nil-or, :value-type :gravity.type/keyword}
+        input (keyword-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (keyword-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-kp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-kp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-integer-set-contains-throw-consumer-development-kernel
+  (let [backing [:gravity.type/integer]
+        members (subvec (into [:gravity.type/nil] backing) 1)
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (map-contains-input [nested :gravity.type/integer])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-ksm-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ksm-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :gravity.type/bool (:type derived)))
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :membership-policy :comparison]
+                                             :identity)]
+                                          [core
+                                           (assoc-in
+                                             types
+                                             [:arg0 :element-types]
+                                             [:gravity.type/integer :gravity.type/string])]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ksm-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-integer-predicate-throw-consumer-development-kernel
+  (let [nested {:kind :gravity.type/map,
+                :shape :literal,
+                :member-types
+                [:gravity.type/keyword
+                 {:kind :gravity.type/vector,
+                  :shape :literal,
+                  :element-types
+                  [{:kind :gravity.type/list,
+                    :shape :literal,
+                    :element-types (vec (repeat 16 :gravity.type/keyword))}]}]}
+        input (integer-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (integer-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ip-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ip-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-integer-inequality-throw-consumer-development-kernel
+  (let [frames (atom [])
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        input (atomic-inequality-input [:gravity.type/integer :gravity.type/integer])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println (pr-str {:bm-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-flat-keyword-set-vector-inequality-throw-consumer-development-kernel
+  (let [frames (atom [])
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        input (atomic-inequality-input
+                [(inequality-vector-type
+                   (repeat
+                     32
+                     {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/keyword]}))
+                 (inequality-vector-type
+                   (repeat
+                     32
+                     {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/keyword]}))])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println
+      (pr-str
+        {:keyword-set-vector-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-flat-integer-vector-inequality-throw-consumer-development-kernel
+  (let [frames (atom [])
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        input (atomic-inequality-input
+                [(inequality-vector-type (repeat 32 :gravity.type/integer))
+                 (inequality-vector-type (repeat 32 :gravity.type/integer))])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println
+      (pr-str
+        {:integer-vector-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-boolean-predicate-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        backing [:gravity.type/keyword]
+        members (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (boolean-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (boolean-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        _ (reset! reads 0)
+        measured (invoke-c7
+                   'sh08-boolp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        measured-reads @reads
+        _ (reset! reads 0)
+        accepted (check core types)]
+    (is (pos? measured-reads))
+    (is
+      (= measured-reads @reads)
+      "owning consumer preserves one measured closed-type validation without unrelated hashing")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-boolp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-character-predicate-throw-consumer-development-kernel
+  (let [reads (atom 0)
+        backing [:gravity.type/keyword]
+        members (proxy
+                  [clojure.lang.APersistentVector]
+                  []
+                  (count [] (count backing))
+                  (nth [i] (swap! reads inc) (nth backing i)))
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (character-predicate-input [nested])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (character-predicate-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        _ (reset! reads 0)
+        measured (invoke-c7
+                   'sh08-chp-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        measured-reads @reads
+        _ (reset! reads 0)
+        accepted (check core types)]
+    (is (pos? measured-reads))
+    (is
+      (= measured-reads @reads)
+      "owning consumer preserves one measured closed-type validation without unrelated hashing")
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :query-semantics :refinement]
+                                             :integer)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-chp-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-character-set-contains-dispatch-guard-development-kernel
+  (let [calls (atom 0)
+        hostile (proxy
+                  [Object]
+                  []
+                  (hashCode
+                    []
+                    (swap! calls inc)
+                    (throw (AssertionError. "operand ID hashed before dispatch precharge"))))
+        finite {:kind :gravity.type/set, :shape :literal, :element-types [:gravity.type/character]}
+        base (map-contains-input [finite :gravity.type/character])
+        context (fn [arguments]
+                  {:ordering-operators {:operator (assoc (:call base) :argument-node-ids arguments)},
+                   :ordering-edges {:call (:edge base)},
+                   :ordering-core (:core base),
+                   :lookup-nodes (:nodes base),
+                   :ordering-bindings (:bindings base),
+                   :association-forms (:forms base)})]
+    (doseq [arguments [[hostile hostile] {:bad hostile}]]
+      (let [result (invoke-c7 'sh08-mc-step [(:node base) {} {} {} (context arguments)])]
+        (is (= :rejected (:status result)))))
+    (is (= 0 @calls))))
+(deftest
+  sh08-character-set-contains-throw-consumer-development-kernel
+  (let [backing [:gravity.type/character]
+        members (subvec (into [:gravity.type/nil] backing) 1)
+        nested {:kind :gravity.type/set, :shape :literal, :element-types members}
+        input (map-contains-input [nested :gravity.type/character])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (invoke-c7
+                  'sh08-ksm-derive
+                  [core node (:call input) edge nodes (:bindings input) (:types input) (:forms input)])
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ksm-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        accepted (check core types)]
+    (is (= :gravity.type/bool (:type derived)))
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :membership-policy :comparison]
+                                             :identity)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ksm-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
+(deftest
+  sh08-count-quotient-scaling-scoped-consumer-development-kernel
+  (let [input (count-quotient-scaling-input 2 4 :vector false)
+        record {:function-syntax-id :scaling-function,
+                :function-core-node-id :scaling-fn,
+                :body-core-node-id :scale-call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :scaling-fn,
+                  :core-form :fn,
+                  :children [:scale-call],
+                  :attributes {},
+                  :source {:form-id :scaling-form, :syntax-id :scaling-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        node-list (mapv
+                    #(assoc-in % [:evaluation :owner-function-syntax-id] :scaling-function)
+                    (get-in input [:core :nodes]))
+        edges (mapv
+                #(assoc
+                  %
+                  :caller-function-syntax-id
+                  :scaling-function
+                  :caller-function-core-node-id
+                  :scaling-fn)
+                (get-in input [:core :call-edges]))
+        core (assoc
+               (:core input)
+               :nodes
+               (conj node-list function)
+               :function-records
+               [record]
+               :call-edges
+               edges
+               :root-core-node-ids
+               [:scaling-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        calls (:calls core)
+        bindings (:bindings input)
+        forms (:forms input)
+        counted (invoke-c7
+                  'sh08-cq-derive
+                  [core
+                   (get nodes (:core-node-id (first calls)))
+                   (first calls)
+                   (first edges)
+                   nodes
+                   bindings
+                   (:types input)
+                   forms])
+        types (assoc
+                (:types input)
+                (:operator-node-id (first calls))
+                (:descriptor counted)
+                (:core-node-id (first calls))
+                (:type counted))
+        qcall (second calls)
+        qedge (second edges)
+        qnode (get nodes (:core-node-id qcall))
+        quotient (invoke-c7 'sh08-nq-derive [core qnode qcall qedge nodes bindings types forms])
+        types (assoc
+                types
+                (:operator-node-id qcall)
+                (:descriptor quotient)
+                (:core-node-id qcall)
+                (:type quotient))
+        node (get nodes :scale-call)
+        call (last calls)
+        edge (last edges)
+        derived (invoke-c7 'sh08-cqs-derive [core node call edge nodes bindings types forms])
+        types (assoc types :scale-operator (:descriptor derived) :scale-call (:type derived))
+        functions {:scaling-function
+                   {:function-id :scaling-function,
+                    :body-core-node-id :scale-call,
+                    :parameters [],
+                    :return :gravity.type/integer,
+                    :latent-effects [:memory/allocate],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:scaling-function []}, :constraints [], :diagnostics []}
+        binding-list (vec (vals bindings))
+        check #(invoke-c7 'sh08-tc-products [core % functions binding-list direct])
+        own #(invoke-c7 'sh08-cqs-inferred-call [core node call edge nodes bindings %])
+        measured (own types)
+        accepted (check types)
+        prior (invoke-c7 'sh08-nq-inferred-call [core qnode qcall qedge nodes bindings types])
+        scoped (invoke-c7 'sh08-tc-scope-with-types [core (:throws direct) types])
+        owners (invoke-c7 'sh08-th-owners [core])]
+    (is (= :accepted (:status derived) (:status measured) (:status accepted)) (pr-str accepted))
+    (is (= [] (get-in accepted [:throws :scaling-function])))
+    (doseq [candidate [(update-in types [:scale-operator] dissoc :kind)
+                       (assoc-in types [:scale-operator :kind] nil)
+                       (assoc-in types [:scale-operator :kind] (Object.))
+                       (assoc-in types [:scale-operator :kind] :gravity.type/applied-string-concat)
+                       (assoc types :scale-operator :gravity.type/integer)
+                       (assoc types :scale-operator nil)
+                       (assoc-in types [:scale-operator :numeric-mode] :wrapping)
+                       (assoc-in types [:scale-operator :range-proof :factor :value] 3)
+                       (assoc-in types [:scale-operator :storage-policy :allocation] :none)]]
+      (is (= :rejected (:status (own candidate))))
+      (is (= :rejected (:status (check candidate)))))
+    (let [callbacks (atom 0)
+          opaque (proxy
+                   [Object]
+                   []
+                   (hashCode [] (swap! callbacks inc) (throw (AssertionError. "scoped scaling hash")))
+                   (equals [_] (swap! callbacks inc) (throw (AssertionError. "scoped scaling equality")))
+                   (toString [] (swap! callbacks inc) (throw (AssertionError. "scoped scaling formatting"))))
+          candidate (assoc-in types [:scale-operator :kind] opaque)]
+      (is (= :rejected (:status (own candidate))))
+      (is (= :rejected (:status (check candidate))))
+      (is (= :accepted (:status (check types))))
+      (is (zero? @callbacks)))))
+(deftest
+  sh08-fixed-integral-inequality-throw-consumer-development-kernel
+  (let [frames (atom [])
+        measurements (atom 0)
+        unrelated-probes (atom 0)
+        input (atomic-inequality-input [:gravity.type/i8 :gravity.type/i8])
+        record {:function-syntax-id :predicate-function,
+                :function-core-node-id :predicate-fn,
+                :body-core-node-id :call,
+                :fixed-arity 0,
+                :parameter-binding-ids []}
+        function {:node-id :predicate-fn,
+                  :core-form :fn,
+                  :children [:call],
+                  :attributes {},
+                  :source {:form-id :predicate-form, :syntax-id :predicate-function},
+                  :evaluation {:kind :function-creation, :order []}}
+        nodes (mapv
+                #(assoc-in % [:evaluation :owner-function-syntax-id] :predicate-function)
+                (get-in input [:core :nodes]))
+        node (last nodes)
+        edge (assoc
+               (:edge input)
+               :caller-function-syntax-id
+               :predicate-function
+               :caller-function-core-node-id
+               :predicate-fn)
+        core (assoc
+               (:core input)
+               :nodes
+               (conj nodes function)
+               :function-records
+               [record]
+               :call-edges
+               [edge]
+               :root-core-node-ids
+               [:predicate-fn])
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        input (assoc input :core core :node node :nodes nodes :edge edge)
+        derived (atomic-inequality-derived input)
+        types (assoc (:types input) :operator (:descriptor derived) :call (:type derived))
+        bindings (vec (vals (:bindings input)))
+        functions {:predicate-function
+                   {:function-id :predicate-function,
+                    :body-core-node-id :call,
+                    :parameters [],
+                    :return :gravity.type/bool,
+                    :latent-effects [],
+                    :capabilities [],
+                    :thrown-error-effects []}}
+        direct {:status :accepted, :throws {:predicate-function []}, :constraints [], :diagnostics []}
+        check (fn [c t] (invoke-c7 'sh08-tc-products [c t functions bindings direct]))
+        measured (invoke-c7
+                   'sh08-ane-inferred-call
+                   [core node (:call input) edge nodes (:bindings input) types])
+        trace-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
+        original-trace @trace-var
+        accepted (with-redefs-fn
+                   {trace-var
+                    (fn [& arguments]
+                      (let [callee (nth arguments 2) prior @frames]
+                        (when (= 'sh08-ane-type-work callee) (swap! measurements inc))
+                        (when (contains? '#{sh08-ae-source sh08-io-descriptor} callee)
+                          (swap! unrelated-probes inc))
+                        (reset! frames (conj prior callee))
+                        (try (apply original-trace arguments) (finally (reset! frames prior)))))}
+                   #(check core types))]
+    (is (= :accepted (:status derived)))
+    (is (= :accepted (:status measured)))
+    (is (= :accepted (:status accepted)) (pr-str accepted))
+    (is (= 1 @measurements))
+    (is (zero? @unrelated-probes))
+    (println (pr-str {:bn-owning-type-check {:calls @measurements, :unrelated-probes @unrelated-probes}}))
+    (is (= [] (get-in accepted [:throws :predicate-function])))
+    (doseq [[changed-core changed-types] [[core
+                                           (assoc-in
+                                             types
+                                             [:operator :inequality-policy :cross-family]
+                                             :always-unequal)]
+                                          [core (assoc types :arg0 :gravity.type/unknown)]
+                                          [(assoc-in core [:calls 0 :argument-node-ids] []) types]]]
+      (let [c (first (:calls changed-core))
+            own (invoke-c7
+                  'sh08-ane-inferred-call
+                  [changed-core node c edge nodes (:bindings input) changed-types])
+            rejected (check changed-core changed-types)]
+        (is (= :rejected (:status own)))
+        (is (= :rejected (:status rejected)))
+        (is (= "C7-VERIFY" (get-in rejected [:diagnostics 0 :rule])))))))
