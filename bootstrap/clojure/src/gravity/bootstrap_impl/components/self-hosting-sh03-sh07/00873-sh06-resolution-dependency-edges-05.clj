@@ -163,6 +163,7 @@
   #'sh06-resolution-resolve-source-path,
   :p15-s23-stage2-compiler-artifact-semantic-input
   #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh06-fixed-vector-pattern? #'sh06-fixed-vector-pattern?,
   :sh06-resolution-definition-kind #'sh06-resolution-definition-kind,
   :sha256-hex #'sha256-hex,
   :sh06-resolution-core-record #'sh06-resolution-core-record,
@@ -179,14 +180,17 @@
   :sha256-bytes-hex #'sha256-bytes-hex,
   :input #'resolution-stage-input,
   :sh06-resolution-plan-identities #'sh06-resolution-plan-identities,
+  :sh06-let-loop-binding-paths #'sh06-let-loop-binding-paths,
   :sh06-resolution-build-binding! #'sh06-resolution-build-binding!,
   :sh06-resolution-boundary-fail! #'sh06-resolution-boundary-fail!,
+  :sh06-unique-match-binding-paths #'sh06-unique-match-binding-paths,
   :c-backend-stage2-plan-emitter-source-rule!
   #'c-backend-stage2-plan-emitter-source-rule!,
   :sh06-resolution-dependency-record
   #'sh06-resolution-dependency-record,
   :p15-s23-stage2-compiler-artifact-source-path
   #'p15-s23-stage2-compiler-artifact-source-path,
+  :sh06-match-pattern-binding-paths #'sh06-match-pattern-binding-paths,
   :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
   :sh06-resolution-semantic-span #'sh06-resolution-semantic-span,
   :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
