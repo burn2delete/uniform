@@ -19876,13 +19876,8 @@
                :call-fact (sh08-cq-call-fact descriptor (get core :module))
                :relation :nonnegative :law :finite-collection-cardinality-nonnegative} nil) nil)) nil)) nil))
 
-(defn sh08-nq-proof [core node call nodes bindings types forms budget]
-  ; Pay global lookup and source reconstruction visits before walking rows.
-  ; Integer leaves are logical units, not precision or host CPU/heap bounds.
-  (let [work (+ 128 (* 2 (count (get core :calls))) (* 2 (count (get core :call-edges)))
-                  (* 4 (count (get core :function-records))))]
-    (if (> work budget) {:status :rejected :reason :nonnegative-integer-quotient-work-limit :work-count work}
-      (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
+(defn sh08-nq-proof [core node call nodes bindings types forms]
+  (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
         (if (sh08-sse-call-ids? node call)
           (let [ids (get call :argument-node-ids) left-type (get types (get ids 0)) right-type (get types (get ids 1))
                 left (get nodes (get ids 0)) right (get nodes (get ids 1))
@@ -19894,7 +19889,7 @@
                 divisor (if (= :gravity.type/never right-type) {:kind :non-invoked-operand}
                           (sh08-nq-literal right right-type forms true))]
             (if (if (map? dividend) (map? divisor) false)
-              {:status :accepted :work-count work
+              {:status :accepted
                :proof {:source-forms (loop [ids (get node :children) out [(get forms (get (get node :source) :form-id))]]
                                        (if (= 0 (count ids)) out
                                          (recur (rest ids) (conj out (get forms (get (get (get nodes (first ids)) :source) :form-id))))))
@@ -19904,9 +19899,9 @@
                        :result-value-bound :zero-through-original-dividend :overflow :impossible
                        :conversion :none :signed-negative-rounding :outside-domain}}
               {:status :rejected :reason (if (if (map? right-literal) (= 0 (get right-literal :value)) false)
-                                           :nonnegative-integer-quotient-zero-divisor :nonnegative-integer-quotient-proof-required) :work-count work}))
-          {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch :work-count work})
-        {:status :rejected :reason :nonnegative-integer-quotient-arity-mismatch :work-count work}))))
+                                           :nonnegative-integer-quotient-zero-divisor :nonnegative-integer-quotient-proof-required)}))
+          {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch})
+        {:status :rejected :reason :nonnegative-integer-quotient-arity-mismatch}))
 
 (defn sh08-nq-source [core node call edge nodes bindings types module proof]
   (if (if (map? edge) (if (integer? (get edge :ordinal)) (>= (get edge :ordinal) 0) false) false)
@@ -19995,26 +19990,22 @@
   (let [type (if (= :normal (get header :application)) :gravity.type/integer :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
 
-(defn sh08-nq-derive [core node call edge nodes bindings types forms budget]
+(defn sh08-nq-derive [core node call edge nodes bindings types forms]
   ; SAFE9/STD5: only source-proven nonnegative division is admitted.
   ; Result storage may allocate; Never preserves each normal operand proof.
-  (let [args (get call :argument-node-ids) work (+ 64 (if (vector? args) (count args) 0) (count (get core :function-records)))]
-    (if (> work budget)
-      (assoc (sh08-sm-failure "C7-GENERIC" :nonnegative-integer-quotient-work-limit nil :remaining-type-join-units budget) :work-count work)
+  (let [args (get call :argument-node-ids)]
       (if (if (vector? args) (= 2 (count args)) false)
       (if (sh08-nq-ids? node call nodes bindings (get core :module))
       (let [owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
-            checked (sh08-nq-proof core node call nodes bindings types forms (- budget work))
-            work (+ work (get checked :work-count))
+            checked (sh08-nq-proof core node call nodes bindings types forms)
             header (if (= :accepted (get checked :status))
                      (sh08-nq-source core node call edge nodes bindings types (get core :module) (get checked :proof)) nil)]
         (if (= header nil)
           (assoc (sh08-sm-failure (if (= :accepted (get checked :status)) "C7-VERIFY"
-                                    (if (= :nonnegative-integer-quotient-work-limit (get checked :reason)) "C7-GENERIC"
-                                    (if (= :nonnegative-integer-quotient-zero-divisor (get checked :reason)) "STD5002" "STD5001")))
+                   (if (= :nonnegative-integer-quotient-zero-divisor (get checked :reason)) "STD5002" "STD5001"))
                    (if (= 2 (count args)) (get checked :reason :nonnegative-integer-quotient-source-mismatch) :nonnegative-integer-quotient-arity-mismatch)
                    nil {:operation 'quot :numeric-mode :proof-required :dividend :source-proven-nonnegative-Integer
-                        :divisor :source-proven-positive-Integer-literal} (sh08-ft-ordered-child-types args types)) :work-count work)
+                        :divisor :source-proven-positive-Integer-literal} (sh08-ft-ordered-child-types args types))
           (if (sh08-ft-all-true?
                 [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner)) (vector? ids) (= 3 (if (vector? ids) (count ids) 0))
                  (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
@@ -20028,19 +20019,18 @@
                          (recur (+ i 1)) false))))])
             (let [descriptor (sh08-nq-finish header)]
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
-               :constraint (sh08-nq-constraint descriptor) :work-count work})
-            (assoc (sh08-sm-failure "C7-VERIFY" :nonnegative-integer-quotient-source-mismatch nil :exact-operator-left-right-integer-source (get node :node-id)) :work-count work))))
-      (assoc (sh08-sm-failure "C7-VERIFY" :nonnegative-integer-quotient-source-mismatch nil :closed-source-identities nil) :work-count work))
-      (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :nonnegative-integer-quotient-arity-mismatch nil :binary-integer-quotient nil) :work-count work)))))
+               :constraint (sh08-nq-constraint descriptor)})
+            (sh08-sm-failure "C7-VERIFY" :nonnegative-integer-quotient-source-mismatch nil :exact-operator-left-right-integer-source (get node :node-id)))))
+      (sh08-sm-failure "C7-VERIFY" :nonnegative-integer-quotient-source-mismatch nil :closed-source-identities nil))
+      (sh08-sm-failure "C7-TYPE-MISMATCH" :nonnegative-integer-quotient-arity-mismatch nil :binary-integer-quotient nil)))))
 
 (defn sh08-nq-node? [node context]
   (if (= :call (get node :core-form))
     (sh08-nq-binding? (get (get context :ordering-bindings) (first (get node :resolved-binding-ids)))
                      (get (get context :ordering-core) :module)) false))
 
-(defn sh08-nq-inferred-call [core node call edge nodes bindings types budget]
-  (if (< budget 16) {:status :rejected :reason :nonnegative-integer-quotient-work-limit :work-count 16}
-    (let [descriptor (get types (get call :operator-node-id)) proof (get descriptor :range-proof)
+(defn sh08-nq-inferred-call [core node call edge nodes bindings types]
+  (let [descriptor (get types (get call :operator-node-id)) proof (get descriptor :range-proof)
           source-forms (get proof :source-forms) dividend (get proof :dividend)
           counted? (= :authenticated-cardinality (get dividend :kind)) child-forms (get dividend :child-source-forms)]
       (if (if (if (vector? source-forms) (= 4 (count source-forms)) false)
@@ -20053,20 +20043,19 @@
                         (let [form (first remaining) id (get form :form-id)]
                           (if (sh08-sse-ids? [id] 1) (recur (rest remaining) (assoc out id form)) nil))))]
           (if (map? forms)
-            (let [derived (sh08-nq-derive core node call edge nodes bindings types forms (- budget 16))
-                  work (+ 16 (get derived :work-count))]
+            (let [derived (sh08-nq-derive core node call edge nodes bindings types forms)]
               (if (= :accepted (get derived :status))
-                (if (= descriptor (get derived :descriptor)) {:status :accepted :work-count work}
-                  {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch :work-count work})
-                (assoc derived :work-count work)))
-            {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch :work-count 16}))
-        {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch :work-count 16}))))
+                (if (= descriptor (get derived :descriptor)) {:status :accepted}
+                  {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch})
+                derived))
+            {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch}))
+        {:status :rejected :reason :nonnegative-integer-quotient-source-mismatch})))
 
-(defn sh08-nq-step [node types binding-types functions context budget]
+(defn sh08-nq-step [node types binding-types functions context]
   (sh08-nq-derive (get context :ordering-core) node
     (get (get context :ordering-operators) (first (get node :children)))
     (get (get context :ordering-edges) (get node :node-id))
-    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms) budget))
+    (get context :lookup-nodes) (get context :ordering-bindings) types (get context :association-forms)))
 
 (defn sh08-si-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
