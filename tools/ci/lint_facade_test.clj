@@ -149,5 +149,73 @@
   (doseq [mode [:valid :invalid :missing :unregistered]]
     (compare-added-fragment! mode)))
 
+(defn private-call-plan [call & [required]]
+  {:paths ["fixture-owner.clj" "fixture-caller.clj"]
+   :entrypoints #{"fixture-owner.clj" "fixture-caller.clj"}
+   :namespace-by-path {"fixture-owner.clj" 'fixture.private-owner "fixture-caller.clj" 'fixture.private-caller}
+   :inputs {"fixture-owner.clj" (utf8 (str "(ns fixture.private-owner)\n"
+                                           "(defn- held [value] value)\n"
+                                           "(defn- dead [value] value)\n"))
+            "fixture-caller.clj" (utf8 (str "(ns fixture.private-caller (:require ["
+                                            (or required "fixture.private-owner") " :as local]))\n" call "\n"))}})
+
+(deftest real-linter-private-var-calls-have-source-backed-usage-provenance
+  (doseq [reference ["local/held" "fixture.private-owner/held"]]
+    (let [plan (private-call-plan (str "(defn call-helper [] (#'" reference " 1))"))
+          raw (observe! plan)
+          result (context/resolve-private-usages raw (context/private-var-usages [plan]))
+          edge (first (:resolved result))]
+      (is (= #{"Unused private var fixture.private-owner/held"
+               "Unused private var fixture.private-owner/dead"} (set (map :message raw))))
+      (is (= 'held (get-in edge [:definition :name])))
+      (is (= "fixture-owner.clj" (get-in edge [:definition :path])))
+      (is (= (context/sha256 (get-in plan [:inputs "fixture-owner.clj"]))
+             (get-in edge [:definition :sha256])))
+      (is (= 'fixture.private-caller (get-in edge [:callers 0 :caller-namespace])))
+      (is (= (symbol reference) (get-in edge [:callers 0 :reference])))
+      (is (= (context/sha256 (get-in plan [:inputs "fixture-caller.clj"]))
+             (get-in edge [:callers 0 :sha256])))
+      (is (= 'fixture.private-owner (get-in edge [:callers 0 :require :namespace])))
+      (is (= "fixture-caller.clj" (get-in edge [:callers 0 :require :path])))
+      (is (= (context/sha256 (get-in plan [:inputs "fixture-caller.clj"]))
+             (get-in edge [:callers 0 :require :sha256])))
+      (is (= ["Unused private var fixture.private-owner/dead"] (mapv :message (:findings result))))
+      (is (= (:findings result) (:blocking (lint/classify [] (:findings result) {})))))))
+
+(deftest data-wrong-bindings-and-lost-calls-cannot-count-as-private-invocations
+  (doseq [[call required]
+          [["(defn call-helper [] (#'local/held 1))" "fixture.other-owner"]
+           ["(defn call-helper [] (#'wrong/held 1))" nil]
+           ["(defn call-helper [] (#'local/other 1))" nil]
+           ["(def data '(#'local/held 1))" nil]
+           ["(def data `(#'local/held 1))" nil]
+           ["(comment (#'local/held 1))" nil]
+           ["(def data #'local/held)" nil]
+           ["(defn call-helper [] 1)" nil]]]
+    (let [plan (private-call-plan call required)
+          raw (observe! plan)
+          result (context/resolve-private-usages raw (context/private-var-usages [plan]))]
+      (is (empty? (:resolved result)))
+      (is (= raw (:findings result)))
+      (is (some #(= "Unused private var fixture.private-owner/held" (:message %))
+                (:blocking (lint/classify [] (:findings result) {}))))))
+  (let [plan (private-call-plan "(defn call-helper [] (#'local/held 1) (new-unresolved-symbol))")
+        raw (observe! plan)
+        result (context/resolve-private-usages raw (context/private-var-usages [plan]))]
+    (is (= 1 (count (:resolved result))))
+    (is (some #(and (= :unresolved-symbol (:type %)) (= :error (:level %)))
+              (:blocking (lint/classify [] (:findings result) {})))))
+  (let [live (private-call-plan "(defn call-helper [] (#'local/held 1))")
+        dead (private-call-plan "(defn call-helper [] 1)")
+        before (context/resolve-private-usages (observe! live) (context/private-var-usages [live]))
+        after (context/resolve-private-usages (observe! dead) (context/private-var-usages [dead]))
+        source "fixture-owner.clj"
+        text (String. ^bytes (get-in live [:inputs source]) "UTF-8")
+        mapped {source {:changes [] :before (str/split-lines text) :after (str/split-lines text)}}
+        blocking (:blocking (lint/classify (:findings before) (:findings after) mapped))]
+    (is (= ["Unused private var fixture.private-owner/held"]
+           (mapv :message (filter #(= :unused-private-var (:type %)) blocking))))
+    (is (some #(= :unused-namespace (:type %)) blocking))))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
