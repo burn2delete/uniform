@@ -34,6 +34,9 @@
   '{sh07-build-core-template "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948", sh07-resolve-source-core-map-preimage "sha256:667f3461e8566c1a0ec854f156f1aa56baf8b9d34ffc1f31e7a06a35e7c0048d", sh07-verify-core-resolved "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba", sh07-verify-core-template "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791", sh07-verify-source-core-map "sha256:30b77009004032faa6306970676d9bf7e3a01c33d51006c9b69811a20cae1637"})
 
 (declare
+ sh07-core-descendant-node-ids
+ sh07-b9-handler-group-coherent?
+ ^{:private true} sh07-b9-handler-descriptor-keys
  ^{:private true} checked-core-stage-input
  ^{:private true, :dynamic true} *sh07-core-execution-binding*
  ^{:private true} sh07-core-cached-binding
@@ -140,6 +143,7 @@
   #'sh06-resolution-artifact-verification,
   :sh07-core-resolve-reference-vector!
   #'sh07-core-resolve-reference-vector!,
+  :sh07-core-descendant-node-ids #'sh07-core-descendant-node-ids,
   :sh07-core-children #'sh07-core-children,
   :read-forms #'read-forms,
   :sh07-core-projected-form-id #'sh07-core-projected-form-id,
@@ -175,6 +179,7 @@
   :sh07-core-root-syntax-id #'sh07-core-root-syntax-id,
   :sh07-core-semantic-resolution #'sh07-core-semantic-resolution,
   :sh07-core-projected-syntax-id #'sh07-core-projected-syntax-id,
+  :sh07-b9-handler-group-coherent? #'sh07-b9-handler-group-coherent?,
   :sha256-bytes-hex #'sha256-bytes-hex,
   :input #'checked-core-stage-input,
   :sh07-core-semantic-projection-id #'sh07-core-semantic-projection-id,
@@ -225,6 +230,8 @@
   sh07-core-public-function-shapes
   :sh07-core-source-relative-path
   sh07-core-source-relative-path
+  :sh07-b9-handler-descriptor-keys
+  sh07-b9-handler-descriptor-keys
   (throw (ex-info "Unknown checked-core stage input" {:input field}))))
 
 (defn
