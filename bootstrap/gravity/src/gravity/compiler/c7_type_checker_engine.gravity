@@ -8038,22 +8038,21 @@
                      (recur (rest remaining)
                        (conj (conj out :gravity.type/keyword) (get (get (first remaining) :shape) :type)))))})
 
-(defn sh08-mr-transition [input key budget]
+(defn sh08-mr-transition [input key]
   (let [parts (get input :parts) type (get input :type) members (get type :member-types)
-        width (if (vector? parts) (count parts) 0) work (+ 2 (* 4 width))]
-    (if (> work budget) {:status :rejected :reason :map-removal-work-limit :work-count work}
-      (if (if (keyword? key)
+        width (if (vector? parts) (count parts) 0)]
+    (if (if (keyword? key)
             (if (= :map (get input :shape-kind))
               (if (vector? parts)
                 (if (map? type)
                   (if (= 3 (count type))
                     (if (= #{:kind :shape :member-types} (set (keys type)))
                       (if (= [:gravity.type/map :literal] [(get type :kind) (get type :shape)])
-                        (if (vector? members) (if (<= (count members) 1024) (= (count members) (* 2 width)) false) false)
+                        (if (vector? members) (= (count members) (* 2 width)) false)
                         false) false) false) false) false) false) false)
         (loop [remaining parts ordinal 0 output [] survivors [] seen #{} removed nil removed-index nil]
           (if (= 0 (count remaining))
-            {:status :accepted :work-count work :type (sh08-mr-result-type output)
+            {:status :accepted :type (sh08-mr-result-type output)
              :transition {:kind (if (= removed-index nil) :absent :remove) :key key
                           :input-entry-count width :output-entry-count (count output)
                           :removed-entry-index removed-index :removed-part removed
@@ -8074,36 +8073,35 @@
                       (conj survivors {:input-entry-index ordinal :input-coordinate coordinate
                                        :output-entry-index next-index :output-coordinate derived-coordinate
                                        :source-part part}) (conj seen part-key) removed removed-index)))
-                {:status :rejected :reason :map-removal-input-shape-required :work-count work}))))
-        {:status :rejected :reason :map-removal-input-shape-required :work-count work}))))
+                {:status :rejected :reason :map-removal-input-shape-required}))))
+        {:status :rejected :reason :map-removal-input-shape-required})))
 
-(defn sh08-mr-finish [header input transition used]
+(defn sh08-mr-finish [header input transition]
   (let [call (get header :source-call) args (get call :argument-node-ids)
         normal? (= :normal (get header :application)) id (get header :call-core-node-id)
         change (if normal? (get transition :transition) nil)
         type (if normal? (get transition :type) :gravity.type/never)
         ancestry {:source-call call :source-edge (get header :source-edge) :source-binding (get header :source-binding)
                   :input-node-id (get args 0) :key-node-id (get args 1) :input-shape input :transition change}
-        size (+ 1 (get input :shape-size 0))
         shape (if normal?
                 {:status :accepted :shape-kind :map :type type :node-id id :source (get header :source)
                  :constructor-origin :persistent-map-removal :coordinate-system :ordered-map-entry-value-slots
-                 :binding-links [] :parts (get change :parts) :removal ancestry :shape-size size
-                 :call-join-work used :call-links (get input :call-links [])}
+                 :binding-links [] :parts (get change :parts) :removal ancestry
+                 :call-links (get input :call-links [])}
                 {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get header :source)
-                 :binding-links [] :removal ancestry :shape-size size :call-join-work used})]
+                 :binding-links [] :removal ancestry})]
     {:descriptor (assoc header :input-shape input :transition change :result-shape (if normal? shape nil)
                    :parameter-types (get header :argument-types) :return type :result-type type)
-     :shape shape :type type :shape-size size}))
+     :shape shape :type type}))
 
-(defn sh08-mr-family-finish [header nodes used]
+(defn sh08-mr-family-finish [header nodes]
   (let [argument-id (get (get (get header :source-call) :argument-node-ids) 0)
         argument (get nodes argument-id)
         type (if (= :normal (get header :application)) :gravity.type/map :gravity.type/never)
         evidence {:kind :map-family-type-only :type :gravity.type/map :node-id argument-id :source (get argument :source)}]
     {:descriptor (assoc header :input-type-evidence evidence :input-shape nil :transition nil :result-shape nil
-                   :parameter-types (get header :argument-types) :return type :result-type type :call-join-work used)
-     :shape nil :type type :shape-size 0}))
+                   :parameter-types (get header :argument-types) :return type :result-type type)
+     :shape nil :type type}))
 
 (defn sh08-mr-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-map-removal-constraint-v1 :application descriptor}
@@ -8148,52 +8146,37 @@
 (defn sh08-mr-derive [node nodes types binding-types functions lexical bindings forms seen depth binding-shapes context]
   (let [core (get context :source-core) id (get node :node-id)
         call (get (get context :calls) id) args (get call :argument-node-ids)
-        children (get node :children) budget (get context :budget-left 0)]
-    (if (< budget 1)
-      (assoc (sh08-sm-failure "C7-GENERIC" :map-removal-work-limit nil :remaining-type-join-units budget) :call-join-work 1)
-      (if (= false (if (vector? args) (vector? children) false))
-        (assoc (sh08-sm-failure "C7-VERIFY" :map-removal-call-shape-required nil :argument-and-child-vectors id) :call-join-work 1)
-        (if (= false (if (= 2 (count args)) (= 3 (count children)) false))
-          (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :map-removal-arity-mismatch nil :two-arguments (count args)) :call-join-work 1)
-          (let [work (+ 64 (count args) (count (get core :function-records)))
-                edge (get (get context :edges) id)
-                header (if (<= work budget) (sh08-mr-source core node call edge nodes bindings types (get core :module)) nil)]
-            (if (> work budget)
-              (assoc (sh08-sm-failure "C7-GENERIC" :map-removal-work-limit nil :remaining-type-join-units budget) :call-join-work work)
-              (if (= header nil)
-                (assoc (sh08-sm-failure "C7-TYPE-MISMATCH" :map-removal-key-or-operand-type-required nil
-                         :established-map-and-literal-keyword-or-nonreturning-operand (sh08-ft-ordered-child-types args types)) :call-join-work work)
-                (if (sh08-mr-forms? node nodes forms header)
-                  (if (= :gravity.type/map (get (get header :argument-types) 0))
-                    (let [total (+ work 1) finished (sh08-mr-family-finish header nodes total)]
-                      (if (if (<= total budget) true false)
-                        {:status :accepted :descriptor (get finished :descriptor) :shape nil :type (get finished :type) :call-join-work total}
-                        (assoc (sh08-sm-failure "C7-GENERIC" :map-removal-work-limit nil :remaining-type-join-units budget) :call-join-work total)))
-                  (let [input-never? (= :gravity.type/never (get types (get args 0)))
-                        input (if input-never? nil
-                                (sh08-sm-shape-with-bindings (get args 0) nodes types binding-types functions lexical bindings forms
-                                  (conj seen id) (+ depth 1) binding-shapes (assoc context :budget-left (- budget work))))
-                        used (+ work (get input :call-join-work 0))]
-                    (if (if input-never? true
-                          (if (= :accepted (get input :status))
-                            (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false) false))
-                      (let [transition (if (= :normal (get header :application))
-                                         (sh08-mr-transition input (get header :key) (- budget used))
-                                         {:status :accepted :work-count 0})
-                            total (+ used (get transition :work-count))]
-                        (if (= :accepted (get transition :status))
-                          (let [finished (sh08-mr-finish header input transition total)
-                                descriptor (get finished :descriptor) size (get finished :shape-size)]
-                            (if (<= total budget)
-                              {:status :accepted :descriptor descriptor :shape (get finished :shape) :type (get finished :type) :call-join-work total}
-                              (assoc (sh08-sm-failure "C7-GENERIC" :map-removal-evidence-or-work-limit nil :bounded-removal-evidence size) :call-join-work total)))
-                          (assoc (sh08-sm-failure (if (= :map-removal-work-limit (get transition :reason)) "C7-GENERIC" "C7-VERIFY")
-                                   (get transition :reason) nil :accepted-source-owned-map-shape (get input :type)) :call-join-work total)))
-                      (assoc (if (= :rejected (get input :status)) input
-                               (sh08-sm-failure "C7-ANNOTATION" :map-removal-map-shape-required nil
-                                 :established-map-constructor-quote-binding-or-local-return (get types (get args 0))))
-                        :call-join-work used))))
-                  (assoc (sh08-sm-failure "C7-VERIFY" :map-removal-source-mismatch nil :exact-operator-map-key-source id) :call-join-work work))))))))))
+        children (get node :children) edge (get (get context :edges) id)]
+    (if (= false (if (vector? args) (vector? children) false))
+      (sh08-sm-failure "C7-VERIFY" :map-removal-call-shape-required nil :argument-and-child-vectors id)
+      (if (= false (if (= 2 (count args)) (= 3 (count children)) false))
+        (sh08-sm-failure "C7-TYPE-MISMATCH" :map-removal-arity-mismatch nil :two-arguments (count args))
+        (let [header (sh08-mr-source core node call edge nodes bindings types (get core :module))]
+          (if (= header nil)
+            (sh08-sm-failure "C7-TYPE-MISMATCH" :map-removal-key-or-operand-type-required nil
+              :established-map-and-literal-keyword-or-nonreturning-operand (sh08-ft-ordered-child-types args types))
+            (if (sh08-mr-forms? node nodes forms header)
+              (if (= :gravity.type/map (get (get header :argument-types) 0))
+                (let [finished (sh08-mr-family-finish header nodes)]
+                  {:status :accepted :descriptor (get finished :descriptor) :shape nil :type (get finished :type)})
+                (let [input-never? (= :gravity.type/never (get types (get args 0)))
+                      input (if input-never? nil
+                              (sh08-sm-shape-with-bindings (get args 0) nodes types binding-types functions lexical bindings forms
+                                (conj seen id) (+ depth 1) binding-shapes context))]
+                  (if (if input-never? true
+                        (if (= :accepted (get input :status))
+                          (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false) false))
+                    (let [transition (if (= :normal (get header :application))
+                                       (sh08-mr-transition input (get header :key))
+                                       {:status :accepted})]
+                      (if (= :accepted (get transition :status))
+                        (let [finished (sh08-mr-finish header input transition)]
+                          {:status :accepted :descriptor (get finished :descriptor) :shape (get finished :shape) :type (get finished :type)})
+                        (sh08-sm-failure "C7-VERIFY" (get transition :reason) nil :accepted-source-owned-map-shape (get input :type))))
+                    (if (= :rejected (get input :status)) input
+                      (sh08-sm-failure "C7-ANNOTATION" :map-removal-map-shape-required nil
+                        :established-map-constructor-quote-binding-or-local-return (get types (get args 0)))))))
+              (sh08-sm-failure "C7-VERIFY" :map-removal-source-mismatch nil :exact-operator-map-key-source id))))))))
 
 (defn sh08-mr-node? [node context]
   (if (= :call (get node :core-form))
@@ -8204,25 +8187,22 @@
   (let [descriptor (get types (get call :operator-node-id))
         header (sh08-mr-source core node call edge nodes bindings types (get core :module))
         family? (= :gravity.type/map (get (get header :argument-types) 0))
-        input (get descriptor :input-shape) input-work (if family? 0 (get input :call-join-work 0))
-        transition (if family? {:status :accepted :work-count 1}
-                     (if (= :normal (get header :application)) (sh08-mr-transition input (get header :key) 65536)
-                       {:status :accepted :work-count 0}))
-        used (+ 64 (if (vector? (get call :argument-node-ids)) (count (get call :argument-node-ids)) 0)
-                (count (get core :function-records)) (if (integer? input-work) input-work 0) (get transition :work-count))]
+        input (get descriptor :input-shape)
+        transition (if family? {:status :accepted}
+                     (if (= :normal (get header :application)) (sh08-mr-transition input (get header :key))
+                       {:status :accepted}))]
     (if (map? header)
       (if (= :accepted (get transition :status))
         (sh08-ft-all-true?
-          [(if (integer? input-work) (<= 0 input-work) false)
-           (= descriptor (if family? (get (sh08-mr-family-finish header nodes used) :descriptor)
-                           (get (sh08-mr-finish header input transition used) :descriptor)))
+          [(= descriptor (if family? (get (sh08-mr-family-finish header nodes) :descriptor)
+                           (get (sh08-mr-finish header input transition) :descriptor)))
            (= (get descriptor :result-type) (get types (get node :node-id)))
            (if family? true (if (= :gravity.type/never (get (get header :argument-types) 0)) (= input nil)
              (if (= :accepted (get input :status))
                (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false) false)))])
         false) false)))
 
-(defn sh08-mr-step [node types binding-types functions context budget]
+(defn sh08-mr-step [node types binding-types functions context]
   (let [core (get context :ordering-core)
         call (get (get context :ordering-operators) (first (get node :children)))
         args (get call :argument-node-ids)
@@ -8230,18 +8210,16 @@
                      (if (sh08-ft-unknown? (get types (get args 0))) true
                        (sh08-ft-unknown? (get types (get args 1)))) false) false)]
     (if deferred?
-      (if (< budget 2)
-        (assoc (sh08-sm-failure "C7-GENERIC" :map-removal-work-limit nil :remaining-type-join-units budget) :work-count 2)
-        {:status :deferred :type :gravity.type/unknown :work-count 2})
+      {:status :deferred :type :gravity.type/unknown}
       (let [result (sh08-mr-derive node (get context :lookup-nodes) types binding-types functions
                      (get core :lexical-bindings) (get context :ordering-bindings) (get context :association-forms)
                      #{} 0 (get context :prior-binding-shapes {})
-                     (assoc (get context :shape-call-context) :source-core core :module (get core :module) :budget-left budget))]
+                     (assoc (get context :shape-call-context) :source-core core :module (get core :module))) ]
         (if (= :accepted (get result :status))
-          (assoc result :constraint (sh08-mr-constraint (get result :descriptor)) :work-count (get result :call-join-work))
-          (assoc result :work-count (get result :call-join-work 0)))))))
+          (assoc result :constraint (sh08-mr-constraint (get result :descriptor)))
+          result)))))
 
-(defn sh08-ma-finish [header input value used]
+(defn sh08-ma-finish [header input value]
   (let [call (get header :source-call) edge (get header :source-edge) args (get call :argument-node-ids)
         id (get header :call-core-node-id) normal? (= :normal (get header :application))
         transition (if normal? (sh08-ma-transition input value (get header :key) (get args 1) (get args 2) id) nil)
@@ -8249,17 +8227,16 @@
         ancestry {:source-call call :source-edge edge :source-binding (get header :source-binding)
                   :input-node-id (get args 0) :key-node-id (get args 1) :value-node-id (get args 2)
                   :input-shape input :value-shape value :transition transition}
-        size (+ 1 (get input :shape-size 0) (get value :shape-size 0))
         shape (if normal?
                 {:status :accepted :shape-kind :map :type type :node-id id :source (get header :source)
                  :constructor-origin :persistent-map-association :coordinate-system :ordered-map-entry-value-slots
-                 :binding-links [] :parts (get transition :parts) :association ancestry :shape-size size
-                 :call-join-work used :call-links (sh08-ft-add-values-to-set (get value :call-links []) (get input :call-links []))}
+                 :binding-links [] :parts (get transition :parts) :association ancestry
+                 :call-links (sh08-ft-add-values-to-set (get value :call-links []) (get input :call-links []))}
                 {:status :accepted :shape-kind :scalar :type :gravity.type/never :node-id id :source (get header :source)
-                 :binding-links [] :shape-size size :association ancestry :call-join-work used})]
+                 :binding-links [] :association ancestry})]
     {:descriptor (assoc header :input-shape input :value-shape value :transition transition :result-shape (if normal? shape nil)
                    :parameter-types (get header :argument-types) :return type :result-type type)
-     :shape shape :type type :shape-size size}))
+     :shape shape :type type}))
 
 (defn sh08-ma-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-map-association-constraint-v1 :application descriptor}
@@ -8289,14 +8266,11 @@
         core (get context :source-core) module (get context :module)
         args (get call :argument-node-ids) key-node (get nodes (get args 1))
         owner (get forms (get (get node :source) :form-id)) ids (get owner :child-form-ids)
-        work (+ 64 (count args) (count (get core :function-records)))]
-    (if (> work (get context :budget-left 0))
-      (assoc (sh08-sm-failure "C7-GENERIC" :map-association-work-limit nil :remaining-type-join-units (get context :budget-left 0)) :call-join-work work)
-      (let [header (sh08-ma-source core node call edge nodes bindings types module)]
+        header (sh08-ma-source core node call edge nodes bindings types module)]
       (if (= header nil)
-        (assoc (sh08-sm-failure "C7-TYPE-MISMATCH"
+        (sh08-sm-failure "C7-TYPE-MISMATCH"
                  (if (= 3 (count args)) :map-association-key-or-operand-type-required :map-association-arity-mismatch)
-                 nil :established-map-literal-keyword-and-established-value (sh08-ft-ordered-child-types args types)) :call-join-work work)
+                 nil :established-map-literal-keyword-and-established-value (sh08-ft-ordered-child-types args types))
       (if (sh08-ft-all-true?
             [(= :list (get owner :kind)) (= (get node :source) (sh08-ma-form-source owner))
              (= 4 (count ids)) (= {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
@@ -8312,26 +8286,22 @@
               value-never? (= :gravity.type/never (get types (get args 2)))
               input (if input-never? nil
                       (sh08-sm-shape-with-bindings (get args 0) nodes types binding-types functions lexical bindings forms
-                        (conj seen id) (+ depth 1) binding-shapes (assoc context :budget-left (- (get context :budget-left) work))))
+                        (conj seen id) (+ depth 1) binding-shapes context))
               value (if value-never? {:status :accepted :shape-kind :scalar :type :gravity.type/never
-                                       :node-id (get args 2) :source (get (get nodes (get args 2)) :source) :binding-links [] :shape-size 1}
+                                       :node-id (get args 2) :source (get (get nodes (get args 2)) :source) :binding-links []}
                       (sh08-sm-shape-with-bindings (get args 2) nodes types binding-types functions lexical bindings forms
-                        (conj seen id) (+ depth 1) binding-shapes
-                        (assoc context :budget-left (- (get context :budget-left) work (get input :call-join-work 0)))))
-              used (+ work (get input :call-join-work 0) (get value :call-join-work 0))]
+                        (conj seen id) (+ depth 1) binding-shapes context))]
           (if (if input-never? true (if (= :accepted (get input :status)) (= :map (get input :shape-kind)) false))
             (if (= :accepted (get value :status))
-              (let [finished (sh08-ma-finish header input value used)
-                    shape (get finished :shape) type (get finished :type) size (get finished :shape-size)
+              (let [finished (sh08-ma-finish header input value)
+                    shape (get finished :shape) type (get finished :type)
                     descriptor (get finished :descriptor)]
-                (if (<= used (get context :budget-left 0))
-                  {:status :accepted :descriptor descriptor :shape shape :type type :call-join-work used}
-                  (assoc (sh08-sm-failure "C7-GENERIC" :map-association-evidence-or-work-limit nil :bounded-map-association size) :call-join-work used)))
-              (assoc value :call-join-work used))
-            (assoc (if (= :rejected (get input :status)) input
-                     (sh08-sm-failure "C7-ANNOTATION" :map-association-map-shape-required nil :established-constructor-quote-binding-or-local-return (get types (get args 0))))
-                   :call-join-work used)))
-        (assoc (sh08-sm-failure "C7-VERIFY" :map-association-source-mismatch nil :exact-operator-map-key-value-source id) :call-join-work work)))))))
+                {:status :accepted :descriptor descriptor :shape shape :type type})
+              value)
+            (if (= :rejected (get input :status)) input
+              (sh08-sm-failure "C7-ANNOTATION" :map-association-map-shape-required nil
+                :established-constructor-quote-binding-or-local-return (get types (get args 0))))))
+        (sh08-sm-failure "C7-VERIFY" :map-association-source-mismatch nil :exact-operator-map-key-value-source id)))))
 
 (defn sh08-ma-node? [node context]
   (if (= :call (get node :core-form))
@@ -8342,23 +8312,22 @@
   (let [descriptor (get types (get call :operator-node-id))
         header (sh08-ma-source core node call edge nodes bindings types (get core :module))
         input (get descriptor :input-shape) value (get descriptor :value-shape)
-        used (+ 64 (count (get call :argument-node-ids)) (count (get core :function-records))
-                (get input :call-join-work 0) (get value :call-join-work 0))]
+        finished (if (map? header) (sh08-ma-finish header input value) nil)]
     (if (map? header)
-      (sh08-ft-all-true? [(= descriptor (get (sh08-ma-finish header input value used) :descriptor))
+      (sh08-ft-all-true? [(= descriptor (get finished :descriptor))
                           (if (= :gravity.type/never (get (get header :argument-types) 0)) (= input nil)
                             (if (= :map (get input :shape-kind)) (= (get input :type) (get (get header :argument-types) 0)) false))
                           (= (get value :type) (get (get header :argument-types) 2))]) false)))
 
-(defn sh08-ma-step [node types binding-types functions context budget]
+(defn sh08-ma-step [node types binding-types functions context]
   (let [core (get context :ordering-core)
         result (sh08-ma-derive node (get context :lookup-nodes) types binding-types functions
                  (get core :lexical-bindings) (get context :ordering-bindings) (get context :association-forms)
                  #{} 0 (get context :prior-binding-shapes {})
-                 (assoc (get context :shape-call-context) :source-core core :module (get core :module) :budget-left budget))]
+                 (assoc (get context :shape-call-context) :source-core core :module (get core :module)))]
     (if (= :accepted (get result :status))
-      (assoc result :constraint (sh08-ma-constraint (get result :descriptor)) :work-count (get result :call-join-work))
-      (assoc result :work-count (get result :call-join-work 0)))))
+      (assoc result :constraint (sh08-ma-constraint (get result :descriptor)))
+      result)))
 
 (defn sh08-va-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
