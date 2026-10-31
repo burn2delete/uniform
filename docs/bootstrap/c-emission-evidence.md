@@ -17,12 +17,66 @@ verification. No native toolchain, Gate A/Gate B, migration or release probe
 is authorized by this data extraction. The lexical authority holder and full
 guarded assembler remain in Bootstrap.
 
-## Evidence status
+## Implementation and evidence
 
-This draft records the bounded change before implementation. Before integration
-it requires paired original/extracted outputs, current Gravity data-kernel
-execution, actual rejection, focused regression checks, exact independent
-acceptance and successful candidate CI. No completed validation is claimed yet.
+Seventeen functions and the header constant move from Bootstrap components
+022/023/024 into the stage. Ten explicit Var ports preserve the existing
+interposition and evaluation order. The lexical authority holder, source pins,
+full guarded assembler and native toolchain paths remain unchanged. The stage
+imports no compiler or orchestration namespace; Bootstrap consumes it. Every
+public Var carries its exact contract, API, artifact and diagnostic metadata.
+
+The focused fixture contains 22 explicit scalar operations: signed endpoints,
+booleans, nil, all five forwarded forms, three truthiness cases, all integer
+comparisons and a conditional join. These are data fixtures, not authenticated
+MIR or B1 packets. Emission writes actual program.c and program.h files in the
+local evidence directory. The current Gravity B2 implementation is compiled
+and its operation, source/header, build, ABI, runtime, debug and proof record
+kernels execute on the same data and compare equal. Its bounded builder
+receives nil and genuinely rejects B1-INPUT/:exact-sealed-b1-c-packet. No
+accepted packet, authority token or preflight result is fabricated.
+
+Original and extracted captures match as full EDN data and exact serialized
+text in four paired files: all native output/diagnostic records, current
+Gravity source/plan, C source and C header. Both source hashes and declared
+plan identities recompute through the unchanged canonical identity protocol.
+Read-only reconstruction from main 41ab1c357e4d96a510fae4cf5a46e903fe340510
+matches the entire stage, all three consumer files and the Bootstrap require
+delta. This checks every unmoved form, including the guarded assembler and
+lexical holder. Before capture used the original implementation on scope
+commit 909d7f032 with the new test untracked; after capture used the working
+extraction over that commit. These are ordinary development captures, not
+committed-head authority or migration bookends.
+
+Focused regressions pass (initially 5 tests/153 assertions; two additional
+interposition assertions added afterward). Ownership passes 25/888 and the
+language gate passes 6/11. Documentation validates 240 documents and 19 phase
+indexes; roadmap and workstream governance validators pass. Independent exact
+candidate acceptance and successful final candidate CI remain required.
+
+The initial focused command used the self-hosting runner, which correctly
+rejected this new nested standalone namespace; the existing development
+runner executes it without changing shared routing. The first ownership
+check exposed a direct-child count that included a nested helper. It now
+counts direct helper paths for the direct-child projection while retaining
+the complete helper/module ownership checks. No catalog counts changed.
+The first lint observation ran before the implementation commit, so its
+base-to-HEAD source mapping did not cover the working require-line insertion;
+two inherited Bootstrap warnings did not map. A third warning was a new unused
+test import, which was removed. Exact committed-range lint is still pending.
+
+Reproduction:
+
+```bash
+clojure -M:dev-test --namespace gravity.backend.c.pipeline-test
+clojure -M:test --namespace gravity.self-hosting.sh01-ownership-test
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+```
+
+Local producer, verifier and extraction scripts are
+`/tmp/uniform-c-emission-{evidence,verify,extract}.clj`; captures are in
+`/tmp/uniform-c-emission-evidence/`. The verifier captures reconstructed writes
+in memory and compares complete source text; it does not rewrite the checkout.
 
 ## Unsupported boundaries
 
@@ -32,3 +86,7 @@ proof certificates, execute C, verify the configured ABI/toolchain, implement
 general MIR or domain IR lowering, or complete self-hosting or seed retirement.
 Historical data labels such as proven-safe and proof-authorized are copied
 records whose authority still depends on the unchanged upstream gates.
+The legacy unknown-op expression fallback still returns zero; it is not a
+validator. The native exit-code helper still returns nil for nil, whereas the
+Gravity helper returns zero. That pre-existing difference is outside valid
+admitted process results and is preserved explicitly, not claimed as parity.
