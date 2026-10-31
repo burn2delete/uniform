@@ -252,11 +252,17 @@
 (def ^:private types-stage-path "bootstrap/clojure/src/gravity/types.clj")
 (def ^:private types-stage-consumer "bootstrap/clojure/src/gravity/c7_type_checker/inference.clj")
 (def ^:private types-stage-test "bootstrap/clojure/test/gravity/c7_type_checker_test.clj")
+(def ^:private effects-stage-path "bootstrap/clojure/src/gravity/effects.clj")
+(def ^:private effects-stage-consumer "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj")
+(def ^:private effects-stage-test "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj")
 
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {types-stage-path
+    (and (= {effects-stage-path
+             {:namespace 'gravity.effects :owner :sh-effects :slice "SH-09"
+              :consumer-path effects-stage-consumer :test-path effects-stage-test}
+             types-stage-path
              {:namespace 'gravity.types :owner :sh-types :slice "SH-08"
               :consumer-path types-stage-consumer :test-path types-stage-test}
              core-stage-path
@@ -295,6 +301,8 @@
          (= :sh-core (get-in record [:module-owners core-stage-path]))
          (= :sh-types (get-in record [:module-owners types-stage-path]))
          (= :sh-types (get-in record [:module-owners types-stage-test]))
+         (= :sh-effects (get-in record [:module-owners effects-stage-path]))
+         (= :sh-effects (get-in record [:module-owners effects-stage-test]))
          (= {:namespace 'gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
             (get-in record [:standalone-test-owners core-stage-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
@@ -331,8 +339,38 @@
               "source" {"path" types-stage-path "namespace" "gravity.types"}
               "consumer" {"path" types-stage-consumer "namespace" "gravity.c7-type-checker.inference" "owner" "sh-types"}
               "test" {"path" types-stage-test "namespace" "gravity.c7-type-checker-test"
+                      "registration" "bootstrap-free"}}
+             {"id" "effects-graph-data" "kind" "production-stage-helper" "owner" "sh-effects"
+              "source" {"path" effects-stage-path "namespace" "gravity.effects"}
+              "consumer" {"path" effects-stage-consumer "namespace" "gravity.c8-effect-checker.facts" "owner" "sh-effects"}
+              "test" {"path" effects-stage-test "namespace" "gravity.c8-effect-checker-test"
                       "registration" "bootstrap-free"}}]
             (get contract "production_helpers")))))
+
+(deftest effects-graph-helper-joins-existing-bootstrap-free-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))]
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [effects-stage-path effects-stage-consumer effects-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path effects-stage-path)))]
+        (is (= 'gravity.effects (second (read reader))))))
+    (doseq [operation ["effects/fact-direct-effects" "effects/effectful-facts" "effects/effect-graph"]]
+      (is (str/includes? (slurp (path effects-stage-consumer)) operation)))
+    (doseq [bad [(update record :module-owners dissoc effects-stage-path)
+                 (assoc-in record [:module-owners effects-stage-path] :master-coordinator)
+                 (assoc-in record [:module-owners effects-stage-test] :sh-core)
+                 (assoc-in record [:production-helper-associations effects-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations effects-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations effects-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" 7 "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" 7 "test" "registration"] "standalone")
+                 (assoc-in contract ["production_helpers" 7 "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" 7 "consumer" "path"] "forged.clj")]]
+      (is (not (production-helper-registration-valid? record bad))))))
 
 (deftest types-products-helper-joins-existing-bootstrap-free-test
   (require 'gravity.bootstrap-free-leaf-test-runner)

@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/types.clj"
+ {"bootstrap/clojure/src/gravity/effects.clj"
+  {:namespace gravity.effects :owner :sh-effects :slice "SH-09"
+   :consumer-path "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj"
+   :test-path "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj"}
+  "bootstrap/clojure/src/gravity/types.clj"
   {:namespace gravity.types :owner :sh-types :slice "SH-08"
    :consumer-path "bootstrap/clojure/src/gravity/c7_type_checker/inference.clj"
    :test-path "bootstrap/clojure/test/gravity/c7_type_checker_test.clj"}
@@ -230,6 +234,7 @@
   "bootstrap/clojure/src/gravity/c6_core_lowering.clj" :sh-core
   "bootstrap/clojure/src/gravity/c7_type_checker.clj" :sh-types
   "bootstrap/clojure/src/gravity/types.clj" :sh-types
+  "bootstrap/clojure/src/gravity/effects.clj" :sh-effects
   "bootstrap/clojure/src/gravity/c8_effect_checker.clj" :sh-effects
   "bootstrap/clojure/src/gravity/c9_ownership_checker.clj" :sh-ownership
   "bootstrap/clojure/src/gravity/capability_validation.clj" :sh-capability
