@@ -244,8 +244,8 @@
                        :status :partial}
           artifact (assoc artifact-base
                           :capability-based-proof capability-proof
-                          :c2-reader-results conformance)]
-      (let [artifact
+                          :c2-reader-results conformance)
+          artifact
             (if (reader-pure-text/options? reader-options)
               (-> artifact
                   (assoc-in [:reader-extension-policy :extensions]
@@ -255,7 +255,7 @@
                   (assoc-in [:gravity-reader-boundary :pure-text-reconstruction-input]
                             {:source-text source-text :project-context project-context}))
               artifact)]
-        (assoc artifact :artifact-id (c2-reader-artifact-id artifact))))
+      (assoc artifact :artifact-id (c2-reader-artifact-id artifact)))
      (catch clojure.lang.ExceptionInfo ex
        (c2-reader-remap-exception! source-path ex)))))
 

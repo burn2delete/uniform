@@ -11,6 +11,12 @@
 
 (alias 'reader-dispatch 'gravity.reader.dispatch)
 
+;; These names are installed from source below; declare direct test references
+;; explicitly so static CI can also resolve the isolated model's calls.
+(declare sh03-reader-read-text sh03-construct-parsed-source-unit
+         sh03-reader-policy-valid? sh03-verify-reader-result sh03-digest-requests
+         sh03-reader-sealed-text-record sh03-c3-precomputed-c2-verify!)
+
 (defn- forms [path]
   (with-open [r (java.io.PushbackReader. (io/reader path))]
     (binding [*read-eval* false]

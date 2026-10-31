@@ -3,9 +3,11 @@
   Gravity definition, handler, provider or integration fixture is evaluated."
   (:require [clojure.java.io :as io]
             [clojure.set :as set]
-            [clojure.string :as str]
+            [clojure.string :as strings]
             [clojure.test :refer [deftest is]]
             [clojure.walk :as walk]))
+
+(alias 'str (ns-name (:ns (meta #'strings/starts-with?))))
 
 (def ^:private component-root
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/self-hosting-sh03-sh07/")

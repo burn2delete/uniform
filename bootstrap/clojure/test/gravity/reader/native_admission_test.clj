@@ -8,6 +8,9 @@
 
 (def ^:private root "bootstrap/clojure/src/gravity/bootstrap_impl/components/")
 
+(declare p15-s23-trusted-carrier-validation sh03-c3-precomputed-c2-verify!
+         reader-artifact-view)
+
 (defn- source-forms [path]
   (with-open [r (java.io.PushbackReader. (io/reader path))]
     (binding [*read-eval* false]
@@ -146,8 +149,12 @@
             (is (= [:native-validation] @calls))
             (is (empty? @callbacks))))))
     ;; Positive controls prove each carrier method is observable.
-    (get foreign :x) (seq foreign) (meta foreign) (hash foreign)
-    (.equals foreign :x) (.hashCode foreign)
+    (is (nil? (get foreign :x)))
+    (is (nil? (seq foreign)))
+    (is (nil? (meta foreign)))
+    (is (= (hash :source-unit-record) (hash foreign)))
+    (is (false? (.equals foreign :x)))
+    (is (= (.hashCode :source-unit-record) (.hashCode foreign)))
     (is (= #{:lookup :seq :meta :hash :equality :hash-code} (set @callbacks)))))
 
 (deftest native-default-and-pure-fresh-routing-survive

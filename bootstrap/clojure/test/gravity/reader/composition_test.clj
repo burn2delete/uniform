@@ -2,8 +2,12 @@
   "Compiler-free composition checks of exact named source bodies and admission
   predicates. Ports use synthetic DATA; no Bootstrap or gravity.syntax load."
   (:require [clojure.java.io :as io]
-            [gravity.reader.pure-text :as reader-pure-text]
+            [gravity.reader.pure-text :as pure-text]
             [clojure.test :refer [deftest is]]))
+
+;; Source-evaluated bodies use their production alias in this isolated ns.
+(alias 'reader-pure-text (ns-name (:ns (meta #'pure-text/admission-required?))))
+(declare reader-artifact-view current-reader-identity-view)
 
 (def ^:private component-root
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/")

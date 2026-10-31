@@ -8,8 +8,10 @@
             [gravity.c2-artifact-identity.canonical :as canonical]
             [gravity.digest :as digest]
             [gravity.source-unit :as source-unit]
-            [gravity.reader.pure-text :as reader-pure-text]
+            [gravity.reader.pure-text :as pure-text]
             [gravity.reader.dispatch :as reader-dispatch]))
+
+(alias 'reader-pure-text (ns-name (:ns (meta #'pure-text/returned-data!))))
 
 (def ^:private component-root
   "bootstrap/clojure/src/gravity/bootstrap_impl/components/")
