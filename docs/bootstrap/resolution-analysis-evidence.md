@@ -31,3 +31,28 @@ before/after product comparison. Module-import regression, focused adversarial
 checks, independent review, clean commits, CI and final integration preflight
 remain required. No current Reader admission, authoritative migration, full
 resolution, release, performance, self-hosting or seed-retirement claim.
+
+The stage cold-loads 30 public APIs without Bootstrap. The three retired
+late-helper resources are removed from both load orders; their compatibility
+installer remains in its original position. The two traversal helpers remain
+lexical locals, absent from both namespaces' Var inventories. Receipt and
+construction qualification include all six added stage APIs and four pattern
+callback ports.
+
+The actual lexical-normalization fixtures emit 276 bindings and 21 resolutions
+in each spelling, with identity
+sha256:0fdf519ad7657aa8b291b7aa46df085324bb1fb6bff3cb290b5ecbaf5c8152f2.
+Fresh public verification passes. The lexical-leak fixtures reject the escaped
+right binding with C5-UNRESOLVED. All four complete before/after values compare
+equal, including each accepted artifact's source provenance and each rejected
+diagnostic's full data. Canonical source and Reader paths were held constant.
+This evidence uses the explicit current-development invocation and grants no
+historical Reader migration authority.
+
+Language boundary passed 6 tests / 11 assertions; ownership and catalog checks
+passed 45 / 1036. Documentation validation passed 240 documents / 19 phase
+indexes, and roadmap and workstream-governance validation passed. Direct
+stage/test lint and changed-file repository lint have zero blockers. An initial
+new-test delimiter error and an incorrect expected vector index were corrected;
+those initial runs remain nonpasses. Final regression and independent review
+are recorded separately before integration.
