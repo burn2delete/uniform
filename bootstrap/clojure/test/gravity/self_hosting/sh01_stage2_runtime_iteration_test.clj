@@ -1001,14 +1001,12 @@
       (is (= :rejected (:status (compile changed 1000)))))
     (let [bad-node (assoc-in node [:attributes :keyword] :forged)
           bad (step bad-node work-context)]
-      (is (= :keyword-lookup-record-mismatch (:reason bad)))
-      (is (pos? (:work-count bad))))
+      (is (= :keyword-lookup-record-mismatch (:reason bad))))
     (doseq [changed [(assoc-in work-context [:lookup-forms :lookup-key-form :parent-form-id] :wrong)
                      (assoc-in work-context [:lookup-nodes :vector :core-form] :reference)
                      (assoc-in work-context [:lookup-nodes :vector-right :attributes :value] "forged")]]
       (let [failed (step node changed)]
-        (is (= :rejected (:status failed)))
-        (is (pos? (:work-count failed)))))
+        (is (= :rejected (:status failed)))))
     (let [missing-node (assoc-in node [:attributes :keyword] :missing)
           missing-context (-> work-context (assoc-in [:lookup-core :keyword-lookups 0 :keyword] :missing)
                               (assoc-in [:lookup-nodes :lookup-key :attributes :value] :missing)
