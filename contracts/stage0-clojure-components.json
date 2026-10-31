@@ -218,6 +218,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/optimization.clj", "namespace": "gravity.optimization"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00750-p15-s23-c13-comparison-fold-reconstruction.clj", "namespace": "gravity.bootstrap-c13-comparison", "owner": "sh-optimization"},
       "test": {"path": "bootstrap/clojure/test/gravity/optimization/pipeline_test.clj", "namespace": "gravity.optimization.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "wasm-codec",
+      "kind": "production-stage-helper",
+      "owner": "sh-target-wasm",
+      "source": {"path": "bootstrap/clojure/src/gravity/backend/wasm.clj", "namespace": "gravity.backend.wasm"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00756-p15-s23-b4-wasm-authority-token-002-p15-s23-b4-wasm-operation-bytes-through-p15-s23-b4-wasm-canonical-bounded-octet.clj", "namespace": "gravity.bootstrap", "owner": "sh-target-wasm"},
+      "test": {"path": "bootstrap/clojure/test/gravity/backend/wasm/pipeline_test.clj", "namespace": "gravity.backend.wasm.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
