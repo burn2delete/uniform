@@ -1,7 +1,8 @@
 (ns gravity.cli.entrypoint
   "Process boundary for the bootstrap-hosted CLI."
   (:refer-clojure :exclude [run!])
-  (:require [gravity.cli.dispatch :as dispatch]))
+  (:require [gravity.build.invocation :as build-invocation]
+            [gravity.cli.dispatch :as dispatch]))
 
 (def usage-text
   (str
@@ -16,5 +17,9 @@
       (exit! 2))
     (shutdown-agents)
     (catch clojure.lang.ExceptionInfo exception
-      (print-diagnostic! exception)
-      (exit! 1))))
+      (if (= "build" (first arguments))
+        (let [{:keys [json exit-code]} (build-invocation/diagnostic-json exception)]
+          (binding [*out* *err*] (println json))
+          (exit! exit-code))
+        (do (print-diagnostic! exception)
+            (exit! 1))))))

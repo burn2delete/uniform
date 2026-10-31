@@ -1,5 +1,11 @@
 # Hermetic Reader input issuer and original-result boundary
 
+Successor note: the explicit local host entry is now implemented in
+[local build invocation](local-build-invocation.md). The missing-entry statements
+below describe the frozen initial issuer/ABI decision. The Stage2/Reader bridge
+and normal effectful integration remain unimplemented; this successor does not
+convert the earlier model evidence into genuine Reader evidence.
+
 This is the bounded Auth/Build source response to
 [the effectful provider handoff](effectful-provider-boundary.md), at Reader
 handoff `f07efdf4ea7060f1cfd6ef8e4295b675c07b84b2`, tree

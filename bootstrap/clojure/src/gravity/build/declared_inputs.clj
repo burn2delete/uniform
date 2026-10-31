@@ -1,7 +1,7 @@
 (ns gravity.build.declared-inputs
   "Private host-entry issuer and fixed hermetic Reader input/result store.
 
-  No production entry currently calls the private issuer. Public operations
+  The explicit local build invocation calls the private issuer. Public operations
   consume its live opaque capability; supplied grants/receipts cannot mint it.
   Trusted Clojure host code, including private-Var access, is outside the source
   sandbox. This leaf grants no filesystem or runtime access."
@@ -124,9 +124,9 @@
     context))
 
 (defn- call-with-authorized-inputs
-  "RESERVED trusted build-entry seam, not a source-callable grant API.
-  The future host invocation producer must authorize grant outside source data
-  before calling this private function. Tests inject that host boundary only.
+  "Trusted build-entry seam, not a source-callable grant API.
+  The host invocation producer must authorize grant outside source data
+  before calling this private function. Tests may inject that host boundary.
   Callback is trusted host control flow, never a provider supplied by source."
   [grant inputs run]
   (let [grant (grant! (freeze grant))
