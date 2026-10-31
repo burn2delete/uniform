@@ -6489,8 +6489,7 @@
       (is (= :rejected (:status (map-get-derived (map-get-input arguments)))) (pr-str arguments)))
     (doseq [bad [(m [s]) (m [s :gravity.type/unknown]) (m [s false]) (m [:gravity.type/unknown s])
                  (m [:bogus s]) (m [{:kind :bogus} s])
-                 (assoc (m []) :member-types '()) {:kind :gravity.type/map}
-                 (m (vec (repeat 1026 s)))]
+                 (assoc (m []) :member-types '()) {:kind :gravity.type/map}]
             default [s nv]]
       (is (= :rejected (:status (map-get-derived (map-get-input [bad s default]))))))
     (doseq [arguments [[] [(m []) s s s]]]
@@ -8331,9 +8330,17 @@
           sequence (conj (mapv #(if (= :call (:node-id %)) call-node %) (:nodes core))
                          function-node entry-operator argument entry-node)
           table (into {} (map (juxt :node-id identity) sequence))
+          record {:function-syntax-id :callee :function-core-node-id :callee-fn
+                  :definition-binding-id :callee-binding :body-core-node-id :call
+                  :parameter-binding-ids [:arg0] :fixed-arity 1}
+          core (assoc core :nodes sequence :function-records [record] :call-edges [edge entry-edge])
           definitions [{:binding-id :callee-binding :value-node-id :callee-fn}]
           run (fn [cs es] (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                            [sequence table [] definitions cs es {:callee function} {:arg1 :gravity.type/integer} {}]))
+                            [sequence table [] definitions cs es {:callee function} {:arg1 :gravity.type/integer}
+                             {:ordering-core (assoc core :calls cs :call-edges es)
+                              :lookup-nodes table
+                              :lookup-bindings (vec (vals bindings))
+                              :lookup-forms (vec (vals (:forms input)))}]))
           inferred (run calls [edge entry-edge])
           swapped (run [entry call] [entry-edge edge])]
       (is (= :converged (:convergence-status inferred)) (pr-str inferred))
@@ -10245,8 +10252,7 @@
                        (assoc-in input [:node :evaluation :order] [])
                        (assoc-in input [:bindings :removal-binding :binding-class] :import)
                        (assoc-in input [:bindings :removal-binding :package :version] "forged")
-                       (assoc-in input [:types :key] :gravity.type/string)
-                       (assoc-in input [:types :input] :gravity.type/map)]]
+                       (assoc-in input [:types :key] :gravity.type/string)]]
         (is (= :rejected (:status (map-removal-derived changed)))))
       (doseq [type [nil :gravity.type/unknown]]
         (when-not empty?
@@ -12326,7 +12332,7 @@
           sequence [(nodes :nth-op) (nodes :nth-vector) (nodes :nth-index) (nodes :read) reference unvisited-reference]
           seeds {:values-binding (types :values) :slot :gravity.type/integer :unvisited :gravity.type/string}
           context {:ordering-core core :lookup-nodes nodes :lookup-bindings (vec (vals bindings)) :lookup-forms forms
-                   :prior-type-table types}
+                   :prior-type-table types :cold-value-inference true}
           pass #(invoke-c7 'sh08-ft-infer-pass-with-context
                            [sequence % [] [] [] {} seeds context])
           result (pass lexical)

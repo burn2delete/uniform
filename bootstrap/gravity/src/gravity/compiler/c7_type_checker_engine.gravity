@@ -22397,6 +22397,19 @@
             (if (if lookup? true association?) (get lookup :type :gravity.type/unknown)
               (sh08-ft-infer-node-with-context
                node type-table binding-types function-result edges context)))
+            ; Cold VALUE evidence cannot borrow a declared call result while
+            ; one of its evaluated operands is still independently unresolved.
+            ; The mode is semantic cold-value inference, not a work allowance.
+            node-type (if (if (= true (get context :cold-value-inference))
+                              (= false (contains? #{:fn :quote} (get node :core-form))) false)
+                        (if (= node-type :gravity.type/never) node-type
+                          (if (loop [children (get node :children)]
+                                (if (= 0 (count children)) true
+                                  (if (sh08-ft-known?
+                                        (if (if association? (if (= :accepted (get lookup :status))
+                                                              (= (first children) (first (get node :children))) false) false)
+                                          (get lookup :descriptor) (get type-table (first children))))
+                                    (recur (rest children)) false))) node-type :gravity.type/unknown)) node-type)
             ; Only this already-derived normal v2 access may advance its exact
             ; immutable initializer bindings.
             lexical-now? (if (= :accepted (get lookup :status))
@@ -23200,7 +23213,7 @@
           (let [inferred (sh08-ft-infer-acyclic-with-context
                          selected-nodes nodes selected-locals selected-definitions
                          (get selected-calls :calls) (get selected-calls :edges) skeletons seeds
-                         {:source-node-table nodes
+                         {:source-node-table nodes :cold-value-inference true
                           :boolean-matches (get products :boolean-matches) :quote-types (get quotes :type-table)
                           :imported-functions imports :loop-core (sh08-ft-loop-working-core core bindings)
                           :lookup-core (if (> (count (get core :keyword-lookups)) 0) core nil)
