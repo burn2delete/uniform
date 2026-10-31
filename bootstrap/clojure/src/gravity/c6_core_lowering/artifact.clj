@@ -100,13 +100,14 @@
           :status :complete}
          :rejected-design-coverage rejected-designs
          :diagnostics []}
-        _ (context/invoke-op :c6-lowering-validate!
-                             verification/c6-lowering-validate!
-                             source-path artifact-base)
         capability-proof
         (context/invoke-op :c6-lowering-capability-proof
                            verification/c6-lowering-capability-proof
                            artifact-base)
+        _ (binding [verification/*assembly-proof* capability-proof]
+            (context/invoke-op :c6-lowering-validate!
+                               verification/c6-lowering-validate!
+                               source-path artifact-base))
         conformance
         {:documents ["C6"]
          :task "P06-D085"

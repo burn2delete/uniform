@@ -6,6 +6,12 @@
             [gravity.c6-core-lowering.diagnostics :as diagnostics]
             [gravity.c6-core-lowering.lowering :as lowering]))
 
+;; C6 assembly computes a capability proof once per invocation and uses that
+;; freshly-produced value for both validation and artifact publication.  This
+;; dynamic binding is deliberately invocation-local: it is not an acceptance
+;; cache and cannot survive a changed input or compiler revision.
+(def ^:dynamic *assembly-proof* nil)
+
 (defn c6-core-verifier-report [flat-nodes domain-boundaries c5-artifact]
   (let [node-ids (set (map :node-id flat-nodes))
         child-ids
@@ -90,8 +96,9 @@
      :status :complete}))
 
 (defn c6-lowering-validate! [source-path artifact]
-  (let [proof (context/invoke-op :c6-lowering-capability-proof
-                                 c6-lowering-capability-proof artifact)]
+  (let [proof (or *assembly-proof*
+                  (context/invoke-op :c6-lowering-capability-proof
+                                     c6-lowering-capability-proof artifact))]
     (doseq [[field id]
             [[:every-executable-form-lowered? "C6-LOWERING-GAP"]
              [:source-to-core-map-present? "C6-CORE-SHAPE"]
