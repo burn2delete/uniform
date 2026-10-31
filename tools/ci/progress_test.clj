@@ -79,6 +79,32 @@
            (mapv second (filter #(= "--namespace" (first %)) (partition 2 1 argv)))))
     (is (= 1 (count (filter #{"--progress"} argv))))))
 
+(deftest resolution-optin-preserves-exact-selection-and-command-bounds
+  (let [[[id seconds argv]] (ci/commands "resolution")
+        selectors ["--namespace" "gravity.resolution.pipeline-test"
+                   "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
+                   "--namespace" "gravity.self-hosting.sh06-invocation-selection-test"]
+        legacy (apply #'ci/command "2g" "-M:dev-test" selectors)
+        options (#'runner/parse-args (drop (inc (.indexOf ^java.util.List argv "-M:dev-test")) argv))
+        original-options (#'runner/parse-args selectors)]
+    (is (= ["resolution-regression" 600] [id seconds]))
+    (is (= "-J-Xmx2g" (second argv)))
+    (is (= 1 (count (filter #{"--progress"} argv))))
+    (is (= legacy (vec (remove #{"--progress"} argv))))
+    ;; Identical selector options and unchanged selection code retain the
+    ;; selected Var set/order without loading any selected namespace here.
+    (is (= (assoc original-options :progress? true) options))
+    (doseq [mode ["bootstrap" "checked-core-runtime" "leaves-portable"
+                  "leaves-darwin" "darwin-unsupported" "darwin-probe"]]
+      (is (not-any? #{"--progress"} (mapcat #(nth % 2) (ci/commands mode)))))
+    (let [writer (writer-fixture nil nil nil)
+          before (exercise {})
+          observed (exercise {:progress? true :writer (:writer writer)})]
+      (is (= (:result before) (:result observed)))
+      (is (= (:events before) (:events observed)))
+      (is (= (:records before) (:records observed)))
+      (is (str/includes? (str (:text writer)) ":non-authoritative")))))
+
 (deftest write-and-flush-failure-retains-body-before-timing-and-completion
   (doseq [timing? [false true] edge [:enter :return] stage [:write :flush]]
     (let [original (java.io.IOException. "diagnostic") sink (writer-fixture edge stage original)

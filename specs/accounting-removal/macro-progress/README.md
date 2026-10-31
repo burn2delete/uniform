@@ -32,3 +32,12 @@ in tools/ci/progress_test.clj exercise the actual runner and Writer call sites
 with synthetic Vars and no Bootstrap or test-family workload. They do not
 measure real test overhead or establish descendant termination. Independent
 implementation review and normal changed-head CI remain required before use.
+
+The Resolution aggregate command can opt into the SAME accepted progress path
+with --progress. Its three namespace selectors and order, fresh 2GiB child,
+600-second watchdog, workflow ceiling and capture/cleanup behavior are unchanged.
+The flag adds stderr formatting, writes and flushes; resource/time cost is not
+equivalent to the disabled path. It may expose the last reported selected Var or
+phase in a future measured run, but absence or an unmatched phase is not cause,
+assertion completion, process termination or cleanup proof. The previous Macro
+and Resolution NONPASS receipts remain their original exact-tree results.

@@ -184,6 +184,7 @@
                        "--namespace" "gravity.bootstrap-compatibility.c4-test")]]
     "resolution" [["resolution-regression" 600
                    (command "2g" "-M:dev-test"
+                            "--progress"
                             "--namespace" "gravity.resolution.pipeline-test"
                             "--namespace" "gravity.self-hosting.sh06-unmetered-resolution-test"
                             "--namespace" "gravity.self-hosting.sh06-invocation-selection-test")]]
