@@ -10,11 +10,22 @@
 (defn- input [field] ((:input (operations)) field))
 (defn- caught [f] (try (f) nil (catch clojure.lang.ExceptionInfo error error)))
 (def ^:private source "<checked-core-runtime-unit>")
+(def ^:private projection-compatibility-names
+  '[sh07-core-source-path-from-resolution sh07-core-semantic-span sh07-core-value-kind
+    sh07-core-children sh07-core-decimal-descriptor sh07-core-decimal-evidence
+    sh07-core-projected-form-id sh07-core-projected-syntax-id sh07-core-projected-source-mismatch
+    sh07-core-neutral-value sh07-core-macro-trace sh07-core-root-syntax-id
+    sh07-core-decimal-evidence-complete! sh07-core-semantic-macro-trace
+    sh07-core-source-occurrence-context sh07-core-build-form-tree sh07-core-source-map-order
+    sh07-core-parameter-binding-paths sh07-core-lineage-with-semantic-trace sh07-core-lineage
+    sh07-core-projection-binding-input sh07-b13-alias-name sh07-b13-fragment-record
+    sh07-b13-fragment-manifest sh07-b13-binding-order sh07-b13-fragment-coverage
+    sh07-b13-module-assembly-manifest])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 6 (count publics)))
+    (is (= 30 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -23,6 +34,13 @@
       (is (= (:arglists api) (:arglists (meta (publics name)))))
       (is (= :none (:admission api)))
       (is (= contract (:gravity/namespace-contract (meta (publics name))))))
+    (is (= '#{source-occurrence-context projected-source-mismatch lineage-with-semantic-trace}
+           (set (keys (:private-implementation contract)))))
+    (doseq [[name api] (:private-implementation contract)
+            :let [v (ns-resolve 'gravity.checked-core name)]]
+      (is (true? (:private (meta v))))
+      (is (= (:arglists api) (:arglists (meta v))))
+      (is (= contract (:gravity/namespace-contract (meta v)))))
     (is (true? (.isDynamic ^clojure.lang.Var (seed-var '*sh07-core-execution-binding*))))
     (is (not (contains? (ns-aliases 'gravity.checked-core) 'b)))
     (is (= '[gravity.bootstrap] (get-in contract [:dependency-direction :forbids])))))
@@ -38,6 +56,125 @@
     (is (= [] (:nodes empty-state) (:var-references empty-state)))
     (is (= (core/source-key ops) ((seed-var 'sh07-core-current-source-key))))
     (is (= (b/sh07-core-source-path) (core/source-path ops)))))
+
+(deftest projected-identities-distinguish-occurrences-and-preserve-generated-origins
+  (let [ops (operations) revision :unit-revision root :unit-root
+        first-id (core/projected-form-id revision root [0] :integer ops)
+        trace (core/macro-trace {:source-revision-id revision :sh05-artifact-id :macro-artifact
+                                :macro-expansion-trace-id :macro-trace}
+                               {:input-syntax-id :input :output-syntax-id root} ops)]
+    (is (= first-id (b/sh07-core-projected-form-id revision root [0] :integer)))
+    (is (= first-id (core/projected-form-id revision root [0] :integer ops)))
+    (doseq [[r s path kind] [[:other root [0] :integer] [revision :other [0] :integer]
+                             [revision root [1] :integer] [revision root [0] :decimal]]]
+      (is (not= first-id (core/projected-form-id r s path kind ops))))
+    (is (= root (core/projected-syntax-id revision root [] :list trace ops)))
+    (is (= (:introduced-fn-syntax-id trace)
+           (core/projected-syntax-id revision root [2] :list trace ops)))
+    (is (= revision (:source-revision-id trace)))
+    (is (not= (:def-generated-origin-id trace) (:fn-generated-origin-id trace)))
+    (is (= (core/semantic-macro-trace trace ops) (b/sh07-core-semantic-macro-trace trace)))
+    (is (= (core/root-syntax-id revision 0 '(def value 1) ops)
+           (b/sh07-core-root-syntax-id revision 0 '(def value 1))))))
+
+(deftest decimal-occurrence-state-preserves-scale-and-rejects-unconsumed-evidence
+  (let [ops (operations) value (java.math.BigDecimal. "1.250")
+        descriptor (b/p15-s23-c6c10-literal-scalar-descriptor value)
+        records (mapv #(hash-map :kind :decimal :decoded value :form-id % :literal-id % :token-id %) [:a :b])
+        evidence {:records {descriptor records} :next (atom {}) :cache (atom {})}
+        first-value (core/neutral-value source :revision :root [0] evidence value ops)
+        again (core/neutral-value source :revision :root [0] evidence value ops)]
+    (is (= 3 (:scale first-value)))
+    (is (= "1250" (:unscaled-value first-value)))
+    (is (identical? first-value again))
+    (is (= 1 (get @(:next evidence) descriptor)))
+    (let [error (caught #(core/decimal-evidence-complete! source evidence ops))]
+      (is (= ["C6-ORIGIN" :decimal-c2-occurrence-bijection]
+             ((juxt :id :reason) (ex-data error)))))
+    (let [second-value (core/neutral-value source :revision :root [1] evidence value ops)]
+      (is (not= (:literal-id first-value) (:literal-id second-value)))
+      (is (not= (:projection-form-id first-value) (:projection-form-id second-value)))
+      (is (= :passed (core/decimal-evidence-complete! source evidence ops))))
+    (doseq [bad [(assoc (first records) :kind :integer)
+                 (assoc (first records) :decoded (java.math.BigDecimal. "1.251")) nil]]
+      (is (= ["C6-ORIGIN" :exact-decimal-c2-evidence]
+             ((juxt :id :reason) (ex-data (caught #(core/decimal-descriptor source value bad :form ops)))))))))
+
+(deftest projection-classification-and-parameter-paths-retain-their-boundary
+  (let [ops (operations)]
+    (doseq [value [nil true 1 (java.math.BigDecimal. "1.0") 1/2 \a "text" :key 'name [] {} #{} '(value) (Object.)]]
+      (is (= (b/sh07-core-value-kind value) (core/value-kind value ops)))
+      (is (= (b/sh07-core-children value) (core/children value ops))))
+    (is (= [{:name 'a :path [2 0]} {:name 'more :path [2 4]}]
+           (core/parameter-binding-paths '[a :- Integer & more] [2] ops)))
+    (is (= {:byte-start 1 :byte-end 4}
+           (core/semantic-span {:primary {:byte-start 1 :byte-end 4 :source "ignored"}} ops)))
+    (is (= "actual.gravity" (core/source-path-from-resolution
+                              {:gravity-resolution-boundary {:authenticated-resolution-request
+                                                             {:provenance {:actual-source-path "actual.gravity"}}}} ops)))))
+
+(def ^:private lineage-input
+  {:artifact-id :authenticated-owner-id
+   :gravity-resolution-boundary
+   {:resolved-analysis {:module-contract {:namespace 'unit :profile :meta :target :jvm :effects [] :capabilities [] :safety :safe :exports ['value]}
+                        :binding-table [{:binding-id :path-specific-id :name 'value :kind :var :namespace 'unit :visibility :public}]
+                        :resolution-table [{:reference-syntax-id :syntax :symbol 'value :position :value :resolution-order :local-binding}]
+                        :alias-table [{:alias 'dep :namespace 'dependency}]
+                        :lexical-scope-graph {:scope-count 1 :edge-count 0 :status :accepted}}}
+   :sh05-macro-artifact
+   {:expanded-syntax-stream [{:form '(def value 1)}] :macro-expansion-trace []
+    :gravity-macro-boundary {:authenticated-sh04-artifact {:c2-reader-artifact
+                                                        {:source-unit-record {:bytes-hash :source-byte-hash :path "/unit.gravity"}}}}}})
+
+(deftest lineage-separates-authenticated-owner-identity-from-semantic-projection
+  (let [ops (operations) result (core/lineage lineage-input ops)
+        changed-owner (core/lineage (assoc lineage-input :artifact-id :different-authenticated-id) ops)]
+    (is (= result (b/sh07-core-lineage lineage-input)))
+    (is (= :source-byte-hash (:source-revision-id result)))
+    (is (= :authenticated-owner-id (:authenticated-sh06-artifact-id result)))
+    (is (= (:sh06-semantic-projection-id result) (:sh06-artifact-id result)))
+    (is (= (dissoc result :authenticated-sh06-artifact-id)
+           (dissoc changed-owner :authenticated-sh06-artifact-id)))
+    (doseq [changed [(assoc-in lineage-input [:sh05-macro-artifact :expanded-syntax-stream 0 :form] '(def value 2))
+                     (assoc-in lineage-input [:gravity-resolution-boundary :resolved-analysis :binding-table 0 :name] 'other)
+                     (assoc-in lineage-input [:gravity-resolution-boundary :resolved-analysis :module-contract :profile] :hosted)
+                     (assoc-in lineage-input [:sh05-macro-artifact :gravity-macro-boundary :authenticated-sh04-artifact
+                                              :c2-reader-artifact :source-unit-record :bytes-hash] :changed-source)]]
+      (is (not= (:sh06-semantic-projection-id result) (:sh06-semantic-projection-id (core/lineage changed ops)))))))
+
+(deftest fragments-preserve-binding-and-reference-order-and-reject-undeclared-aliases
+  (let [ops (operations) lineage {:source-revision-id :source :sh06-semantic-projection-id :semantic :alias-table-id :aliases}
+        trees [{:root {:form-id :root-a} :records [{:form-id :root-a :syntax-id :syntax-a}]}
+               {:root {:form-id :root-b} :records [{:form-id :root-b :syntax-id :syntax-b}]}]
+        bindings [{:binding-id :external} {:binding-id :b :definition-syntax-id :syntax-b}
+                  {:binding-id :a :definition-syntax-id :syntax-a}]
+        resolutions [{:reference-syntax-id :syntax-a :binding-id :external :resolution-order :alias-qualified-required-binding :symbol 'dep/value}
+                     {:reference-syntax-id :syntax-a :binding-id :a :resolution-order :local-binding :symbol 'value}]
+        aliases [{:alias 'dep}]
+        ordered (core/binding-order :module trees bindings ops)
+        fragments (core/fragment-manifest lineage :module trees ordered resolutions aliases ops)
+        coverage (core/fragment-coverage :module (mapcat :records trees) ordered resolutions fragments ops)
+        assembly (core/module-assembly-manifest lineage fragments ops)]
+    (is (= [:a :b :external] (mapv :binding-id ordered)))
+    (is (= [0 1] (mapv :ordinal fragments)))
+    (is (= [:a] (:local-binding-ids (first fragments))))
+    (is (= [:external] (:external-binding-ids (first fragments))))
+    (is (= ['dep] (:alias-names (first fragments))))
+    (is (= [:syntax-a :syntax-a] (:resolution-reference-syntax-ids (first fragments))))
+    (is (= [:root-a :root-b] (:covered-root-form-ids coverage) (:ordered-fragment-ids assembly)))
+    (is (= [:a :b] (:covered-local-binding-ids coverage)))
+    (is (= :source (:content-id assembly) (:source-revision-id assembly)))
+    (is (= :semantic (:module-id assembly) (:sh06-semantic-projection-id assembly)))
+    (is (= fragments (b/sh07-b13-fragment-manifest lineage :module trees ordered resolutions aliases)))
+    (is (= ["C6-VERIFY" :fragment-undeclared-alias]
+           ((juxt :id :reason) (ex-data (caught #(core/fragment-record lineage :module 0 (first trees) ordered resolutions [] ops))))))))
+
+(deftest projection-binding-input-excludes-only-the-existing-nonsemantic-envelope-fields
+  (let [ops (operations) request {:forms [{:form-id :form :value 1}] :projection-binding :old :provenance {:source-path "/a"}}
+        first-input (core/projection-binding-input request ops)]
+    (is (= first-input (b/sh07-core-projection-binding-input request)))
+    (is (= first-input (core/projection-binding-input (assoc request :projection-binding :new :provenance {:source-path "/b"}) ops)))
+    (is (not= first-input (core/projection-binding-input (assoc-in request [:forms 0 :value] 2) ops)))))
 
 (deftest module-and-source-contract-drift-reject-before-binding-publication
   ;; Real current source bytes with isolated compiler result ports. No admission.
@@ -117,7 +254,10 @@
          (is (= 2 (get-in @ctx [:reuses :sh07])))))))
 
 (deftest every-stage-operation-and-compatibility-root-invalidates-receipts
-  (let [vars (set (concat (vals (ns-publics 'gravity.checked-core)) (filter var? (vals (operations)))
+  (let [private-stages (map #(ns-resolve 'gravity.checked-core %)
+                           '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace])
+        vars (set (concat (vals (ns-publics 'gravity.checked-core)) private-stages
+                         (map seed-var projection-compatibility-names) (filter var? (vals (operations)))
                          (map seed-var '[checked-core-stage-operations sh07-core-source-path sh07-core-plan-identities
                                          sh07-core-build-binding! sh07-core-current-source-key sh07-core-current-binding!
                                          sh07-core-execute!])))]
@@ -163,6 +303,8 @@
 
 (deftest construction-roots-detect-the-new-runtime-inputs-before-owner-work
   (let [expected (set (concat (vals (ns-publics 'gravity.checked-core))
+                              (map #(ns-resolve 'gravity.checked-core %) '[source-occurrence-context projected-source-mismatch lineage-with-semantic-trace])
+                              (map seed-var projection-compatibility-names)
                               (filter var? (vals (operations)))
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input
                                               sh07-core-source-path sh07-core-plan-identities sh07-core-build-binding!

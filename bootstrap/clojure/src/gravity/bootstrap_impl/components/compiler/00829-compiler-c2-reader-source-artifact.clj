@@ -27,6 +27,27 @@
      (when reader-source-path {:reader-source-path reader-source-path
                                :authenticated-envelope-options {:source :development-current}})))
   ([source-path source-text project-context precomputed-products candidate reader-source-path invocation]
+   (compiler-c2-reader-source-artifact
+    source-path source-text project-context precomputed-products candidate
+    reader-source-path invocation standard-reader-options))
+  ([source-path source-text project-context precomputed-products candidate reader-source-path invocation reader-options]
+   (when-not (= :passed (:status (p15-s23-trusted-carrier-validation reader-options :default-only)))
+     (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                      {:missing-fields [:native-reader-options]}))
+   (when (and (reader-pure-text/options? reader-options)
+              (not= :passed
+                    (:status (p15-s23-trusted-carrier-validation
+                              {:source-path source-path :source-text source-text
+                               :project-context project-context :reader-options reader-options} :default-only))))
+     (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                      {:missing-fields [:native-pure-text-construction-input]}))
+   (when-not (or (= standard-reader-options reader-options)
+                 (and (= (assoc standard-reader-options :extension-policy (reader-pure-text/policy-id))
+                         reader-options)
+                      (nil? precomputed-products) (nil? candidate)
+                      (some? invocation) (string? reader-source-path)))
+     (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
+                      {:missing-fields [:fixed-pure-text-current-source-construction]}))
    (when invocation
      (sh03-reader-authenticated-envelope-options source-path invocation))
    (when (and invocation (nil? precomputed-products)
@@ -42,8 +63,7 @@
      (c2-reader-fail! "C2-HASH" source-path {:stage :read-source}
                       {:missing-fields [:direct-current-sh03-reader-construction]}))
    (try
-    (let [reader-options standard-reader-options
-          products
+    (let [products
           (if precomputed-products
             (apply sh03-reader-precomputed-products-verify!
              (cond-> [candidate source-path source-text project-context precomputed-products]
@@ -224,7 +244,27 @@
                        :status :partial}
           artifact (assoc artifact-base
                           :capability-based-proof capability-proof
-                          :c2-reader-results conformance)]
+                          :c2-reader-results conformance)
+          artifact
+            (if (reader-pure-text/options? reader-options)
+              (-> artifact
+                  (assoc-in [:reader-extension-policy :extensions]
+                            [{:tag 'text :handler 'sh03-reader-read-text
+                              :build-effects #{} :capabilities #{} :profiles #{:meta}
+                              :output :syntax-seed}])
+                  (assoc-in [:gravity-reader-boundary :pure-text-reconstruction-input]
+                            {:source-text source-text :project-context project-context}))
+              artifact)]
       (assoc artifact :artifact-id (c2-reader-artifact-id artifact)))
      (catch clojure.lang.ExceptionInfo ex
        (c2-reader-remap-exception! source-path ex)))))
+
+(defn reader-pure-source-artifact
+  "Construct the fixed Gravity-owned text-only variant from current source.
+  Standard constructors and the unsealed host-pure option retain their meaning."
+  [source-path source-text project-context reader-source-path]
+  (compiler-c2-reader-source-artifact
+   source-path source-text project-context nil nil reader-source-path
+   {:reader-source-path reader-source-path
+    :authenticated-envelope-options {:source :development-current}}
+   (assoc standard-reader-options :extension-policy (reader-pure-text/policy-id))))
