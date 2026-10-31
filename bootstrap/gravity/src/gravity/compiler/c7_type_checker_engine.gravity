@@ -2959,180 +2959,194 @@
 (defn sh08-lsi-path [start mode binding env]
   (sh08-lsi-path-from-seen start mode binding env #{}))
 
-(defn sh08-lsi-insertion [env node call edge types budget]
-  (let [core (get env :core) args (get call :argument-node-ids) base (+ 66 (count (get core :function-records)))]
-    (if (> base budget) {:status :rejected :reason :loop-type-work-limit :work-count base}
-      (if (if (sh08-sse-call-ids? node call)
-            (if (vector? args) (if (= 2 (count args))
-              (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false) false)
-        (let [validation (sh08-syin-validate-types [(get types (get args 0) :gravity.type/unknown) (get types (get args 1) :gravity.type/unknown)])
-              work base]
-          (if (= :accepted (get validation :status))
-            (let [header (sh08-pl-source core node call edge (get env :nodes) (get env :bindings) types (get core :module) validation)]
-              (if (if (map? header) (if (sh08-ksin-call-forms? node (get env :nodes) (get env :forms))
+(defn sh08-lsi-insertion [env node call edge types]
+  (let [core (get env :core) args (get call :argument-node-ids)]
+    (if (if (sh08-sse-call-ids? node call)
+          (if (vector? args) (if (= 2 (count args))
+            (if (vector? (get node :children)) (= 3 (count (get node :children))) false) false) false) false)
+      (let [validation (sh08-syin-validate-types [(get types (get args 0) :gravity.type/unknown)
+                                                   (get types (get args 1) :gravity.type/unknown)])]
+        (if (= :accepted (get validation :status))
+          (let [header (sh08-pl-source core node call edge (get env :nodes) (get env :bindings)
+                                       types (get core :module) validation)]
+            (if (if (map? header)
+                  (if (sh08-ksin-call-forms? node (get env :nodes) (get env :forms))
                     (= {:operator-child-index 0 :argument-count 2 :argument-child-indexes [1 2]
-                        :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} (get node :attributes)) false) false)
-                (let [descriptor (sh08-pl-finish header)]
-                  {:status :accepted :work-count work :type (get descriptor :result-type) :descriptor descriptor})
-                {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
-            {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}))
-        {:status :rejected :reason :unsupported-loop-member-grounding :work-count base}))))
+                        :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                       (get node :attributes)) false) false)
+              (let [descriptor (sh08-pl-finish header)]
+                {:status :accepted :type (get descriptor :result-type) :descriptor descriptor})
+              {:status :rejected :reason :unsupported-loop-member-grounding}))
+          {:status :rejected :reason :unsupported-loop-member-grounding}))
+      {:status :rejected :reason :unsupported-loop-member-grounding})))
 
-(defn sh08-lsi-ground [transfer coordinate binding env budget]
+(defn sh08-lsi-ground [transfer coordinate binding env]
   (let [argument (get (get transfer :argument-node-ids) coordinate)
-        result (sh08-lsi-path argument :result binding env budget)
+        result (sh08-lsi-path argument :result binding env)
         node (get (get env :nodes) (get result :leaf))
         call (get (get env :calls) (get result :leaf))
-        edge (get (get env :edges) (get result :leaf)) args (get call :argument-node-ids) work (get result :work-count)]
+        edge (get (get env :edges) (get result :leaf))
+        args (get call :argument-node-ids)]
     (if (= :accepted (get result :status))
       (if (if (vector? args) (= 2 (count args)) false)
-        (let [receiver (sh08-lsi-path (get args 0) :receiver binding env (- budget work))
-              used (+ work (get receiver :work-count))]
+        (let [receiver (sh08-lsi-path (get args 0) :receiver binding env)]
           (if (= :accepted (get receiver :status))
-            (let [member (sh08-lsi-path (get args 1) :member binding env (- budget used))
-                  used (+ used (get member :work-count))]
+            (let [member (sh08-lsi-path (get args 1) :member binding env)]
               (if (= :accepted (get member :status))
-                (let [warm (sh08-lsi-insertion env node call edge (get env :types) (- budget used))
-                      used (+ used (get warm :work-count 0)) descriptor (get warm :descriptor)
-                      comparison (+ 2 (if (map? descriptor) (count descriptor) 0))]
-                  (if (> (+ used comparison) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ used comparison)}
-                    (if (= :accepted (get warm :status))
-                      (let [actual (get (get env :types) (get call :operator-node-id)) used (+ used comparison)
-                            coherent (if (map? actual) (if (= (count descriptor) (count actual))
-                              (if (loop [fields (keys actual)] (if (= 0 (count fields)) true
-                                    (if (keyword? (first fields)) (recur (rest fields)) false)))
-                                (if (= :sh08-symbol-set-insertion-v2 (get actual :version))
-                                  (if (= descriptor actual) (sh08-syc-type? (get warm :type)) false) false) false) false) false)]
-                        (if coherent
-                          (let [empty-type {:kind :gravity.type/set :shape :literal :element-types []}
-                                cold-types (assoc (assoc (get env :types) (get args 0) empty-type) (get args 1) :gravity.type/symbol)
-                                cold (sh08-lsi-insertion env node call edge cold-types (- budget used))
-                                total (+ used (get cold :work-count 0) 10) cold-descriptor (get cold :descriptor)]
-                            (if (> total budget) {:status :rejected :reason :loop-type-work-limit :work-count total}
-                              (if (if (= :accepted (get cold :status))
-                                    (if (= :sh08-symbol-set-insertion-v2 (get cold-descriptor :version)) (= :normal (get cold-descriptor :application)) false) false)
-                                {:status :accepted :work-count total :grounding
-                                 {:schema :gravity/sh08-loop-symbol-set-grounding-v2
-                                  :transfer-node-id (get transfer :recur-core-node-id) :argument-node-id argument
-                                  :producer-node-id (get node :node-id) :receiver-path (get receiver :path)
-                                  :member-path (get member :path) :result-path (get result :path)
-                                  :receiver-type empty-type :member-type :gravity.type/symbol :result-type (get cold-descriptor :result-type)}}
-                                {:status :rejected :reason :unsupported-loop-member-grounding :work-count total})))
-                          {:status :rejected :reason :unsupported-loop-member-grounding :work-count used}))
-                      {:status :rejected :reason (if (= :loop-type-work-limit (get warm :reason)) :loop-type-work-limit :unsupported-loop-member-grounding) :work-count used})))
-                (assoc member :work-count used)))
-            (assoc receiver :work-count used)))
-        {:status :rejected :reason :unsupported-loop-member-grounding :work-count work}) result)))
+                (let [warm (sh08-lsi-insertion env node call edge (get env :types))
+                      descriptor (get warm :descriptor)
+                      actual (get (get env :types) (get call :operator-node-id))
+                      coherent (if (map? actual)
+                                 (if (= (count descriptor) (count actual))
+                                   (if (loop [fields (keys actual)]
+                                         (if (= 0 (count fields)) true
+                                           (if (keyword? (first fields))
+                                             (recur (rest fields)) false)))
+                                     (if (= :sh08-symbol-set-insertion-v2 (get actual :version))
+                                       (if (= descriptor actual) (sh08-syc-type? (get warm :type)) false)
+                                       false)
+                                     false)
+                                   false)
+                                 false)]
+                  (if (if (= :accepted (get warm :status)) coherent false)
+                    (let [empty-type {:kind :gravity.type/set :shape :literal :element-types []}
+                          cold-types (assoc (assoc (get env :types) (get args 0) empty-type)
+                                            (get args 1) :gravity.type/symbol)
+                          cold (sh08-lsi-insertion env node call edge cold-types)
+                          cold-descriptor (get cold :descriptor)]
+                      (if (if (= :accepted (get cold :status))
+                            (if (= :sh08-symbol-set-insertion-v2 (get cold-descriptor :version))
+                              (= :normal (get cold-descriptor :application)) false) false)
+                        {:status :accepted :grounding
+                         {:schema :gravity/sh08-loop-symbol-set-grounding-v2
+                          :transfer-node-id (get transfer :recur-core-node-id)
+                          :argument-node-id argument :producer-node-id (get node :node-id)
+                          :receiver-path (get receiver :path) :member-path (get member :path)
+                          :result-path (get result :path) :receiver-type empty-type
+                          :member-type :gravity.type/symbol :result-type (get cold-descriptor :result-type)}}
+                        {:status :rejected :reason :unsupported-loop-member-grounding}))
+                    {:status :rejected :reason :unsupported-loop-member-grounding}))
+                member))
+            receiver))
+        {:status :rejected :reason :unsupported-loop-member-grounding})
+      result)))
 
-(defn sh08-lsi-entry-index [transfers types budget]
-  (loop [remaining transfers out {} work 0]
-    (if (= 0 (count remaining)) {:status :accepted :index out :work-count work}
-      (let [transfer (first remaining) args (get transfer :argument-node-ids)
-            cost (+ 2 (if (vector? args) (count args) 0)) target (get transfer :target-id)]
-        (if (> (+ work cost) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work cost)}
-          (if (if (vector? args) (sh08-lsi-id? target) false)
-            (let [actual (loop [ids args values []]
-                           (if (= 0 (count ids)) values
-                             (recur (rest ids) (conj values (if (sh08-lsi-id? (first ids))
-                               (get types (first ids) :gravity.type/unknown) :gravity.type/unknown)))))
-                  normal (loop [values actual] (if (= 0 (count values)) true
-                           (if (= :gravity.type/never (first values)) false (recur (rest values)))))
-                  known (loop [values actual] (if (= 0 (count values)) true
+(defn sh08-lsi-entry-index [transfers types]
+  (loop [remaining transfers out {}]
+    (if (= 0 (count remaining)) {:status :accepted :index out}
+      (let [transfer (first remaining) args (get transfer :argument-node-ids) target (get transfer :target-id)]
+        (if (if (vector? args) (sh08-lsi-id? target) false)
+          (let [actual (loop [ids args values []]
+                         (if (= 0 (count ids)) values
+                           (recur (rest ids)
+                                  (conj values (if (sh08-lsi-id? (first ids))
+                                                 (get types (first ids) :gravity.type/unknown)
+                                                 :gravity.type/unknown)))))
+                normal (loop [values actual]
+                         (if (= 0 (count values)) true
+                           (if (= :gravity.type/never (first values)) false
+                             (recur (rest values)))))
+                known (loop [values actual]
+                        (if (= 0 (count values)) true
                           (if (= :gravity.type/unknown (first values)) false
                             (if (= nil (first values)) false (recur (rest values))))))]
-              (recur (rest remaining) (assoc out target (conj (get out target [])
-                {:transfer transfer :types actual :normal? normal :known? known})) (+ work cost)))
-            {:status :rejected :reason :incoherent-loop-member-source :work-count (+ work cost)}))))))
+            (recur (rest remaining)
+                   (assoc out target
+                     (conj (get out target [])
+                           {:transfer transfer :types actual :normal? normal :known? known}))))
+          {:status :rejected :reason :incoherent-loop-member-source})))))
 
-(defn sh08-lsi-slot [record target entries env budget]
+(defn sh08-lsi-slot [record target entries env]
   (let [binding (get record :binding-id) coordinate (get record :ordinal)
         empty-type (get (get env :types) (get record :initializer-node-id))
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/symbol}
-        initializer (sh08-lsi-path (get record :initializer-node-id) :initializer binding env budget)]
+        initializer (sh08-lsi-path (get record :initializer-node-id) :initializer binding env)]
     (if (if (= :accepted (get initializer :status)) (= false (= :slot (get initializer :origin))) false)
-      (loop [remaining entries witness nil evidence [] pending false conflict nil work (get initializer :work-count)]
-      (if (= 0 (count remaining))
-        (if (if (map? witness) (= false pending) false)
-          (if (= conflict nil)
-            (if (> (+ work 8) budget)
-              {:status :rejected :reason :loop-type-work-limit :work-count (+ work 8)}
-              (let [invariant {:schema :gravity/sh08-loop-symbol-set-invariant-v2 :target-id (get target :target-id)
-              :binding-id binding :initializer-node-id (get record :initializer-node-id)
-              :initializer-type empty-type :invariant-type carrier :grounding witness :entries evidence}
-                    measured (sh08-pc-evidence-work invariant (- budget work 8))
-                    total (+ work 8 (* 2 (get measured :work-count)))]
-                (if (if (= :accepted (get measured :status)) (<= total budget) false)
-                  {:status :accepted :work-count total :invariant invariant}
-                  {:status :rejected :reason :loop-type-work-limit :work-count total})))
-            {:status :rejected :reason :loop-recur-slot-type-mismatch :core-node-id (get conflict :argument-node-id)
-             :parameter-binding-id binding :expected carrier :actual (get conflict :argument-type) :work-count work})
-          {:status :accepted :work-count work})
-        (if (> (+ work 2) budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 2)}
-          (let [entry (first remaining) transfer (get entry :transfer) actual (get (get entry :types) coordinate)
-                normal (get entry :normal?)
+      (loop [remaining entries witness nil evidence [] pending false conflict nil]
+        (if (= 0 (count remaining))
+          (if (if (map? witness) (= false pending) false)
+            (if (= conflict nil)
+              (let [invariant {:schema :gravity/sh08-loop-symbol-set-invariant-v2
+                               :target-id (get target :target-id) :binding-id binding
+                               :initializer-node-id (get record :initializer-node-id)
+                               :initializer-type empty-type :invariant-type carrier
+                               :grounding witness :entries evidence}
+                    measured (sh08-pc-evidence-work invariant)]
+                (if (= :accepted (get measured :status))
+                  {:status :accepted :invariant invariant}
+                  measured))
+              {:status :rejected :reason :loop-recur-slot-type-mismatch
+               :core-node-id (get conflict :argument-node-id) :parameter-binding-id binding
+               :expected carrier :actual (get conflict :argument-type)})
+            {:status :accepted})
+          (let [entry (first remaining) transfer (get entry :transfer)
+                actual (get (get entry :types) coordinate) normal (get entry :normal?)
                 compatible (if (= actual :gravity.type/never) true
                              (if (sh08-lsi-empty? actual) true (sh08-syc-type? actual)))
-                proof (if (if (= witness nil) (if normal (if (get entry :known?) (sh08-syc-type? actual) false) false) false)
-                        (sh08-lsi-ground transfer coordinate binding env (- budget work 2))
-                        {:status :accepted :work-count 0})
-                used (+ work 2 (get proof :work-count))
+                proof (if (if (= witness nil) (if normal (if (get entry :known?)
+                                                           (sh08-syc-type? actual) false) false) false)
+                        (sh08-lsi-ground transfer coordinate binding env)
+                        {:status :accepted})
                 row {:transfer-node-id (get transfer :recur-core-node-id)
-                     :argument-node-id (get (get transfer :argument-node-ids) coordinate) :argument-type actual
-                     :normal-transfer? normal :compatibility (if (= false normal) :existing-noninvoked-transfer-rules
+                     :argument-node-id (get (get transfer :argument-node-ids) coordinate)
+                     :argument-type actual :normal-transfer? normal
+                     :compatibility (if (= false normal) :existing-noninvoked-transfer-rules
                        (if (sh08-lsi-empty? actual) :empty-set-to-symbol-carrier :exact-carrier))}]
-            (if (if (= :rejected (get proof :status)) (= :loop-type-work-limit (get proof :reason)) false)
-              (assoc proof :work-count used)
-              (recur (rest remaining) (if (map? (get proof :grounding)) (get proof :grounding) witness)
-                (conj evidence row) (if (= false (get entry :known?)) true pending)
-                (if (if normal (if (get entry :known?) (= false compatible) false) false) row conflict) used))))))
-      {:status :accepted :work-count (get initializer :work-count)})))
+            (if (= :accepted (get proof :status))
+              (recur (rest remaining) (if (map? (get proof :grounding))
+                                        (get proof :grounding) witness)
+                     (conj evidence row) (if (= false (get entry :known?)) true pending)
+                     (if (if normal (if (get entry :known?) (= false compatible) false) false)
+                       row conflict))
+              proof))))
+      {:status :accepted})))
 
-(defn sh08-lsi-solve [core types source budget]
+(defn sh08-lsi-solve [core types source]
   (if (= 0 (count (get core :loop-bindings)))
-    {:status :accepted :invariants {} :work-count 0}
+    {:status :accepted :invariants {}}
     (if (if (map? (get source :forms)) (map? (get source :bindings)) false)
-    (let [aliases (sh08-lsi-index (get core :lexical-bindings []) :binding-id budget)
-          calls (sh08-lsi-index (get core :calls []) :core-node-id (- budget (get aliases :work-count)))
-          edges (sh08-lsi-index (get core :call-edges []) :call-core-node-id (- budget (get aliases :work-count) (get calls :work-count)))
-          targets (sh08-lsi-index (get core :recur-targets []) :owner-core-node-id (- budget (get aliases :work-count) (get calls :work-count) (get edges :work-count)))
-          entries (sh08-lsi-entry-index (get core :recur-transfers []) types
-                    (- budget (get aliases :work-count) (get calls :work-count) (get edges :work-count) (get targets :work-count)))
-          base (+ (get aliases :work-count) (get calls :work-count) (get edges :work-count) (get targets :work-count) (get entries :work-count))
-          env {:core core :types types :nodes (get source :nodes) :forms (get source :forms) :bindings (get source :bindings)
-               :aliases (get aliases :index) :calls (get calls :index) :edges (get edges :index)}]
-      (if (if (= :accepted (get aliases :status)) (if (= :accepted (get calls :status))
-            (if (= :accepted (get edges :status)) (if (= :accepted (get targets :status)) (= :accepted (get entries :status)) false) false) false) false)
-        (loop [remaining (get core :loop-bindings) out {} work base]
-          (if (= 0 (count remaining))
-            (let [reads (if (if (= true (get source :warm?)) (> (count out) 0) false)
-                          (sh08-lsi-reads core types out (- budget work)) {:status :accepted :work-count 0})]
-              (if (= :accepted (get reads :status))
-                {:status :accepted :invariants out :work-count (+ work (get reads :work-count))}
-                (assoc reads :work-count (+ work (get reads :work-count)))))
-            (if (>= work budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 1)}
+      (let [aliases (sh08-lsi-index (get core :lexical-bindings []) :binding-id)
+            calls (sh08-lsi-index (get core :calls []) :core-node-id)
+            edges (sh08-lsi-index (get core :call-edges []) :call-core-node-id)
+            targets (sh08-lsi-index (get core :recur-targets []) :owner-core-node-id)
+            entries (sh08-lsi-entry-index (get core :recur-transfers []) types)
+            env {:core core :types types :nodes (get source :nodes) :forms (get source :forms)
+                 :bindings (get source :bindings) :aliases aliases :calls calls :edges edges}]
+        (if (if (= :accepted (get aliases :status))
+              (if (= :accepted (get calls :status))
+                (if (= :accepted (get edges :status))
+                  (if (= :accepted (get targets :status)) (= :accepted (get entries :status)) false)
+                  false) false) false)
+          (loop [remaining (get core :loop-bindings) out {}]
+            (if (= 0 (count remaining))
+              (if (if (= true (get source :warm?)) (> (count out) 0) false)
+                (let [reads (sh08-lsi-reads core types out)]
+                  (if (= :accepted (get reads :status)) reads reads))
+                {:status :accepted :invariants out})
               (let [record (first remaining) type (get types (get record :initializer-node-id))
                     target (get (get targets :index) (get record :loop-core-node-id))
                     checked (if (sh08-lsi-empty? type)
-                              (sh08-lsi-slot record target (get (get entries :index) (get target :target-id) []) env (- budget work 1))
-                              {:status :accepted :work-count 0}) total (+ work 1 (get checked :work-count))]
+                              (sh08-lsi-slot record target
+                                             (get (get entries :index) (get target :target-id) []) env)
+                              {:status :accepted})]
                 (if (= :accepted (get checked :status))
-                  (recur (rest remaining) (if (map? (get checked :invariant))
-                    (assoc out (get record :binding-id) (get checked :invariant)) out) total)
-                  (assoc checked :work-count total))))))
-        {:status :rejected :reason (if (> base budget) :loop-type-work-limit :incoherent-loop-member-source) :work-count base}))
-    {:status :accepted :invariants {} :work-count 0})))
+                  (recur (rest remaining)
+                         (if (map? (get checked :invariant))
+                           (assoc out (get record :binding-id) (get checked :invariant)) out))
+                  checked))))
+          {:status :rejected :reason :incoherent-loop-member-source}))
+      {:status :accepted :invariants {}})))
 
-(defn sh08-lsi-reads [core types invariants budget]
-  (loop [remaining (get core :nodes) work 0]
-    (if (= 0 (count remaining)) {:status :accepted :work-count work}
-      (if (>= work budget) {:status :rejected :reason :loop-type-work-limit :work-count (+ work 1)}
-        (let [node (first remaining) binding (get (get node :attributes) :binding-id)
-              invariant (if (= :reference (get node :core-form))
-                          (if (sh08-lsi-id? binding) (get invariants binding) nil) nil)]
-          (if (if (map? invariant)
-                (= false (sh08-syc-type? (get types (get node :node-id)))) false)
-            {:status :rejected :reason :incoherent-loop-member-reference :work-count (+ work 1)}
-            (recur (rest remaining) (+ work 1))))))))
+(defn sh08-lsi-reads [core types invariants]
+  (loop [remaining (get core :nodes)]
+    (if (= 0 (count remaining)) {:status :accepted}
+      (let [node (first remaining) binding (get (get node :attributes) :binding-id)
+            invariant (if (= :reference (get node :core-form))
+                        (if (sh08-lsi-id? binding) (get invariants binding) nil) nil)]
+        (if (if (map? invariant)
+              (= false (sh08-syc-type? (get types (get node :node-id)))) false)
+          {:status :rejected :reason :incoherent-loop-member-reference}
+          (recur (rest remaining)))))))
 
 (defn sh08-lsi-target-bindings [target invariants]
   (loop [remaining (get target :binding-ids) out []]
@@ -3389,55 +3403,69 @@
               (if (= :gravity.type/never (first remaining)) :gravity.type/never
                 (recur (rest remaining)))))))) :gravity.type/unknown))
 
-(defn sh08-ft-loop-kernel-failure [reason node expected actual work]
-  {:status :rejected :issues [{:rule "C7-VERIFY" :reason reason :core-node-id node :expected expected :actual actual}]
-   :work-count work :work-unit :node-or-record-visit})
+(defn sh08-ft-loop-kernel-failure [reason node expected actual]
+  {:status :rejected
+   :issues [{:rule "C7-VERIFY" :reason reason :core-node-id node
+             :expected expected :actual actual}]})
 
-(defn sh08-ft-loop-kernel-work-limit [work]
-  {:status :rejected :issues [{:rule "C7-GENERIC" :reason :loop-type-work-limit :core-node-id nil
-                              :expected :remaining-loop-type-visits :actual 0}]
-   :work-count work :work-unit :node-or-record-visit})
-
-(defn sh08-ft-loop-kernel-index-records [records field budget]
-  (loop [remaining records index {} work 0]
-    (if (= 0 (count remaining)) {:status :accepted :index index :work-count work}
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
+(defn sh08-ft-loop-kernel-index-records [records field]
+  (if (vector? records)
+    (loop [remaining records index {}]
+      (if (= 0 (count remaining))
+        {:status :accepted :index index}
         (let [record (first remaining) id (get record field)]
-          (if (if (map? record) (if (= id nil) false (= false (contains? index id))) false)
-            (recur (rest remaining) (assoc index id record) (+ work 1))
-            (sh08-ft-loop-kernel-failure :invalid-loop-record-index nil :unique-nonmissing-record-key field (+ work 1))))))))
+          (if (if (map? record)
+                (if (= id nil) false (= false (contains? index id))) false)
+            (recur (rest remaining) (assoc index id record))
+            (sh08-ft-loop-kernel-failure :invalid-loop-record-index
+              nil :unique-nonmissing-record-key field id)))))
+    (sh08-ft-loop-kernel-failure :invalid-loop-record-index nil :vector records)))
 
-(defn sh08-ft-loop-kernel-parent-index [records nodes budget]
-  (loop [remaining records pending [] owner nil ordinal 0 parents {} target-count 0 transfer-count 0 work 0]
-    (if (if (= 0 (count remaining)) (= 0 (count pending)) false)
-      {:status :accepted :index parents :target-count target-count :transfer-count transfer-count :work-count work}
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
+(defn sh08-ft-loop-kernel-parent-index [records nodes]
+  (if (vector? records)
+    (loop [remaining records pending [] owner nil ordinal 0 parents {}
+           target-count 0 transfer-count 0]
+      (if (if (= 0 (count remaining)) (= 0 (count pending)) false)
+        {:status :accepted :index parents :target-count target-count
+         :transfer-count transfer-count}
         (if (= 0 (count pending))
           (let [node (first remaining)]
             (if (vector? (get node :children))
-              (recur (rest remaining) (get node :children) (get node :node-id) 0 parents
-                     (+ target-count (if (contains? #{:fn :loop} (get node :core-form)) 1 0))
-                     (+ transfer-count (if (= :recur (get node :core-form)) 1 0)) (+ work 1))
-              (sh08-ft-loop-kernel-failure :invalid-loop-core-children (get node :node-id) :vector (get node :children) (+ work 1))))
+              (recur (rest remaining) (get node :children) (get node :node-id) 0
+                parents (+ target-count (if (contains? #{:fn :loop} (get node :core-form)) 1 0))
+                (+ transfer-count (if (= :recur (get node :core-form)) 1 0)))
+              (sh08-ft-loop-kernel-failure :invalid-loop-core-children
+                (get node :node-id) :vector (get node :children))))
           (let [id (first pending)]
             (if (if (contains? nodes id) (= false (contains? parents id)) false)
-              (recur remaining (rest pending) owner (+ ordinal 1) (assoc parents id {:owner owner :ordinal ordinal}) target-count transfer-count (+ work 1))
-              (sh08-ft-loop-kernel-failure :invalid-loop-parent-edge id :unique-existing-child owner (+ work 1)))))))))
+              (recur remaining (rest pending) owner (+ ordinal 1)
+                (assoc parents id {:owner owner :ordinal ordinal})
+                target-count transfer-count)
+              (sh08-ft-loop-kernel-failure :invalid-loop-parent-edge
+                id :unique-existing-child owner))))))
+    (sh08-ft-loop-kernel-failure :invalid-loop-core-children nil :vector records)))
 
-(defn sh08-ft-loop-kernel-nearest-target [id nodes parents owners budget]
-  (loop [current id seen #{} work 0]
+(defn sh08-ft-loop-kernel-nearest-target [id nodes parents owners]
+  (loop [current id seen #{}]
     (let [edge (get parents current)]
-      (if (= edge nil) {:status :accepted :target nil :work-count work}
-        (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-          (if (contains? seen current) (sh08-ft-loop-kernel-failure :cyclic-loop-parent-edge current :acyclic-core nil work)
-            (let [owner (get nodes (get edge :owner)) kind (get owner :core-form)
-                  body (get (get owner :attributes) :body-child-indexes)
-                  target (get owners (get owner :node-id))]
-              (if (if (= kind :fn) true
-                    (if (= kind :loop) (if (vector? body) (contains? (set body) (get edge :ordinal)) false) false))
-                (if (map? target) {:status :accepted :target target :work-count (+ work 1)}
-                  (sh08-ft-loop-kernel-failure :missing-nearest-recur-target (get owner :node-id) :original-target-record nil (+ work 1)))
-                (recur (get owner :node-id) (conj seen current) (+ work 1))))))))))
+      (if (= edge nil)
+        {:status :accepted :target nil}
+        (if (contains? seen current)
+          (sh08-ft-loop-kernel-failure :cyclic-loop-parent-edge current :acyclic-core nil current)
+          (let [owner (get nodes (get edge :owner))
+                kind (get owner :core-form)
+                body (get (get owner :attributes) :body-child-indexes)
+                target (get owners (get owner :node-id))]
+            (if (if (= kind :fn) true
+                  (if (= kind :loop)
+                    (if (vector? body)
+                      (contains? (set body) (get edge :ordinal)) false)
+                    false))
+              (if (map? target)
+                {:status :accepted :target target}
+                (sh08-ft-loop-kernel-failure :missing-nearest-recur-target
+                  (get owner :node-id) :original-target-record nil))
+              (recur (get owner :node-id) (conj seen current)))))))))
 
 (defn sh08-ft-loop-kernel-ordered-children? [node]
   (let [children (get node :children) order (get (get node :evaluation) :order)]
@@ -3445,35 +3473,44 @@
       (if (= (count children) (count order))
         (loop [index 0]
           (if (= index (count children)) true
-            (if (= [(get children index) index] [(get (get order index) :core-node-id) (get (get order index) :index)])
-              (recur (+ index 1)) false))) false) false)))
+            (if (= [(get children index) index]
+                   [(get (get order index) :core-node-id)
+                    (get (get order index) :index)])
+              (recur (+ index 1)) false)))
+        false)
+      false)))
 
-(defn sh08-ft-loop-kernel-prepare [core budget]
+(defn sh08-ft-loop-kernel-prepare [core]
   (let [fields [:nodes :loop-bindings :recur-targets :recur-transfers :binding-table]
         key-fields [:node-id :binding-id :target-id :recur-core-node-id :binding-id]]
-    (loop [fields fields key-fields key-fields indexes [] work 0]
+    (loop [fields fields key-fields key-fields indexes []]
       (if (= 0 (count fields))
-        (let [nodes (get indexes 0) targets (get indexes 2)
-              owners (sh08-ft-loop-kernel-index-records (loop [ids (keys targets) out []]
-                                     (if (= 0 (count ids)) out
-                                       (recur (rest ids) (conj out (get targets (first ids)))))) :owner-core-node-id (- budget work))
+        (let [nodes (get indexes 0)
+              targets (get indexes 2)
+              owner-records (loop [ids (keys targets) out []]
+                              (if (= 0 (count ids)) out
+                                (recur (rest ids)
+                                  (conj out (get targets (first ids))))))
+              owners (sh08-ft-loop-kernel-index-records owner-records :owner-core-node-id)
               parents (if (= :accepted (get owners :status))
-                        (sh08-ft-loop-kernel-parent-index (get core :nodes) nodes (- budget work (get owners :work-count))) owners)]
+                        (sh08-ft-loop-kernel-parent-index (get core :nodes) nodes)
+                        owners)]
           (if (= :accepted (get parents :status))
-            (if (= [(count targets) (count (get indexes 3))] [(get parents :target-count) (get parents :transfer-count)])
-            {:status :accepted :nodes nodes :bindings (get indexes 1) :source-bindings (get indexes 4) :targets targets :owners (get owners :index)
-             :transfers (get indexes 3) :parents (get parents :index)
-             :work-count (+ work (get owners :work-count) (get parents :work-count))}
-             (sh08-ft-loop-kernel-failure :incomplete-loop-control-coverage nil :all-target-and-transfer-nodes nil
-                      (+ work (get owners :work-count) (get parents :work-count))))
-            (assoc parents :work-count (+ work (get owners :work-count) (if (= :accepted (get owners :status)) (get parents :work-count) 0)))))
-        (let [records (get core (first fields))]
-          (if (if (vector? records) (<= (count records) 65536) false)
-            (let [indexed (sh08-ft-loop-kernel-index-records records (first key-fields) (- budget work))]
-              (if (= :accepted (get indexed :status))
-                (recur (rest fields) (rest key-fields) (conj indexes (get indexed :index)) (+ work (get indexed :work-count)))
-                (assoc indexed :work-count (+ work (get indexed :work-count)))))
-            (sh08-ft-loop-kernel-failure :invalid-loop-core-table nil :bounded-vector (first fields) work)))))))
+            (if (= [(count targets) (count (get indexes 3))]
+                   [(get parents :target-count) (get parents :transfer-count)])
+              {:status :accepted :nodes nodes :bindings (get indexes 1)
+               :source-bindings (get indexes 4) :targets targets
+               :owners (get owners :index) :transfers (get indexes 3)
+               :parents (get parents :index)}
+              (sh08-ft-loop-kernel-failure :incomplete-loop-control-coverage
+                nil :all-target-and-transfer-nodes nil))
+            parents))
+        (let [records (get core (first fields))
+              indexed (sh08-ft-loop-kernel-index-records records (first key-fields))]
+          (if (= :accepted (get indexed :status))
+            (recur (rest fields) (rest key-fields)
+              (conj indexes (get indexed :index)))
+            indexed))))))
 
 (defn sh08-ft-loop-kernel-target-shape? [target node]
   (if (if (map? target) (if (vector? (get target :binding-ids)) (map? node) false) false)
@@ -3495,225 +3532,360 @@
                           (get attrs :body-child-indexes) (get attrs :body-count) (get attrs :result-policy)
                           (get (get node :evaluation) :kind)]) false) false) false) false)) false) false) false)) false))
 
-(defn sh08-ft-loop-kernel-initializer-visible? [root nodes all-slots prior budget]
-  (loop [pending [root] seen #{} work 0]
-    (if (= 0 (count pending)) {:status :accepted :work-count work}
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-        (let [id (first pending) node (get nodes id) binding (get (get node :attributes) :binding-id)]
-          (if (contains? seen id) (sh08-ft-loop-kernel-failure :cyclic-loop-initializer id :tree nil work)
-            (if (if (= :reference (get node :core-form))
-                  (if (contains? all-slots binding) (= false (contains? prior binding)) false) false)
-              (sh08-ft-loop-kernel-failure :loop-initializer-binding-visibility id :prior-loop-bindings binding (+ work 1))
-              (recur (sh08-ft-loop-kernel-append (vec (rest pending)) (get node :children)) (conj seen id) (+ work 1)))))))))
+(defn sh08-ft-loop-kernel-initializer-visible? [root nodes all-slots prior]
+  (loop [pending [root] seen #{}]
+    (if (= 0 (count pending))
+      {:status :accepted}
+      (let [id (first pending) node (get nodes id)
+            binding (get (get node :attributes) :binding-id)]
+        (if (contains? seen id)
+          (sh08-ft-loop-kernel-failure :cyclic-loop-initializer id :tree nil id)
+          (if (if (= :reference (get node :core-form))
+                (if (contains? all-slots binding)
+                  (= false (contains? prior binding)) false)
+                false)
+            (sh08-ft-loop-kernel-failure :loop-initializer-binding-visibility
+              id :prior-loop-bindings binding)
+            (recur (sh08-ft-loop-kernel-append
+                     (vec (rest pending)) (get node :children))
+              (conj seen id))))))))
 
-(defn sh08-ft-loop-kernel-loop-slots [target node records nodes source-bindings types bindings budget]
-  (loop [ids (get target :binding-ids) ordinal 0 prior [] out bindings slots [] constraints [] work 0]
-    (if (= 0 (count ids)) {:status :accepted :bindings out :slots slots :constraints constraints :work-count work}
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-        (let [id (first ids) record (get records id) binding (get source-bindings id) initializer (get nodes (get record :initializer-node-id))
-              type (get types (get initializer :node-id) :gravity.type/unknown)]
-          (if (if (map? record)
-                (= [(get node :node-id) ordinal id prior :immutable (get (get node :children) ordinal)
-                    (get (get initializer :source) :form-id) (get (get initializer :source) :syntax-id) (get initializer :binding-context)
-                    (get binding :binding-id) (get binding :name) (get binding :scope-id) (get binding :definition-syntax-id)]
-                   [(get record :loop-core-node-id) (get record :ordinal) (get record :binding-id) (get record :visible-prior-binding-ids)
-                    (get record :mutability) (get record :initializer-node-id) (get record :initializer-form-id)
-                    (get record :initializer-syntax-id) (get record :initializer-scope-id)
-                    id (get record :name) (get record :binding-scope-id) (get record :definition-syntax-id)]) false)
-            (let [visible (sh08-ft-loop-kernel-initializer-visible? (get initializer :node-id) nodes (set (get target :binding-ids)) (set prior) (- budget work 1))]
-              (if (= :accepted (get visible :status))
-                (recur (rest ids) (+ ordinal 1) (conj prior id) (assoc out id type) (conj slots type)
-                  (conj constraints {:kind :loop-slot-type :binding-id id :initializer-node-id (get initializer :node-id)
-                    :type type :source-loop-binding record :source-target target :status (if (sh08-ft-loop-kernel-known? type) :solved :pending)})
-                  (+ work 1 (get visible :work-count)))
-                (assoc visible :work-count (+ work 1 (get visible :work-count)))))
-            (sh08-ft-loop-kernel-failure :incoherent-loop-slot (get node :node-id) :original-sequential-initializer record (+ work 1))))))))
+(defn sh08-ft-loop-kernel-loop-slots
+  [target node records nodes source-bindings types bindings]
+  (loop [ids (get target :binding-ids) ordinal 0 prior [] out bindings
+         slots [] constraints []]
+    (if (= 0 (count ids))
+      {:status :accepted :bindings out :slots slots :constraints constraints}
+      (let [id (first ids)
+            record (get records id)
+            binding (get source-bindings id)
+            initializer (get nodes (get record :initializer-node-id))
+            type (get types (get initializer :node-id) :gravity.type/unknown)]
+        (if (if (map? record)
+              (= [(get node :node-id) ordinal id prior :immutable
+                  (get (get node :children) ordinal)
+                  (get (get initializer :source) :form-id)
+                  (get (get initializer :source) :syntax-id)
+                  (get initializer :binding-context)
+                  (get binding :binding-id) (get binding :name)
+                  (get binding :scope-id) (get binding :definition-syntax-id)]
+                 [(get record :loop-core-node-id) (get record :ordinal)
+                  (get record :binding-id)
+                  (get record :visible-prior-binding-ids)
+                  (get record :mutability) (get record :initializer-node-id)
+                  (get record :initializer-form-id)
+                  (get record :initializer-syntax-id)
+                  (get record :initializer-scope-id) id
+                  (get record :name) (get record :binding-scope-id)
+                  (get record :definition-syntax-id)])
+              false)
+          (let [visible (sh08-ft-loop-kernel-initializer-visible?
+                         (get initializer :node-id) nodes
+                         (set (get target :binding-ids)) (set prior))]
+            (if (= :accepted (get visible :status))
+              (recur (rest ids) (+ ordinal 1) (conj prior id)
+                (assoc out id type) (conj slots type)
+                (conj constraints
+                  {:kind :loop-slot-type :binding-id id
+                   :initializer-node-id (get initializer :node-id) :type type
+                   :source-loop-binding record :source-target target
+                   :status (if (sh08-ft-loop-kernel-known? type) :solved :pending)}))
+              visible))
+          (sh08-ft-loop-kernel-failure :incoherent-loop-slot
+            (get node :node-id) :original-sequential-initializer record)))))
 
-(defn sh08-ft-loop-kernel-collect-slots [core prepared types bindings budget]
-  (loop [targets (get core :recur-targets) out bindings slots {} constraints [] slot-count 0 work (get prepared :work-count)]
+(defn sh08-ft-loop-kernel-collect-slots [core prepared types bindings]
+  (loop [targets (get core :recur-targets) out bindings slots {}
+         constraints [] slot-count 0]
     (if (= 0 (count targets))
       (if (= slot-count (count (get core :loop-bindings)))
-        {:status :accepted :bindings out :slots slots :constraints constraints :work-count work}
-        (sh08-ft-loop-kernel-failure :incomplete-loop-slot-coverage nil :all-original-loop-bindings slot-count work))
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-        (let [target (first targets) node (get (get prepared :nodes) (get target :owner-core-node-id))
-              nearest (if (= :function (get target :target-kind)) {:status :accepted :target nil :work-count 0}
-                        (sh08-ft-loop-kernel-nearest-target (get node :node-id) (get prepared :nodes) (get prepared :parents) (get prepared :owners) (- budget work 1)))
-              used (+ work 1 (get nearest :work-count))]
-          (if (= :accepted (get nearest :status))
-            (if (if (sh08-ft-loop-kernel-target-shape? target node)
-                  (if (= (get target :parent-target-id) (get (get nearest :target) :target-id))
-                    (= (get target :body-scope-id)
-                       (get (get (get prepared :nodes)
-                                 (get (get node :children) (if (= :loop (get target :target-kind)) (get target :arity) 0))) :binding-context)) false) false)
-              (if (= :function (get target :target-kind)) (recur (rest targets) out slots constraints slot-count used)
-                (let [result (sh08-ft-loop-kernel-loop-slots target node (get prepared :bindings) (get prepared :nodes) (get prepared :source-bindings) types out (- budget used))]
-                  (if (= :accepted (get result :status))
-                    (recur (rest targets) (get result :bindings) (assoc slots (get target :target-id) (get result :slots))
-                           (sh08-ft-loop-kernel-append constraints (get result :constraints)) (+ slot-count (count (get result :slots))) (+ used (get result :work-count)))
-                    (assoc result :work-count (+ used (get result :work-count))))))
-              (sh08-ft-loop-kernel-failure :incoherent-loop-target (get node :node-id) :original-nearest-target target used))
-            (assoc nearest :work-count used)))))))
+        {:status :accepted :bindings out :slots slots :constraints constraints}
+        (sh08-ft-loop-kernel-failure :incomplete-loop-slot-coverage
+          nil :all-original-loop-bindings slot-count))
+      (let [target (first targets)
+            node (get (get prepared :nodes) (get target :owner-core-node-id))
+            nearest (if (= :function (get target :target-kind))
+                      {:status :accepted :target nil}
+                      (sh08-ft-loop-kernel-nearest-target
+                        (get node :node-id) (get prepared :nodes)
+                        (get prepared :parents) (get prepared :owners)))]
+        (if (= :accepted (get nearest :status))
+          (if (if (sh08-ft-loop-kernel-target-shape? target node)
+                (if (= (get target :parent-target-id)
+                       (get (get nearest :target) :target-id))
+                  (= (get target :body-scope-id)
+                     (get (get (get prepared :nodes)
+                               (get (get node :children)
+                                 (if (= :loop (get target :target-kind))
+                                   (get target :arity) 0)))
+                       :binding-context))
+                  false)
+                false)
+            (if (= :function (get target :target-kind))
+              (recur (rest targets) out slots constraints slot-count)
+              (let [result (sh08-ft-loop-kernel-loop-slots
+                             target node (get prepared :bindings)
+                             (get prepared :nodes) (get prepared :source-bindings)
+                             types out)]
+                (if (= :accepted (get result :status))
+                  (recur (rest targets) (get result :bindings)
+                    (assoc slots (get target :target-id) (get result :slots))
+                    (sh08-ft-loop-kernel-append constraints (get result :constraints))
+                    (+ slot-count (count (get result :slots))))
+                  result)))
+            (sh08-ft-loop-kernel-failure :incoherent-loop-target
+              (get node :node-id) :original-nearest-target target))
+          nearest))))
 
-(defn sh08-ft-loop-kernel-transfer-types [transfer target nodes types slots invariants budget]
-  (if (if (vector? slots) (= (count (get transfer :argument-node-ids)) (count slots)) false)
-  (loop [args (get transfer :argument-node-ids) slots slots coordinate 0 values [] resolved true normal true work 0]
-    (if (= 0 (count args)) {:status :accepted :argument-types values :resolved? resolved :normal-transfer? normal :work-count work}
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-        (let [id (first args) actual (get types id :gravity.type/unknown) expected (first slots)]
+(defn sh08-ft-loop-kernel-transfer-types
+  [transfer target nodes types slots invariants]
+  (if (if (vector? slots)
+        (= (count (get transfer :argument-node-ids)) (count slots)) false)
+    (loop [args (get transfer :argument-node-ids) slots slots coordinate 0
+           values [] resolved true normal true]
+      (if (= 0 (count args))
+        {:status :accepted :argument-types values :resolved? resolved
+         :normal-transfer? normal}
+        (let [id (first args) actual (get types id :gravity.type/unknown)
+              expected (first slots)]
           (if (if (= actual :gravity.type/never) false
-                (if (sh08-ft-loop-kernel-known? actual) (if (sh08-ft-loop-kernel-known? expected)
-                  (if (map? (get invariants (get (get target :binding-ids) coordinate)))
-                    (= false (sh08-lsi-compatible? actual expected)) (= false (= actual expected))) false) false))
-            {:status :rejected :issues [{:rule "C7-TYPE-MISMATCH"
-              :reason (if (= :function (get target :target-kind)) :function-recur-slot-type-mismatch :loop-recur-slot-type-mismatch) :core-node-id id
-              :parameter-binding-id (get (get target :binding-ids) coordinate) :expected expected :actual actual}]
-             :work-count (+ work 1) :work-unit :node-or-record-visit}
-            (recur (rest args) (rest slots) (+ coordinate 1) (conj values actual)
-                   (if (if (sh08-ft-loop-kernel-known? actual) (sh08-ft-loop-kernel-known? expected) false) resolved false)
-                   (if (= actual :gravity.type/never) false normal) (+ work 1)))))))
-    (sh08-ft-loop-kernel-failure :loop-transfer-slot-count (get transfer :recur-core-node-id) (count slots) (count (get transfer :argument-node-ids)) 0)))
+                (if (sh08-ft-loop-kernel-known? actual)
+                  (if (sh08-ft-loop-kernel-known? expected)
+                    (if (map? (get invariants
+                                    (get (get target :binding-ids) coordinate)))
+                      (= false (sh08-lsi-compatible? actual expected))
+                      (= false (= actual expected)))
+                    false)
+                  false))
+            {:status :rejected
+             :issues [{:rule "C7-TYPE-MISMATCH"
+                       :reason (if (= :function (get target :target-kind))
+                                 :function-recur-slot-type-mismatch
+                                 :loop-recur-slot-type-mismatch)
+                       :core-node-id id
+                       :parameter-binding-id (get (get target :binding-ids) coordinate)
+                       :expected expected :actual actual}]}
+            (recur (rest args) (rest slots) (+ coordinate 1)
+              (conj values actual)
+              (if (if (sh08-ft-loop-kernel-known? actual)
+                    (sh08-ft-loop-kernel-known? expected) false)
+                resolved false)
+              (if (= actual :gravity.type/never) false normal))))))
+    (sh08-ft-loop-kernel-failure :loop-transfer-slot-count
+      (get transfer :recur-core-node-id) (count slots)
+      (count (get transfer :argument-node-ids)))))
 
 (defn sh08-ft-loop-kernel-transfer-shape? [transfer target nearest node slots]
-  (if (if (vector? (get transfer :argument-node-ids)) (if (map? target) (vector? (get node :children)) false) false)
+  (if (if (vector? (get transfer :argument-node-ids))
+        (if (map? target) (vector? (get node :children)) false) false)
     (if (= (count (get transfer :argument-node-ids)) (get target :arity))
       (if (if (= :loop (get target :target-kind))
             (if (vector? slots) (= (count slots) (get target :arity)) false) true)
         (if (sh08-ft-loop-kernel-ordered-children? node)
-          (= [:recur target (get target :target-id) (get target :target-kind) (get target :arity)
-              (get target :binding-ids) (get node :children) true :arguments-left-to-right :nearest-lexical-recur-target :pending-sh08
-              (get target :target-id) (get target :target-kind) (get target :arity) :pending-sh08 :arguments-left-to-right-then-transfer
-              (get (get node :source) :form-id) (get (get node :source) :syntax-id)]
-             [(get node :core-form) (get nearest :target) (get transfer :target-id) (get transfer :target-kind) (get transfer :arity)
-              (get node :resolved-binding-ids) (get transfer :argument-node-ids) (get transfer :tail-position) (get transfer :evaluation-order)
-              (get transfer :transfer-policy) (get transfer :type-compatibility) (get (get node :attributes) :target-id)
-              (get (get node :attributes) :target-kind) (get (get node :attributes) :arity) (get (get node :attributes) :type-compatibility)
-              (get (get node :evaluation) :kind) (get transfer :recur-form-id) (get transfer :recur-syntax-id)]) false) false) false) false))
+          (= [:recur target (get target :target-id) (get target :target-kind)
+              (get target :arity) (get target :binding-ids) (get node :children)
+              true :arguments-left-to-right :nearest-lexical-recur-target
+              :pending-sh08 (get target :target-id) (get target :target-kind)
+              (get target :arity) :pending-sh08
+              :arguments-left-to-right-then-transfer (get (get node :source) :form-id)
+              (get (get node :source) :syntax-id)]
+             [(get node :core-form) (get nearest :target)
+              (get transfer :target-id) (get transfer :target-kind)
+              (get transfer :arity) (get node :resolved-binding-ids)
+              (get transfer :argument-node-ids) (get transfer :tail-position)
+              (get transfer :evaluation-order) (get transfer :transfer-policy)
+              (get transfer :type-compatibility)
+              (get (get node :attributes) :target-id)
+              (get (get node :attributes) :target-kind)
+              (get (get node :attributes) :arity)
+              (get (get node :attributes) :type-compatibility)
+              (get (get node :evaluation) :kind)
+              (get transfer :recur-form-id) (get transfer :recur-syntax-id)])
+          false)
+        false)
+      false)
+    false))
 
-(defn sh08-ft-function-recur-slots [target node bindings budget]
+(defn sh08-ft-function-recur-slots [target node bindings]
   (let [names (get (get node :attributes) :parameters)
         declarations (get (get (get node :attributes) :signature) :parameters)]
-    (loop [ids (get target :binding-ids) ordinal 0 slots [] work 0]
-      (if (= 0 (count ids)) {:status :accepted :slots slots :work-count work}
-        (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-          (let [id (first ids) binding (get bindings id)]
-            (if (if (map? binding)
-                  (if (vector? names)
-                    (= [id (get names ordinal)] [(get binding :binding-id) (get binding :name)]) false) false)
-              (recur (rest ids) (+ ordinal 1)
-                     (conj slots (get (get declarations ordinal) :type-id :gravity.type/unknown)) (+ work 1))
-              (sh08-ft-loop-kernel-failure :incoherent-function-recur-parameter
-                (get node :node-id) :original-parameter-binding id (+ work 1)))))))))
+    (loop [ids (get target :binding-ids) ordinal 0 slots []]
+      (if (= 0 (count ids))
+        {:status :accepted :slots slots}
+        (let [id (first ids) binding (get bindings id)]
+          (if (if (map? binding)
+                (if (vector? names)
+                  (= [id (get names ordinal)]
+                     [(get binding :binding-id) (get binding :name)]) false)
+                false)
+            (recur (rest ids) (+ ordinal 1)
+              (conj slots (get (get declarations ordinal) :type-id :gravity.type/unknown)))
+            (sh08-ft-loop-kernel-failure :incoherent-function-recur-parameter
+              (get node :node-id) :original-parameter-binding id)))))))
 
-(defn sh08-ft-loop-kernel-collect-transfers [core prepared types result budget]
-  (loop [transfers (get core :recur-transfers) constraints (get result :constraints) work (get result :work-count)]
-    (if (= 0 (count transfers)) {:status :accepted :bindings (get result :bindings) :constraints constraints :issues []
-                                :work-count work :work-unit :node-or-record-visit :member-invariants (get result :member-invariants {})}
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-        (let [transfer (first transfers) id (get transfer :recur-core-node-id) node (get (get prepared :nodes) id)
-              target (get (get prepared :targets) (get transfer :target-id))
-              nearest (sh08-ft-loop-kernel-nearest-target id (get prepared :nodes) (get prepared :parents) (get prepared :owners) (- budget work 1))
-              function? (= :function (get target :target-kind))
-              used (+ work 1 (get nearest :work-count))
-              slot-result (if function?
-                            (sh08-ft-function-recur-slots target
-                              (get (get prepared :nodes) (get target :owner-core-node-id))
-                              (get prepared :source-bindings) (- budget used))
-                            {:status :accepted :slots (get (get result :slots) (get target :target-id)) :work-count 0})
-              used (+ used (get slot-result :work-count)) slots (get slot-result :slots)
-              invariants (get result :member-invariants {})
-              member-work (if (= 0 (count invariants)) 0 (count (get target :binding-ids)))]
-          (if (= :accepted (get nearest :status))
-            (if (sh08-ft-loop-kernel-transfer-shape? transfer target nearest node slots)
-              (if (= :accepted (get slot-result :status))
-                (if (if function? (if (contains? (set slots) :gravity.type/unknown) true (contains? (set slots) nil)) false)
-                  (assoc (sh08-ft-loop-kernel-failure :function-recur-parameter-types-required id :declared-parameter-types slots used)
-                         :issues [{:rule "C7-ANNOTATION" :reason :function-recur-parameter-types-required
-                                   :core-node-id id :expected :declared-parameter-types :actual slots}])
-                (if (> member-work (- budget used)) (sh08-ft-loop-kernel-work-limit used)
-                (let [member-bindings (if (= 0 member-work) [] (sh08-lsi-target-bindings target invariants))
-                      used (+ used member-work)
-                      checked (sh08-ft-loop-kernel-transfer-types transfer target (get prepared :nodes) types slots invariants (- budget used))]
+(defn sh08-ft-loop-kernel-collect-transfers [core prepared types result]
+  (loop [transfers (get core :recur-transfers)
+         constraints (get result :constraints)]
+    (if (= 0 (count transfers))
+      {:status :accepted :bindings (get result :bindings)
+       :constraints constraints :issues []
+       :member-invariants (get result :member-invariants {})}
+      (let [transfer (first transfers)
+            id (get transfer :recur-core-node-id)
+            node (get (get prepared :nodes) id)
+            target (get (get prepared :targets) (get transfer :target-id))
+            nearest (sh08-ft-loop-kernel-nearest-target id
+                       (get prepared :nodes) (get prepared :parents)
+                       (get prepared :owners))
+            function? (= :function (get target :target-kind))
+            slot-result (if function?
+                          (sh08-ft-function-recur-slots target
+                            (get (get prepared :nodes)
+                                 (get target :owner-core-node-id))
+                            (get prepared :source-bindings))
+                          {:status :accepted
+                           :slots (get (get result :slots) (get target :target-id))})
+            slots (get slot-result :slots)
+            invariants (get result :member-invariants {})]
+        (if (= :accepted (get nearest :status))
+          (if (sh08-ft-loop-kernel-transfer-shape? transfer target nearest node slots)
+            (if (= :accepted (get slot-result :status))
+              (if (if function?
+                    (if (contains? (set slots) :gravity.type/unknown)
+                      true (contains? (set slots) nil)) false)
+                (assoc (sh08-ft-loop-kernel-failure
+                         :function-recur-parameter-types-required id
+                         :declared-parameter-types slots)
+                  :issues [{:rule "C7-ANNOTATION"
+                            :reason :function-recur-parameter-types-required
+                            :core-node-id id :expected :declared-parameter-types
+                            :actual slots}])
+                (let [member-bindings (if (= 0 (count invariants)) []
+                                       (sh08-lsi-target-bindings target invariants))
+                      checked (sh08-ft-loop-kernel-transfer-types
+                               transfer target (get prepared :nodes) types slots invariants)]
                   (if (= :accepted (get checked :status))
-                    (recur (rest transfers) (conj constraints (let [premise {:kind :loop-recur-type :source-transfer transfer :source-target target
-                       :argument-types (get checked :argument-types) :slot-types slots
-                       :result-type :gravity.type/never :normal-transfer? (get checked :normal-transfer?)
-                       :status (if (get checked :resolved?) :solved :pending)}]
-                         (if (= 0 (count member-bindings)) premise (assoc premise :member-invariant-bindings member-bindings))))
-                       (+ used (get checked :work-count)))
-                    (assoc checked :work-count (+ used (get checked :work-count)))))))
-                (assoc slot-result :work-count used))
-              (sh08-ft-loop-kernel-failure :incoherent-loop-transfer id :original-nearest-tail-transfer transfer used))
-            (assoc nearest :work-count used)))))))
+                    (recur (rest transfers)
+                      (conj constraints
+                        (let [premise
+                              {:kind :loop-recur-type :source-transfer transfer
+                               :source-target target
+                               :argument-types (get checked :argument-types)
+                               :slot-types slots :result-type :gravity.type/never
+                               :normal-transfer? (get checked :normal-transfer?)
+                               :status (if (get checked :resolved?) :solved :pending)}]
+                          (if (= 0 (count member-bindings))
+                            premise
+                            (assoc premise :member-invariant-bindings
+                              member-bindings)))))
+                    checked))))
+              slot-result)
+            (sh08-ft-loop-kernel-failure :incoherent-loop-transfer
+              id :original-nearest-tail-transfer transfer))
+          nearest)))))
 
-(defn sh08-lsi-promote [result invariants budget]
-  (loop [remaining (get result :constraints) rows [] bindings (get result :bindings) slots (get result :slots) work (get result :work-count)]
+(defn sh08-lsi-promote [result invariants]
+  (loop [remaining (get result :constraints) rows []
+         bindings (get result :bindings) slots (get result :slots)]
     (if (= 0 (count remaining))
-      (assoc result :constraints rows :bindings bindings :slots slots :member-invariants invariants :work-count work)
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-        (let [premise (first remaining) binding (get premise :binding-id) invariant (get invariants binding)
-              record (get premise :source-loop-binding) target (get premise :source-target)]
-          (if (map? invariant)
-            (recur (rest remaining) (conj rows (assoc premise :type (get invariant :invariant-type)
-                    :initializer-type (get invariant :initializer-type) :member-invariant invariant))
-              (assoc bindings binding (get invariant :invariant-type))
-              (assoc slots (get target :target-id) (assoc (get slots (get target :target-id)) (get record :ordinal) (get invariant :invariant-type))) (+ work 1))
-            (recur (rest remaining) (conj rows premise) bindings slots (+ work 1))))))))
+      (assoc result :constraints rows :bindings bindings :slots slots
+        :member-invariants invariants)
+      (let [premise (first remaining)
+            binding (get premise :binding-id)
+            invariant (get invariants binding)
+            record (get premise :source-loop-binding)
+            target (get premise :source-target)]
+        (if (map? invariant)
+          (recur (rest remaining)
+            (conj rows (assoc premise :type (get invariant :invariant-type)
+              :initializer-type (get invariant :initializer-type)
+              :member-invariant invariant))
+            (assoc bindings binding (get invariant :invariant-type))
+            (assoc slots (get target :target-id)
+              (assoc (get slots (get target :target-id))
+                (get record :ordinal) (get invariant :invariant-type))))
+          (recur (rest remaining) (conj rows premise) bindings slots))))))
 
-(defn sh08-lsi-control-transfers [core prepared result budget]
-  (loop [remaining (get core :recur-transfers) work (get result :work-count)]
-    (if (= 0 (count remaining)) {:status :accepted :work-count work}
-      (if (>= work budget) (sh08-ft-loop-kernel-work-limit work)
-        (let [transfer (first remaining) id (get transfer :recur-core-node-id) node (get (get prepared :nodes) id)
-              target (get (get prepared :targets) (get transfer :target-id))
-              nearest (sh08-ft-loop-kernel-nearest-target id (get prepared :nodes) (get prepared :parents) (get prepared :owners) (- budget work 1))
-              used (+ work 1 (get nearest :work-count)) function? (= :function (get target :target-kind))
-              slots (if function? (sh08-ft-function-recur-slots target
-                       (get (get prepared :nodes) (get target :owner-core-node-id))
-                       (get prepared :source-bindings) (- budget used))
-                      {:status :accepted :slots (get (get result :slots) (get target :target-id)) :work-count 0})
-              used (+ used (get slots :work-count))]
-          (if (= :accepted (get nearest :status))
-            (if (sh08-ft-loop-kernel-transfer-shape? transfer target nearest node (get slots :slots))
-              (if (= :accepted (get slots :status))
-                (if (if function? (loop [types (get slots :slots)]
-                      (if (= 0 (count types)) false (if (= nil (first types)) true
-                        (if (= :gravity.type/unknown (first types)) true (recur (rest types)))))) false)
-                  (assoc (sh08-ft-loop-kernel-failure :function-recur-parameter-types-required id :declared-parameter-types (get slots :slots) used)
-                    :issues [{:rule "C7-ANNOTATION" :reason :function-recur-parameter-types-required :core-node-id id
-                              :expected :declared-parameter-types :actual (get slots :slots)}])
-                  (recur (rest remaining) used)) (assoc slots :work-count used))
-              (sh08-ft-loop-kernel-failure :incoherent-loop-transfer id :original-nearest-tail-transfer transfer used))
-            (assoc nearest :work-count used)))))))
-
-(defn sh08-ft-loop-type-step [core type-table binding-types budget]
-  (if (if (integer? budget) (if (<= 0 budget) (<= budget 65536) false) false)
-    (if (if (map? type-table) (map? binding-types) false)
-      (let [prepared (sh08-ft-loop-kernel-prepare core budget)]
-        (if (= :accepted (get prepared :status))
-          (let [slots (sh08-ft-loop-kernel-collect-slots core prepared type-table binding-types budget)]
+(defn sh08-lsi-control-transfers [core prepared result]
+  (loop [remaining (get core :recur-transfers)]
+    (if (= 0 (count remaining))
+      {:status :accepted}
+      (let [transfer (first remaining)
+            id (get transfer :recur-core-node-id)
+            node (get (get prepared :nodes) id)
+            target (get (get prepared :targets) (get transfer :target-id))
+            nearest (sh08-ft-loop-kernel-nearest-target id
+                       (get prepared :nodes) (get prepared :parents)
+                       (get prepared :owners))
+            function? (= :function (get target :target-kind))
+            slots (if function?
+                    (sh08-ft-function-recur-slots target
+                      (get (get prepared :nodes)
+                           (get target :owner-core-node-id))
+                      (get prepared :source-bindings))
+                    {:status :accepted
+                     :slots (get (get result :slots) (get target :target-id))})]
+        (if (= :accepted (get nearest :status))
+          (if (sh08-ft-loop-kernel-transfer-shape? transfer target nearest node
+                (get slots :slots))
             (if (= :accepted (get slots :status))
-              (let [controls (if (map? (get core :loop-member-source))
-                               (sh08-lsi-control-transfers core prepared slots budget)
-                               {:status :accepted :work-count (get slots :work-count)})]
-                (if (= :accepted (get controls :status))
-                  (let [source (assoc (get core :loop-member-source {}) :nodes (get prepared :nodes))
-                        members (sh08-lsi-solve core type-table source (- budget (get controls :work-count)))
-                        used (+ (get controls :work-count) (get members :work-count))]
-                    (if (= :accepted (get members :status))
-                      (let [promoted (if (= 0 (count (get members :invariants)))
-                                       (assoc slots :member-invariants {} :work-count used)
-                                       (sh08-lsi-promote (assoc slots :work-count used) (get members :invariants) budget))]
-                        (if (= :accepted (get promoted :status))
-                          (sh08-ft-loop-kernel-collect-transfers core prepared type-table promoted budget) promoted))
-                      (assoc members :work-count used :issues
-                        [{:rule (if (= :loop-type-work-limit (get members :reason)) "C7-GENERIC" "C7-TYPE-MISMATCH")
-                          :reason (get members :reason) :core-node-id (get members :core-node-id)
-                          :parameter-binding-id (get members :parameter-binding-id) :expected (get members :expected) :actual (get members :actual)}])))
-                  controls)) slots)) prepared))
-      (sh08-ft-loop-kernel-failure :invalid-loop-type-tables nil :maps nil 0))
-    (sh08-ft-loop-kernel-failure :invalid-loop-type-budget nil :bounded-visit-count budget 0)))
+              (if (if function?
+                    (loop [types (get slots :slots)]
+                      (if (= 0 (count types)) false
+                        (if (= nil (first types)) true
+                          (if (= :gravity.type/unknown (first types)) true
+                            (recur (rest types))))))
+                    false)
+                (assoc (sh08-ft-loop-kernel-failure
+                         :function-recur-parameter-types-required id
+                         :declared-parameter-types (get slots :slots))
+                  :issues [{:rule "C7-ANNOTATION"
+                            :reason :function-recur-parameter-types-required
+                            :core-node-id id
+                            :expected :declared-parameter-types
+                            :actual (get slots :slots)}])
+                (recur (rest remaining))))
+              slots)
+            (sh08-ft-loop-kernel-failure :incoherent-loop-transfer
+              id :original-nearest-tail-transfer transfer))
+          nearest)))))
 
+(defn sh08-ft-loop-type-step [core type-table binding-types]
+  (if (if (map? type-table) (map? binding-types) false)
+    (let [prepared (sh08-ft-loop-kernel-prepare core)]
+      (if (= :accepted (get prepared :status))
+        (let [slots (sh08-ft-loop-kernel-collect-slots core prepared
+                      type-table binding-types)]
+          (if (= :accepted (get slots :status))
+            (let [controls (if (map? (get core :loop-member-source))
+                             (sh08-lsi-control-transfers core prepared slots)
+                             {:status :accepted})]
+              (if (= :accepted (get controls :status))
+                (let [source (assoc (get core :loop-member-source {})
+                                    :nodes (get prepared :nodes))
+                      members (if (map? (get core :loop-member-source))
+                                (sh08-lsi-solve core type-table source)
+                                {:status :accepted :invariants {}})]
+                  (if (= :accepted (get members :status))
+                    (let [promoted (if (= 0 (count (get members :invariants)))
+                                     (assoc slots :member-invariants {})
+                                     (sh08-lsi-promote slots
+                                       (get members :invariants)))]
+                      (if (= :accepted (get promoted :status))
+                        (sh08-ft-loop-kernel-collect-transfers core prepared
+                          type-table promoted)
+                        promoted))
+                    (assoc members :issues
+                      [{:rule "C7-TYPE-MISMATCH"
+                        :reason (get members :reason)
+                        :core-node-id (get members :core-node-id)
+                        :parameter-binding-id (get members :parameter-binding-id)
+                        :expected (get members :expected)
+                        :actual (get members :actual)}])))
+                controls))
+            slots))
+        prepared))
+    (sh08-ft-loop-kernel-failure :invalid-loop-type-tables nil :maps nil nil)))
 (defn sh08-ft-ordered-child-types [children type-table]
   (loop [remaining children out []]
     (if (= 0 (count remaining)) out
