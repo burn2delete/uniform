@@ -8626,53 +8626,44 @@
                         false) false) false) false))) false) false) false) false)))
 
 (defn sh08-pl-insertion-policy [family]
-  (if (= :symbol-set-insertion family)
-    {:insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
-                           :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
-                           :member-domain :independently-established-symbol-only :member-equality :guarded-atomic-symbol-value
-                           :symbol-equality :original-namespace-and-name :normalization :none :locale :none :coercion :none
-                           :resolution-authority :none
-                           :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
-                           :operand-evaluation :left-to-right-once :operand-position :non-tail
-                           :result-evidence :homogeneous-symbol-set-only :carrier-schema :gravity/homogeneous-symbol-set-type-v1 :cardinality-analysis :none
-                           :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                           :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
-     :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
-     :storage-policy {:representation :development-persistent-symbol-set :input :preserved
-                      :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
-                      :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
-                      :physical-sharing :unpromised :enumeration :unobserved}}
-    (if (= :keyword-set-insertion family)
-      {:insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
-                             :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
-                             :member-domain :independently-established-keyword-only :member-equality :guarded-atomic-keyword-value
-                             :normalization :none :locale :none :coercion :none
-                             :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
-                             :operand-evaluation :left-to-right-once :operand-position :non-tail
-                             :result-evidence :bare-set-only :cardinality-analysis :none
-                             :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                             :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
-       :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
-       :storage-policy {:representation :development-persistent-keyword-set :input :preserved
-                        :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
-                        :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
-                        :physical-sharing :unpromised :enumeration :unobserved}}
-      (if (= :string-set-insertion family)
-        {:insertion-semantics {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
-                               :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
-                               :member-domain :independently-established-string-only :member-equality :native-string-value
-                               :strings :exact-valid-scalar-sequence :normalization :none :locale :none :coercion :none
-                               :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
-                               :operand-evaluation :left-to-right-once :operand-position :non-tail
-                               :result-evidence :homogeneous-string-set-only :carrier-schema :gravity/homogeneous-string-set-type-v1 :cardinality-analysis :none
-                               :domain-validation :complete-and-unique-before-hit-miss-or-construction
-                               :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
-         :allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}
-         :storage-policy {:representation :development-persistent-string-set :input :preserved
+  (if (contains? '#{:symbol-set-insertion :keyword-set-insertion :string-set-insertion} family)
+    (let [insertion-common {:operation :persistent-set-insertion :existing-classes :preserved :present-class :value-equivalent-unchanged
+                            :absent-class :add-supplied-value :input-preserved? true :payload-evaluation :none
+                            :normalization :none :locale :none :coercion :none
+                            :enumeration :unobserved :identity :unobserved :physical-sharing :unpromised
+                            :operand-evaluation :left-to-right-once :operand-position :non-tail :cardinality-analysis :none
+                            :domain-validation :complete-and-unique-before-hit-miss-or-construction
+                            :entry-contract :type-conforming-typed-calls :provider-cpu-bound :not-established}
+          insertion-semantics
+          (if (= :symbol-set-insertion family)
+            (assoc insertion-common
+                   :member-domain :independently-established-symbol-only :member-equality :guarded-atomic-symbol-value
+                   :symbol-equality :original-namespace-and-name :resolution-authority :none
+                   :result-evidence :homogeneous-symbol-set-only :carrier-schema :gravity/homogeneous-symbol-set-type-v1)
+            (if (= :keyword-set-insertion family)
+              (assoc insertion-common
+                     :member-domain :independently-established-keyword-only :member-equality :guarded-atomic-keyword-value
+                     :result-evidence :bare-set-only)
+              (assoc insertion-common
+                     :member-domain :independently-established-string-only :member-equality :native-string-value
+                     :strings :exact-valid-scalar-sequence
+                     :result-evidence :homogeneous-string-set-only :carrier-schema :gravity/homogeneous-string-set-type-v1)))
+          storage-common {:input :preserved
                           :present-class :may-retain-input-storage :absent-class :trusted-persistent-rebuild
                           :retention :may-retain-input-storage-and-member-values :lifetime :result-retains-storage-and-stored-values
-                          :physical-sharing :unpromised :enumeration :unobserved}}
-        nil))))
+                          :physical-sharing :unpromised :enumeration :unobserved}
+          storage-policy
+          (assoc storage-common :representation
+                 (if (= :symbol-set-insertion family)
+                   :development-persistent-symbol-set
+                   (if (= :keyword-set-insertion family)
+                     :development-persistent-keyword-set
+                     :development-persistent-string-set)))
+          allocation-policy {:behavior :possible-persistent-set-construction :condition :normal-operand-completion :effect :memory/allocate}]
+      {:insertion-semantics insertion-semantics
+       :allocation-policy allocation-policy
+       :storage-policy storage-policy})
+    nil))
 
 (defn sh08-pl-source [core node call edge nodes bindings types module validation]
   (if (sh08-pl-validation? validation)
