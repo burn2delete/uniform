@@ -49,7 +49,7 @@ jobs:
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint/archive.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint/archive.tar.gz" -C "$RUNNER_TEMP/actionlint" actionlint
           echo "$RUNNER_TEMP/actionlint" >> "$GITHUB_PATH"
-      - name: Run checks in fresh child processes
+      - name: Run selected checks in fresh child processes (docs-only PRs retain contract checks)
         env:
           CI_MODE: ${{ matrix.mode }}
           CI_BASE_SHA: ${{ github.event.before }}
