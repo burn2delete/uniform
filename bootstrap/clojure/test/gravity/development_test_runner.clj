@@ -24,6 +24,7 @@
 (def machine-result-schema :gravity/development-test-result-v1)
 
 (def ^:private ^:dynamic *progress-state* nil)
+(def ^:private ^:dynamic *progress-test-context* nil)
 
 (defn- progress-state []
   {:errors (java.util.ArrayList.)
@@ -98,15 +99,40 @@
       (retain-progress-error! *progress-state* diagnostic)
       (note-progress-interrupt! *progress-state* diagnostic))))
 
+(defn- resolution-digest-test? [namespace test-var]
+  (and (= "gravity.self-hosting.sh06-unmetered-resolution-test" namespace)
+       (= "gravity.self-hosting.sh06-unmetered-resolution-test/digest-count-quota-is-gone-but-complete-ordered-requests-remain-required"
+          test-var)))
+
 (defn- observe-progress! [phase namespace test-var body]
   (emit-progress! phase :enter namespace test-var nil)
-  (let [outcome (try {:value (body)}
+  (let [outcome (try {:value (if (and (= :test-var phase) (resolution-digest-test? namespace test-var))
+                              (binding [*progress-test-context* {:state *progress-state*
+                                                                :namespace namespace :test-var test-var}]
+                                (body))
+                              (body))}
                      (catch Throwable error
                        (note-progress-interrupt! *progress-state* error)
                        {:error error}))]
     (emit-progress! phase (if (:error outcome) :throw :return)
                     namespace test-var (:error outcome))
     (if-let [error (:error outcome)] (throw error) (:value outcome))))
+
+(defn observe-resolution-digest-interval!
+  "Five fixed diagnostic intervals in one selected test; never execution authority.
+  Outside its original enabled test scope, execute body once without reporting."
+  [interval body]
+  (let [context *progress-test-context*
+        phase (when (keyword? interval)
+                ({:positive-resolve :resolution-digest-positive-resolve
+                  :count-and-hash-shape :resolution-digest-count-and-hash-shape
+                  :ordinal-negative :resolution-digest-ordinal-negative
+                  :count-negative :resolution-digest-count-negative
+                  :shape-negative :resolution-digest-shape-negative} interval))]
+    (if (and *progress-state* (identical? *progress-state* (:state context)) phase
+             (resolution-digest-test? (:namespace context) (:test-var context)))
+      (observe-progress! phase (:namespace context) (:test-var context) body)
+      (body))))
 
 (defmacro ^:private with-progress-phase [phase namespace test-var & body]
   `(if *progress-state*

@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh06-unmetered-resolution-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
+            [gravity.development-test-runner :as development]
             [gravity.bootstrap :as b]))
 
 ;; L3/C5: execute the actual current Gravity leaf on normalized requests.
@@ -165,16 +166,26 @@
         requests (conj (mapv #(hash-map :ordinal % :purpose :sh06-binding-id :preimage {:ordinal %})
                              (range 8192))
                        {:ordinal 8192 :purpose :sh06-namespace-analysis-id :preimage {}})
-        resolved (b/sh06-resolution-resolve-digest-requests! source analysis requests)
+        resolved (development/observe-resolution-digest-interval!
+                   :positive-resolve
+                   #(b/sh06-resolution-resolve-digest-requests! source analysis requests))
         failure (fn [values]
                   (try (b/sh06-resolution-resolve-digest-requests! source analysis values) nil
                        (catch clojure.lang.ExceptionInfo error (ex-data error))))]
-    (is (= 8193 (count resolved)))
-    (is (every? #(re-matches #"sha256:[0-9a-f]{64}" %) resolved))
-    (is (= [:ordered-resolution-digest-requests]
-           (:missing-fields (failure (assoc-in requests [0 :ordinal] 1)))))
-    (is (= [:complete-resolution-digest-requests] (:missing-fields (failure (pop requests)))))
-    (is (= [:resolution-digest-requests] (:missing-fields (failure '()))))))
+    (development/observe-resolution-digest-interval!
+      :count-and-hash-shape
+      (fn [] (is (= 8193 (count resolved)))
+             (is (every? #(re-matches #"sha256:[0-9a-f]{64}" %) resolved))))
+    (development/observe-resolution-digest-interval!
+      :ordinal-negative
+      #(is (= [:ordered-resolution-digest-requests]
+              (:missing-fields (failure (assoc-in requests [0 :ordinal] 1))))))
+    (development/observe-resolution-digest-interval!
+      :count-negative
+      #(is (= [:complete-resolution-digest-requests] (:missing-fields (failure (pop requests))))))
+    (development/observe-resolution-digest-interval!
+      :shape-negative
+      #(is (= [:resolution-digest-requests] (:missing-fields (failure '())))))))
 
 (deftest actual-current-source-artifact-retains-authentication-and-roundtrip
   (let [fixture (.getCanonicalPath

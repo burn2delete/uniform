@@ -1,6 +1,7 @@
 (ns ci.progress-test
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
+            [ci.resolution-interval-test]
             [clojure.test :as test :refer [deftest is run-tests]]))
 
 (binding [*command-line-args* nil]
@@ -225,6 +226,6 @@
     (is (zero? @callbacks))))
 
 (assert (nil? (find-ns 'gravity.bootstrap)))
-(let [result (run-tests)]
+(let [result (run-tests 'ci.progress-test 'ci.resolution-interval-test)]
   (assert (nil? (find-ns 'gravity.bootstrap)))
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))
