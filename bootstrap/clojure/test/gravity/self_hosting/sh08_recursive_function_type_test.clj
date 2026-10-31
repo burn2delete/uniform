@@ -1488,7 +1488,7 @@
           (:calls carrier) (:edges carrier)
           {(:function-id complete) complete}
           {(get-in proof [:definition :binding-id]) complete}
-          64])
+          {}])
         permuted (assoc carrier :nodes (vec (reverse (:nodes carrier))))
         permuted-proof (recursive-proof permuted)
         permuted-skeleton
@@ -1507,7 +1507,7 @@
           {(:function-id permuted-complete) permuted-complete}
           {(get-in permuted-proof [:definition :binding-id])
            permuted-complete}
-          64])
+          {}])
         canonical-call-facts
         (invoke-c7
          'sh08-ft-call-facts
@@ -1674,7 +1674,7 @@
               (:calls carrier) (:edges carrier)
               {(:function-id complete) complete}
               {(get-in proof [:definition :binding-id]) complete}
-              64])
+              {}])
             call-facts
             (invoke-c7
              'sh08-ft-call-facts

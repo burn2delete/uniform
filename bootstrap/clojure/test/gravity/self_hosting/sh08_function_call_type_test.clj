@@ -1047,7 +1047,7 @@
 (deftest sh08-pattern-alias-development-kernel
   (let [{:keys [groups nodes sequence lexical binding-types binder sha]} (pattern-alias-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types 50])
+                             [sequence nodes lexical [] [] [] {} binding-types {}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         checked (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} {:profile :meta :target :jvm}])
         evidence (get (:binding-shapes inference) binder)
@@ -1072,7 +1072,7 @@
              ((juxt :rule :reason) (invoke-c7 'sh08-sm-group-shape [bad (:type-table inference) (:binding-types inference) {}])))))
     (is (= (:binding-shapes inference)
            (:binding-shapes (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                                       [sequence nodes lexical [] [] [] {} binding-types 50]))))))
+                                       [sequence nodes lexical [] [] [] {} binding-types {}]))))))
 
 (deftest sh08-pattern-alias-correlations-development-kernel
   (let [scalar {:status :accepted :shape-kind :scalar :type :gravity.type/bool :domain {:values [true false]} :shape-size 1}
@@ -1118,7 +1118,7 @@
         verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [groups nodes sequence lexical binding-types]} (pattern-alias-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types 50])
+                             [sequence nodes lexical [] [] [] {} binding-types {}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         base (fixture "/development/pattern-alias.gravity")
         facts (:constraints (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} (:module base)]))
@@ -1273,7 +1273,7 @@
 (deftest sh08-quoted-data-structural-development-kernel
   (let [{:keys [groups sequence nodes forms lexical binding-types quote-products item match-id sha]} (quoted-structural-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types 50])
+                             [sequence nodes lexical [] [] [] {} binding-types {}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         checked (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} {:profile :meta :target :jvm}])
         fact (first (:constraints checked)) extracted (first (:extractions fact))]
@@ -1292,7 +1292,7 @@
     (is (not= (get-in extracted [:data-origin :form-id]) (get-in extracted [:data-origin :quote-core-node-id])))
     (is (= (:type-table inference)
            (:type-table (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                                   [sequence nodes lexical [] [] [] {} binding-types 50])))))
+                                   [sequence nodes lexical [] [] [] {} binding-types {}])))))
   (let [{:keys [node forms]} (quoted-data-input {'non-keyword 'value})
         quoted (invoke-c7 'sh08-qd-node [node forms])
         shape (invoke-c7 'sh08-qd-shape [(:data quoted) node])]
@@ -1304,7 +1304,7 @@
         joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
         groups (:boolean-matches joined)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) nodes lexical [] [] [] {} binding-types 50])
+                             [(:nodes core) nodes lexical [] [] [] {} binding-types {}])
         checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}])
         facts (:constraints checked) extraction (get-in facts [0 :extractions 0])]
     (is (= :accepted (:status joined)) (pr-str joined))
@@ -1491,7 +1491,7 @@
         joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
         groups (:boolean-matches joined)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) nodes lexical [] calls edges functions binding-types 50])
+                             [(:nodes core) nodes lexical [] calls edges functions binding-types {}])
         types (:type-table inference)
         checked (invoke-c7 'sh08-bm-checks [groups types functions {:profile :meta :target :jvm}])
         facts (:constraints checked)]
@@ -1548,7 +1548,7 @@
         group (first (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])))
         branch (first (:branches group)) guard-id (get-in branch [:guard :node-id])
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) (:nodes group) (:lexical-bindings group) [] [] [] functions binding-types 50])]
+                             [(:nodes core) (:nodes group) (:lexical-bindings group) [] [] [] functions binding-types {}])]
     (doseq [[value expected] [[false :false] [true :true] [nil :gravity.type/nil] ["wrong" :gravity.type/string]
                              [(list 'throw 'unresolved) {:kind :gravity.type/list :element-types [:gravity.type/symbol :gravity.type/symbol] :shape :literal}]]]
       (let [quoted (quoted-data-input value)
@@ -1576,7 +1576,7 @@
         fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [quote-products groups nodes sequence lexical binding-types]} (quoted-structural-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [sequence nodes lexical [] [] [] {} binding-types 50])
+                             [sequence nodes lexical [] [] [] {} binding-types {}])
         enriched (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)])
         base (fixture "/development/quoted-data.gravity")
         facts (into (:constraints quote-products) (:constraints (invoke-c7 'sh08-bm-checks [enriched (:type-table inference) {} (:module base)])))
@@ -1599,7 +1599,7 @@
           joined (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])
           groups (:boolean-matches joined)
           inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                               [(:nodes core) nodes lexical [] [] [] {} binding-types 50])
+                               [(:nodes core) nodes lexical [] [] [] {} binding-types {}])
           checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta}])
           first-fact (first (:constraints checked))]
       (is (= :accepted (:status joined)) (pr-str joined))
@@ -1656,7 +1656,7 @@
 (deftest sh08-root-map-guard-completion-development-kernel
   (let [{:keys [core products forms nodes lexical binding-types functions guard-id sha]} (throwing-guard-input)
         group (first (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))])))
-        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] [] [] functions binding-types 50])
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] [] [] functions binding-types {}])
         types (:type-table inference)
         single (-> group (update :branches #(vector (first %))) (update :pattern-trees #(vector (first %))))
         checked (invoke-c7 'sh08-sm-check [single types functions {:profile :meta}])]
@@ -1711,7 +1711,7 @@
         fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [core products forms nodes lexical binding-types functions calls edges guard-id]} (guarded-match-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
-        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] calls edges functions binding-types 50])
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] calls edges functions binding-types {}])
         base (fixture "/development/guard.gravity") module (:module base)
         facts (:constraints (invoke-c7 'sh08-bm-checks [groups (:type-table inference) functions module]))
         call-facts (invoke-c7 'sh08-ft-call-facts-with-context [calls edges nodes (:type-table inference) functions module {}])
@@ -2117,7 +2117,7 @@
         verify (var-get (ns-resolve upstream 'function-verification))
         {:keys [core products forms nodes lexical binding-types]} (structural-match-products-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
-        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] [] [] {} binding-types 50])
+        inference (invoke-c7 'sh08-ft-infer-acyclic-with-context [(:nodes core) nodes lexical [] [] [] {} binding-types {}])
         constraints (:constraints (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}]))
         raw (assoc (fixture "/development/structural-match.gravity") :constraint-ledger constraints)
         identity (invoke-c8 'sh09-adapter-function-identity-input [raw])
@@ -2301,7 +2301,7 @@
   (let [{:keys [core products forms bindings nodes types match-id scrutinee-id bodies remainder]} (keyword-match-input)
         joined (invoke-c7 'sh08-bm-products [core products forms]) group (first (:boolean-matches joined))
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) nodes [] [] [] [] {} bindings 20])
+                             [(:nodes core) nodes [] [] [] [] {} bindings {}])
         check #(invoke-c7 'sh08-sm-check [%1 %2 {} {:profile %3 :target :jvm}])
         result (check group (:type-table inference) :meta)
         shape (invoke-c7 'sh08-sm-group-shape [group types bindings {}])
@@ -12523,7 +12523,7 @@
         joined (invoke-c7 'sh08-bm-products [core products forms])
         groups (:boolean-matches joined)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) (:node-table products) [] [] [] [] {} bindings 20])
+                             [(:nodes core) (:node-table products) [] [] [] [] {} bindings {}])
         checked (invoke-c7 'sh08-bm-checks [groups (:type-table inference) {} {:profile :meta :target :jvm}])
         group (first groups)
         types {scrutinee-id :gravity.type/bool (bodies 0) :gravity.type/bool (bodies 1) :gravity.type/bool}]
@@ -12893,7 +12893,7 @@
   (let [{:keys [core products forms nodes lexical binding-types match-id]} (structural-match-products-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                             [(:nodes core) nodes lexical [] [] [] {} binding-types 50])
+                             [(:nodes core) nodes lexical [] [] [] {} binding-types {}])
         group (first (invoke-c7 'sh08-sm-groups-with-shapes [groups (:binding-shapes inference)]))
         owner :structural-return group (assoc-in group [:node :evaluation :owner-function-syntax-id] owner)
         bodies (mapv :branch-core-node-id (:branches group))
@@ -15189,7 +15189,7 @@
     (let [core {:calls [] :call-edges [] :nodes [] :function-records [] :module (:module input)}
           context {:ordering-core core :lookup-bindings [] :lookup-forms [] :boolean-matches []
                    :shape-call-products {:calls [] :call-edges [] :function-index {} :definitions []} :loop-work-left 65536}
-          infer (fn [ctx] (invoke-c7 'sh08-ft-infer-acyclic-with-context [[] {} [] [] [] [] {} {} 2]))
+          infer (fn [ctx] (invoke-c7 'sh08-ft-infer-acyclic-with-context [[] {} [] [] [] [] {} {} ctx]))
           clean (infer context) poisoned (infer (assoc context :private-first-entry-products table))]
       (is (= clean poisoned))
       (is (= :converged (:convergence-status clean)))
@@ -15638,7 +15638,7 @@
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
             step (invoke-c7 'sh08-va-step [node types {} {} context])
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types 10])
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types {}])
             shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
@@ -15843,7 +15843,7 @@
             context {:ordering-core core :ordering-operators {:operator call} :ordering-edges {:call edge}
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types 10])]
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} binding-types {}])]
         (is (= :accepted (:status checked) (:status result) (:status validated)))
         (is (= :string-set-carrier (:comparison-domain checked)))
         (is (= :gravity.type/applied-string-set-equality (:kind descriptor)))
@@ -16419,7 +16419,7 @@
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
             step (invoke-c7 'sh08-va-step [node types {} {} context])
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types 10])
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types {}])
             shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))
@@ -16778,7 +16778,7 @@
                      :lookup-nodes nodes :ordering-bindings bindings :association-forms forms}
             step (invoke-c7 'sh08-va-step [node types {} {} context])
             inferred (invoke-c7 'sh08-ft-infer-acyclic-with-context
-                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types 10])
+                       [(:nodes core) nodes [] [] (:calls core) (:call-edges core) {} types {}])
             shape-context {:source-core core :calls {:call call} :edges {:call edge} :prior-types types :budget-left 65536}
             shape (invoke-c7 'sh08-va-shape [node nodes established binding-types {} [] bindings forms #{} 0 {} shape-context])]
         (is (= :accepted (:status result) (:status checked) (:status step) (:status shape)))

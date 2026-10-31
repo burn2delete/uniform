@@ -1021,12 +1021,6 @@
     (let [never (c7 'sh08-kl-step [node (assoc (:types context) :vector :gravity.type/never) {} {} work-context])]
       (is (= :gravity.type/never (:type never)))
       (is (= :no-normal-result (get-in never [:constraint :solution :presence]))))
-    (let [nodes (mapv (:nodes context) [:lookup-key :vector-left :vector-right :vector :lookup])
-          infer #(c7 'sh08-ft-infer-acyclic-with-context [nodes (:nodes context) [] [] [] [] {} {} 2])
-          total (* 2 (:work-count result))]
-      (is (= :converged (:convergence-status (infer total))))
-      (is (= :gravity.type/string (get-in (infer total) [:type-table :lookup])))
-      (is (= :nonconverged (:convergence-status (infer (dec total))))))
     (let [first (step node work-context (* 2 (:work-count result)))
           second (step node work-context (- (* 2 (:work-count result)) (:work-count first)))
           third (step node work-context (- (* 2 (:work-count result)) (:work-count first) (:work-count second)))]
@@ -1192,7 +1186,7 @@
                                        :vector-left :vector-right :vector :builder-fn :builder-def])
           skeletons (invoke 'sh08-ft-function-skeletons [(vec (vals (:function-index products))) (:module products)])
           inference (invoke 'sh08-ft-infer-acyclic-with-context
-                            [nodes (:nodes context) [] (:definitions products) (:calls products) (:call-edges products) skeletons binding-types 8
+                            [nodes (:nodes context) [] (:definitions products) (:calls products) (:call-edges products) skeletons binding-types
                              (assoc work-context :shape-call-products products)])]
       (is (= :converged (:convergence-status inference)))
       (is (= :gravity.type/string (get-in inference [:type-table :lookup])))
@@ -1951,7 +1945,7 @@
         products (assoc products :node-table nodes)
         joined (invoke 'sh08-bm-products [core products (vec (vals forms))])
         inference (invoke 'sh08-ft-infer-acyclic-with-context
-                          [(:nodes core) nodes lexical [] [] [] {} binding-types 50 {:boolean-matches (:boolean-matches joined)}])
+                          [(:nodes core) nodes lexical [] [] [] {} binding-types {:boolean-matches (:boolean-matches joined)}])
         types (:type-table inference)
         checked (invoke 'sh08-bm-checks [(:boolean-matches joined) types {} {:profile :meta :target :jvm}])
         context (-> base (update :forms merge forms) (update :nodes merge nodes) (update :types merge types)
