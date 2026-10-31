@@ -128,7 +128,7 @@
   (p15-s23-runtime-evaluate-in-instance instruction environment output functions path targets nil))
 
 (defn p15-s23-runtime-module-id? [value]
-  (if (string? value) (if (< 0 (count value)) (<= (count value) 256) false) false))
+  (if (string? value) (< 0 (count value)) false))
 
 (defn p15-s23-runtime-module-source? [source]
   (if (map? source)
@@ -361,7 +361,7 @@
         previous? (if (map? previous) (= function (get previous :function)) false)]
     (if (loop [checks
                [(map? input) (map? metadata) (if (map? metadata) (= 3 (count metadata)) false)
-                (map? range) (if (map? range) (<= (count range) 64) false) (map? record)
+                (map? range) (map? record)
                 (if (vector? names) (= 3 (count names)) false)
                 (if (vector? params) (= 3 (count params)) false)
                 (if (vector? values) (= 3 (count values)) false)
@@ -1273,14 +1273,14 @@
                             (loop [checks
                                    [(= #{:kind :numeric-mode :integer-type :operation-core-node-id :target-id :slot-binding-id :slot-name
                                           :guard-core-node-id :condition-core-node-id :count-core-node-id :count-operand-node-id
-                                          :vector-origin-node-id :unit-core-node-id :vector-extent :maximum-vector-extent :lower :step
+                                          :vector-origin-node-id :unit-core-node-id :vector-extent :lower :step
                                           :guard-relation :result-relation} (set (keys proof)))
-                                    (= [:gravity.runtime/bounded-unit-addition :proof-required :gravity.type/integer 1024 0 1
+                                    (= [:gravity.runtime/bounded-unit-addition :proof-required :gravity.type/integer 0 1
                                         :zero-le-counter-lt-extent :zero-lt-successor-le-extent]
                                        [(get proof :kind) (get proof :numeric-mode) (get proof :integer-type)
-                                        (get proof :maximum-vector-extent) (get proof :lower) (get proof :step)
+                                        (get proof :lower) (get proof :step)
                                         (get proof :guard-relation) (get proof :result-relation)])
-                                    (if (integer? extent) (<= 0 extent 1024) false)
+                                    (if (integer? extent) (<= 0 extent) false)
                                     (if (symbol? (get proof :slot-name)) (contains? environment (get proof :slot-name)) false)
                                     (loop [remaining [:operation-core-node-id :target-id :slot-binding-id :guard-core-node-id
                                                       :condition-core-node-id :count-core-node-id :count-operand-node-id
@@ -1288,7 +1288,7 @@
                                       (if (= 0 (count remaining)) true
                                         (let [id (get proof (first remaining))]
                                           (if (string? id)
-                                            (if (if (> (count id) 0) (<= (count id) 256) false)
+                                            (if (> (count id) 0)
                                               (recur (rest remaining)) false) false))))]]
                               (if (= 0 (count checks)) true
                                 (if (= true (first checks)) (recur (rest checks)) false))) false)) false) false) false)
@@ -1300,15 +1300,15 @@
                             (if (map? proof)
                               (if (= #{:kind :numeric-mode :integer-type :operation-core-node-id :target-id :slot-binding-id :slot-name
                                        :guard-core-node-id :condition-core-node-id :count-core-node-id :count-operand-node-id
-                                       :vector-origin-node-id :vector-extent :maximum-vector-extent :lower :step :guard-relation :result-relation}
+                                       :vector-origin-node-id :vector-extent :lower :step :guard-relation :result-relation}
                                      (set (keys proof)))
-                                (if (= [:gravity.runtime/bounded-successor :proof-required :gravity.type/integer 1024 0 1
+                                (if (= [:gravity.runtime/bounded-successor :proof-required :gravity.type/integer 0 1
                                         :zero-le-counter-lt-extent :zero-lt-successor-le-extent]
                                        [(get proof :kind) (get proof :numeric-mode) (get proof :integer-type)
-                                        (get proof :maximum-vector-extent) (get proof :lower) (get proof :step)
+                                        (get proof :lower) (get proof :step)
                                         (get proof :guard-relation) (get proof :result-relation)])
                                   (if (integer? extent)
-                                    (if (if (<= 0 extent) (<= extent 1024) false)
+                                    (if (<= 0 extent)
                                       (if (symbol? (get proof :slot-name))
                                         (if (contains? environment (get proof :slot-name))
                                           (loop [remaining [:operation-core-node-id :target-id :slot-binding-id :guard-core-node-id
@@ -1316,7 +1316,7 @@
                                             (if (= 0 (count remaining)) true
                                               (let [id (get proof (first remaining))]
                                                 (if (string? id)
-                                                  (if (if (> (count id) 0) (<= (count id) 256) false)
+                                                  (if (> (count id) 0)
                                                     (recur (rest remaining)) false) false)))) false) false) false) false) false) false) false) false)) false) false)
                   (if (contains? '#{nth conj contains? dissoc quot *} function)
                     (if (= fields #{:op :function :args})
@@ -1340,10 +1340,9 @@
                               (if (keyword? (get key :value)) (if (map? (get arguments 0)) (map? (get arguments 2)) false) false) false) false)) false) false)
                     (if (= function 'list)
                       (if (= fields #{:op :function :args})
-                        (if (<= (count arguments) 1023)
-                          (loop [remaining arguments]
-                            (if (= 0 (count remaining)) true
-                              (if (map? (first remaining)) (recur (rest remaining)) false))) false) false)
+                        (loop [remaining arguments]
+                          (if (= 0 (count remaining)) true
+                            (if (map? (first remaining)) (recur (rest remaining)) false))) false)
                       (if (= function 'str) (contains? #{1 2} (count arguments)) false)))))))))) false) false) false)
           (if (= operation :println)
             (if (contains? fields :args)
