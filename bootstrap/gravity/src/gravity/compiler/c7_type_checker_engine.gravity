@@ -8887,8 +8887,8 @@
                   (sh08-sm-failure "C7-TYPE-MISMATCH" (get validation :reason) nil (if (sh08-syin-selected? arguments)
             :finite-symbol-set-and-symbol-value
             (if (sh08-ksin-selected? arguments) :finite-keyword-set-and-keyword-value
-                   (if (if (= :gravity.type/set (get arguments 0)) true (if (sh08-lc-native-map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false)) :finite-string-set-and-string-value :established-list-and-first-order-value))) arguments)
-              (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-source-identities nil)))))))))
+                   (if (if (= :gravity.type/set (get arguments 0)) true (if (sh08-lc-native-map? (get arguments 0)) (= :gravity.type/set (get (get arguments 0) :kind)) false)) :finite-string-set-and-string-value :established-list-and-first-order-value))) arguments)))
+              (sh08-sm-failure "C7-VERIFY" :conj-source-id-required nil :closed-source-identities nil)))))))
 
 (defn sh08-syin-inferred-call [core node call edge nodes bindings types]
   (let [args (get call :argument-node-ids)]
@@ -9750,10 +9750,10 @@
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :list-set-conversion-source-mismatch}))
                     {:status :rejected :reason :list-set-conversion-source-mismatch}))
-                      {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required})))
+                      {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required}))
                   {:status :rejected :reason :list-set-conversion-homogeneous-keyword-list-type-required}))))
         {:status :rejected :reason :list-set-conversion-source-mismatch}))
-    {:status :rejected :reason :list-set-conversion-source-mismatch})
+    {:status :rejected :reason :list-set-conversion-source-mismatch}))
 
 (defn sh08-lset-constraint [descriptor]
   {:constraint-id-request {:domain :gravity/sh08-list-set-conversion-constraint-v1 :application descriptor}
@@ -9958,10 +9958,10 @@
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :map-keys-source-mismatch}))
                     {:status :rejected :reason :map-keys-source-mismatch}))
-                      {:status :rejected :reason :map-keys-finite-keyword-map-type-required})))
-                  {:status :rejected :reason :map-keys-finite-keyword-map-type-required})))
-        {:status :rejected :reason :map-keys-source-mismatch}))
-    {:status :rejected :reason :map-keys-source-mismatch})
+                      {:status :rejected :reason :map-keys-finite-keyword-map-type-required}))
+                  {:status :rejected :reason :map-keys-finite-keyword-map-type-required}))))
+        {:status :rejected :reason :map-keys-source-mismatch})
+    {:status :rejected :reason :map-keys-source-mismatch}))
 
 (defn sh08-pmk-id-vector? [values]
   (if (vector? values)
@@ -10025,7 +10025,7 @@
                         (if (loop [rows (get group 0)]
                               (if (= 0 (count rows)) true
                                 (if (sh08-pmk-record-ids? (first rows) (get group 1) (get group 2) (get group 3))
-                                  (recur (rest rows)) false))) (recur (rest groups)) false)))) false)
+                                  (recur (rest rows)) false))) (recur (rest groups)) false))))
               (if (sh08-ft-all-true?
                   [(loop [rows (get core :nodes)]
                      (if (= 0 (count rows)) true
@@ -10075,7 +10075,7 @@
                   {:status :rejected :reason :private-map-keys-source-mismatch})
                 {:status :rejected :reason :private-map-keys-source-mismatch})
               {:status :rejected :reason :private-map-keys-source-mismatch})
-        {:status :rejected :reason :private-map-keys-source-mismatch}))
+        {:status :rejected :reason :private-map-keys-source-mismatch})))
 
 (defn sh08-pmk-source [core node call edge nodes bindings types module]
   (if (vector? (get core :function-records))
@@ -10152,8 +10152,11 @@
                                                      :private-entry-domain :caller-entries :reference-uses :preserved-resolution :exports :mutations :var-references :recur-targets :recur-transfers :recursion-components
                                                      :result-type :stored-value-lifetimes :result-storage-policy :profile :target :evaluation-order]}}
                         {:status :rejected :reason :private-map-keys-source-mismatch}))
-                    {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required})))
-        {:status :rejected :reason :private-map-keys-source-mismatch}))))))
+                    {:status :rejected :reason :private-map-keys-source-mismatch}))
+                      {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))
+                  {:status :rejected :reason :private-map-keys-finite-keyword-map-type-required}))
+        {:status :rejected :reason :private-map-keys-source-mismatch})
+    {:status :rejected :reason :private-map-keys-source-mismatch}))
 
 (defn sh08-pmk-parameter [census core node nodes bindings forms]
   (let [record (get census :function-record) params (get record :parameter-binding-ids)
@@ -10362,10 +10365,10 @@
                                                                             :profile (get (get core :module) :profile) :target (get (get core :module) :target)}})
                                     normal-count))
                                   {:status :rejected :reason :private-map-keys-source-mismatch})
-                                {:status :rejected :reason :private-map-keys-entry-domain-required})))))))
+                                {:status :rejected :reason :private-map-keys-entry-domain-required}))))))
                   {:status :rejected :reason (get graph :reason)}))
               {:status :rejected :reason :private-map-keys-entry-domain-required}))
-      physical))
+      physical)))
 
 (defn sh08-pmk-header [core node call edge nodes bindings types forms]
   (let [source (sh08-pmk-source core node call edge nodes bindings types (get core :module))]
@@ -11116,7 +11119,7 @@
                                      (let [binding (get bindings (get predicate :operator-binding-id))]
                                        (if (= 'empty? (get binding :name)) (sh08-lq-binding? binding (get core :module)) false)) false) false) false) false)
                            (sh08-lq-source core condition predicate (get edges (get condition :node-id))
-                             nodes bindings types (get core :module) (sh08-lc-validate-types [input])) nil)
+                             nodes bindings types (get core :module) (sh08-lc-validate-types [input])) nil) nil)
                 control {:core-node-id (get branch :node-id) :kind :if :condition-node-id (get condition :node-id)
                          :branches [{:role :then :predicate :truthy :core-node-id (get (get branch :children) 1)}
                                     {:role :else :predicate :falsey :core-node-id (get (get branch :children) 2)}]
@@ -11124,7 +11127,7 @@
                          :result-policy :selected-branch}
                 controls (loop [records (get core :control-flow) found []]
                            (if (= 0 (count records)) found
-                             (recur (rest records) (if (= (get branch :node-id) (get (first records) :core-node-id)) (conj found (first records)) found)))))]
+                             (recur (rest records) (if (= (get branch :node-id) (get (first records) :core-node-id)) (conj found (first records)) found))))]
             (if (= :accepted (get path :status))
               (if (sh08-ft-all-true?
                     [(map? selected) (contains? #{1 2} ordinal) (= :if (get branch :core-form)) (= 3 (count (get branch :children)))
@@ -13223,8 +13226,8 @@
                 {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                  :constraint (sh08-mg-constraint descriptor)}
                 (sh08-sm-failure "C7-ANNOTATION" :map-get-presence-required nil
-                  :independently-established-finite-keyword-map-and-present-key (get header :key)))))
-        (sh08-sm-failure "C7-VERIFY" :map-get-source-mismatch nil :exact-operator-map-key-source id))))))
+                  :independently-established-finite-keyword-map-and-present-key (get header :key))))))
+        (sh08-sm-failure "C7-VERIFY" :map-get-source-mismatch nil :exact-operator-map-key-source id)))))
 
 (defn sh08-pe-type-view [types prior]
   (loop [ids (keys prior) out types]
@@ -13246,7 +13249,7 @@
               {:status :accepted :descriptor descriptor :type (get descriptor :result-type)
                :constraint (sh08-mg-constraint descriptor)}
               (sh08-sm-failure "C7-ANNOTATION" :map-get-private-entry-presence-required nil
-                :every-normal-private-entry-proves-literal-key (get header :key))))
+                :every-normal-private-entry-proves-literal-key (get header :key)))))
           (let [call (first remaining) args (get call :argument-node-ids)
                 complete? (loop [ids args]
                             (if (= 0 (count ids)) true
@@ -13258,7 +13261,7 @@
                               lexical bindings forms #{(get node :node-id)} 0 binding-shapes context) nil)]
                 (if (if invoked? (= :rejected (get shape :status)) false)
                   shape
-                  (recur (rest remaining) (conj shapes shape)))))))))))
+                  (recur (rest remaining) (conj shapes shape))))))))))
 
 (defn sh08-mg-present-derive [node nodes types binding-types functions lexical bindings forms binding-shapes context]
   (let [core (get context :source-core) id (get node :node-id)
