@@ -195,3 +195,34 @@ semantic assertions are unchanged. The complete models again pass 6 tests /
 focused adapter lint has zero errors and warnings. This adapter delta requires
 its own affected review; the earlier oracle acceptance does not cover it.
 Publication and automatic hosted CI for this composed correction remain pending.
+
+## Published correction and newly integrated lexical fixture
+
+Draft PR673 was normally updated to `f578abb0`, tree
+`361cd3aba02415939a7dfd899ec1aae344c59aa8`, composed with main `c7f6e489`.
+Automatic CI run `41172854770` tested merge `5ccf6697`, the same tree.
+Bootstrap and Macro passed. Resolution ran 45 tests / 1747 assertions with one
+failure and no errors: the newly integrated `lexical-normalization` fixture's
+fixed whole-artifact literal was still
+`sha256:0fdf519ad7657aa8b291b7aa46df085324bb1fb6bff3cb290b5ecbaf5c8152f2`;
+observed was
+`sha256:9ff5bc278edfcea7ed7d5a76b68e59e89f93628121ae0c55960e8c898e50f750`.
+Its accepted status, 276 bindings, 21 resolutions, complete artifact verifier,
+and rejected out-of-scope reference diagnostics passed. The earlier corrected
+identity assertion and all other Resolution controls passed. This is observed
+semantic/verification evidence, not a complete historical value comparison.
+
+Main introduced this fixture after the original oracle correction. Its real
+constructor explicitly selects the development-current Reader. The independent
+Resolution preimage and digest equations already used by the older fixture
+therefore also replace this new unconditional literal. The new assertion
+compares the complete independent preimage with the actual stage projection,
+then compares the independent digest with the returned artifact id. It retains
+all fixture construction and accepted/rejected semantic controls. No observed
+digest becomes an expected constant, and no production code or CI policy changes.
+This small successor requires its own affected review before publication.
+
+The same automatic run's portable leaf job failed before running tests because
+Maven Central returned HTTP 429 while resolving Clojure 1.12.5. Its artifact and
+checkout identity are preserved separately from the Resolution assertion
+failure. No manual rerun, alternate repository or CI bypass was attempted.

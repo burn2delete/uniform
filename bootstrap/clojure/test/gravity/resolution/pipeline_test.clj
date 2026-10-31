@@ -586,8 +586,9 @@
         accepted (compile-fixture "lexical-normalization")
         rejected (caught #(compile-fixture "lexical-leak"))]
     (is (= :accepted (:status accepted)))
-    (is (= "sha256:0fdf519ad7657aa8b291b7aa46df085324bb1fb6bff3cb290b5ecbaf5c8152f2"
-           (:artifact-id accepted)))
+    (is (= (expected/resolution-preimage accepted)
+           (resolution/artifact-identity-input accepted (operations))))
+    (is (= (expected/resolution-id accepted) (:artifact-id accepted)))
     (is (= 276 (count (get-in accepted [:binding-table :bindings]))))
     (is (= 21 (count (:resolution-table accepted))))
     (is (= :passed (:status (b/sh06-resolution-artifact-verification accepted :gravity.bootstrap/legacy invocation))))
