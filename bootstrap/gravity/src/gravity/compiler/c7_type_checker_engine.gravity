@@ -23239,18 +23239,15 @@
                                           (get lookup :descriptor) (get type-table (first children))))
                                     (recur (rest children)) false))) node-type :gravity.type/unknown)) node-type)
             ; Only this already-derived normal v2 access may advance its exact
-            ; immutable initializer bindings. Reserve both traversals first.
+            ; immutable initializer bindings.
             lexical-now? (if (= :accepted (get lookup :status))
                            (if (contains? #{:gravity.type/applied-vector-nth :gravity.type/applied-vector-get}
                                  (get (get lookup :descriptor) :kind))
                              (if (= :sh08-bounded-unit-step-v2
                                    (get (get (get (get (get lookup :descriptor) :bounds-proof) :loop-invariant) :range-proof) :version))
                                (if (sh08-ft-known? node-type) (= false (= :gravity.type/never node-type)) false) false) false) false)
-            lexical-work (if lexical-now? (* 2 (count lexical-bindings)) 0)
-            lexical-limit? (> (+ lookup-work (get lookup :work-count 0) (get if-result :work-count 0) lexical-work)
-                              (get context :loop-work-left 65536))
             next-binding-types
-            (if (if lexical-now? (= false lexical-limit?) false)
+            (if lexical-now?
               (let [selected (loop [records lexical-bindings out []]
                                (if (= 0 (count records)) out
                                  (let [record (first records)]
@@ -23271,17 +23268,13 @@
            function-result)
          (if (= :accepted (get if-result :status)) (conj lookup-rows (sh08-ij-row (get if-result :premise)))
            (if (= :accepted (get lookup :status)) (conj lookup-rows (get lookup :constraint)) lookup-rows))
-         (if (if lexical-now? lexical-limit? false)
-           (conj lookup-issues {:node node :rule "C7-GENERIC" :reason :bounded-unit-access-lexical-work-limit
-                               :expected :remaining-type-join-units
-                               :actual (- (get context :loop-work-left 65536) lookup-work)})
          (if (if (if lookup? true association?) (= :rejected (get lookup :status)) false)
            (conj lookup-issues (assoc lookup :node node))
            (if (= :rejected (get if-result :status))
              (conj lookup-issues (assoc if-result :node node
                :rule (if (= :list-if-join-work-limit (get if-result :reason)) "C7-GENERIC" "C7-VERIFY")
-               :expected :source-bound-independent-list-if-join :actual (get node :node-id))) lookup-issues)))
-         (+ lookup-work (get lookup :work-count 0) (get if-result :work-count 0) lexical-work)
+               :expected :source-bound-independent-list-if-join :actual (get node :node-id))) lookup-issues))
+         (+ lookup-work (get lookup :work-count 0) (get if-result :work-count 0))
          (if (if (= :accepted (get lookup :status)) (map? (get lookup :local-private-product)) false)
            (assoc private-products (get node :node-id) (get lookup :local-private-product)) private-products)))))))
 
