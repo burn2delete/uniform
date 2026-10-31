@@ -33,128 +33,93 @@
 (def sh07-core-public-function-hashes
   '{sh07-build-core-template "sha256:3c986f70123a51afb4e788199f559b1d571afd825c2ba72c0a53675eb5c34948", sh07-resolve-source-core-map-preimage "sha256:667f3461e8566c1a0ec854f156f1aa56baf8b9d34ffc1f31e7a06a35e7c0048d", sh07-verify-core-resolved "sha256:d0aa83b35de51eb7fdbbdef6133aa5b20ec825340bf45d8c3833fb6801ffa8ba", sh07-verify-core-template "sha256:4bc863464168971648f1c3e7ee17df32155e6c3d77b6c3d69d138566cf3b1791", sh07-verify-source-core-map "sha256:30b77009004032faa6306970676d9bf7e3a01c33d51006c9b69811a20cae1637"})
 
-(defn sh07-core-source-path []
-  (let [anchor (java.io.File. (p15-s23-stage2-compiler-artifact-source-path))
-        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
-    (or
-     (loop [directory start]
-       (when directory
-         (let [candidate (java.io.File. directory sh07-core-source-relative-path)]
-           (if (.isFile candidate)
-             (.getPath candidate)
-             (recur (.getParentFile directory))))))
-     sh07-core-source-relative-path)))
+(declare
+ ^{:private true} checked-core-stage-input
+ ^{:private true, :dynamic true} *sh07-core-execution-binding*
+ ^{:private true} sh07-core-cached-binding
+ ^{:private true} sh07-core-development-binding
+ sh07-core-public-function-shapes
+ sh07-core-source-relative-path
+ sh07-core-build-binding!
+ ^{:private true} sh07-core-current-source-key
+ sh07-core-plan-identities
+ sh07-core-source-path)
 
-(defn sh07-core-plan-identities [plan]
-  (let [functions (:functions plan)
-        shapes (into (sorted-map)
-              (map (fn [[name function]]
-                     [name (select-keys function [:arity :params])]))
-              functions)]
-    {:plan-semantic-hash
-     (p15-s23-c11-mir-digest
-      (p15-s23-stage2-compiler-artifact-semantic-input plan))
-     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
-     :function-count (count functions)
-     :function-names-hash (p15-s23-c11-mir-digest (vec (keys functions)))
-     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
-     :public-function-hashes
-     (into (sorted-map)
-           (map (fn [name]
-                  [name (p15-s23-c11-mir-digest (get functions name))]))
-           (keys sh07-core-public-function-shapes))
-     :public-function-shapes
-     (select-keys shapes (keys sh07-core-public-function-shapes))}))
+(def
+ ^{:private true} checked-core-stage-defaults
+ {:p15-s23-stage2-compiler-artifact-plan
+  #'p15-s23-stage2-compiler-artifact-plan,
+  :sh07-core-source-path #'sh07-core-source-path,
+  :sh07-core-current-source-key #'sh07-core-current-source-key,
+  :p15-s23-stage2-runtime-execute-function
+  #'p15-s23-stage2-runtime-execute-function,
+  :p15-s23-stage2-compiler-artifact-semantic-input
+  #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :read-forms #'read-forms,
+  :sh07-core-plan-identities #'sh07-core-plan-identities,
+  :c-backend-resolve-p15-s23-compiler-source-path
+  #'c-backend-resolve-p15-s23-compiler-source-path,
+  :sha256-bytes-hex #'sha256-bytes-hex,
+  :input #'checked-core-stage-input,
+  :p15-s23-c6c10-carrier-validation #'p15-s23-c6c10-carrier-validation,
+  :sh07-core-build-binding! #'sh07-core-build-binding!,
+  :c-backend-stage2-plan-emitter-source-rule!
+  #'c-backend-stage2-plan-emitter-source-rule!,
+  :p15-s23-stage2-compiler-artifact-source-path
+  #'p15-s23-stage2-compiler-artifact-source-path,
+  :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
 
-(defn sh07-core-build-binding! []
-  (let [source-path (sh07-core-source-path)
-        bytes (java.nio.file.Files/readAllBytes
-               (.toPath (java.io.File. source-path)))
-        source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
-        source-hash (str "sha256:" (sha256-bytes-hex bytes))
-        emitter (:emitter (c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
-        plan (p15-s23-stage2-compiler-artifact-plan emitter source-path source-text)
-        identities (sh07-core-plan-identities plan)]
-    (when-not
-     (and (= source-hash (get-in plan [:source :sha256]))
-          (= sh07-core-public-function-shapes
-             (:public-function-shapes identities))
-          (= (set (concat '[sh07-core-contract sh07-core-diagnostic-catalog]
-                          (keys sh07-core-public-function-shapes)))
-             (set (some #(when (= :exports (first %)) (second %))
-                        (drop 2 (first (read-forms source-path source-text))))))
-          (= 'gravity.checked-core (get-in plan [:module :module]))
-          (= :meta (get-in plan [:module :profile]))
-          (= :jvm (get-in plan [:module :target]))
-          (= #{} (get-in plan [:module :effects]))
-          (= #{} (get-in plan [:module :capabilities]))
-          (= :safe (get-in plan [:module :safety])))
-      (throw (ex-info "SH-07 checked-core module contract changed"
-                {:id "C6-VERIFY" :stage :core-lowering
-                 :missing-fields [:sh07-core-module-contract]
-                 :observed (merge {:source-byte-count (alength bytes)
-                         :source-content-hash source-hash :module (:module plan) :plan-source (:source plan)}
-                        identities)})))
-    (when-not (= source-hash
-                 (str "sha256:"
-                      (sha256-bytes-hex
-                       (java.nio.file.Files/readAllBytes
-                        (.toPath (java.io.File. source-path))))))
-      (throw (ex-info "SH-07 source changed during compilation"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :reason :checked-core-source-drift})))
-    (merge
-     {:artifact :gravity/sh07-current-core-plan-binding
-      :revision-status :development-unadmitted
-      :source-path source-path :source-byte-count (alength bytes)
-      :source-content-hash source-hash :plan plan
-      :semantic-authority :gravity-source
-      :compiled-by :clojure-stage0-seed
-      :executed-by :clojure-stage2-generic-rule-runner
-      :generic-bridge-residual? true :self-hosted? false}
-     identities)))
+(defn- checked-core-stage-operations [] checked-core-stage-defaults)
 
-(defn- sh07-core-current-source-key []
-  (let [source (sh07-core-source-path)
-        compiler (java.io.File. (c-backend-resolve-p15-s23-compiler-source-path))
-        emitter (java.io.File. (p15-s23-stage2-compiler-artifact-source-path))
-        snapshot (fn [file]
-                   [(.getCanonicalPath ^java.io.File file)
-                    (str "sha256:" (sha256-bytes-hex
-                          (java.nio.file.Files/readAllBytes
-                           (.toPath ^java.io.File file))))])]
-    {:source (snapshot (java.io.File. source))
-     :toolchain [(snapshot compiler) (snapshot emitter)]}))
+(defn-
+ checked-core-stage-input
+ [field]
+ (case
+  field
+  :*sh07-core-execution-binding*
+  *sh07-core-execution-binding*
+  :sh07-core-cached-binding
+  sh07-core-cached-binding
+  :sh07-core-development-binding
+  sh07-core-development-binding
+  :sh07-core-public-function-shapes
+  sh07-core-public-function-shapes
+  :sh07-core-source-relative-path
+  sh07-core-source-relative-path
+  (throw (ex-info "Unknown checked-core stage input" {:input field}))))
+
+(defn
+ sh07-core-source-path
+ []
+ (gravity.checked-core/source-path (checked-core-stage-operations)))
+
+(defn
+ sh07-core-plan-identities
+ [plan]
+ (gravity.checked-core/plan-identities
+  plan
+  (checked-core-stage-operations)))
+
+(defn
+ sh07-core-build-binding!
+ []
+ (gravity.checked-core/build-plan-binding!
+  (checked-core-stage-operations)))
+
+(defn-
+ sh07-core-current-source-key
+ []
+ (gravity.checked-core/source-key (checked-core-stage-operations)))
 
 (def ^:private sh07-core-development-binding (atom nil))
 
-(defn sh07-core-current-binding!
-  "Compile the current source; reuse only a binding for unchanged input bytes."
-  []
-  (locking sh07-core-development-binding
-    (let [key (sh07-core-current-source-key)
-          cached @sh07-core-development-binding]
-      (when (and cached
-                 (not= (:toolchain key) (get-in cached [:key :toolchain])))
-        (throw (ex-info "SH-07 compiler dependencies changed; reload the toolchain"
-                        {:id "C6-VERIFY" :stage :core-lowering
-                         :reason :checked-core-toolchain-drift})))
-      (if (= key (:key cached))
-        (:binding cached)
-        (let [binding (sh07-core-build-binding!)]
-          (when-not (= (second (:source key)) (:source-content-hash binding))
-            (throw (ex-info "SH-07 source changed before binding publication"
-                            {:id "C6-VERIFY" :stage :core-lowering
-                             :reason :checked-core-source-drift})))
-          (let [after (sh07-core-current-source-key)]
-            (when-not (= key after)
-              (throw (ex-info "SH-07 inputs changed before binding publication"
-                              {:id "C6-VERIFY" :stage :core-lowering
-                               :reason (if (= (:toolchain key) (:toolchain after))
-                                         :checked-core-source-drift
-                                         :checked-core-toolchain-drift)}))))
-          (reset! sh07-core-development-binding {:key key :binding binding})
-          binding)))))
+(defn
+ sh07-core-current-binding!
+ "Compile the current source; reuse only a binding for unchanged input bytes."
+ []
+ (gravity.checked-core/current-plan-binding!
+  (checked-core-stage-operations)))
 
 (def ^:private sh07-core-cached-binding
   (reify clojure.lang.IDeref
@@ -188,41 +153,14 @@
 
 (def ^:private ^:dynamic *sh07-core-execution-binding* nil)
 
-(defn sh07-core-execute! [source-path function arguments]
-  (try
-    (p15-s23-c6c10-carrier-validation source-path arguments)
-    (let [result
-          (p15-s23-stage2-runtime-execute-function
-           {:engine :gravity-sh07-pinned-core-runner :compiler-artifact-plan? true}
-           (:plan (or *sh07-core-execution-binding* @sh07-core-cached-binding))
-           function (sh04-syntax-strip-host-metadata arguments))]
-      (p15-s23-c6c10-carrier-validation source-path result)
-      (sh04-syntax-strip-host-metadata result))
-    (catch InterruptedException interrupted
-      (.interrupt (Thread/currentThread))
-      (throw interrupted))
-    (catch StackOverflowError error
-      (throw (ex-info "SH-07 core boundary rejected host stack exhaustion"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :source-path source-path :contained-host-error (.getName (class error))})))
-    (catch OutOfMemoryError error
-      (throw (ex-info "SH-07 core boundary rejected host memory exhaustion"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :source-path source-path :contained-host-error (.getName (class error))})))
-    (catch AssertionError error
-      (throw (ex-info "SH-07 core boundary contained an assertion"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :source-path source-path :contained-host-error (.getName (class error))})))
-    (catch LinkageError error
-      (throw (ex-info "SH-07 core boundary contained a linkage failure"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :source-path source-path :contained-host-error (.getName (class error))})))
-    (catch clojure.lang.ExceptionInfo error (throw error))
-    (catch Exception error
-      (throw (ex-info "SH-07 core boundary contained a host failure"
-                      {:id "C6-VERIFY" :stage :core-lowering
-                       :source-path source-path :contained-host-error (.getName (class error))}
-                      error)))))
+(defn
+ sh07-core-execute!
+ [source-path function arguments]
+ (gravity.checked-core/execute!
+  source-path
+  function
+  arguments
+  (checked-core-stage-operations)))
 
 (defn sh07-core-source-path-from-resolution [resolution-artifact]
   (or (get-in resolution-artifact [:provenance :source-path])

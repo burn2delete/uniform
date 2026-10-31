@@ -68,30 +68,77 @@
      :syntax (sh07-core-construction-binding-view (sh04-syntax-current-binding! source-path))
      :core (sh07-core-construction-binding-view @sh07-core-cached-binding)}))
 
-(defn- sh07-core-construction-roots []
-  (mapv (fn [name]
-          (let [v (ns-resolve 'gravity.bootstrap name)]
-            [v (var-get v)]))
-        '[sh06-resolution-artifact-verification sh06-resolution-artifact-verification-contained
-          sh06-resolution-artifact-verification* sh06-resolution-artifact-verification-bounded*
-          sh05-macro-artifact-verification sh05-macro-artifact-verification*
-          sh07-proof-transaction-report c3-syntax-capability-proof
-          c3-syntax-stream-reader-products-authentic? c3-current-reader-revision-authentic?
-          sh04-syntax-reader-binding p15-s23-stage2-sh02-descriptor-envelope-verify!
-          p15-s23-stage2-sh02-descriptor-envelope sh03-reader-authenticated-envelope-options
-          p15-s23-sh02-source-snapshot! sh07-core-current-source-key
-          sh06-resolution-current-source-key sh05-macro-read-pinned-source!
-          sh04-syntax-read-pinned-source! sh07-core-current-binding!
-          sh06-resolution-current-binding! sh06-resolution-binding-current!
-          sh05-macro-current-binding! sh04-syntax-current-binding!
-          sh07-core-construction-dependencies sh07-core-construction-bindings
-          sh07-core-construction-envelope-source sh07-core-construction-carrier!
-          sh07-core-construction-reader sh07-core-construction-catalog
-          sh07-core-construction-envelope!
-          sh07-core-construction-check! sh07-core-run-with-construction
-          sh07-core-build-verified-artifact sh07-core-request-from-verified-upstream
-          sh07-core-run-structural-request-for-test
-          sh07-core-execute! sh07-core-verification-checks sh07-core-proof-from-checks]))
+(defn-
+ sh07-core-construction-roots
+ []
+ (into
+  (mapv
+   (fn [v] [v (var-get v)])
+   (concat
+    [#'gravity.checked-core/build-plan-binding!
+     #'gravity.checked-core/current-plan-binding!
+     #'gravity.checked-core/execute!
+     #'gravity.checked-core/plan-identities
+     #'gravity.checked-core/source-key
+     #'gravity.checked-core/source-path
+     #'sh07-core-build-binding!
+     #'sh07-core-current-binding!
+     #'sh07-core-current-source-key
+     #'sh07-core-execute!
+     #'sh07-core-plan-identities
+     #'sh07-core-source-path
+     #'checked-core-stage-operations
+     #'checked-core-stage-defaults
+     #'checked-core-stage-input
+     #'sh07-core-cached-binding
+     #'sh07-core-development-binding
+     #'sh07-core-public-function-shapes
+     #'sh07-core-source-relative-path
+     #'*sh07-core-execution-binding*]
+    (filter var? (vals checked-core-stage-defaults))))
+  (mapv
+   (fn
+    [name]
+    (let [v (ns-resolve 'gravity.bootstrap name)] [v (var-get v)]))
+   '[sh06-resolution-artifact-verification
+     sh06-resolution-artifact-verification-contained
+     sh06-resolution-artifact-verification*
+     sh06-resolution-artifact-verification-bounded*
+     sh05-macro-artifact-verification
+     sh05-macro-artifact-verification*
+     sh07-proof-transaction-report
+     c3-syntax-capability-proof
+     c3-syntax-stream-reader-products-authentic?
+     c3-current-reader-revision-authentic?
+     sh04-syntax-reader-binding
+     p15-s23-stage2-sh02-descriptor-envelope-verify!
+     p15-s23-stage2-sh02-descriptor-envelope
+     sh03-reader-authenticated-envelope-options
+     p15-s23-sh02-source-snapshot!
+     sh07-core-current-source-key
+     sh06-resolution-current-source-key
+     sh05-macro-read-pinned-source!
+     sh04-syntax-read-pinned-source!
+     sh07-core-current-binding!
+     sh06-resolution-current-binding!
+     sh06-resolution-binding-current!
+     sh05-macro-current-binding!
+     sh04-syntax-current-binding!
+     sh07-core-construction-dependencies
+     sh07-core-construction-bindings
+     sh07-core-construction-envelope-source
+     sh07-core-construction-carrier!
+     sh07-core-construction-reader
+     sh07-core-construction-catalog
+     sh07-core-construction-envelope!
+     sh07-core-construction-check!
+     sh07-core-run-with-construction
+     sh07-core-build-verified-artifact
+     sh07-core-request-from-verified-upstream
+     sh07-core-run-structural-request-for-test
+     sh07-core-execute!
+     sh07-core-verification-checks
+     sh07-core-proof-from-checks])))
 
 (defn- sh07-core-construction-phase []
   (when-let [context (sh07-proof-transaction-context!)]
