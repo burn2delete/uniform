@@ -28,12 +28,13 @@
     sh07-core-resolve-digest-preimage! sh07-core-digest-requests sh07-core-resolve-result
     sh07-core-public-decimal-presentation sh07-core-canonical-artifact sh07-core-raise-diagnostic!
     sh07-core-request-diagnostic! sh07-core-request-preflight!
-    sh07-core-run-structural-request-for-test sh07-core-run-request-for-test])
+    sh07-core-run-structural-request-for-test sh07-core-run-request-for-test
+    sh07-core-projection-diagnostic! sh07-core-error-transfers-coherent?])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 53 (count publics)))
+    (is (= 55 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -716,3 +717,78 @@
                                     (fn [] ((seed-var 'sh07-core-construction-check!) facts))))]
               (is (= :construction-dependency-drift (:reason (ex-data error))) (str (:name (meta v))))))
           (is (zero? @downstream)))))))
+(def ^:private transfer-shared
+  {:construction-order 0 :runtime-reachability :executed :transfer-policy :typed-error
+   :result-policy :no-return :required-effect :error/throw
+   :authenticated-sh06-artifact-id :owner :sh06-semantic-projection-id :semantic
+   :type-legality :pending :effect-registry-legality :pending
+   :effect-profile-capability-legality :pending :profile-error-lowering-legality :pending
+   :ownership-legality :pending :safety-classification :pending})
+
+(def ^:private transfer-core
+  {:nodes [{:node-id :value :core-form :literal}
+           {:node-id :throw :core-form :throw :children [:value] :resolved-binding-ids []
+            :evaluation {:kind :value-then-transfer :order [{:index 0 :core-node-id :value}]}
+            :attributes (assoc transfer-shared :value-child-index 0 :evaluation-order :value-then-transfer)}]
+   :error-transfers [(assoc transfer-shared :ordinal 0 :core-node-id :throw :value-core-node-id :value
+                           :evaluated-children [:value] :ordered-steps [:evaluate-value :transfer-error])]})
+
+(deftest transfer-coherence-preserves-bijection-order-and-shared-facts
+  (let [ops (operations)]
+    (is (true? (core/error-transfers-coherent? transfer-core ops)))
+    (is (true? (core/error-transfers-coherent? {:nodes [] :error-transfers []} ops)))
+    (doseq [bad (concat
+                [(assoc transfer-core :nodes nil) (update transfer-core :nodes seq)
+                 (assoc transfer-core :error-transfers []) (update transfer-core :error-transfers seq)
+                 (update transfer-core :nodes conj (second (:nodes transfer-core)))
+                 (update transfer-core :error-transfers conj (first (:error-transfers transfer-core)))
+                 (assoc-in transfer-core [:error-transfers 0 :ordinal] 1)
+                 (assoc-in transfer-core [:error-transfers 0 :core-node-id] :missing)
+                 (assoc-in transfer-core [:error-transfers 0 :value-core-node-id] :other)
+                 (assoc-in transfer-core [:error-transfers 0 :evaluated-children] [])
+                 (assoc-in transfer-core [:error-transfers 0 :ordered-steps] [:transfer-error :evaluate-value])
+                 (assoc-in transfer-core [:nodes 1 :children] [])
+                 (assoc-in transfer-core [:nodes 1 :resolved-binding-ids] [:unexpected])
+                 (assoc-in transfer-core [:nodes 1 :evaluation :kind] :transfer-before-value)
+                 (assoc-in transfer-core [:nodes 1 :evaluation :order] [])
+                 (assoc-in transfer-core [:nodes 1 :attributes :value-child-index] 1)
+                 (assoc-in transfer-core [:nodes 1 :attributes :evaluation-order] :transfer-before-value)]
+                (map #(assoc-in transfer-core [:error-transfers 0 %] :tampered) (keys transfer-shared)))]
+      (is (false? (core/error-transfers-coherent? bad ops)))
+      (is (= (b/sh07-core-error-transfers-coherent? bad) (core/error-transfers-coherent? bad ops))))
+    ;; Equality is the retained predicate boundary, not presence/legality proof.
+    (let [without-facts (-> transfer-core
+                            (update-in [:nodes 1 :attributes] #(apply dissoc % (keys transfer-shared)))
+                            (update-in [:error-transfers 0] #(apply dissoc % (keys transfer-shared))))
+          contract (:gravity/namespace-contract (meta #'core/error-transfers-coherent?))]
+      (is (true? (core/error-transfers-coherent? without-facts ops)))
+      (is (= :owner-validated-native-core-data (get-in contract [:public-api 'error-transfers-coherent? :input-boundary])))
+      (is (false? (get-in contract [:public-api 'error-transfers-coherent? :checks-legality-fact-presence?]))))))
+
+(deftest projection-diagnostic-retains-source-facts-and-unresolved-identity
+  (let [ops (operations)
+        parent {:artifact-id :authenticated-owner
+                :namespace-analysis {:namespace 'unit :profile :meta :target :jvm}
+                :gravity-resolution-boundary {:authenticated-resolution-request
+                                              {:module {:source-revision-id :source-revision}
+                                               :provenance {:actual-source-path "unit.gravity"}}}}
+        reason :transfer-order
+        failure (ex-data (caught #(core/projection-diagnostic! parent reason ops)))]
+    (is (= failure (ex-data (caught #(b/sh07-core-projection-diagnostic! parent reason)))))
+    (is (= ["C6-VERIFY" :error :core-lowering] ((juxt :rule :severity :stage) failure)))
+    (is (= {:source "unit.gravity"} (:source-span failure)))
+    (is (= [nil nil nil []] ((juxt :syntax-id :form-id :core-node-id :generated-origin-chain) failure)))
+    (is (= ['unit :meta :jvm] ((juxt :namespace :profile :target) failure)))
+    (is (= {:reason reason :rule-specific {:reason reason} :source-revision-id :source-revision
+            :sh06-artifact-id :authenticated-owner :authenticated-sh06-artifact-id :authenticated-owner
+            :fail-closed true} (:facts failure)))
+    (is (= (b/reader-canonical-hash {:domain :gravity/sh07-projection-diagnostic-v16 :reason reason :sh06-artifact-id :authenticated-owner})
+           (:diagnostic-id-request failure)))
+    (is (not (contains? failure :diagnostic-id)))
+    (is (not= (:diagnostic-id-request failure)
+              (:diagnostic-id-request (ex-data (caught #(core/projection-diagnostic! parent :other ops))))))
+    (is (not= (:diagnostic-id-request failure)
+              (:diagnostic-id-request (ex-data (caught #(core/projection-diagnostic! (assoc parent :artifact-id :other) reason ops))))))
+    (let [missing (ex-data (caught #(core/projection-diagnostic! {} reason ops)))]
+      (is (= [nil nil nil] ((juxt :namespace :profile :target) missing)))
+      (is (= {:source "<sh07-core-input>"} (:source-span missing))))))

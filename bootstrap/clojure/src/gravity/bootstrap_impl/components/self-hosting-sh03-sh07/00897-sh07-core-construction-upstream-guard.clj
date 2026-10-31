@@ -197,7 +197,11 @@
  #'sh07-core-request-preflight!
  #'sh07-core-run-structural-request-for-test
  #'sh07-core-run-request-for-test
- #'checked-core-with-execution-binding]
+ #'checked-core-with-execution-binding
+ #'gravity.checked-core/error-transfers-coherent?
+ #'gravity.checked-core/projection-diagnostic!
+ #'sh07-core-error-transfers-coherent?
+ #'sh07-core-projection-diagnostic!]
     (filter var? (vals checked-core-stage-defaults))))
   (mapv
    (fn

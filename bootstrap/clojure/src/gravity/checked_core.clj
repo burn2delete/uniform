@@ -182,6 +182,12 @@
       :sh07-core-source-path
       :sha256-bytes-hex],
      :admission :none},
+    projection-diagnostic!
+    {:arglists ([resolution-artifact reason operations]),
+     :operation-inputs
+     [:reader-canonical-hash :sh07-core-source-path-from-resolution],
+     :admission :none,
+     :resolved-diagnostic-identity? false},
     macro-trace
     {:arglists [[lineage sh05-step operations]],
      :operation-inputs [:reader-canonical-hash],
@@ -253,6 +259,12 @@
     {:arglists [[trace operations]],
      :operation-inputs [:sh05-path-neutral-semantic-value],
      :admission :none},
+    error-transfers-coherent?
+    {:arglists ([core _operations]),
+     :operation-inputs [],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     projected-syntax-id
     {:arglists
      [[source-revision-id root-syntax-id path kind trace operations]],
@@ -481,7 +493,7 @@
       :sh07-core-source-path-from-resolution],
      :admission :none}},
    :governing-contracts
-   [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2 B13],
+   [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2 B13 L9],
    :seed-inputs
    [:*sh07-core-execution-binding*
     :sh07-core-cached-binding
@@ -504,7 +516,9 @@
     :diagnostic-safe-public-projection
     :diagnostic-publication
     :structural-test-runner-c5-authentication
-    :test-runner-core-owner-admission],
+    :test-runner-core-owner-admission
+    :transfer-predicate-native-carrier-validation
+    :transfer-predicate-legality-fact-presence-and-proof],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -528,7 +542,9 @@
     :request-rule-specific-failure-data
     :native-core-request
     :verified-c5-parent-and-reader-invocation
-    :current-scoped-core-plan],
+    :current-scoped-core-plan
+    :native-core-node-and-error-transfer-records
+    :c5-provenance-and-projection-failure-reason],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -550,7 +566,9 @@
      :request-shape-and-identity-preflight
      :test-request-membership
      :test-execution-revision-bookends
-     :template-and-resolved-replay-failure],
+     :template-and-resolved-replay-failure
+     :error-transfer-structural-coherence
+     :projection-verification-failure-carrier],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -578,7 +596,9 @@
     :explicit-host-decimal-presentation
     :c6-diagnostic-construction-records
     :request-preflight-acceptance
-    :test-only-core-template-digest-and-replay-bundle],
+    :test-only-core-template-digest-and-replay-bundle
+    :structural-transfer-coherence-result
+    :projection-diagnostic-construction-record],
    :clojure-seed-boundary? true,
    :contract-boundary
    :checked-core-supported-data-runtime-and-test-execution})
@@ -3678,6 +3698,128 @@
      {:reason :authenticated-sh06-request-membership-mismatch}))
    (sh07-core-run-structural-request-for-test authenticated-request))))
 
+(defn
+ projection-diagnostic!
+ [resolution-artifact reason operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh07-core-source-path-from-resolution
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-source-path-from-resolution)
+   source-path
+   (sh07-core-source-path-from-resolution resolution-artifact)
+   diagnostic
+   {:lowering-rule :sh07-b47-function-call-recursion-products,
+    :remediation
+    "Replay the Gravity template and bind every digest ordinal exactly once.",
+    :source-span {:source source-path},
+    :stage :core-lowering,
+    :rule "C6-VERIFY",
+    :diagnostic-id-request
+    (reader-canonical-hash
+     {:domain :gravity/sh07-projection-diagnostic-v16,
+      :reason reason,
+      :sh06-artifact-id (:artifact-id resolution-artifact)}),
+    :generated-origin-chain [],
+    :syntax-id nil,
+    :severity :error,
+    :core-node-id nil,
+    :artifact :gravity/sh07-core-diagnostic,
+    :form-id nil,
+    :target (get-in resolution-artifact [:namespace-analysis :target]),
+    :facts
+    {:reason reason,
+     :rule-specific {:reason reason},
+     :source-revision-id
+     (get-in
+      resolution-artifact
+      [:gravity-resolution-boundary
+       :authenticated-resolution-request
+       :module
+       :source-revision-id]),
+     :sh06-artifact-id (:artifact-id resolution-artifact),
+     :authenticated-sh06-artifact-id
+     (:artifact-id resolution-artifact),
+     :fail-closed true},
+    :namespace
+    (get-in resolution-artifact [:namespace-analysis :namespace]),
+    :profile
+    (get-in resolution-artifact [:namespace-analysis :profile])}]
+  (throw
+   (ex-info "SH-07 projection authentication failed" diagnostic))))
+
+(defn
+ error-transfers-coherent?
+ [core _operations]
+ (let
+  [nodes
+   (:nodes core)
+   transfers
+   (:error-transfers core)
+   throw-nodes
+   (when
+    (vector? nodes)
+    (filterv
+     (fn*
+      [p1__154#]
+      (and (map? p1__154#) (= :throw (:core-form p1__154#))))
+     nodes))
+   throw-node-by-id
+   (when
+    (vector? throw-nodes)
+    (into {} (map (juxt :node-id identity)) throw-nodes))
+   shared-attribute-keys
+   [:construction-order
+    :runtime-reachability
+    :transfer-policy
+    :result-policy
+    :required-effect
+    :authenticated-sh06-artifact-id
+    :sh06-semantic-projection-id
+    :type-legality
+    :effect-registry-legality
+    :effect-profile-capability-legality
+    :profile-error-lowering-legality
+    :ownership-legality
+    :safety-classification]]
+  (and
+   (vector? nodes)
+   (vector? transfers)
+   (= (count throw-nodes) (count transfers))
+   (= (count throw-nodes) (count throw-node-by-id))
+   (every?
+    true?
+    (map-indexed
+     (fn
+      [ordinal transfer]
+      (let
+       [node
+        (get throw-node-by-id (:core-node-id transfer))
+        value-node-id
+        (:value-core-node-id transfer)]
+       (and
+        (map? transfer)
+        (map? node)
+        (= ordinal (:ordinal transfer))
+        (= [value-node-id] (:evaluated-children transfer))
+        (= [value-node-id] (:children node))
+        (= [] (:resolved-binding-ids node))
+        (= :value-then-transfer (get-in node [:evaluation :kind]))
+        (=
+         [{:index 0, :core-node-id value-node-id}]
+         (get-in node [:evaluation :order]))
+        (= 0 (get-in node [:attributes :value-child-index]))
+        (=
+         :value-then-transfer
+         (get-in node [:attributes :evaluation-order]))
+        (= [:evaluate-value :transfer-error] (:ordered-steps transfer))
+        (=
+         (select-keys transfer shared-attribute-keys)
+         (select-keys (:attributes node) shared-attribute-keys)))))
+     transfers)))))
+
 (doseq
  [operation
   [#'build-plan-binding!
@@ -3736,7 +3878,9 @@
    #'request-diagnostic!
    #'request-preflight!
    #'run-structural-request-for-test
-   #'run-request-for-test]]
+   #'run-request-for-test
+   #'error-transfers-coherent?
+   #'projection-diagnostic!]]
  (alter-meta!
   operation
   assoc
