@@ -19,6 +19,7 @@
             [gravity.c2-pass-cache :as c2-pass-cache]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
             [gravity.reader.dispatch :as reader-dispatch]
+            [gravity.reader.pure-text :as reader-pure-text]
             [gravity.c3-artifact-identity :as c3-artifact-identity]
             [gravity.c3-reader-integrity :as c3-reader-integrity]
             [gravity.c3-reader-expansions :as c3-reader-expansions]
