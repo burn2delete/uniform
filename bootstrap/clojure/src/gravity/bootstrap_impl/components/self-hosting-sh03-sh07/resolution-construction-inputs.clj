@@ -102,6 +102,27 @@
          #'sh06-let-loop-binding-paths
          #'sh06-match-pattern-binding-paths
          #'sh06-unique-match-binding-paths
+         #'sh06-resolution-artifact-identity-input
+         #'sh06-resolution-artifact-identity-input-with-chunks
+         #'sh06-resolution-envelope-summary-with-chunks
+         #'sh06-resolution-identity-chunks
+         #'sh06-resolution-order-compatibility
+         #'sh06-resolution-product-identity-chunks
+         #'gravity.resolution/artifact-id
+         #'gravity.resolution/artifact-identity-input
+         #'gravity.resolution/artifact-identity-input-with-chunks
+         #'gravity.resolution/envelope-summary
+         #'gravity.resolution/envelope-summary-with-chunks
+         #'gravity.resolution/identity-chunks
+         #'gravity.resolution/product-identity-chunks
+         #'gravity.resolution/product-projections
+         #'resolution-stage-system-property
+         #'sh06-resolution-boundary-keys
+         #'sh06-resolution-envelope-stage
+         #'sh06-resolution-sealed-artifact-kind
+         #'sh06-resolution-source-relative-path
+         #'gravity.resolution/boundary-keys-for
+         #'gravity.resolution/envelope-descriptor
          #'resolution-stage-operations #'resolution-stage-defaults #'resolution-stage-input
          #'sh06-authenticated-sh05-parent! #'sh06-resolution-verify-sh05
          #'sh05-macro-artifact-verification #'sh05-macro-artifact-verification*

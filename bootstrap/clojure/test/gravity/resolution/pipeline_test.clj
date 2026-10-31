@@ -27,7 +27,7 @@
 (deftest contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.resolution)
         contract (:gravity/namespace-contract (meta #'resolution/execute!))]
-    (is (= 30 (count publics)))
+    (is (= 40 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [[name api] (:public-api contract)]
@@ -299,6 +299,146 @@
     (is (= span (:source-span (first result))))
     (is (= [] (resolution/dependency-edges source {:module 'consumer} [] {} ops)))))
 
+(deftest product-projections-retain-analysis-and-compatibility-records
+  ;; Supplied analysis exercises projection only, without C5 authentication.
+  (let [ops (operations)
+        analysis {:binding-table [{:binding-id "binding" :source-span {:line-start 3}}]
+                  :resolution-table [{:binding-id "binding" :resolution-order :lexical}]
+                  :alias-table [{:alias 'lib}]
+                  :dependency-records [{:namespace 'library}]
+                  :exports ['value] :lexical-scope-graph [{:scope-id "scope"}]
+                  :dependency-graph {:nodes ['consumer 'library] :edges []}
+                  :cross-profile-edge-report [{:boundary :pure-core-api}]
+                  :incremental-invalidation-inputs {:imports ['library]}}
+        product (resolution/product-projections analysis ops)]
+    (is (= (assoc analysis :artifact :gravity/namespace-analysis) (:namespace-analysis product)))
+    (is (= (:binding-table analysis) (get-in product [:binding-table :bindings])))
+    (is (= (:resolution-table product) (get-in product [:binding-table :resolution-table])))
+    (is (= ((seed-var 'sh06-resolution-order-compatibility) :lexical)
+           (get-in product [:resolution-table 0 :resolution-kind])))
+    (is (= (:alias-table analysis) (get-in product [:alias-table :aliases])))
+    (is (= (:dependency-records analysis) (get-in product [:import-export-table :imports])))
+    (is (= (:exports analysis) (get-in product [:import-export-table :exports])))
+    (is (= (:lexical-scope-graph analysis) (get-in product [:lexical-scope-graph :scopes])))
+    (is (= (:cross-profile-edge-report analysis) (get-in product [:cross-profile-edge-report :records])))
+    (is (= (:incremental-invalidation-inputs analysis) (get-in product [:incremental-invalidation-keys :inputs])))
+    (is (not= (get-in product [:incremental-invalidation-keys :invalidation-id])
+              (get-in (resolution/product-projections (assoc analysis :incremental-invalidation-inputs {}) ops)
+                      [:incremental-invalidation-keys :invalidation-id])))))
+
+(deftest identity-chunks-preserve-representation-and-semantic-invalidation
+  (let [ops (operations) values (vec (range 17))
+        chunks (resolution/identity-chunks values ops)
+        changed (resolution/identity-chunks (assoc values 16 :changed) ops)]
+    (is (= [] (resolution/identity-chunks [] ops)))
+    (is (= [0 1] (mapv :chunk-index chunks)))
+    (is (= [16 1] (mapv :entry-count chunks)))
+    (is (= chunks (resolution/identity-chunks (seq values) ops)))
+    (is (= (first chunks) (first changed)))
+    (is (not= (second chunks) (second changed)))))
+
+(deftest artifact-identities-and-summaries-retain-the-existing-semantic-boundary
+  ;; These pure identity helpers do not authenticate supplied chunks or artifacts.
+  (let [ops (operations)
+        artifact {:kind :resolution :slice :SH-06 :task :normalization
+                  :gravity-resolution-boundary
+                  {:adapter-contract :test :resolved-analysis {:artifact-id "analysis"}
+                   :authenticated-resolution-request {:module {:source-revision-id "source"}}}
+                  :sh05-macro-artifact {:artifact-id "macro" :expanded-syntax-stream-id "stream"
+                                        :macro-expansion-trace-id "trace"}
+                  :binding-table {:bindings [{:binding-id "binding" :source-span {:line-start 1}}]}
+                  :resolution-table [{:binding-id "binding" :source-span {:line-start 2}}]
+                  :dependency-graph {:nodes ['consumer 'library]
+                                     :edges [{:from 'consumer :to 'library :source-span {:line-start 3}}]}
+                  :incremental-invalidation-keys {:invalidation-id "invalidation"}}
+        chunks (resolution/product-identity-chunks artifact ops)
+        preimage (resolution/artifact-identity-input artifact ops)
+        id (resolution/artifact-id artifact ops)
+        summary (resolution/envelope-summary artifact ops)
+        relocated (-> artifact
+                      (assoc-in [:binding-table :bindings 0 :source-span :line-start] 30)
+                      (assoc-in [:resolution-table 0 :source-span :line-start] 40)
+                      (assoc-in [:dependency-graph :edges 0 :source-span :line-start] 50))]
+    (is (= preimage (resolution/artifact-identity-input-with-chunks artifact chunks ops)))
+    (is (= id ((:reader-canonical-hash ops) preimage)))
+    (is (= summary (resolution/envelope-summary-with-chunks artifact chunks)))
+    (is (= [1 1 1] ((juxt :binding-count :reference-count :dependency-edge-count) summary)))
+    (is (= "source" (:source-revision-id summary)))
+    (is (= id (resolution/artifact-id relocated ops)))
+    (is (= (:source-span (first (:resolution-table artifact))) {:line-start 2}))
+    (doseq [changed [(assoc-in artifact [:binding-table :bindings 0 :binding-id] "other")
+                     (assoc-in artifact [:resolution-table 0 :binding-id] "other")
+                     (assoc-in artifact [:dependency-graph :edges 0 :to] 'other)
+                     (assoc-in artifact [:sh05-macro-artifact :macro-expansion-trace-id] "other")
+                     (assoc-in artifact [:incremental-invalidation-keys :invalidation-id] "other")]]
+      (is (not= id (resolution/artifact-id changed ops))))))
+
+(deftest envelope-descriptor-retains-digest-lineage-and-actual-path-inputs
+  ;; Descriptor projection is DATA construction, not envelope authentication.
+  (let [base (operations) digests (atom []) properties (atom []) fields (atom [])
+        ops (assoc base
+                   :p15-s23-c6c10-canonical-digest
+                   (fn [path value]
+                     (swap! digests conj [path value])
+                     ((:reader-canonical-hash base) value))
+                   :input (fn [field] (swap! fields conj field) ((:input base) field))
+                   :system-property (fn [name]
+                                      (swap! properties conj name)
+                                      (str "observed-directory-" (count @properties))))
+        binding {:source-content-hash "source-hash" :source-byte-count 17
+                 :plan-semantic-hash "plan-hash" :functions-semantic-hash "functions-hash"
+                 :public-function-hashes {'sh06-build-resolution-template "builder-hash"}
+                 :public-function-shapes [['sh06-build-resolution-template 1]]}
+        summary {:artifact-id "semantic-product" :source-revision-id "source-revision"}
+        descriptor (resolution/envelope-descriptor source binding summary ops)
+        evidence ((:reader-canonical-hash base) (second (first @digests)))
+        sealed ((:reader-canonical-hash base) (second (nth @digests 2)))]
+    (is (= [[source {:domain :gravity/sh06-resolution-envelope-evidence-v1
+                     :summary summary :plan-semantic-hash "plan-hash"}]
+            [source {:domain :gravity/sh06-resolution-result-identity-v1
+                     :semantic-input {:summary summary}}]
+            [source {:resolution-result "semantic-product"}]] @digests))
+    (is (= ["user.dir" "user.dir"] @properties))
+    (is (= {:sh06-resolution-envelope-stage 1 :sh06-resolution-sealed-artifact-kind 1
+            :sh06-resolution-source-relative-path 1} (frequencies @fields)))
+    (is (= {:source-path source :workspace-root "observed-directory-1"
+            :invocation-root "observed-directory-2"} (:actual-path-provenance descriptor)))
+    (is (= :gravity/private-authenticated-envelope-descriptor (:artifact descriptor)))
+    (is (= 2 (:schema-version descriptor)))
+    (is (= "builder-hash" (get-in descriptor [:source-revision :builder-semantic-hash])))
+    (is (= "source-hash" (get-in descriptor [:source-revision :source-content-hash])))
+    (is (= (:public-function-shapes binding) (get-in descriptor [:source-revision :function-shapes])))
+    (is (= summary (get-in descriptor [:semantic-projections 0 :value])))
+    (is (= (count summary) (get-in descriptor [:semantic-projections 0 :entry-count])))
+    (is (= [evidence] (get-in descriptor [:fact-transitions 0 :evidence-ids])))
+    (is (= {evidence {:status :checked}} (get-in descriptor [:proof-composite :proof-certificate-table])))
+    (is (= "semantic-product" (get-in descriptor [:lineage 0 :semantic-id])))
+    (is (= sealed (get-in descriptor [:lineage 0 :artifact-id])))
+    (is (= evidence (get-in descriptor [:lineage 0 :verification-id])))
+    (is (= [evidence] (get-in descriptor [:reference-closure :fact-reference-ids])))
+    (is (= [evidence] (get-in descriptor [:reference-closure :proof-reference-ids])))
+    (is (= [] (get-in descriptor [:reference-closure :runtime-check-reference-ids])))
+    (is (= [:identity-subject-equality :digest-graph-reachability]
+           (get-in descriptor [:preservation :residual-checks])))
+    (let [failure (ex-info "digest refused" {:id "UNIT-DIGEST"})
+          calls-before @properties]
+      (is (identical? failure
+                      (caught #(resolution/envelope-descriptor
+                                source binding summary
+                                (assoc ops :p15-s23-c6c10-canonical-digest
+                                       (fn [& _] (throw failure)))))))
+      (is (= calls-before @properties)))))
+
+(deftest boundary-key-selection-adds-only-the-existing-module-carrier
+  (let [ops (operations) expected (input :sh06-resolution-boundary-keys)
+        ordinary {:authenticated-resolution-request {:artifact :gravity/sh06-ordinary-module-resolution-request}}]
+    (is (= expected (resolution/boundary-keys-for {} ops)))
+    (is (= expected (resolution/boundary-keys-for nil ops)))
+    (is (= expected (resolution/boundary-keys-for {:authenticated-resolution-request {:artifact :other}} ops)))
+    (is (= (conj expected :module-inputs) (resolution/boundary-keys-for ordinary ops)))
+    (is (= #{:supplied-key :module-inputs}
+           (resolution/boundary-keys-for ordinary (assoc ops :input (fn [_] #{:supplied-key})))))))
+
 (deftest actual-nested-bindings-emit-and-out-of-scope-binding-rejects
   (let [compile-fixture (fn [name]
                           (let [path (.getCanonicalPath
@@ -479,6 +619,14 @@
     (is (not (identical? @v copied)))
     (assert-interposition-misses #(with-redefs-fn {v copied} %))))
 
+(deftest descriptor-configuration-roots-invalidate-old-receipts
+  (doseq [name '[sh06-resolution-envelope-stage sh06-resolution-sealed-artifact-kind
+                sh06-resolution-boundary-keys]]
+    (let [v (seed-var name) original @v
+          replacement (if (set? original) (conj original :unit-extra) :unit-different)]
+      (is (not= original replacement))
+      (assert-interposition-misses #(with-redefs-fn {v replacement} %)))))
+
 (deftest equal-valued-configuration-cache-and-thread-bindings-invalidate-receipts
   (doseq [name ['sh06-resolution-source-relative-path 'sh06-resolution-expected-source-content-hash
                 'sh06-resolution-public-function-shapes 'sh06-resolution-cached-binding
@@ -535,7 +683,12 @@
                                (seed-var 'resolution-stage-defaults)
                                (seed-var 'resolution-stage-input)
                                (seed-var 'sh06-resolution-dependency-record)
-                               (seed-var 'source-span)]))]
+                               (seed-var 'source-span)
+                               (seed-var 'resolution-stage-system-property)
+                               (seed-var 'p15-s23-c6c10-canonical-digest)
+                               (seed-var 'sh06-resolution-envelope-stage)
+                               (seed-var 'sh06-resolution-sealed-artifact-kind)
+                               (seed-var 'sh06-resolution-boundary-keys)]))]
     ;; Isolate the existing readonly drift seam; no parent/owner admission runs.
     (with-redefs-fn
       {environment (fn [] (swap! reads inc) {})}
