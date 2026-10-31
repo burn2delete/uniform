@@ -5248,6 +5248,7 @@
                  (assoc-in facts [:recursive-proof :parameter-value-premise :cold-entry-derivation :source-argument-call-node-ids] [:forged])
                  (assoc-in facts [:recursive-proof :cold-body-derivation :cut :excluded-node-ids] [])
                  (assoc-in facts [:recursive-proof :return-witness :return-type] :gravity.type/bool)
+                 ;; Removed C7 accounting fields remain invalid as unknown proof keys.
                  (assoc-in facts [:recursive-proof :work-count] nil)
                  (assoc facts :constraint-ledger [])]]
       (is (= :rejected (:status (derive core bad bindings forms 65536)))))
@@ -5299,10 +5300,6 @@
                  (assoc-in [:module :effects] [:error/throw])
                  (assoc-in [:function-records 0 :signature] signature))
         bindings {(sha 50) {:binding-id (sha 50)} (sha 51) {:binding-id (sha 51)}}
-        work (+ 32 (* 8 (count nodes)) (* 8 (count calls)) (* 4 (count (:call-edges core)))
-                (* 4 (count bindings)) (* 4 (count (:function-records core)))
-                (* 2 (reduce + (map (comp count :argument-node-ids) calls)))
-                (* (count calls) (count bindings)))
         proof {:domain :gravity/sh08-declared-self-value-proof-v1
                :function-syntax-id (sha 20) :function-core-node-id (sha 7)
                :definition-binding-id (sha 50) :definition-syntax-id (sha 80)
@@ -5315,7 +5312,7 @@
                :incoming-call-node-ids (mapv sha [4 11])
                :value-check :complete-body-and-all-incoming-arguments
                :effect-error-status :pending-sh09-recursive-body
-               :captures :own-parameters-and-lexical-locals-only :work-count work}
+               :captures :own-parameters-and-lexical-locals-only}
         types (merge (zipmap (map :node-id nodes) (repeat :gravity.type/string))
                      {(sha 1) :gravity.type/bool (sha 5) :gravity.type/never (sha 7) function (sha 8) function})
         facts {:recursive-proof proof :function-type-table [function] :type-table types :constraint-ledger []
@@ -9855,7 +9852,12 @@
 
 (deftest cold-quote-metadata-effects-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [{:keys [core facts record bindings forms cold cut]} ((sh08-helper 'cold-metadata-input))
+  ;; Preserve the historical test name while exercising only semantic cold evidence.
+  (let [{:keys [core facts record bindings forms input]} ((sh08-helper 'cold-metadata-input))
+        cut {:status :accepted :mode (get-in input [:cut :mode])
+             :excluded-node-ids (get-in input [:cut :excluded-node-ids])}
+        cold {:mode (:mode input) :cut cut
+              :source-argument-call-node-ids (:source-argument-call-node-ids input)}
         run #(leaf 'body-is-cold-metadata-valid? core facts record bindings forms % cut)]
     (is (true? (run cold)))
     (doseq [changed ((sh08-helper 'cold-metadata-invalid-inputs) cold)]
