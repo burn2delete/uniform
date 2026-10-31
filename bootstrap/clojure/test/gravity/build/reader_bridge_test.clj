@@ -8,9 +8,10 @@
 (def instruction {:op :builtin-call :function 'build-read-declared-input
                   :args [{:op :literal :value "schema"}]})
 (def runtime {:engine :injected-model})
-(def module {:profile :meta :target :jvm :effects #{:build/read-file} :capabilities #{:fs/read}})
+(def module {:module 'gravity.reader :profile :meta :target :jvm
+             :effects #{:build/read-file} :capabilities #{:fs/read}})
 (def plan {:kind :gravity/stage2-compiler-artifact-plan :compiler-artifact-plan? true
-           :module module :functions {'gravity.reader/read-input
+           :module module :functions {'read-input
                                      {:instructions [instruction]
                                       :body (list (list 'build-read-declared-input "schema"))
                                       :native-literals [1N 1/2 \a 1.0M]}}})
@@ -29,7 +30,7 @@
     (with-scope
       (fn [scope]
         (reset! escaped scope)
-        (is (bridge/assert-function-entry! runtime plan 'gravity.reader/read-input [] scope))
+        (is (bridge/assert-function-entry! runtime plan 'read-input [] scope))
         (is (= "schema text" (form-call scope :construct
                                #(bridge/read! runtime plan instruction ["schema"] scope))))
         (is (= :reader-duplicate-effect
@@ -91,6 +92,34 @@
   (doseq [bad [(assoc module :profile :hosted) (assoc module :target :wasm)
                (assoc module :effects #{}) (assoc module :capabilities #{})]]
     (is (= :read-legality (failure #(bridge/validate-call! bad 1))))))
+
+(deftest fixed-reader-module-and-local-callee-are-distinct-from-public-handler
+  (let [reads (atom 0)]
+    (with-redefs-fn
+      {#'inputs/input-entry (fn [& _] (swap! reads inc))}
+      #(fixture/host-call fixture/grant fixture/declared
+         (fn [cap]
+           (doseq [[bad expected]
+                   [[(assoc-in plan [:module :module] 'other.reader) :reader-plan]
+                    [(assoc plan :functions {'other-input (get-in plan [:functions 'read-input])})
+                     :reader-handler-occurrence]
+                    [(assoc plan :functions {'gravity.reader/read-input
+                                            (get-in plan [:functions 'read-input])})
+                     :reader-handler-occurrence]
+                    [(assoc-in plan [:functions 'read-input :instructions]
+                               [(assoc instruction :copy true)]) :reader-handler-occurrence]]]
+             (is (= expected
+                    (failure (fn [] (#'bridge/call-with-scope cap runtime bad rows identity))))))
+           (with-scope
+             (fn [scope]
+               (is (= 'gravity.reader/read-input (:handler fixture/request)))
+               (is (bridge/assert-function-entry! runtime plan 'read-input [] scope))
+               (is (= :reader-function-entry
+                      (failure (fn [] (bridge/assert-function-entry!
+                                        runtime plan 'gravity.reader/read-input [] scope)))))
+               (is (= :reader-function-entry
+                      (failure (fn [] (bridge/assert-function-entry! runtime plan 'other-input [] scope))))))))))
+    (is (zero? @reads))))
 
 (def component-root "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/")
 (defn forms [path]

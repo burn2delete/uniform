@@ -154,6 +154,15 @@ Accordingly the outer command's fixed link still reports
 handler result. Compatibility with a genuine complete Reader plan and normal
 integration remains unverified. The injected bridge models are not that result.
 
+The selected Reader connection contract normalizes the executable function key
+to `read-input` inside module `gravity.reader`. Scope creation now requires
+that exact module and obtains original instruction objects from
+`plan.functions['read-input']`; request/grant handler identity remains
+`gravity.reader/read-input`. Qualified lookalike function keys, other modules
+or callees, and copied/replaced instructions do not satisfy this join. This is
+the narrow amendment to the independently reviewed `aa03d20d` interface; no
+grant API, signature, provider or generalized handler selection is added.
+
 ### Evidence boundary
 
 Tests inject the fixed private Reader link or observe the issuer; no callback
