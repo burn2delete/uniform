@@ -95,3 +95,12 @@ actual CI harness controls pass 11 tests / 106 assertions. No lint policy or
 warning baseline was relaxed. Independent prefix review accepts d2255ffc
 conditionally; final evidence-only review, current-main composition, exact-head
 CI and final clean integration preflight remain required.
+
+The first exact-head CI run at b9fcb4bd exposed an omitted production-helper
+ownership registration for gravity.checked-core. The ownership EDN and stage0
+component JSON now join its real source, SH-07 owner, Bootstrap consumer and
+standalone stage test. The 55 primary component pairs remain unchanged. The
+ownership suite passes 20 tests / 798 assertions, including rejection of forged
+owners, namespaces, consumers and test registration. The language boundary
+gate passes 6 tests / 11 assertions. This registration carries no migration,
+release or seed-retirement authority; new exact-head review and CI are required.
