@@ -21,6 +21,12 @@
     {:arglists ([semantic-projection-id mutation operations]),
      :operation-inputs [:sh07-core-semantic-projection-id],
      :admission :none},
+    error-handlers-coherent?
+    {:arglists ([core operations]),
+     :operation-inputs [:sh07-b9-handler-group-coherent?],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     current-plan-binding!
     {:arglists ([operations]),
      :operation-inputs
@@ -182,6 +188,12 @@
       :sh07-core-source-path
       :sha256-bytes-hex],
      :admission :none},
+    projection-diagnostic!
+    {:arglists ([resolution-artifact reason operations]),
+     :operation-inputs
+     [:reader-canonical-hash :sh07-core-source-path-from-resolution],
+     :admission :none,
+     :resolved-diagnostic-identity? false},
     macro-trace
     {:arglists [[lineage sh05-step operations]],
      :operation-inputs [:reader-canonical-hash],
@@ -202,6 +214,12 @@
     {:arglists [[resolution _operations]],
      :operation-inputs [],
      :admission :none},
+    descendant-node-ids
+    {:arglists ([node-by-id root-node-id _operations]),
+     :operation-inputs [],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     semantic-identity-preimage
     {:arglists ([preimage operations]),
      :operation-inputs
@@ -253,6 +271,12 @@
     {:arglists [[trace operations]],
      :operation-inputs [:sh05-path-neutral-semantic-value],
      :admission :none},
+    error-transfers-coherent?
+    {:arglists ([core _operations]),
+     :operation-inputs [],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     projected-syntax-id
     {:arglists
      [[source-revision-id root-syntax-id path kind trace operations]],
@@ -340,6 +364,13 @@
     {:arglists [[value _operations]],
      :operation-inputs [],
      :admission :none},
+    handler-group-coherent?
+    {:arglists
+     ([node-by-id transfers references try-node handlers operations]),
+     :operation-inputs [:input :sh07-core-descendant-node-ids],
+     :admission :none,
+     :input-boundary :owner-validated-native-core-data,
+     :checks-legality-fact-presence? false},
     build-plan-binding!
     {:arglists ([operations]),
      :operation-inputs
@@ -380,6 +411,7 @@
     :sh07-b13-fragment-manifest
     :sh07-b13-fragment-record
     :sh07-b13-module-assembly-manifest
+    :sh07-b9-handler-group-coherent?
     :sh07-core-authenticated-request
     :sh07-core-build-binding!
     :sh07-core-build-form-tree
@@ -389,6 +421,7 @@
     :sh07-core-decimal-descriptor
     :sh07-core-decimal-evidence
     :sh07-core-decimal-evidence-complete!
+    :sh07-core-descendant-node-ids
     :sh07-core-digest-reference-ordinal
     :sh07-core-digest-requests
     :sh07-core-execute!
@@ -481,13 +514,14 @@
       :sh07-core-source-path-from-resolution],
      :admission :none}},
    :governing-contracts
-   [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2 B13],
+   [D1 D2 D3 D9 L2 C1 C3 C4 C5 C6 C15 BOOT2 BOOT8 TEST2 L1 C2 B13 L9],
    :seed-inputs
    [:*sh07-core-execution-binding*
     :sh07-core-cached-binding
     :sh07-core-development-binding
     :sh07-core-public-function-shapes
-    :sh07-core-source-relative-path],
+    :sh07-core-source-relative-path
+    :sh07-b9-handler-descriptor-keys],
    :unsupported
    [:canonical-c6-admission
     :lowering-assembly
@@ -504,7 +538,11 @@
     :diagnostic-safe-public-projection
     :diagnostic-publication
     :structural-test-runner-c5-authentication
-    :test-runner-core-owner-admission],
+    :test-runner-core-owner-admission
+    :transfer-predicate-native-carrier-validation
+    :transfer-predicate-legality-fact-presence-and-proof
+    :handler-predicate-native-and-complete-core-validation
+    :handler-predicate-legality-fact-presence-and-proof],
    :artifact-inputs
    [:current-core-source
     :compiler-and-emitter-snapshots
@@ -528,7 +566,11 @@
     :request-rule-specific-failure-data
     :native-core-request
     :verified-c5-parent-and-reader-invocation
-    :current-scoped-core-plan],
+    :current-scoped-core-plan
+    :native-core-node-and-error-transfer-records
+    :c5-provenance-and-projection-failure-reason
+    :native-core-node-handler-transfer-and-reference-records
+    :handler-descriptor-key-configuration],
    :namespace gravity.checked-core,
    :diagnostic-ownership
    {:stage
@@ -550,7 +592,10 @@
      :request-shape-and-identity-preflight
      :test-request-membership
      :test-execution-revision-bookends
-     :template-and-resolved-replay-failure],
+     :template-and-resolved-replay-failure
+     :error-transfer-structural-coherence
+     :projection-verification-failure-carrier
+     :typed-handler-structural-coherence],
     :catalog :existing-c6-catalog,
     :lowering-semantics :gravity-source},
    :artifact-outputs
@@ -578,7 +623,11 @@
     :explicit-host-decimal-presentation
     :c6-diagnostic-construction-records
     :request-preflight-acceptance
-    :test-only-core-template-digest-and-replay-bundle],
+    :test-only-core-template-digest-and-replay-bundle
+    :structural-transfer-coherence-result
+    :projection-diagnostic-construction-record
+    :descendant-node-id-set
+    :structural-typed-handler-coherence-result],
    :clojure-seed-boundary? true,
    :contract-boundary
    :checked-core-supported-data-runtime-and-test-execution})
@@ -3678,6 +3727,331 @@
      {:reason :authenticated-sh06-request-membership-mismatch}))
    (sh07-core-run-structural-request-for-test authenticated-request))))
 
+(defn
+ projection-diagnostic!
+ [resolution-artifact reason operations]
+ (let
+  [reader-canonical-hash
+   (.valAt ^clojure.lang.ILookup operations :reader-canonical-hash)
+   sh07-core-source-path-from-resolution
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-source-path-from-resolution)
+   source-path
+   (sh07-core-source-path-from-resolution resolution-artifact)
+   diagnostic
+   {:lowering-rule :sh07-b47-function-call-recursion-products,
+    :remediation
+    "Replay the Gravity template and bind every digest ordinal exactly once.",
+    :source-span {:source source-path},
+    :stage :core-lowering,
+    :rule "C6-VERIFY",
+    :diagnostic-id-request
+    (reader-canonical-hash
+     {:domain :gravity/sh07-projection-diagnostic-v16,
+      :reason reason,
+      :sh06-artifact-id (:artifact-id resolution-artifact)}),
+    :generated-origin-chain [],
+    :syntax-id nil,
+    :severity :error,
+    :core-node-id nil,
+    :artifact :gravity/sh07-core-diagnostic,
+    :form-id nil,
+    :target (get-in resolution-artifact [:namespace-analysis :target]),
+    :facts
+    {:reason reason,
+     :rule-specific {:reason reason},
+     :source-revision-id
+     (get-in
+      resolution-artifact
+      [:gravity-resolution-boundary
+       :authenticated-resolution-request
+       :module
+       :source-revision-id]),
+     :sh06-artifact-id (:artifact-id resolution-artifact),
+     :authenticated-sh06-artifact-id
+     (:artifact-id resolution-artifact),
+     :fail-closed true},
+    :namespace
+    (get-in resolution-artifact [:namespace-analysis :namespace]),
+    :profile
+    (get-in resolution-artifact [:namespace-analysis :profile])}]
+  (throw
+   (ex-info "SH-07 projection authentication failed" diagnostic))))
+
+(defn
+ error-transfers-coherent?
+ [core _operations]
+ (let
+  [nodes
+   (:nodes core)
+   transfers
+   (:error-transfers core)
+   throw-nodes
+   (when
+    (vector? nodes)
+    (filterv
+     (fn*
+      [p1__154#]
+      (and (map? p1__154#) (= :throw (:core-form p1__154#))))
+     nodes))
+   throw-node-by-id
+   (when
+    (vector? throw-nodes)
+    (into {} (map (juxt :node-id identity)) throw-nodes))
+   shared-attribute-keys
+   [:construction-order
+    :runtime-reachability
+    :transfer-policy
+    :result-policy
+    :required-effect
+    :authenticated-sh06-artifact-id
+    :sh06-semantic-projection-id
+    :type-legality
+    :effect-registry-legality
+    :effect-profile-capability-legality
+    :profile-error-lowering-legality
+    :ownership-legality
+    :safety-classification]]
+  (and
+   (vector? nodes)
+   (vector? transfers)
+   (= (count throw-nodes) (count transfers))
+   (= (count throw-nodes) (count throw-node-by-id))
+   (every?
+    true?
+    (map-indexed
+     (fn
+      [ordinal transfer]
+      (let
+       [node
+        (get throw-node-by-id (:core-node-id transfer))
+        value-node-id
+        (:value-core-node-id transfer)]
+       (and
+        (map? transfer)
+        (map? node)
+        (= ordinal (:ordinal transfer))
+        (= [value-node-id] (:evaluated-children transfer))
+        (= [value-node-id] (:children node))
+        (= [] (:resolved-binding-ids node))
+        (= :value-then-transfer (get-in node [:evaluation :kind]))
+        (=
+         [{:index 0, :core-node-id value-node-id}]
+         (get-in node [:evaluation :order]))
+        (= 0 (get-in node [:attributes :value-child-index]))
+        (=
+         :value-then-transfer
+         (get-in node [:attributes :evaluation-order]))
+        (= [:evaluate-value :transfer-error] (:ordered-steps transfer))
+        (=
+         (select-keys transfer shared-attribute-keys)
+         (select-keys (:attributes node) shared-attribute-keys)))))
+     transfers)))))
+
+(defn
+ descendant-node-ids
+ [node-by-id root-node-id _operations]
+ (loop
+  [frontier [root-node-id] visited #{}]
+  (if
+   (empty? frontier)
+   visited
+   (let
+    [node-id
+     (peek frontier)
+     frontier
+     (pop frontier)
+     node
+     (get node-by-id node-id)]
+    (cond
+     (contains? visited node-id)
+     (recur frontier visited)
+     (not (map? node))
+     nil
+     :else
+     (recur
+      (into frontier (:children node))
+      (conj visited node-id)))))))
+
+(defn
+ handler-group-coherent?
+ [node-by-id transfers references try-node handlers operations]
+ (let
+  [sh07-core-descendant-node-ids
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-core-descendant-node-ids)
+   sh07-b9-handler-descriptor-keys
+   ((:input operations) :sh07-b9-handler-descriptor-keys)
+    handlers
+    (vec (sort-by :clause-ordinal handlers))
+    attributes
+    (:attributes try-node)
+    protected-node-id
+    (first (:children try-node))
+    handler-node-ids
+    (mapv :handler-core-node-id handlers)
+    expected-children
+    (into [protected-node-id] handler-node-ids)
+    expected-bindings
+    (vec
+     (mapcat (juxt :error-type-binding-id :catch-binding-id) handlers))
+    expected-indexes
+    (mapv inc (range (count handlers)))
+    expected-descriptors
+    (mapv
+     (fn*
+      [p1__154#]
+      (select-keys p1__154# sh07-b9-handler-descriptor-keys))
+     handlers)
+    protected-tree
+    (sh07-core-descendant-node-ids node-by-id protected-node-id)
+    owner
+    (:evaluation-owner-function-syntax-id (first handlers))
+    expected-candidates
+    (when
+     protected-tree
+     (->>
+      transfers
+      (filter
+       (fn*
+        [p1__155#]
+        (and
+         (= owner (:evaluation-owner-function-syntax-id p1__155#))
+         (contains? protected-tree (:core-node-id p1__155#)))))
+      (mapv
+       (fn*
+        [p1__156#]
+        (select-keys p1__156# [:ordinal :core-node-id])))))
+    shared-attribute-keys
+    [:runtime-reachability
+     :selection-policy
+     :result-policy
+     :authenticated-sh06-artifact-id
+     :sh06-semantic-projection-id
+     :type-coverage-legality
+     :result-type-join-legality
+     :effect-registry-legality
+     :effect-profile-capability-legality
+     :profile-error-lowering-legality
+     :ownership-legality
+     :safety-classification]]
+   (and
+    (seq handlers)
+    (= (range (count handlers)) (map :clause-ordinal handlers))
+    (every?
+     (fn* [p1__157#] (= (count handlers) (:clause-count p1__157#)))
+     handlers)
+    (= expected-indexes (mapv :handler-child-index handlers))
+    (= expected-children (:children try-node))
+    (= expected-bindings (:resolved-binding-ids try-node))
+    (= (count handler-node-ids) (count (distinct handler-node-ids)))
+    (=
+     (count handlers)
+     (count (distinct (map :catch-binding-id handlers))))
+    (=
+     (count handlers)
+     (count (distinct (map :catch-binding-scope-id handlers))))
+    (=
+     :protected-then-ordered-typed-handler-candidates
+     (get-in try-node [:evaluation :kind]))
+    (=
+     [{:index 0, :core-node-id protected-node-id}]
+     (get-in try-node [:evaluation :order]))
+    (= 0 (:protected-child-index attributes))
+    (= (count handlers) (:handler-count attributes))
+    (= expected-indexes (:handler-child-indexes attributes))
+    (= expected-descriptors (:handler-clauses attributes))
+    (=
+     :protected-then-ordered-typed-handler-candidates
+     (:evaluation-order attributes))
+    (every?
+     (fn
+      [handler]
+      (let
+       [handler-tree
+        (sh07-core-descendant-node-ids
+         node-by-id
+         (:handler-core-node-id handler))
+        expected-use-syntax-ids
+        (when
+         handler-tree
+         (->>
+          references
+          (filter
+           (fn*
+            [p1__158#]
+            (and
+             (= (:catch-binding-id handler) (:binding-id p1__158#))
+             (contains? handler-tree (:core-node-id p1__158#)))))
+          (mapv :syntax-id)))]
+       (and
+        (= (:node-id try-node) (:core-node-id handler))
+        (= protected-node-id (:protected-core-node-id handler))
+        (= expected-candidates (:candidate-error-transfers handler))
+        (=
+         expected-use-syntax-ids
+         (:catch-binding-use-syntax-ids handler))
+        (=
+         (select-keys attributes shared-attribute-keys)
+         (select-keys handler shared-attribute-keys)))))
+     handlers))))
+
+(defn
+ error-handlers-coherent?
+ [core operations]
+ (let
+  [sh07-b9-handler-group-coherent?
+   (.valAt
+    ^clojure.lang.ILookup operations
+    :sh07-b9-handler-group-coherent?)
+    nodes
+    (:nodes core)
+    handlers
+    (:error-handlers core)
+    transfers
+    (:error-transfers core)
+    references
+    (:reference-uses core)
+    try-nodes
+    (when
+     (vector? nodes)
+     (filterv
+      (fn*
+       [p1__159#]
+       (and (map? p1__159#) (= :try (:core-form p1__159#))))
+      nodes))
+    node-by-id
+    (when
+     (vector? nodes)
+     (into {} (map (juxt :node-id identity)) nodes))
+    try-by-id
+    (when
+     (vector? try-nodes)
+     (into {} (map (juxt :node-id identity)) try-nodes))
+    handlers-by-try
+    (when (vector? handlers) (group-by :core-node-id handlers))]
+   (and
+    (vector? nodes)
+    (vector? handlers)
+    (vector? transfers)
+    (vector? references)
+    (= (count nodes) (count node-by-id))
+    (= (count try-nodes) (count try-by-id))
+    (= (mapv :ordinal handlers) (vec (range (count handlers))))
+    (= (set (keys try-by-id)) (set (keys handlers-by-try)))
+    (every?
+     (fn
+      [[try-id try-node]]
+      (sh07-b9-handler-group-coherent?
+       node-by-id
+       transfers
+       references
+       try-node
+       (get handlers-by-try try-id)))
+     try-by-id))))
+
 (doseq
  [operation
   [#'build-plan-binding!
@@ -3736,7 +4110,12 @@
    #'request-diagnostic!
    #'request-preflight!
    #'run-structural-request-for-test
-   #'run-request-for-test]]
+   #'run-request-for-test
+   #'error-transfers-coherent?
+   #'projection-diagnostic!
+   #'descendant-node-ids
+   #'handler-group-coherent?
+   #'error-handlers-coherent?]]
  (alter-meta!
   operation
   assoc

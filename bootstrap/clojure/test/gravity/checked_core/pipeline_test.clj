@@ -28,12 +28,14 @@
     sh07-core-resolve-digest-preimage! sh07-core-digest-requests sh07-core-resolve-result
     sh07-core-public-decimal-presentation sh07-core-canonical-artifact sh07-core-raise-diagnostic!
     sh07-core-request-diagnostic! sh07-core-request-preflight!
-    sh07-core-run-structural-request-for-test sh07-core-run-request-for-test])
+    sh07-core-run-structural-request-for-test sh07-core-run-request-for-test
+    sh07-core-projection-diagnostic! sh07-core-error-transfers-coherent?
+    sh07-core-descendant-node-ids sh07-b9-handler-group-coherent? sh07-core-error-handlers-coherent?])
 
 (deftest namespace-contract-and-operation-inventories-agree
   (let [publics (ns-publics 'gravity.checked-core)
         contract (:gravity/namespace-contract (meta #'core/execute!))]
-    (is (= 53 (count publics)))
+    (is (= 58 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (is (= (set (keys (operations))) (set (:operation-inputs contract))))
     (doseq [field (:seed-inputs contract)]
@@ -650,7 +652,7 @@
         (assert-interposition-misses #(with-redefs-fn {v (fn [& args] (apply original args))} %))))))
 
 (deftest configuration-cache-and-thread-binding-roots-invalidate-receipts
-  (doseq [name '[checked-core-stage-defaults sh07-core-public-function-shapes sh07-core-source-relative-path
+  (doseq [name '[checked-core-stage-defaults sh07-b9-handler-descriptor-keys sh07-core-public-function-shapes sh07-core-source-relative-path
                 sh07-core-development-binding sh07-core-cached-binding]]
     (let [v (seed-var name) original @v
           replacement (cond (map? original) (reduce-kv assoc {} original)
@@ -693,7 +695,7 @@
                               (map seed-var '[checked-core-stage-operations checked-core-stage-defaults checked-core-stage-input
                                               sh07-core-source-path sh07-core-plan-identities sh07-core-build-binding!
                                               sh07-core-current-source-key sh07-core-current-binding! sh07-core-execute!
-                                              sh07-core-source-relative-path sh07-core-public-function-shapes
+                                              sh07-core-source-relative-path sh07-core-public-function-shapes sh07-b9-handler-descriptor-keys
                                               sh07-core-development-binding sh07-core-cached-binding *sh07-core-execution-binding*])))
         downstream (atom 0)]
     ;; Isolated bookend only; the owning admission operations are not executed.
@@ -716,3 +718,202 @@
                                     (fn [] ((seed-var 'sh07-core-construction-check!) facts))))]
               (is (= :construction-dependency-drift (:reason (ex-data error))) (str (:name (meta v))))))
           (is (zero? @downstream)))))))
+(def ^:private transfer-shared
+  {:construction-order 0 :runtime-reachability :executed :transfer-policy :typed-error
+   :result-policy :no-return :required-effect :error/throw
+   :authenticated-sh06-artifact-id :owner :sh06-semantic-projection-id :semantic
+   :type-legality :pending :effect-registry-legality :pending
+   :effect-profile-capability-legality :pending :profile-error-lowering-legality :pending
+   :ownership-legality :pending :safety-classification :pending})
+
+(def ^:private transfer-core
+  {:nodes [{:node-id :value :core-form :literal}
+           {:node-id :throw :core-form :throw :children [:value] :resolved-binding-ids []
+            :evaluation {:kind :value-then-transfer :order [{:index 0 :core-node-id :value}]}
+            :attributes (assoc transfer-shared :value-child-index 0 :evaluation-order :value-then-transfer)}]
+   :error-transfers [(assoc transfer-shared :ordinal 0 :core-node-id :throw :value-core-node-id :value
+                           :evaluated-children [:value] :ordered-steps [:evaluate-value :transfer-error])]})
+
+(deftest transfer-coherence-preserves-bijection-order-and-shared-facts
+  (let [ops (operations)]
+    (is (true? (core/error-transfers-coherent? transfer-core ops)))
+    (is (true? (core/error-transfers-coherent? {:nodes [] :error-transfers []} ops)))
+    (doseq [bad (concat
+                [(assoc transfer-core :nodes nil) (update transfer-core :nodes seq)
+                 (assoc transfer-core :error-transfers []) (update transfer-core :error-transfers seq)
+                 (update transfer-core :nodes conj (second (:nodes transfer-core)))
+                 (update transfer-core :error-transfers conj (first (:error-transfers transfer-core)))
+                 (assoc-in transfer-core [:error-transfers 0 :ordinal] 1)
+                 (assoc-in transfer-core [:error-transfers 0 :core-node-id] :missing)
+                 (assoc-in transfer-core [:error-transfers 0 :value-core-node-id] :other)
+                 (assoc-in transfer-core [:error-transfers 0 :evaluated-children] [])
+                 (assoc-in transfer-core [:error-transfers 0 :ordered-steps] [:transfer-error :evaluate-value])
+                 (assoc-in transfer-core [:nodes 1 :children] [])
+                 (assoc-in transfer-core [:nodes 1 :resolved-binding-ids] [:unexpected])
+                 (assoc-in transfer-core [:nodes 1 :evaluation :kind] :transfer-before-value)
+                 (assoc-in transfer-core [:nodes 1 :evaluation :order] [])
+                 (assoc-in transfer-core [:nodes 1 :attributes :value-child-index] 1)
+                 (assoc-in transfer-core [:nodes 1 :attributes :evaluation-order] :transfer-before-value)]
+                (map #(assoc-in transfer-core [:error-transfers 0 %] :tampered) (keys transfer-shared)))]
+      (is (false? (core/error-transfers-coherent? bad ops)))
+      (is (= (b/sh07-core-error-transfers-coherent? bad) (core/error-transfers-coherent? bad ops))))
+    ;; Equality is the retained predicate boundary, not presence/legality proof.
+    (let [without-facts (-> transfer-core
+                            (update-in [:nodes 1 :attributes] #(apply dissoc % (keys transfer-shared)))
+                            (update-in [:error-transfers 0] #(apply dissoc % (keys transfer-shared))))
+          contract (:gravity/namespace-contract (meta #'core/error-transfers-coherent?))]
+      (is (true? (core/error-transfers-coherent? without-facts ops)))
+      (is (= :owner-validated-native-core-data (get-in contract [:public-api 'error-transfers-coherent? :input-boundary])))
+      (is (false? (get-in contract [:public-api 'error-transfers-coherent? :checks-legality-fact-presence?]))))))
+
+(deftest projection-diagnostic-retains-source-facts-and-unresolved-identity
+  (let [ops (operations)
+        parent {:artifact-id :authenticated-owner
+                :namespace-analysis {:namespace 'unit :profile :meta :target :jvm}
+                :gravity-resolution-boundary {:authenticated-resolution-request
+                                              {:module {:source-revision-id :source-revision}
+                                               :provenance {:actual-source-path "unit.gravity"}}}}
+        reason :transfer-order
+        failure (ex-data (caught #(core/projection-diagnostic! parent reason ops)))]
+    (is (= failure (ex-data (caught #(b/sh07-core-projection-diagnostic! parent reason)))))
+    (is (= ["C6-VERIFY" :error :core-lowering] ((juxt :rule :severity :stage) failure)))
+    (is (= {:source "unit.gravity"} (:source-span failure)))
+    (is (= [nil nil nil []] ((juxt :syntax-id :form-id :core-node-id :generated-origin-chain) failure)))
+    (is (= ['unit :meta :jvm] ((juxt :namespace :profile :target) failure)))
+    (is (= {:reason reason :rule-specific {:reason reason} :source-revision-id :source-revision
+            :sh06-artifact-id :authenticated-owner :authenticated-sh06-artifact-id :authenticated-owner
+            :fail-closed true} (:facts failure)))
+    (is (= (b/reader-canonical-hash {:domain :gravity/sh07-projection-diagnostic-v16 :reason reason :sh06-artifact-id :authenticated-owner})
+           (:diagnostic-id-request failure)))
+    (is (not (contains? failure :diagnostic-id)))
+    (is (not= (:diagnostic-id-request failure)
+              (:diagnostic-id-request (ex-data (caught #(core/projection-diagnostic! parent :other ops))))))
+    (is (not= (:diagnostic-id-request failure)
+              (:diagnostic-id-request (ex-data (caught #(core/projection-diagnostic! (assoc parent :artifact-id :other) reason ops))))))
+    (let [missing (ex-data (caught #(core/projection-diagnostic! {} reason ops)))]
+      (is (= [nil nil nil] ((juxt :namespace :profile :target) missing)))
+      (is (= {:source "<sh07-core-input>"} (:source-span missing))))))
+
+(def ^:private handler-shared
+  {:runtime-reachability :conditional :selection-policy :source-order
+   :result-policy :handler-value :authenticated-sh06-artifact-id :owner
+   :sh06-semantic-projection-id :semantic :type-coverage-legality :pending
+   :result-type-join-legality :pending :effect-registry-legality :pending
+   :effect-profile-capability-legality :pending :profile-error-lowering-legality :pending
+   :ownership-legality :pending :safety-classification :pending})
+
+(defn- handler-core []
+  (let [handlers
+        (mapv (fn [i]
+                (merge handler-shared
+                       {:ordinal i :clause-ordinal i :clause-count 2 :handler-child-index (inc i)
+                        :core-node-id :try :protected-core-node-id :protected
+                        :handler-core-node-id (keyword (str "handler" i))
+                        :evaluation-owner-function-syntax-id :function
+                        :catch-clause-form-id [:catch-form i] :catch-clause-syntax-id [:catch-syntax i]
+                        :error-type-form-id [:type-form i] :error-type-syntax-id [:type-syntax i]
+                        :error-type-binding-id [:type i] :catch-binding-form-id [:binding-form i]
+                        :catch-binding-syntax-id [:binding-syntax i] :catch-binding-id [:catch i]
+                        :catch-binding-scope-id [:scope i]
+                        :candidate-error-transfers [{:ordinal 0 :core-node-id :throw}]
+                        :catch-binding-use-syntax-ids [[:use-syntax i]]})) (range 2))
+        descriptors (mapv #(select-keys % (input :sh07-b9-handler-descriptor-keys)) handlers)
+        try-node {:node-id :try :core-form :try :children [:protected :handler0 :handler1]
+                  :resolved-binding-ids [[:type 0] [:catch 0] [:type 1] [:catch 1]]
+                  :evaluation {:kind :protected-then-ordered-typed-handler-candidates
+                               :order [{:index 0 :core-node-id :protected}]}
+                  :attributes (merge handler-shared
+                                     {:protected-child-index 0 :handler-count 2 :handler-child-indexes [1 2]
+                                      :handler-clauses descriptors
+                                      :evaluation-order :protected-then-ordered-typed-handler-candidates})}]
+    {:nodes [try-node {:node-id :protected :children [:throw :foreign-throw]}
+             {:node-id :throw :children []} {:node-id :foreign-throw :children []}
+             {:node-id :outside :children []}
+             {:node-id :handler0 :children [:use0]} {:node-id :handler1 :children [:use1]}
+             {:node-id :use0 :children []} {:node-id :use1 :children []}]
+     :error-handlers handlers
+     :error-transfers [{:ordinal 0 :core-node-id :throw :evaluation-owner-function-syntax-id :function}
+                      {:ordinal 1 :core-node-id :foreign-throw :evaluation-owner-function-syntax-id :other-function}
+                      {:ordinal 2 :core-node-id :outside :evaluation-owner-function-syntax-id :function}]
+     :reference-uses [{:core-node-id :use0 :binding-id [:catch 0] :syntax-id [:use-syntax 0]}
+                      {:core-node-id :use1 :binding-id [:catch 1] :syntax-id [:use-syntax 1]}
+                      {:core-node-id :outside :binding-id [:catch 0] :syntax-id :outside-syntax}]}))
+
+(deftest descendant-traversal-preserves-cycles-and-missing-node-refusal
+  (let [ops (operations) nodes {:root {:children [:child :child]} :child {:children [:root]}}]
+    (is (= #{:root :child} (core/descendant-node-ids nodes :root ops)))
+    (is (= (core/descendant-node-ids nodes :root ops) (b/sh07-core-descendant-node-ids nodes :root)))
+    (is (nil? (core/descendant-node-ids nodes :absent ops)))
+    (is (nil? (core/descendant-node-ids (assoc nodes :child {:children [:missing]}) :root ops)))))
+
+(deftest typed-handler-coherence-preserves-order-region-bindings-and-facts
+  (let [ops (operations) core-data (handler-core)
+        node-by-id (into {} (map (juxt :node-id identity)) (:nodes core-data))
+        try-node (first (:nodes core-data))]
+    (is (true? (core/error-handlers-coherent? core-data ops)))
+    (is (= (core/error-handlers-coherent? core-data ops) (b/sh07-core-error-handlers-coherent? core-data)))
+    (is (true? (core/handler-group-coherent? node-by-id (:error-transfers core-data)
+                                            (:reference-uses core-data) try-node
+                                            (vec (reverse (:error-handlers core-data))) ops)))
+    (is (true? (core/error-handlers-coherent? {:nodes [] :error-handlers [] :error-transfers [] :reference-uses []} ops)))
+    (doseq [bad (concat
+                 [(assoc core-data :nodes nil) (update core-data :nodes seq)
+                  (assoc core-data :error-handlers []) (update core-data :error-handlers seq)
+                  (assoc core-data :error-transfers nil) (assoc core-data :reference-uses nil)
+                  (update core-data :nodes conj try-node)
+                  (update core-data :error-handlers #(vec (reverse %)))
+                  (assoc-in core-data [:nodes 0 :children] [:protected :handler1 :handler0])
+                  (assoc-in core-data [:nodes 0 :resolved-binding-ids] [])
+                  (assoc-in core-data [:nodes 0 :evaluation :kind] :handlers-before-protected)
+                  (assoc-in core-data [:nodes 0 :evaluation :order] [])
+                  (assoc-in core-data [:nodes 0 :attributes :protected-child-index] 1)
+                  (assoc-in core-data [:nodes 0 :attributes :handler-count] 1)
+                  (assoc-in core-data [:nodes 0 :attributes :handler-child-indexes] [2 1])
+                  (assoc-in core-data [:nodes 0 :attributes :handler-clauses] [])
+                  (assoc-in core-data [:nodes 0 :attributes :evaluation-order] :unordered)
+                  (assoc-in core-data [:error-handlers 0 :clause-count] 1)
+                  (assoc-in core-data [:error-handlers 0 :clause-ordinal] 1)
+                  (assoc-in core-data [:error-handlers 0 :handler-child-index] 2)
+                  (assoc-in core-data [:error-handlers 0 :core-node-id] :missing)
+                  (assoc-in core-data [:error-handlers 0 :protected-core-node-id] :outside)
+                  (assoc-in core-data [:error-handlers 0 :candidate-error-transfers] [])
+                  (assoc-in core-data [:error-handlers 0 :catch-binding-use-syntax-ids] [:outside-syntax])
+                  (assoc-in core-data [:error-handlers 1 :handler-core-node-id] :handler0)
+                  (assoc-in core-data [:error-handlers 1 :catch-binding-id] [:catch 0])
+                  (assoc-in core-data [:error-handlers 1 :catch-binding-scope-id] [:scope 0])
+                  (assoc-in core-data [:error-transfers 1 :evaluation-owner-function-syntax-id] :function)
+                  (assoc-in core-data [:reference-uses 0 :binding-id] [:catch 1])]
+                 (for [key (keys handler-shared)] (assoc-in core-data [:error-handlers 0 key] :changed)))]
+      (is (false? (core/error-handlers-coherent? bad ops)))
+      (is (= (core/error-handlers-coherent? bad ops) (b/sh07-core-error-handlers-coherent? bad))))
+    ;; Shared absence and pending facts are agreement, not proof of legality.
+    (let [without-facts (-> core-data (update-in [:nodes 0 :attributes] #(apply dissoc % (keys handler-shared)))
+                            (update :error-handlers #(mapv (fn [handler] (apply dissoc handler (keys handler-shared))) %)))]
+      (is (true? (core/error-handlers-coherent? without-facts ops))))
+    (let [contract (:gravity/namespace-contract (meta #'core/error-handlers-coherent?))]
+      (doseq [name '[descendant-node-ids handler-group-coherent? error-handlers-coherent?]]
+        (is (= :owner-validated-native-core-data (get-in contract [:public-api name :input-boundary])))
+        (is (false? (get-in contract [:public-api name :checks-legality-fact-presence?])))))))
+
+(deftest handler-operations-and-descriptor-configuration-remain-explicit
+  (let [ops (operations) core-data (handler-core) calls (atom [])
+        node-by-id (into {} (map (juxt :node-id identity)) (:nodes core-data))
+        group (:sh07-b9-handler-group-coherent? ops)
+        descendant (:sh07-core-descendant-node-ids ops)]
+    (is (true? (core/error-handlers-coherent?
+                 core-data (assoc ops :sh07-b9-handler-group-coherent?
+                                  (fn [& args] (swap! calls conj :group) (apply group args))))))
+    (is (= [:group] @calls))
+    (reset! calls [])
+    (is (true? (core/handler-group-coherent?
+                 node-by-id (:error-transfers core-data) (:reference-uses core-data)
+                 (first (:nodes core-data)) (:error-handlers core-data)
+                 (assoc ops :sh07-core-descendant-node-ids
+                        (fn [& args] (swap! calls conj (second args)) (apply descendant args))))))
+    (is (= [:protected :handler0 :handler1] @calls))
+    (is (false? (core/handler-group-coherent?
+                  node-by-id (:error-transfers core-data) (:reference-uses core-data)
+                  (first (:nodes core-data)) (:error-handlers core-data)
+                  (assoc ops :input (fn [field]
+                                      (if (= field :sh07-b9-handler-descriptor-keys)
+                                        (vec (rest ((:input ops) field))) ((:input ops) field)))))))))
