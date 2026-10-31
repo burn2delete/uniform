@@ -116,3 +116,62 @@ handoff. PR673 remains draft at its existing public head. Original genuine
 Reader acceptance, the shared resource hold, effectful admission, full Reader
 closure, release, self-hosting and seed retirement remain open. This local
 candidate makes no publication, CI-pass, review-acceptance or merge claim.
+
+## Follow-up: complete independent identity equations
+
+Candidate `35d172be12d602e50961525299417e260470f3df`, tree
+`a612e525f3667730fee198e2eb58e3320a2f222f`, received an independent
+CHANGES-REQUIRED review, SHA256
+`9395811f2a16ac1fa5a1f1db40597ed1ee8617887bd0b802fc2847db1055ca0d`.
+Its two P2 counterexamples were valid: losing `:document-set` from Macro's
+preimage or `:invalidation-id` from Resolution's preimage escaped the new
+partial lineage predicates. The original CI failure and this failed review
+remain history. The earlier 3 / 17 model result was not a complete oracle.
+
+The successor adds test-only `gravity.reader.identity-expectations`. It states
+the complete existing artifact equations independently of the production
+artifact-id and preimage helpers. Macro's 19 fields include the full boundary
+and selected plan binding, document and execution contracts, environment,
+diagnostics, run summaries, ordered chunks and authenticated Syntax parent.
+Resolution's 14 fields include analysis, source revision, all upstream ids,
+binding and resolution chunks, dependency graph and invalidation. Its chunks
+and dependency ids are independently derived from the artifact's actual rows
+and edges with the existing fixed domains and ordering. Actual Reader-dependent
+parents remain dynamic inputs, not new observed digest constants.
+
+The real Macro/Resolution tests compare the entire production preimage to the
+independent expected map and the actual id to the independently hashed expected
+map. Macro additionally checks fixed document/kind/status/task metadata, the
+declared governing document and macro environment, and the full selected plan
+fields against the separately obtained current Macro binding. Existing exact
+semantic output, verifier, paired-source, provenance and tamper checks remain.
+
+Macro uses the existing native `gravity/canonical-edn-v1` tagged value encoding;
+the test equation independently states its scalar/collection tags, UTF8 hex
+ordering and printer settings. Resolution uses the existing hosted Reader
+canonical encoding primitive on the independent expected preimage. Sharing a
+SHA256 or canonical encoding primitive does not share either production
+artifact projection. Neither production artifact-id helper supplies an expected
+value. No general hashing framework or new artifact format is introduced.
+The encoder is test-only for already admitted artifact DATA, not a replacement
+admission validator or a claim of complete native-carrier conformance.
+
+Compiler-free controls drop and alter every top-level preimage field, including
+both independently reported losses. They also exercise each selected plan
+field, raw/run-summary fields, selected resolved-expansion fields, ordered
+chunk descriptors, dynamic parent/source/analysis/trace/stream values and
+invalidation. Eighteen modeled entries cross the existing 16-entry identity
+chunk boundary; reversing entries changes the expected identity. This width
+is existing serialization structure, not an input admission allowance.
+Canonical controls check scalar tags against inspected actual scalar functions,
+the fixed domain wrapper, map order, list/vector distinction, printer binding,
+metadata refusal and default-comparator assumptions. Inert source models retain
+their port namespaces until the test finishes, then remove them.
+
+The expanded compiler-free suite passed 6 tests / 259 assertions, with Bootstrap,
+Syntax, Macro and Resolution namespaces unloaded. Intermediate private model
+preparation failures (an incorrect field count, early model namespace removal,
+metadata-bearing quoted test lists and a misplaced closing parenthesis) are
+retained externally, not relabeled as passes. Real changed pipeline tests
+remain unrun locally. Source/model success does not establish a corrected CI
+result, runtime acceptance, resource clearance or review acceptance.

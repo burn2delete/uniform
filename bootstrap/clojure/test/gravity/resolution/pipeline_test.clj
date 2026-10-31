@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
+            [gravity.reader.identity-expectations :as expected]
             [gravity.resolution :as resolution]))
 
 (defn- seed-var [name]
@@ -144,7 +145,10 @@
     ;; semantics stay the same. Assert the complete identity joins rather than
     ;; pinning an artifact digest whose Reader implementation is not fixed.
     (let [identity ((seed-var 'sh06-resolution-artifact-identity-input) artifact)]
-      (is (= (:artifact-id artifact) (b/sh06-resolution-artifact-id artifact)))
+      (is (= (expected/resolution-preimage artifact) identity))
+      (is (= (expected/resolution-id artifact) (:artifact-id artifact)))
+      (is (= [:gravity/sh06-resolution-artifact :SH-06 "SH-06"]
+             ((juxt :kind :slice :task) artifact)))
       (is (= :gravity/sh06-resolution-artifact-v1 (:domain identity)))
       (is (= (get-in request [:module :source-revision-id]) (:source-revision-id identity)))
       (doseq [[field parent-field] [[:upstream-artifact-id :artifact-id]
