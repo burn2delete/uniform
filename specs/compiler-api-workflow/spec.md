@@ -1,3 +1,59 @@
+# Compiler API and pipeline implementation specification
+
+Implementation scope added under the 2026-11-01 request as an isolated successor
+to the preserved source-reconciliation candidate. Existing semantic owners,
+literal task criteria and pending review scopes remain unchanged. The original
+specification/composition text below is retained in full.
+
+## Behavior and interfaces
+
+Implement [the Compiler API outcomes](../../docs/component-roadmaps/compiler-api.md#release-outcome)
+under D1/D3/D7/D9, C1/C12/C16/C17/C18, L14-L18 and the retained testing/source
+contracts below. Explicit versioned source/stage requests, context/grants,
+registered pass/provider/plugin contracts and actual artifacts become real
+pipeline execution, verified stage products, cache/invalidation decisions,
+extension/domain registration, subject-bound evidence/trust and diagnostics
+consumed by Build, CLI, Tools and Release.
+
+Passes consume explicit artifacts, not hidden mutable compiler state. Fused
+execution retains the canonical observable inputs/outputs/facts/diagnostics/
+verification boundaries. Resolve the documented D1 versus C1/C5/C6
+representation-order qualification through its existing architecture decision;
+no newly named intermediate stage or ordering label can resolve it here.
+
+## Existing implementation routes and acceptance
+
+The [sole marked ledger](tasks.md#implementation-tasks) already contains five
+literal outcomes with detailed criteria and source amendments. Retain them as
+the editable authority; their individual table rows are not new task IDs.
+
+| Existing outcome | Behavior and required accepted/rejected evidence |
+| --- | --- |
+| `pipeline` | Real versioned request/context/result calls, built-in pass registration/scheduling, stage execution, verification and provenance, C16 stage-specific reuse/invalidation and actual API/CLI/Build composition. Reject missing versions/facts, invalid ordering, hidden context mutation, stale proofs/diagnostics and unchecked backend consumption. Diagnostic-only mode cannot emit runnable artifacts. |
+| `plugins` | Actual C17 pre-load manifest/API/compiler/package/trust checks, scoped grants and sandbox/trusted execution, complete pass/facet/domain registration, output verification, trace and cache identities. Reject incompatible initialization before code runs, read-only/namespace/phase violations, hidden effects/state, invalid output and opaque registration. Package trust is distinct from compiler authority. |
+| `pass-evidence` | Classify the real pass closure and invoke required C18 schema/semantic verifiers, changed-function translation validation and applicable checked proof/certificate/differential/domain evidence. Bind source/input/output/checker/profile/target identities, counterexamples and release/trust decisions. Reject omitted passes, supplied success flags, stale/wrong-subject evidence, lost origins and verification failures reaching affected release artifacts. |
+| `domain-ir-boundaries` | Actually register, enter, verify and exit C12 domain artifacts through owning schemas/anchors and registered lowerings; preserve full semantic/safety/authority/provenance facts and valid fallback/residual/rejection paths. Retain the existing required EFIR/schema/workflow/identified HDL population. Reject missing family/schema/anchor/fact/proof, failed verification, illegal fallback and unregistered exits; search/benchmark/provider claims alone prove no correctness. |
+| `development-boundaries` | Maintain actual unique semantic and fixture/shared-path ownership, delegated compatibility entrypoints, dedicated focused tests and strict truthful affected selection. Exercise representative leaf/shared boundaries and missing/duplicate-owner/unknown-selector refusals. Preserve historical SH-01 completion and unassessed current acceptance; do not introduce a second implementation or a routine admission framework. |
+
+L14 facets remain explicit namespace-scoped, versioned and checked, including
+ambiguity, generated-code and privacy/disclosure boundaries. Alternative macro,
+type and memory providers replace machinery under L16-L18, preserve core/profile
+safety and exported fact/equivalence contracts, and cannot redefine language
+meaning. Component/domain/provider owners implement those semantics; the API
+owns their declared registration, invocation and consumer boundaries.
+
+## Starting work and completion
+
+Versioned input/fact/verifier interfaces and fixtures allow local API or pass
+work before complete producer components. Real composition uses actual selected
+passes, verifiers, grants and consumers. Preserve C12 and other recorded
+execution/publication holds; no callback or plugin run is authorized by this
+source entry. Each outcome completes through its existing full criteria and
+real positive/negative artifacts, with independent acceptance and coordinator
+integration separate from author checks, migration and release.
+
+## Historical workflow-transfer and source-composition specification
+
 # Feature specification: Compiler API workflow migration
 
 Status: prepared; independent review and integration pending.

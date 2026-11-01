@@ -1,3 +1,28 @@
+# Compiler API implementation planning entry
+
+Select one of the five literal [existing outcomes](tasks.md#implementation-tasks),
+preserving its full criteria, current status and historical/qualified receipts.
+Preserve the transfer/composition plan below and the separate unintegrated
+requirement-reconciliation lineage. Read [spec.md](spec.md), the complete
+selected C1/C12/C16/C17/C18 and applicable provider/facet contracts.
+
+Bind actual request/context/schema versions, source/compiler/pass/plugin/
+policy/grant/profile/target inputs, semantic producer/verifier and real consumer.
+Plan actual registered execution or artifact verification plus relevant invalid
+ordering, missing/stale facts, scope/phase/effect, invalid registration/output,
+cache or evidence-subject negatives. Keep actual callback/process execution
+separate from record validation and honor all existing operation holds.
+
+Use focused owner tests and affected actual stage/Build/CLI/Tools composition
+through [development verification](../../docs/development-verification.md) and
+the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+Refine only the selected existing outcome. Retain exact passed/failed/unrun
+artifacts and counterexamples without changing ownership, accepting pending
+source amendments, refreshing migration evidence or claiming whole-pass/release
+support from local checks.
+
+## Historical workflow-transfer and source-composition plan
+
 # Implementation plan: Compiler API workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

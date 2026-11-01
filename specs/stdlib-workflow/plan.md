@@ -1,3 +1,29 @@
+# Standard library implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks) and actual
+export family, preserving compiler-support scope and the historical plan below.
+Read [spec.md](spec.md), complete applicable L13/STD/TEST7 rules and the actual
+language/domain/runtime/provider contract. Resolve current semantic source and
+temporary adapters using [development verification](../../docs/development-verification.md)
+and the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name the actual compiled namespace/export/binding, input/result types and value
+laws, evaluation/transfers, effect/allocation/storage, profile/target/grants,
+provider and real caller. Plan legal examples plus arity/type/value/profile/
+authority/ownership/taint/schema or proof negatives specific to the API. For
+collections preserve full physical validation and precise empty/false/nil,
+ordering and lifetime rules; do not copy superseded quotas or infer unsupported
+shape/presence facts. Compatibility spellings alone are not module-export proof.
+
+Run focused API/property checks and affected compiler/runtime/domain/provider
+composition, with runnable documentation and exact diagnostic/artifact identity.
+Use the existing task authority only, recording absent exports, failed/unrun
+cases, residual host/provider boundaries and actual manifest/stability changes.
+Preserve reserved writers and held live operations. Separate reachable compiler
+support, wider module/profile completion, independent acceptance and release.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Standard Library workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

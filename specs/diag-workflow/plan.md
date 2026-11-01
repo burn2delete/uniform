@@ -1,3 +1,24 @@
+# Diagnostic implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the transfer plan below. Read [spec.md](spec.md), C15 and the actual producer
+rule and consumer/redaction contracts. Resolve current stage/carrier/renderer
+ownership through [development verification](../../docs/development-verification.md)
+and the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name actual producing input/failure, source/generated/artifact locations,
+available and nil context, semantic identity/facts, policy and consumer.
+Construct a real failure plus relevant malformed-record, origin/ordering,
+wording-change, redaction or view-parity cases. Assert semantic fields and
+remediation categories; do not invent facts merely to satisfy the common shape.
+
+Use focused owner checks and affected real producer/CLI/Build/editor/runtime
+composition. Preserve exact diagnostic and compatibility IDs, private-data
+boundaries and failed/unrun evidence. Refine only the selected task; a successful
+rendering fixture does not establish all-stage integration or release.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Diagnostics task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

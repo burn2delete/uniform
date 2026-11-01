@@ -7,6 +7,15 @@ another implementation task ledger, acceptance graph or completion denominator.
 Reconciliation remains in progress; independent acceptance and integration of
 this change are pending. No compiler or product completion is claimed.
 
+At the inspected base, the 240 canonical documents specify the complete
+language/platform contracts. Spec Kit primarily organizes implementation
+ownership, task editing and historical evidence. Its document links reach the
+full inventory, but most component specifications describe workflow migration
+rather than the actual remaining behavior. The material differences are
+requirement-to-task entailment, concrete producer/consumer interfaces,
+implementation planning detail and evidence applicability, not simply the
+number of files.
+
 ## Existing authority and preserved work
 
 The [canonical inventory](../docs/document-inventory.json) retains all 240
@@ -85,6 +94,36 @@ They route real graph construction/verification, semantics-preserving passes,
 target/ABI/provider lowering, emitted bytes and actual next-stage rebuilds
 through their existing authorities. SH-25 construction, SH-26 actual rebuild,
 SH-27 equivalence, SH-28 trust and SH-29 public delivery remain distinct.
+The [backend portfolio](../specs/backends-workflow/spec.md) now routes all
+fifteen existing family groups to real target-specific behavior, and
+[Runtime](../specs/runtime-workflow/spec.md) routes its existing five groups to
+actual service selection, execution, memory/concurrency/FFI, replay/interactive
+behavior and enforcement. Selected compiler-service and Linux LLVM evidence
+remain narrower than the wider required runtime and backend families.
+The service and library entries are [Build](../specs/build-workflow/spec.md),
+[CLI](../specs/cli-workflow/spec.md), [Diagnostics](../specs/diag-workflow/spec.md),
+[Developer Tools](../specs/tools-workflow/spec.md) and
+[Standard Library](../specs/stdlib-workflow/spec.md). They route actual graph/
+package operations, public commands, diagnostic consumers, twelve specialist
+tools and callable library exports through their existing task records. Library
+compiler-support and CLI compiler-command slices retain their finite scope.
+
+Compiler API, Domains and Platform have preserved source-reconciliation
+proposals with spec/plan changes. The existing chats were observed idle on
+2026-11-01; an immutable pending candidate is not an active-writer lock under
+AGENTS.md. This branch adds isolated implementation entries while preserving
+the inspected-main originals and all task/evidence bytes, without importing or
+accepting the proposed amendments. Their
+[proposed Compiler API](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/compiler-api-workflow/spec.md),
+[Domains](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/spec.md)
+and [Platform](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/platform-workflow/spec.md)
+packages distinguish migration prose from detailed implementation task criteria.
+The new [Compiler API entry](../specs/compiler-api-workflow/spec.md) and
+[Platform entry](../specs/platform-workflow/spec.md) retain the existing literal
+outcomes and unresolved architecture/operation restrictions. Domains remains
+under direct source review for its implementation entry. Exact affected
+composition with the preserved proposals remains required; their additional
+integration interfaces and Platform product decisions are not replaced here.
 The other component packages remain discoverable through the existing
 [component registry](../docs/component-roadmaps/README.md#component-registry).
 Their migration specs are not automatically accepted as complete implementation
@@ -223,3 +262,14 @@ navigation and conservation across fourteen component entries; it does not
 accept their implementation outcomes, the other ten component specifications,
 the global source partition or a seedless release. No compiler or release
 execution was performed.
+
+The ecosystem packet expands Backends, Runtime, Diagnostics, CLI, Build,
+Developer Tools and Standard Library, followed by isolated Compiler API and
+Platform entries. Focused checks passed 49 changed Markdown files, all 132
+existing task routes, 46 historical spec/plan suffixes and 46 unchanged
+task/evidence files; local path/heading checks also passed. Current canonical
+and full-language structural validators both exited 0. Dependency controls
+passed 18 tests / 419 assertions; the language-boundary gate passed 6 / 11.
+The full-language validator explicitly reports a dated non-authoritative
+snapshot, not current execution coverage. These checks confer no semantic
+partition, implementation, independent review, integration or release acceptance.
