@@ -1,3 +1,30 @@
+# Effects implementation planning entry
+
+Select one unresolved record from [tasks.md](tasks.md#implementation-tasks),
+preserving the original transfer plan and existing pending source-family
+amendments. Reconcile its plan against [spec.md](spec.md), complete L6/C8
+semantics and the actual typed-Core, Auth, Legality and runtime/domain interface.
+Resolve current semantic implementation and transport paths from
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name actual operations and call/dispatch/recursive edges, direct versus latent
+and handled/escaping facts, declarations, profile/provider/grants and replay
+inputs. Supply concrete positive/negative programs for the selected fact or
+handler class. Cover missing or hidden actions, residual effects, type/profile/
+capability mismatch, illegal continuation transfer, invalid record/replay and
+changed-input invalidation where applicable. A fake must retain original labels,
+its explicit fixture capability and absence of live authority.
+
+Use focused owner tests and proportionate Types/Auth/Legality/MIR and selected
+runtime/domain composition; do not substitute declared allowances or metadata
+for inference or real interpretation. Preserve all reserved writers and held
+provider/replay operations. Refine the existing authoritative task only, record
+exact passed/failed/unrun evidence and retain separate independent acceptance,
+integration and wider-runtime/handler completion boundaries.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Effects task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

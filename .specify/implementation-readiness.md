@@ -70,6 +70,14 @@ behavior to its unchanged marked task authority. Reader's
 [planning entry](../specs/reader-workflow/plan.md) and
 [task authority](../specs/reader-workflow/tasks.md#implementation-tasks) begin
 the dependency selection below.
+The checked-source entries now also cover
+[Types](../specs/types-workflow/spec.md), [Effects](../specs/effects-workflow/spec.md),
+[Legality](../specs/legality-workflow/spec.md) and [Auth](../specs/auth-workflow/spec.md).
+They describe actual constraint/effect derivation, the required handler classes,
+profile and safety enforcement, and provider/grant/artifact verification. They
+route to the same existing tasks without adopting pending source-family task
+amendments or promoting old receipts. Runtime handler interpretation, surviving
+checks and actual action/verification boundaries require real composition.
 The other component packages remain discoverable through the existing
 [component registry](../docs/component-roadmaps/README.md#component-registry).
 Their migration specs are not automatically accepted as complete implementation
@@ -88,16 +96,28 @@ The declared staged graph has no cycle; its coarse cycles and the unresolved
 Core/Resolve representation-order question remain explicitly documented there.
 An advisory frontier does not grant execution permission or transfer a writer.
 
-The first preparation increment is the existing
+The first source-coverage increment is the existing
 `reader/finite-remaining-work/contract-coverage-reconciliation` task in
 `specs/reader-workflow`. It has no completed-Build or self-hosted-compiler start
 prerequisite. It must bind the complete L1/C2 surface and product population to
 actual implementation locations and real accepted/rejected fixtures, preserving
 the exact accepted decode, lexical/origin and fresh-Syntax evidence. Missing
 behavior must be represented by concrete failing cases and an owned correction,
-not a claim based on source presence. It is not yet certified as the first
+not a claim based on source presence. This is substantive source/fixture
+reconciliation in an existing task, not a new preparation-only admission gate
+for ordinary development. It is not yet certified as the first
 behavior-changing increment for the whole project: the source-backed gap and
 current writer must be identified before that narrower selection can be made.
+
+In particular, Reader's existing
+[pure integration correction](../specs/reader-workflow/pure-native-admission-evidence.md#handoff-and-remaining-gate)
+retains the genuine Reader/Gravity/Bootstrap, paired integration, provider,
+lease, probe and shared-6343 hold. The
+[standard-handler seam](../specs/reader-workflow/normal-dispatch-evidence.md#remaining-gates)
+does not establish authenticated execution either. These are source-backed
+remaining extension-policy obligations, not permission to rerun the held
+transaction or assign its implementation to another writer. Coverage work can
+identify and bind those existing outcomes without executing them.
 
 Select that existing increment in Codex:
 
@@ -179,3 +199,11 @@ all 27 existing frontend task identities, preserved all ten historical spec/plan
 suffixes and confirmed all ten task/evidence files unchanged from the inspected
 main. These are source/navigation conservation checks, not acceptance of the
 27 implementation outcomes or an assessment of every attached source facet.
+
+The checked-source packet extends Types, Effects, Legality and Auth. Focused
+checks passed 21 changed Markdown files for ASCII and 352 local path/heading
+references, all 47 existing task routes, 18 byte-identical historical spec/plan
+suffixes and 18 unchanged task/evidence files. An initial ad hoc route selector
+incorrectly counted an inline historical alias as a task and was corrected to
+select actual checkbox records; no project task or criterion changed. Whitespace
+checks passed. No compiler or privileged action was run for these entries.
