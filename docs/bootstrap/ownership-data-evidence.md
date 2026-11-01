@@ -2,7 +2,7 @@
 
 ## Boundary and contracts
 
-D1, D2, D3, D8, D9, L10, SAFE3, SAFE4, SAFE5, C1, C6-C11, C15,
+D1, D2, D3, D8, D9, L10, SAFE2, SAFE3, SAFE4, SAFE5, C1, C6-C11, C15,
 BOOT8 and TEST2 govern this increment. The base is main
 3a4d5ea11c946bd374dfdfa09feaa1d78aa6c582. Nine existing native seed algorithms
 move from components 00684, 00685 and 00694 into gravity.ownership:
@@ -129,6 +129,63 @@ wrappers without authenticated source/Core composition. Original paired
 evidence keeps its earlier production context. The final composition requires
 its own independent review, contextual lint against actual main, successful CI
 and clean integration preflight; acceptance of b14 alone is insufficient.
+
+## Composition with main 7019 and fresh development evidence
+
+The earlier composition cd606ded98854da99992a20be69f3e3db9783981, tree
+e4ab2be1d0b3da03e9c1248c079c366667984be8, remains nonpassing: its own
+CI 41220765999 recorded Macro and Resolution watchdog exits 124 at 600
+seconds. Those failures do not identify an active test or cause and are not
+retried, repaired, or credited by this composition. The earlier cancelled run
+41220457191 remains cancelled evidence. No actor or cancellation cause is
+inferred.
+
+A normal merge now incorporates actual main
+7019c174703d534e8da0341587a172a9214b9f20, tree
+749fd2729a7c9782c08786c8485f067274f5ecfb. Its three native ownership
+components are unchanged from the previous integration base. Five genuine
+conflicts are resolved by reconstructing complete current-main Bootstrap,
+registration and namespace-map files and adding only the existing ownership
+association, require, test and row. All incoming main code is retained. Nine
+moved bodies, wrappers, ports and focused tests remain conserved; the quoted
+contract and map now also name the applicable SAFE2 memory-safety boundary.
+CI policy, watchdogs, runners, caches and authority pins remain exactly main's.
+
+Before composition, an ordinary development producer runs at clean main 7019.
+The same producer runs on the working composition. Both spellings compile the
+complete accepted and rejected fixtures and execute normalized C9 requests:
+immutable sharing is accepted and use after move yields C9-USE-AFTER-MOVE.
+Thirty-six complete and serialized record pairs match. All captured source
+texts match actual files, their hashes recompute, and both fixture plan IDs
+recompute without normalization. The native view remains unauthenticated data.
+Fresh ownership, runtime, optimization, lowering and normalized C9 regressions
+pass 27 tests / 996 assertions; registration passes 33 / 1012 and the language
+boundary passes 6 / 11.
+
+The complete C9 engine plan is separately captured: 101 functions, source SHA
+717358b45c98dcb5d8c86afea58a3c0a85a34ea66bb9e2dc72c2fd5b8c77de43,
+plan ID sha256:367d262bb4d51904c26ebabee1151155e8f8ef750147ab8c99c8f079d3b40496.
+Execution uses the existing fixed Stage2 compiler seed
+bootstrap/gravity/p15_s23/compiler.gravity, SHA
+57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527,
+and native Clojure gravity.runtime plus component 00593. This does not execute
+main's changed Gravity emitter.gravity or runtime.gravity, authenticate
+source/Core inputs, renew migration evidence or claim full C9 conformance.
+Captured compiler provenance records their actual hashes and the inherited
+compiler stamps; no stamp or identity is fabricated.
+
+The first new control launch supplied a script path to the self-hosting test
+runner, which rejected its arguments before any fixture ran. A corrected
+ordinary Clojure script invocation produced the evidence above. A temporary
+parse-check command also had an extra closing delimiter after fully reading
+both evidence scripts; neither script was evaluated by that command. These
+nonpasses remain recorded separately from successful execution.
+
+Evidence remains in /tmp/uniform-ownership-data-evidence and the corresponding
+accounting-main command logs. Fresh contextual lint, docs/roadmap/governance,
+exact independent review, this composed head's own CI and clean current-main
+integration preflight remain required. Neither old acceptance nor a later
+green run supplies old-head or old-watchdog credit.
 
 ## Unsupported boundaries
 

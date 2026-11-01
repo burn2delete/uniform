@@ -202,6 +202,16 @@
     (is (thrown? Exception (dependencies/current-task-body! locator (constantly changed))))
     (is (thrown? Exception (dependencies/current-task-body! locator (constantly duplicated))))))
 
+(deftest normalized-source-snapshot-tampering-rejects
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        reference (get-in source [:requirements 0 :acceptance-source :source-snapshot-ref])
+        forged (assoc source :source-snapshots
+                      (assoc (:source-snapshots source) reference "forged acceptance"))
+        missing (update source :source-snapshots dissoc reference)]
+    (is (string? reference))
+    (is (thrown? Exception (dependencies/task-sh-view forged slurp)))
+    (is (thrown? Exception (dependencies/task-sh-view missing slurp)))))
+
 (deftest navigation-roadmap-drift-does-not-rebind-sh-history
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         roadmap "docs/component-roadmaps/runtime.md"

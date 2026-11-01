@@ -237,9 +237,9 @@
                           {(ids :result) :gravity.type/string (ids :branch) :gravity.type/string
                            (ids :loop-target) :gravity.type/string caller caller-function})
                   (update :function-type-table conj caller-function))
-        derived (effects 'body-derive-module-nodes core facts {} 65536)
+        derived (effects 'body-derive-module-nodes core facts {})
         graph (:nodes derived)
-        checked (effects 'body-tc-verify core facts bindings graph {:active? true} 65536)
+        checked (effects 'body-tc-verify core facts bindings graph {:active? true})
         self-call (get-in facts [:recursive-proof :self-call-core-node-id])]
     (is (true? (effects 'body-recursive-proof-valid? core facts)))
     (is (true? (effects 'body-ds-captures-valid? core facts bindings)))
@@ -256,24 +256,21 @@
     (is (true? (effects 'body-graph-equations-valid? core facts {} graph)))
     (is (= :accepted (:status checked)))
     (is (= [:gravity.type/string] (get-in checked [:functions caller])))
-    (is (= :accepted (:status (effects 'body-derive-module-nodes core facts {} (:work-count derived)))))
-    (is (= :body-deferred-work-limit
-           (:reason (effects 'body-derive-module-nodes core facts {} (dec (:work-count derived))))))
-    (doseq [budget [0 1 10]]
-      (is (= :body-deferred-work-limit (:reason (effects 'body-derive-module-nodes core facts {} budget)))))
+    (is (= :accepted (:status (effects 'body-derive-module-nodes core facts {}))))
+
     (doseq [bad [#{:error/throw} nil {:transitive #{:error/throw}}
                  {:transitive #{} :escaping-thrown-errors #{} :escaping-thrown-error-types [:gravity.type/string]}]]
       (is (= :malformed-declared-self-summary
-             (:reason (effects 'body-derive-nodes-pass core facts {} 65536
+             (:reason (effects 'body-derive-nodes-pass core facts {}
                                 (assoc (:recursive-proof facts) :loop-summaries {}) bad)))))
     (is (= :rejected
            (:status (effects 'body-tc-verify core facts bindings
                               (assoc-in graph [call-id :escaping-thrown-error-types] [])
-                              {:active? true} 65536))))))
+                              {:active? true}))))))
 
 (deftest loop-effect-backedge-development-kernel
   (let [[core facts ids] (effect-loop-data)
-        result (effects 'body-derive-loop-nodes core facts {} 65536)
+        result (effects 'body-derive-loop-nodes core facts {})
         graph (:nodes result) transfer (ids :transfer) body (ids :branch)]
     (is (= :accepted (:status result)) (pr-str result))
     (is (= [(ids :next-again) (ids :next-value) body] (get-in graph [transfer :dependencies])))
@@ -283,21 +280,18 @@
     (is (= #{} (get-in graph [transfer :transitive])))
     (is (= (mapv ids [:again-init :value-init :branch]) (get-in graph [(ids :loop-target) :evaluated-children])))
     (is (true? (effects 'body-graph-equations-valid? core facts {} graph)))
-    (is (= :accepted (:status (effects 'body-derive-loop-nodes core facts {} (:work-count result)))))
-    (is (= :body-deferred-work-limit
-           (:reason (effects 'body-derive-loop-nodes core facts {} (dec (:work-count result))))))
-    (doseq [budget [0 2 6]]
-      (is (= :body-deferred-work-limit (:reason (effects 'body-loop-rows core facts budget)))))
+    (is (= :accepted (:status (effects 'body-derive-loop-nodes core facts {}))))
+
     (doseq [indexes [[0] [1] [2 2] [3] [-1] ["2"] [nil] 2]]
       (let [bad (update core :nodes #(mapv (fn [node] (if (= :loop (:core-form node))
                                                         (assoc-in node [:attributes :body-child-indexes] indexes) node)) %))]
-        (is (= :incoherent-loop-result-type (:reason (effects 'body-derive-loop-nodes bad facts {} 65536))))))
+        (is (= :incoherent-loop-result-type (:reason (effects 'body-derive-loop-nodes bad facts {}))))))
     (let [seal (fn [c] (assoc c :identity-preimage (select-keys c [:loop-bindings :recur-targets :recur-transfers])))
           recur-node (first (filter #(= :recur (:core-form %)) (:nodes core)))
           duplicate (seal (-> core (update :nodes conj (assoc recur-node :node-id "sha256:duplicate-recur"))
                                   (update :recur-transfers conj (first (:recur-transfers core)))))
           duplicate-facts (update facts :constraint-ledger conj (last (:constraint-ledger facts)))]
-      (is (= :incomplete-loop-control-coverage (:reason (effects 'body-loop-joins duplicate duplicate-facts 65536))))
+      (is (= :incomplete-loop-control-coverage (:reason (effects 'body-loop-joins duplicate duplicate-facts))))
       (doseq [bad [(assoc core :recur-targets [7])
                    (assoc-in core [:recur-targets 0 :arity] nil)
                    (assoc-in core [:recur-targets 0 :arity] "two")
@@ -307,7 +301,7 @@
                    (-> core (assoc :loop-bindings [])
                             (assoc-in [:recur-targets 0 :binding-ids] [])
                             (update-in [:recur-targets 0] dissoc :arity))]]
-        (is (= :rejected (:status (effects 'body-derive-loop-nodes (seal bad) facts {} 65536))))))
+        (is (= :rejected (:status (effects 'body-derive-loop-nodes (seal bad) facts {}))))))
     (doseq [[c f] [[core (assoc-in facts [:type-table (ids :value-init)] :gravity.type/string)]
                    [core (assoc-in facts [:type-table transfer] :gravity.type/integer)]
                    [core (assoc-in facts [:type-table (ids :loop-target)] :gravity.type/string)]
@@ -315,10 +309,10 @@
                    [core (assoc-in facts [:constraint-ledger 0 :solution :type] :gravity.type/string)]
                    [(assoc-in core [:recur-transfers 0 :target-id] (ids :function-target)) facts]
                    [(update core :nodes #(filterv (fn [n] (not= body (:node-id n))) %)) facts]]]
-      (is (= :rejected (:status (effects 'body-derive-loop-nodes c f {} 65536)))))
+      (is (= :rejected (:status (effects 'body-derive-loop-nodes c f {})))))
     (is (false? (effects 'body-graph-equations-valid? core facts {}
                         (assoc-in graph [transfer :loop-backedge :body-core-node-ids] []))))
-    (let [inflated (:nodes (effects 'body-derive-nodes-pass core facts {} 65536
+    (let [inflated (:nodes (effects 'body-derive-nodes-pass core facts {}
                               {:loop-summaries {body #{:compiler/read-ir}}} #{}))]
       (is (true? (effects 'body-graph-equations-valid? core facts {} inflated)))
       (is (not= graph inflated)))
@@ -566,7 +560,7 @@
         facts {:constraint-ledger (:constraints c7) :type-table types
                :function-type-table [{:function-id :function :thrown-error-effects [:gravity.type/string]}]}
         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms forms}}}
-        check #(effects 'body-throw-joins %1 %2 65536)]
+        check #(effects 'body-throw-joins %1 %2)]
     (is (= :accepted (:status (check request facts))))
     (is (= :accepted (:status (check (assoc-in request [:canonical-core-artifact :call-edges]
                                              [{:caller-function-syntax-id :other :callee-function-syntax-id :plain}]) facts))))
@@ -632,7 +626,7 @@
     (is (= 2 (count (:constraints checked))))
     (is (= {:function [:gravity.type/string]} (:throws checked)))
     (is (false? (get-in checked [:constraints 1 :solution :normal-transfer?])))
-    (is (= :accepted (:status (effects 'body-throw-joins request facts 65536))))
+    (is (= :accepted (:status (effects 'body-throw-joins request facts))))
     (is (= #{} (:direct outer-graph) (:direct-thrown-errors outer-graph)))
     (is (= #{:error/throw} (:escaping outer-graph)))
     (is (= #{:gravity.type/string} (:escaping-thrown-errors outer-graph))))
@@ -654,10 +648,10 @@
         graph {:functions {:first {:declared #{} :inferred #{:error/throw}}
                            :second {:declared #{} :inferred #{:error/throw}}}
                :nodes {:first {:direct #{}} :second {:direct #{}} :top {:direct #{:error/throw}}}}
-        first-failure (effects 'body-allowance-check core facts graph 65536)
+        first-failure (effects 'body-allowance-check core facts graph)
         namespace-failure (effects 'body-allowance-check core facts
                             (-> graph (assoc-in [:functions :first :declared] #{:error/throw})
-                                      (assoc-in [:functions :second :declared] #{:error/throw})) 65536)]
+                                      (assoc-in [:functions :second :declared] #{:error/throw})))]
     (is (= "C8-UNDECLARED" (:rule first-failure) (:rule namespace-failure)))
     (is (= :first (get-in first-failure [:node :node-id])))
     (is (= :first (:function first-failure)))
@@ -668,7 +662,7 @@
     (is (= :error/throw (:effect namespace-failure)))
     (is (= "C8-UNDECLARED" (-> (effects 'body-error-result facts namespace-failure) :diagnostics first :rule)))
     (is (= "C8-VERIFY" (-> (effects 'body-error-result facts {:reason :forged}) :diagnostics first :rule)))
-    (is (= :rejected (:status (effects 'body-allowance-check core facts graph 0))))))
+    (is (= :rejected (:status (effects 'body-allowance-check core facts graph))))))
 
 (defn- local-throw-kernel-data []
   (let [id (fn [n] ((body-helper 'sha) n))
@@ -773,16 +767,9 @@
            (assoc direct :throws {})))
     (is (= "C7-GENERIC" (-> (c7-invoke 'sh08-tc-products [core types functions bindings direct ]) :diagnostics first :rule)))
     (is (= :accepted (:status (c7-invoke 'sh08-tc-products [core types functions bindings direct ]))))
-    (let [direct (assoc direct :work-count 17)
-          baseline (:work-count result)
-          accepted (c7-invoke 'sh08-tc-products [core types functions bindings direct ])]
-      (is (= :accepted (:status accepted)))
-      (is (= (+ 17 baseline) (:work-count accepted)))
-      (is (= "C7-GENERIC" (-> (c7-invoke 'sh08-tc-products [core types functions bindings direct ]) :diagnostics first :rule))))
-    (let [isolated (assoc direct :throws {(fid 6) [:gravity.type/string]} :work-count 17)
+    (let [isolated (assoc direct :throws {(fid 6) [:gravity.type/string]})
           no-touch (c7-invoke 'sh08-tc-products [core types functions bindings isolated ])]
-      (is (= (:throws isolated) (:throws no-touch)))
-      (is (= (+ 17 (count (:call-edges core))) (:work-count no-touch))))
+      (is (= (:throws isolated) (:throws no-touch))))
     (let [scoped (c7-invoke 'sh08-tc-scope [core (:throws direct)])]
       (is (set? (:scope scoped)))
       (is (true? (:active? scoped))))
@@ -901,7 +888,7 @@
   (let [{:keys [core forms bindings types]} (loop-handler-kernel-data)
         checked (c7-invoke 'sh08-ft-loop-type-step [core types {}])
         source (c7-invoke 'sh08-eh-source-products [core forms bindings])
-        independent (effects 'body-eh-source-products core forms bindings 65536)
+        independent (effects 'body-eh-source-products core forms bindings)
         direct (c7-invoke 'sh08-th-products [core forms types])
         products (c7-invoke 'sh08-tc-products [core types {} bindings direct ])
         owners (c7-invoke 'sh08-th-owners [core])
@@ -913,7 +900,7 @@
         request {:b47-context {:authenticated-core-request {:forms forms :binding-table bindings
                     :resolution-table [{:reference-syntax-id :type :position :type :symbol 'String :binding-id :string-type}
                                        {:reference-syntax-id :handler :position :value :symbol 'e :binding-id :caught}]}}}
-        verify #(effects 'body-eh-verify request core %1 (:groups independent) %2 65536)]
+        verify #(effects 'body-eh-verify request core %1 (:groups independent) %2)]
     (is (= :accepted (:status checked)))
     (is (= :accepted (:status source) (:status independent) (:status direct) (:status products) (:status derived))
         (pr-str {:source source :independent independent}))
@@ -945,7 +932,7 @@
         check #(c7-invoke 'sh08-eh-source-products [%1 %2 %3])
         result (check core forms bindings)]
     (is (= :accepted (:status result)) (pr-str result))
-    (is (= :accepted (:status (effects 'body-eh-source-products core forms bindings 65536))))
+    (is (= :accepted (:status (effects 'body-eh-source-products core forms bindings))))
     (is (= {:caught :gravity.type/string} (:seeds result)))
     (is (= [:gravity.type/string] (mapv :error-type (get-in result [:groups :try]))))
     (doseq [[bad-core bad-forms bad-bindings]
@@ -963,7 +950,7 @@
              [core forms (assoc-in bindings [1 :scope-id] :sibling)]
              [core (assoc-in forms [7 :value] 'Bool) bindings]]]
       (is (= "C7-VERIFY" (get-in (check bad-core bad-forms bad-bindings) [:diagnostics 0 :rule])))
-      (is (= :rejected (:status (effects 'body-eh-source-products bad-core bad-forms bad-bindings 65536)))))
+      (is (= :rejected (:status (effects 'body-eh-source-products bad-core bad-forms bad-bindings)))))
     (let [plain (assoc core :nodes [(first (:nodes core))] :error-handlers [])
           result (check plain [] [])]
       (is (= {:status :accepted :groups {} :seeds {} :diagnostics []} result)))))
@@ -1049,7 +1036,7 @@
 (deftest atomic-typed-handler-body-development-kernel
   (let [{:keys [core forms bindings types]} (typed-handler-kernel-data)
         source (c7-invoke 'sh08-eh-source-products [core forms bindings])
-        independent (effects 'body-eh-source-products core forms bindings 65536)
+        independent (effects 'body-eh-source-products core forms bindings)
         owners (c7-invoke 'sh08-th-owners [core])
         derived (c7-invoke 'sh08-tc-graph [core types (:owners owners) #{:function} (:groups source)])
         rows (c7-invoke 'sh08-eh-constraints [core (:groups source) types (:nodes derived) []])
@@ -1060,7 +1047,7 @@
         request {:b47-context {:authenticated-core-request {:forms forms :binding-table bindings
                     :resolution-table [{:reference-syntax-id :type :position :type :symbol 'String :binding-id :string-type}
                                        {:reference-syntax-id :handler :position :value :symbol 'e :binding-id :caught}]}}}
-        verify #(effects 'body-eh-verify request core %1 (:groups independent) %2 65536)]
+        verify #(effects 'body-eh-verify request core %1 (:groups independent) %2)]
     (is (= :accepted (:status derived)))
     (is (= [] (get-in derived [:nodes :try])))
     (is (= :accepted (:status (verify facts graph))) (pr-str (verify facts graph)))
@@ -1074,7 +1061,7 @@
       (is (= :rejected (:status (verify (mutate facts) graph)))))
     (is (= :rejected (:status (verify facts (assoc-in graph [:try :escaping-thrown-error-types] [:gravity.type/bool])))))
     (is (= :rejected (:status (effects 'body-eh-verify (assoc-in request [:b47-context :authenticated-core-request :resolution-table 0 :position] :value)
-                              core facts (:groups independent) graph 65536))))
+                              core facts (:groups independent) graph))))
     (is (= :gravity.type/string (c7-invoke 'sh08-ft-normal-return-type [:try [:gravity.type/never :gravity.type/string] :gravity.type/unknown])))
     (is (= "C7-TYPE-MISMATCH" (get-in (c7-invoke 'sh08-eh-type-checks [(:groups source) (assoc types :transfer :gravity.type/string :handler :gravity.type/bool)
                                             (into {} (map (juxt :node-id identity) (:nodes core)))]) [:diagnostics 0 :rule])))))
@@ -1120,7 +1107,7 @@
     (doseq [[core facts] [[core facts] [ho-core ho-facts]]]
       (let [table (:function-type-table facts) index (effects 'body-index table :function-id)
             edges (effects 'body-index (:call-edges core) :call-core-node-id)
-            derived (effects 'body-derive-nodes-with-foreign core facts {} 65536) graph (:nodes derived)
+            derived (effects 'body-derive-nodes-with-foreign core facts {}) graph (:nodes derived)
             old-source #(get (effects 'body-by table :function-id (:callee-function-syntax-id %)) :body-core-node-id)
             indexed-source #(get-in index [(:callee-function-syntax-id %) :body-core-node-id])
             record (fn [node edge source]
@@ -1208,8 +1195,8 @@
                 :parameters [] :return :gravity.type/string :fixed-arity 0 :latent-effects [:error/throw] :capabilities [] :thrown-error-effects []}]
         bindings {(ids :callee-binding) {:binding-id (ids :callee-binding)}}
         groups {(ids :try) [{:record :string-catch :error-type :gravity.type/string :handler-core-node-id (ids :handler)}]}
-        owners (effects 'body-throw-owners core 65536)
-        scoped (effects 'body-tc-scope core {callee [:gravity.type/string]} 65536)
+        owners (effects 'body-throw-owners core)
+        scoped (effects 'body-tc-scope core {callee [:gravity.type/string]})
         joined (assoc scoped :direct-throws {callee [:gravity.type/string]} :owners (:owners owners))
         source (c7-invoke 'sh08-tc-graph [core types (:owners owners) (:scope scoped) groups])
         nodes (into {} (map (juxt :node-id identity) (:nodes core)))
@@ -1229,11 +1216,11 @@
         result (c7-invoke 'sh08-tc-products [core types functions bindings direct ])
         function-table (c7-invoke 'sh08-th-functions [(vec (vals functions)) (:throws result)])
         facts {:function-type-table function-table :type-table types :constraint-ledger (:constraints result)}
-        scoped (effects 'body-tc-scope core (:throws direct) 65536)
-        owners (effects 'body-throw-owners core 65536)
+        scoped (effects 'body-tc-scope core (:throws direct))
+        owners (effects 'body-throw-owners core)
         joined (assoc scoped :direct-throws (:throws direct) :owners (:owners owners))
         derived (effects 'body-derive-nodes core facts) graph (:nodes derived)
-        verify #(effects 'body-tc-verify core % (into {} (map (juxt :binding-id identity) bindings)) %2 joined 65536)]
+        verify #(effects 'body-tc-verify core % (into {} (map (juxt :binding-id identity) bindings)) %2 joined)]
     (is (= :accepted (:status derived)))
     (is (not (contains? (:scope scoped) (fid 6))))
     (is (= :accepted (:status (verify facts graph))))
@@ -1258,15 +1245,15 @@
       (is (= [:gravity.type/string :gravity.type/bool]
              (c7-invoke 'sh08-tc-node-errors [node graph nil {:argument :gravity.type/never} {}])))))
   (let [{:keys [core facts bindings joined ids checked source]} (local-throw-loop-effect-data)
-        derive #(effects 'body-derive-module-nodes %1 %2 {} 65536)
+        derive #(effects 'body-derive-module-nodes %1 %2 {})
         derived (derive core facts) graph (:nodes derived)
-        verify #(effects 'body-tc-verify %1 %2 bindings %3 joined 65536)
+        verify #(effects 'body-tc-verify %1 %2 bindings %3 joined)
         replace-node (fn [c id f] (update c :nodes #(mapv (fn [node] (if (= id (:node-id node)) (f node) node)) %)))
         reseal (fn [c] (assoc c :identity-preimage (select-keys c [:loop-bindings :recur-targets :recur-transfers])))]
     (is (= :accepted (:status checked) (:status source) (:status derived)) (pr-str {:checked checked :source source :derived derived}))
     (is (true? (:recur-control? derived)))
     (is (true? (effects 'body-graph-equations-valid? core facts {} graph)))
-    (is (= :accepted (:status (effects 'body-loop-joins core facts 65536))))
+    (is (= :accepted (:status (effects 'body-loop-joins core facts))))
     (is (= :accepted (:status (verify core facts graph))))
     (is (= {(:function-target ids) [:gravity.type/string] (:caller ids) []} (:functions (verify core facts graph))))
     (doseq [name [:result :branch :loop-target :call]]
@@ -1276,8 +1263,7 @@
     (is (= #{:error/throw} (get-in graph [(ids :try) :transitive]) (get-in graph [(ids :transfer) :transitive])))
     (is (= (first (:recur-transfers core)) (get-in graph [(ids :transfer) :loop-backedge :source-transfer])))
     (when (= :accepted (:status derived))
-      (is (= derived (effects 'body-derive-module-nodes core facts {} (:work-count derived))))
-      (is (= :body-deferred-work-limit (:reason (effects 'body-derive-module-nodes core facts {} (dec (:work-count derived)))))))
+      (is (= derived (effects 'body-derive-module-nodes core facts {}))))
     (doseq [bad [(assoc-in facts [:constraint-ledger (dec (count (:constraint-ledger facts))) :dependencies :callee-error-types] [])
                  (assoc-in facts [:function-type-table 0 :thrown-error-effects] [])
                  (assoc-in facts [:function-type-table 1 :thrown-error-effects] [:gravity.type/string])]]
@@ -1365,7 +1351,7 @@
                        (assoc-in graph [:nodes ordered-id :covered-source-errors] [])]]
             (is (= :rejected (:status (effects 'verify-body-effect-result typed (:verification p) (:binding p)
                                        ((body-helper 'reseal-effect-graph) result bad)))))))
-        ))
+))
     (doseq [extension [".gravity" ".qst"]]
       (doseq [[name rule reason] [["atomic-catch-result-type" "C7-TYPE-MISMATCH" :try-normal-result-type-mismatch]
                                 ["atomic-catch-unsupported-type" "C7-ANNOTATION" :unsupported-atomic-catch-type]]]
@@ -1767,7 +1753,7 @@
         transfer-node (first (filter #(= :recur (:core-form %)) (:nodes core)))
         rows (mapv #(effects 'body-loop-row % transfer-node module) (:constraints checked))
         facts {:module module :type-table table :constraint-ledger rows :function-type-table [function]}
-        derived (effects 'body-derive-module-nodes core facts {} 65536)
+        derived (effects 'body-derive-module-nodes core facts {})
         graph (:nodes derived)]
     (is (= [:gravity.type/bool :gravity.type/string] (effects 'body-function-recur-slot-types target owner function)))
     (is (empty? (filter #(= :loop (:core-form %)) (:nodes core))))
@@ -1783,7 +1769,7 @@
                  (assoc-in facts [:function-type-table 0 :body-core-node-id] (ids :next-value))
                  (assoc-in facts [:function-type-table 0 :parameter-binding-ids] (mapv ids [:value :flag]))
                  (assoc-in facts [:constraint-ledger 0 :dependencies :loop-premise :slot-types] [])]]
-      (is (= :rejected (:status (effects 'body-loop-joins core bad 65536)))))
+      (is (= :rejected (:status (effects 'body-loop-joins core bad)))))
     (is (nil? (effects 'body-function-recur-slot-types target owner (assoc function :parameters 3))))
     (doseq [[kind value reason] [[:empty [] :incomplete-loop-control-coverage]
                                  [:nil nil :incomplete-loop-control-tables]
@@ -1791,28 +1777,28 @@
       (let [missing (if (= kind :absent)
                       (-> core (dissoc :recur-transfers) (update :identity-preimage dissoc :recur-transfers))
                       (-> core (assoc :recur-transfers value) (assoc-in [:identity-preimage :recur-transfers] value)))
-            rejected (effects 'body-derive-module-nodes missing facts {} 65536)]
+            rejected (effects 'body-derive-module-nodes missing facts {})]
         (is (true? (:recur-control? rejected)))
         (is (= [:rejected reason] ((juxt :status :reason) rejected)))))
     (doseq [malformed [7 {} "bad"]]
       (is (= [true :rejected :incomplete-loop-control-tables]
              ((juxt :recur-control? :status :reason)
-              (effects 'body-derive-module-nodes (assoc core :recur-transfers malformed) facts {} 65536)))))
+              (effects 'body-derive-module-nodes (assoc core :recur-transfers malformed) facts {})))))
     (let [plain {:nodes [(first (:nodes core))] :call-edges [] :recur-transfers []}
           plain-facts (assoc facts :function-type-table [])]
       (doseq [ordinary [plain (dissoc plain :recur-transfers) (assoc plain :recur-transfers nil)]]
-        (let [derived (effects 'body-derive-module-nodes ordinary plain-facts {} 65536)]
+        (let [derived (effects 'body-derive-module-nodes ordinary plain-facts {})]
           (is (= :accepted (:status derived)))
           (is (false? (:recur-control? derived)))
-          (is (= (effects 'body-derive-nodes-with-foreign ordinary plain-facts {} 65536) (dissoc derived :recur-control?))))))
+          (is (= (effects 'body-derive-nodes-with-foreign ordinary plain-facts {}) (dissoc derived :recur-control?))))))
     (let [[loop-core loop-facts] (effect-loop-data)
-          derived (effects 'body-derive-module-nodes loop-core loop-facts {} 65536)]
+          derived (effects 'body-derive-module-nodes loop-core loop-facts {})]
       (is (true? (:recur-control? derived)))
-      (is (= (effects 'body-derive-loop-nodes loop-core loop-facts {} 65536) (dissoc derived :recur-control?))))
+      (is (= (effects 'body-derive-loop-nodes loop-core loop-facts {}) (dissoc derived :recur-control?))))
     (let [[recursive-core recursive-facts] ((body-helper 'recursive-kernel-data))
-          derived (effects 'body-derive-module-nodes recursive-core recursive-facts {} 65536)]
+          derived (effects 'body-derive-module-nodes recursive-core recursive-facts {})]
       (is (false? (:recur-control? derived)))
-      (is (= (effects 'body-derive-recursive-nodes recursive-core recursive-facts {} 65536)
+      (is (= (effects 'body-derive-recursive-nodes recursive-core recursive-facts {})
              (dissoc derived :recur-control?))))))
 
 (deftest function-target-reset-is-not-forgery-development-kernel
@@ -2083,11 +2069,11 @@
   (let [{:keys [core types nodes forms bindings carrier rows context]} (symbol-set-loop-data)
         facts {:module (:module core) :type-table types :constraint-ledger rows :function-type-table []
                :append-context {:forms forms :bindings bindings}}
-        checked (effects 'body-loop-joins core facts 65536)]
+        checked (effects 'body-loop-joins core facts)]
     (is (= :accepted (:status checked)) (pr-str checked))
     (is (= rows (:rows checked)))
-    (is (= checked (effects 'body-loop-joins core facts (:work-count checked))))
-    (is (= :body-deferred-work-limit (:reason (effects 'body-loop-joins core facts (dec (:work-count checked))))))
+    (is (= checked (effects 'body-loop-joins core facts)))
+
     (doseq [mutate [#(assoc-in % [:type-table :operator :version] :sh08-symbol-set-insertion-v1)
                     #(assoc-in % [:constraint-ledger 1 :producer-rule] :sh08-loop-target-types-v1)
                     #(assoc-in % [:constraint-ledger 1 :constraint-id-request :domain] :gravity/sh08-loop-type-constraint-v1)
@@ -2098,14 +2084,14 @@
                         (get-in % [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :entries]))
                     #(assoc-in % [:constraint-ledger 2 :dependencies :loop-premise :member-invariant-bindings] [])
                     #(assoc-in % [:type-table :arg0] {:kind :gravity.type/set :shape :literal :element-types []})]]
-      (is (= :rejected (:status (effects 'body-loop-joins core (mutate facts) 65536)))))
+      (is (= :rejected (:status (effects 'body-loop-joins core (mutate facts))))))
     (let [callbacks (atom 0) opaque (proxy [Object] []
                                     (hashCode [] (swap! callbacks inc) (throw (AssertionError. "loop proof hash")))
                                     (equals [_] (swap! callbacks inc) (throw (AssertionError. "loop proof equality")))
                                     (toString [] (swap! callbacks inc) (throw (AssertionError. "loop proof printing"))))]
       (doseq [bad [opaque [opaque] {:opaque opaque}]]
         (is (= :rejected (:status (effects 'body-loop-joins core
-          (assoc-in facts [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :grounding :member-path] bad) 65536))))
+          (assoc-in facts [:constraint-ledger 1 :dependencies :loop-premise :member-invariant :grounding :member-path] bad)))))
         (is (zero? @callbacks))))
     (let [ids (zipmap (concat (keys nodes) [:again :value "loop-target" "function-target"])
                      (map #(str "sha256:" (format "%064x" %)) (range 3000 3100)))
@@ -2127,9 +2113,9 @@
                         :constraint-ledger (:ledger converted-context) :function-type-table []
                         :call-type-facts (vec (vals (:call-facts converted-context)))}
           request {:canonical-core-artifact converted :b47-context {:authenticated-core-request {:forms (vec (vals (:forms converted-context)))}}}
-          prepared (effects 'body-va-context request source-facts (:bindings converted-context) 65536)
+          prepared (effects 'body-va-context request source-facts (:bindings converted-context))
           source-facts (assoc source-facts :append-context (:context prepared))
-          graph (effects 'body-derive-loop-nodes converted source-facts {} 65536)
+          graph (effects 'body-derive-loop-nodes converted source-facts {})
           transfer (ids :transfer)]
       (is (= :accepted (:status prepared) (:status graph)) (pr-str graph))
       (is (= [(ids :next-again) (ids :call) (ids :branch)] (get-in graph [:nodes transfer :dependencies])))
@@ -2139,7 +2125,7 @@
     (let [alias (symbol-set-loop-alias-data)
           alias-facts {:module (get-in alias [:core :module]) :type-table (:types alias) :constraint-ledger (:rows alias)
                        :function-type-table [] :append-context {:forms (:forms alias) :bindings (:bindings alias)}}
-          result (effects 'body-loop-joins (:core alias) alias-facts 65536)]
+          result (effects 'body-loop-joins (:core alias) alias-facts)]
       (is (= :accepted (:status result)) (pr-str result))
       (is (= (:rows alias) (:rows result))))
     (let [callbacks (atom 0) opaque (proxy [Object] []
@@ -2150,7 +2136,7 @@
         (let [changed (assoc-in forms [:arg1 :child-form-ids coordinate] bad)
               env {:nodes nodes :forms changed :bindings bindings :types types :aliases {}}]
           (is (false? (effects 'body-lsi-leaf? (nodes :arg1) changed :member)))
-          (doseq [quota [0 65536]] (is (= :rejected (:status (effects 'body-lsi-path :arg1 :member :value env quota))))))
+          (is (= :rejected (:status (effects 'body-lsi-path :arg1 :member :value env)))))
         (is (zero? @callbacks))))
 ))
 
@@ -2223,16 +2209,15 @@
         node (nodes :value-init)
         facts {:module (:module core) :type-table types :constraint-ledger rows :function-type-table []
                :append-context {:forms forms :bindings bindings}}
-        joined (effects 'body-loop-joins core facts 65536)]
+        joined (effects 'body-loop-joins core facts)]
     (is (= :accepted (:status checked) (:status joined)) (pr-str joined))
     (is (= rows (:rows joined)))
     (when (= :accepted (:status joined))
-      (is (= joined (effects 'body-loop-joins core facts (:work-count joined))))
-      (is (= :body-deferred-work-limit (:reason (effects 'body-loop-joins core facts (dec (:work-count joined)))))))
+      (is (= joined (effects 'body-loop-joins core facts))))
     (is (true? (effects 'body-lsi-empty-constructor? node forms)))
     (doseq [changed [(assoc-in facts [:append-context :forms :value-init-form :value] #{:bad})
                     (assoc-in facts [:constraint-ledger 1 :producer-rule] :sh08-loop-target-types-v1)]]
-      (is (= :rejected (:status (effects 'body-loop-joins core changed 65536)))))
+      (is (= :rejected (:status (effects 'body-loop-joins core changed)))))
     (let [ids (zipmap (concat (keys nodes) [:again :value "loop-target" "function-target"])
                      (map #(str "sha256:" (format "%064x" %)) (range 4000 4100)))
           rename (fn rename [field value]
@@ -2253,9 +2238,9 @@
                         :constraint-ledger (:ledger converted-context) :function-type-table []
                         :call-type-facts (vec (vals (:call-facts converted-context)))}
           request {:canonical-core-artifact converted :b47-context {:authenticated-core-request {:forms (vec (vals (:forms converted-context)))}}}
-          prepared (effects 'body-va-context request source-facts (:bindings converted-context) 65536)
+          prepared (effects 'body-va-context request source-facts (:bindings converted-context))
           source-facts (assoc source-facts :append-context (:context prepared))
-          graph (effects 'body-derive-loop-nodes converted source-facts {} 65536)]
+          graph (effects 'body-derive-loop-nodes converted source-facts {})]
       (is (= :accepted (:status prepared) (:status graph)) (pr-str graph))
       (is (= #{:memory/allocate} (get-in graph [:nodes (ids :value-init) :direct])))
       (is (= #{:memory/allocate} (get-in graph [:nodes (ids :transfer) :transitive])))
@@ -2273,7 +2258,7 @@
                                 [node (assoc-in forms [:value-init-form :syntax-id] bad)]]]
         (let [env {:nodes {:value-init changed} :forms source :types {:value-init empty-type} :aliases {}}]
           (is (false? (effects 'body-lsi-empty-constructor? changed source)))
-          (doseq [quota [15 16]] (is (= :rejected (:status (effects 'body-lsi-path :value-init :initializer :value env quota)))))
+          (is (= :rejected (:status (effects 'body-lsi-path :value-init :initializer :value env))))
           (is (zero? @callbacks)))))
 ))
 
@@ -2422,8 +2407,8 @@
 
 (deftest vector-first-symbol-loop-witness-controls-development-kernel
   (let [data (vector-first-symbol-loop-data) env (vector-first-symbol-loop-env data)
-        walk (fn [changed _budget] (c7-invoke 'sh08-lsi-path [:vector-first :member :value changed]))
-        accepted (walk env 65536)
+        walk (fn [changed] (c7-invoke 'sh08-lsi-path [:vector-first :member :value changed]))
+        accepted (walk env)
         alias-env (vector-first-symbol-loop-alias-env data)]
     (is (= :accepted (:status accepted)) (pr-str accepted))
     (is (= [:vector-first :symbol-vector :arg1] (:path accepted)))
@@ -2446,7 +2431,7 @@
                       (assoc-in [:nodes :symbol-vector :attributes :source-value] [q])
                       (assoc-in [:forms :symbol-vector-form :value] [q])
                       (assoc-in [:forms :vector-first-form :value] (list 'first [q])))]
-      (is (= :accepted (:status (walk changed 65536)))))
+      (is (= :accepted (:status (walk changed)))))
     (doseq [mutate [#(assoc-in % [:nodes :symbol-vector :core-form] :quote)
                     #(assoc-in % [:nodes :symbol-vector :core-form] :reference)
                     #(assoc-in % [:nodes :symbol-vector :core-form] :call)
@@ -2475,18 +2460,18 @@
                     #(assoc-in % [:types :arg1] :gravity.type/unknown)
                     #(assoc-in % [:types :arg1] :gravity.type/keyword)
                     #(assoc-in % [:nodes :arg1 :attributes :quoted-value] :wrong)]]
-      (is (= :rejected (:status (walk (mutate env) 65536)))))
+      (is (= :rejected (:status (walk (mutate env))))))
     (doseq [bad [:gravity.type/unknown :gravity.type/never]]
       (let [mixed (vector-first-symbol-loop-data [{:kind :nil :value nil :type :gravity.type/nil}])
             changed (-> (vector-first-symbol-loop-env mixed)
                         (assoc-in [:types :vector-tail-0] bad)
                         (assoc-in [:types :symbol-vector :element-types 1] bad))]
-        (is (= :rejected (:status (walk changed 65536))))))
+        (is (= :rejected (:status (walk changed))))))
     (let [mixed (vector-first-symbol-loop-data [{:kind :symbol :value 'tail :type :gravity.type/symbol}])
           changed (-> (vector-first-symbol-loop-env mixed)
                       (assoc-in [:types :arg1] :gravity.type/keyword)
                       (assoc-in [:types :symbol-vector :element-types 0] :gravity.type/keyword))]
-      (is (= :rejected (:status (walk changed 65536))))
+      (is (= :rejected (:status (walk changed))))
       (is (= :rejected (:status (c7-invoke 'sh08-lsi-path [:vector-first :literal-head :value env])))))
     (doseq [changed [(assoc-in alias-env [:aliases :head :mutability] :mutable)
                       (assoc-in alias-env [:nodes :head-use :binding-context] :other)
@@ -2517,7 +2502,7 @@
                       #(assoc-in % [:nodes :symbol-vector :attributes :source-value] bad)
                       #(assoc-in % [:forms :symbol-vector-form :value] bad)
                       #(assoc-in % [:types :first-operator :bounds-proof :operand-node-id] bad)]]
-        (is (= :rejected (:status (walk (mutate env) nil))))
+        (is (= :rejected (:status (walk (mutate env)))))
         (is (zero? @callbacks)))
       (is (= :rejected (:status (c7-invoke 'sh08-lsi-first-data [lazy-value]))))
       (is (zero? @callbacks))
@@ -2537,23 +2522,22 @@
   (let [{:keys [core types nodes forms bindings checked rows context]} (vector-first-symbol-loop-data)
         facts {:module (:module core) :type-table types :constraint-ledger rows :function-type-table []
                :append-context {:forms forms :bindings bindings}}
-        joined (effects 'body-loop-joins core facts 65536)
+        joined (effects 'body-loop-joins core facts)
         env (vector-first-symbol-loop-env {:core core :types types :nodes nodes :forms forms :bindings bindings})
-        path (effects 'body-lsi-path :vector-first :member :value env 65536)]
+        path (effects 'body-lsi-path :vector-first :member :value env)]
     (is (= :accepted (:status checked) (:status joined) (:status path)) (pr-str joined))
     (is (= rows (:rows joined)))
     (is (= [:vector-first :symbol-vector :arg1] (:path path)))
     (when (= :accepted (:status joined))
-      (is (= joined (effects 'body-loop-joins core facts (:work-count joined))))
-      (is (= :body-deferred-work-limit (:reason (effects 'body-loop-joins core facts (dec (:work-count joined)))))))
+      (is (= joined (effects 'body-loop-joins core facts))))
     (doseq [changed [(assoc-in facts [:type-table :first-operator :bounds-proof :selected-index] 1)
                     (assoc-in facts [:type-table :first-operator :application] :not-invoked)
                     (assoc-in facts [:append-context :forms :symbol-vector-form :value] ['wrong])
                     (assoc-in facts [:constraint-ledger 1 :solution :member-invariant :grounding :member-path] [:vector-first])
                     (assoc-in facts [:constraint-ledger 1 :producer-rule] :sh08-loop-target-types-v1)]]
-      (is (= :rejected (:status (effects 'body-loop-joins core changed 65536)))))
+      (is (= :rejected (:status (effects 'body-loop-joins core changed)))))
     (is (= :rejected (:status (effects 'body-lsi-path :vector-first :member :value
-                               (assoc-in env [:nodes :symbol-vector :evaluation :order] []) 65536))))
+                               (assoc-in env [:nodes :symbol-vector :evaluation :order] [])))))
     (let [ids (zipmap (concat (keys nodes) [:again :value "loop-target" "function-target"])
                      (map #(str "sha256:" (format "%064x" %)) (range 6000 6100)))
           rename (fn rename [field value]
@@ -2574,10 +2558,10 @@
                         :constraint-ledger (:ledger converted-context) :function-type-table []
                         :call-type-facts (vec (vals (:call-facts converted-context)))}
           request {:canonical-core-artifact converted :b47-context {:authenticated-core-request {:forms (vec (vals (:forms converted-context)))}}}
-          prepared (effects 'body-va-context request source-facts (:bindings converted-context) 65536)
-          queries (effects 'body-lq-context request source-facts (:bindings converted-context) 65536)
+          prepared (effects 'body-va-context request source-facts (:bindings converted-context))
+          queries (effects 'body-lq-context request source-facts (:bindings converted-context))
           source-facts (assoc source-facts :append-context (:context prepared) :list-query-context (:context queries))
-          graph (effects 'body-derive-loop-nodes converted source-facts {} 65536)]
+          graph (effects 'body-derive-loop-nodes converted source-facts {})]
       (is (= :accepted (:status prepared) (:status queries) (:status graph)) (pr-str graph))
       (is (= #{:memory/allocate} (get-in graph [:nodes (ids :value-init) :direct])))
       (is (= #{:memory/allocate} (get-in graph [:nodes (ids :transfer) :transitive])))
@@ -2604,14 +2588,14 @@
                  (equals [_] (swap! callbacks inc) (throw (AssertionError. "unused metadata equality")))
                  (toString [] (swap! callbacks inc) (throw (AssertionError. "unused metadata printing"))))
         large (vec (repeat 1024 {:unused (vec (range 20))}))
-        walks [(fn [env _budget] (c7-invoke 'sh08-lsi-path [:vector-first :member :value env]))
-               (fn [env budget] (effects 'body-lsi-path :vector-first :member :value env budget))]]
+        walks [(fn [env] (c7-invoke 'sh08-lsi-path [:vector-first :member :value env]))
+               (fn [env] (effects 'body-lsi-path :vector-first :member :value env))]]
     (doseq [walk walks]
-      (let [baseline (walk env 65536)]
+      (let [baseline (walk env)]
         (is (= :accepted (:status baseline)))
         (doseq [value [large opaque] node? [true false]]
           (let [changed (vector-first-symbol-loop-unused-metadata-env env value node?)]
-            (is (= baseline (walk changed 65536)))
+            (is (= baseline (walk changed)))
             (is (zero? @callbacks))))
         (doseq [changed [(assoc-in env [:nodes :vector-first :source :semantic-span] opaque)
                         (assoc-in env [:forms :vector-first-form :source-span] opaque)
@@ -2619,7 +2603,7 @@
                         (assoc-in env [:nodes :symbol-vector :evaluation :order] opaque)
                         (assoc-in env [:types :first-operator :source-binding :metadata] opaque)
                         (assoc-in env [:types :first-operator :extra] opaque)]]
-          (is (= :rejected (:status (walk changed 65536))))
+          (is (= :rejected (:status (walk changed))))
           (is (zero? @callbacks)))))))
 
 (defn- vector-first-symbol-loop-cold-data []
@@ -2826,7 +2810,7 @@
                  (toString [] (swap! callbacks inc) (throw (AssertionError. "warm descriptor printing"))))
         values (vector-first-symbol-loop-hostile-warm-values (get-in env [:types operator]) opaque callbacks)
         walks [(fn [env] (c7-invoke 'sh08-lsi-path [start :member binding env]))
-               (fn [env] (effects 'body-lsi-path start :member binding env 65536))]]
+               (fn [env] (effects 'body-lsi-path start :member binding env))]]
     (is (= :accepted (:status derived)))
     (is (= [] (:diagnostics quotes)))
     (doseq [walk walks]

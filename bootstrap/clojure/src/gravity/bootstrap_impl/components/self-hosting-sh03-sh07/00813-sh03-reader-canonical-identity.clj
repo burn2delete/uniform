@@ -141,15 +141,11 @@
 
 (defn sh03-reader-resolve-diagnostic-id
   [source-path diagnostic]
-  (let [request (:diagnostic-id-request diagnostic)]
-    (when-not (map? request)
-      (sh03-reader-boundary-fail!
-       source-path :sh03-reader-diagnostic-id-request
-       diagnostic {}))
-    (-> diagnostic
-        (dissoc :diagnostic-id-request)
-        (assoc :diagnostic-id
-               (sh03-reader-canonical-digest source-path request)))))
+  (diagnostics/resolve-request-id
+   #'sh03-reader-canonical-digest
+   (fn [path value]
+     (sh03-reader-boundary-fail! path :sh03-reader-diagnostic-id-request value {}))
+   source-path diagnostic))
 
 (defn sh03-reader-resolved-result!
   ([source-path source-bytes project-context reader-options]

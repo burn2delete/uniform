@@ -38,6 +38,7 @@
   D8
   D9
   L10
+  SAFE2
   SAFE3
   SAFE4
   SAFE5

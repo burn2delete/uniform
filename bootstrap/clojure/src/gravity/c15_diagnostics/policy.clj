@@ -33,8 +33,8 @@
     (throw (ex-info "C15 scalar operation has invalid shape" {:key key}))) operations)
 (defn engine-contract [public-api]
   {:contract-boundary :hosted-stage0-c15-compiler-diagnostics
-   :dependency-direction {:requires ['clojure.string 'gravity.compiler-verification-shared 'gravity.digest]
-                          :forbids ['gravity.bootstrap 'gravity.diagnostics]}
+   :dependency-direction {:requires ['clojure.string 'gravity.compiler-verification-shared 'gravity.digest 'gravity.diagnostics]
+                          :forbids ['gravity.bootstrap]}
    :owns [:hosted-stage0-c15-diagnostic-schema :hosted-stage0-c15-diagnostic-evidence]
    :does-not-own [:canonical-c15-authority :source-authentication :redaction-policy-authority
                   :privacy-authority :localization-authority :renderer-authority
