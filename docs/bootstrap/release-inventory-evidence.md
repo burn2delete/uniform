@@ -76,6 +76,22 @@ materials remain byte-identical. No cross-revision archive identity equality or
 PKG7 reproducibility claim is made. Remaining coupled checks, lint, exact review,
 own CI and clean current-base preflight still govern integration.
 
+## Verified Reader main composition
+
+The next normal composition uses actual main
+ec15f95051e6e9e674974d43f5a14e6555cf176a/tree
+118c6a279533a1e796d34287dc2fba526a92991f, the verified Reader PR739 merge.
+Reader implementation, compatibility component, tests and evidence remain
+byte-identical to main. The shared map preserves Reader's row and merges the
+Release row without conflict. Both Release algorithms, the canonical-order
+correction, wrappers, tests and helper ownership remain exactb905dc6b.
+
+Fresh coupled tests include current Reader decoding. Real archive controls and
+whole-component/hash verification use `reader-main-*`, preserving the original
+false refusal as immutable history. New exact-source review, contextual lint,
+own CI and clean current-base preflight remain gates. Older base checks do not
+confer current-base acceptance or release authority.
+
 ## Unsupported boundaries
 
 Expected inventory and status fields are trusted native data, not artifact
