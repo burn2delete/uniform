@@ -8,7 +8,7 @@
           authority-evidence
           execution-evidence
           nodes
-          plan-nodes
+
           node-ids
           paths
           node-origin-ids
