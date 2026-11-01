@@ -127,3 +127,68 @@ Independent exact review, actual-main reconciliation after the inherited
 Runtime work, this slice's own CI/artifact receipts and immediate clean
 integration preflight remain required. Prior source or CI acceptance does not
 transfer to a different integration tuple.
+
+## Complete Runtime and Effects current-main composition
+
+The integration candidate combines the instruction/policy bodies from PR761,
+the recurrence/call bodies from PR763 and these three native report bodies.
+All16 moves retain their immutable source and draft histories. The28-path
+union contains12 paired Runtime fixtures, eight production files, three tests,
+four evidence documents and the namespace map. No predecessor receives duplicate
+credit, and no namespace, release or migration completion follows.
+
+Actual main is942dbdf8fed7b3ee6e7370a0bfb0780a92158ace, tree
+38eafe7db008258d009120b7763e58780f9b3b7f. It includes the incoming CLI
+loading change, SH09 test split, native quota removal and explicit packaged
+launcher boundary. Clean normal merge checkpoint
+12a717433663b0e65ad8182e91643768ed83743b, tree
+64fe2ea03f7d6884c42ab8d737efd4775b94e9b2, preserves all eight reviewed
+production files and three reviewed tests byte-for-byte from2c1fed3d. Every
+other Bootstrap/Gravity/test file matches actual main. The namespace map is
+the reviewed map with main's CLI row, and all12 fixtures remain exact. These
+claims are checked by uniform-runtime-effects-942-conservation.clj.
+
+Clean named baselinebcce6d1ce2f9b26aae1538cd1726ae34f0aacee5, tree
+46405099dc1357affbc717416ff031f31ab1c474, is actual942 main production
+plus exactly12 fixture files, in this same physical Analysis checkout. Both
+baseline processes terminate before restoring checkpoint12a717 and starting
+cold after processes. Both after processes also terminate before this evidence
+commit. No root, field, pin, reader mode, authority callback, predicate or
+source identity is substituted. The source-default route remains distinct
+from explicit current packaging and the unchanged historical archive.
+
+All44 complete data and original serialized-text pairs pass: twelve full
+Runtime source/plan/value/class/stdout/refusal records, actual compiler-source
+rule data and seven altered-input refusals,28 retained Effects records, CLI
+arguments and two complete current Core artifacts. Per spelling the three
+Runtime corpora accept68 cases and reject25 actual arity/operand failures.
+Source/plan identities recompute. Core retains25 nodes, one target read,
+source8e63 and recomputed Core16ec. Effects retains the real pure C8-ORDER
+and changed-effect C8-UNDECLARED refusals, historical producer provenance,
+Core462f, fixturef32e, imported hashes and graph-node source records. No
+full C7/C8 source admission or authority is inferred from retained inputs.
+
+Fresh942 checks pass: Runtime/CLI/Reader/Release/Safety composition109/3220;
+separate fresh-JVM launcher4/50; Bootstrap-free native C7/C8/C9 tests23/560;
+existing unary/equality/assoc/recurrence kernels21/322; ownership/language
+47/1154. Committed11-path contextual lint against942 retains56 unchanged
+warnings and reports zero blockers. Its receipts are archived outside the
+checkout at /tmp/uniform-runtime-effects-942-lint-archive. Scripts, logs and
+products use uniform-runtime-effects-942-* under /tmp; full Core records use
+runtime-effects-942-before/after under uniform-cli-core-arguments-evidence.
+
+Earlier867 and46 compositions each pass44 complete comparisons and retain
+their original contexts. The initial867 combined CLI/launcher test invocation
+reports four errors because an earlier CLI test closes the agent pool before
+launcher tests start child processes. Its log remains; the same unchanged
+seven-namespace tests and launcher pass in their existing separate JVMs.
+No guard, test, source operation or CI policy is changed to obtain that pass.
+PR761/763 and the earlier native-source head have green own CI on their older
+tuples. PR761's nine artifact manifests/command receipts and checkout identities
+verify at /tmp/uniform-pr761-ci. These old-base results do not confer acceptance
+or integration eligibility on this complete942 composition.
+
+Final contract validation, independent acceptance of the exact complete tuple,
+its own CI/artifact receipts and immediate clean current-main integration
+preflight remain required before normal merge. All historical restrictions,
+source/authority boundaries and explicit nonclaims above remain in force.
