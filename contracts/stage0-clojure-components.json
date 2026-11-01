@@ -298,6 +298,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/standard_library.clj", "namespace": "gravity.standard-library"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00081-record-standard-library-call.clj", "namespace": "gravity.bootstrap", "owner": "sh-standard-library"},
       "test": {"path": "bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj", "namespace": "gravity.standard-library.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "bootstrap-module-literals",
+      "kind": "production-stage-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/bootstrap/module_literals.clj", "namespace": "gravity.bootstrap.module-literals"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-source.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
+      "test": {"path": "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj", "namespace": "gravity.bootstrap.module-literals-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
