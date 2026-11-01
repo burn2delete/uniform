@@ -9,6 +9,7 @@
   (:require [clojure.test :refer [deftest is testing run-tests]]
             [gravity.bootstrap :as bootstrap]
             [gravity.p15-native-plan-specialization :as specialization]
+            [gravity.p15-native-plan-specialization.contract :as contract]
             [gravity.p15-native-plan-specialization.emission :as emission]
             [gravity.p15-native-plan-specialization.plan-validation :as plan-validation]
             [gravity.p15-native-plan-specialization.source-snapshot :as source-snapshot])
@@ -344,6 +345,70 @@
            (diagnostic-id
             #(bootstrap/p15-s23-closed-runtime-plan-validation!
               "malformed-unknown-op.gravity" :c malformed))))))
+
+(deftest deep-closed-runtime-type-inference-is-iterative
+  (let [depth 10000
+        nested-if
+        (reduce
+          (fn [inner _]
+            {:op :if
+             :test {:op :literal :value true}
+             :then inner
+             :else {:op :literal :value 1}})
+          {:op :literal :value 1}
+          (range depth))
+        plan {:entrypoint 'main
+              :functions
+              {'main {:arity 0
+                      :params []
+                      :instructions
+                      [{:op :let
+                        :bindings [{:name 'value :expr nested-if}]
+                        :body [{:op :println
+                                :args [{:op :literal :value "deep"}]
+                                :effect :io/write
+                                :capability :io/stdout}]}]}}}
+        validation
+        (bootstrap/p15-s23-closed-runtime-plan-validation!
+          "deep-inferred-type.gravity" :c plan)
+        malformed (assoc nested-if :else nil)
+        malformed-plan (assoc-in plan
+                                 [:functions 'main :instructions 0
+                                  :bindings 0 :expr]
+                                 malformed)]
+    (is (= :complete (:status validation)) validation)
+    (is (= :gravity/integer
+           (bootstrap/p15-s23-closed-runtime-inferred-type
+             nested-if {} 0)))
+    (is (= "P15S23X002"
+           (diagnostic-id
+             #(bootstrap/p15-s23-closed-runtime-plan-validation!
+                "deep-malformed-if.gravity" :c malformed-plan))))))
+
+(deftest deep-helper-safety-proof-is-iterative
+  (let [depth 10000
+        nested-do
+        (reduce
+          (fn [inner _]
+            {:op :do :body [inner]})
+          {:op :println
+           :args [{:op :literal :value "deep"}]}
+          (range depth))
+        plan {:entrypoint 'main
+              :functions {'main {:instructions [nested-do]}}}
+        proof (contract/helper-safety-proof plan :test-helper)
+        malformed (assoc nested-do :body [{:op :unsupported}])
+        malformed-proof
+        (contract/helper-safety-proof
+          {:entrypoint 'main
+           :functions {'main {:instructions [malformed]}}}
+          :test-helper)]
+    (is (true? (:safe? proof)) proof)
+    (is (= :test-helper (get-in proof [:facts :contract])) proof)
+    (is (false? (:safe? malformed-proof)) malformed-proof)
+    (is (= :gravity-c-emitter-printable-ascii-subset
+           (get-in malformed-proof [:facts :missing-fact]))
+        malformed-proof)))
 
 (deftest closed-core-value-domain-accepts-former-scalar-limits
   (let [large-string (apply str (repeat (inc (* 8 1024 1024)) "x"))

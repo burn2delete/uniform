@@ -26,7 +26,18 @@
          {:missing-fact :public-c-backend-runtime-plan-validation
           :cause-message (.getMessage error)})))
     (let [helper (compile-helper! source-path)
-          safety (helper-safety-proof plan)
+          safety (try
+                   (helper-safety-proof plan)
+                   (catch
+                     StackOverflowError
+                     error
+                     (helper-contract-fail!
+                       source-path
+                       "Gravity C emitter helper safety proof exceeded the host stack"
+                       {:missing-fact
+                        :gravity-c-emitter-helper-safety-host-stack-failure
+                        :boundary :helper-safety-proof
+                        :cause-message (.getMessage error)})))
           helper-result
           (try
             (bootstrap/p15-s23-stage2-runtime-execute-function

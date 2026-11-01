@@ -29,23 +29,49 @@
 
 (defn helper-scalar-safe?
   [instruction]
-  (case (:op instruction)
-    :literal (printable-ascii-string? (:value instruction))
-    :quote (printable-ascii-string? (:value instruction))
-    :builtin-call
-    (and (= 'str (:function instruction))
-         (seq (:args instruction))
-         (every? helper-scalar-safe? (:args instruction)))
-    false))
+  ;; Keep nested :str operands off the host call stack.  This is a safety
+  ;; predicate, not a depth or work budget: every supplied operand is still
+  ;; visited and checked against the same printable-ASCII contract.
+  (loop [pending [instruction]]
+    (if-let [current (peek pending)]
+      (let [pending (pop pending)]
+        (case (:op current)
+          (:literal :quote)
+          (if (printable-ascii-string? (:value current))
+            (recur pending)
+            false)
+
+          :builtin-call
+          (if (and (= 'str (:function current))
+                   (seq (:args current)))
+            (recur (into pending (:args current)))
+            false)
+
+          false))
+      true)))
 
 (defn helper-statement-safe?
   [instruction]
-  (case (:op instruction)
-    :literal true
-    :quote true
-    :println (every? helper-scalar-safe? (:args instruction))
-    :do (every? helper-statement-safe? (:body instruction))
-    false))
+  ;; The helper subset permits arbitrarily nested statement blocks.  Traverse
+  ;; those blocks explicitly so malformed or deep-but-valid plans cannot leak
+  ;; a host StackOverflowError from this admission predicate.
+  (loop [pending [instruction]]
+    (if-let [current (peek pending)]
+      (let [pending (pop pending)]
+        (case (:op current)
+          (:literal :quote)
+          (recur pending)
+
+          :println
+          (if (every? helper-scalar-safe? (:args current))
+            (recur pending)
+            false)
+
+          :do
+          (recur (into pending (:body current)))
+
+          false))
+      true)))
 
 (defn helper-safety-proof
   [plan helper-contract-value]

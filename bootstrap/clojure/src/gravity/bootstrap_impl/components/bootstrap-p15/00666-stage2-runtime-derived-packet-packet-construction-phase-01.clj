@@ -97,10 +97,24 @@
                                      {:source-declared-target source-declared-target,
                                       :requested-target requested-target,
                                       :missing-fact :target-constraint-compatibility}))
-        closed-plan-validation (p15-s23-closed-runtime-plan-validation!
-                                 source-path
-                                 requested-target
-                                 plan)]
+        closed-plan-validation (try
+                                (p15-s23-closed-runtime-plan-validation!
+                                  source-path
+                                  requested-target
+                                  plan)
+                                (catch
+                                  StackOverflowError
+                                  ex
+                                  (p15-s23-stage2-runtime-executor-fail!
+                                    "P15S23X002"
+                                    source-path
+                                    nil
+                                    {:target requested-target,
+                                     :cause-message (.getMessage ex),
+                                     :missing-fact
+                                     :closed-runtime-host-stack-failure,
+                                     :boundary
+                                     :closed-runtime-plan-validation})))]
     (assoc
       state
       'stage2-rule
