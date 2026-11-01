@@ -83,19 +83,7 @@
 
 (defn p15-s23-closed-core-persistent-ownership
   [role extra]
-  (merge
-   {:model :persistent-immutable-value
-    :role role
-    :shareability :shared
-    :alias-policy :immutable-sharing
-    :mutation :forbidden
-    :managed-reachability :value-and-program-reachability
-    :cleanup-policy :no-explicit-cleanup
-    :provider-requirement :not-required
-    :allocator-requirement :not-required
-    :escape-policy :safe-persistent-value
-    :derived? true}
-   extra))
+  (ownership/persistent-ownership role extra))
 
 (defn p15-s23-closed-core-intrinsic-effects
   [source-operation]
