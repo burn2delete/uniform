@@ -1,3 +1,30 @@
+# Core implementation planning entry
+
+Select one existing unresolved task from [tasks.md](tasks.md#implementation-tasks)
+against the implementation specification in [spec.md](spec.md). Preserve the
+original transfer plan below and prior accepted finite receipts. Resolve the
+owning Gravity Core implementation, transport boundary, source mapping and real
+verifier from [development verification](../../docs/development-verification.md)
+and the [stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+For the selected task, name the exact primitive/surface/control population,
+expanded-syntax and binding inputs, node/trace/map products and downstream
+consumer. Supply real accepted programs and malformed/order/binding/origin/
+control/metadata/domain negatives as applicable. Match guards, if conditions,
+quote data and exception/resource cleanup retain their distinct source rules.
+Semantic replay and coherent-substitution controls must exercise the actual
+owner, not merely the artifact hash or a supplied verification record.
+
+Use focused semantic checks and affected Resolve/Types/Effects composition.
+Preserve existing writer reservations, the Core-representation ordering
+qualification and restricted domain/source paths. Record actual observations,
+reused unchanged evidence, unrun boundaries and stable diagnostic ownership.
+`speckit-tasks` refines the same marked task authority, with no duplicate
+implementation checklist. Independent acceptance, migration and integration
+remain separate from ordinary development and structural validation.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Core task authority
 
 Spec: [spec.md](spec.md) | Owner role: compiler core maintainer.

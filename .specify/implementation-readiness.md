@@ -36,6 +36,21 @@ reports its historical 236-link population. Later
 explain the four additional references. These observations establish navigation
 only; they do not establish substantive requirement coverage or implementation.
 
+Source applicability was checked separately against the preserved
+`source-task-inputs.edn` at that aggregate (SHA-256
+`423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94`).
+Of its 240 canonical document pins, 239 match the inspected main. STD3 differs:
+the preserved hash is
+`58d096cc16d922ad72d560c5b3e4d60d093c9527a9472c2414d63deb98630e3d`,
+while current main has
+`af847392b2ff50155d61a9a9c93bb6e2f1cc573220ceb11920de4dd483bd4160`.
+The actual diff removes List-to-Set and Map-keys work/width allowances while
+retaining complete physical member validation, allocation/lifetime semantics
+and rejection of invalid data. Applicable STD3 requirement joins need that
+explicit successor context; earlier source or execution acceptance cannot be
+promoted to the changed contract. This observation does not rewrite the
+aggregate's preserved pins or adjudicate its pending semantic partition.
+
 ## Implementation specifications and task authority
 
 An implementation entry must describe behavior and interfaces, accepted and
@@ -47,9 +62,14 @@ change their accepted scope or status. Unresolved finer-grained requirement
 joins remain with the existing reconciliation owner, not inferred from a
 component name or document link.
 
-The first expanded entry is [Reader](../specs/reader-workflow/spec.md), with its
-[planning entry](../specs/reader-workflow/plan.md) and unchanged
-[task authority](../specs/reader-workflow/tasks.md#implementation-tasks).
+The expanded frontend entries are [Reader](../specs/reader-workflow/spec.md),
+[Syntax](../specs/syntax-workflow/spec.md), [Expand](../specs/expand-workflow/spec.md),
+[Resolve](../specs/resolve-workflow/spec.md) and [Core](../specs/core-workflow/spec.md).
+Each retains its original spec/plan text as a historical suffix and routes
+behavior to its unchanged marked task authority. Reader's
+[planning entry](../specs/reader-workflow/plan.md) and
+[task authority](../specs/reader-workflow/tasks.md#implementation-tasks) begin
+the dependency selection below.
 The other component packages remain discoverable through the existing
 [component registry](../docs/component-roadmaps/README.md#component-registry).
 Their migration specs are not automatically accepted as complete implementation
@@ -151,3 +171,11 @@ provider, migration or release execution was performed for this packet. These
 observations do not certify the other component specs or the full substantive
 requirement population as implementation-ready. Independent review and
 integration remain pending.
+
+The subsequent frontend packet expands Syntax, Expand, Resolve and Core without
+changing any implementation ledger or receipt. Focused checks passed all 13
+changed Markdown files for ASCII and 171 local path/heading references, routed
+all 27 existing frontend task identities, preserved all ten historical spec/plan
+suffixes and confirmed all ten task/evidence files unchanged from the inspected
+main. These are source/navigation conservation checks, not acceptance of the
+27 implementation outcomes or an assessment of every attached source facet.
