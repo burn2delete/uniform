@@ -1,5 +1,5 @@
 (ns ci.lint-context
-  "Non-evaluating lint views of the reviewed Bootstrap and facade resource loaders."
+  "Non-evaluating lint views of the reviewed Bootstrap, checker, and facade resource loaders."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str])
@@ -17,12 +17,17 @@
 (def facade-resources
   ["01-pipeline-schema-version" "02-clear-cache" "03-revalidate-payload"
    "04-envelope-valid" "05-run-pipeline"])
+(def checker (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity.clj"))
+(def checker-prefix (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity/"))
+(def checker-resources ["01-checker-specs" "02-source-product" "03-runtime-fingerprint"])
 
 (defn context-path? [path]
   (or (= bootstrap path) (str/starts-with? path (str source-root "gravity/bootstrap_impl/"))
-      (= facade path) (str/starts-with? path facade-prefix)))
+      (= facade path) (str/starts-with? path facade-prefix)
+      (= checker path) (str/starts-with? path checker-prefix)))
 
-(defn whole-context-path? [path] (contains? #{bootstrap manifest semantic-late-manifest loader facade} path))
+(defn whole-context-path? [path]
+  (contains? #{bootstrap manifest semantic-late-manifest loader facade checker} path))
 
 (defn source-text! [path bytes]
   (let [text (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)]
@@ -119,12 +124,39 @@
                          (throw (ex-info "Unsupported namespace/load change in facade fragment" {:path path})))
                        [path bytes])))}))
 
+(defn checker-plan! [read-bytes]
+  (let [entry (read-bytes checker)
+        [header load-form :as forms] (source-forms! checker entry)
+        expected (cons 'load (map #(str "/gravity/tools/sh07_b51_attempt32_checker_identity/" %)
+                                  checker-resources))
+        paths (into [checker] (map #(str checker-prefix % ".clj") checker-resources))]
+    (when-not (and (= 2 (count forms))
+                   (= '(ns gravity.tools.sh07-b51-attempt32-checker-identity) (take 2 header))
+                   (= expected load-form))
+      (throw (ex-info "Checker entrypoint changed; unsupported lint assembly recipe" {})))
+    {:paths paths
+     :namespace-by-path (zipmap paths (repeat 'gravity.tools.sh07-b51-attempt32-checker-identity))
+     :entrypoints #{checker}
+     :inputs (into {checker entry}
+                   (for [path (rest paths) :let [bytes (read-bytes path)
+                                                 forms (source-forms! path bytes)]]
+                     (do
+                       (when (some #(and (seq? %) (#{'ns 'in-ns 'clojure.core/ns 'clojure.core/in-ns
+                                                     'load 'clojure.core/load} (first %)))
+                                   (tree-seq coll? seq forms))
+                         (throw (ex-info "Unsupported namespace/load change in checker fragment" {:path path})))
+                       [path bytes])))}))
+
 (defn selected-plan!
   ([read-bytes selected] (selected-plan! read-bytes selected loader-sha))
   ([read-bytes selected expected-loader-sha]
    (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
          facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
-         plans (cond-> [] bootstrap? (conj (plan! read-bytes expected-loader-sha)) facade? (conj (facade-plan! read-bytes)))
+         checker? (some #(or (= checker %) (str/starts-with? % checker-prefix)) selected)
+         plans (cond-> []
+                 bootstrap? (conj (plan! read-bytes expected-loader-sha))
+                 facade? (conj (facade-plan! read-bytes))
+                 checker? (conj (checker-plan! read-bytes)))
          combined {:paths (vec (mapcat :paths plans))
                    :inputs (apply merge (map :inputs plans))
                    :namespace-by-path (apply merge (map :namespace-by-path plans))
