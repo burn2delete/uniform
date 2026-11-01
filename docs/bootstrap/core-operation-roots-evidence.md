@@ -57,6 +57,19 @@ Language boundary6/11, docs240/19, roadmap and governance185 pass. Contextual
 lint, independent exact-source review, own CI and clean current-main preflight
 remain required for integration.
 
+## Bootstrap literal main composition
+
+The normal composition after source
+`77b7a4cb5ed259a096a80d56793060764b828d60` uses actual Bootstrap literal main
+`04de291fbed2bdda7070ecfba665d81207cd6d74`. The merge has no conflicts.
+The guard implementation and its tests remain exact77b7. All incoming literal
+source, wrapper, tests, quota regression, ownership and evidence remain main's
+inputs. The five focused native guard tests pass18 assertions on this base.
+Fresh current-reader public controls use the `root-main` evidence prefix;
+their source, plan and artifact identities are checked separately from the
+earlier `root-fixed` results. This composition adds no semantic or authority
+claim and requires its own review, checks and integration gate.
+
 ## Unsupported boundaries
 
 This is a temporary Clojure adapter correction. It grants no source, Core,

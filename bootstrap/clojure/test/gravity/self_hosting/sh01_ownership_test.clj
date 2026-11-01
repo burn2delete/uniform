@@ -312,10 +312,17 @@
 (def ^:private tooling-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/platform-phases/00349-p13-tooling-proof.clj")
 (def ^:private tooling-stage-test "bootstrap/clojure/test/gravity/tooling/pipeline_test.clj")
 
+(def ^:private bootstrap-literals-stage-path "bootstrap/clojure/src/gravity/bootstrap/module_literals.clj")
+(def ^:private bootstrap-literals-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-source.clj")
+(def ^:private bootstrap-literals-stage-test "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj")
+
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {tooling-stage-path
+    (and (= {bootstrap-literals-stage-path
+             {:namespace 'gravity.bootstrap.module-literals :owner :master-coordinator :slice "SH-01"
+              :consumer-path bootstrap-literals-stage-consumer :test-path bootstrap-literals-stage-test}
+             tooling-stage-path
              {:namespace 'gravity.tooling :owner :master-coordinator :slice "SH-24"
               :consumer-path tooling-stage-consumer :test-path tooling-stage-test}
              standard-library-stage-path
@@ -413,6 +420,9 @@
          (= :master-coordinator (get-in record [:module-owners tooling-stage-path]))
          (= {:namespace 'gravity.tooling.pipeline-test :slice "SH-24" :owner :master-coordinator}
             (get-in record [:standalone-test-owners tooling-stage-test]))
+         (= :master-coordinator (get-in record [:module-owners bootstrap-literals-stage-path]))
+         (= {:namespace 'gravity.bootstrap.module-literals-test :slice "SH-01" :owner :master-coordinator}
+            (get-in record [:standalone-test-owners bootstrap-literals-stage-test]))
          (= :sh-target-jvm (get-in record [:module-owners jvm-source-stage-path]))
          (= {:namespace 'gravity.backend.jvm.pipeline-test :slice "SH-00" :owner :sh-target-jvm}
             (get-in record [:standalone-test-owners jvm-source-stage-test]))
@@ -543,6 +553,11 @@
               "source" {"path" tooling-stage-path "namespace" "gravity.tooling"}
               "consumer" {"path" tooling-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
               "test" {"path" tooling-stage-test "namespace" "gravity.tooling.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "bootstrap-module-literals" "kind" "production-stage-helper" "owner" "master-coordinator"
+              "source" {"path" bootstrap-literals-stage-path "namespace" "gravity.bootstrap.module-literals"}
+              "consumer" {"path" bootstrap-literals-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
+              "test" {"path" bootstrap-literals-stage-test "namespace" "gravity.bootstrap.module-literals-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
 
@@ -1378,6 +1393,28 @@
       (is (not (production-helper-registration-valid? bad contract))))
     (doseq [bad [(assoc-in contract ["production_helpers" index "owner"] "sh-core")
                  (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
+                 (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest bootstrap-module-literals-helper-has-an-explicit-boundary
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "bootstrap-module-literals")]
+    (is (not (neg? index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [bootstrap-literals-stage-path bootstrap-literals-stage-consumer bootstrap-literals-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path bootstrap-literals-stage-consumer)) "gravity.bootstrap.module-literals/materialize!"))
+    (is (= :temporary-seed-module-literal-data
+           (:contract-boundary (:gravity/namespace-contract
+             (meta (requiring-resolve 'gravity.bootstrap.module-literals/materialize!))))))
+    (doseq [bad [(assoc-in record [:module-owners bootstrap-literals-stage-path] :sh-core)
+                 (update record :standalone-test-owners dissoc bootstrap-literals-stage-test)
+                 (assoc-in record [:production-helper-associations bootstrap-literals-stage-path :namespace] 'gravity.forged)]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
       (is (not (production-helper-registration-valid? record bad))))))
