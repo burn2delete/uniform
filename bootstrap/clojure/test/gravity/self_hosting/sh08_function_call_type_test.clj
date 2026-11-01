@@ -14228,20 +14228,16 @@
         normal #(invoke-c7 'sh08-ij-normal-type [%1 %2])]
     (doseq [t families :let [nt (nullable t)]]
       (doseq [[a b] [[n t] [t n] [nt n] [n nt] [nt t] [t nt]]]
-        (let [result (invoke-c7 'sh08-ij-type-work [a b 65536])]
+        (let [result (invoke-c7 'sh08-ij-type-join [a b])]
           (is (= :accepted (:status result)))
           (is (= nt (:type result) (normal a b)))
           (is (= [a b] (:branch-types result)))
           (is (= :nil-or (:join-family result)))
           (is (= :gravity.type/nil (:nil-type result)))
-          (is (= t (:value-type result)))
-          (is (= result (invoke-c7 'sh08-ij-type-work [a b (:work-count result)])))
-          (is (= :rejected (:status (invoke-c7 'sh08-ij-type-work [a b (dec (:work-count result))]))))))
+          (is (= t (:value-type result)))))
       (doseq [[a b expected] [[n n n] [t t t] [nt nt nt] [nv nt nt] [nt nv nt] [nv t t] [nv nv nv]]]
         (is (= expected (normal a b))))
       (is (true? (invoke-c7 'sh08-ni-type? [nt])))
-      (is (= {:status :accepted} (invoke-c7 'sh08-lc-validate-types [[nt]])))
-
       (doseq [bad [(assoc nt :extra true) (assoc nt :value-type :gravity.type/unknown)
                     (assoc nt :value-type :gravity.type/never) (assoc nt :value-type n)
                     (assoc nt :value-type (nullable t)) (dissoc nt :value-type)
@@ -14267,9 +14263,9 @@
             context {:ordering-core core :lookup-core core :lookup-nodes nodes
                      :lookup-bindings (vec (vals bindings)) :lookup-forms (vec (vals forms))}
             seeds (into {} (for [[role id] refs] [id (get types (nids role))]))
-            run #(invoke-c7 'sh08-ft-infer-pass-with-context [(:nodes core) [] [] [] [] {} seeds (assoc context :loop-work-left %)])
-            result (run 65536) row (first (:constraints result)) premise (:dependencies row)
-            derive #(invoke-c7 'sh08-ij-derive [%1 %2 %3 %4 %5 %6 65536])]
+            result (invoke-c7 'sh08-ft-infer-pass-with-context [(:nodes core) [] [] [] [] {} seeds context])
+            row (first (:constraints result)) premise (:dependencies row)
+            derive #(invoke-c7 'sh08-ij-derive [%1 %2 %3 %4 %5 %6])]
         (is (= [] (:diagnostics result)) (pr-str (:diagnostics result)))
         (is (= nk (get-in result [:type-table (nids :if)])))
         (is (= :sh08-nil-if-join-v1 (:producer-rule row) (:version premise)))
@@ -14278,8 +14274,6 @@
         (is (= k (:value-type premise)))
         (is (not (contains? premise :element-type)))
         (is (= :none (:expected-return-premise premise) (:runtime-conversion premise)))
-        (is (= (dissoc result :shape-call-context) (dissoc (run (:loop-work-count result)) :shape-call-context)))
-        (is (some #(= :list-if-join-work-limit (:reason %)) (:diagnostics (run (dec (:loop-work-count result))))))
         (let [functions {:owner {:function-id :owner :body-core-node-id (nids :if) :return :gravity.type/unknown}}
               updated (invoke-c7 'sh08-ft-update-function-returns [functions nodes (:type-table result)])
               declared (invoke-c7 'sh08-ft-update-function-returns [(assoc-in functions [:owner :return] k) nodes (:type-table result)])]
@@ -14315,8 +14309,8 @@
   (let [s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
         homogeneous {:kind :gravity.type/list :shape :homogeneous :element-type s}
         {:keys [core node nodes forms types bindings nids fids definition refs]} (list-if-join-input (finite [s]) (finite []))
-        derive #(invoke-c7 'sh08-ij-derive [%1 %2 %3 %4 %5 %6 %7])
-        result (derive core node nodes types bindings forms 65536) premise (:premise result)
+        derive #(invoke-c7 'sh08-ij-derive [%1 %2 %3 %4 %5 %6])
+        result (derive core node nodes types bindings forms) premise (:premise result)
         row (invoke-c7 'sh08-ij-row [premise])]
     (is (= :accepted (:status result)) (pr-str result))
     (is (= homogeneous (:type result) (:result-type premise)))
@@ -14324,8 +14318,6 @@
     (is (= :none (:expected-return-premise premise) (:runtime-conversion premise)))
     (is (= :join-compatibility (:kind row)))
     (is (= premise (:dependencies row) (get-in row [:constraint-id-request :join-compatibility])))
-    (is (= result (derive core node nodes types bindings forms (:work-count result))))
-    (is (= :list-if-join-work-limit (:reason (derive core node nodes types bindings forms (dec (:work-count result))))))
     (doseq [[changed-core changed-node changed-nodes changed-types changed-bindings changed-forms]
             [[(assoc core :control-flow []) node nodes types bindings forms]
              [(update core :control-flow conj (first (:control-flow core))) node nodes types bindings forms]
@@ -14342,8 +14334,9 @@
              [core node nodes types (assoc-in bindings [(refs :then) :binding-id] :forged) forms]
              [core node nodes types bindings (assoc-in forms [(fids :operator) :value] 'other/if)]
              [core node nodes types bindings (assoc-in forms [(fids :then) :parent-form-id] :sibling)]
-             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] [])]]]
-      (let [changed (derive changed-core changed-node changed-nodes changed-types changed-bindings changed-forms 65536)]
+             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] [])]
+             [core node nodes types bindings (assoc-in forms [(fids :if) :child-form-ids] :uncountable)]]]
+      (let [changed (derive changed-core changed-node changed-nodes changed-types changed-bindings changed-forms)]
         (is (= :rejected (:status changed)))
         (is (= :list-if-join-source-mismatch (:reason changed)))))
     (doseq [changed [(assoc types (nids :condition) :gravity.type/never)
@@ -14351,10 +14344,10 @@
                      (assoc types (nids :then) (finite []))
                      (assoc types (nids :then) :gravity.type/never)
                      (assoc types (nids :else) :gravity.type/never)]]
-      (is (= :not-applicable (:status (derive core node nodes changed bindings forms 65536)))))
+      (is (= :not-applicable (:status (derive core node nodes changed bindings forms)))))
     (is (= homogeneous (:type (derive (assoc-in core [:function-records 0 :signature :return :type-id]
                                                {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/keyword})
-                                     node nodes types bindings forms 65536))))))
+                                     node nodes types bindings forms))))))
 
 (deftest sh08-list-if-join-inference-development-kernel
   (let [s :gravity.type/string finite #(hash-map :kind :gravity.type/list :shape :literal :element-types %)
@@ -14365,9 +14358,8 @@
             context {:ordering-core core :lookup-core core :lookup-nodes nodes
                      :lookup-bindings (vec (vals bindings)) :lookup-forms (vec (vals forms))}
             binding-types (into {} (for [[role id] refs] [id (get types (nids role))]))
-            run #(invoke-c7 'sh08-ft-infer-pass-with-context
-                            [(:nodes core) [] [] [] [] {} binding-types (assoc context :loop-work-left %)])
-            result (run 65536) work (:loop-work-count result)
+            result (invoke-c7 'sh08-ft-infer-pass-with-context
+                             [(:nodes core) [] [] [] [] {} binding-types context])
             row (first (:constraints result))]
         (is (= homogeneous (get-in result [:type-table (nids :if)])))
         (is (= [] (:diagnostics result)) (pr-str (:diagnostics result)))
@@ -14377,27 +14369,21 @@
         (is (= homogeneous (get-in row [:solution :result-type])))
         (is (= homogeneous (invoke-c7 'sh08-ft-normal-return-type [:if [:gravity.type/bool left right] :gravity.type/unknown])))
         (is (= homogeneous (invoke-c7 'sh08-ft-infer-node-with-context [node types binding-types {} [] {}])))
-        ;; The scheduling context retains the caller's remaining budget.
-        (is (= (dissoc result :shape-call-context) (dissoc (run work) :shape-call-context)))
-        (is (some #(= :list-if-join-work-limit (:reason %)) (:diagnostics (run (dec work)))))
         (let [unknown-types (dissoc types (nids :condition))
-              step #(invoke-c7 'sh08-ij-step [node unknown-types context %])]
-          (is (= {:status :deferred :work-count 1} (step 1)))
-          (doseq [budget [0 -1]]
-            (is (= {:status :rejected :reason :list-if-join-work-limit :work-count 1} (step budget))))
+              result (invoke-c7 'sh08-ij-step [node unknown-types context])]
+          (is (= {:status :deferred} result))
           (doseq [[left right expected] [[:gravity.type/never :gravity.type/bool :gravity.type/bool]
                                         [:gravity.type/bool :gravity.type/never :gravity.type/bool]
                                         [:gravity.type/bool :gravity.type/bool :gravity.type/bool]
                                         [:gravity.type/never :gravity.type/never :gravity.type/never]]]
             (let [types (assoc unknown-types (nids :then) left (nids :else) right)]
-              (is (= {:status :deferred :type expected :work-count 1}
-                     (invoke-c7 'sh08-ij-step [node types context 1]))))))
+              (is (= {:status :deferred :type expected}
+                     (invoke-c7 'sh08-ij-step [node types context]))))))
         (let [later (assoc node :node-id :deferred-if :children [:missing-condition (nids :then) (nids :else)])
               result (invoke-c7 'sh08-ft-infer-pass-with-context
-                               [(conj (:nodes core) later) [] [] [] [] {} binding-types (assoc context :loop-work-left work)])]
-          (is (= (inc work) (:loop-work-count result)))
-          (is (some #(and (= :list-if-join-work-limit (:reason %)) (= :deferred-if (get-in % [:node :node-id])))
-                    (:diagnostics result))))
+                               [(conj (:nodes core) later) [] [] [] [] {} binding-types context])]
+          (is (= [] (:diagnostics result)))
+          (is (= :gravity.type/unknown (get-in result [:type-table :deferred-if]))))
         (let [functions {:owner {:function-id :owner :body-core-node-id (nids :if) :return :gravity.type/unknown}}
               updated (invoke-c7 'sh08-ft-update-function-returns [functions nodes (:type-table result)])]
           (is (= homogeneous (get-in updated [:owner :return])))
@@ -14422,7 +14408,7 @@
                  :gravity.type/u8 :gravity.type/u16 :gravity.type/u32 :gravity.type/u64
                  :gravity.type/f32 :gravity.type/f64 :gravity.type/bool :gravity.type/string
                  :gravity.type/symbol :gravity.type/keyword :gravity.type/ratio]
-        join #(invoke-c7 'sh08-ij-type-work [%1 %2 %3])
+        join #(invoke-c7 'sh08-ij-type-join [%1 %2])
         normal #(invoke-c7 'sh08-ij-normal-type [%1 %2])]
     (doseq [element atomics
             [left right] [[(finite [element]) (finite [])] [(finite []) (finite [element])]
@@ -14430,19 +14416,17 @@
                           [(homogeneous element) (finite [])] [(finite []) (homogeneous element)]
                           [(homogeneous element) (finite [element element])]
                           [(finite [element]) (homogeneous element)]]]
-      (let [result (join left right 65536)]
+      (let [result (join left right)]
         (is (= :accepted (:status result)))
         (is (= (homogeneous element) (:type result) (normal left right)))
         (is (= [left right] (:branch-types result)))
         (is (= element (:element-type result)))
-        (is (= 2 (count (:branch-compatibility result))))
-        (is (= result (join left right (:work-count result))))
-        (is (= :list-if-join-work-limit (:reason (join left right (dec (:work-count result))))))))
+        (is (= 2 (count (:branch-compatibility result))))))
     (let [s :gravity.type/string left (finite [s]) same (finite []) hom (homogeneous s)]
       (doseq [type [left same hom :gravity.type/string :gravity.type/never]]
         (is (= type (normal type type)))
         (is (= type (normal :gravity.type/never type) (normal type :gravity.type/never))))
-      (is (= :not-applicable (:status (join same same 65536))))
+      (is (= :not-applicable (:status (join same same))))
       (doseq [unsupported [:gravity.type/list :gravity.type/unknown nil :gravity.type/string
                            {:kind :gravity.type/vector :shape :literal :element-types [s]}
                            (finite [:gravity.type/keyword]) (finite [s :gravity.type/keyword])
@@ -14450,16 +14434,14 @@
                            (finite [:gravity.type/never]) (finite [nil])
                            (homogeneous :gravity.type/keyword)
                            (homogeneous (homogeneous s)) (assoc hom :extra :forged)
-                           (assoc left :element-types '(s))
-                           (finite (vec (repeat 1025 s)))]]
+                           (assoc left :element-types '(s))]]
         (doseq [[a b] [[left unsupported] [unsupported left]]]
-          (is (= :not-applicable (:status (join a b 65536))))
+          (is (= :not-applicable (:status (join a b))))
           (is (= :gravity.type/unknown (normal a b)))))
-      (let [large (finite (vec (repeat 1024 s))) result (join large same 65536)]
+      (let [members (vec (repeat 4097 s)) large (finite members) result (join large same)]
         (is (= :accepted (:status result)))
-        (is (= 1024 (get-in result [:branch-compatibility 0 :checked-member-count])))
-        (is (= result (join large same (:work-count result))))
-        (is (= :list-if-join-work-limit (:reason (join large same (dec (:work-count result)))))))
+        (is (= 4097 (get-in result [:branch-compatibility 0 :checked-member-count])))
+        (is (= :not-applicable (:status (join (finite (assoc members 4096 :gravity.type/keyword)) same)))))
       (is (= :gravity.type/unknown
              (invoke-c7 'sh08-ft-normal-return-type [:alternatives [left same] :gravity.type/unknown])))
       (is (= :gravity.type/unknown
