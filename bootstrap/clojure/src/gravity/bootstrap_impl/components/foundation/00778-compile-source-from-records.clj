@@ -64,44 +64,7 @@
 (defn decode-gravity-source-bytes
   "Decode one already-captured source snapshot without reopening its path."
   [path bytes]
-  (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
-                  (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
-                  (.onUnmappableCharacter
-                   java.nio.charset.CodingErrorAction/REPORT))
-        input (java.nio.ByteBuffer/wrap bytes)
-        output (java.nio.CharBuffer/allocate (max 1 (alength bytes)))
-        result (.decode decoder input output true)]
-    (when (.isError result)
-      (let [start (.position input)
-            end (+ start (max 1 (.length result)))
-            bytes-hash (str "sha256:" (sha256-bytes-hex bytes))]
-        (fail! "L1-SOURCE-ENCODING"
-               "source bytes cannot be decoded as UTF-8"
-               {:severity :error
-                :stage :read-source
-                :source-id bytes-hash
-                :source-span {:source path
-                              :byte-start start
-                              :byte-end end}
-                :primary {:span {:source path
-                                 :byte-start start
-                                 :byte-end end}
-                          :artifact bytes-hash}
-                :related []
-                :origin-chain [{:kind :source-bytes :path path}]
-                :profile nil
-                :target nil
-                :facts {:declared-encoding :utf-8
-                        :bytes-hash bytes-hash
-                        :malformed-input-length (.length result)}
-                :reader-state {:stage :source-decoding
-                               :encoding :utf-8}
-                :remediation "Save the source as valid UTF-8 without replacement decoding."})))
-    (let [flush-result (.flush decoder output)]
-      (when (.isError flush-result)
-        (.throwException flush-result)))
-    (.flip output)
-    (.toString output)))
+  (gravity.reader/decode-source-bytes #'sha256-bytes-hex #'fail! path bytes))
 
 (defn read-gravity-source-text
   [path]

@@ -145,17 +145,100 @@
 
 (deftest namespace-contract-is-narrow-and-preserves-compatibility-arities
   (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
-    (is (= #{'read-source-artifact} (set (keys (ns-publics 'gravity.reader)))))
+    (is (= #{'read-source-artifact 'decode-source-bytes} (set (keys (ns-publics 'gravity.reader)))))
     (is (empty? (ns-aliases 'gravity.reader)))
-    (is (= :stage0-reader-artifact-assembly (:contract-boundary contract)))
+    (is (= :native-utf8-decoding-and-stage0-reader-artifact-assembly (:contract-boundary contract)))
     (is (= ['clojure.core] (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
     (is (= (set (:operation-inputs contract)) (set (keys (operations)))))
-    (is (= [] (get-in contract [:diagnostic-ownership :owns])))
+    (is (= ["L1-SOURCE-ENCODING"] (get-in contract [:diagnostic-ownership :owns])))
     (is (true? (:clojure-seed-boundary? contract)))
     (is (false? (:canonical-c2-reader? contract)))
     (is (false? (:authenticated-reader? contract)))
     (is (false? (:self-hosted? contract)))
     (is (= '([source-path source-text] [source-path source-text project-context])
            (:arglists (meta #'bootstrap/read-source-artifact))))))
+
+(defn- decode [path bytes]
+  (reader/decode-source-bytes #'bootstrap/sha256-bytes-hex #'bootstrap/fail! path bytes))
+
+(defn- raw-bytes [values] (byte-array (map unchecked-byte values)))
+
+(deftest strict-utf8-preserves-valid-bytes-as-text-without-consulting-error-ports
+  (let [contract (:gravity/namespace-contract (meta #'reader/decode-source-bytes))]
+    (is (= (:arglists (meta #'reader/decode-source-bytes))
+           (get-in contract [:public-api 'decode-source-bytes :arglists])))
+    (is (= :none (get-in contract [:public-api 'decode-source-bytes :admission])))
+    (is (false? (get-in contract [:public-api 'decode-source-bytes :opens-source?]))))
+  (doseq [text ["" "ascii" "first\r\nsecond\n" "\u03bb" "\u00e9" "\u4e2d"
+                (String. (Character/toChars 128578)) "\u0000" "\ufefftext"]]
+    (let [input (.getBytes ^String text "UTF-8")]
+      (is (= text (decode "valid.gravity" input)
+             (bootstrap/decode-gravity-source-bytes "valid.gravity" input)))
+      (with-redefs [bootstrap/sha256-bytes-hex (fn [_] (throw (ex-info "Unexpected hash" {})))
+                    bootstrap/fail! (fn [& _] (throw (ex-info "Unexpected diagnostic" {})))]
+        (is (= text (decode "valid.qst" input)))))))
+
+(deftest malformed-utf8-keeps-exact-byte-source-hash-and-diagnostic-provenance
+  (doseq [values [[195] [195 40] [65 195 40] [128] [192 175] [224 128 175]
+                  [237 160 128] [240 159 153] [244 144 128 128] [245 128 128 128] [255]]]
+    (let [input (raw-bytes values)
+          path "malformed.qst"
+          direct (rejection #(decode path input))
+          compatibility (rejection #(bootstrap/decode-gravity-source-bytes path input))
+          data (ex-data direct)
+          raw-hash (str "sha256:" (bootstrap/sha256-bytes-hex input))]
+      (is (= "L1-SOURCE-ENCODING" (:id data)))
+      (is (= (ex-message direct) (ex-message compatibility)))
+      (is (= data (ex-data compatibility)))
+      (is (= raw-hash (:source-id data) (get-in data [:facts :bytes-hash])))
+      (is (= path (get-in data [:source-span :source])))
+      (is (= (:source-span data) (get-in data [:primary :span])))
+      (is (= raw-hash (get-in data [:primary :artifact])))
+      (is (= {:stage :source-decoding :encoding :utf-8} (:reader-state data)))))
+  (let [data (ex-data (rejection #(decode "offset.gravity" (raw-bytes [65 195 40]))))]
+    (is (= {:source "offset.gravity" :byte-start 1 :byte-end 2} (:source-span data)))
+    (is (= 1 (get-in data [:facts :malformed-input-length])))))
+
+(deftest real-invalid-source-files-stop-before-form-reading
+  (doseq [extension [".gravity" ".qst"]]
+    (let [path (java.nio.file.Files/createTempFile
+                "gravity-stage-utf8-" extension
+                (make-array java.nio.file.attribute.FileAttribute 0))
+          input (raw-bytes [65 195 40]) reads (atom 0)]
+      (try
+        (java.nio.file.Files/write path input (make-array java.nio.file.OpenOption 0))
+        (let [error
+              (with-redefs [bootstrap/read-source-form-records
+                            (fn [& _] (swap! reads inc) (throw (ex-info "Unexpected parser" {})))]
+                (rejection #(bootstrap/read-file-artifact (str path))))]
+          (is (= "L1-SOURCE-ENCODING" (:id (ex-data error))))
+          (is (= (str path) (get-in (ex-data error) [:source-span :source])))
+          (is (= (str "sha256:" (bootstrap/sha256-bytes-hex input)) (:source-id (ex-data error))))
+          (is (zero? @reads)))
+        (finally (java.nio.file.Files/deleteIfExists path))))))
+
+(deftest raw-byte-hash-and-diagnostic-var-order-and-exceptions-remain-native
+  ;; Explicit trusted host interposition only; no authenticated input or grant.
+  (doseq [operation [decode bootstrap/decode-gravity-source-bytes]]
+    (let [input (raw-bytes [195 40]) original-hash bootstrap/sha256-bytes-hex
+          calls (atom [])
+          final (fn [id message data]
+                  (swap! calls conj [:diagnostic id message (:source-id data)])
+                  (throw (ex-info message (assoc data :id id))))]
+      (with-redefs [bootstrap/sha256-bytes-hex
+                    (fn [bytes]
+                      (swap! calls conj [:hash (vec bytes)])
+                      (alter-var-root #'bootstrap/fail! (constantly final))
+                      (original-hash bytes))
+                    bootstrap/fail! (fn [& _] (throw (ex-info "Premature diagnostic root" {})))]
+        (let [error (rejection #(operation "late.gravity" input))]
+          (is (= "L1-SOURCE-ENCODING" (:id (ex-data error))))))
+      (is (= [:hash :diagnostic] (mapv first @calls)))))
+  (let [sentinel (ex-info "hash owner failed" {:id "HASH-OWNER"}) diagnostics (atom 0)
+        error (with-redefs [bootstrap/sha256-bytes-hex (fn [_] (throw sentinel))
+                            bootstrap/fail! (fn [& _] (swap! diagnostics inc))]
+                (rejection #(decode "hash-failure.gravity" (raw-bytes [195 40]))))]
+    (is (identical? sentinel error))
+    (is (zero? @diagnostics))))
