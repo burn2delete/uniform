@@ -268,6 +268,60 @@
   [& args]
   (apply run-bin-env {"GRAVITY_PACKAGED_CLI_ONLY" "1"} args))
 
+(deftest p18-bin-source-development-does-not-auto-select-packaged-jar
+  (let [source-result
+        (run-bin-env {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                      "GRAVITY_PACKAGED_CLI_ONLY" "0"}
+                     "bin/gravity" "--version")
+        packaged-result
+        (run-bin-env {"GRAVITY_BOOTSTRAP_ONLY" "0"
+                      "GRAVITY_PACKAGED_CLI_ONLY" "1"}
+                     "bin/gravity" "--version")
+        source-version (edn/read-string (str/trim (:out source-result)))
+        packaged-version (edn/read-string (str/trim (:out packaged-result)))]
+    (is (zero? (:exit source-result)) source-result)
+    (is (= "P18-T01" (:phase source-version)) source-version)
+    (is (false? (:packaged-jvm-cli? source-version)) source-version)
+    (is (zero? (:exit packaged-result)) packaged-result)
+    (is (= "P18-T02" (:phase packaged-version)) packaged-version)
+    (is (true? (:packaged-jvm-cli? packaged-version)) packaged-version)))
+
+(deftest p18-bin-explicit-packaged-mode-fails-closed-when-jar-is-missing
+  (with-temp-directory
+    "gravity-p18-packaged-missing-"
+    (fn [root]
+      (let [bin-directory (.resolve root "bin")
+            script (.resolve bin-directory "gravity")
+            source (java.nio.file.Paths/get
+                    (.getCanonicalPath (java.io.File. "bin/gravity"))
+                    (make-array String 0))
+            _ (java.nio.file.Files/createDirectory
+               bin-directory
+               (make-array java.nio.file.attribute.FileAttribute 0))
+            _ (java.nio.file.Files/copy
+               source script
+               (into-array java.nio.file.CopyOption
+                           [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))
+            _ (.setExecutable (.toFile script) true false)
+            result (run-process-in-directory
+                    (.toString root)
+                    {"GRAVITY_PACKAGED_CLI_ONLY" "1"
+                     "GRAVITY_BOOTSTRAP_ONLY" "0"}
+                    [(.toString script) "--version"])
+            diagnostic (edn/read-string (str/trim (:err result)))]
+        (is (= 1 (:exit result)) result)
+        (is (empty? (:out result)) result)
+        (is (= "P18T02009" (:id diagnostic)) diagnostic)
+        (is (= :packaged-jvm-cli-artifact (:missing-fact diagnostic)) diagnostic)))))
+
+(deftest p18-public-test-executables-use-ignored-development-scratch-root
+  (let [output-path
+        (bootstrap/p18-t04-public-test-output-path "examples/hello.gravity")]
+    (is (= "target/development-loop-batches/phase-18/public-test/hello.gravity"
+           output-path))
+    (is (not (str/starts-with? output-path "target/phase-18/command/")))
+    (is (str/starts-with? output-path "target/development-loop-batches/"))))
+
 (def safe-memory-rejected-fixtures
   [["typed-safe2-uninit.gravity" "SAFE2-UNINIT"]
    ["typed-safe2-bounds.gravity" "SAFE2-BOUNDS"]
@@ -23064,6 +23118,10 @@
     (is (= :gravity/p18-t04-public-test-command-proof
            (:kind public-artifact)))
     (is (= :current-public-release-surface (:scope public-artifact)))
+    (is (every? #(str/starts-with?
+                  (str (:output-path %))
+                  "target/development-loop-batches/phase-18/public-test/")
+                (:accepted-test-proofs public-artifact)))
     (is (true? (:public-test-command-passed? public-proof)))
     (is (true? (:rejected-stable-diagnostics-covered? public-proof)))
     (is (true? (:co-canonical-source-paths-preserved? public-proof)))
@@ -25109,8 +25167,8 @@
         boundary (:release-boundary-record artifact)
         p15-proof (:p15-final-seed-retirement-proof artifact)
         diagnostics (set (map :diagnostic (:diagnostics artifact)))
-        version-result (run-bin "bin/gravity" "--version")
-        seedless-assert (run-bin "bin/gravity" "--assert-seedless-release")
+        version-result (run-packaged-bin "bin/gravity" "--version")
+        seedless-assert (run-packaged-bin "bin/gravity" "--assert-seedless-release")
         release-test-result (run-bin bootstrap/p18-t06-release-binary-path
                                      "test")
         release-test-artifact (when (zero? (:exit release-test-result))
