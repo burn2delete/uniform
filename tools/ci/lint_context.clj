@@ -38,15 +38,52 @@
       (throw (ex-info "Unsupported lone CR in lint context source" {:path path})))
     text))
 
+(declare require-spec)
+
+(defn- source-reader
+  [source-ns aliases]
+  (reify clojure.lang.LispReader$Resolver
+    (currentNS [_] source-ns)
+    (resolveAlias [_ alias] (get aliases alias))
+    (resolveVar [_ _] nil)
+    (resolveClass [_ _] nil)))
+
+(defn- ns-reader-context
+  [form]
+  (when (and (seq? form)
+             (#{'ns 'clojure.core/ns} (first form))
+             (symbol? (second form)))
+    (let [specs (mapcat rest
+                        (filter #(and (seq? %) (= :require (first %)))
+                                (drop 2 form)))
+          aliases (into {}
+                        (keep (fn [spec]
+                                (when-let [{:keys [namespace alias]}
+                                           (require-spec spec true)]
+                                  (when alias [alias namespace])))
+                              specs))]
+      {:namespace (second form) :aliases aliases})))
+
 (defn source-forms! [path bytes]
   (binding [*read-eval* false *data-readers* {}
             *default-data-reader-fn* (fn [tag _] (throw (ex-info "Unsupported source tag" {:tag tag :path path})))]
     (with-open [reader (clojure.lang.LineNumberingPushbackReader.
                         (java.io.StringReader. (source-text! path bytes)))]
-      (let [eof (Object.)]
-        (loop [forms []]
-          (let [form (read {:eof eof} reader)]
-            (if (identical? eof form) forms (recur (conj forms form)))))))))
+      (let [eof (Object.)
+            first-form (read {:eof eof} reader)]
+        (if (identical? eof first-form)
+          []
+          (let [{:keys [namespace aliases]} (ns-reader-context first-form)
+                read-more (fn []
+                            (loop [forms [first-form]]
+                              (let [form (read {:eof eof} reader)]
+                                (if (identical? eof form)
+                                  forms
+                                  (recur (conj forms form))))))]
+            (if namespace
+              (binding [*reader-resolver* (source-reader namespace aliases)]
+                (read-more))
+              (read-more))))))))
 
 (defn manifest! [bytes]
   (with-open [reader (java.io.PushbackReader.
@@ -230,12 +267,19 @@
   (when (and (symbol? value) (contains? #{nil "clojure.core"} (namespace value)))
     (symbol (name value))))
 
-(defn- require-spec [value]
-  (let [spec (if (and (seq? value) (= 'quote (core-operation (first value)))) (second value) value)]
-    (when (and (vector? spec) (symbol? (first spec)) (even? (count (rest spec))))
-      (let [options (apply hash-map (rest spec))]
-        (when-not (contains? options :as-alias)
-          {:namespace (first spec) :alias (:as options)})))))
+(defn- require-spec
+  ([value] (require-spec value false))
+  ([value reader-alias?]
+   (let [spec (if (and (seq? value) (= 'quote (core-operation (first value))))
+                (second value)
+                value)]
+     (when (and (vector? spec) (symbol? (first spec))
+                (even? (count (rest spec))))
+       (let [options (apply hash-map (rest spec))]
+         (when (or reader-alias? (not (contains? options :as-alias)))
+           {:namespace (first spec)
+            :alias (or (:as options)
+                       (when reader-alias? (:as-alias options)))}))))))
 
 (declare ^:private call-references)
 
