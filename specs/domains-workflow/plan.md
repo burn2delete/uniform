@@ -1,3 +1,52 @@
+# Domains implementation planning entry
+
+Select one unresolved [existing domain task](tasks.md#implementation-tasks) and
+its actual operation/provider/target boundary. Read [spec.md](spec.md), the whole
+owning canonical contract and relevant profile/safety/backend/runtime/library
+rules. Retain current task identities, Open status and accepted receipt scope.
+For the nine proposed integration interfaces, reconcile the exact preserved
+source-family amendment into this same authority before claiming their task
+adoption; do not create a parallel task population.
+
+Name the source construct, typed inputs/results, checked domain representation,
+producer and consumer versions, effects/grants, schema/numeric/privacy policy,
+provider binding, diagnostic identity and actual emitted or executed product.
+Choose one source-required end-to-end behavior, such as a certified numeric
+kernel, schema-derived consumer, parameterized query, durable replay or typed
+render/event path. Planning must preserve the wider contract rather than
+declaring that first example to be the whole domain.
+
+Resolve implementation locations through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+Current `bootstrap/clojure/src/gravity/bootstrap_impl/components/` includes
+foundation and platform-phase domain/schema/AI validators;
+`bootstrap/clojure/src/gravity/bootstrap_impl/semantic_early/` includes
+specialized query/workflow/GPU lowering. Source presence and phase summaries
+are inspection leads, not proof of callable behavior. Preserve the separate
+`bootstrap/clojure/src/gravity/c12_domain_ir/` ownership and restrictions; do
+not execute a held C12 transaction to refresh evidence. New temporary tooling
+is Clojure, with Gravity/Uniform remaining the destination language.
+
+Plan real accepted execution and contract-specific negatives, oracle/reference
+comparison, proof/certificate replay, source/generated mapping, taint/grant and
+stale-identity checks. For effects include first-run/replay or failure/recovery
+traces; for schemas include source/generated parity; for math distinguish
+provider selection, proof production and independent checking. External CI/live
+provider/device/chain access retains its actual policy. Honest fixtures may
+exercise an interface independently, but cannot substitute for real composed
+target/provider execution at acceptance.
+
+Record checks and absent/failed/unrun behavior in the existing evidence route,
+including residual host/provider boundaries and unresolved target decisions.
+Run only focused applicable tests plus affected composition; source/tool changes
+also run the language-boundary gate. Keep independent source/task review,
+component acceptance and coordinator integration pending until their exact
+evidence is present. Whole-domain, full-language, self-hosted and release claims
+remain governed by their separate existing outcomes.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Domains workflow migration
 
 Spec: [spec.md](spec.md) | Migration owner: documentation migration maintainer.

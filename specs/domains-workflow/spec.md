@@ -1,3 +1,107 @@
+# Domains implementation specification
+
+Implementation scope added under the 2026-11-01 request. Domain architecture
+and specialist owners retain their responsibilities. This entry preserves the
+inspected-main task authority and historical migration below; it does not adopt
+the pending source-family task amendments or confer domain acceptance.
+
+## Behavior and interfaces
+
+Implement the [existing domain outcomes](../../docs/component-roadmaps/domains.md)
+as source-checked operations with actual execution or generated target artifacts.
+Typed source/Core/MIR, profile, target, schema, numeric mode, effect/capability,
+provider and proof inputs become verified domain IR, lowered operations,
+artifacts and source-bound diagnostics. C12/L14 extension contracts preserve
+producer/consumer versions, legality facts, invalidation and provenance across
+domain boundaries; a registry entry or manifest validator alone does not
+implement those operations.
+
+## Existing implementation routes and acceptance
+
+Use the [sole marked implementation ledger](tasks.md#implementation-tasks).
+Its seven literal keys remain Open with their full criteria and named owners.
+The contracts retained below govern these distinguishing cases:
+
+| Existing key | Required behavior and positive/negative evidence |
+| --- | --- |
+| `math` | MATH1-MATH11/SAFE9 numeric families, conversions, modes, domains, branches and exceptional values execute with declared semantics. EFIR carries semantics; EML proposes normalization/search candidates. An independent checker replays exact or approximation/interval evidence before justified rewrites or provider selection. Compare strict results and certified errors with declared oracles; reject tree-identity equality, uncovered domains, stale certificates, unsupported target/rounding assumptions, unauthorized reassociation/FMA and fusion justified only by per-call certificates. Preserve separate approximation, roundoff and reconstruction bounds and residual checks where legal. |
+| `schema` | S1-S9 source schemas drive static projections, validators, codecs, canonical identities, API/database/ABI/config/artifact outputs and compatibility diffs. Execute recursive/refined/variant and round-trip fixtures, source/generated parity, migration plans and reference byte layouts. Reject duplicate or invalid fields, undeclared loss, weakened nullability/refinements, taint bypass, schema drift, nondeterministic padding, unsafe pointer layouts and leaked secrets. Canonical hash/signature use requires the canonical encoding. Generated GraphQL/OpenAPI and database schemas remain projections of source. |
+| `query` | DOM10/DOM11/B11 typed relational/dataflow operations produce real parameterized provider queries or declared native/GPU/workflow plans and validated rows. Exercise grouping/window ordering, null/decimal/time/enum behavior, isolation/failure/retry, schema/lineage and privacy preservation. Reject input spliced into executable syntax, missing grants, invalid rows, unsupported dialect portability and undeclared approximate/nondeterministic aggregates. Storage-engine durability is a separate interface below. |
+| `workflow` | DOM9/A6 durable graphs execute typed transitions, retries, timers, cancellation, compensation and first-run/replay paths without repeating recorded external effects. Preserve state/event schemas and migration, node sources, idempotency keys and payload-bound review. Exercise crash/restart and failure injection; reject unrecorded clock/random/model/tool/IO, incompatible logs and changed review payload reuse. Actor and local-first/CRDT claims additionally need delivery/backpressure/failure rules, merge laws, causal history, coordination classification, conflict policy and multi-replica partition/heal/reorder/duplicate/restart/migration convergence evidence. |
+| `ai` | A1-A11/DOM18 typed provider/model/prompt/tool/agent/memory/policy/eval/review operations execute through normal compiler and runtime boundaries. Schemas and taint precede tool use or branching; prompt authority partitions never grant capabilities. Exercise scoped provider and separate memory read/write grants, redaction/deletion/re-indexing, pinned replay/fallback identities, and grant/deny/expiry/revocation/payload-change review cases. Reject hidden effects, cross-tenant access, stale embedding dimensions, secret/no-store leakage, unvalidated generated code and policy escalation from retrieved/tool/model data. Required release evals bind exact subject/dataset/model/prompt/tool/memory/policy/runtime identities and include injection/misuse probes. |
+| `gpu` | P11/DOM13/B8 checked kernels and host adapters execute on the adopted device with explicit geometry, address spaces/layout/ownership/lifetimes, transfers, barriers/atomics and numeric modes. Compare reduction/filter/tensor results with the declared CPU/MIR reference; reject host effects, unsupported recursion/allocation, implicit transfers, invalid launch/target assumptions, unsynchronized mutation and unjustified approximate math. Emit the actual kernel, dispatch, transfer/synchronization and conformance artifacts. |
+| `ui` | DOM6/DOM7 typed state, events, routes/forms, API/storage schemas and adopted rendering/platform adapters produce an actual web/mobile artifact. Exercise rendering/update, loading/invalid input, permission denial, lifecycle/thread rules, offline edit/sync/migration and source-mapped failures. Reject ambient browser/platform authority, unsafe HTML/URL/script sinks, untyped imports, schema drift, unchecked foreign null/errors, hidden background work and lifecycle-unsafe UI. Frameworks, platform UI runtimes and signing remain declared boundaries. |
+
+## Wider domain interfaces and ownership
+
+The preserved [source-reconciliation proposal](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md#implementation-tasks)
+already names nine additional Open integration interfaces: `automation`,
+`blockchain`, `cryptography`, `formal`, `native`, `services`, `simulation`,
+`storage` and `visual`. Their exact source-facet/task entailment and composition
+remain pending in that lineage. They are explicit future task amendments to
+this authority, not nine completed domains or a second editable checklist here.
+Do not omit these required outcomes because the inspected main has seven keys.
+
+Their source obligations include actual DOM5 vector/native execution with
+proof-gated optimization and differential benchmarks; DOM8 service routes,
+workers, typed API/config, denied IO and redacted observability; DOM10 page/WAL
+write ordering/fsync, corruption and crash recovery; DOM14 deterministic physics
+and replay with actual timing/allocation policy; DOM20 process/file automation
+with structured arguments and hermetic/replay boundaries; and DOM21 typed visual
+graph checking/lowering with diagnostic round trips to nodes/edges. Visual or
+generated source passes the ordinary compiler checks.
+
+DOM15 requires real crypto/provider operations, vetted vectors and audits,
+secret/custody/redaction rules, and WebAuthn/passkey registration, assertion and
+credential lifecycle checks. Synced credentials do not prove device-bound
+custody. FHE/MPC types preserve scheme parameters, actual noise/depth/precision,
+participants, protected/public value boundaries, reveal authority and leakage
+policy; a provider manifest alone cannot prove private computation.
+
+DOM16 requires real deterministic chain execution, checked arithmetic,
+ABI/state/event schemas, authorization, upgrade invariants and the selected
+protocol's actual gas/fee behavior. Programmable accounts require validation,
+user-operation schemas, nonces/replay domains, session-key revocation,
+sponsorship/delegation and bundler/simulation/wallet contracts. Named
+ERC-4337/EIP-7702/ERC-7579 and ordering/MEV claims require their specific profiles,
+encoding, assumptions and rejection fixtures; no chain is adopted here.
+
+DOM19/TEST11 proof claims bind source/IR/relation, assumptions, checker and
+counterexample origins. ZK work separately emits the relation/privacy contract,
+records witness generation and setup/key trust, produces the proof, verifies it
+against public inputs, and checks recursive/folding/IVC chain links. A public
+verifier does not require disclosure of the private witness. Reject stale or
+mismatched relation/setup/key/provider records and unsupported privacy claims.
+
+## Starting work, restrictions and completion
+
+Domain work may start against the exact relevant typed operation interfaces
+without whole-component completion. Actual composition needs the selected
+Types/Effects/Legality/Auth, MIR/Opt/Lower/Emit/backend, Runtime/Stdlib, schema and
+Build consumers. Hardware/firmware/kernel/driver outcomes remain in
+[Platform](../platform-workflow/spec.md); language-tooling integration remains
+with [Compiler API](../compiler-api-workflow/spec.md) and
+[Developer Tools](../tools-workflow/spec.md). D5/L19 replacement claims name the
+supported and unsupported incumbent slice, typed interop and real parity
+evidence; a domain demo cannot prove whole-language replacement.
+
+Current accounting removal supersedes project work/fuel/token/form/capacity
+admission clauses in older math/AI/domain text. Preserve numeric error bounds,
+cryptographic noise/depth/security parameters, representability, actual
+profile/memory/timing constraints and external protocol/billing limits for their
+independent semantics. Do not rename work quotas as safety bounds.
+
+Preserve C12 restrictions and all held provider, publication and shared-writer
+operations. Provider/device/chain decisions remain with the named specialist
+owner, with unsupported combinations explicit. No live external action is
+authorized by this documentation. Completion requires actual positive/negative
+execution, parsed/checked artifacts, exact source/target/provider identities,
+stale-evidence invalidation and affected cross-component conformance. Narrow
+historical receipts, component acceptance, independent review, integration and
+release remain distinct.
+
+## Historical workflow-transfer specification
+
 # Feature specification: Domains workflow migration
 
 Status: prepared; independent review and integration pending.

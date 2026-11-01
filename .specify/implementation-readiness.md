@@ -118,10 +118,14 @@ accepting the proposed amendments. Their
 [Domains](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/spec.md)
 and [Platform](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/platform-workflow/spec.md)
 packages distinguish migration prose from detailed implementation task criteria.
-The new [Compiler API entry](../specs/compiler-api-workflow/spec.md) and
+The new [Compiler API entry](../specs/compiler-api-workflow/spec.md),
+[Domains entry](../specs/domains-workflow/spec.md) and
 [Platform entry](../specs/platform-workflow/spec.md) retain the existing literal
-outcomes and unresolved architecture/operation restrictions. Domains remains
-under direct source review for its implementation entry. Exact affected
+outcomes and unresolved architecture/operation restrictions. All 24 component
+packages now have behavior and planning entries above their preserved migration
+records. Domains routes the seven current keys and explicitly retains the nine
+additional proposed integration interfaces, without importing their task
+amendments or claiming that seven headings cover every domain contract. Exact affected
 composition with the preserved proposals remains required; their additional
 integration interfaces and Platform product decisions are not replaced here.
 The other component packages remain discoverable through the existing
@@ -192,7 +196,15 @@ decisions stay in the existing
 [Platform scope](../specs/platform-workflow/tasks.md#platform-product-scope).
 The broader evolution lifecycle still needs its accountable policy owner and
 real command-produced/release-blocking behavior; Release's four GOV consumer
-links cannot confer that authority.
+links cannot confer that authority. Direct GOV1/GOV6/GOV7/GOV8 review requires
+tracked change/RFC decision history, experiment opt-in/on-off/expiry/rollback,
+exact stabilization compatibility surfaces, and deprecation diagnostics,
+schedules and migration. GOV2/GOV4/GOV5/GOV9/GOV10 additionally require real
+baseline comparisons, security/unsafe review and invalidation, target-tier
+conformance and package/registry decisions. Component artifact consumers alone
+do not establish the producer or policy adoption. These missing joins remain
+with the existing source-reconciliation decision allocation; they cannot be
+closed by adding document links or treating author checks as governance review.
 
 Current accounting-removal decisions supersede project work/fuel/capacity
 requirements still present in contracts such as L1, L12 and C4. Preserve their
@@ -273,3 +285,16 @@ passed 18 tests / 419 assertions; the language-boundary gate passed 6 / 11.
 The full-language validator explicitly reports a dated non-authoritative
 snapshot, not current execution coverage. These checks confer no semantic
 partition, implementation, independent review, integration or release acceptance.
+
+The Domains packet completes the behavior/planning entry expansion across all
+24 component workflows. Focused checks passed 51 changed Markdown files, 963
+local path/heading references, all 139 existing task routes, 48 byte-identical
+historical spec/plan suffixes and 48 unchanged task/evidence files. Canonical
+document and full-language structural validators exited 0; dependency controls
+passed 18 tests / 419 assertions, and whitespace checks passed. Direct source
+review included the math, schema, AI, wider application-domain, conformance and
+governance obligations described above. No new execution receipt or semantic
+partition acceptance follows from these documentation checks. The nine Domains
+integration amendments, global requirement joins, exact first behavior-changing
+selection, independent acceptance and composition with the preserved proposal
+remain pending.
