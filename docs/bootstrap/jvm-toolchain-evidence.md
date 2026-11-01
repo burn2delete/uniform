@@ -130,3 +130,11 @@ serialization still match both original captures with all five byte hashes
 recomputed. Independent corrected-candidate acceptance, own CI artifact
 verification and immediate clean current-main preflight remain integration
 gates, recorded on the PR rather than inferred from these local results.
+
+A final source audit found that the extraction printer had omitted the two
+original Java type hints (ProcessBuilder's List argument and the JAR entry
+receiver). Both hints are restored without changing expressions. The immutable
+source verifier now independently compares all type tags as well as complete
+reconstructed text and printed forms. Earlier candidate acceptance and CI are
+not transferred to this source correction; fresh products, focused checks,
+independent exact acceptance and candidate-owned CI are required.

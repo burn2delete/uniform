@@ -351,7 +351,7 @@
    (java.io.File/createTempFile "gravity-jvm-err-" ".txt")]
   (try
    (let
-    [pb (ProcessBuilder. (vec command))]
+    [pb (ProcessBuilder. ^java.util.List (vec command))]
     (.redirectOutput pb stdout-file)
     (.redirectError pb stderr-file)
     (let
@@ -539,7 +539,7 @@
    {:entries
     (->>
      (enumeration-seq (.entries jar))
-     (map (fn* [p1__156#] (.getName p1__156#)))
+     (map (fn* [p1__156#] (.getName ^java.util.jar.JarEntry p1__156#)))
      sort
      vec),
     :main-class
