@@ -981,42 +981,25 @@
       second (second value)
       rest ((deref (get operations :normalized-rest)) value)
 
-      symbol? (do
-                (symbol? value))
-      keyword? (do
-                 (keyword? value))
-      char? (do
-              (char? value))
-      number? (do
-                (number? value))
-      seq? (do
-             (seq? value))
-      list? (do
-              (list? value))
-      vector? (do
-                (vector? value))
-      map? (do
-             (map? value))
-      set? (do
-             (set? value))
-      string? (do
-                (string? value))
-      even? (do
-              (even? value))
-      integer? (do
-                 (integer? value))
-      boolean? (do
-                 (boolean? value))
+      symbol? (symbol? value)
+      keyword? (keyword? value)
+      char? (char? value)
+      number? (number? value)
+      seq? (seq? value)
+      list? (list? value)
+      vector? (vector? value)
+      map? (map? value)
+      set? (set? value)
+      string? (string? value)
+      even? (even? value)
+      integer? (integer? value)
+      boolean? (boolean? value)
 
-      keys (do
-             (apply list (keys value)))
-      set (do
-            (set value))
+      keys (apply list (keys value))
+      set (set value)
       sort-by-pr-str
-      (do
-        (apply list (sort-by pr-str value)))
-      vec (do
-            (into [] value))
+      (apply list (sort-by pr-str value))
+      vec (into [] value)
 
       ;; Variadic builtins, pr-str, and malformed callees retain generic
       ;; dispatch after the sole argument has been evaluated exactly once.

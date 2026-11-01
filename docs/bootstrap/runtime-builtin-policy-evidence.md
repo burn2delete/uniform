@@ -52,7 +52,9 @@ and source-order gaps and all historical restricted routes, pins and guards.
 
 Six policy/data bodies (81 lines) and the55-line unary dispatcher now live in
 Runtime. Only owner names, explicit operation parameters and late Var ports
-change. The rule builder uses six function/data Vars; unary dispatch uses three;
+change in the initial move. Seventeen inherited single-expression do wrappers
+are subsequently folded for lint without changing evaluation or ports. The
+rule builder uses six function/data Vars; unary dispatch uses three;
 fact/guard APIs each receive their single failure Var explicitly. Bootstrap
 keeps original public/private argument lists and all remaining00587 pinned
 tables/authorization code exactly. All23 prior Runtime bodies, Bootstrap and
@@ -99,3 +101,21 @@ under /tmp; complete Core products use runtime-builtin-policy-before/after
 under uniform-cli-core-arguments-evidence. Existing exact kernels, contextual
 lint, contract validators, current-main reconciliation, independent acceptance,
 own CI and clean preflight still govern integration.
+
+## Lint normalization and combined integration
+
+The initial committed-source lint reports17 redundant single-expression do
+forms in the moved unary body. Its report and receipts are retained outside
+the checkout. Only those17 wrappers are folded; no algorithm, guard, port,
+argument order, privacy or lint policy changes. The conservation model names
+this precise syntax normalization. Initial complete after products are retained
+as pre-fold history; final focused and source/rule/Core controls run again.
+The existing seven exact unary kernels pass7/176.
+
+PR756's instruction source is independently accepted, but main moves during
+its integration checks. PR761 will carry the complete instruction plus builtin
+policy composition against current main, preserving both draft histories and
+all immutable source commits. Neither old-base CI nor a descriptive rule label
+is transferred as integration authority. The complete union needs its own
+current-main baseline/control comparison, independent exact acceptance, fresh
+enabled CI/artifacts and exact clean integration preflight.
