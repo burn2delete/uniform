@@ -6,6 +6,11 @@
 (def ^:private artifact-kind :gravity/p15-s23-c11-authenticated-mir-artifact)
 
 (defn interface-version! [value]
+  (header/source-interface-version! value :gravity/c11-mir))
+
+(defn public-interface-version!
+  "The public constructor/report route currently admits the version2 contract."
+  [value]
   (header/interface-version! value :gravity/c11-mir))
 
 (defn artifact-version!
@@ -26,12 +31,12 @@
     (when-not (= 3 seen) (header/reject! :artifact-header-keyset))
     (when-not (and (header/native-keyword? kind) (identical? artifact-kind kind))
       (header/reject! :artifact-header-kind))
-    (header/supported-version! version)))
+    (header/supported-source-version! version)))
 
 (defn require-matching-artifact-version!
   "An early dispatch check only; full typed validation/authentication still follows."
   [artifact selected-version]
-  (header/supported-version! selected-version)
+  (header/supported-source-version! selected-version)
   (let [observed (artifact-version! artifact)]
     (when-not (== (.longValue ^Long selected-version) (.longValue ^Long observed))
       (header/reject! :mixed-c11-interface-versions)))
@@ -39,10 +44,11 @@
 
 (defn reject-recognized-v2-on-legacy!
   "Keep malformed legacy inputs on their original owning validation path.
-   Only a safely recognized v2 discriminant is an early dispatch rejection."
+   Only a safely recognized explicit-source discriminant is an early rejection."
   [artifact]
   (let [observed (try (artifact-version! artifact)
                       (catch clojure.lang.ExceptionInfo _ nil))]
-    (when (and (some? observed) (== 2 (.longValue ^Long observed)))
+    (when (and (some? observed)
+               (or (== 2 (.longValue ^Long observed)) (== 3 (.longValue ^Long observed))))
       (header/reject! :mixed-c11-interface-versions)))
   nil)

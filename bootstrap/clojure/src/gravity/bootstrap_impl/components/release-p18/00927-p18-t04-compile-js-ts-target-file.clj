@@ -111,6 +111,8 @@
 (defn p18-t04-shell
   [& args]
   (if (= "bin/gravity" (first args))
+    ;; This proof intentionally exercises the packaged public command; ordinary
+    ;; source-development invocations use the launcher default instead.
     (p18-shell-run {"GRAVITY_PACKAGED_CLI_ONLY" "1"} args)
     (p18-shell-run args)))
 
@@ -229,8 +231,14 @@
     :command :compile
     :expected-diagnostic "B13-RELEASE"}])
 
+;; Public `gravity test` executables are development scratch.  Keep them under
+;; the ignored development-batch root instead of the tracked Phase 18 command
+;; evidence tree; durable proof records retain the actual generated paths.
+(def p18-t04-public-test-scratch-root
+  "target/development-loop-batches/phase-18/public-test")
+
 (defn p18-t04-public-test-output-path
   [fixture]
   (let [basename (.getName (java.io.File. fixture))
         safe-name (str/replace basename #"[^A-Za-z0-9_.-]" "_")]
-    (str p18-t04-build-root "/public-test/" safe-name)))
+    (str p18-t04-public-test-scratch-root "/" safe-name)))

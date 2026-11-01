@@ -18,8 +18,12 @@ has exactly 18 expansion rows, C01-C18, under its existing six criteria.
 
 ## Requirements and authority
 
-- Preserve original IDs, exact raw source spans, UTF-8 offsets, lines, SHA256,
-  source commits, context/owners/checks/stopping rules and original evidence.
+- Preserve original IDs, exact source spans, UTF-8 offsets, lines, SHA256, source
+  commits, context/owners/checks/stopping rules and original evidence. The
+  current crosswalk stores each distinct raw source payload once in its
+  digest-keyed `:source-snapshots` table; rows retain their locators, hashes and
+  `:source-snapshot-ref`. Legacy inline `:raw` spans remain readable only for
+  historical projections.
 - Reuse literal implementation task IDs inside the 24 component authorities.
   Their task blocks and statuses are read from their sole editable marked
   ledgers. Historical migration checkboxes outside those markers do not count.
@@ -49,8 +53,13 @@ record and one Release acceptance-boundary clarification are preserved in the
 criteria. [crosswalk.edn](crosswalk.edn) is generated from the routing proposal,
 all original sections, historical evidence and current marked task authorities.
 It includes all 18 SH07 rows and the existing wider Platform task references.
-Neither file is editable task truth. Regenerate from Clojure tools and owning
-sources; amend source lineage explicitly when any original source changes.
+The current schema is a normalized projection: source rows reference the
+digest-keyed snapshot table rather than repeating payloads, and the validator
+recovers and checks those bytes before consuming the view. Neither file is
+editable task truth. Regenerate from Clojure tools and owning sources; amend
+source lineage explicitly when any original source changes. A representation-
+only update of an existing pinned projection uses the normalization command and
+does not refresh its source pins or dispositions.
 [rollup.md](rollup.md) is the deterministic human-readable view of all 180 routes
 and all 18 SH07 sequence rows, not another editable checklist.
 Regeneration checks each stamped task/evidence file against its actual local

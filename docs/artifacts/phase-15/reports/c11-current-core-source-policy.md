@@ -186,3 +186,26 @@ historical physical tuple; this reconciliation does not assert unchanged
 composed execution closure or fresh acceptance at the new merge. Independent
 composition review and affected integration evidence remain required before
 merging. This does not add latest-source or v3 support as a finite v2 gate.
+
+## Current-main reconciliation checkpoint
+
+The reconciliation with main `942dbdf8fed7b3ee6e7370a0bfb0780a92158ace`
+retains its version-3 contract DATA, source-binding checks, family grammar and
+relative policy checks. Thirteen moved definitions compare unchanged with main
+and occur once after the source split. This is static source comparison, not
+source authentication. The public constructor/report selector remains version 2;
+the version-3 DATA selector does not install a public version-3 transaction.
+
+The affected compiled public-dispatch and policy tests passed 6 tests / 49
+assertions, including version-3 rejection before hostile Core access. Separate
+contract, source-binding mechanism and relative DATA controls passed 22 tests /
+258 assertions; their declared compiler/digest or fixture oracles do not confer
+source authentication. Ownership passed 1 / 589 and the language boundary 6 / 11.
+
+The crosswalk tests remain a nonpass: 22 tests / 103 assertions, zero assertion
+failures and 15 errors at the source/routing review guard. Untouched main has
+the same result and the identical input fingerprint
+`13da30848304f1d4c76b44978349d8d9dbc95c2b386a8dc62b17d8e2e8859605`.
+Its guard and existing receipts are unchanged; this source reconciliation does
+not renew their acceptance. Genuine constructor/fresh-report execution on the
+reconciled consumer and independent final integration review remain pending.

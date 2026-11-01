@@ -12,12 +12,9 @@ The workflow records work and evidence; it does not replace normative authority.
 
 ## Approach and exact files
 
-Keep the four workflow artifacts, generated roadmap task region and
-`tools/build_task_projection{,_test}.clj` in scope. Edit implementation
-records only in [tasks.md](tasks.md#implementation-tasks); the roadmap task link
-below is a generated view. Retain the entire original migration file as history.
-Shared helpers remain unchanged. Shared migration indexes are owned
-by the migration coordinator and are not edited by this package.
+Keep the four workflow artifacts and direct roadmap task link. Edit implementation
+records only in [tasks.md](tasks.md#implementation-tasks); the roadmap links
+directly to that ledger. Retain the entire original migration file as history.
 
 | Canonical truth | Reference | Package use |
 | --- | --- | --- |
@@ -36,7 +33,7 @@ semantic package names and absence of duplicated component checklists.
 Negative acceptance cases are broken/missing links, treating artifact presence
 as implementation completion, or narrowing retained contracts without disposition.
 Run the existing structural documentation and full-language roadmap validators.
-Run focused projector, link-preservation and language-boundary checks; no
+Run focused document/link and language-boundary checks; no
 compiler/service execution suite is claimed. Record commands/results and exact review identity in evidence.md.
 
 ## Delivery and remaining work
@@ -86,9 +83,8 @@ implementation assessment are conserved. The old missing-interface reason is
 retained inside the amended gap qualification. No other requirement or alias
 is changed; GOV10 source-binding repair is excluded.
 
-Check the four source spans, current task hash/marker/ID, acceptance predicates,
-wrong hash/marker/ID controls, unchanged task population/status and the generated
-Build/SH projections. Preserve predecessor SH review as history and leave the
+Check the four source spans, acceptance predicates, unchanged task
+population/status and the Build/SH navigation. Preserve predecessor SH review as history and leave the
 changed-source mapping pending independent review. The 577-interface inventory
 is not recomputed; accepted isolated 586 and proposed-unverified 470 remain
 distinct. No live resolver, compiler, runtime or broker action is required.

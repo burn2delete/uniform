@@ -19,6 +19,22 @@
    ;; format. They are source identity/encoding, not a function/work allowance.
    :function-count 170 :chunk-size 64 :chunk-counts [64 64 42]})
 
+;; Independently reviewed observation of the changed C6 program. This record is
+;; not selected by a public version3 route until the complete C6/C11 transaction
+;; is installed and reviewed. Historical version1/version2 records are unchanged.
+(def flat-bool-compiler-program
+  {:version 3
+   :semantic-family :closed-flat-bool-literal-sequence
+   :source-relative-path "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+   :source-byte-count 186745
+   :source-content-hash "sha256:7d14fef9a3ca0f47fd7ec301d96cd6c0b57c4c6a3f91a0839c673e8c702a6396"
+   :plan-semantic-hash "sha256:478007025328dec1aaf5fd5546cdc4813e3c62d4abeccad1a1a9bec2a9b5b07f"
+   :functions-semantic-hash "sha256:a507d12cfb35cbc219ce8b4f2690ca4633a75445a354f807d44202dde32f24d5"
+   :builder-semantic-hash "sha256:724437315b8cefd7d0261691920f1f76685636e90ac5e5972fc83477a5e0f5ed"
+   :verifier-semantic-hash "sha256:992165c95972cde92fbf34eea355333f389a76be6d28944dff6f75f4ff25296d"
+   :required-functions (:required-functions current-compiler-program)
+   :function-count 170 :chunk-size 64 :chunk-counts [64 64 42]})
+
 ;; Observed through the existing selected-source Reader owner, independently
 ;; reviewed as plan identities only. These do not attest a Reader result or an
 ;; SH02 envelope and do not replace the historical Reader admission policy.

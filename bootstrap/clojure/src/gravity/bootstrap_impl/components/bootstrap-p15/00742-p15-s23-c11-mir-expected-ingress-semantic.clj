@@ -150,7 +150,7 @@
          :construction-record
          {:semantic-constructor
           {:owner :gravity-source
-           :function p15-s23-c11-mir-builder-function
+           :function (p15-s23-c11-mir-selected-builder-function version)
            :builder-semantic-hash (:builder-semantic-hash source-rule)}
           :execution-tcb
           {:runner :clojure-stage0-rule-runner

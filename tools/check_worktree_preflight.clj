@@ -1,4 +1,4 @@
-(ns gravity.worktree-preflight
+(ns check-worktree-preflight
   "Read-only Git worktree and integration preflight.
 
   This is a tooling boundary, not compiler authority.  It invokes Git without
@@ -11,6 +11,10 @@
            [java.util.regex Pattern]))
 
 (def schema "gravity/worktree-preflight-v1")
+
+(binding [*command-line-args* nil]
+  (load-file "tools/workstream_composition.clj"))
+(alias 'composition 'workstream-composition)
 (def default-base-ref "origin/main")
 (def default-worktree-scan "candidate")
 (def worktree-scan-modes #{"candidate" "all"})
@@ -54,8 +58,9 @@
                               (deliver result
                                        (try
                                          {:value (with-open [stream stream]
-                                                   (String. (.readAllBytes stream)
-                                                            StandardCharsets/UTF_8))}
+                                                   (let [bytes (.readAllBytes stream)]
+                                                     {:text (String. bytes StandardCharsets/UTF_8)
+                                                      :bytes bytes}))}
                                          (catch Throwable error
                                            {:error error})))))]
                 (.setDaemon thread true)
@@ -68,8 +73,10 @@
             (fn [{:keys [thread result]}]
               (.join ^Thread thread)
               (let [{:keys [value error]} @result]
-                (if error (throw error) value)))]
-        {:exit exit :stdout (await-stream stdout) :stderr (await-stream stderr)}))
+                (if error (throw error) value)))
+            out (await-stream stdout)
+            err (await-stream stderr)]
+        {:exit exit :stdout (:text out) :stdout-bytes (:bytes out) :stderr (:text err)}))
     (catch java.io.IOException error
       (throw (failure "WORKTREE-GIT-UNAVAILABLE"
                       (str "cannot execute git: " (.getMessage error)))))))
@@ -291,6 +298,37 @@
                       {:scan scan :allowed (sort worktree-scan-modes)})))
     scan))
 
+(defn- source-composition [root base candidate options]
+  (let [fields [:source-commit :source-tree :workstream-id]]
+    (when (some #(contains? options %) fields)
+      (when-not (every? #(some? (get options %)) fields)
+        (throw (failure "WORKTREE-COMPOSITION" "source commit, tree and workstream id are required together")))
+      (let [{:keys [source-commit source-tree workstream-id]} options]
+        (when-not (and (valid-oid? source-commit) (valid-oid? source-tree)
+                       (= source-commit (revision root source-commit "source commit"))
+                       (= source-tree (revision root (str source-commit "^{tree}") "source tree"))
+                       (ancestor? root (:commit base) source-commit)
+                       (ancestor? root source-commit (:commit candidate)))
+          (throw (failure "WORKTREE-COMPOSITION" "source identities or ancestry differ from the integration tuple")))
+        (let [read-file
+              (fn [commit path]
+                (let [entry (:stdout (require-git root ["ls-tree" commit "--" path]))]
+                  (when-not (re-matches #"100(?:644|755) blob [0-9a-f]+\t[^\r\n]+\n?" entry)
+                    (throw (failure "WORKTREE-COMPOSITION" "metadata must be a regular committed blob" {:path path})))
+                  (let [result (require-git root ["show" (str commit ":" path)])]
+                    (try
+                      (str (.decode (doto (.newDecoder StandardCharsets/UTF_8)
+                                      (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                                      (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
+                                    (java.nio.ByteBuffer/wrap (:stdout-bytes result))))
+                      (catch java.nio.charset.CharacterCodingException _
+                        (throw (failure "WORKTREE-COMPOSITION" "metadata is not strict UTF-8" {:path path})))))))
+              changed (remove str/blank? (str/split (:stdout (require-git root
+                           ["diff" "--no-renames" "--name-only" "-z" source-commit (:commit candidate)])) #"\u0000"))]
+          (assoc (composition/verify! read-file source-commit (:commit candidate)
+                                      (:commit base) workstream-id changed)
+                 :source-tree source-tree :integration-tree (:tree candidate)))))))
+
 (defn- preflight-document [repository options]
   (let [{:keys [mode base-ref candidate-base candidate-commit candidate-tree allow-output
                 worktree-scan]
@@ -343,6 +381,11 @@
                {:state "unavailable" :entries [] :allowed-entries [] :blocked-entries []
                 :tracked-changes [] :untracked-changes [] :exclusions exclusions})
         reconciliation (reconcile root base candidate)
+        composition (try (when root (source-composition root base candidate options))
+                         (catch clojure.lang.ExceptionInfo error
+                           (swap! diagnostics conj (diagnostic (error-code error) (ex-message error)
+                                                              (error-details error)))
+                           nil))
         relation-pass (contains? #{"identical" "tree_equivalent_squash" "descendant"}
                                  (:relation reconciliation))
         _ (when (and root (= mode "integration") (= "dirty" (:state tree)))
@@ -400,6 +443,7 @@
                   :detached (:detached branch) :head (:commit candidate) :tree (:tree candidate)}
      :base {:ref (:ref base) :resolved (:resolved base) :commit (:commit base) :tree (:tree base)}
      :candidate {:commit (:commit candidate) :tree (:tree candidate)}
+     :source-composition composition
      :reconciliation reconciliation
      :working-tree tree
      :worktree-scan worktree-scan
@@ -430,6 +474,9 @@
   `:candidate-base`, `:candidate-commit`, `:candidate-tree`, and repeated
   `:allow-output` repository-relative paths.  `:worktree-scan` defaults to
   `\"candidate\"`; use `\"all\"` only when a full peer inventory is needed.
+  Together, `:source-commit`, `:source-tree` and `:workstream-id` additionally
+  verify the narrow committed lifecycle composition without replacing the
+  expected complete integration tuple.
   Integration requires all three expected identities and a truly clean
   candidate worktree; inspect is discovery-only and returns zero for a report
   even when integration gates fail."
@@ -542,6 +589,9 @@
           "--expected-commit" (recur (next remainder) (assoc options :candidate-commit (value option)))
           "--candidate-tree" (recur (next remainder) (assoc options :candidate-tree (value option)))
           "--expected-tree" (recur (next remainder) (assoc options :candidate-tree (value option)))
+          "--source-commit" (recur (next remainder) (assoc options :source-commit (value option)))
+          "--source-tree" (recur (next remainder) (assoc options :source-tree (value option)))
+          "--workstream-id" (recur (next remainder) (assoc options :workstream-id (value option)))
           "--allow-output" (recur (next remainder)
                                   (update options :allow-output conj (value option)))
           "--help" (assoc options :help true)
@@ -559,6 +609,7 @@
           (println "  --worktree-scan candidate|all (default: candidate; all is explicit full inventory)")
           (println "  --full-inventory (alias for --worktree-scan all)")
           (println "  integration requires --candidate-base OID --candidate-commit OID --candidate-tree OID")
+          (println "  governed lifecycle composition additionally requires --source-commit OID --source-tree OID --workstream-id ID")
           (println "  --allow-output RELATIVE-PATH (inspection classification only; repeatable)")
           0)
         (let [[document exit-code] (run-preflight (:repo options) options)]

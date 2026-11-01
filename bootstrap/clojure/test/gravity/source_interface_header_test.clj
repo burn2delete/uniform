@@ -43,3 +43,37 @@
     (is (= :interface-id
            (reason #(header/interface-version! {:interface foreign :version 2}))))
     (is (zero? @calls))))
+
+(deftest source-successor-discriminants-do-not-change-generic-owner-versions
+  (doseq [interface [:gravity/c11-mir :gravity/c6-c10]
+          version [2 3]]
+    (is (= version (header/source-interface-version!
+                   {:interface interface :version version} interface))))
+  (is (= :interface-version-class-or-value
+         (reason #(header/supported-version! 3))))
+  (is (= :interface-version-class-or-value
+         (reason #(header/interface-version! {:interface :gravity/c11-mir :version 3}))))
+  (doseq [version [(int 3) 3N 3.0 nil 0 4]]
+    (is (= :interface-version-class-or-value
+           (reason #(header/source-interface-version!
+                     {:interface :gravity/c11-mir :version version}))))))
+
+(deftest successor-source-header-hostile-values-have-zero-callbacks
+  (let [calls (atom 0)
+        foreign (proxy [Object clojure.lang.IMeta] []
+                  (meta [] (swap! calls inc) {})
+                  (equals [_] (swap! calls inc) false)
+                  (hashCode [] (swap! calls inc) 1)
+                  (toString [] (swap! calls inc) "foreign"))]
+    (doseq [[value expected]
+            [[foreign :interface-map-class]
+             [{:interface foreign :version 3} :interface-id]
+             [{:interface :gravity/c11-mir :version foreign} :interface-version-class-or-value]
+             [(clojure.lang.PersistentArrayMap.
+               (object-array [foreign 3 :version 3])) :interface-header-key-class]
+             [(with-meta {:interface :gravity/c11-mir :version 3} {:extra foreign})
+              :interface-header-metadata]
+             [(clojure.lang.PersistentArrayMap.
+               (object-array [:version 3 :version 3])) :interface-header-keyset]]]
+      (is (= expected (reason #(header/source-interface-version! value)))))
+    (is (zero? @calls))))

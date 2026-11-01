@@ -259,6 +259,20 @@
     (capture! binding capture)
     (.getBytes (pr-str capture) StandardCharsets/UTF_8)))
 
+(defn serialize-observed-fresh-capture
+  "Serialize the child wiring's observation with separately observed terminal facts.
+
+  Does not supply terminal facts or confer method review or runtime admission."
+  [contract-bytes report terminal]
+  (let [observation (:test-producer-observation report)]
+    (keys! observation #{:schema :binding-before :binding-after :producer-provenance
+                         :applying-source} :child-observation)
+    (require! (= :gravity/sh01-fresh-producer-observation-v1 (:schema observation))
+              :child-observation)
+    (serialize-fresh-capture contract-bytes
+                             (assoc (dissoc observation :schema) :terminal terminal)
+                             report)))
+
 (defn verify-capture!
   "Check pinned method, dependency contract and retained capture bytes offline.
 

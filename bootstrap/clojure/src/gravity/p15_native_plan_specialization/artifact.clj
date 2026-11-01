@@ -3,7 +3,7 @@
 
 (defn build
   [packet context emission helper-function helper-contract]
-  (let [{:keys [source source-bytes source-content-hash expected-output bounds
+  (let [{:keys [source source-bytes source-content-hash expected-output
                 helper helper-safety helper-result]} emission
         compiler-record (:stage2-compiler-artifact-record packet)]
     {:artifact :gravity/p15-native-plan-specialization
@@ -27,7 +27,6 @@
                   (pr-str
                    (bootstrap/c-backend-canonical-value
                     (:plan packet)))))
-            :instruction-count (:instruction-count bounds)
             :validation-status :passed
             :validator 'gravity.bootstrap/c-backend-validate-runtime-plan!}
      :compiler {:artifact (:artifact compiler-record)

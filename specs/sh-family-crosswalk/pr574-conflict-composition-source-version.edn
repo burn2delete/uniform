@@ -1,0 +1,51 @@
+{:preserved-history-paths
+ ["specs/sh-family-crosswalk/pr574-composition-source-version.edn"
+  "specs/sh-family-crosswalk/source-version-bridge.edn"
+  "specs/sh-family-crosswalk/reader-assembly-source-version.edn"
+  "specs/sh-family-crosswalk/syntax-pipeline-source-version.edn"
+  "specs/sh-family-crosswalk/macro-runtime-source-version.edn"],
+ :current-main-review
+ {:status :pending-source-version-review,
+  :input-fingerprint
+  "904a047459a1ddab17e8ac975c0c35df6e863ece53bb4383c284f4d5850e8048",
+  :source-version-bridge
+  "specs/sh-family-crosswalk/macro-runtime-source-version.edn",
+  :source-commit "e8f6fe3bf1971503bcf1d705d88c7432b95fdcca",
+  :source-path "specs/sh-family-crosswalk/crosswalk.edn",
+  :source-file-sha256
+  "7f39316d92c16906768571bdf5939ae0ce6a65abd0b2a4abbffc6bfe5f128211"},
+ :authority :source-conservation-only,
+ :published-candidate "d15f5795a51e6dee3b5699d633d11dcda3af5bb4",
+ :published-d15-source-review-receipt
+ "185f465cde14bc831c4921bf14b34f0d91febd81353e8f58fb7572ecc3619d4d",
+ :published-d15-review
+ {:status :pending-source-version-review,
+  :input-fingerprint
+  "3d669ff375f173660995b57708934d827a168995e15cf4dfa2541d6ab898c60e",
+  :source-version-bridge
+  "specs/sh-family-crosswalk/pr574-composition-source-version.edn",
+  :source-commit "d15f5795a51e6dee3b5699d633d11dcda3af5bb4",
+  :source-path "specs/sh-family-crosswalk/crosswalk.edn",
+  :source-file-sha256
+  "d4b78094ca4fa2f22416f50c0d690a53ee17e80ba0ee3620061dbb38fff48a68"},
+ :added-entries
+ {:module-owners
+  ["bootstrap/clojure/src/gravity/source_interface_header.clj"
+   "bootstrap/clojure/test/gravity/source_interface_header_test.clj"],
+  :reserved-leaf-modules ["source-interface-header"]},
+ :source-merge "c581bfb8465b1fcb066e51d3e335d14ae465dc72",
+ :status :pending-independent-affected-composition-review,
+ :kind :pr574-published-source-current-main-conflict-composition,
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn",
+  :before
+  {:commit "e8f6fe3bf1971503bcf1d705d88c7432b95fdcca",
+   :sha256
+   "c742e291bf3aa0f85ad8c80b95b215680f2fa36a0dd218add9261e9c684845f4"},
+  :after
+  {:commit "c581bfb8465b1fcb066e51d3e335d14ae465dc72",
+   :sha256
+   "dbd90d806b62a61081716365ac9035d0048f4421045c5affab71016cda7c916a"}},
+ :qualification
+ "Only the exact Native header ownership union and reporting inputs are reconciled. Preserve published Native/PR453/PR640 and current macro/Syntax/compiler-domain histories. No compiler migration pin refresh, implementation credit, runtime equivalence, new semantic gate, or reuse of old CI/preflight as current authority.",
+ :main "e8f6fe3bf1971503bcf1d705d88c7432b95fdcca"}

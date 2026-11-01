@@ -1,56 +1,21 @@
+(declare
+ sh06-resolution-artifact-keys
+ sh06-resolution-execution-boundary-contract
+ sh06-resolution-pass-contract)
+
 
 (declare sh06-resolution-module-request)
 (declare ^:private resolution-module-request-from-base)
 (declare ^:private sh06-resolution-verify-sh05)
 
-(defn- resolution-base-request-from-authenticated-parent
-  [source-path sh05-artifact overrides]
-   (let [forms (mapv :form (:expanded-syntax-stream sh05-artifact))
-        module (parse-module source-path forms)
-        imports (sh06-resolution-import-records
-                 source-path module overrides)
-        explicit-definitions
-        (sh06-resolution-explicit-candidate-records
-         module sh05-artifact overrides)
-        analysis-inputs
-        (sh06-resolution-analysis-inputs
-         module sh05-artifact overrides)
-        source-revision-id
-        (sh06-resolution-source-revision-id sh05-artifact)]
-    {:artifact :gravity/sh06-authenticated-c4-resolution-request
-     :schema-version 1
-     :module
-     {:namespace (:module module)
-      :package (sh06-resolution-package (:module module))
-      :profile (:profile module)
-      :target (:target module)
-      :safety (:safety module)
-      :effects (vec (sort (:effects module)))
-      :capabilities (vec (sort (:capabilities module)))
-      :exports (vec (:exports module))
-      :source-revision-id source-revision-id
-      :c4-artifact-id (:artifact-id sh05-artifact)}
-     :definitions
-     (vec (concat
-           (sh06-resolution-definition-records module sh05-artifact)
-           explicit-definitions))
-     :imports imports
-     :import-bindings
-     (sh06-resolution-import-binding-records module imports overrides)
-     :lexical-scopes (:lexical-scopes analysis-inputs)
-     :references (:references analysis-inputs)
-     :core-bindings (sh06-resolution-core-records)
-     :dependency-edges
-     (sh06-resolution-dependency-edges source-path module imports overrides)
-     :macro-expansion-binding
-     {:artifact :gravity/sh05-macro-expansion-binding
-      :schema-version 1
-      :c4-artifact-id (:artifact-id sh05-artifact)
-      :source-revision-id source-revision-id
-      :macro-result-id (:expanded-syntax-stream-id sh05-artifact)
-      :authenticated-envelope-id
-      (sh06-resolution-envelope-id sh05-artifact)}
-     :provenance {:actual-source-path source-path}}))
+(defn-
+ resolution-base-request-from-authenticated-parent
+ [source-path sh05-artifact overrides]
+ (gravity.resolution/base-request
+  source-path
+  sh05-artifact
+  overrides
+  (resolution-stage-operations)))
 
 (defn sh06-resolution-base-request-data
   [source-path sh05-artifact overrides]
@@ -122,103 +87,272 @@
    {:arity 3
     :params ['analysis 'digest-requests 'resolved-digests]}})
 
-(defn sh06-resolution-boundary-fail!
-  [rule source-path missing-field observed facts]
-  (c5-resolution-fail!
-   rule source-path
-   {:source-span (source-span source-path 0)
-    :symbol (:symbol facts)
-    :syntax-id (:syntax-id facts)
-    :namespace (:namespace facts)
-    :profile (:profile facts)
-    :target (:target facts)
-    :candidate-bindings (:candidate-bindings facts)
-    :dependency-edge (:dependency-edge facts)}
-   {:severity :error
-    :profile (:profile facts)
-    :missing-fields [missing-field]
-    :facts (merge {:sh06-boundary :gravity-resolution-plan} facts)
-    :observed observed}))
+(declare
+ ^{:private true} resolution-stage-input
+ ^{:private true, :dynamic true} *sh06-resolution-operation-binding*
+ c-backend-canonical-value
+ c-backend-resolve-p15-s23-compiler-source-path
+ c-backend-stage2-plan-emitter-source-rule!
+ c5-resolution-fail!
+ p15-s23-c11-mir-digest
+ p15-s23-stage2-compiler-artifact-plan
+ p15-s23-stage2-compiler-artifact-semantic-input
+ p15-s23-stage2-compiler-artifact-source-path
+ p15-s23-stage2-runtime-execute-function
+ sh04-syntax-strip-host-metadata
+ sh06-resolution-binding-current!
+ sh06-resolution-boundary-fail!
+ sh06-resolution-build-binding!
+ ^{:private true} sh06-resolution-cached-binding
+ sh06-resolution-current-source-key
+ sh06-resolution-expected-source-byte-count
+ sh06-resolution-expected-source-content-hash
+ sh06-resolution-plan-identities
+ sh06-resolution-public-function-shapes
+ sh06-resolution-read-current-source!
+ sh06-resolution-resolve-source-path
+ sh06-resolution-source-relative-path
+ sha256-bytes-hex
+ sha256-hex
+ source-span)
 
-(defn sh06-resolution-resolve-source-path
-  []
-  (let [anchor (java.io.File.
-                (p15-s23-stage2-compiler-artifact-source-path))
-        start (if (.isDirectory anchor) anchor (.getParentFile anchor))]
-    (or
-     (loop [directory start]
-       (when directory
-         (let [candidate
-               (java.io.File. directory sh06-resolution-source-relative-path)]
-           (if (.isFile candidate)
-             (.getPath candidate)
-             (recur (.getParentFile directory))))))
-     sh06-resolution-source-relative-path)))
+(declare sh06-resolution-artifact-identity-input
+         sh06-resolution-identity-chunks
+         sh06-resolution-order-compatibility
+         ^:private sh06-resolution-product-identity-chunks
+         ^:private sh06-resolution-artifact-identity-input-with-chunks
+         ^:private sh06-resolution-envelope-summary-with-chunks)
 
-(defn sh06-resolution-read-current-source!
-  [request-source]
-  (let [source-path (sh06-resolution-resolve-source-path)
-        nio-path (.toPath (java.io.File. source-path))
-        nofollow (into-array java.nio.file.LinkOption
-                             [java.nio.file.LinkOption/NOFOLLOW_LINKS])
-        attributes
-        (try
-          (java.nio.file.Files/readAttributes
-           nio-path java.nio.file.attribute.BasicFileAttributes nofollow)
-          (catch Exception error
-            (sh06-resolution-boundary-fail!
-             "C5-UNRESOLVED" request-source :pinned-resolution-source-readable
-             source-path {:cause-message (.getMessage error)})))
-        bytes
-        (try
-          (java.nio.file.Files/readAllBytes nio-path)
-          (catch Exception error
-            (sh06-resolution-boundary-fail!
-             "C5-UNRESOLVED" request-source :pinned-resolution-source-bytes
-             source-path {:cause-message (.getMessage error)})))
-        content-hash (str "sha256:" (sha256-bytes-hex bytes))]
-    (when-not
-     (and attributes (.isRegularFile attributes)
-          (= (.size attributes) (alength bytes)))
-      (sh06-resolution-boundary-fail!
-       "C5-UNRESOLVED" request-source :exact-pinned-resolution-source
-       {:source-path source-path
-        :source-byte-count (alength bytes)
-        :source-content-hash content-hash}
-       {}))
-    {:source-path source-path
-     :source-text (String. bytes java.nio.charset.StandardCharsets/UTF_8)
-     :source-byte-count (alength bytes)
-     :source-content-hash content-hash}))
+(declare sh06-resolution-boundary-keys)
+(defn- resolution-stage-system-property [name] (System/getProperty name))
 
-(defn sh06-resolution-read-pinned-source! [request-source]
-  (let [source (sh06-resolution-read-current-source! request-source)]
-    (when-not (= [sh06-resolution-expected-source-byte-count sh06-resolution-expected-source-content-hash]
-                 ((juxt :source-byte-count :source-content-hash) source))
-      (sh06-resolution-boundary-fail! "C5-UNRESOLVED" request-source
-        :exact-pinned-resolution-source (dissoc source :source-text) {}))
-    source))
+(declare sh06-resolution-product-projections sh06-resolution-sh02-descriptor)
 
-(defn sh06-resolution-plan-identities
-  [plan]
-  (let [functions (:functions plan)
-        shapes
-        (into (sorted-map)
-              (map (fn [[name function]]
-                     [name (select-keys function [:arity :params])]))
-              functions)]
-    {:plan-semantic-hash
-     (p15-s23-c11-mir-digest
-      (p15-s23-stage2-compiler-artifact-semantic-input plan))
-     :functions-semantic-hash (p15-s23-c11-mir-digest functions)
-     :function-count (count functions)
-     :function-names-hash
-     (p15-s23-c11-mir-digest (vec (keys functions)))
-     :function-shapes-hash (p15-s23-c11-mir-digest shapes)
-     :public-function-hashes
-     (into (sorted-map)
-           (map (fn [name]
-                  [name (p15-s23-c11-mir-digest (get functions name))]))
-           (keys sh06-resolution-public-function-shapes))
-     :public-function-shapes
-     (select-keys shapes (keys sh06-resolution-public-function-shapes))}))
+(declare
+ p15-s23-stage2-sh02-descriptor-envelope-verify!
+ ^{:private true} sh06-resolution-artifact-verification*
+ ^{:private true} sh06-resolution-artifact-verification-bounded*
+ sh06-resolution-boundary-keys-for
+ sh06-resolution-carrier-validation
+ sh06-resolution-component-validations
+ sh06-resolution-contained-verification-failure
+ sh06-resolution-context-plan-binding!
+ sh06-resolution-current-binding!
+ sh06-resolution-envelope-source-options
+ sh06-resolution-module-request
+ sh06-resolution-request
+ sh06-resolution-run-request!
+ ^{:private true} sh06-resolution-verify-sh05)
+
+(declare
+ sh06-resolution-digest-reference
+ sh06-resolution-execute!
+ sh06-resolution-raise-rejection!
+ sh06-resolution-require-carrier!
+ sh06-resolution-resolve-analysis!
+ sh06-resolution-resolve-declared-id!
+ sh06-resolution-resolve-digest-requests!
+ sh06-resolution-resolve-record-binding-id!)
+
+(def
+ ^{:private true} resolution-stage-defaults
+ {:sh06-resolution-digest-reference #'sh06-resolution-digest-reference,
+  :sh06-resolution-artifact-verification*
+  #'sh06-resolution-artifact-verification*,
+  :sh06-resolution-component-validations
+  #'sh06-resolution-component-validations,
+  :sh06-resolution-carrier-validation
+  #'sh06-resolution-carrier-validation,
+  :c5-resolution-fail! #'c5-resolution-fail!,
+  :p15-s23-stage2-compiler-artifact-plan
+  #'p15-s23-stage2-compiler-artifact-plan,
+  :sh06-resolution-explicit-candidate-records
+  #'sh06-resolution-explicit-candidate-records,
+  :source-span #'source-span,
+  :sh06-resolution-envelope-summary-with-chunks
+  #'sh06-resolution-envelope-summary-with-chunks,
+  :parse-module #'parse-module,
+  :sh06-resolution-run-request! #'sh06-resolution-run-request!,
+  :sh06-resolution-execute! #'sh06-resolution-execute!,
+  :sh06-resolution-order-compatibility
+  #'sh06-resolution-order-compatibility,
+  :p15-s23-stage2-runtime-execute-function
+  #'p15-s23-stage2-runtime-execute-function,
+  :sh06-resolution-resolve-source-path
+  #'sh06-resolution-resolve-source-path,
+  :sh06-resolution-resolve-record-binding-id!
+  #'sh06-resolution-resolve-record-binding-id!,
+  :sh06-resolution-source-revision-id
+  #'sh06-resolution-source-revision-id,
+  :p15-s23-stage2-compiler-artifact-semantic-input
+  #'p15-s23-stage2-compiler-artifact-semantic-input,
+  :sh06-resolution-artifact-identity-input-with-chunks
+  #'sh06-resolution-artifact-identity-input-with-chunks,
+  :sh06-fixed-vector-pattern? #'sh06-fixed-vector-pattern?,
+  :sh06-resolution-definition-kind #'sh06-resolution-definition-kind,
+  :sh06-resolution-envelope-source-options
+  #'sh06-resolution-envelope-source-options,
+  :sha256-hex #'sha256-hex,
+  :p15-s23-trusted-carrier-validation
+  #'p15-s23-trusted-carrier-validation,
+  :sh06-resolution-core-record #'sh06-resolution-core-record,
+  :c-backend-canonical-value #'c-backend-canonical-value,
+  :sh06-resolution-analysis-inputs #'sh06-resolution-analysis-inputs,
+  :sh06-resolution-verify-sh05 #'sh06-resolution-verify-sh05,
+  :reader-canonical-hash #'reader-canonical-hash,
+  :sh06-resolution-artifact-identity-input
+  #'sh06-resolution-artifact-identity-input,
+  :system-property #'resolution-stage-system-property,
+  :sh06-resolution-core-records #'sh06-resolution-core-records,
+  :sh06-resolution-artifact-verification-bounded*
+  #'sh06-resolution-artifact-verification-bounded*,
+  :sh06-resolution-read-current-source!
+  #'sh06-resolution-read-current-source!,
+  :c-backend-resolve-p15-s23-compiler-source-path
+  #'c-backend-resolve-p15-s23-compiler-source-path,
+  :sh06-resolution-definition-records
+  #'sh06-resolution-definition-records,
+  :sh06-resolution-product-identity-chunks
+  #'sh06-resolution-product-identity-chunks,
+  :sh06-resolution-binding-current! #'sh06-resolution-binding-current!,
+  :sh06-resolution-package #'sh06-resolution-package,
+  :sh06-resolution-resolve-declared-id!
+  #'sh06-resolution-resolve-declared-id!,
+  :sh06-resolution-dependency-edges #'sh06-resolution-dependency-edges,
+  :sh06-resolution-context-plan-binding!
+  #'sh06-resolution-context-plan-binding!,
+  :sh06-resolution-request #'sh06-resolution-request,
+  :sh06-resolution-boundary-keys-for
+  #'sh06-resolution-boundary-keys-for,
+  :sh06-resolution-resolve-digest-requests!
+  #'sh06-resolution-resolve-digest-requests!,
+  :sh06-resolution-import-records #'sh06-resolution-import-records,
+  :p15-s23-stage2-sh02-descriptor-envelope-verify!
+  #'p15-s23-stage2-sh02-descriptor-envelope-verify!,
+  :sh06-resolution-import-binding-records
+  #'sh06-resolution-import-binding-records,
+  :sh06-resolution-current-source-key
+  #'sh06-resolution-current-source-key,
+  :sh06-resolution-require-carrier! #'sh06-resolution-require-carrier!,
+  :sha256-bytes-hex #'sha256-bytes-hex,
+  :sh06-resolution-raise-rejection! #'sh06-resolution-raise-rejection!,
+  :input #'resolution-stage-input,
+  :sh06-resolution-current-binding! #'sh06-resolution-current-binding!,
+  :sh06-resolution-sh02-descriptor #'sh06-resolution-sh02-descriptor,
+  :sh06-resolution-plan-identities #'sh06-resolution-plan-identities,
+  :sh06-resolution-product-projections
+  #'sh06-resolution-product-projections,
+  :sh06-let-loop-binding-paths #'sh06-let-loop-binding-paths,
+  :sh06-resolution-module-request #'sh06-resolution-module-request,
+  :p15-s23-sh02-sha256-id? #'p15-s23-sh02-sha256-id?,
+  :sh06-resolution-identity-chunks #'sh06-resolution-identity-chunks,
+  :sh06-resolution-resolve-analysis!
+  #'sh06-resolution-resolve-analysis!,
+  :sh06-resolution-build-binding! #'sh06-resolution-build-binding!,
+  :sh06-resolution-boundary-fail! #'sh06-resolution-boundary-fail!,
+  :sh06-unique-match-binding-paths #'sh06-unique-match-binding-paths,
+  :c-backend-stage2-plan-emitter-source-rule!
+  #'c-backend-stage2-plan-emitter-source-rule!,
+  :sh06-resolution-dependency-record
+  #'sh06-resolution-dependency-record,
+  :sh06-resolution-contained-verification-failure
+  #'sh06-resolution-contained-verification-failure,
+  :sh06-resolution-envelope-id #'sh06-resolution-envelope-id,
+  :p15-s23-stage2-compiler-artifact-source-path
+  #'p15-s23-stage2-compiler-artifact-source-path,
+  :sh06-match-pattern-binding-paths #'sh06-match-pattern-binding-paths,
+  :p15-s23-c11-mir-digest #'p15-s23-c11-mir-digest,
+  :sh06-resolution-semantic-span #'sh06-resolution-semantic-span,
+  :p15-s23-c6c10-canonical-digest #'p15-s23-c6c10-canonical-digest,
+  :sh04-syntax-strip-host-metadata #'sh04-syntax-strip-host-metadata})
+
+^{:line 100, :column 18}
+(defn- resolution-stage-operations [] resolution-stage-defaults)
+
+(defn-
+ resolution-stage-input
+ [field]
+ (case
+  field
+  :*sh06-resolution-operation-binding*
+  *sh06-resolution-operation-binding*
+  :sh06-resolution-cached-binding
+  sh06-resolution-cached-binding
+  :sh06-resolution-expected-source-byte-count
+  sh06-resolution-expected-source-byte-count
+  :sh06-resolution-expected-source-content-hash
+  sh06-resolution-expected-source-content-hash
+  :sh06-resolution-public-function-shapes
+  sh06-resolution-public-function-shapes
+  :sh06-resolution-source-relative-path
+  sh06-resolution-source-relative-path
+  :known-source-profiles
+  known-source-profiles
+  :sh06-resolution-all-core-symbols
+  sh06-resolution-all-core-symbols
+  :sh06-resolution-special-symbols
+  sh06-resolution-special-symbols
+  :sh06-resolution-type-symbols
+  sh06-resolution-type-symbols
+  :sh06-resolution-boundary-keys
+  sh06-resolution-boundary-keys
+  :sh06-resolution-envelope-stage
+  sh06-resolution-envelope-stage
+  :sh06-resolution-sealed-artifact-kind
+  sh06-resolution-sealed-artifact-kind
+  :c5-resolution-diagnostic-ids
+  c5-resolution-diagnostic-ids
+  :c5-resolution-governing-document
+  c5-resolution-governing-document
+  :sh06-resolution-adapter-contract
+  sh06-resolution-adapter-contract
+  :sh06-resolution-artifact-keys
+  sh06-resolution-artifact-keys
+  :sh06-resolution-execution-boundary-contract
+  sh06-resolution-execution-boundary-contract
+  :sh06-resolution-pass-contract
+  sh06-resolution-pass-contract
+  (throw (ex-info "Unknown resolution stage input" {:input field}))))
+
+(defn
+ sh06-resolution-boundary-fail!
+ [rule source-path missing-field observed facts]
+ (gravity.resolution/boundary-fail!
+  rule
+  source-path
+  missing-field
+  observed
+  facts
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-resolve-source-path
+ []
+ (gravity.resolution/resolve-source-path
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-read-current-source!
+ [request-source]
+ (gravity.resolution/read-current-source!
+  request-source
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-read-pinned-source!
+ [request-source]
+ (gravity.resolution/read-pinned-source!
+  request-source
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))
+
+(defn
+ sh06-resolution-plan-identities
+ [plan]
+ (gravity.resolution/plan-identities
+  plan
+  ^{:line 117, :column 65}
+  (resolution-stage-operations)))

@@ -48,7 +48,7 @@
           (false? (:self-hosted? artifact)))
      "C11-MODULE" source-path artifact :authenticated-c11-artifact-envelope)
     ;; Relative structural coherence is not fresh Core/source authority.
-    (if (= 2 version)
+    (if (contains? #{2 3} version)
       (p15-s23-c11-mir-validate-ingress-data!
        checked-core context (:checked-core-ingress artifact) version)
       (p15-s23-c11-mir-require!
@@ -154,7 +154,7 @@
     (p15-s23-c11-mir-require!
      (= {:semantic-constructor
          {:owner :gravity-source
-          :function p15-s23-c11-mir-builder-function
+          :function (p15-s23-c11-mir-selected-builder-function version)
           :builder-semantic-hash
           (get-in artifact [:source-rule :builder-semantic-hash])}
          :execution-tcb
@@ -173,7 +173,7 @@
      source-path
      {:semantic-constructor
       {:owner :gravity-source
-       :function p15-s23-c11-mir-builder-function
+       :function (p15-s23-c11-mir-selected-builder-function version)
        :builder-semantic-hash
        (get-in artifact [:source-rule :builder-semantic-hash])}
       :execution-tcb

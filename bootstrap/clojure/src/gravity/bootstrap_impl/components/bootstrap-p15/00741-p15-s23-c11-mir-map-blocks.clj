@@ -29,6 +29,13 @@
                         :required-core-source-policy
                         {:interface :gravity/c6-c10 :version 2
                          :admission-status :development-unadmitted
+                         :verification-scope :selected-current-source-host-seed})
+    (= 3 version) (assoc :supported-source-family :closed-flat-bool-literal-sequence
+                        :maximum-conditionals 0 :control-flow :single-entry-return
+                        :required-core-source-policy
+                        {:interface :gravity/c6-c10 :version 3
+                         :semantic-family :closed-flat-bool-literal-sequence
+                         :admission-status :development-unadmitted
                          :verification-scope :selected-current-source-host-seed})) version)))
 
 (defn p15-s23-c11-independent-verifier-record
@@ -43,7 +50,7 @@
                :verifier-implementation :clojure-stage0-seed
                :verification-tcb :clojure-stage0-rule-runner) version)
         base (cond-> unbound-base
-               (= 2 version) (assoc :checked-core-source-policy-binding
+               (contains? #{2 3} version) (assoc :checked-core-source-policy-binding
                                      (p15-s23-c11-mir-core-policy-binding version policy)))
         report-hash (p15-s23-c11-mir-digest base)
         report-id
@@ -80,7 +87,7 @@
          :diagnostics []
          :status :verified-by-independent-seed} version)
         base (cond-> unbound-base
-               (= 2 version) (assoc :checked-core-source-policy-binding
+               (contains? #{2 3} version) (assoc :checked-core-source-policy-binding
                                      (p15-s23-c11-mir-core-policy-binding version policy)))]
     (assoc base :record-id
            (p15-s23-c11-mir-digest
@@ -109,7 +116,7 @@
    :target-lowering-credit? false
    :backend-credit? false
    :llvm-credit? false}
-    (= 2 version) (assoc-in [:binding :checked-core-source-policy-binding]
+    (contains? #{2 3} version) (assoc-in [:binding :checked-core-source-policy-binding]
                            (p15-s23-c11-mir-core-policy-binding version policy))) version)))
 
 (defn p15-s23-c11-mir-finalize
@@ -182,9 +189,9 @@
    :source-byte-count (:source-byte-count binding)
    :plan-semantic-hash (:plan-semantic-hash binding)
    :functions-semantic-hash (:functions-semantic-hash binding)
-   :builder-function p15-s23-c11-mir-builder-function
+   :builder-function (p15-s23-c11-mir-selected-builder-function (get binding :interface-version 1))
    :builder-semantic-hash (:builder-semantic-hash binding)
-   :verifier-function p15-s23-c11-mir-verifier-function
+   :verifier-function (p15-s23-c11-mir-selected-verifier-function (get binding :interface-version 1))
    :verifier-semantic-hash (:verifier-semantic-hash binding)
    :function-shapes (:function-shapes binding)
    :compiled-by :clojure-stage0-seed

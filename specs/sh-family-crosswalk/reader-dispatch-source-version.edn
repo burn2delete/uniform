@@ -1,4 +1,55 @@
-{:implementation-review
+{:normal-dispatch-seam
+ {:status :pending-independent-source-version-review,
+  :incoming-main "43112981c2e6ee47e1cc1451dbe3b750f88ee874",
+  :source-files
+  [{:path "specs/reader-workflow/tasks.md",
+    :before
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"},
+    :after
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"}}
+   {:path "docs/component-roadmaps/reader.md",
+    :before
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"},
+    :after
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"}}
+   {:path "docs/self-hosting-slice-ownership.edn",
+    :before
+    {:commit "e446f3268ecc8ce25408236631a41c5939e7a952",
+     :sha256
+     "d8b3c24d7c619ab28bfc2a7bd70dde086c27b0b851e563d28cbfd3c79a5f631f"},
+    :after
+    {:commit "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7",
+     :sha256
+     "7b08322372e708f4c27b19d82865e1e1af6b44e423e4af6dbb8a65a19d4bae97"}}],
+  :applying-input-fingerprint
+  "98c5fa7283ba55654d8cd4f5bce73bbcd687115d64adbccd0f2cd8fbb7362959",
+  :new-standalone-owners
+  {"bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+   {:namespace gravity.reader.normal-dispatch-test,
+    :slice "SH-03",
+    :owner :sh-reader}},
+  :qualification
+  "Only standalone normal-dispatch fixture ownership changes strict projection inputs. Task status and predicates remain unchanged; parser/authentication/reconstruction and mapping promotion remain open.",
+  :current-main-composition
+  {:incoming-main "3ddff4b7d50dd874da8c8d62c8f75eef28647955",
+   :applying-input-fingerprint
+   "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
+   :reader-source-review
+   {:commit "afe5d20b3d013beabec45fa23768949ea05f2611",
+    :receipt-sha256
+    "e05486a0e1e707a1c45e38a9b1e2a5bd53328058a58b6664cc315d136ebf448a",
+    :scope :finite-source-and-injected-fixtures-only},
+   :qualification
+   "Build source pins and normal Reader ownership composed without changing their source bytes. Prior lineages retained; mapping promotion and genuine Reader authentication remain open."}},
+ :implementation-review
  {:commit "f27f076231c056909e83a6dd59f662542cd4864f",
   :receipt-sha256
   "9213fa159fabae82610edd7ec496f52e16735491897cd776342412cc5c49de80",

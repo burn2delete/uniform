@@ -54,3 +54,36 @@
    :builder-semantic-hash "sha256:4471ced7b19c9225ba6f7641c13a565eea26281413d8d3704e51968dbbcb6081"
    :verifier-semantic-hash "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"
    :required-functions v2-required-functions})
+
+(def flat-bool-required-functions
+  (merge v2-required-functions
+    {'sh12-flat-bool-sequence-view {:arity 1 :params ['core]}
+     'sh12-flat-bool-sequence-topology-valid? {:arity 2 :params ['core 'view]}
+     'sh12-flat-bool-sequence-origin-valid? {:arity 3 :params ['core 'node 'literal?]}
+     'sh12-flat-bool-sequence-node-facts-valid? {:arity 4 :params ['core 'node 'literal? 'function?]}
+     'sh12-flat-bool-sequence-original-facts-valid? {:arity 1 :params ['core]}
+     'sh12-flat-bool-sequence-original-graphs-valid? {:arity 1 :params ['core]}
+     'sh12-flat-bool-sequence-original-lineage-valid? {:arity 1 :params ['core]}
+     'sh12-verify-core-mir-preservation {:arity 2 :params ['checked-core 'mir]}
+     'sh12-flat-bool-sequence-mir-policy {:arity 0 :params []}
+     'sh12-flat-bool-sequence-report {:arity 2 :params ['checked-core 'report]}
+     'sh12-flat-bool-sequence-core-preflight {:arity 1 :params ['core]}
+     'sh12-build-flat-bool-sequence-mir {:arity 1 :params ['checked-core]}
+     'sh12-verify-flat-bool-sequence-mir {:arity 2 :params ['checked-core 'mir]}}))
+
+;; Observed and independently reviewed from the corrected source. Each owner
+;; must still compile the same stable source bytes and compare all identities.
+;; This does not replace Core/source authentication or a fresh verifier call.
+(def flat-bool-source-contract
+  {:interface :gravity/c11-mir :version 3
+   :semantic-family :closed-flat-bool-literal-sequence
+   :source-relative-path "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"
+   :source-byte-count 597279
+   :source-content-hash "sha256:4ca2bf8c551c9b0e7aefbeab84e7f7c9b5742bdeee10f68e74aff3470d35b3dd"
+   :plan-semantic-hash "sha256:36c1a98c8753852754147f01bdd310b952391fea406125093d20d4f242b8199a"
+   :functions-semantic-hash "sha256:58b6002f47dbdecc9a8b202ea7dbfe97433b6629d1a6418bc01b7996ababee71"
+   :builder-function 'sh12-build-flat-bool-sequence-mir
+   :builder-semantic-hash "sha256:f24491eab6a0f88c4c7b638af5bbcf1d6c371b66e509657afdf8b2bf1f5bb93a"
+   :verifier-function 'sh12-verify-flat-bool-sequence-mir
+   :verifier-semantic-hash "sha256:7562fc08983f1341bcd8d4d510fe361902f36a7f1cacd917dce3161a3fb3b90f"
+   :required-functions flat-bool-required-functions})

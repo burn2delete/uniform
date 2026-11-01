@@ -96,14 +96,14 @@
       "Existing legacy arity remains v1. The explicit header selects only a built-in contract."
       ([checked-core context] (artifact* checked-core context 1))
       ([checked-core context interface-header]
-       (artifact* checked-core context (c11-source-interface/interface-version! interface-header))))
+       (artifact* checked-core context (c11-source-interface/public-interface-version! interface-header))))
 
     (defn p15-s23-stage2-c11-mir-verification-report
       ([artifact checked-core context]
        (c11-source-interface/reject-recognized-v2-on-legacy! artifact)
        (report* artifact checked-core context 1))
       ([artifact checked-core context interface-header]
-       (let [version (c11-source-interface/interface-version! interface-header)]
+       (let [version (c11-source-interface/public-interface-version! interface-header)]
          (c11-source-interface/require-matching-artifact-version! artifact version)
          (report* artifact checked-core context version))))
 

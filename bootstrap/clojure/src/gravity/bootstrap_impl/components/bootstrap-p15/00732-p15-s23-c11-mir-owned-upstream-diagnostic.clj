@@ -117,43 +117,6 @@
        item))
    value))
 
-(require '[gravity.c11-mir.source-interface :as c11-source-interface]
-         '[gravity.c11-mir.source-contract :as c11-source-contract])
-
-(defn p15-s23-c11-mir-contract
-  [version]
-  (when-not (identical? Long (class version))
-    (throw (ex-info "Invalid C11 source contract version"
-                    {:id "C11-VERIFY" :missing-fact :reviewed-c11-source-contract})))
-  (case (.longValue ^Long version)
-    1 {:version 1
-       :source-byte-count p15-s23-c11-mir-source-byte-count
-       :source-content-hash p15-s23-c11-mir-expected-source-content-hash
-       :plan-semantic-hash p15-s23-c11-mir-expected-plan-semantic-hash
-       :functions-semantic-hash p15-s23-c11-mir-expected-functions-semantic-hash
-       :builder-semantic-hash p15-s23-c11-mir-expected-builder-semantic-hash
-       :verifier-semantic-hash p15-s23-c11-mir-expected-verifier-semantic-hash
-       :required-functions p15-s23-c11-mir-required-functions}
-    2 c11-source-contract/v2-source-contract
-    (throw (ex-info "Unknown C11 source contract version"
-                    {:id "C11-VERIFY" :missing-fact :reviewed-c11-source-contract}))))
-
-(defn p15-s23-c11-mir-versioned-record
-  [record version]
-  (p15-s23-c11-mir-contract version)
-  (if (= 2 version)
-    (assoc record :source-interface {:interface :gravity/c11-mir :version 2})
-    record))
-
-(defn p15-s23-c11-mir-contract-binding
-  [version]
-  (let [contract (p15-s23-c11-mir-contract version)]
-    (cond-> (assoc (select-keys contract
-                               [:source-content-hash :source-byte-count :plan-semantic-hash
-                                :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash])
-                   :function-shapes (:required-functions contract))
-      (= 2 version) (assoc :interface-version version))))
-
 (defn p15-s23-c11-mir-resolve-source-path
   "Resolve the pinned C11 source independently of the caller's CWD."
   []
@@ -177,3 +140,53 @@
                       :else nil))))
               roots)
         relative)))
+
+;; Pure built-in contract selection; no constructor or verifier is invoked.
+(require '[gravity.c11-mir.source-contract :as c11-source-contract]
+         '[gravity.c11-mir.source-interface :as c11-source-interface])
+
+(defn p15-s23-c11-mir-contract
+  [version]
+  (when-not (identical? Long (class version))
+    (throw (ex-info "Invalid C11 source contract version"
+                    {:id "C11-VERIFY" :missing-fact :reviewed-c11-source-contract})))
+  (case (.longValue ^Long version)
+    1 {:version 1
+       :source-byte-count p15-s23-c11-mir-source-byte-count
+       :source-content-hash p15-s23-c11-mir-expected-source-content-hash
+       :plan-semantic-hash p15-s23-c11-mir-expected-plan-semantic-hash
+       :functions-semantic-hash p15-s23-c11-mir-expected-functions-semantic-hash
+       :builder-semantic-hash p15-s23-c11-mir-expected-builder-semantic-hash
+       :verifier-semantic-hash p15-s23-c11-mir-expected-verifier-semantic-hash
+       :required-functions p15-s23-c11-mir-required-functions}
+    2 c11-source-contract/v2-source-contract
+    3 c11-source-contract/flat-bool-source-contract
+    (throw (ex-info "Unknown C11 source contract version"
+                    {:id "C11-VERIFY" :missing-fact :reviewed-c11-source-contract}))))
+
+(defn p15-s23-c11-mir-versioned-record
+  [record version]
+  (p15-s23-c11-mir-contract version)
+  (cond-> record
+    (not= 1 version) (assoc :source-interface {:interface :gravity/c11-mir :version version})
+    (= 3 version) (assoc :semantic-family :closed-flat-bool-literal-sequence)))
+
+(defn p15-s23-c11-mir-selected-builder-function [version]
+  (let [contract (p15-s23-c11-mir-contract version)]
+    (if (= 3 version) (:builder-function contract) p15-s23-c11-mir-builder-function)))
+
+(defn p15-s23-c11-mir-selected-verifier-function [version]
+  (let [contract (p15-s23-c11-mir-contract version)]
+    (if (= 3 version) (:verifier-function contract) p15-s23-c11-mir-verifier-function)))
+
+(defn p15-s23-c11-mir-contract-binding
+  [version]
+  (let [contract (p15-s23-c11-mir-contract version)]
+    (cond-> (assoc (select-keys contract
+                               [:source-content-hash :source-byte-count :plan-semantic-hash
+                                :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash])
+                   :function-shapes (:required-functions contract))
+      (not= 1 version) (assoc :interface-version version)
+      (= 3 version) (assoc :semantic-family (:semantic-family contract)
+                          :builder-function (:builder-function contract)
+                          :verifier-function (:verifier-function contract)))))

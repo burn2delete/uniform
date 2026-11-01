@@ -1,0 +1,62 @@
+{:task "reader/finite-remaining-work/extension-policy-closure"
+ :planning-ref "FL-P01-T01"
+ :evidence-class :source-definitions
+ :execution-status :unrun
+ :input-commit "e351cd65589037fe70dacfa3b5f35c0d441b316b"
+ :producer-choice :gravity-owned-narrow-pure-variant
+ :proposed-policy-selector :gravity/sealed-pure-text-reader
+ :implemented-selector? false
+ :source-pairs
+ [{:case :text
+   :paths ["bootstrap/clojure/fixtures/reader-extension-binding/normal-pure.qst"
+           "bootstrap/clojure/fixtures/reader-extension-binding/normal-pure.gravity"]}
+  {:case :mixed-unknown
+   :paths ["bootstrap/clojure/fixtures/reader-extension-binding/normal-unknown.qst"
+           "bootstrap/clojure/fixtures/reader-extension-binding/normal-unknown.gravity"]}
+  {:case :mixed-effectful
+   :paths ["bootstrap/clojure/fixtures/reader-extension-binding/normal-effect.qst"
+           "bootstrap/clojure/fixtures/reader-extension-binding/normal-effect.gravity"]}]
+ :future-acceptance
+ {:entrypoint :normal-c2-constructor-with-fixed-pure-options
+  :reader-entrypoint sh03-read-source-unit
+  :reader-verifier sh03-verify-reader-result
+  :source-selection :explicit-current-reader-source
+  :implementation :private-gravity-pure-text-handler
+  :providers []
+  :requirements
+  [:actual-handler-invocation
+   :actual-returned-seed-in-raw-product
+   :policy-source-form-payload-span-input-joins
+   :current-reader-source-and-plan-binding
+   :complete-existing-extension-invocation-digest
+   :existing-reader-result-identity-and-envelope
+   :fresh-reconstruction-from-all-original-source-bytes
+   :result-preserving-adapter-projection
+   :normal-opaque-reader-reverification-before-consumer-admission]}
+ :future-tamper-controls
+ [{:field :source-bytes :expected "C2-HASH"}
+  {:field :source-parent :expected "C2-HASH"}
+  {:field :current-reader-source :expected "C2-HASH"}
+  {:field :policy :expected "C2-HASH"}
+  {:field :private-handler :expected "C2-HASH"}
+  {:field :form-id :expected "C2-HASH"}
+  {:field :payload-form-id :expected "C2-HASH"}
+  {:field :span :expected "C2-HASH"}
+  {:field :input-seed :expected "C2-HASH"}
+  {:field :returned-seed :expected "C2-HASH"}
+  {:field :invocation :expected "C2-HASH"}
+  {:field :missing-result :expected "C2-HASH"}
+  {:field :duplicate-result :expected "C2-HASH"}
+  {:field :recomputed-caller-hashes :expected "C2-HASH"}]
+ :future-refusals
+ {:mixed-unknown {:diagnostic "C2-EXTENSION" :handler-calls 0 :provider-calls 0}
+  :mixed-effectful {:diagnostic "C2-EXTENSION" :handler-calls 0 :provider-calls 0}}
+ :current-companion-refusal
+ {:entrypoint sh03-c3-precomputed-c2-verify!
+  :values [nil [] [{:artifact :gravity/reader-pure-extension-result}]]
+  :diagnostic "C2-HASH"
+  :missing-fields [:authenticated-pure-extension-results]
+  :before [:source-selection :envelope-verification :registered-literal-projection]}
+ :nonclaims
+ [:sealed-pure-support :runtime-acceptance :independent-acceptance
+  :integration-eligibility :full-extension-policy-closure]}

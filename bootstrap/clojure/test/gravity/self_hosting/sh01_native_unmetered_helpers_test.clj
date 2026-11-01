@@ -603,6 +603,8 @@
       :interface-version-class-or-value]
      [(assoc c11-interface-header :version 1)
       :explicit-interface-version]
+     [(assoc c11-interface-header :version 3)
+      :interface-version-class-or-value]
      [(assoc c11-interface-header :interface foreign) :interface-id]]]
    (is
     (=

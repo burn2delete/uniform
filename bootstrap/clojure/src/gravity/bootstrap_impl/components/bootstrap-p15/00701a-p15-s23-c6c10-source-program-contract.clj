@@ -1,4 +1,7 @@
-(require '[gravity.c6-c10.source-interface :as c6-source-interface])
+(require (quote [gravity.c6-c10.source-interface :as c6-source-interface]))
+
+;; Fixed contract DATA selection only; no source execution or admission.
+(require '[gravity.c6-c10.source-contract :as c6-source-contract])
 
 (defn p15-s23-c6c10-source-program-contract [version]
   (when-not (identical? Long (class version))
@@ -15,6 +18,7 @@
        :required-functions p15-s23-c6c10-required-functions
        :function-count 139 :chunk-size 64}
     2 c6-source-contract/current-compiler-program
+    3 c6-source-contract/flat-bool-compiler-program
     (p15-s23-c6c10-host-fail! "C6-VERIFY" "<gravity-checked-core>"
                              :explicit-c6-source-contract-version {})))
 
