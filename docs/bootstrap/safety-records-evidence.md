@@ -348,9 +348,9 @@ no current-source admission, full safety or release authority is implied.
 The next normal composition uses actual main
 612367e981ec37072cc3d3525f09263bdc91b264/tree
 efc971c757313a418a7b40a7b14bcdeb7ef8b45e, the verified CLI PR729 merge.
-All five incoming CLI paths remain exact main, including its selected-command
-parser, compatibility wrapper, help golden and evidence. The namespace-map rows
-merge without conflict. Safety's stage, both native components, Var ports,
+The incoming CLI implementation, wrapper, tests and evidence remain exact main.
+The shared namespace-map file preserves the CLI row and merges the Safety row
+without conflict. Safety's stage, both native components, Var ports,
 pipeline tests and ownership associations remain exact7a1cec47. No semantic,
 policy, authentication or migration-pin changes are introduced.
 
@@ -360,6 +360,14 @@ and component conservation, and current compiler provenance. Logs, evidence and
 scripts use `cli-main-*`. Exact independent review, contextual lint, own new-head
 CI and clean current-base integration preflight remain required. Older green
 remains historical, with no acceptance transferred across bases.
+
+The coupled tests pass82/2995, ownership39/1110 and language6/11. All42
+complete/text comparisons, current provenance and whole-component conservation
+pass. Docs240/19, roadmap/governance185 and contextual lint7 paths/3486 unchanged
+baseline warnings/0 blockers pass. The two first control/provenance launches
+omitted test sources from the script classpath and stopped before subject
+execution. Their `cli-main-*-classpath-nonpass.log` files remain; corrected
+explicit classpaths pass without changing subjects, guards, pins or semantics.
 
 ## Loader and snapshot CI main composition
 
