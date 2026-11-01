@@ -31,7 +31,7 @@
   (let [text "Do one thing.\n" occurrence (first (rr/source-occurrences "X" text))]
     [(assoc (open-manifest) :scope-state :reviewed
             :requirements [{:id "fixture/one-thing" :atomicity :reviewed :nonoverlap :reviewed}]
-            :source-dispositions [{:occurrence-id (:id occurrence) :kind :requirement
+            :source-dispositions [{:occurrence-id (:id occurrence) :kind :requirement :review-state :reviewed
                                    :requirement-ids ["fixture/one-thing"]}])
      {"X" text}]))
 
@@ -96,8 +96,8 @@
         proposed (-> manifest
                      (assoc :scope-decisions [decision])
                      (update :source-dispositions into
-                             [{:occurrence-id old-id :kind :superseded :decision-id "removal"}
-                              {:occurrence-id authority-id :kind :nonnormative
+                             [{:occurrence-id old-id :kind :superseded :review-state :reviewed :decision-id "removal"}
+                              {:occurrence-id authority-id :kind :nonnormative :review-state :reviewed
                                :rationale "Fixture policy authority; implementation scope is represented separately."}]))]
     (is (= 1 (:denominator (rr/project proposed sources))))
     (doseq [field [:authority :reason :scope-version :lineage :authority-source-occurrence-id :source-occurrence-ids]]
@@ -119,6 +119,19 @@
         proposed (assoc-in manifest [:source-dispositions 0 :review-state] :proposed)]
     (is (false? (:denominator-ready? (rr/project proposed sources))))
     (is (= 1 (count (:unresolved-source-occurrences (rr/project proposed sources)))))))
+
+(deftest only-explicit-reviewed-source-dispositions-close-scope
+  (let [[manifest sources] (complete-fixture)
+        occurrence-id (get-in manifest [:source-dispositions 0 :occurrence-id])]
+    (doseq [state [nil :unreviewed :rejected :unknown :accepted :proposed]]
+      (let [candidate (if (nil? state)
+                        (update-in manifest [:source-dispositions 0] dissoc :review-state)
+                        (assoc-in manifest [:source-dispositions 0 :review-state] state))
+            report (rr/project candidate sources)]
+        (is (false? (:denominator-ready? report)))
+        (is (nil? (:denominator report)))
+        (is (= 0 (get-in report [:source-dispositions :reviewed])))
+        (is (= [occurrence-id] (:unresolved-source-occurrences report)))))))
 
 (deftest canonical-task-region-controls-the-projection
   (let [record "- [ ] `reader/identity` Identity\n\nCurrent evidence/status: Partial; fixture only.\n\nDone when (yes/no): Declared roots determine identity."
@@ -222,8 +235,8 @@
                         :requirements [{:id "one" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["fa"]}
                                        {:id "two" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["fb"]}]
                         :source-facets [(facet "fa" (first os) "one") (facet "fb" (second os) "two")]
-                        :source-dispositions [{:occurrence-id (:id (first os)) :kind :requirement :requirement-ids ["one"] :facet-ids ["fa"]}
-                                              {:occurrence-id (:id (second os)) :kind :requirement :requirement-ids ["two"] :facet-ids ["fb"]}])]
+                        :source-dispositions [{:occurrence-id (:id (first os)) :kind :requirement :review-state :reviewed :requirement-ids ["one"] :facet-ids ["fa"]}
+                                              {:occurrence-id (:id (second os)) :kind :requirement :review-state :reviewed :requirement-ids ["two"] :facet-ids ["fb"]}])]
     (is (= 2 (:denominator (rr/project manifest sources))))
     (is (thrown? Exception (rr/project (update manifest :requirements #(mapv (fn [r] (dissoc r :source-facet-ids)) %)) sources)))
     (is (thrown? Exception (rr/project (-> manifest
@@ -313,7 +326,7 @@
                        :source-facets [(assoc first-facet :requirement-role :historical-superseded :supersession supersession) second-facet])
               (assoc-in [:requirements 0 :source-facet-ids] ["old" "current"])
               (assoc-in [:source-dispositions 0 :facet-ids] ["old" "current"])
-              (update :source-dispositions conj {:occurrence-id (:id authority) :kind :nonnormative
+              (update :source-dispositions conj {:occurrence-id (:id authority) :kind :nonnormative :review-state :reviewed
                                                 :rationale "Fixture governing policy, not another product requirement."}))
         reviewed (assoc-in m [:source-facets 0 :supersession :review-state] :reviewed)]
     (is (false? (:denominator-ready? (rr/project m sources))))
@@ -349,8 +362,8 @@
                               :source-facet-id "old" :source-fragment-sha256 (:raw-sha256 quota) :reason "Remove the old quota."}]
             [{:scope-version "v1" :scope-state :reviewed :scope-decisions [decision] :aliases []
               :requirements [{:id "u" :atomicity :reviewed :nonoverlap :reviewed :source-facet-ids ["old" "remaining"]}]
-              :source-dispositions [{:occurrence-id (:id o) :kind :requirement :requirement-ids ["u"] :facet-ids ["old" "remaining"]}
-                                    {:occurrence-id (:id authority) :kind :nonnormative :rationale "Governing policy."}]
+              :source-dispositions [{:occurrence-id (:id o) :kind :requirement :review-state :reviewed :requirement-ids ["u"] :facet-ids ["old" "remaining"]}
+                                    {:occurrence-id (:id authority) :kind :nonnormative :review-state :reviewed :rationale "Governing policy."}]
               :source-facets [(assoc quota :requirement-role :historical-superseded :supersession supersession) remaining]}
              {"X" text "policy" authority-text}]))]
     (doseq [[tail kind] [["\n" :layout] ["\n" nil] ["\n" :requirement]
@@ -393,7 +406,7 @@
     (let [[one one-sources] (complete-fixture)
           dispositions (for [o (rr/source-occurrences "platform-product" base)
                              :when (= :source-block (:structural-kind o))]
-                         {:occurrence-id (:id o) :kind :nonnormative :rationale "Fixture source context."})
+                         {:occurrence-id (:id o) :kind :nonnormative :review-state :reviewed :rationale "Fixture source context."})
           projected (-> (merge one m) (update :source-dispositions into dispositions))
           sources (assoc one-sources "platform-product" live)]
       (is (false? (:denominator-ready? (rr/project projected sources))))

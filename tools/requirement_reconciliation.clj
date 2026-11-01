@@ -139,7 +139,7 @@
     (let [unresolved (vec (for [o occurrences
                                :when (and (= :source-block (:structural-kind o))
                                           (or (nil? (get mapped (:id o)))
-                                              (= :proposed (:review-state (get mapped (:id o))))
+                                              (not= :reviewed (:review-state (get mapped (:id o))))
                                               (contains? (:unresolved-occurrence-ids facet-result) (:id o))
                                               (#{:scope-decision :unresolved} (:kind (get mapped (:id o))))))]
                            (:id o)))
@@ -158,7 +158,7 @@
        :source-facet-count (:facets facet-result)
        :historical-superseded-facet-count (:historical-superseded-facets facet-result)
        :acceptance-qualification-facet-count (:acceptance-qualified-facets facet-result)
-       :source-dispositions {:reviewed (count (remove #(= :proposed (:review-state %)) dispositions))
+       :source-dispositions {:reviewed (count (filter #(= :reviewed (:review-state %)) dispositions))
                              :proposed (count (filter #(= :proposed (:review-state %)) dispositions))}
        :unresolved-source-occurrences unresolved
        :proposed-requirement-ids ids :denominator-ready? (boolean ready?)
