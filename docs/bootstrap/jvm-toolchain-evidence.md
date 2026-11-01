@@ -53,3 +53,66 @@ guards are not exercised or changed.
 Initial base is c4ae7a51fc815be31cb9636567c6c83a2d051309, tree
 ef2dd8a2421439044aff2c1ed7c68a160f9059dd. Scope publication provides no
 implementation, acceptance or integration credit.
+
+## Implemented source and artifact evidence
+
+Eight bodies now live in gravity.backend.jvm. Eight compatibility wrappers
+retain their original names and arglists and pass ten late function/data Vars.
+The entire stage and both complete consumer files reconstruct from immutable
+base96f4a3a with only these moves, explicit ports and contract additions.
+All other Bootstrap/Gravity source, especially the private closure and input,
+manifest and provenance owners, remains unchanged by this slice.
+
+The native-source baseline is63b62e58c2deeb0559140093462f4a6a651dac99,
+tree67e17a26a17c1c4b3732aad5423f31ecbee55859. Both before processes
+terminate before implementation edits. After captures run the working
+extraction in the same physical checkout. Full EDN and original serialization
+match for both real source spellings, including source/plan/emitter, partial
+source map, actual tool versions, Java/class/JAR byte arrays, all five byte
+hashes, process output and four complete refusal records. Source and compiler
+plan identities and all emitted byte hashes recompute. Both source spellings
+produce plan sha256:e84fc441ab8e778d23056b3f42b24e45bacfab2fb10019bed9a56d30e77af1d6.
+
+The installed javac/java are26.0.1; unchanged --release21 flags produce major65
+classes. Repeated stored JAR bytes agree and real execution prints the expected
+24 bytes, including nil's existing empty output. A real vector source plan
+rejects C14-UNSUPPORTED; malformed Java rejects B5-TARGET with real javac stderr;
+altered class bytes reject B13-HASH; existing-file creation fails with the
+original FileAlreadyExistsException. An altered major is reported as64 by the
+header inspector; that helper does not itself confer class eligibility.
+These are internal output controls, not complete backend admission or
+canonical execution parity evidence.
+
+Scripts and complete captures are retained under
+/tmp/uniform-jvm-toolchain-{capture,verify,extract}.clj and
+/tmp/uniform-jvm-toolchain-evidence. Source reconstruction covers all three
+production files; repeated source captures after incorporating main44f0955
+still match the original complete records and serialization. That main update
+changes release/test infrastructure, not the moved source bodies.
+
+## Retained local nonpasses and review gates
+
+The initial twelve-body scope included four private helpers. Ordinary Bootstrap
+loading captures them in a closure and removes their Vars, so the first test
+harness could not reference the compilation helper. That harness is discarded;
+no private loader, admission route or source projection is used to obtain
+access. The slice is narrowed to eight public compatibility bodies. Two early
+harness read errors and a verifier comparison of distinct regex objects are
+retained as local nonpasses; the corrected verifier compares complete source
+reconstruction and printed forms.
+
+Initial contextual lint found the test's missing explicit clojure.java.io
+require. Adding that dependency yields zero warnings and zero blockers across
+four changed Clojure paths. A later concurrent capture exposed an invalid test
+assumption about all global temp files. The corrected cleanup test records only
+the stderr File actually passed to its own process read, then checks deletion
+on success and failure. Whole-body conservation separately preserves both
+original cleanup calls and the host watchdog. No production behavior changes
+are made for these test or evidence repairs.
+
+Focused and affected backend tests initially pass31/627; language/ownership
+pass47/1154. Cold loading the19-operation stage does not load Bootstrap.
+Canonical docs240/19, roadmap and governance185 validations pass. Final focused
+checks after the cleanup-test correction, independent acceptance, this PR's
+own CI/artifacts and an immediate exact clean current-main preflight remain
+required before integration. No historical CI or acceptance is transferred.

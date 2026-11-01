@@ -365,21 +365,29 @@
       (finally (remove-test-directory! directory)))))
 
 (deftest real-process-unavailable-tool-and-temporary-output-cleanup
-  (let [temporary (io/file (System/getProperty "java.io.tmpdir"))
-        outputs (fn [] (set (map #(.getName ^java.io.File %)
-                                 (filter #(re-matches #"gravity-jvm-(?:out|err)-.*" (.getName ^java.io.File %))
-                                         (.listFiles temporary)))))
-        before (outputs)
-        unavailable (observe-toolchain #(native "run-process!"
+  (let [unavailable (observe-toolchain #(native "run-process!"
                                          ["/gravity-test-no-such-tool"] "source.gravity"
-                                         "B5-TARGET" "test tool failed"))]
+                                         "B5-TARGET" "test tool failed"))
+        old-slurp slurp
+        observed-files (atom [])
+        observe-stderr (fn [file & args]
+                         (when (and (instance? java.io.File file)
+                                    (str/starts-with? (.getName ^java.io.File file) "gravity-jvm-err-"))
+                           (swap! observed-files conj file))
+                         (apply old-slurp file args))]
     (is (= "B5-TARGET" (get-in unavailable [:data :id])))
     (is (= :java21-target-toolchain (get-in unavailable [:data :missing-fact])))
-    (is (= before (outputs)))
+    (with-redefs [clojure.core/slurp observe-stderr]
+      (is (= 0 (:exit (native "run-process!" ["java" "-version"]
+                              "source.gravity" "B5-TARGET" "version probe failed")))))
+    (is (= 1 (count @observed-files)))
+    (is (every? #(not (.exists ^java.io.File %)) @observed-files))
     (let [failure (ex-info "original process failure" {:id :original-process})]
-      (with-redefs [bootstrap/jvm-backend-fail! (fn [& _] (throw failure))]
+      (with-redefs [bootstrap/jvm-backend-fail! (fn [& _] (throw failure))
+                    clojure.core/slurp observe-stderr]
         (is (identical? failure
                (try (native "run-process!" ["java" "--gravity-unknown-option"]
                             "source.gravity" "B5-TARGET" "test process refused")
                     nil (catch clojure.lang.ExceptionInfo ex ex)))))
-      (is (= before (outputs))))))
+      (is (= 2 (count @observed-files)))
+      (is (every? #(not (.exists ^java.io.File %)) @observed-files)))))
