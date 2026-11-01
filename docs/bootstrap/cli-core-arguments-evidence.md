@@ -6,23 +6,74 @@ D1/D2/D3/D8/D9, L1/L2/L3, C1/C6/C15, T1, BOOT1/BOOT8 and TEST2 govern
 this increment. The CLI owns argument normalization; Core and Reader owners
 retain source decoding, authentication, legality, identity and verification.
 
-Move the existing `sh07-public-core-cli-input` implementation from component
+The existing `sh07-public-core-cli-input` implementation moves from component
 00942 into `gravity.cli/sh07-core-input`. The public input is an argument
 sequence for the already selected `sh07-core` command. Output is the existing
 `[path options]` value. The helper selects no command, reads no source and
 grants no authority. Preserve exact argument acceptance, failure ex-data and
 message, the private compatibility wrapper, surrounding component and dispatch.
 
-## Evidence required
+## Development evidence and dependency
 
-Capture accepted argument outputs and complete SH07-CLI-ARGS refusals before
-the move. Use the documented public development-current-reader option with
-actual complete Gravity/QST source files to emit genuine Core artifacts, capture
-full results, source hashes and deterministic identities, and retain real
-refusal evidence. Preserve the default pinned route without executing a
-historically denied path. Run focused CLI/argument tests, proportionate current
-source composition, language/docs/roadmap/governance, contextual lint,
-independent exact-source review, own CI and clean current-main preflight.
+The clean initial scope at653298a393209ac2488726fe0ade6064def5f020 uses actual
+Tooling mainfd159988ab06ee0397505718e9bd96bbf8df8228. The original pure
+argument test passes1/9. Full CLI tests6/79 report two baseline failures:
+their expected help omits three build-help lines already present in main.
+Only that expected fixture text is corrected; emitted help/version bodies
+remain unchanged and their exact equality checks remain.
+
+The initial documented public current-reader source control fails C6-VERIFY /
+construction-dependency-drift before any CLI extraction edits. Its log is
+`/tmp/uniform-cli-core-arguments-before-control.log`; the full report is
+`/var/folders/3y/hpny2h8j4jn2qwyxxrzm3hb00000gn/T/clojure-6726046598742302627.edn`.
+Independent native tests identify the builder's local execution binding being
+mistaken for Var-root drift. Separate Core PR730 repairs that invariant without
+removing a guarded Var, changing a pin or supplying an authenticated packet.
+That failure carries no Core-emission credit.
+
+CLI development is stacked on exact reviewed Core candidate
+721b52892f2af28db4ef2ffc4e45b532d81ed4de, which includes actual Bootstrap
+literal main04de291fbed2bdda7070ecfba665d81207cd6d74. The conflict-free scope
+compositionf5b3b8cf1f3cc1c4801547ece49e9e76906034e0 is clean before the
+new control. This is a proposed source dependency, not an accepted main state.
+Final CLI integration requires Core730 on main and fresh current-main
+composition, review, own CI and clean integration preflight.
+
+The corrected before-control emits real Core artifacts from both complete
+`compiler-exact-keys.gravity` and `.qst` files through the existing private
+argument helper and public development-current-reader API. Each has25 nodes,
+one API target read, passed template/resolved verification and source hash
+`sha256:8e63ea9e37ab40a8e66975b3e58dc8eb5b9b74aa339d2625d5bd67070802758d`.
+The recomputed Core id is
+`sha256:16ec6d50a8514188f3010880f3022e88f7f1054fe4058a5caa6b74367ee98f0e`
+in both spellings, while actual extension/path provenance remains distinct.
+The complete current Core implementation binding is390 functions with source
+hash455f2d496e410ba8c5f4d17b2e4e558c6fb62306b614a6b9643107c8e1c82770;
+its generic-seed, development-unadmitted and incomplete boundaries remain.
+
+The after-control uses the unchanged private wrapper now delegating to the
+stage. Full argument/source artifact data and serialization, entire component,
+parser body/arity, and both unchanged presentation bodies must compare exactly.
+Positive/negative argv tests include empty-path compatibility and rejection of
+wrong/missing/duplicate flags before source IO. Source validation stays with
+Reader/Core. Neither default pinned execution nor a historical denied route
+is used to obtain evidence.
+
+Scripts are `/tmp/uniform-cli-core-arguments-control.clj` and
+`/tmp/uniform-cli-core-arguments-verify.clj`; corrected evidence uses
+`/tmp/uniform-cli-core-arguments-evidence/cli-{before,after}-*`. Logs use
+`/tmp/uniform-cli-core-arguments-*`. Focused/affected tests, language/docs/
+roadmap/governance, contextual lint and exact independent review remain
+integration obligations.
+
+On the reviewed dependency, CLI tests pass7/104 and focused public ingress
+units pass4/50; the pinned-constructor unit uses spies only, not a historical
+pinned execution. Language boundary6/11, docs240/19, roadmap and governance185
+pass. Corrected before/after controls compare three complete data/serialized
+pairs exactly. The whole component/dispatch, moved parser body/arity and both
+existing presentation bodies conserve against dependency721b5289. No default
+source route, exit code, output format, compiler operation or authority policy
+changes with this extraction.
 
 ## Unsupported boundaries
 
@@ -34,4 +85,4 @@ compiler semantics and process exit stay with their existing owners. The
 development reader choice renews no migration or release authority. No backend,
 full Core/CLI completion, self-hosting, release or seed-retirement claim follows.
 
-This scope record provides no implementation or integration credit.
+Namespace presence and development checks confer no integration credit.
