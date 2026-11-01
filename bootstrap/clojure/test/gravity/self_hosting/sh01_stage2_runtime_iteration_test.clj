@@ -21022,12 +21022,9 @@
                   "(def catalog 1) (def catalog 2)" "(def catalog 1) (defn catalog [x] x)"]]
       (is (= "BOOT2006" (:id (diagnostic #(bootstrap/p15-s23-stage2-compiler-artifact-plan
                                            emitter path (str "(ns example.literal (:profile :meta) (:target :jvm)) " body)))))))
-    (is (= :unsupported-literal-data
-           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literal! (nth (iterate vector :leaf) 66))) [:facts :reason])))
-    (is (= :unsupported-literal-data
-           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literal! (apply str (repeat 65537 "x")))) [:facts :reason])))
-    (is (= :literal-data-size-limit
-           (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literal! (vec (repeat 65537 nil)))) [:facts :reason])))
+    (doseq [value [(nth (iterate vector :leaf) 66)
+                   (apply str (repeat 65537 "x")) (vec (repeat 65537 nil))]]
+      (is (= value (bootstrap/p15-s23-stage2-module-literal! value))))
     (is (= :duplicate-module-definition
            (get-in (diagnostic #(bootstrap/p15-s23-stage2-module-literals '[(def value 1) (defn value [x] x)])) [:facts :reason])))
     (is (= "L2-DUPLICATE-FUNCTION"

@@ -308,6 +308,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/tooling/pipeline_test.clj", "namespace": "gravity.tooling.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "bootstrap-module-literals",
+      "kind": "production-stage-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/bootstrap/module_literals.clj", "namespace": "gravity.bootstrap.module-literals"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-source.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
+      "test": {"path": "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj", "namespace": "gravity.bootstrap.module-literals-test", "registration": "standalone"}
+    },
+    {
       "id": "safety-records",
       "kind": "production-stage-helper",
       "owner": "sh-safety",

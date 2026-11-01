@@ -281,3 +281,21 @@ new composition. Its Macro16/293 and Resolution54/2307 receipts, with inherited
 Current-source review, contextual lint, own CI and current-main integration
 preflight remain distinct gates. No semantic, authentication, full safety,
 migration, self-hosting, release or completion claim is added.
+
+## Bootstrap literal main composition
+
+The next normal composition uses actual Bootstrap literal main
+`04de291fbed2bdda7070ecfba665d81207cd6d74`, after Safety source
+`f8a360eec403c4d5c3918a10e58bb727efa662ab`. Three registration conflicts
+reconstruct five complete metadata files from main, appending the existing
+Safety association/test. The stage, both native components, tests and Var ports
+remain unchanged. Incoming literal helper, wrapper, tests, original quota
+regression and evidence are preserved exactly, as are Tooling's source repairs.
+
+Fresh coupled regressions including the literal helper pass 71/2838. Ownership
+inventory passes 38/1093 and language boundary6/11. The full 42-record controls,
+source hashes, identities, C10 outcomes and whole-component/require conservation
+remain the evidence boundary. Source admission, grants, performed safety checks,
+full safety and namespace completion remain unsupported. New-base review,
+contextual lint, own CI and exact integration preflight remain required; no
+prior-base green is transferred.

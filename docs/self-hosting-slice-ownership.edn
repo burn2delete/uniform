@@ -98,6 +98,10 @@
   {:namespace gravity.safety :owner :sh-safety :slice "SH-11"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj"
    :test-path "bootstrap/clojure/test/gravity/safety/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/bootstrap/module_literals.clj"
+  {:namespace gravity.bootstrap.module-literals :owner :master-coordinator :slice "SH-01"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-source.clj"
+   :test-path "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj"}
   "bootstrap/clojure/src/gravity/tooling.clj"
   {:namespace gravity.tooling :owner :master-coordinator :slice "SH-24"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/platform-phases/00349-p13-tooling-proof.clj"
@@ -189,6 +193,7 @@
 
  :module-owners
  {"bootstrap/clojure/src/gravity/safety.clj" :sh-safety
+  "bootstrap/clojure/src/gravity/bootstrap/module_literals.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/tooling.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/standard_library.clj" :sh-standard-library
   "bootstrap/clojure/src/gravity/ownership.clj" :sh-ownership
@@ -420,6 +425,8 @@
  :standalone-test-owners
  {"bootstrap/clojure/test/gravity/safety/pipeline_test.clj"
   {:namespace gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
+  "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj"
+  {:namespace gravity.bootstrap.module-literals-test :slice "SH-01" :owner :master-coordinator}
   "bootstrap/clojure/test/gravity/tooling/pipeline_test.clj"
   {:namespace gravity.tooling.pipeline-test :slice "SH-24" :owner :master-coordinator}
   "bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj"
