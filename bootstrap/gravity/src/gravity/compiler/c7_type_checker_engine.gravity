@@ -219,10 +219,7 @@
 (defn sh08-local-bounds-value []
   {:maximum-core-nodes 65536
    :maximum-node-children 1024
-   :maximum-carrier-nodes 1048576
-   :maximum-carrier-depth 128
-   :maximum-carrier-width 65536
-   :maximum-scalar-units 16777216})
+   :maximum-carrier-depth 128})
 
 (defn sh08-vector-contains? [values value]
   (loop [remaining values]
@@ -294,95 +291,8 @@
           false)))
     false))
 
-(defn sh08-aggregate? [value]
-  (if (map? value)
-    true
-    (if (vector? value)
-      true
-      (if (set? value)
-        true
-        (seq? value)))))
-
-(defn sh08-aggregate-width [value]
-  (if (map? value)
-    (* 2 (count value))
-    (count value)))
-
-(defn sh08-aggregate-components [value]
-  (if (map? value)
-    (loop [remaining (keys value) result []]
-      (if (= (count remaining) 0)
-        result
-        (recur
-         (rest remaining)
-         (conj
-          (conj result (first remaining))
-          (get value (first remaining))))))
-    (vec value)))
-
-(defn sh08-max [left right]
-  (if (> left right) left right))
-
 (defn sh08-carrier-preflight [value]
-  (let [maximum-nodes
-        (get (sh08-local-bounds-value) :maximum-carrier-nodes)
-        maximum-depth
-        (get (sh08-local-bounds-value) :maximum-carrier-depth)
-        maximum-width
-        (get (sh08-local-bounds-value) :maximum-carrier-width)
-        maximum-scalar-units
-        (get (sh08-local-bounds-value) :maximum-scalar-units)]
-    (loop [frontier [[value 0]]
-           nodes 0
-           scalar-units 0
-           observed-depth 0
-           observed-width 0]
-      (if (= (count frontier) 0)
-        {:status :accepted
-         :nodes nodes
-         :scalar-units scalar-units
-         :maximum-depth observed-depth
-         :maximum-width observed-width}
-        (let [entry (first frontier)
-              current (first entry)
-              depth (second entry)
-              next-nodes (+ nodes 1)]
-          (if (> next-nodes maximum-nodes)
-            {:status :rejected :reason :carrier-node-bound}
-            (if (> depth maximum-depth)
-              {:status :rejected :reason :carrier-depth-bound}
-              (if (sh08-aggregate? current)
-                (let [width (sh08-aggregate-width current)]
-                  (if (> width maximum-width)
-                    {:status :rejected :reason :carrier-width-bound}
-                    (let [components
-                          (sh08-aggregate-components current)
-                          next-frontier
-                          (loop [remaining components
-                                 result (rest frontier)]
-                            (if (= (count remaining) 0)
-                              result
-                              (recur
-                               (rest remaining)
-                               (conj
-                                result
-                                [(first remaining) (+ depth 1)]))))]
-                      (recur
-                       next-frontier
-                       next-nodes
-                       scalar-units
-                       (sh08-max observed-depth depth)
-                       (sh08-max observed-width width)))))
-                (let [next-scalar-units
-                      (+ scalar-units (count (vec (str current))))]
-                  (if (> next-scalar-units maximum-scalar-units)
-                    {:status :rejected :reason :carrier-scalar-bound}
-                    (recur
-                     (rest frontier)
-                     next-nodes
-                     next-scalar-units
-                     (sh08-max observed-depth depth)
-                     observed-width)))))))))))
+  (sh08-vf-original-data value))
 
 (defn sh08-origin-shape? [origin]
   (if (sh08-exact-keys?
@@ -26281,7 +26191,7 @@
       (if (= :accepted (get resolution :status))
         (let [checked (sh08-carrier-preflight (get resolution :core))
               input-check (if (= :accepted (get checked :status)) (sh08-im-inputs-check inputs)
-                            (sh08-im-failure "C7-VERIFY" :module-type-producer-core-bound checked))
+                            (sh08-im-failure "C7-VERIFY" :module-type-producer-core-invalid checked))
               producers (if (= :accepted (get input-check :status))
                           (sh08-im-producers-with-allowance (get inputs :module-requests) memo (assoc active id true)
                             (sh08-im-path request [:b47-context :authenticated-wrapper :sh06-resolution-artifact
@@ -26306,7 +26216,7 @@
   (let [result (get (sh08-im-derive-with-allowance request {} {} allowance) :result)]
     (if (if (= :accepted (get result :status)) (= :direct-imported-functions-types-only (get result :scope)) false)
       (if (= :accepted (get (sh08-carrier-preflight result) :status)) result
-        (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :imported-type-result-carrier-limit nil))) result)))
+        (sh08-im-rejected-result request (sh08-im-failure "C7-VERIFY" :imported-type-result-carrier-invalid nil))) result)))
 
 (defn sh08-function-type-core-artifact [request]
   (sh08-function-type-core-artifact-with-allowance request 65536))

@@ -1,0 +1,180 @@
+{:nonclaims
+ [:public-source-authentication
+  :whole-C7-accounting-removal
+  :runtime-support
+  :independent-acceptance
+  :release
+  :self-hosting
+  :PR502-closure],
+ :tests
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :genuine-execution :UNRUN,
+  :native-safety-complete-body-preserved-under-one-entrypoint-substitution
+  true,
+  :late-invalid-indexed-visitation
+  :index-zero-after-all-later-siblings,
+  :appended-tests
+  [{:name carrier-native-safety-development-kernel,
+    :form-sha256
+    "00cc5304bda896f2bc4e45589a88a99b4d0329e4534c2ee6ad80d2ab409e1507"}
+   {:name carrier-native-extents-development-kernel,
+    :form-sha256
+    "593b957e31773d60116150f10d9902ed206fc759cd8674c5cfabeede4aa5e788"}],
+  :base-sha256
+  "93155220901390db8102f99813fdc69c1c94360d852ba68602a13876dbe7bb09",
+  :positive-extents
+  {:depth 192,
+   :width 65537,
+   :occurrence-count 1049601,
+   :scalar-units 16777217},
+  :candidate-sha256
+  "c84aeec34fb2068373ccb465935b97bf5f61b5bfe7ffa4c2d1acf9786dad9ec9",
+  :all-other-existing-test-bytes-preserved true,
+  :existing-test-byte-transformations
+  [["(let [bounds (invoke-c7 'sh08-local-bounds-value [])\n        id"
+    "(let [id"]
+   ["(inc (:maximum-scalar-units bounds))" "16777217"]
+   ["(is (= :rejected (:status (invoke-c7 'sh08-carrier-preflight [supplied]))))"
+    "(is (= {:status :accepted} (invoke-c7 'sh08-carrier-preflight [supplied])))"]
+   ["(nth (iterate vector :leaf) 129)"
+    "(with-meta {:module {:namespace 'example.invalid} :nodes []} {:unexpected true})"]
+   [":module-type-producer-core-bound\n"
+    ":module-type-producer-core-invalid\n"]
+   [":carrier-depth-bound (get-in diagnostic"
+    ":verification-carrier-metadata (get-in diagnostic"]
+   ["#{:maximum-core-nodes :maximum-node-children :maximum-carrier-nodes\n           :maximum-carrier-depth :maximum-carrier-width :maximum-scalar-units}"
+    "#{:maximum-core-nodes :maximum-node-children :maximum-carrier-depth}"]]},
+ :coverage
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh07_c7_type_source_coverage_test.clj",
+  :base-sha256
+  "be9fe1c06ce9390acdbf36af2dfd3506cef76b5dc4a3c48303cf62d0ad838e78",
+  :candidate-sha256
+  "e640d724823fb30001b31baa7ffab0e591f7eccce10bdc9f9b780b8ed83790fa",
+  :only-change :four-retired-definition-name-removals},
+ :source
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :modified-definitions
+  [{:name sh08-carrier-preflight,
+    :base-form-sha256
+    "74fd9829a9a0c89abe71e0d42b33f137c05e6fd261be2d3ad275afe39d1d8aea",
+    :candidate-form-sha256
+    "853b93fa7e4a565cc697efed88879f5b545e37972d68ef4b576ea8781af6c502"}
+   {:name sh08-function-type-core-artifact-with-allowance,
+    :base-form-sha256
+    "5611719b80559bdec44afe55f2e771f03f80db176bd00039f6a312c0eaaae2a6",
+    :candidate-form-sha256
+    "19a2f8b289ce474d4dbe7690b852ed3cf1d42fea6d02b314e40cabc27f042b5f"}
+   {:name sh08-im-derive-with-allowance,
+    :base-form-sha256
+    "00646c30cf42a2d2d49231d0ee785c58257191576cd6b0ef952d1af57d6affe5",
+    :candidate-form-sha256
+    "7e8b169ed1fa918ab1fd848c93c8df8d018f52054976a39cb7a58f97713c48c4"}
+   {:name sh08-local-bounds-value,
+    :base-form-sha256
+    "65739d107deb2b7c42ce9d01254b6dc490dad2ca46d84c3f2a3cdfdb82624181",
+    :candidate-form-sha256
+    "6846042280af08e253ef33fd374902e78d3bb16843cac6f11a671d3d4b1e95a4"}],
+  :complete-direct-callers
+  [{:name sh08-function-type-core-artifact-with-allowance,
+    :candidate-form-sha256
+    "19a2f8b289ce474d4dbe7690b852ed3cf1d42fea6d02b314e40cabc27f042b5f",
+    :unchanged-except-listed-diagnostic true}
+   {:name sh08-im-derive-with-allowance,
+    :candidate-form-sha256
+    "7e8b169ed1fa918ab1fd848c93c8df8d018f52054976a39cb7a58f97713c48c4",
+    :unchanged-except-listed-diagnostic true}
+   {:name sh08-ma-derive,
+    :candidate-form-sha256
+    "8c1b761da744bbc46dcb137d16b5a94ed35ad86a59a6eb65ee3f02d0d25b3b13",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-mg-present-finite-derive,
+    :candidate-form-sha256
+    "f827850dc1a2b775fc82413a1184736dbfa76a8ee4a5583720f110750604cd5a",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-mr-derive,
+    :candidate-form-sha256
+    "96f4021eba32f31cd92cc6bf825408c306096950d44b05d41d9c3ece0823f727",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-pe-derive,
+    :candidate-form-sha256
+    "56a0fd96775d768ba27407f538a88e7bc73feae4560eb7c4c3be492d6a0860f5",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-sm-check,
+    :candidate-form-sha256
+    "523cb74b439c5d8932d5682998fcc1bcea3afc92e28fc1dd51524e4f270da0b4",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-sm-shape-with-bindings-base,
+    :candidate-form-sha256
+    "8090b1223988ec7a1e5c65eb02a6fc9e88a93ad0c040856298e899e21582503a",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-va-shape,
+    :candidate-form-sha256
+    "9b0c8895413987208ce514dae2bb8a453de6602e522895ebbf03cd944a3665e6",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-validate-core-shape,
+    :candidate-form-sha256
+    "1759000c261c482cdf68dddce107eadb83a67fb5f02070f04bf4e3e510bc31b7",
+    :unchanged-except-listed-diagnostic false}
+   {:name sh08-vn-project-close,
+    :candidate-form-sha256
+    "3eb40f258708ec41db9ad742b31444d028805ef88dc55765f03f5fcb775f67ba",
+    :unchanged-except-listed-diagnostic false}],
+  :removed-historical-absences
+  [sh08-aggregate-components
+   sh08-aggregate-width
+   sh08-aggregate?
+   sh08-max],
+  :removed-policy-fields
+  [:maximum-carrier-nodes
+   :maximum-carrier-width
+   :maximum-scalar-units],
+  :base-sha256
+  "71841553644b80a43d4425081539637eacc1dd931adf1029974b1576f466f433",
+  :historical-complete-preflight-form-sha256
+  "853b93fa7e4a565cc697efed88879f5b545e37972d68ef4b576ea8781af6c502",
+  :all-other-production-definitions-unchanged true,
+  :candidate-sha256
+  "45e135800dbec4bd98158328825e5d968e7da3c4fa7ba66f0bbd5e6e95f4ad8f",
+  :unchanged-native-dependencies
+  [{:name sh08-vf-data-failure,
+    :historical-base-and-candidate-form-sha256
+    "4f54864cf84791a8c4a1102699f88ae41ca406578c0eed6a935993bc41ef356a"}
+   {:name sh08-vf-ancestor?,
+    :historical-base-and-candidate-form-sha256
+    "fd4ebeda311495e19d97a39dbd8bd54d2226b32c7307d5f79f5cbe8fb8416c27"}
+   {:name sh08-vf-header-failure,
+    :historical-base-and-candidate-form-sha256
+    "c089f76ec82d68e3b88a9300b7344f75c88cff3c9fdc6eb386e5f5be5a0e8e70"}
+   {:name sh08-vf-original-expand-indexed,
+    :historical-base-and-candidate-form-sha256
+    "28e5a52473d995cd449f3bba4c783505f6ac579a7c554b01de7cfedc516cc37a"}
+   {:name sh08-vf-original-data,
+    :historical-base-and-candidate-form-sha256
+    "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241"}],
+  :retained-other-caller-policy-fields
+  [:maximum-core-nodes :maximum-node-children :maximum-carrier-depth]},
+ :kind :native-carrier-admission-source-successor,
+ :generator
+ {:language :clojure,
+  :sha256
+  "b92a013de99752eda0b5136014546367760b599724b1076b19c45c41c82ffc4d",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :source-checks :passed,
+  :genuine-acceptance :UNRUN},
+ :base "b786b464a67e33af2b75bfcf90a87619b71774c3",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :open-obligations
+ [:independent-source-and-result-acceptance
+  :genuine-native-header-and-callbacks
+  :actual-caller-and-authentication-composition
+  :remaining-structural-depth-policy
+  :other-core-and-inference-accounting
+  :fresh-main-composition
+  :integration]}

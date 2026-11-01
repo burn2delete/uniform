@@ -132,10 +132,6 @@
      sh08-bounded-vector?
      sh08-keyword-vector?
      sh08-sha-vector?
-     sh08-aggregate?
-     sh08-aggregate-width
-     sh08-aggregate-components
-     sh08-max
      sh08-carrier-preflight
      sh08-origin-shape?
      sh08-origin-vector?

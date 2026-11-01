@@ -388,8 +388,7 @@
 
 (deftest sh08-imported-module-validation-development-kernel
   ;; Invocation-local normalized memo DATA, not authenticated source admission.
-  (let [bounds (invoke-c7 'sh08-local-bounds-value [])
-        id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  (let [id "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         module-id "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
         c5 {:artifact-id module-id}
         request {:b47-context {:artifact-id id :authenticated-wrapper {:sh06-resolution-artifact c5}}}
@@ -409,12 +408,12 @@
            (:status (invoke-c7 'sh08-im-inputs-check
                       [{:artifact :gravity/sh08-module-type-inputs :schema-version 1
                         :module-requests (vec (repeat 1025 request))}]))))
-    (let [duplicated-proof (String. (char-array (inc (:maximum-scalar-units bounds)) \x))
+    (let [duplicated-proof (String. (char-array 16777217 \x))
           supplied {:artifact :gravity/sh08-module-type-inputs :schema-version 1
                     :module-requests [(assoc request :coordinator-verification {:raw-proof duplicated-proof})]}]
       ;; Container validation does not re-flatten proof bodies. This malformed
       ;; producer still rejects through the unchanged full authentication path.
-      (is (= :rejected (:status (invoke-c7 'sh08-carrier-preflight [supplied]))))
+      (is (= {:status :accepted} (invoke-c7 'sh08-carrier-preflight [supplied])))
       (is (= :accepted (:status (invoke-c7 'sh08-im-inputs-check [supplied]))))
       (is (= :rejected (get-in (invoke-c7 'sh08-im-producers [(:module-requests supplied) {} {} [c5]]) [:status]))))))
 
@@ -458,15 +457,15 @@
     (is (= [core] (second (first (filter #(= 'sh08-carrier-preflight (first %)) calls)))))
     (is (= (assoc (:active accepted) :current-module true) (nth producer-args 2)))
     (is (= 37 (last producer-args) (last inference-args))))
-  (doseq [resolution [{:status :accepted :core (nth (iterate vector :leaf) 129)}
+  (doseq [resolution [{:status :accepted :core (with-meta {:module {:namespace 'example.invalid} :nodes []} {:unexpected true})}
                       {:status :rejected :reason :normalized-authentication-rejection}]]
     (let [{:keys [result calls memo request]} (normalized-import-derive resolution)
           diagnostic (get-in result [:result :diagnostics 0])]
       (is (= :rejected (get-in result [:result :status])))
-      (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-bound
+      (is (= (if (= :accepted (:status resolution)) :module-type-producer-core-invalid
                  :normalized-authentication-rejection) (:reason diagnostic)))
       (when (= :accepted (:status resolution))
-        (is (= :carrier-depth-bound (get-in diagnostic [:actual-type :reason]))))
+        (is (= :verification-carrier-metadata (get-in diagnostic [:actual-type :reason]))))
       (is (= (if (= :accepted (:status resolution))
                (assoc memo :current-module {:request request :result (:result result)}) memo)
              (:memo result)))
@@ -20624,8 +20623,7 @@
 
 (deftest sh08-core-shape-field-extents-development-kernel
   ;; Actual Gravity shape helpers on normalized DATA, not source admission.
-  (is (= #{:maximum-core-nodes :maximum-node-children :maximum-carrier-nodes
-           :maximum-carrier-depth :maximum-carrier-width :maximum-scalar-units}
+  (is (= #{:maximum-core-nodes :maximum-node-children :maximum-carrier-depth}
          (set (keys (invoke-c7 'sh08-local-bounds-value [])))))
   (doseq [[function arguments]
           [['sh08-module-shape? [(assoc core-shape-module :effects (vec (repeat 129 :io/write)))]]
@@ -23558,3 +23556,67 @@
                            (assoc-in produced [:identity-input :constraint-ledger] [])
                            (assoc produced :unknown-verifier-field true)]]
           (is (= :rejected (:status (invoke-c7 'sh08-verify-function-type-result [request candidate])))))))))
+
+(deftest carrier-native-safety-development-kernel
+  (let [data #(invoke-c7 'sh08-carrier-preflight [%])
+        original #(invoke-c7 'sh08-vf-original-data [%])
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "candidate hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "candidate equality")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "candidate rendering"))))
+        foreign (proxy [clojure.lang.APersistentMap] []
+                  (count [] (swap! callbacks conj :count) (throw (AssertionError. "candidate count")))
+                  (seq [] (swap! callbacks conj :seq) (throw (AssertionError. "candidate seq"))))
+        lazy-tail (lazy-seq (swap! callbacks conj :forced) (list :value))
+        invalid-symbol (clojure.lang.Symbol/intern nil nil)
+        odd-map (clojure.lang.PersistentArrayMap. (object-array [:odd]))
+        nil-map (clojure.lang.PersistentArrayMap. nil)
+        backing (object-array [:self nil])
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 cyclic)
+    (doseq [value [opaque foreign {:unused opaque} [opaque] (list opaque)
+                  (clojure.lang.Cons. :head lazy-tail)
+                  (with-meta [] {:unused opaque})
+                  invalid-symbol (list invalid-symbol)
+                  (clojure.lang.PersistentArrayMap. (object-array [invalid-symbol :value]))
+                  odd-map nil-map]]
+      (is (= :rejected (:status (data value))))
+      (is (= :rejected (:status (original value)))))
+    (is (= {:status :rejected :reason :verification-native-cycle} (data cyclic)))
+    (is (= {:status :rejected :reason :verification-native-cycle} (original cyclic)))
+    (doseq [[namespace name] [[nil ""] ["" ""] ["qualified" ""] [nil "valid"]]]
+      (is (= :accepted (:status (data (clojure.lang.Symbol/intern namespace name))))))
+    (is (empty? @callbacks))))
+
+(deftest carrier-native-extents-development-kernel
+  ;; Historical thresholds are regression inputs, not current admission policy.
+  (let [check #(invoke-c7 'sh08-carrier-preflight [%])
+        deep (reduce (fn [value _] [value]) :leaf (range 192))
+        wide (vec (repeat 65537 :member))
+        shared (vec (repeat 1024 :member))
+        many (vec (repeat 1024 shared))
+        scalar (String. (char-array 16777217 \x))
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "carrier hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "carrier equality")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "carrier rendering"))))]
+    (doseq [value [deep wide many scalar [shared shared]]]
+      (is (= {:status :accepted} (check value))))
+    ;; Indexed children are pushed in order and visited from the front: index 0
+    ;; is visited after every later sibling by the preserved native traversal.
+    (doseq [value [(reduce (fn [value _] [value]) opaque (range 192))
+                  (assoc wide 0 opaque)
+                  (assoc many 0 (assoc shared 0 opaque))
+                  [opaque scalar]]]
+      (is (= {:status :rejected :reason :verification-native-carrier} (check value))))
+    (is (= {:status :accepted} (check (sorted-map :key :value))))
+    (is (= {:status :rejected :reason :verification-ratio-denominator-zero}
+           (check (clojure.lang.Ratio. java.math.BigInteger/ONE java.math.BigInteger/ZERO))))
+    (doseq [value [(subvec [1 2] 0 1)
+                  (sorted-map-by (fn [& _]
+                                   (swap! callbacks conj :comparator)
+                                   (throw (AssertionError. "carrier comparator"))))]]
+      (is (= {:status :rejected :reason :verification-native-carrier} (check value))))
+    (is (empty? @callbacks))))
