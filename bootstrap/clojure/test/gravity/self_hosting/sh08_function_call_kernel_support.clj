@@ -5,6 +5,7 @@
   The SH-08 type kernels and the SH-09 body consumers use the same delayed C7
   plan, verification context, and source-linked development builders."
   (:require [clojure.java.io :as io]
+            [clojure.walk :as walk]
             [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]))
 
@@ -122,6 +123,26 @@
    {:engine :gravity-sh08-function-call-type-leaf
     :compiler-artifact-plan? true}
    @c7-plan function arguments))
+
+(defn cold-metadata-input
+  "Build the small cold-evidence DATA fixture without loading the SH-08 suite."
+  []
+  (let [record {:function-syntax-id :function :parameter-binding-ids []}
+        cut {:mode :entries :excluded-node-ids []}
+        core {:function-records [record] :calls [] :call-edges [] :nodes []
+              :lexical-bindings [] :definitions []}
+        input {:mode :entries :cut cut :source-argument-call-node-ids []
+               :source-preparation {:status :accepted}
+               :quoted-products {:status :accepted}
+               :inference {:status :converged}}
+        cold (invoke-c7 'sh08-is-cold-evidence [input])]
+    {:core core :facts {:imported-function-types []} :record record :bindings [] :forms []
+     :input input :cold cold :cut cut}))
+
+(defn cold-metadata-invalid-inputs
+  [input]
+  [(assoc input :quote-work-count 0) (assoc input :quote-work-count 1)
+   (assoc input :quote-work-count nil) (assoc input :unknown-field true)])
 
 (defn- sh08-verification-preimage
   [artifact report]
@@ -279,6 +300,100 @@
            :products {:calls (get-in input [:core :calls])
                       :call-edges (get-in input [:core :call-edges])
                       :module (:module input)})))
+
+(defn- private-self-throw-data
+  [data]
+  (require 'gravity.self-hosting.sh08-recursive-function-type-test)
+  (let [make-node (ns-resolve 'gravity.self-hosting.sh08-recursive-function-type-test 'node)
+        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
+        make (fn [id kind children attrs] (assoc (make-node id kind children attrs :helper-form) :source (source id)))
+        additions [(make :argument-condition :literal [] {:literal-kind :boolean :value true})
+                   (make :argument-payload :literal [] {:literal-kind :string :value "deep"})
+                   (make :argument-transfer :throw [:argument-payload] {})
+                   (make :argument-normal :reference [] {:symbol 'span :position :expression :binding-id :span-binding
+                                                          :binding-class :lexical :definition-syntax-id nil})
+                   (make :self-argument-if :if [:argument-condition :argument-transfer :argument-normal] {})]
+        core (-> (:core data)
+                 (update :function-records #(vector (first %)))
+                 (assoc-in [:module :exports] [])
+                 (assoc-in [:module :effects] [:error/throw])
+                 (update :nodes #(into additions %))
+                 (update :nodes #(mapv (fn [n]
+                                         (let [n (if (= :self-call (:node-id n))
+                                                   (assoc n :children [:self-op :self-argument-if]) n)
+                                               owner (get-in n [:evaluation :owner-function-syntax-id])
+                                               owner (when-not (contains? #{:caller-0 :caller-1} owner) owner)
+                                               children (:children n) kind (:core-form n)
+                                               ordered (cond (= kind :fn) [] (= kind :if) [(first children)] :else children)]
+                                           (assoc n :evaluation
+                                                  {:owner-function-syntax-id owner
+                                                   :kind (case kind :call :operator-then-arguments :if :condition-then-exclusive-branch :left-to-right)
+                                                   :order (mapv (fn [i id] {:index i :core-node-id id}) (range) ordered)}))) %))
+                 (update :calls #(mapv (fn [c] (if (= :self-call (:core-node-id c))
+                                                 (assoc c :argument-node-ids [:self-argument-if]
+                                                          :ordered-evaluation-node-ids [:self-op :self-argument-if]) c)) %))
+                 (update :call-edges #(mapv (fn [e] (if (= :self-call (:call-core-node-id e))
+                                                      (assoc e :argument-core-node-ids [:self-argument-if]
+                                                               :ordered-evaluation-node-ids [:self-op :self-argument-if])
+                                                      (assoc e :caller-function-syntax-id nil :caller-function-core-node-id nil))) %)))
+        forms (mapv #(if (= :self-call (:form-id %)) (assoc % :child-form-ids [:self-op :self-argument-if]) %) (:forms data))
+        forms (conj forms {:form-id :self-argument-if :syntax-id :self-argument-if :kind :list :parent-form-id :self-call
+                           :source-span nil :origin-chain [] :generated-origin nil
+                           :child-form-ids [:argument-condition :argument-transfer :argument-normal]})
+        ids (into {} (map-indexed (fn [i n] [(:node-id n) (sha (+ 30000 i))]) (:nodes core)))
+        renamed (walk/postwalk-replace ids (assoc data :core core :forms forms))]
+    (assoc renamed :node-id-map ids)))
+
+(defn private-self-value-kernel-data
+  "Build the shared private-self C7 fixture without loading SH-09 tests."
+  [kind]
+  (require 'gravity.self-hosting.sh08-recursive-function-type-test)
+  (let [ns 'gravity.self-hosting.sh08-recursive-function-type-test
+        invoke (ns-resolve ns 'invoke-c7)
+        indexed? (contains? #{:indexed :indexed-sha} kind)
+        data ((ns-resolve ns (if indexed? 'indexed-private-self-data
+                                (if (= kind :prior-three) 'private-self-three-parameter-false-base-data
+                                  (if (= kind :head) 'private-self-homogeneous-head-data 'private-self-string-proof-data)))))
+        data (if (= kind :throw) (private-self-throw-data data) data)
+        data (if (= kind :indexed-sha)
+               (let [ids (set (concat (map :node-id (get-in data [:core :nodes]))
+                                      (map :form-id (:forms data))
+                                      (map :binding-id (:bindings data))
+                                      (map :function-syntax-id (get-in data [:core :function-records]))))
+                     renamed (into {} (map-indexed (fn [i id] [id (sha (+ 51000 i))])
+                                                  (sort-by str (filter keyword? ids))))]
+                 (assoc (walk/postwalk-replace renamed data) :node-id-map renamed)) data)
+        {:keys [core bindings forms]} data
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        shape {:nodes (:nodes core) :analysis-core core :analysis-source-forms forms :analysis-imports {}}
+        proof (:recursive-proof (invoke 'sh08-ft-proof-results [shape (assoc core :node-table nodes) bindings (:module core)]))
+        skeletons (invoke 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
+        functions (invoke 'sh08-ft-complete-function-skeletons [skeletons proof {}])
+        function (get functions (:function-syntax-id proof))
+        working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise proof))
+        cold (invoke 'sh08-is-cold-infer [working core (first (:function-records core)) nodes bindings forms {}
+                                         :body (:parameter-types proof)])
+        return (:inferred-return-type proof)
+        completed-types (walk/postwalk-replace (get data :node-id-map {})
+                        (merge
+                         {:self-op function :entry-operator-0 function :entry-operator-1 function
+                          :self-call return :entry-0 return :entry-1 return :recursive-body return
+                          :helper-fn function :helper-def function}
+                         (when (= kind :head) {:head-else return})
+                         (when indexed? {:ix-inner return})))
+        types (merge (get-in cold [:inference :type-table]) completed-types)
+        ledger (invoke 'sh08-ft-recursive-constraint-ledger [proof])
+        call-facts (invoke 'sh08-ft-call-facts [(:calls core) (:call-edges core) nodes types functions (:module core)])
+        facts {:domain (if indexed? :gravity/sh08-indexed-private-self-value-typed-core-v1
+                           :gravity/sh08-private-self-value-typed-core-v1)
+               :recursive-proof (invoke 'sh08-ft-recursive-proof-input [proof])
+               :function-type-table (if indexed?
+                                      (invoke 'sh08-ft-function-facts [functions nodes (:module core)])
+                                      (vec (vals functions)))
+               :type-table types
+               :call-type-facts call-facts :constraint-ledger (into ledger (get-in cold [:inference :constraints]))}]
+    {:core core :facts facts :bindings (into {} (map (juxt :binding-id identity) bindings))
+     :forms forms :nodes nodes :proof proof :cold cold :invoke invoke :data data}))
 
 (defn nonnegative-integer-quotient-input [values]
   (let [base (integral-ordering-input 'quot (vec (repeat (count values) :gravity.type/integer)))

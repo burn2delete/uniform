@@ -18217,8 +18217,7 @@
                          row)) %))))
 
 (deftest sh08-private-return-witness-context-tamper-development-kernel
-  (require 'gravity.self-hosting.sh09-body-effect-test)
-  (let [data ((ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'private-self-value-kernel-data) :string)
+  (let [data (kernel-support/private-self-value-kernel-data :string)
         {:keys [core facts bindings forms]} data
         facts (assoc facts :scope :private-inferred-monomorphic-named-self-value)
         proof (:recursive-proof facts)
