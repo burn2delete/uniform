@@ -1,0 +1,153 @@
+{:before-sha256
+ "5d9baca24e019084f5f6bfc84f8e01eb03b82c650949d1365c40f8cfd9fa24fc",
+ :nonclaims
+ [:parent-623-acceptance
+  :historical-helper-equivalence
+  :current-main-extraction
+  :actual-lowering-runtime-acceptance
+  :whole-path-incorporation
+  :ACC01-closure
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:read-eval false,
+  :Bootstrap-loaded false,
+  :genuine-kernel :UNRUN,
+  :target-runtime :UNRUN},
+ :test-path
+ "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+ :historical-span-sha256
+ "2521c59d7fef6925212937df81caf2be55d8503c1deb27ddc54ef740e476af85",
+ :integration :UNRUN,
+ :dependency-boundary
+ :requires-unaccepted-PR623-width-removal-not-main-support,
+ :parent-pr 623,
+ :production
+ {:changed false,
+  :files
+  [{:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :file-sha256
+    "2bccc04debd00b13d4cc4fd472f3923440fac378c6f30503b24f289209b05774",
+    :definitions
+    [{:name sh08-lc-derive,
+      :arguments [core node call edge nodes bindings types forms],
+      :form-sha256
+      "a0e5d8fdc0a71e885329ad5da722ec1f58c41fb313bd28430477c19c9b643869",
+      :historical-form-sha256
+      "a0e5d8fdc0a71e885329ad5da722ec1f58c41fb313bd28430477c19c9b643869",
+      :historical-identical true}
+     {:name sh08-lc-source,
+      :arguments
+      [core node call edge nodes bindings types module validation],
+      :form-sha256
+      "730d6db2542cbc947207b6306c0a388f5fbe1ca0a7413f3a6d2d714619d1e665",
+      :historical-form-sha256
+      "07d5d63f136c1d9f72f6f03eb3299441690324cd85972f398bb672aa42cb7f68",
+      :historical-identical false}
+     {:name sh08-lc-validate-types,
+      :arguments [arguments],
+      :form-sha256
+      "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+      :historical-form-sha256
+      "b9c0d0a219e4985ec89ead54e0ea66aa861901dfd66b5089b5d0ddfa6110ea47",
+      :historical-identical false}]}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :file-sha256
+    "b1fbd10e61b2ed8e66e813be69ccbe7ad4808a4c62aa71d9fd0269ac03f95529",
+    :definitions
+    [{:name body-lc-source,
+      :arguments
+      [core node call edge nodes bindings types module validation],
+      :form-sha256
+      "c7393e2da58855a1574a4f66665902d0ef428e1ae3d0d22786dbe3a55feb67be",
+      :historical-form-sha256
+      "1695248dd1e24369946dda9922eb3fe4b72e97cbe8fa6dec74cf213ffbd2649b",
+      :historical-identical false}
+     {:name body-lc-validate-types,
+      :arguments [arguments],
+      :form-sha256
+      "1de453c6a8b8eae47502e5e1970735027c1580817524f392ebe3ea9906815247",
+      :historical-form-sha256 nil,
+      :historical-identical false}]}
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :file-sha256
+    "f12fd8cbcf91e35a2d9cf531875be228b809249630238c5c79bc5f7da145aeb4",
+    :definitions
+    [{:name p15-s23-lc-source,
+      :arguments
+      [core node call edge nodes bindings types module validation],
+      :form-sha256
+      "0be703c129e2569749db232b9459a00a0f3ae1f4992700531d6d3b19f6663b1d",
+      :historical-form-sha256
+      "e81a1d96198497c901b61890001d9edff5a2857ce2a608e9a6f05e23a6be1b56",
+      :historical-identical false}
+     {:name p15-s23-lc-validate-types,
+      :arguments [arguments],
+      :form-sha256
+      "6313c82c7b00955f0fd80296353c8a2a7bdd777a8454e72f97e543edbd81546d",
+      :historical-form-sha256 nil,
+      :historical-identical false}
+     {:name p15-s23-typed-compile-node,
+      :arguments [context id budget],
+      :form-sha256
+      "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+      :historical-form-sha256
+      "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+      :historical-identical true}]}]},
+ :fixture-inputs
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :file-sha256
+  "41d3a7b48aad61d75d5c7b64a34cc06ba5dfac30e175263301631fdeed31bfda",
+  :definitions
+  [{:name list-construction-input,
+    :form-sha256
+    "e2224dbdc285091d4cce0aed03f03df834e634c0cea253269ba0660d7bb8dd24"}
+   {:name list-construction-derived,
+    :form-sha256
+    "08bf2d2c72a10d09ebd8c1686da3fbed40fc990a27eed487ba389ef90497d468"}
+   {:name invoke-c7,
+    :form-sha256
+    "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17"}]},
+ :restored-controls
+ {:wide-positive 1025,
+  :runtime-value-identity :original-assertions,
+  :late-invalid-indices [0 1024],
+  :nested-Never :rejected,
+  :shape-schema-carrier-mutants :original-seven-cases,
+  :wide-homogeneous-and-Map-positives :original-two-cases},
+ :all-other-test-bytes :unchanged,
+ :independent-source-review :pending,
+ :kind :preserved-List-construction-lowering-controls,
+ :runtime-projection-helper
+ {:name typed-catch-runtime-projection,
+  :form-sha256
+  "0c2292648487068a702b48a8b2e18353bc3e6120c267429c871b4306f1c0c564",
+  :invoked false},
+ :test-name
+ current-gravity-list-construction-lowering-development-kernel,
+ :candidate-sha256
+ "d14bd4e3392c0147e9ef0eb60540b059d6cbab79558ad9d62c1bb5f3c305e7ce",
+ :generator
+ {:language :clojure,
+  :sha256
+  "81740878ac22435ff72c953dbae6c34d150311b3c9f15d27b7f9fa70fc915564",
+  :preserved-locally true},
+ :exact-raw-adaptations
+ [["(invoke 'p15-s23-lc-type-work [bad] 65536)"
+   "(invoke 'p15-s23-lc-validate-types [bad])"]
+  ["(invoke 'p15-s23-lc-type-work [type] 65536)"
+   "(invoke 'p15-s23-lc-validate-types [type])"]],
+ :all-current-assertions :preserved,
+ :base "c5e9fccdad293b34c290859cc3e4716870241dd6",
+ :all-historical-assertions
+ :preserved-with-two-explicit-API-adaptations,
+ :all-other-definitions :unchanged,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :adapted-span-sha256
+ "534baa7099ff76e4dbd6fdaa2de9a2a06476f9cd1a305dca935b29d6f4894f28",
+ :before-span-sha256
+ "c643697d88ede2e9175f625823e6af431b35623390840bb6b952c0edf75c8120"}
