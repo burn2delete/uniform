@@ -128,3 +128,29 @@ exactly the ten owned paths. Working before/after source observations remain
 distinct from final candidate-head CI. Independent exact acceptance, this
 implementation's own CI and exact clean current-main integration preflight
 remain required; predecessor checks grant no credit for this slice.
+
+## CI-base reconciliation after completed checks
+
+Both independent reviewers accept c2bbff55/tree4174c41a against a00101d2.
+Its own run41346807226 passes all nine enabled jobs; two experimental jobs
+skip. All nine artifact checksum manifests, command receipts and checkout
+identities verify. Tested merge81f667648d881a9fd8013dac79f2a50d64e8a764
+has parents a00101d2/c2bbff55 and tree4174c41a.
+
+The immediate integration preflight correctly refuses that tuple because main
+has advanced to24dbb23b5ce44639f7dd250fd6d87b8dbcad2d0a. Its original
+WORKTREE-CANDIDATE-BASE-MISMATCH record is retained. Before reconciliation,
+main advances again to dc7de7f9cf18961e5894caad0d7934b978ae9dfe, tree
+f5ddc331ea022fc44c1556e0eeb50b9287fe5eea. Those two commits change only
+CI static-tool installation and reuse parsed leaf dependencies within one
+selection; four CI files change, with no compiler, fixture, test or contract
+input changes in this slice.
+
+Normal merge7b1b8d1f53c8be4e77e58f8987552c1f18624b87, tree
+dbeee769cff9e0f176c33de8d60d0f02fc6404a2, preserves all ten owned files
+and all bootstrap/docs/contracts source byte for byte against c2bbff55.
+The PR returns to draft. Earlier source/product observations retain their
+actual contexts, and the old acceptance/CI remains bound to its original
+tuple. The new composition requires fresh exact review, its own enabled CI
+under the current tooling, verified artifacts and an exact clean current-main
+preflight. No merge, repeated credit or waived check follows from old results.
