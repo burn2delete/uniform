@@ -182,6 +182,51 @@
       (is (= 1 (count @in-opens)))
       (is (= (if (#{:write :output-close} stage) 1 0) (count @out-opens))))))
 
+(deftest interruption-is-restored-through-channel-and-admission-failures
+  (doseq [stage [:read :input-close :admission :wrapped-admission :write :output-close]]
+    (let [was-interrupted? (Thread/interrupted)]
+      (try
+        (let [{:keys [report observation]} (fixture)
+              interrupted (InterruptedException. (str "capture " stage))
+              primary (if (= stage :wrapped-admission)
+                        (java.io.IOException. "wrapped admission" interrupted) interrupted)
+              events (atom []) input-opens (atom []) output-opens (atom [])
+              input (channel (encoded report) (when (= stage :read) primary) nil
+                             (when (= stage :input-close) primary) events)
+              output (channel (byte-array 0) nil (when (= stage :write) primary)
+                              (when (= stage :output-close) primary) events)
+              opts (cond-> (options 1048576 1048576 (atom []))
+                     (#{:admission :wrapped-admission} stage)
+                     (assoc :admit-bytes! (fn [_] (throw primary))))
+              error (error-of #(parent/publish-capture! contract-bytes observation
+                                (directory input input-opens) "report.edn"
+                                (directory output output-opens) "capture.edn" opts))
+              ;; Observe the API boundary before test reporting performs IO.
+              restored? (.isInterrupted (Thread/currentThread))
+              _ (Thread/interrupted)]
+          (is (identical? primary error))
+          (is restored?)
+          (is (= 1 (count @input-opens)))
+          (is (= (if (#{:write :output-close} stage) 1 0) (count @output-opens))))
+        (finally
+          (Thread/interrupted)
+          (when was-interrupted? (.interrupt (Thread/currentThread))))))))
+
+(deftest fatal-close-failures-are-not-hidden-by-ordinary-read-errors
+  (doseq [fatal [(ThreadDeath.) (OutOfMemoryError. "synthetic close") (LinkageError. "synthetic close")]]
+    (let [{:keys [report observation]} (fixture)
+          primary (java.io.IOException. "ordinary read")
+          input-opens (atom []) output-opens (atom [])
+          input (channel (encoded report) primary nil fatal (atom []))
+          error (error-of #(parent/publish-capture! contract-bytes observation
+                            (directory input input-opens) "report.edn"
+                            (directory (channel (byte-array 0) nil nil nil (atom [])) output-opens)
+                            "capture.edn" (options 1048576 1048576 (atom []))))]
+      (is (identical? fatal error))
+      (is (= [primary] (vec (.getSuppressed ^Throwable error))))
+      (is (= 1 (count @input-opens)))
+      (is (empty? @output-opens)))))
+
 (deftest no-producer-Git-compiler-or-target-was-loaded
   (is (nil? (find-ns 'gravity.bootstrap)))
   (is (nil? (find-ns 'gravity.c2-artifact-identity-test))))

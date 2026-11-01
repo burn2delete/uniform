@@ -1725,7 +1725,10 @@ admission. Refused parent/report facts or input-close failure create no output.
 The output uses private CREATE_NEW/NOFOLLOW access without overwrite, deletion
 or retry. Write/close failure can leave failed partial or complete bytes; no
 atomic or durable publication is claimed. Caller directory handles remain
-caller-owned, and primary errors retain distinct close errors as suppressed.
+caller-owned. Ordinary primary errors retain distinct ordinary close errors
+as suppressed. Fatal close failures take precedence over ordinary primary
+errors and retain those primary errors as suppressed. Interruption from failure
+causes is restored after owned-channel close and before callback failure escapes.
 
 Compiler-free DATA/IO controls exercise the real IO/serializer path; their
 global-cleanup=true positive is explicitly synthetic and unadmitted. The

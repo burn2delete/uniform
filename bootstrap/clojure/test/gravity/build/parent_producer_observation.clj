@@ -80,17 +80,39 @@
                       (not (#{"." ".."} name)) (= name (str path))) :relative-name)
     path))
 
+(defn- restore-capture-interrupt! [error]
+  (loop [cause error]
+    (when cause
+      (if (instance? InterruptedException cause)
+        (.interrupt (Thread/currentThread))
+        (recur (.getCause ^Throwable cause))))))
+
+(defn- fatal-capture-cause [error]
+  (loop [cause error]
+    (cond
+      (nil? cause) nil
+      (or (instance? ThreadDeath cause) (instance? VirtualMachineError cause)
+          (instance? LinkageError cause)) cause
+      :else (recur (.getCause ^Throwable cause)))))
+
 (defn- use-capture-channel [channel operation]
   (let [outcome (try {:value (operation channel)} (catch Throwable error {:error error}))
         interrupted? (.isInterrupted (Thread/currentThread))
-        close-error (try (.close ^java.nio.channels.Channel channel) nil (catch Throwable error error))]
+        close-error (try (.close ^java.nio.channels.Channel channel) nil (catch Throwable error error))
+        primary (:error outcome)
+        fatal-close (fatal-capture-cause close-error)
+        error (if (and fatal-close (not (fatal-capture-cause primary)))
+                fatal-close (or primary close-error))
+        secondary (if (identical? error primary) close-error primary)]
     (when interrupted? (.interrupt (Thread/currentThread)))
-    (if-let [primary (:error outcome)]
-      (do (when (and close-error (not (identical? primary close-error))
-                     (not-any? #(identical? close-error %) (.getSuppressed ^Throwable primary)))
-            (.addSuppressed ^Throwable primary close-error))
-          (throw primary))
-      (do (when close-error (throw close-error)) (:value outcome)))))
+    (restore-capture-interrupt! primary)
+    (restore-capture-interrupt! close-error)
+    (when error
+      (when (and secondary (not (identical? error secondary))
+                 (not-any? #(identical? secondary %) (.getSuppressed ^Throwable error)))
+        (.addSuppressed ^Throwable error secondary))
+      (throw error))
+    (:value outcome)))
 
 (defn publish-capture!
   "Connect ONLY the existing C2 report to serialize-capture and new output.
@@ -106,6 +128,7 @@
   atomic/durable publication claim. Even a successful write admits no capture
   or cache use. Nil global cleanup is still rejected by the existing serializer."
   [contract-bytes observation input-directory input-name output-directory output-name options]
+  (try
   (io-require! (and (instance? SecureDirectoryStream input-directory)
                     (instance? SecureDirectoryStream output-directory)) :directory-handles)
   (io-require! (= #{:input-limit-bytes :output-limit-bytes :admit-bytes!} (set (keys options))) :options)
@@ -147,4 +170,7 @@
          (let [buffer (ByteBuffer/wrap bytes)]
            (while (.hasRemaining buffer) (.write ^java.nio.channels.WritableByteChannel channel buffer)))))
       {:schema :gravity/rv2-contained-capture-publication-v1 :file (str output-name) :bytes (alength ^bytes bytes)
-       :real-evidence-accepted? false :cache-admission? false})))
+       :real-evidence-accepted? false :cache-admission? false}))
+    (catch Throwable error
+      (restore-capture-interrupt! error)
+      (throw error))))
