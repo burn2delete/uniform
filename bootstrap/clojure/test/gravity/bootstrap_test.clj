@@ -44403,9 +44403,12 @@
                       {:kind :gravity/p18-t06-final-release-executable-artifact
                        :task "P18-T06"
                        :status :complete
+                       :source-path fixture
                        :executable-path output-path
                        :release-binary-path
                        bootstrap/p18-t06-release-binary-path
+                       :release-proof-record
+                       bootstrap/p18-t06-final-proof-path
                        :clojure-seed-boundary? false
                        :reproducible-release? true
                        :signed-release? true
@@ -44420,7 +44423,12 @@
                    :compile-result {:exit 0
                                     :out (pr-str compile-artifact)
                                     :err ""}
-                   :compile-artifact compile-artifact
+                   :compile-artifact
+                   (select-keys compile-artifact
+                                [:kind :task :status :executable-path
+                                 :release-binary-path :clojure-seed-boundary?
+                                 :reproducible-release? :signed-release?
+                                 :governance-approved?])
                    :executable-result {:exit 0
                                        :out expected-stdout
                                        :err ""}
@@ -44519,6 +44527,45 @@
                (assoc-in complete-proof
                          [:accepted-command-proofs 0 :matches-expected?]
                          false))
+              recomputed-failed-status
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:accepted-command-proofs 0 :status]
+                         :failed))
+              evil-command-artifact
+              (assoc
+               (edn/read-string
+                (get-in complete-proof
+                        [:accepted-command-proofs 0
+                         :compile-result :out]))
+               :kind :gravity/evil-command-artifact
+               :task "P18-T99"
+               :status :failed
+               :source-path "evil.gravity"
+               :executable-path "evil/output"
+               :release-binary-path "evil/release"
+               :release-proof-record "evil-proof.edn")
+              evil-command-artifact-record
+              (select-keys
+               evil-command-artifact
+               [:kind :task :status :executable-path
+                :release-binary-path :clojure-seed-boundary?
+                :reproducible-release? :signed-release?
+                :governance-approved?])
+              recomputed-evil-command-artifact
+              (recomputed-proof
+               (assoc-in
+                (assoc-in
+                 (assoc-in complete-proof
+                           [:accepted-command-proofs 0
+                            :compile-artifact]
+                           evil-command-artifact-record)
+                 [:accepted-command-proofs 0
+                  :compile-result :out]
+                 (pr-str evil-command-artifact))
+                [:accepted-command-proofs 0
+                 :inspect-result :out]
+                (pr-str evil-command-artifact)))
               recomputed-nested-result-failures
               (mapv
                (fn [[label path value]]
@@ -44551,8 +44598,12 @@
                  recomputed-empty-coverage]
                 [:recomputed-failed-command
                  recomputed-failed-command]
+                [:recomputed-failed-status
+                 recomputed-failed-status]
                 [:recomputed-failed-rejected
                  recomputed-failed-rejected]
+                [:recomputed-evil-command-artifact
+                 recomputed-evil-command-artifact]
                 [:wrong-kind
                  (rehash (assoc complete-proof
                                 :kind :gravity/not-final-release-proof))]

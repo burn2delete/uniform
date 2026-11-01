@@ -74,6 +74,20 @@
        (string? (:out result))
        (string? (:err result))))
 
+(defn- p18-t06-final-release-executable-artifact?
+  [artifact fixture output-path]
+  (and (map? artifact)
+       (= :gravity/p18-t06-final-release-executable-artifact
+          (:kind artifact))
+       (= "P18-T06" (:task artifact))
+       (= :complete (:status artifact))
+       (= (:fixture fixture) (:source-path artifact))
+       (= output-path (:executable-path artifact))
+       (= p18-t06-release-binary-path
+          (:release-binary-path artifact))
+       (= (str p18-t06-artifact-dir "/p18-t06-final-release-proof.edn")
+          (:release-proof-record artifact))))
+
 (defn p18-t06-accepted-command-proof-valid?
   [record]
   (try
@@ -94,13 +108,15 @@
            :reproducible-release? :signed-release?
            :governance-approved?]
           artifact-inspection-final-release?
-          (and (map? inspected-artifact)
+          (and (p18-t06-final-release-executable-artifact?
+                inspected-artifact fixture (:output-path fixture))
                (false? (:clojure-seed-boundary? inspected-artifact))
                (true? (:reproducible-release? inspected-artifact))
                (true? (:signed-release? inspected-artifact))
                (true? (:governance-approved? inspected-artifact)))
           matches-expected?
           (and (map? fixture)
+               (= :accepted (:status record))
                (= expected-stdout (:expected-stdout record))
                (= (:output-path fixture) (:output-path record))
                (= (:module fixture) (:expected-module record))
@@ -111,6 +127,8 @@
                (= expected-stdout (:out executable-result))
                (= (select-keys compile-artifact compile-artifact-keys)
                   recorded-compile-artifact)
+               (p18-t06-final-release-executable-artifact?
+                compile-artifact fixture (:output-path fixture))
                artifact-inspection-final-release?
                (true? (:executable? record))
                (str/includes? (:out version-result)
