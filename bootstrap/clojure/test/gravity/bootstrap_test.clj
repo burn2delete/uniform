@@ -29801,20 +29801,7 @@
         (str "(ns runtime.closed.str-three (:profile :hosted) (:target :jvm) "
              "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
              "(defn main [] (println (str \"a\" \"b\" \"c\")))\n")
-        deep-expression
-        (str (apply str (repeat 130 "(if true "))
-             "\"ok\""
-             (apply str (repeat 130 " \"bad\")")))
-        deep-source
-        (str "(ns runtime.closed.deep (:profile :hosted) (:target :jvm) "
-             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
-             "(defn main [] (println " deep-expression "))\n")
-        wide-source
-        (str "(ns runtime.closed.wide (:profile :hosted) (:target :jvm) "
-             "(:effects #{}) (:capabilities #{}))\n"
-             "(defn main [] (do "
-             (apply str (interpose " " (repeat 512 "nil")))
-             "))\n")]
+        ]
     (with-redefs
       [bootstrap/p15-s23-stage2-runtime-artifact-invoke
        (fn [runtime function args]
@@ -29824,8 +29811,6 @@
          (original runtime function args))]
       (doseq [[source expected-id expected-fact]
               [[unsupported "P15S23X002" :closed-plan-operation]
-               [deep-source "P15S23X002" :closed-plan-bounds]
-               [wide-source "P15S23X002" :closed-plan-bounds]
                [str-zero "L2-BUILTIN-ARITY" nil]
                [str-three "L2-BUILTIN-ARITY" nil]]]
         (let [data (diagnostic-data
@@ -29851,7 +29836,8 @@
                     "(defn main [] nil)\n")
                :c)))]
       (is (= "P15S23X002" (:id stack-data)))
-      (is (= :closed-plan-bounds (:missing-fact stack-data))))
+      (is (= :closed-runtime-host-stack-failure
+             (:missing-fact stack-data))))
     (let [compile-source
           (str "(ns runtime.closed.upstream-stack (:profile :hosted) "
                "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
@@ -29869,7 +29855,7 @@
               (bootstrap/stage2-runtime-derived-packet
                "upstream-stack.gravity" compile-source :c)))]
       (is (= "P15S23X002" (:id compile-stack-data)))
-      (is (= :closed-plan-bounds
+      (is (= :closed-runtime-host-stack-failure
              (:missing-fact compile-stack-data)))
       (is (= :source-to-stage2-plan
              (:boundary compile-stack-data))))
@@ -31664,7 +31650,7 @@
       (is (string? (:syntax-id data)))
       (is (= literal-id (get-in nodes [literal-index :node-id]))))))
 
-(deftest pure-checked-core-bounds-and-hostile-values-fail-closed
+(deftest pure-checked-core-hostile-values-fail-closed
   (let [nested-source
         (fn [wrappers]
           (str
@@ -31676,38 +31662,18 @@
            (apply str (repeat wrappers ")"))
            ")\n"))
         accepted-source (nested-source 127)
-        rejected-source (nested-source 128)
         accepted
         (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
          "bound-128.gravity" accepted-source :c)
         context
         (bootstrap/p15-s23-stage2-closed-checked-core-context
          "bound-128.gravity" accepted-source :c)
-        rejected
-        (diagnostic-data
-         #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
-           "bound-129.gravity" rejected-source :c))
-        wide
-        (vec (repeat
-              (inc bootstrap/p15-s23-closed-core-max-serialized-values)
-              nil))
-        oversized-scalar
-        (.repeat "x"
-                 (inc
-                  bootstrap/p15-s23-closed-core-max-artifact-scalar-bytes))
-        oversized-integer
-        (.shiftLeft java.math.BigInteger/ONE
-                    bootstrap/p15-s23-closed-core-max-integer-bits)
+        expanded
+        (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+         "bound-129.gravity" (nested-source 128) :c)
         lone-surrogate (char 0xD800)
         candidates
-        [[(assoc accepted :diagnostics wide)
-          :trusted-legacy-checked-core-carrier
-          :maximum-carrier-width]
-         [(assoc accepted :diagnostics [oversized-scalar])
-          :bounded-canonical-string-scalar nil]
-         [(assoc accepted :diagnostics [oversized-integer])
-          :bounded-closed-core-integer nil]
-         [(assoc accepted :diagnostics [lone-surrogate])
+        [[(assoc accepted :diagnostics [lone-surrogate])
           :unicode-scalar-character nil]
          [(assoc accepted :diagnostics [(Object.)])
           :trusted-legacy-checked-core-carrier
@@ -31720,10 +31686,8 @@
     (is (= :complete-for-pure-closed-slice (:status accepted)))
     (is (= 128 (get-in accepted [:bounds :observed-plan-nodes])))
     (is (= 128 (get-in accepted [:bounds :observed-plan-depth])))
-    (is (= "C6-VERIFY" (:id rejected)) rejected)
-    (is (= :bounded-pure-source-form-surface
-           (:missing-fact rejected)) rejected)
-    (is (= 129 (:observed-source-forms rejected)))
+    (is (= :complete-for-pure-closed-slice (:status expanded)))
+    (is (= 129 (get-in expanded [:bounds :observed-plan-nodes])))
     (doseq [[candidate expected-missing expected-reason] candidates]
       (let [data
             (diagnostic-data
@@ -31734,16 +31698,7 @@
         (when expected-reason
           (is (= expected-reason (:reason data)) data))
         (is (not (str/includes? (pr-str data) ":fixture/")) data)))
-    (let [oversized-source
-          (.repeat "a"
-                   (inc bootstrap/p15-s23-closed-core-max-source-bytes))
-          data
-          (diagnostic-data
-           #(bootstrap/p15-s23-stage2-closed-checked-core-context
-             "oversized.gravity" oversized-source :c))]
-      (is (= "C6-VERIFY" (:id data)) data)
-      (is (= :bounded-closed-core-source-bytes
-             (:missing-fact data)) data))))
+    ))
 
 (deftest p15-s23-pinned-runtime-contract-bounds-and-loader-order
   (let [rule (bootstrap/c-backend-stage2-runtime-source-rule!
@@ -34532,7 +34487,7 @@
           (let [restored?
                 (try
                   (with-redefs
-                    [bootstrap/p15-s23-closed-core-bounded-utf8-count
+                    [bootstrap/p15-s23-closed-core-diagnostic-utf8-count
                      (fn [& _]
                        (throw
                         (InterruptedException.

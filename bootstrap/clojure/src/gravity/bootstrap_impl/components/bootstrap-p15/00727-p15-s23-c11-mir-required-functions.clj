@@ -92,7 +92,7 @@
            (try
              (= :valid
                 (:status
-                 (p15-s23-closed-core-bounded-utf8-count
+                 (p15-s23-closed-core-diagnostic-utf8-count
                   source-path 4096)))
              (catch InterruptedException interrupted
                (.interrupt (Thread/currentThread))
