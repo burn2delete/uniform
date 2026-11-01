@@ -1,0 +1,2417 @@
+{:witnesses
+ [{:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "f72ac20497199a735c828f974e3bdaa74d46a7205f78735a4c39a1578c807f74",
+    :raw
+    "### accounting-beyond-limit-late-invalid\n\nTask: ACC-12\n\nSource requirement: policy/accounting/beyond-limit-and-late-invalid-evidence\n\nAcceptance: For each removed artificial condition, demonstrate ordinary valid inputs beyond its former limit and equally late/deep/wide invalid inputs through the genuine affected producer/consumer paths and required runtime composition. The valid case must succeed for its declared semantics and the late invalid case must reject for the retained semantic rule with stable diagnostics and source/extents. Direct helpers, normalized owner fixtures, flags or recorded counts prove only their named scope; missing source authentication or required composition remains open.\n\nNegative evidence: Reject closure based on only small/early fixtures, a helper substituted for the required consumer/runtime route, a skipped or held path counted as a pass, lost late-invalid checking, fabricated extents or unreported callback effects.\n\nOutputs: Exact input/source/owner and command/result receipts for beyond-limit acceptance and equally late semantic rejection, actual composition identity and explicit failed/skipped/held/unrun stages. This mapping does not launch those paths.\n\nDependencies: ACC-01 old-condition census, the applicable coherent owner removal, preserved semantic validation and permitted genuine producer/consumer/runtime evidence. Restricted acceptance paths stay open.\n",
+    :criterion-id "accounting-beyond-limit-late-invalid",
+    :marker "accounting-source-criteria",
+    :end-byte 12808,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 11393},
+   :affected-source-families ["accounting-removal"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/accounting/beyond-limit-and-late-invalid-evidence",
+     :original-record-sha256
+     "9f3b8d25da4b0862db20c257081980c22e4288bae35b805f866aed6d30bdd800",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history
+      [{:tested-runtime-sha256
+        "840c2ce49c42c0e200b5ea170d1f6b59d6c1ee7d4463a4fc7d718c380fd1e99f",
+        :finite-behavior
+        "Removed module-read traversal work allowances; beyond-old-limit valid and equally late invalid cases, complete child traversal and substitutions remain covered at the helper/normalized-plan boundary.",
+        :recorded-semantic-run
+        {:tests 10,
+         :assertions 123,
+         :failures 0,
+         :errors 0,
+         :scope
+         "Three helper tests, normalized module-plan execution selector and six language-boundary tests."},
+        :source-tree "8554ba879a6b7d562d459ca05dcbf643c8700a30",
+        :integration
+        {:pull-request 433,
+         :merge-commit "cfb499405450d479955fa70daa0f14dfa3233ee8",
+         :merge-tree "87c466ffda7cef690714c1d09b65ecded29bc9b8",
+         :merged true,
+         :merged-at "2026-10-26T21:00:15Z",
+         :source-pin-descends-from-merge true,
+         :live-read-url
+         "https://api.github.com/repos/burn2delete/uniform/pulls/433"},
+        :source
+        {:path "specs/accounting-removal/evidence.md",
+         :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+         :blob "bbfeb020d9b482fb234f000aa74c132213b57c6c",
+         :sha256
+         "da138836b60bde903cb8848927f4b48bbb86286862c8e0145e1e72a11ee40dfd",
+         :url
+         "https://github.com/burn2delete/uniform/blob/a1b991be499d50579a8b4366976c519ae8949224/specs/accounting-removal/evidence.md"},
+        :source-commit "a722ba820d5fd4c362296752857c3c3592185f83",
+        :original-candidate-receipt-sha256
+        "ba015e917c9a10d2c924998b50ffaa1d190cbedfedf2041c55844f5ee823562e",
+        :kind :finite-reviewed-integrated-historical-support,
+        :current-main-reconciliation
+        {:candidate "31f9e87bf716e621138dc62cb686122319fd5563",
+         :tree "37bd9b2b68962fedd59596586b6886b0c55cf335",
+         :tests 7,
+         :assertions 72,
+         :failures 0,
+         :errors 0,
+         :receipt-sha256
+         "da1520e70c11bf812666a84a003572185aadd2e00d6788b755eb566f5bdb1630"},
+        :limits
+        ["All ACC outcome checkboxes remain open at the pinned task ledger; this finite partial support must not be erased."
+         "Authenticated source, public runtime admission, C12, release and complete ACC09 remain unrun/open."
+         "The source evidence's integration-pending sentence is stale for this finite PR433 merge; do not misread it as absent integration or current complete accounting."
+         "Later PR444/module-census changes are outside the a1b source pin and are not credited by this proposal."]}],
+      :trace-gap
+      {:state :partial,
+       :reason
+       "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."}}},
+    :obligation
+    "Verify valid inputs beyond removed limits and equally late invalid inputs through genuine affected producer/consumer paths and required runtime composition.",
+    :source-facet-ids
+    ["facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :partial,
+     :reason
+     "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 27,
+     :raw-sha256
+     "18aec143fbb0ce3debad4c32e7779e0ae1697d8529da660812a7e41ae50273c4",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/8fde0351ed0b865c2bde8794"],
+     :id "facet/extension/46c00a2e061a20dfa058e7fa",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 1736,
+     :end-line 30,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1450}
+    {:start-line 31,
+     :raw-sha256
+     "222cfe5b9ecd4ae870b4b1aae3cb884b6394f20d260de1ef2c12326ae8dda230",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/bcb310e52e5a4082b79f94e7"],
+     :id "facet/extension/b3ac01d3101e1c2b8a365c21",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2028,
+     :end-line 34,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1736}
+    {:start-line 35,
+     :raw-sha256
+     "8be126858a7990eb4b923658736691f2d3e6998c27e9235ff5a75e397c37c10e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/dd1df3a0e2b4a5a4d4ff161f"],
+     :id "facet/extension/b4d7d896f4d58ee22ff69465",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2248,
+     :end-line 37,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2028}
+    {:start-line 38,
+     :raw-sha256
+     "6081bef5a349aa48538a89fe7d16f9d47eed3d722a0c06ad58df74f73a0f0542",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/ccc3d4a15887975447016c77"],
+     :id "facet/extension/340afdbab9ac40baeef00bf6",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2476,
+     :end-line 40,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2248}
+    {:start-line 41,
+     :raw-sha256
+     "b42610d837cc3168faac7e896e681e2943674cfcf1c0796a072904ab56210248",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/0b24d9c308037fa136e33b05"],
+     :id "facet/extension/661e99e543ebbb90426a5540",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2694,
+     :end-line 43,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2476}
+    {:start-line 45,
+     :raw-sha256
+     "0fb8e1583def9338db8adc1c4e9f3e140ecae331d028c3f22f71db0f6f21426d",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/99a82cdcc6f704017831cfa63bc6562b61c048f6d862aa2baf85a70f5e28512a",
+     :origin-facet-ids ["origin/extension/d1edac08e1570ae2f8bb83aa"],
+     :id "facet/extension/c0d50272ffb5be27ae236735",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2991,
+     :end-line 48,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 2695}],
+   :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :historical-obligation
+    "Verify valid inputs beyond removed limits and equally late invalid inputs through genuine affected producer/consumer paths and required runtime composition.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}
+  {:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "aed095b9bc0520ea04ce03d8cec9263d008c7aa28b2ad02af7ee0fd3d14d6af3",
+    :raw
+    "### accounting-closure-evidence\n\nTask: ACC-12\n\nSource requirement: policy/accounting/closure-evidence-record\n\nAcceptance: Before claiming accounting-removal completion, retain independently reviewed exact base/candidate/commit/tree and current-main integration evidence for the actual tested scope, with passed, failed and unrun stages, required owner acceptance, source/dependency invalidation and remaining host/semantic/restricted boundaries. All in-scope classifications and required removals must be resolved; a search count, helper result, draft PR, historical estimate or mapping witness cannot close the backlog. Accounting closure is not Gravity, release, self-hosting or seed-retirement completion.\n\nNegative evidence: Reject stale or mismatched source/tree, author self-acceptance, failed/unrun stages relabeled passing, unknown owners hidden from the census, a partial result promoted to whole closure, or an absent independent review/integration receipt.\n\nOutputs: Source-pinned closure bundle, independent review and exact integration receipts, per-stage result/limit inventory and explicit remaining-open list; preserve historical failed attempts and their original dates/commits.\n\nDependencies: Every other applicable ACC item's required evidence and existing coordinator integration authority; no unsupported runtime, source-authentication or release claim.\n",
+    :criterion-id "accounting-closure-evidence",
+    :marker "accounting-source-criteria",
+    :end-byte 14184,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 12809},
+   :affected-source-families ["accounting-removal"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/accounting/closure-evidence-record",
+     :original-record-sha256
+     "c870dc9e88bd30820fbdeda17e72ec6fc4e269670d4125e7970397ab171f878d",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history
+      [{:tested-runtime-sha256
+        "840c2ce49c42c0e200b5ea170d1f6b59d6c1ee7d4463a4fc7d718c380fd1e99f",
+        :finite-behavior
+        "Removed module-read traversal work allowances; beyond-old-limit valid and equally late invalid cases, complete child traversal and substitutions remain covered at the helper/normalized-plan boundary.",
+        :recorded-semantic-run
+        {:tests 10,
+         :assertions 123,
+         :failures 0,
+         :errors 0,
+         :scope
+         "Three helper tests, normalized module-plan execution selector and six language-boundary tests."},
+        :source-tree "8554ba879a6b7d562d459ca05dcbf643c8700a30",
+        :integration
+        {:pull-request 433,
+         :merge-commit "cfb499405450d479955fa70daa0f14dfa3233ee8",
+         :merge-tree "87c466ffda7cef690714c1d09b65ecded29bc9b8",
+         :merged true,
+         :merged-at "2026-10-26T21:00:15Z",
+         :source-pin-descends-from-merge true,
+         :live-read-url
+         "https://api.github.com/repos/burn2delete/uniform/pulls/433"},
+        :source
+        {:path "specs/accounting-removal/evidence.md",
+         :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+         :blob "bbfeb020d9b482fb234f000aa74c132213b57c6c",
+         :sha256
+         "da138836b60bde903cb8848927f4b48bbb86286862c8e0145e1e72a11ee40dfd",
+         :url
+         "https://github.com/burn2delete/uniform/blob/a1b991be499d50579a8b4366976c519ae8949224/specs/accounting-removal/evidence.md"},
+        :source-commit "a722ba820d5fd4c362296752857c3c3592185f83",
+        :original-candidate-receipt-sha256
+        "ba015e917c9a10d2c924998b50ffaa1d190cbedfedf2041c55844f5ee823562e",
+        :kind :finite-reviewed-integrated-historical-support,
+        :current-main-reconciliation
+        {:candidate "31f9e87bf716e621138dc62cb686122319fd5563",
+         :tree "37bd9b2b68962fedd59596586b6886b0c55cf335",
+         :tests 7,
+         :assertions 72,
+         :failures 0,
+         :errors 0,
+         :receipt-sha256
+         "da1520e70c11bf812666a84a003572185aadd2e00d6788b755eb566f5bdb1630"},
+        :limits
+        ["All ACC outcome checkboxes remain open at the pinned task ledger; this finite partial support must not be erased."
+         "Authenticated source, public runtime admission, C12, release and complete ACC09 remain unrun/open."
+         "The source evidence's integration-pending sentence is stale for this finite PR433 merge; do not misread it as absent integration or current complete accounting."
+         "Later PR444/module-census changes are outside the a1b source pin and are not credited by this proposal."]}],
+      :trace-gap
+      {:state :partial,
+       :reason
+       "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."}}},
+    :obligation
+    "Record independently reviewed exact commit/tree integration evidence, passed/failed/unrun stages and residual boundaries before claiming accounting-removal completion.",
+    :source-facet-ids
+    ["facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :partial,
+     :reason
+     "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/accounting/closure-evidence-record",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 27,
+     :raw-sha256
+     "18aec143fbb0ce3debad4c32e7779e0ae1697d8529da660812a7e41ae50273c4",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/8fde0351ed0b865c2bde8794"],
+     :id "facet/extension/46c00a2e061a20dfa058e7fa",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 1736,
+     :end-line 30,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1450}
+    {:start-line 31,
+     :raw-sha256
+     "222cfe5b9ecd4ae870b4b1aae3cb884b6394f20d260de1ef2c12326ae8dda230",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/bcb310e52e5a4082b79f94e7"],
+     :id "facet/extension/b3ac01d3101e1c2b8a365c21",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2028,
+     :end-line 34,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1736}
+    {:start-line 35,
+     :raw-sha256
+     "8be126858a7990eb4b923658736691f2d3e6998c27e9235ff5a75e397c37c10e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/dd1df3a0e2b4a5a4d4ff161f"],
+     :id "facet/extension/b4d7d896f4d58ee22ff69465",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2248,
+     :end-line 37,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2028}
+    {:start-line 38,
+     :raw-sha256
+     "6081bef5a349aa48538a89fe7d16f9d47eed3d722a0c06ad58df74f73a0f0542",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/ccc3d4a15887975447016c77"],
+     :id "facet/extension/340afdbab9ac40baeef00bf6",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2476,
+     :end-line 40,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2248}
+    {:start-line 41,
+     :raw-sha256
+     "b42610d837cc3168faac7e896e681e2943674cfcf1c0796a072904ab56210248",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/0b24d9c308037fa136e33b05"],
+     :id "facet/extension/661e99e543ebbb90426a5540",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2694,
+     :end-line 43,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2476}
+    {:start-line 45,
+     :raw-sha256
+     "0fb8e1583def9338db8adc1c4e9f3e140ecae331d028c3f22f71db0f6f21426d",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/99a82cdcc6f704017831cfa63bc6562b61c048f6d862aa2baf85a70f5e28512a",
+     :origin-facet-ids ["origin/extension/d1edac08e1570ae2f8bb83aa"],
+     :id "facet/extension/c0d50272ffb5be27ae236735",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2991,
+     :end-line 48,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 2695}],
+   :id "policy/accounting/closure-evidence-record",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :historical-obligation
+    "Record independently reviewed exact commit/tree integration evidence, passed/failed/unrun stages and residual boundaries before claiming accounting-removal completion.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/accounting/closure-evidence-record",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}
+  {:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "bb88eb29231485b242ef94e34f518cc9a8a035d0bc68534302491788741b3bd7",
+    :raw
+    "### accounting-host-external-boundaries\n\nTask: ACC-12\n\nSource requirement: policy/accounting/host-external-boundary-separation\n\nAcceptance: Distinguish removed compiler/project allowances from actual host broker, heap, process-watchdog, capture and platform restrictions and from external billing/account limits. Preserve those host/external restrictions while deleting artificial accounting; they neither justify keeping a compiler quota nor become a disguised replacement for one. This criterion does not authorize changing security, access, credentials, live runtime policy or a denied operation.\n\nNegative evidence: Reject a removal disposition that disables a host safeguard or billing/account rule, treats external spend as removed project accounting, or cites an unchanged host restriction as proof that a compiler allowance is semantic. Preserve denied, restricted and unknown operations as such; do not replay or route around them.\n\nOutputs: Source-bound classification and diff evidence separating compiler/project removal from unchanged host/external policy, including explicit held/unrun restrictions; no host probe is required to prepare this record.\n\nDependencies: Current AGENTS authority, actual host/external policy declarations and applicable owner removal evidence. Final closure requires evidence, not a fresh host-policy reassessment.\n",
+    :criterion-id "accounting-host-external-boundaries",
+    :marker "accounting-source-criteria",
+    :end-byte 11392,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 10036},
+   :affected-source-families
+   ["accounting-policy" "accounting-removal"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/accounting/host-external-boundary-separation",
+     :original-record-sha256
+     "0151a46b29497c168efbf9868b1d6d262ae4fb2c141b29393db9ccbdaa9b8e40",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :partial,
+       :reason
+       "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."}}},
+    :obligation
+    "Keep actual host broker/heap/watchdog/capture/platform controls and external billing/account limits distinct from removed compiler/project accounting.",
+    :source-facet-ids
+    ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/c0a50dab808dbc55acedbe6f"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :partial,
+     :reason
+     "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/accounting/host-external-boundary-separation",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 114,
+     :raw-sha256
+     "72cddb25023e70a6c4ac67bf835a2328d11853188909c277d582de926cc278f1",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/adc1867a821d7718b8a5afa596625eda4bbbda8d0ec17aaae9b12d46f412b682",
+     :origin-facet-ids ["origin/extension/bd2248f51764fe84344f6ac1"],
+     :id "facet/extension/f9d2b0829c7d71d90a00cbb5",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 6526,
+     :end-line 121,
+     :unit-ids
+     ["policy/accounting/host-external-boundary-separation"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 5947}
+    {:start-line 52,
+     :raw-sha256
+     "ac36fad1a0698223bc61d3ba115426a8d209e3b633453bd499d1ccae8bcf598e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/b7edac0017c5f05bc7a87b293a677d208a0ffebc5ece17234888fe9b475a6ac4",
+     :origin-facet-ids ["origin/extension/e9a7c17511e221414f62ba91"],
+     :id "facet/extension/c0a50dab808dbc55acedbe6f",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 3390,
+     :end-line 56,
+     :unit-ids ["policy/accounting/host-external-boundary-separation"],
+     :start-byte 3009}],
+   :id "policy/accounting/host-external-boundary-separation",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/c0a50dab808dbc55acedbe6f"],
+    :historical-obligation
+    "Keep actual host broker/heap/watchdog/capture/platform controls and external billing/account limits distinct from removed compiler/project accounting.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/accounting/host-external-boundary-separation",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}
+  {:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "5f69692ac3c358bc90e15e959f35626a8d9c03f63f27efe74f751598ddfbc3ce",
+    :raw
+    "### accounting-semantic-validation-preservation\n\nTask: ACC-12\n\nSource requirement: policy/accounting/preserve-semantic-validation\n\nAcceptance: For each removal preserve complete traversal and independently meaningful Unicode/UTF8, types, valid index/arity and map parity, target-format representability, profiles, effects, capabilities, authenticated inputs, native class and callback rules, metadata, source/callee identity and provenance, collisions, lifetime, refinement forgetting, identity/not-applicable behavior and tamper detection. Retained numeric conditions must name the concrete independent rule rather than a work allowance. Semantic checked-member/element extents must match actual complete traversal and retain independently effective tamper controls.\n\nNegative evidence: Reject late invalid or opaque members, malformed source/type/arity, callback/class violations, forged extents or provenance and coherent source/callee/result forgeries after accounting removal. Passing counts alone do not prove traversal; disabling or weakening these negatives cannot establish preservation.\n\nOutputs: Per-removal retained-rule matrix, actual positive/negative owner fixtures and checked-extent/source/tamper observations with exact provenance and unrun boundaries.\n\nDependencies: ACC-01 guard classifications, each affected owner and its normative semantic contracts; applicable ACC-02 through ACC-11 and ACC-13 evidence. Implementation acceptance is separate from this mapping.\n",
+    :criterion-id "accounting-semantic-validation-preservation",
+    :marker "accounting-source-criteria",
+    :end-byte 10035,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 8550},
+   :affected-source-families
+   ["accounting-policy" "accounting-removal"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/accounting/preserve-semantic-validation",
+     :original-record-sha256
+     "51453e93fec1715bef2f6edaa2655890420a19b1cfee9d5d033cc613af1475fa",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history
+      [{:tested-runtime-sha256
+        "840c2ce49c42c0e200b5ea170d1f6b59d6c1ee7d4463a4fc7d718c380fd1e99f",
+        :finite-behavior
+        "Removed module-read traversal work allowances; beyond-old-limit valid and equally late invalid cases, complete child traversal and substitutions remain covered at the helper/normalized-plan boundary.",
+        :recorded-semantic-run
+        {:tests 10,
+         :assertions 123,
+         :failures 0,
+         :errors 0,
+         :scope
+         "Three helper tests, normalized module-plan execution selector and six language-boundary tests."},
+        :source-tree "8554ba879a6b7d562d459ca05dcbf643c8700a30",
+        :integration
+        {:pull-request 433,
+         :merge-commit "cfb499405450d479955fa70daa0f14dfa3233ee8",
+         :merge-tree "87c466ffda7cef690714c1d09b65ecded29bc9b8",
+         :merged true,
+         :merged-at "2026-10-26T21:00:15Z",
+         :source-pin-descends-from-merge true,
+         :live-read-url
+         "https://api.github.com/repos/burn2delete/uniform/pulls/433"},
+        :source
+        {:path "specs/accounting-removal/evidence.md",
+         :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+         :blob "bbfeb020d9b482fb234f000aa74c132213b57c6c",
+         :sha256
+         "da138836b60bde903cb8848927f4b48bbb86286862c8e0145e1e72a11ee40dfd",
+         :url
+         "https://github.com/burn2delete/uniform/blob/a1b991be499d50579a8b4366976c519ae8949224/specs/accounting-removal/evidence.md"},
+        :source-commit "a722ba820d5fd4c362296752857c3c3592185f83",
+        :original-candidate-receipt-sha256
+        "ba015e917c9a10d2c924998b50ffaa1d190cbedfedf2041c55844f5ee823562e",
+        :kind :finite-reviewed-integrated-historical-support,
+        :current-main-reconciliation
+        {:candidate "31f9e87bf716e621138dc62cb686122319fd5563",
+         :tree "37bd9b2b68962fedd59596586b6886b0c55cf335",
+         :tests 7,
+         :assertions 72,
+         :failures 0,
+         :errors 0,
+         :receipt-sha256
+         "da1520e70c11bf812666a84a003572185aadd2e00d6788b755eb566f5bdb1630"},
+        :limits
+        ["All ACC outcome checkboxes remain open at the pinned task ledger; this finite partial support must not be erased."
+         "Authenticated source, public runtime admission, C12, release and complete ACC09 remain unrun/open."
+         "The source evidence's integration-pending sentence is stale for this finite PR433 merge; do not misread it as absent integration or current complete accounting."
+         "Later PR444/module-census changes are outside the a1b source pin and are not credited by this proposal."]}],
+      :trace-gap
+      {:state :partial,
+       :reason
+       "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."}}},
+    :obligation
+    "Retain independently meaningful Unicode, type/arity/index, target-format, effect/capability, authenticity, metadata, identity, class/callback, collision, lifetime and source/tamper validation while removing artificial accounting.",
+    :source-facet-ids
+    ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/39c2bfa75c064758d41df1a0"
+     "facet/extension/22370b2464bfef0cdba95864"
+     "facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :partial,
+     :reason
+     "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/accounting/preserve-semantic-validation",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 114,
+     :raw-sha256
+     "72cddb25023e70a6c4ac67bf835a2328d11853188909c277d582de926cc278f1",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/adc1867a821d7718b8a5afa596625eda4bbbda8d0ec17aaae9b12d46f412b682",
+     :origin-facet-ids ["origin/extension/bd2248f51764fe84344f6ac1"],
+     :id "facet/extension/f9d2b0829c7d71d90a00cbb5",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 6526,
+     :end-line 121,
+     :unit-ids
+     ["policy/accounting/host-external-boundary-separation"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 5947}
+    {:start-line 11,
+     :raw-sha256
+     "a7cf46d761523ed15b25a6ba440594aace18bd42ff92ca76fd5500264e0d486e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/7188320df7bda12d9206e76ad2650ec52cb2cc0ba5ac6bce24f6701b7717fac7",
+     :origin-facet-ids ["origin/extension/b6f3f9301ec50e3af6f032e0"],
+     :id "facet/extension/39c2bfa75c064758d41df1a0",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 809,
+     :end-line 15,
+     :unit-ids
+     ["policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 393}
+    {:start-line 17,
+     :raw-sha256
+     "8ac558485113670a395564b5cde842cb44c2f3d87867a9e1dca1b2f4f5b972b8",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/7983d30a6e75a4bcec56ed995b58c277b8406fb7866aa14a1de4fba6b146d4f9",
+     :origin-facet-ids ["origin/extension/337d5fa20a8efbfaa2d35d8c"],
+     :id "facet/extension/22370b2464bfef0cdba95864",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 1434,
+     :end-line 23,
+     :unit-ids
+     ["policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 810}
+    {:start-line 27,
+     :raw-sha256
+     "18aec143fbb0ce3debad4c32e7779e0ae1697d8529da660812a7e41ae50273c4",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/8fde0351ed0b865c2bde8794"],
+     :id "facet/extension/46c00a2e061a20dfa058e7fa",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 1736,
+     :end-line 30,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1450}
+    {:start-line 31,
+     :raw-sha256
+     "222cfe5b9ecd4ae870b4b1aae3cb884b6394f20d260de1ef2c12326ae8dda230",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/bcb310e52e5a4082b79f94e7"],
+     :id "facet/extension/b3ac01d3101e1c2b8a365c21",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2028,
+     :end-line 34,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1736}
+    {:start-line 35,
+     :raw-sha256
+     "8be126858a7990eb4b923658736691f2d3e6998c27e9235ff5a75e397c37c10e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/dd1df3a0e2b4a5a4d4ff161f"],
+     :id "facet/extension/b4d7d896f4d58ee22ff69465",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2248,
+     :end-line 37,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2028}
+    {:start-line 38,
+     :raw-sha256
+     "6081bef5a349aa48538a89fe7d16f9d47eed3d722a0c06ad58df74f73a0f0542",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/ccc3d4a15887975447016c77"],
+     :id "facet/extension/340afdbab9ac40baeef00bf6",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2476,
+     :end-line 40,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2248}
+    {:start-line 41,
+     :raw-sha256
+     "b42610d837cc3168faac7e896e681e2943674cfcf1c0796a072904ab56210248",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/0b24d9c308037fa136e33b05"],
+     :id "facet/extension/661e99e543ebbb90426a5540",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2694,
+     :end-line 43,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2476}
+    {:start-line 45,
+     :raw-sha256
+     "0fb8e1583def9338db8adc1c4e9f3e140ecae331d028c3f22f71db0f6f21426d",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/99a82cdcc6f704017831cfa63bc6562b61c048f6d862aa2baf85a70f5e28512a",
+     :origin-facet-ids ["origin/extension/d1edac08e1570ae2f8bb83aa"],
+     :id "facet/extension/c0d50272ffb5be27ae236735",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2991,
+     :end-line 48,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 2695}],
+   :id "policy/accounting/preserve-semantic-validation",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/39c2bfa75c064758d41df1a0"
+     "facet/extension/22370b2464bfef0cdba95864"
+     "facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :historical-obligation
+    "Retain independently meaningful Unicode, type/arity/index, target-format, effect/capability, authenticity, metadata, identity, class/callback, collision, lifetime and source/tamper validation while removing artificial accounting.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/accounting/preserve-semantic-validation",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}
+  {:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "1ba8042498535425892560a3bb05361159604ac15a298f333413b93bedcb670e",
+    :raw
+    "### accounting-artificial-refusal-removal\n\nTask: ACC-12\n\nSource requirement: policy/accounting/remove-artificial-refusals\n\nAcceptance: Close every ACC-01 in-scope artificial project/compiler cost, work-unit, debit, reservation, prospective capacity and accounting-only refusal coherently across its actual producer, consumer, schema, current contract and test owners. Include node, depth, width, scalar, byte, token and form quotas that only refuse otherwise valid input. Delete enforcing interfaces and budget-only tests; do not raise constants, return zero charges, retain unbounded sentinels, rename quotas or demand replacement accounting.\n\nNegative evidence: Reject closure with any live orphan cost field, caller debit, compatibility accounting path, budget-only test, quota-only refusal or operative accounting requirement, including one disguised by a new name or larger constant.\n\nOutputs: Reviewed exact-source removal dispositions and coherent owner diffs, removed-interface/contract/test census and positive/negative owner-path evidence; restricted or unverified owner paths remain open.\n\nDependencies: ACC-01 census and applicable ACC-02 through ACC-11 and ACC-13 owner results for final closure; existing writer releases and genuine incompatible interfaces. No cross-owner implementation is duplicated by this criterion.\n",
+    :criterion-id "accounting-artificial-refusal-removal",
+    :marker "accounting-source-criteria",
+    :end-byte 8549,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 7214},
+   :affected-source-families
+   ["accounting-policy" "accounting-removal"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/accounting/remove-artificial-refusals",
+     :original-record-sha256
+     "28f7192c025739ec89966aeb0de17402a0bda7de700f391e4ba601f5ad06420b",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history
+      [{:tested-runtime-sha256
+        "840c2ce49c42c0e200b5ea170d1f6b59d6c1ee7d4463a4fc7d718c380fd1e99f",
+        :finite-behavior
+        "Removed module-read traversal work allowances; beyond-old-limit valid and equally late invalid cases, complete child traversal and substitutions remain covered at the helper/normalized-plan boundary.",
+        :recorded-semantic-run
+        {:tests 10,
+         :assertions 123,
+         :failures 0,
+         :errors 0,
+         :scope
+         "Three helper tests, normalized module-plan execution selector and six language-boundary tests."},
+        :source-tree "8554ba879a6b7d562d459ca05dcbf643c8700a30",
+        :integration
+        {:pull-request 433,
+         :merge-commit "cfb499405450d479955fa70daa0f14dfa3233ee8",
+         :merge-tree "87c466ffda7cef690714c1d09b65ecded29bc9b8",
+         :merged true,
+         :merged-at "2026-10-26T21:00:15Z",
+         :source-pin-descends-from-merge true,
+         :live-read-url
+         "https://api.github.com/repos/burn2delete/uniform/pulls/433"},
+        :source
+        {:path "specs/accounting-removal/evidence.md",
+         :source-commit "a1b991be499d50579a8b4366976c519ae8949224",
+         :blob "bbfeb020d9b482fb234f000aa74c132213b57c6c",
+         :sha256
+         "da138836b60bde903cb8848927f4b48bbb86286862c8e0145e1e72a11ee40dfd",
+         :url
+         "https://github.com/burn2delete/uniform/blob/a1b991be499d50579a8b4366976c519ae8949224/specs/accounting-removal/evidence.md"},
+        :source-commit "a722ba820d5fd4c362296752857c3c3592185f83",
+        :original-candidate-receipt-sha256
+        "ba015e917c9a10d2c924998b50ffaa1d190cbedfedf2041c55844f5ee823562e",
+        :kind :finite-reviewed-integrated-historical-support,
+        :current-main-reconciliation
+        {:candidate "31f9e87bf716e621138dc62cb686122319fd5563",
+         :tree "37bd9b2b68962fedd59596586b6886b0c55cf335",
+         :tests 7,
+         :assertions 72,
+         :failures 0,
+         :errors 0,
+         :receipt-sha256
+         "da1520e70c11bf812666a84a003572185aadd2e00d6788b755eb566f5bdb1630"},
+        :limits
+        ["All ACC outcome checkboxes remain open at the pinned task ledger; this finite partial support must not be erased."
+         "Authenticated source, public runtime admission, C12, release and complete ACC09 remain unrun/open."
+         "The source evidence's integration-pending sentence is stale for this finite PR433 merge; do not misread it as absent integration or current complete accounting."
+         "Later PR444/module-census changes are outside the a1b source pin and are not credited by this proposal."]}],
+      :trace-gap
+      {:state :partial,
+       :reason
+       "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."}}},
+    :obligation
+    "Remove project work/cost/debit/reservation/capacity-only admission mechanisms coherently across actual producer, consumer, schema, contract and test owners.",
+    :source-facet-ids
+    ["facet/extension/81b347b50b389d47748ba512"
+     "facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/d52ee8ce3fed3c840458f3ae"
+     "facet/extension/39c2bfa75c064758d41df1a0"
+     "facet/extension/22370b2464bfef0cdba95864"
+     "facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :partial,
+     :reason
+     "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/accounting/remove-artificial-refusals",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 106,
+     :raw-sha256
+     "36c6c71cb03260aac1682d325e867158c6b7da7db79677c4b8e5ed9d36eba36b",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/a3db2c6c1e2b5a9879dfe959b75318d3aa4f97e84cd23f11b22fdcdf5de04ee7",
+     :origin-facet-ids ["origin/extension/e1c080c4a53afd75d01e582f"],
+     :id "facet/extension/81b347b50b389d47748ba512",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 5946,
+     :end-line 112,
+     :unit-ids
+     ["policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 5423}
+    {:start-line 114,
+     :raw-sha256
+     "72cddb25023e70a6c4ac67bf835a2328d11853188909c277d582de926cc278f1",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/adc1867a821d7718b8a5afa596625eda4bbbda8d0ec17aaae9b12d46f412b682",
+     :origin-facet-ids ["origin/extension/bd2248f51764fe84344f6ac1"],
+     :id "facet/extension/f9d2b0829c7d71d90a00cbb5",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 6526,
+     :end-line 121,
+     :unit-ids
+     ["policy/accounting/host-external-boundary-separation"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 5947}
+    {:start-line 123,
+     :raw-sha256
+     "3017c31fc367bb32132e168ec8a3bdd2268fdc1187756c3a69140e4f29ec38e7",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/a7c935729251edefb29d01cb899cefe10125564e9c3601d91fdf1fbd364bc3a2",
+     :origin-facet-ids ["origin/extension/9cc732409625f046a6ffe12d"],
+     :id "facet/extension/d52ee8ce3fed3c840458f3ae",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 6997,
+     :end-line 128,
+     :unit-ids
+     ["policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"
+      "policy/development/autonomy-and-conflict-coordination"],
+     :start-byte 6527}
+    {:start-line 11,
+     :raw-sha256
+     "a7cf46d761523ed15b25a6ba440594aace18bd42ff92ca76fd5500264e0d486e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/7188320df7bda12d9206e76ad2650ec52cb2cc0ba5ac6bce24f6701b7717fac7",
+     :origin-facet-ids ["origin/extension/b6f3f9301ec50e3af6f032e0"],
+     :id "facet/extension/39c2bfa75c064758d41df1a0",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 809,
+     :end-line 15,
+     :unit-ids
+     ["policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 393}
+    {:start-line 17,
+     :raw-sha256
+     "8ac558485113670a395564b5cde842cb44c2f3d87867a9e1dca1b2f4f5b972b8",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/7983d30a6e75a4bcec56ed995b58c277b8406fb7866aa14a1de4fba6b146d4f9",
+     :origin-facet-ids ["origin/extension/337d5fa20a8efbfaa2d35d8c"],
+     :id "facet/extension/22370b2464bfef0cdba95864",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 1434,
+     :end-line 23,
+     :unit-ids
+     ["policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 810}
+    {:start-line 27,
+     :raw-sha256
+     "18aec143fbb0ce3debad4c32e7779e0ae1697d8529da660812a7e41ae50273c4",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/8fde0351ed0b865c2bde8794"],
+     :id "facet/extension/46c00a2e061a20dfa058e7fa",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 1736,
+     :end-line 30,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1450}
+    {:start-line 31,
+     :raw-sha256
+     "222cfe5b9ecd4ae870b4b1aae3cb884b6394f20d260de1ef2c12326ae8dda230",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/bcb310e52e5a4082b79f94e7"],
+     :id "facet/extension/b3ac01d3101e1c2b8a365c21",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2028,
+     :end-line 34,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1736}
+    {:start-line 35,
+     :raw-sha256
+     "8be126858a7990eb4b923658736691f2d3e6998c27e9235ff5a75e397c37c10e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/dd1df3a0e2b4a5a4d4ff161f"],
+     :id "facet/extension/b4d7d896f4d58ee22ff69465",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2248,
+     :end-line 37,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2028}
+    {:start-line 38,
+     :raw-sha256
+     "6081bef5a349aa48538a89fe7d16f9d47eed3d722a0c06ad58df74f73a0f0542",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/ccc3d4a15887975447016c77"],
+     :id "facet/extension/340afdbab9ac40baeef00bf6",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2476,
+     :end-line 40,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2248}
+    {:start-line 41,
+     :raw-sha256
+     "b42610d837cc3168faac7e896e681e2943674cfcf1c0796a072904ab56210248",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/0b24d9c308037fa136e33b05"],
+     :id "facet/extension/661e99e543ebbb90426a5540",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2694,
+     :end-line 43,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2476}
+    {:start-line 45,
+     :raw-sha256
+     "0fb8e1583def9338db8adc1c4e9f3e140ecae331d028c3f22f71db0f6f21426d",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/99a82cdcc6f704017831cfa63bc6562b61c048f6d862aa2baf85a70f5e28512a",
+     :origin-facet-ids ["origin/extension/d1edac08e1570ae2f8bb83aa"],
+     :id "facet/extension/c0d50272ffb5be27ae236735",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2991,
+     :end-line 48,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"],
+     :start-byte 2695}],
+   :id "policy/accounting/remove-artificial-refusals",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/81b347b50b389d47748ba512"
+     "facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/d52ee8ce3fed3c840458f3ae"
+     "facet/extension/39c2bfa75c064758d41df1a0"
+     "facet/extension/22370b2464bfef0cdba95864"
+     "facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"
+     "facet/extension/c0d50272ffb5be27ae236735"],
+    :historical-obligation
+    "Remove project work/cost/debit/reservation/capacity-only admission mechanisms coherently across actual producer, consumer, schema, contract and test owners.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/accounting/remove-artificial-refusals",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}
+  {:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-01",
+    :raw-sha256
+    "0db784adf3ee6dc72170e85b26a6519e88e7390f5acfe42f770ced3e7d31bba3",
+    :raw
+    "### accounting-source-inventory\n\nTask: ACC-01\n\nSource requirement: policy/accounting/source-grounded-inventory\n\nAcceptance: Inventory every in-scope compiler, emitter, development-runtime, adapter, schema, test and operative contract producer/consumer, including transitive callsites and unnamed literal maxima. Pin source commit, path, raw condition and owner; give each guard a source-grounded remove, retain-semantic, retain-host/external or historical disposition. Record unclassified guards and unknown owners as open work. A search-hit list, zero telemetry or renamed allowance is insufficient.\n\nNegative evidence: Reject an inventory that omits a transitive consumer, unnamed ceiling, enforcing schema/test/contract or unresolved classification, or calls a work/cost allowance a semantic limit without identifying the actual independent rule.\n\nOutputs: Source-pinned producer/consumer/field/refusal/test/contract census, per-guard rationale and explicit unresolved-owner/classification list, independently reviewed against actual source.\n\nDependencies: Current AGENTS accounting-removal authority; actual owner source and call graph. No preparation-only or per-run permission gate for ordinary census work.\n",
+    :criterion-id "accounting-source-inventory",
+    :marker "accounting-source-criteria",
+    :end-byte 7213,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 5999},
+   :affected-source-families
+   ["accounting-policy" "accounting-removal"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/accounting/source-grounded-inventory",
+     :original-record-sha256
+     "6d529ad6c3067a0a84f8c987042f36dc57552090fb2259148c64257892bb3e98",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :partial,
+       :reason
+       "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."}}},
+    :obligation
+    "Inventory all in-scope accounting producers, consumers, fields, refusals, tests and contracts, including unnamed literal ceilings, with source-bound remove/retain/history dispositions and visible unresolved cases.",
+    :source-facet-ids
+    ["facet/extension/81b347b50b389d47748ba512"
+     "facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/d52ee8ce3fed3c840458f3ae"
+     "facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :partial,
+     :reason
+     "Exact ACC task views are open; merged module-read support is finite partial evidence, not whole accounting acceptance."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/accounting/source-grounded-inventory",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 106,
+     :raw-sha256
+     "36c6c71cb03260aac1682d325e867158c6b7da7db79677c4b8e5ed9d36eba36b",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/a3db2c6c1e2b5a9879dfe959b75318d3aa4f97e84cd23f11b22fdcdf5de04ee7",
+     :origin-facet-ids ["origin/extension/e1c080c4a53afd75d01e582f"],
+     :id "facet/extension/81b347b50b389d47748ba512",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 5946,
+     :end-line 112,
+     :unit-ids
+     ["policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 5423}
+    {:start-line 114,
+     :raw-sha256
+     "72cddb25023e70a6c4ac67bf835a2328d11853188909c277d582de926cc278f1",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/adc1867a821d7718b8a5afa596625eda4bbbda8d0ec17aaae9b12d46f412b682",
+     :origin-facet-ids ["origin/extension/bd2248f51764fe84344f6ac1"],
+     :id "facet/extension/f9d2b0829c7d71d90a00cbb5",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 6526,
+     :end-line 121,
+     :unit-ids
+     ["policy/accounting/host-external-boundary-separation"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 5947}
+    {:start-line 123,
+     :raw-sha256
+     "3017c31fc367bb32132e168ec8a3bdd2268fdc1187756c3a69140e4f29ec38e7",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/a7c935729251edefb29d01cb899cefe10125564e9c3601d91fdf1fbd364bc3a2",
+     :origin-facet-ids ["origin/extension/9cc732409625f046a6ffe12d"],
+     :id "facet/extension/d52ee8ce3fed3c840458f3ae",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 6997,
+     :end-line 128,
+     :unit-ids
+     ["policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"
+      "policy/development/autonomy-and-conflict-coordination"],
+     :start-byte 6527}
+    {:start-line 27,
+     :raw-sha256
+     "18aec143fbb0ce3debad4c32e7779e0ae1697d8529da660812a7e41ae50273c4",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/8fde0351ed0b865c2bde8794"],
+     :id "facet/extension/46c00a2e061a20dfa058e7fa",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 1736,
+     :end-line 30,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1450}
+    {:start-line 31,
+     :raw-sha256
+     "222cfe5b9ecd4ae870b4b1aae3cb884b6394f20d260de1ef2c12326ae8dda230",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/bcb310e52e5a4082b79f94e7"],
+     :id "facet/extension/b3ac01d3101e1c2b8a365c21",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2028,
+     :end-line 34,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 1736}
+    {:start-line 35,
+     :raw-sha256
+     "8be126858a7990eb4b923658736691f2d3e6998c27e9235ff5a75e397c37c10e",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/dd1df3a0e2b4a5a4d4ff161f"],
+     :id "facet/extension/b4d7d896f4d58ee22ff69465",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2248,
+     :end-line 37,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2028}
+    {:start-line 38,
+     :raw-sha256
+     "6081bef5a349aa48538a89fe7d16f9d47eed3d722a0c06ad58df74f73a0f0542",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/ccc3d4a15887975447016c77"],
+     :id "facet/extension/340afdbab9ac40baeef00bf6",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2476,
+     :end-line 40,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2248}
+    {:start-line 41,
+     :raw-sha256
+     "b42610d837cc3168faac7e896e681e2943674cfcf1c0796a072904ab56210248",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-removal/source/55fef789ba699365fc1a16c5517711024b066f0488a6091d364337c5eea72bbe",
+     :origin-facet-ids ["origin/extension/0b24d9c308037fa136e33b05"],
+     :id "facet/extension/661e99e543ebbb90426a5540",
+     :kind :requirement,
+     :document-id "accounting-removal",
+     :end-byte 2694,
+     :end-line 43,
+     :unit-ids
+     ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+      "policy/accounting/closure-evidence-record"
+      "policy/accounting/preserve-semantic-validation"
+      "policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"],
+     :start-byte 2476}],
+   :id "policy/accounting/source-grounded-inventory",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/81b347b50b389d47748ba512"
+     "facet/extension/f9d2b0829c7d71d90a00cbb5"
+     "facet/extension/d52ee8ce3fed3c840458f3ae"
+     "facet/extension/46c00a2e061a20dfa058e7fa"
+     "facet/extension/b3ac01d3101e1c2b8a365c21"
+     "facet/extension/b4d7d896f4d58ee22ff69465"
+     "facet/extension/340afdbab9ac40baeef00bf6"
+     "facet/extension/661e99e543ebbb90426a5540"],
+    :historical-obligation
+    "Inventory all in-scope accounting producers, consumers, fields, refusals, tests and contracts, including unnamed literal ceilings, with source-bound remove/retain/history dispositions and visible unresolved cases.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/accounting/source-grounded-inventory",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}
+  {:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "ad9f2ee1734a1eb50bfe2bb5ee8698f1b5c0425948b522b7ba6486d7c9540bd0",
+    :raw
+    "### development-autonomy-conflict-coordination\n\nTask: ACC-12\n\nSource requirement: policy/development/autonomy-and-conflict-coordination\n\nAcceptance: Operative accounting-related contracts, tooling and coordination must allow authorized ordinary development without task-count, failed-attempt allowance, preparation-only stage or discretionary per-run permission prerequisites. Managers continue independently within standing goals while coordinating actual conflicting writers and incompatible interfaces. Preserve the coordinator's independent acceptance/integration role and historical attempts; never retry, transfer or route around denied/restricted actions. Removal of a project quota does not grant new access or operation authority.\n\nNegative evidence: Reject policy/tool changes that reintroduce those ordinary-development quotas, impose migration/admission proofs before an ordinary edit or focused test, ignore a genuine writer/interface conflict, confer author acceptance, or use a different actor/endpoint to replay a denied action.\n\nOutputs: Exact operative policy/tool source review and focused allowed/refused coordination fixtures or source-bound decision records distinguishing ordinary development, real conflict and denied-action cases. Missing execution evidence is recorded, not invented.\n\nDependencies: Standing AGENTS decisions apply immediately; current writer/interface ownership and coordinator authority. This criterion has no dependency on completing ACC-12 before ordinary work proceeds.\n",
+    :criterion-id "development-autonomy-conflict-coordination",
+    :marker "accounting-source-criteria",
+    :end-byte 15702,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 14185},
+   :affected-source-families ["accounting-policy"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/development/autonomy-and-conflict-coordination",
+     :original-record-sha256
+     "3a5f56623b29c7739d170903943b2bdcd6392522d91894b8ab044dad15e2fbd3",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :policy-only,
+       :reason
+       "Standing process/policy constraint is preserved, not claimed as a newly implemented language feature."}}},
+    :obligation
+    "Continue authorized ordinary development without task-count/attempt/preparation/per-run permission prerequisites while coordinating actual writer/interface conflicts and preserving existing integration authority.",
+    :source-facet-ids
+    ["facet/extension/d52ee8ce3fed3c840458f3ae"
+     "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+     "facet/extension/f3636df6e157a3cd03c6759b"
+     "facet/extension/b4faf5c413baf7acccd9f9aa"
+     "facet/extension/74c658623c0e7fa71db70872"
+     "facet/extension/1e870cbdb8245c6676bf5e21"
+     "facet/extension/70b6be3c1c9b0901c38f7cf9"
+     "facet/extension/d3c54bd0a627a0423d27c564"
+     "facet/extension/93cf1f576b4b93ccd064759d"
+     "facet/extension/fb812dbb0759c68f99c0a956"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :policy-only,
+     :reason
+     "Standing process/policy constraint is preserved, not claimed as a newly implemented language feature."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/development/autonomy-and-conflict-coordination",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 123,
+     :raw-sha256
+     "3017c31fc367bb32132e168ec8a3bdd2268fdc1187756c3a69140e4f29ec38e7",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/a7c935729251edefb29d01cb899cefe10125564e9c3601d91fdf1fbd364bc3a2",
+     :origin-facet-ids ["origin/extension/9cc732409625f046a6ffe12d"],
+     :id "facet/extension/d52ee8ce3fed3c840458f3ae",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 6997,
+     :end-line 128,
+     :unit-ids
+     ["policy/accounting/remove-artificial-refusals"
+      "policy/accounting/source-grounded-inventory"
+      "policy/development/autonomy-and-conflict-coordination"],
+     :start-byte 6527}
+    {:start-line 191,
+     :raw-sha256
+     "d98a7403e709a8aefb51beeb9249d2216af1e97ade219f6e984df07cca23cfd5",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/8d75f2a4af3512b143b9686f5a5263841e4ab180646d94ea607784ace1ef0bff",
+     :origin-facet-ids ["origin/extension/a90b8cfb4c54681f0799ec62"],
+     :id "facet/extension/0e4cba66a2e3d7d8ab4dda10",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10184,
+     :end-line 194,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 9941}
+    {:start-line 196,
+     :raw-sha256
+     "ed9ea84ea02c6b3ca98e6f605c6f5dc34df62497e7c29e82a5a35f9cbfa6c351",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/1fab5fc0053784297716c4a89277916d6e91cc452f302ab081664095d0766edc",
+     :origin-facet-ids ["origin/extension/855322dda40d4d4acaba43f5"],
+     :id "facet/extension/f3636df6e157a3cd03c6759b",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10333,
+     :end-line 199,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10185}
+    {:start-line 201,
+     :raw-sha256
+     "abdef54f21f5c1926369757c5c91f4bf80ab91be297b1050751d7f821df31950",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/9f180d2c9796cc37537ff870"],
+     :id "facet/extension/b4faf5c413baf7acccd9f9aa",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10567,
+     :end-line 203,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10334}
+    {:start-line 204,
+     :raw-sha256
+     "0236659e7eae2533fb771c90383e0f6ac364e176ca8a70fedbbf660b1325f599",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/3a711e71a53a2d1d36051b7b"],
+     :id "facet/extension/74c658623c0e7fa71db70872",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10805,
+     :end-line 206,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10567}
+    {:start-line 207,
+     :raw-sha256
+     "4bf8dc0e77a7dd9234106811f9308308db5320a050cb58790c264f70789d14bd",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/185ece0a9b994779d2b0211a"],
+     :id "facet/extension/1e870cbdb8245c6676bf5e21",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10948,
+     :end-line 208,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10805}
+    {:start-line 209,
+     :raw-sha256
+     "4df293548b547b5d61d5d3f4e6bed0d7355991ef88543f9d516f6c4b937392e6",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/c6b7f61f68afe64eda94dbb0"],
+     :id "facet/extension/70b6be3c1c9b0901c38f7cf9",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11228,
+     :end-line 212,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10948}
+    {:start-line 213,
+     :raw-sha256
+     "57b8398331c69cfdb248003b107cee7af7cbfdb0387df3c5404bb0e4554da537",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/5b0375ae4ca35ea7b49b01e8"],
+     :id "facet/extension/d3c54bd0a627a0423d27c564",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11435,
+     :end-line 215,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 11228}
+    {:start-line 216,
+     :raw-sha256
+     "7ce63820b218632b52b04187e3d688d0d2ed03999b5c67ede83036a108e308bb",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/d44d33013a3d2cd92ccc7cf2"],
+     :id "facet/extension/93cf1f576b4b93ccd064759d",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11583,
+     :end-line 217,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 11435}
+    {:start-line 218,
+     :raw-sha256
+     "a949eb574cec91db111857d6e9ea747a2a7d837b36bacbdc0febcef76a021715",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/0c2c0d84247da41ed26f2437"],
+     :id "facet/extension/fb812dbb0759c68f99c0a956",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11808,
+     :end-line 220,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 11583}],
+   :id "policy/development/autonomy-and-conflict-coordination",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/d52ee8ce3fed3c840458f3ae"
+     "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+     "facet/extension/f3636df6e157a3cd03c6759b"
+     "facet/extension/b4faf5c413baf7acccd9f9aa"
+     "facet/extension/74c658623c0e7fa71db70872"
+     "facet/extension/1e870cbdb8245c6676bf5e21"
+     "facet/extension/70b6be3c1c9b0901c38f7cf9"
+     "facet/extension/d3c54bd0a627a0423d27c564"
+     "facet/extension/93cf1f576b4b93ccd064759d"
+     "facet/extension/fb812dbb0759c68f99c0a956"],
+    :historical-obligation
+    "Continue authorized ordinary development without task-count/attempt/preparation/per-run permission prerequisites while coordinating actual writer/interface conflicts and preserving existing integration authority.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/development/autonomy-and-conflict-coordination",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}
+  {:criterion-witness
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "b88cfe0c377004ec2e366a4be5c55ff8226e3908aa5e4a93613a874b79618acf",
+    :raw
+    "### development-exact-candidate-admission\n\nTask: ACC-12\n\nSource requirement: policy/development/exact-candidate-admission\n\nAcceptance: Governed candidate integration eligibility binds exact base/candidate commit and tree, clean named worktree, owned paths, governing contracts, positive/negative fixtures, stable diagnostics, successful scoped validation, independent acceptance, residual host boundaries and coordinator disposition. Use the ledger's exact tuple immediately before integration; refuse dirty/detached, missing/divergent base, identity mismatch, held/rejected/superseded/abandoned dependencies and unsupported credit. Compare ancestry and tree identity; already-identical/tree-equivalent work is not merged or replayed again. These admission requirements are not ordinary edit/test prerequisites.\n\nNegative evidence: Refuse stale or forged tuples, dirty/detached worktrees, owner/path conflicts, missing or self-authored acceptance, missing negative/diagnostic evidence, inadmissible dependencies and repeat integration of equivalent trees. A structural validator pass or self-audit does not grant semantic acceptance, release or self-hosting authority.\n\nOutputs: Exact governed preflight/ledger input and refusal/conformance records, independent acceptance and coordinator integration disposition with scoped nonclaims; ordinary-development cases remain separately legal under standing authority.\n\nDependencies: Applicable workstream governance/ledger contracts and exact immutable candidate evidence at integration time; no admission replay or live integration is performed by this mapping.\n",
+    :criterion-id "development-exact-candidate-admission",
+    :marker "accounting-source-criteria",
+    :end-byte 17311,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 15703},
+   :affected-source-families ["accounting-policy"],
+   :whole-shared-facet-acceptance :not-conferred,
+   :historical-source-record
+   {:additional-task-interfaces [],
+    :historical-discovery-support
+    {:original-candidate-id
+     "policy/development/exact-candidate-admission",
+     :original-record-sha256
+     "399dea6a661975015e98077b64b7e5efcabee7f39f4c8e3ae0973a436dc1d9b6",
+     :input-sha256
+     "d851466f6c93729456968df76bf069c3f3019c6e589e7d6d3af3f6c0438814de",
+     :qualification :historical-discovery-only,
+     :evidence
+     {:history [],
+      :trace-gap
+      {:state :policy-only,
+       :reason
+       "Standing process/policy constraint is preserved, not claimed as a newly implemented language feature."}}},
+    :obligation
+    "Bind governed integration eligibility to the exact base/candidate/tree, clean owned paths, scoped validation, independent review, residual boundaries and coordinator disposition, without turning these into ordinary edit/test prerequisites.",
+    :source-facet-ids
+    ["facet/extension/36ae1f06f3d916349306d096"
+     "facet/extension/81d3d77531dc76543665c3ac"
+     "facet/extension/2998bc6f17aeb73521322dad"
+     "facet/extension/90c0a765d3433d23d1f41686"
+     "facet/extension/7be86bf274f4b91e89704c2e"
+     "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+     "facet/extension/f3636df6e157a3cd03c6759b"
+     "facet/extension/b4faf5c413baf7acccd9f9aa"
+     "facet/extension/74c658623c0e7fa71db70872"
+     "facet/extension/1e870cbdb8245c6676bf5e21"
+     "facet/extension/70b6be3c1c9b0901c38f7cf9"
+     "facet/extension/d3c54bd0a627a0423d27c564"
+     "facet/extension/93cf1f576b4b93ccd064759d"
+     "facet/extension/fb812dbb0759c68f99c0a956"],
+    :acceptance-authority :canonical-task-only,
+    :task-gap
+    {:state :policy-only,
+     :reason
+     "Standing process/policy constraint is preserved, not claimed as a newly implemented language feature."},
+    :atomicity :proposed,
+    :nonoverlap :proposed,
+    :id "policy/development/exact-candidate-admission",
+    :historical-support [],
+    :proposal-batch "release-product-policy"},
+   :disposition :proposed-concrete-task-criterion-witness,
+   :source-facets
+   [{:start-line 178,
+     :raw-sha256
+     "58a9cb35c9ea286afb1a8d5754c9af5a29598e5dd4086bb1636bdc61e2132246",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/52ade90627b64e4c2020196b2314940a9e5e9c110ed010f2d9d55480d9a8865d",
+     :origin-facet-ids ["origin/extension/762ce69a04237478268850dc"],
+     :id "facet/extension/36ae1f06f3d916349306d096",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 9261,
+     :end-line 178,
+     :unit-ids ["policy/development/exact-candidate-admission"],
+     :start-byte 9181}
+    {:start-line 179,
+     :raw-sha256
+     "227dc00f26b27601c2ccf201af7cfd2c16c90e8499d884f1c39259cf05b78e17",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/52ade90627b64e4c2020196b2314940a9e5e9c110ed010f2d9d55480d9a8865d",
+     :origin-facet-ids ["origin/extension/f897cc1d285c013029edd90b"],
+     :id "facet/extension/81d3d77531dc76543665c3ac",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 9339,
+     :end-line 179,
+     :unit-ids ["policy/development/exact-candidate-admission"],
+     :start-byte 9261}
+    {:start-line 180,
+     :raw-sha256
+     "fa89b09e426b53cd8eb6241a75dcc985ce4d90c77a0033c62005db2f6b005d88",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/52ade90627b64e4c2020196b2314940a9e5e9c110ed010f2d9d55480d9a8865d",
+     :origin-facet-ids ["origin/extension/763428fd2c012f874afec27f"],
+     :id "facet/extension/2998bc6f17aeb73521322dad",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 9458,
+     :end-line 181,
+     :unit-ids ["policy/development/exact-candidate-admission"],
+     :start-byte 9339}
+    {:start-line 182,
+     :raw-sha256
+     "11403af1d0b77e9c5534502f6e4a167fbd52ef50bfdd935631fe986b8c92ffec",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/52ade90627b64e4c2020196b2314940a9e5e9c110ed010f2d9d55480d9a8865d",
+     :origin-facet-ids ["origin/extension/21c69dee48c0e03e35f14cab"],
+     :id "facet/extension/90c0a765d3433d23d1f41686",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 9758,
+     :end-line 185,
+     :unit-ids ["policy/development/exact-candidate-admission"],
+     :start-byte 9458}
+    {:start-line 186,
+     :raw-sha256
+     "c53137c17065c161369af2aa1346a450337f7cc10bc6a7383a4845b3b01b5ce2",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/52ade90627b64e4c2020196b2314940a9e5e9c110ed010f2d9d55480d9a8865d",
+     :origin-facet-ids ["origin/extension/d23f2f71cb28453007d69f95"],
+     :id "facet/extension/7be86bf274f4b91e89704c2e",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 9899,
+     :end-line 187,
+     :unit-ids ["policy/development/exact-candidate-admission"],
+     :start-byte 9758}
+    {:start-line 191,
+     :raw-sha256
+     "d98a7403e709a8aefb51beeb9249d2216af1e97ade219f6e984df07cca23cfd5",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/8d75f2a4af3512b143b9686f5a5263841e4ab180646d94ea607784ace1ef0bff",
+     :origin-facet-ids ["origin/extension/a90b8cfb4c54681f0799ec62"],
+     :id "facet/extension/0e4cba66a2e3d7d8ab4dda10",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10184,
+     :end-line 194,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 9941}
+    {:start-line 196,
+     :raw-sha256
+     "ed9ea84ea02c6b3ca98e6f605c6f5dc34df62497e7c29e82a5a35f9cbfa6c351",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/1fab5fc0053784297716c4a89277916d6e91cc452f302ab081664095d0766edc",
+     :origin-facet-ids ["origin/extension/855322dda40d4d4acaba43f5"],
+     :id "facet/extension/f3636df6e157a3cd03c6759b",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10333,
+     :end-line 199,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10185}
+    {:start-line 201,
+     :raw-sha256
+     "abdef54f21f5c1926369757c5c91f4bf80ab91be297b1050751d7f821df31950",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/9f180d2c9796cc37537ff870"],
+     :id "facet/extension/b4faf5c413baf7acccd9f9aa",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10567,
+     :end-line 203,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10334}
+    {:start-line 204,
+     :raw-sha256
+     "0236659e7eae2533fb771c90383e0f6ac364e176ca8a70fedbbf660b1325f599",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/3a711e71a53a2d1d36051b7b"],
+     :id "facet/extension/74c658623c0e7fa71db70872",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10805,
+     :end-line 206,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10567}
+    {:start-line 207,
+     :raw-sha256
+     "4bf8dc0e77a7dd9234106811f9308308db5320a050cb58790c264f70789d14bd",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/185ece0a9b994779d2b0211a"],
+     :id "facet/extension/1e870cbdb8245c6676bf5e21",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 10948,
+     :end-line 208,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10805}
+    {:start-line 209,
+     :raw-sha256
+     "4df293548b547b5d61d5d3f4e6bed0d7355991ef88543f9d516f6c4b937392e6",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/c6b7f61f68afe64eda94dbb0"],
+     :id "facet/extension/70b6be3c1c9b0901c38f7cf9",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11228,
+     :end-line 212,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 10948}
+    {:start-line 213,
+     :raw-sha256
+     "57b8398331c69cfdb248003b107cee7af7cbfdb0387df3c5404bb0e4554da537",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/5b0375ae4ca35ea7b49b01e8"],
+     :id "facet/extension/d3c54bd0a627a0423d27c564",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11435,
+     :end-line 215,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 11228}
+    {:start-line 216,
+     :raw-sha256
+     "7ce63820b218632b52b04187e3d688d0d2ed03999b5c67ede83036a108e308bb",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/d44d33013a3d2cd92ccc7cf2"],
+     :id "facet/extension/93cf1f576b4b93ccd064759d",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11583,
+     :end-line 217,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 11435}
+    {:start-line 218,
+     :raw-sha256
+     "a949eb574cec91db111857d6e9ea747a2a7d837b36bacbdc0febcef76a021715",
+     :unresolved nil,
+     :source-occurrence-id
+     "accounting-policy/source/f8175f23d2cfca673a201fe1a397b315bfb592c88f05b13d93510df26290646e",
+     :origin-facet-ids ["origin/extension/0c2c0d84247da41ed26f2437"],
+     :id "facet/extension/fb812dbb0759c68f99c0a956",
+     :kind :requirement,
+     :document-id "accounting-policy",
+     :end-byte 11808,
+     :end-line 220,
+     :unit-ids
+     ["policy/development/autonomy-and-conflict-coordination"
+      "policy/development/exact-candidate-admission"],
+     :start-byte 11583}],
+   :id "policy/development/exact-candidate-admission",
+   :qualification
+   "The full assigned obligation has explicit criteria, negatives, outputs and dependencies. Shared source facets retain all their original memberships; this is not acceptance of every co-located requirement.",
+   :historical-before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/extension/36ae1f06f3d916349306d096"
+     "facet/extension/81d3d77531dc76543665c3ac"
+     "facet/extension/2998bc6f17aeb73521322dad"
+     "facet/extension/90c0a765d3433d23d1f41686"
+     "facet/extension/7be86bf274f4b91e89704c2e"
+     "facet/extension/0e4cba66a2e3d7d8ab4dda10"
+     "facet/extension/f3636df6e157a3cd03c6759b"
+     "facet/extension/b4faf5c413baf7acccd9f9aa"
+     "facet/extension/74c658623c0e7fa71db70872"
+     "facet/extension/1e870cbdb8245c6676bf5e21"
+     "facet/extension/70b6be3c1c9b0901c38f7cf9"
+     "facet/extension/d3c54bd0a627a0423d27c564"
+     "facet/extension/93cf1f576b4b93ccd064759d"
+     "facet/extension/fb812dbb0759c68f99c0a956"],
+    :historical-obligation
+    "Bind governed integration eligibility to the exact base/candidate/tree, clean owned paths, scoped validation, independent review, residual boundaries and coordinator disposition, without turning these into ordinary edit/test prerequisites.",
+    :coverage-disposition
+    :no-same-id-open-row-and-no-full-coverage-witness,
+    :id "policy/development/exact-candidate-admission",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids [],
+    :implementation-acceptance :not-inferred},
+   :implementation-acceptance :unchanged-not-inferred}],
+ :field-edits
+ [{:collection :historical-gap-traceability,
+   :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "f72ac20497199a735c828f974e3bdaa74d46a7205f78735a4c39a1578c807f74",
+    :criterion-id "accounting-beyond-limit-late-invalid",
+    :marker "accounting-source-criteria",
+    :end-byte 12808,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 11393}}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### accounting-beyond-limit-late-invalid\n\nTask: ACC-12\n\nSource requirement: policy/accounting/beyond-limit-and-late-invalid-evidence\n\nAcceptance: For each removed artificial condition, demonstrate ordinary valid inputs beyond its former limit and equally late/deep/wide invalid inputs through the genuine affected producer/consumer paths and required runtime composition. The valid case must succeed for its declared semantics and the late invalid case must reject for the retained semantic rule with stable diagnostics and source/extents. Direct helpers, normalized owner fixtures, flags or recorded counts prove only their named scope; missing source authentication or required composition remains open.\n\nNegative evidence: Reject closure based on only small/early fixtures, a helper substituted for the required consumer/runtime route, a skipped or held path counted as a pass, lost late-invalid checking, fabricated extents or unreported callback effects.\n\nOutputs: Exact input/source/owner and command/result receipts for beyond-limit acceptance and equally late semantic rejection, actual composition identity and explicit failed/skipped/held/unrun stages. This mapping does not launch those paths.\n\nDependencies: ACC-01 old-condition census, the applicable coherent owner removal, preserved semantic validation and permitted genuine producer/consumer/runtime evidence. Restricted acceptance paths stay open.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-12"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/beyond-limit-and-late-invalid-evidence",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/closure-evidence-record",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/closure-evidence-record",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "aed095b9bc0520ea04ce03d8cec9263d008c7aa28b2ad02af7ee0fd3d14d6af3",
+    :criterion-id "accounting-closure-evidence",
+    :marker "accounting-source-criteria",
+    :end-byte 14184,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 12809}}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/closure-evidence-record",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### accounting-closure-evidence\n\nTask: ACC-12\n\nSource requirement: policy/accounting/closure-evidence-record\n\nAcceptance: Before claiming accounting-removal completion, retain independently reviewed exact base/candidate/commit/tree and current-main integration evidence for the actual tested scope, with passed, failed and unrun stages, required owner acceptance, source/dependency invalidation and remaining host/semantic/restricted boundaries. All in-scope classifications and required removals must be resolved; a search count, helper result, draft PR, historical estimate or mapping witness cannot close the backlog. Accounting closure is not Gravity, release, self-hosting or seed-retirement completion.\n\nNegative evidence: Reject stale or mismatched source/tree, author self-acceptance, failed/unrun stages relabeled passing, unknown owners hidden from the census, a partial result promoted to whole closure, or an absent independent review/integration receipt.\n\nOutputs: Source-pinned closure bundle, independent review and exact integration receipts, per-stage result/limit inventory and explicit remaining-open list; preserve historical failed attempts and their original dates/commits.\n\nDependencies: Every other applicable ACC item's required evidence and existing coordinator integration authority; no unsupported runtime, source-authentication or release claim.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/closure-evidence-record",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-12"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/closure-evidence-record",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/host-external-boundary-separation",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/host-external-boundary-separation",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "bb88eb29231485b242ef94e34f518cc9a8a035d0bc68534302491788741b3bd7",
+    :criterion-id "accounting-host-external-boundaries",
+    :marker "accounting-source-criteria",
+    :end-byte 11392,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 10036}}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/host-external-boundary-separation",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### accounting-host-external-boundaries\n\nTask: ACC-12\n\nSource requirement: policy/accounting/host-external-boundary-separation\n\nAcceptance: Distinguish removed compiler/project allowances from actual host broker, heap, process-watchdog, capture and platform restrictions and from external billing/account limits. Preserve those host/external restrictions while deleting artificial accounting; they neither justify keeping a compiler quota nor become a disguised replacement for one. This criterion does not authorize changing security, access, credentials, live runtime policy or a denied operation.\n\nNegative evidence: Reject a removal disposition that disables a host safeguard or billing/account rule, treats external spend as removed project accounting, or cites an unchanged host restriction as proof that a compiler allowance is semantic. Preserve denied, restricted and unknown operations as such; do not replay or route around them.\n\nOutputs: Source-bound classification and diff evidence separating compiler/project removal from unchanged host/external policy, including explicit held/unrun restrictions; no host probe is required to prepare this record.\n\nDependencies: Current AGENTS authority, actual host/external policy declarations and applicable owner removal evidence. Final closure requires evidence, not a fresh host-policy reassessment.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/host-external-boundary-separation",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-12"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/host-external-boundary-separation",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/preserve-semantic-validation",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/preserve-semantic-validation",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "5f69692ac3c358bc90e15e959f35626a8d9c03f63f27efe74f751598ddfbc3ce",
+    :criterion-id "accounting-semantic-validation-preservation",
+    :marker "accounting-source-criteria",
+    :end-byte 10035,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 8550}}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/preserve-semantic-validation",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### accounting-semantic-validation-preservation\n\nTask: ACC-12\n\nSource requirement: policy/accounting/preserve-semantic-validation\n\nAcceptance: For each removal preserve complete traversal and independently meaningful Unicode/UTF8, types, valid index/arity and map parity, target-format representability, profiles, effects, capabilities, authenticated inputs, native class and callback rules, metadata, source/callee identity and provenance, collisions, lifetime, refinement forgetting, identity/not-applicable behavior and tamper detection. Retained numeric conditions must name the concrete independent rule rather than a work allowance. Semantic checked-member/element extents must match actual complete traversal and retain independently effective tamper controls.\n\nNegative evidence: Reject late invalid or opaque members, malformed source/type/arity, callback/class violations, forged extents or provenance and coherent source/callee/result forgeries after accounting removal. Passing counts alone do not prove traversal; disabling or weakening these negatives cannot establish preservation.\n\nOutputs: Per-removal retained-rule matrix, actual positive/negative owner fixtures and checked-extent/source/tamper observations with exact provenance and unrun boundaries.\n\nDependencies: ACC-01 guard classifications, each affected owner and its normative semantic contracts; applicable ACC-02 through ACC-11 and ACC-13 evidence. Implementation acceptance is separate from this mapping.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/preserve-semantic-validation",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-12"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/preserve-semantic-validation",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/remove-artificial-refusals",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/remove-artificial-refusals",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "1ba8042498535425892560a3bb05361159604ac15a298f333413b93bedcb670e",
+    :criterion-id "accounting-artificial-refusal-removal",
+    :marker "accounting-source-criteria",
+    :end-byte 8549,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 7214}}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/remove-artificial-refusals",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### accounting-artificial-refusal-removal\n\nTask: ACC-12\n\nSource requirement: policy/accounting/remove-artificial-refusals\n\nAcceptance: Close every ACC-01 in-scope artificial project/compiler cost, work-unit, debit, reservation, prospective capacity and accounting-only refusal coherently across its actual producer, consumer, schema, current contract and test owners. Include node, depth, width, scalar, byte, token and form quotas that only refuse otherwise valid input. Delete enforcing interfaces and budget-only tests; do not raise constants, return zero charges, retain unbounded sentinels, rename quotas or demand replacement accounting.\n\nNegative evidence: Reject closure with any live orphan cost field, caller debit, compatibility accounting path, budget-only test, quota-only refusal or operative accounting requirement, including one disguised by a new name or larger constant.\n\nOutputs: Reviewed exact-source removal dispositions and coherent owner diffs, removed-interface/contract/test census and positive/negative owner-path evidence; restricted or unverified owner paths remain open.\n\nDependencies: ACC-01 census and applicable ACC-02 through ACC-11 and ACC-13 owner results for final closure; existing writer releases and genuine incompatible interfaces. No cross-owner implementation is duplicated by this criterion.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/remove-artificial-refusals",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-12"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/remove-artificial-refusals",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/source-grounded-inventory",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/source-grounded-inventory",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-01",
+    :raw-sha256
+    "0db784adf3ee6dc72170e85b26a6519e88e7390f5acfe42f770ced3e7d31bba3",
+    :criterion-id "accounting-source-inventory",
+    :marker "accounting-source-criteria",
+    :end-byte 7213,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 5999}}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/source-grounded-inventory",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### accounting-source-inventory\n\nTask: ACC-01\n\nSource requirement: policy/accounting/source-grounded-inventory\n\nAcceptance: Inventory every in-scope compiler, emitter, development-runtime, adapter, schema, test and operative contract producer/consumer, including transitive callsites and unnamed literal maxima. Pin source commit, path, raw condition and owner; give each guard a source-grounded remove, retain-semantic, retain-host/external or historical disposition. Record unclassified guards and unknown owners as open work. A search-hit list, zero telemetry or renamed allowance is insufficient.\n\nNegative evidence: Reject an inventory that omits a transitive consumer, unnamed ceiling, enforcing schema/test/contract or unresolved classification, or calls a work/cost allowance a semantic limit without identifying the actual independent rule.\n\nOutputs: Source-pinned producer/consumer/field/refusal/test/contract census, per-guard rationale and explicit unresolved-owner/classification list, independently reviewed against actual source.\n\nDependencies: Current AGENTS accounting-removal authority; actual owner source and call graph. No preparation-only or per-run permission gate for ordinary census work.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/source-grounded-inventory",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-01"}
+  {:collection :historical-gap-traceability,
+   :id "policy/accounting/source-grounded-inventory",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/autonomy-and-conflict-coordination",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/autonomy-and-conflict-coordination",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "ad9f2ee1734a1eb50bfe2bb5ee8698f1b5c0425948b522b7ba6486d7c9540bd0",
+    :criterion-id "development-autonomy-conflict-coordination",
+    :marker "accounting-source-criteria",
+    :end-byte 15702,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 14185}}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/autonomy-and-conflict-coordination",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### development-autonomy-conflict-coordination\n\nTask: ACC-12\n\nSource requirement: policy/development/autonomy-and-conflict-coordination\n\nAcceptance: Operative accounting-related contracts, tooling and coordination must allow authorized ordinary development without task-count, failed-attempt allowance, preparation-only stage or discretionary per-run permission prerequisites. Managers continue independently within standing goals while coordinating actual conflicting writers and incompatible interfaces. Preserve the coordinator's independent acceptance/integration role and historical attempts; never retry, transfer or route around denied/restricted actions. Removal of a project quota does not grant new access or operation authority.\n\nNegative evidence: Reject policy/tool changes that reintroduce those ordinary-development quotas, impose migration/admission proofs before an ordinary edit or focused test, ignore a genuine writer/interface conflict, confer author acceptance, or use a different actor/endpoint to replay a denied action.\n\nOutputs: Exact operative policy/tool source review and focused allowed/refused coordination fixtures or source-bound decision records distinguishing ordinary development, real conflict and denied-action cases. Missing execution evidence is recorded, not invented.\n\nDependencies: Standing AGENTS decisions apply immediately; current writer/interface ownership and coordinator authority. This criterion has no dependency on completing ACC-12 before ordinary work proceeds.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/autonomy-and-conflict-coordination",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-12"}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/autonomy-and-conflict-coordination",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/exact-candidate-admission",
+   :field-path [:coverage-disposition],
+   :before-present? true,
+   :before :no-same-id-open-row-and-no-full-coverage-witness,
+   :after :concrete-task-criterion-witness}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/exact-candidate-admission",
+   :field-path [:criterion-source],
+   :before-present? true,
+   :before nil,
+   :after
+   {:path "specs/accounting-removal/tasks.md",
+    :task-id "ACC-12",
+    :raw-sha256
+    "b88cfe0c377004ec2e366a4be5c55ff8226e3908aa5e4a93613a874b79618acf",
+    :criterion-id "development-exact-candidate-admission",
+    :marker "accounting-source-criteria",
+    :end-byte 17311,
+    :sha256
+    "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+    :start-byte 15703}}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/exact-candidate-admission",
+   :field-path [:criterion-text],
+   :before-present? true,
+   :before nil,
+   :after
+   "### development-exact-candidate-admission\n\nTask: ACC-12\n\nSource requirement: policy/development/exact-candidate-admission\n\nAcceptance: Governed candidate integration eligibility binds exact base/candidate commit and tree, clean named worktree, owned paths, governing contracts, positive/negative fixtures, stable diagnostics, successful scoped validation, independent acceptance, residual host boundaries and coordinator disposition. Use the ledger's exact tuple immediately before integration; refuse dirty/detached, missing/divergent base, identity mismatch, held/rejected/superseded/abandoned dependencies and unsupported credit. Compare ancestry and tree identity; already-identical/tree-equivalent work is not merged or replayed again. These admission requirements are not ordinary edit/test prerequisites.\n\nNegative evidence: Refuse stale or forged tuples, dirty/detached worktrees, owner/path conflicts, missing or self-authored acceptance, missing negative/diagnostic evidence, inadmissible dependencies and repeat integration of equivalent trees. A structural validator pass or self-audit does not grant semantic acceptance, release or self-hosting authority.\n\nOutputs: Exact governed preflight/ledger input and refusal/conformance records, independent acceptance and coordinator integration disposition with scoped nonclaims; ordinary-development cases remain separately legal under standing authority.\n\nDependencies: Applicable workstream governance/ledger contracts and exact immutable candidate evidence at integration time; no admission replay or live integration is performed by this mapping.\n"}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/exact-candidate-admission",
+   :field-path [:criterion-task-id],
+   :before-present? true,
+   :before nil,
+   :after "ACC-12"}
+  {:collection :historical-gap-traceability,
+   :id "policy/development/exact-candidate-admission",
+   :field-path [:qualification],
+   :before-present? true,
+   :before
+   "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+   :after
+   "Proposed full assigned-obligation criterion witness in the existing ACC ledger; independent source review/adoption pending. No implementation or whole-shared-facet acceptance."}],
+ :counts
+ {:new-criterion-count 8,
+  :assigned 8,
+  :existing-acc-task-count 13,
+  :new-task-count 0,
+  :unresolved-assigned 0,
+  :independently-accepted-mappings 0,
+  :component-census-registration :canonical-owner-determines,
+  :concrete-mappings-proposed 8,
+  :existing-task-ids ["ACC-01" "ACC-12"]},
+ :task-source-edit
+ {:path "specs/accounting-removal/tasks.md",
+  :before-sha256
+  "f26670d438f5f4d57a1aab5ba6d5382d573c1f30684eed33042e091c210f7d51",
+  :after-sha256
+  "e0ce960cf0ab30c25f1698f01f7ae28e7a23c331f52aecde91b11cba8abe9663",
+  :insert-before
+  "## ACC-05 shared PL helper successor - 2026-10-28 UTC\n",
+  :insert-text
+  "## Source-bound accounting and development criteria\n\nThese criteria refine the existing ACC-01 and ACC-12 closing evidence; they are\nnot additional tasks or status records. Every existing checkbox, partial result,\nrestriction and historical receipt below retains its scope. Mapping a criterion\ndoes not prove that its required source, runtime, review or integration evidence\nhas been produced. Standing development policy applies now; final ACC-12\ndependencies do not become prerequisites for ordinary edits or focused tests.\n\n<!-- accounting-source-criteria:start -->\n\n### accounting-source-inventory\n\nTask: ACC-01\n\nSource requirement: policy/accounting/source-grounded-inventory\n\nAcceptance: Inventory every in-scope compiler, emitter, development-runtime, adapter, schema, test and operative contract producer/consumer, including transitive callsites and unnamed literal maxima. Pin source commit, path, raw condition and owner; give each guard a source-grounded remove, retain-semantic, retain-host/external or historical disposition. Record unclassified guards and unknown owners as open work. A search-hit list, zero telemetry or renamed allowance is insufficient.\n\nNegative evidence: Reject an inventory that omits a transitive consumer, unnamed ceiling, enforcing schema/test/contract or unresolved classification, or calls a work/cost allowance a semantic limit without identifying the actual independent rule.\n\nOutputs: Source-pinned producer/consumer/field/refusal/test/contract census, per-guard rationale and explicit unresolved-owner/classification list, independently reviewed against actual source.\n\nDependencies: Current AGENTS accounting-removal authority; actual owner source and call graph. No preparation-only or per-run permission gate for ordinary census work.\n\n### accounting-artificial-refusal-removal\n\nTask: ACC-12\n\nSource requirement: policy/accounting/remove-artificial-refusals\n\nAcceptance: Close every ACC-01 in-scope artificial project/compiler cost, work-unit, debit, reservation, prospective capacity and accounting-only refusal coherently across its actual producer, consumer, schema, current contract and test owners. Include node, depth, width, scalar, byte, token and form quotas that only refuse otherwise valid input. Delete enforcing interfaces and budget-only tests; do not raise constants, return zero charges, retain unbounded sentinels, rename quotas or demand replacement accounting.\n\nNegative evidence: Reject closure with any live orphan cost field, caller debit, compatibility accounting path, budget-only test, quota-only refusal or operative accounting requirement, including one disguised by a new name or larger constant.\n\nOutputs: Reviewed exact-source removal dispositions and coherent owner diffs, removed-interface/contract/test census and positive/negative owner-path evidence; restricted or unverified owner paths remain open.\n\nDependencies: ACC-01 census and applicable ACC-02 through ACC-11 and ACC-13 owner results for final closure; existing writer releases and genuine incompatible interfaces. No cross-owner implementation is duplicated by this criterion.\n\n### accounting-semantic-validation-preservation\n\nTask: ACC-12\n\nSource requirement: policy/accounting/preserve-semantic-validation\n\nAcceptance: For each removal preserve complete traversal and independently meaningful Unicode/UTF8, types, valid index/arity and map parity, target-format representability, profiles, effects, capabilities, authenticated inputs, native class and callback rules, metadata, source/callee identity and provenance, collisions, lifetime, refinement forgetting, identity/not-applicable behavior and tamper detection. Retained numeric conditions must name the concrete independent rule rather than a work allowance. Semantic checked-member/element extents must match actual complete traversal and retain independently effective tamper controls.\n\nNegative evidence: Reject late invalid or opaque members, malformed source/type/arity, callback/class violations, forged extents or provenance and coherent source/callee/result forgeries after accounting removal. Passing counts alone do not prove traversal; disabling or weakening these negatives cannot establish preservation.\n\nOutputs: Per-removal retained-rule matrix, actual positive/negative owner fixtures and checked-extent/source/tamper observations with exact provenance and unrun boundaries.\n\nDependencies: ACC-01 guard classifications, each affected owner and its normative semantic contracts; applicable ACC-02 through ACC-11 and ACC-13 evidence. Implementation acceptance is separate from this mapping.\n\n### accounting-host-external-boundaries\n\nTask: ACC-12\n\nSource requirement: policy/accounting/host-external-boundary-separation\n\nAcceptance: Distinguish removed compiler/project allowances from actual host broker, heap, process-watchdog, capture and platform restrictions and from external billing/account limits. Preserve those host/external restrictions while deleting artificial accounting; they neither justify keeping a compiler quota nor become a disguised replacement for one. This criterion does not authorize changing security, access, credentials, live runtime policy or a denied operation.\n\nNegative evidence: Reject a removal disposition that disables a host safeguard or billing/account rule, treats external spend as removed project accounting, or cites an unchanged host restriction as proof that a compiler allowance is semantic. Preserve denied, restricted and unknown operations as such; do not replay or route around them.\n\nOutputs: Source-bound classification and diff evidence separating compiler/project removal from unchanged host/external policy, including explicit held/unrun restrictions; no host probe is required to prepare this record.\n\nDependencies: Current AGENTS authority, actual host/external policy declarations and applicable owner removal evidence. Final closure requires evidence, not a fresh host-policy reassessment.\n\n### accounting-beyond-limit-late-invalid\n\nTask: ACC-12\n\nSource requirement: policy/accounting/beyond-limit-and-late-invalid-evidence\n\nAcceptance: For each removed artificial condition, demonstrate ordinary valid inputs beyond its former limit and equally late/deep/wide invalid inputs through the genuine affected producer/consumer paths and required runtime composition. The valid case must succeed for its declared semantics and the late invalid case must reject for the retained semantic rule with stable diagnostics and source/extents. Direct helpers, normalized owner fixtures, flags or recorded counts prove only their named scope; missing source authentication or required composition remains open.\n\nNegative evidence: Reject closure based on only small/early fixtures, a helper substituted for the required consumer/runtime route, a skipped or held path counted as a pass, lost late-invalid checking, fabricated extents or unreported callback effects.\n\nOutputs: Exact input/source/owner and command/result receipts for beyond-limit acceptance and equally late semantic rejection, actual composition identity and explicit failed/skipped/held/unrun stages. This mapping does not launch those paths.\n\nDependencies: ACC-01 old-condition census, the applicable coherent owner removal, preserved semantic validation and permitted genuine producer/consumer/runtime evidence. Restricted acceptance paths stay open.\n\n### accounting-closure-evidence\n\nTask: ACC-12\n\nSource requirement: policy/accounting/closure-evidence-record\n\nAcceptance: Before claiming accounting-removal completion, retain independently reviewed exact base/candidate/commit/tree and current-main integration evidence for the actual tested scope, with passed, failed and unrun stages, required owner acceptance, source/dependency invalidation and remaining host/semantic/restricted boundaries. All in-scope classifications and required removals must be resolved; a search count, helper result, draft PR, historical estimate or mapping witness cannot close the backlog. Accounting closure is not Gravity, release, self-hosting or seed-retirement completion.\n\nNegative evidence: Reject stale or mismatched source/tree, author self-acceptance, failed/unrun stages relabeled passing, unknown owners hidden from the census, a partial result promoted to whole closure, or an absent independent review/integration receipt.\n\nOutputs: Source-pinned closure bundle, independent review and exact integration receipts, per-stage result/limit inventory and explicit remaining-open list; preserve historical failed attempts and their original dates/commits.\n\nDependencies: Every other applicable ACC item's required evidence and existing coordinator integration authority; no unsupported runtime, source-authentication or release claim.\n\n### development-autonomy-conflict-coordination\n\nTask: ACC-12\n\nSource requirement: policy/development/autonomy-and-conflict-coordination\n\nAcceptance: Operative accounting-related contracts, tooling and coordination must allow authorized ordinary development without task-count, failed-attempt allowance, preparation-only stage or discretionary per-run permission prerequisites. Managers continue independently within standing goals while coordinating actual conflicting writers and incompatible interfaces. Preserve the coordinator's independent acceptance/integration role and historical attempts; never retry, transfer or route around denied/restricted actions. Removal of a project quota does not grant new access or operation authority.\n\nNegative evidence: Reject policy/tool changes that reintroduce those ordinary-development quotas, impose migration/admission proofs before an ordinary edit or focused test, ignore a genuine writer/interface conflict, confer author acceptance, or use a different actor/endpoint to replay a denied action.\n\nOutputs: Exact operative policy/tool source review and focused allowed/refused coordination fixtures or source-bound decision records distinguishing ordinary development, real conflict and denied-action cases. Missing execution evidence is recorded, not invented.\n\nDependencies: Standing AGENTS decisions apply immediately; current writer/interface ownership and coordinator authority. This criterion has no dependency on completing ACC-12 before ordinary work proceeds.\n\n### development-exact-candidate-admission\n\nTask: ACC-12\n\nSource requirement: policy/development/exact-candidate-admission\n\nAcceptance: Governed candidate integration eligibility binds exact base/candidate commit and tree, clean named worktree, owned paths, governing contracts, positive/negative fixtures, stable diagnostics, successful scoped validation, independent acceptance, residual host boundaries and coordinator disposition. Use the ledger's exact tuple immediately before integration; refuse dirty/detached, missing/divergent base, identity mismatch, held/rejected/superseded/abandoned dependencies and unsupported credit. Compare ancestry and tree identity; already-identical/tree-equivalent work is not merged or replayed again. These admission requirements are not ordinary edit/test prerequisites.\n\nNegative evidence: Refuse stale or forged tuples, dirty/detached worktrees, owner/path conflicts, missing or self-authored acceptance, missing negative/diagnostic evidence, inadmissible dependencies and repeat integration of equivalent trees. A structural validator pass or self-audit does not grant semantic acceptance, release or self-hosting authority.\n\nOutputs: Exact governed preflight/ledger input and refusal/conformance records, independent acceptance and coordinator integration disposition with scoped nonclaims; ordinary-development cases remain separately legal under standing authority.\n\nDependencies: Applicable workstream governance/ledger contracts and exact immutable candidate evidence at integration time; no admission replay or live integration is performed by this mapping.\n\n<!-- accounting-source-criteria:end -->\n\n"},
+ :assigned-ids
+ ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+  "policy/accounting/closure-evidence-record"
+  "policy/accounting/host-external-boundary-separation"
+  "policy/accounting/preserve-semantic-validation"
+  "policy/accounting/remove-artificial-refusals"
+  "policy/accounting/source-grounded-inventory"
+  "policy/development/autonomy-and-conflict-coordination"
+  "policy/development/exact-candidate-admission"],
+ :authority :guarded-projection-and-task-interface-proposal-only,
+ :task-count-delta 0,
+ :schema-version 1,
+ :coverage-input
+ {:sha256
+  "a7e82612a715713799be4db46cc3e911aff0cb5a2525d4555c8f8e6ded87101f",
+  :historical-records 577,
+  :existing-witnesses 13,
+  :existing-retirements 3},
+ :source-documents
+ [{:id "accounting-policy",
+   :path "AGENTS.md",
+   :sha256
+   "52e41ad759618a3837d1f818a9f91427823d2b6461a9cd797544cfcccfed90ac",
+   :relation :current-user-policy}
+  {:id "accounting-removal",
+   :path "specs/accounting-removal/spec.md",
+   :sha256
+   "e3d7c4936bf2cfbdd30b0df24fe2db42555033d507308df204f48389ace48321",
+   :relation :existing-policy-implementation-scope}],
+ :partition-input
+ {:ref "bd37ab50c50d27094dce664b34831fcc43c3e9c3",
+  :sha256
+  "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+  :assignments
+  [{:family "accounting-policy",
+    :owner :existing-source-family-owner,
+    :in-thirteen-family-cohort false,
+    :count 6,
+    :ids
+    ["policy/accounting/host-external-boundary-separation"
+     "policy/accounting/preserve-semantic-validation"
+     "policy/accounting/remove-artificial-refusals"
+     "policy/accounting/source-grounded-inventory"
+     "policy/development/autonomy-and-conflict-coordination"
+     "policy/development/exact-candidate-admission"]}
+   {:family "accounting-removal",
+    :owner :existing-source-family-owner,
+    :in-thirteen-family-cohort false,
+    :count 2,
+    :ids
+    ["policy/accounting/beyond-limit-and-late-invalid-evidence"
+     "policy/accounting/closure-evidence-record"]}]},
+ :unresolved-ids [],
+ :review :pending-canonical-owner-routing,
+ :projection-qualification
+ "Field operations amend only a derived current coverage projection after independent adoption. The original review receipt and its historical 577 rows remain immutable; this does not mutate canonical source-dispositions or task-baseline.",
+ :preservation
+ [:all-577-original-histories
+  :thirteen-existing-witnesses
+  :three-retirements
+  :all-240-source-contracts
+  :existing-task-statuses
+  :ACC05-cross-family-amendments],
+ :kind :accounting-historical-gap-criterion-completion-proposal,
+ :original-manifest
+ {:ref "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30",
+  :sha256
+  "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690"},
+ :implementation-acceptance :not-conferred}
