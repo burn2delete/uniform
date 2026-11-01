@@ -7,11 +7,7 @@
     (doseq [[carrier value] [[:legacy-checked-core artifact]
                              [:legacy-checked-core-context context]]]
       (let [validation
-            (p15-s23-trusted-carrier-validation
-             value :default-only
-             p15-s23-closed-core-max-serialized-values
-             p15-s23-closed-core-max-plan-depth
-             p15-s23-closed-core-max-derived-nodes)]
+            (p15-s23-trusted-carrier-validation value :default-only)]
         (when-not (= :passed (:status validation))
           (p15-s23-closed-core-fail!
            "C6-VERIFY" "<closed-core>" {}
@@ -19,7 +15,7 @@
                   :missing-fact :trusted-legacy-checked-core-carrier
                   :carrier carrier)))))
     (p15-s23-checked-core-bounded-context! context)
-    (p15-s23-closed-core-bounded-value! "<closed-core>" artifact)
+    (p15-s23-closed-core-value-domain! "<closed-core>" artifact)
     (let [source-path
           (or (:source-path context)
               (get-in artifact [:provenance :actual-paths :source])

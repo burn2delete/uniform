@@ -51,9 +51,9 @@ does not close the shared transport/fresh replay dependency or complete the
 language. New findings must be added to the owning row with exact affected
 contracts and acceptance evidence, rather than silently excluded.
 
-## Existing dependency evidence
+## Historical dependency evidence
 
-The MIR owner reports PR421 head
+The initial MIR evidence used PR421 head
 `8b9dd46ea38eafba1d3d7a49d8c6ca6b6488563f`, tree
 `ed9d118e18f5f1a3f04138603e282ade9fb70701`, C11 source SHA256
 `c41d9e0317b398a53e4b28d7bba90be7bebda23c51fa9c74a6a8c91be38ce79e`.
@@ -69,9 +69,160 @@ ArrayMap, SubVector becoming Vector, and foreign metadata invoked before class
 rejection. MIR requires exact concrete classes; its actual raw/Core/MIR runtime
 domain is unproven. Native remains the sole codec writer. Shared policy and
 preflight are open dependencies, not permission to weaken class/callback guards
-or create a second serializer. Heavy A/B replay and public admission remain
-unrun for this adaptation. Preserve historical failures and existing specific
+or create a second serializer. At that historical point, heavy A/B replay and
+public admission were unrun. The accepted successor evidence below supersedes
+that transport/replay hold, without replacing these failed receipts. Preserve existing specific
 C12 execution and original C7 publication restrictions.
+
+## Accepted dependency evidence and remaining criteria
+
+PR421 is merged as `06a256fdb97f49b5fedea36a6803483302631bbc`, tree
+`6ed68a337f85d9a044d7eb3d08aa1ae8eebccea2`, exactly the reviewed final
+candidate `d67406b305d93e052f54c9439da8142efbb663c0`. It is no longer a
+draft or timeout-only dependency. Native remained the sole shared codec writer;
+MIR adapted its consumer to the reviewed V3 codec SHA256
+`0f91ef22f305785e8e8d730beff1a31ec9aecce8e9adfd768f0636e3a565daf9`.
+Strict single-form framing, exact native classes before callbacks, metadata and
+SubVector backing/extent conservation, failed-producer nonconsumption, deadline,
+external exit and digest gates received cheap positive and negative controls
+(24 tests / 162 assertions). These controls do not grant source authority.
+
+On original producer head `8b9dd46ea38eafba1d3d7a49d8c6ca6b6488563f`
+and tree `ed9d118e18f5f1a3f04138603e282ade9fb70701`, genuine original A
+and B each completed naturally with observed 2 GiB heaps. A completed 13 and B
+19 harness checkpoints, collectively covering the original 24 predicates;
+these are checkpoints, not Clojure test totals. Each performed actual original
+construction and independent fresh C6 replay, real Gravity/Native positives,
+provenance and immutability checks. B additionally checked both substitution
+directions and exact type and retired-quota-field rejection. Both actual domains contained 12
+full-pair and 11 carried classes; neither observed metadata or SubVector.
+Controlled coverage of those shapes remains distinct. A's handoff was retained
+and independently consumed; B's artifact was not retained, so its domain is
+supported by the in-process inventory and terminal evidence, not a later B
+artifact rewalk. The original timeout remains a nonpass.
+
+Current-main composition was separately checked at
+`38f8f6e00e4ca97c07d3b36ecb499ea93b5c5b29`, tree
+`5b2f86c3843ad0309c951661bc1c8a9b5c1bf1a7`: retained-A current-owner
+validation and affected helper/forwarding controls passed 42 tests / 426
+assertions. Genuine Bool-parameter original and fresh replay passed separately
+with 1/7 and 1/48 tests/assertions on that same tuple and C11 c41 source.
+Final reconciliation at d67406b3 conserved that reviewed evidence with explicit
+SH04 applicability review and a fresh 21/94 leaf/boundary selection, docs
+240/19 and exact integration preflight. Earlier results retain their original
+identities; they are not represented as fresh executions on d67406b3.
+Independent source and retained-record review preceded ordinary integration.
+
+| Original ID | Accepted disposition | Exact remaining acceptance boundary |
+| --- | --- | --- |
+| AS1 | Closed for the inventoried construction, semantic validation, publication and runtime-safety responsibilities; PR431 integrated the reviewed inventory and runner contract. | Preserve those distinct responsibilities when consuming subsequent evidence; this is not completion of every compiler component. |
+| AS2 | Closed by the independently reviewed, validated runner repair in PR431. EOF/capture, no-execution, exit agreement and observation-failure controls remain enforced. | No additional compiler or language feature is required to close this runner increment. |
+| AS3 | Shared V3 transport and development replay were accepted through PR438/PR421. The later frozen v2 candidate has independently reviewed genuine public construction, fresh report/replay and actual report/tuple rejection evidence, detailed below. | Preserve the exact tested producer/consumer tuples. Current-main composition and publication remain open; historical candidate success is not current-source acceptance. |
+| AS4 | PR431 and the accepted PR421 dependency increments have ordinary reviewed publication and integration dispositions. PR457 integrated this canonical reconciliation at `d7451d7546cbc02895d2b5cb43449d9252b919d6`, tree `adb182d7ce6fe73bf0e80e64193ae701c8d3725c`. | Publish the remaining final-admission increment through normal independent review and integration. Whole-outcome closure remains open until AS3's final entry-point boundary is evidenced. |
+
+The selected-source v2 successor supplied the actual public route and rejection
+evidence described below. It preserves historical pins, Core authentication and
+fresh replay. Source identity observations and cheap dispatch controls alone
+still cannot establish that result. The remaining integration work does not
+expand assurance cleanup into completing another language family, W4 release,
+other backends or C12 execution. No measured percentage follows from these
+milestones.
+
+## Current assessment
+
+Assessment date: 2026-10-28, America/Edmonton. Source base:
+`cbf5c210544a0033e9c755d7ef8358f01f1ad57c`. Original criteria are unchanged:
+AS1 closed, AS2 closed, AS3 partial, AS4 partial. The previous assessment at
+2026-10-26 22:31 MDT remains historical; its statements that public Core and
+C11 verification were unrun no longer describe the accepted local candidates.
+This assessment records completed evidence without claiming current-main
+integration or closing the whole outcome.
+
+The inherited dashboard value of 70%, dated Oct26 04:11, is a provisional
+estimate, not measured coverage. No weighting of the original responsibilities
+was defined. This assessment does not recalculate that value from PRs, tests or
+closed-row counts. The collector can display these current milestones without
+presenting the inherited number as a new measurement.
+
+| Original ID | Accepted advance since the merged baseline | Remaining gate |
+| --- | --- | --- |
+| AS1 | The responsibility inventory remains closed. Successor reviews explicitly distinguish selected-source authentication, relative structural/report validation, publication and runtime authority. | Preserve the distinctions in actual final entry-point evidence; no new language family is an AS1 requirement. |
+| AS2 | The bounded runner repair remains closed. Private controllers additionally preserve external timeout/nonzero nonconsumption, immutable transport, capture failure and monotonic sampling boundaries. | These controls neither establish a current semantic result nor resolve an older process's unknown cleanup. No additional compiler family is required for AS2. |
+| AS3 | Genuine public Core construction and fresh contextual verification passed at `cb3701556e9082ae8387c18fa1f6396a9d284617`. Genuine C11 construction, fresh public report/replay and the actual rejection boundaries below passed with that source/CWD and consumer `9c27c3e8856b9659482a3e48238896e1548fce02`. | These are exact candidate results. Reconcile the affected current-main consumer/source closure, run the public route where required by that change, and independently accept it. Do not relabel old source bytes as the latest source. |
+| AS4 | The accepted v2 results and reviewed integration candidate are concrete publication inputs. Candidate `dced564a20c175b95dcb919459c3e673a4ca7ade` is not an ancestor of this assessment's main. Its retained CI run failed projections after the other six jobs passed. | The integration owner must repair the applicable source-derived snapshot/catalog input through its owner, pass required current-head checks, obtain independent review and verify normal main integration. This assessment cannot supply that disposition. |
+
+The original `.gravity` and later `.qst` development replay lanes remain
+separate from public admission. The local `.qst` tuple
+`66f46c53aaa24bfecffca782eb8f2128b85ac1e1` passed original1/7 and fresh1/48;
+it is not current-main public verification. The expression-owner predecessor
+`77019e4948fed440a3dc4aee5552825d7c9d605e` remains NONPASS (37 passed,
+1 failed); the corrected result does not overwrite or sum it.
+
+The actual public C11 route performed fresh C6 authentication and returned a
+passed public report with semantic replay parity. The actual contained-report
+validator rejected semantic-report and vector/list kind substitutions. A
+coherently regenerated policy passed that relative validator and was then
+rejected by the actual fresh public replay at semantic parity. Actual public
+entry-point cases also rejected source-rule, type-fact, Core identity and
+requested-target substitutions, plus malformed/mixed/legacy headers and a
+context source-hash inconsistency. These results distinguish relative DATA
+coherence from fresh source authority; neither a saved report nor a shape
+predicate supplied the latter.
+
+The complete constructor artifact was retained with an exact domain walk.
+The later full public report and raw owner metadata were not retained: compact
+report/policy evidence and in-process domain checks support their stated scope.
+Independent full-report/raw-metadata/policy-hash recomputation is not claimed.
+The actual admission state remained development-unadmitted and host-seeded;
+frozen Reader, release and seed-retirement acceptance do not follow.
+
+Consumer composition `1f51ee30c2e9c93db409f2e871af71b58a5540bc` separately
+passed an actual fresh public report using the original physical source/CWD.
+A separate normal-new-CWD check exercised the affected Reader/C2 host checks
+and rejected the unsupported expression source at the existing source guard.
+Later source preservation reviews do not turn that execution into a run on
+this assessment's main. The selected v2 dependency remains the historical
+expression revision; newer expression bytes require their own supported
+contract before positive admission. The larger flat-Bool v3 family is separate
+unfinished work, not a new definition of the original assurance finish line.
+
+The old-pin rejection, missing-provenance-layer rejection, sorted-owner-metadata
+rejection, load-order hold and failed CI predecessors remain failed history.
+Later v3 watchdog and host-capacity failures also remain NONPASS. They neither
+invalidate the accepted v2 tuple nor establish present execution safety.
+
+## Admission evidence and historical cleanup
+
+Historical semantic acceptance, historical process cleanup, live broker
+admission and permission to execute are separate facts. A later worker's
+successful admission/release cannot close an earlier worker's unknown terminal
+or cleanup. An empty process/holder snapshot, peer reports of no owned jobs,
+or a broker timeout cannot prove global capacity. An access denial does not
+supply the missing process observation and must not be retried by another route.
+
+The inspected controller enters semantic work only inside the Git-common and
+host-wide exclusive broker scopes and after acquiring the canonical file lock.
+The broker acquires the actual slot locks under its queue/admission protocol;
+timeout or acquisition failure does not call the protected thunk. These live
+locks, fixed roots/order, deadlines, source/runtime freeze and owned-process
+lifecycle remain required. They do not authenticate source semantics or prove
+the absence of noncooperating work outside the broker's model.
+
+The broker has no historical-receipt input. Requiring an unrelated successful
+workload before allowing the next normal broker acquisition can create a
+circular project prerequisite, and still cannot prove future availability.
+Do not manufacture such a proof with another validation. Conversely, an
+explicit hold for an unresolved original process remains a separate instruction;
+identifying this circularity does not waive that hold or authorize execution.
+The original recovery owner retains that investigation. No shared-lock probe,
+reset, release, service change or compiler launch is implied by this assessment.
+
+The next eligible assurance work is exact source/evidence reconciliation and
+independent review of the publication candidate. Any distinct public validation
+must preserve the live admission and lifecycle guards and satisfy the current
+execution directive. Whole AS3/AS4 closure still requires actual applicable
+public construction/report/replay evidence and ordinary verified integration;
+another status receipt cannot replace those outcomes.
 
 ## Runner increment evidence
 
@@ -131,8 +282,8 @@ review did not independently execute the tests. A later documentation-only
 receipt commit does not change tested runner/test bytes or imply another run.
 
 AS1 source inventory and AS2 runner controls are evidenced for this increment.
-AS3 shared codec policy, actual artifact domain, genuine fresh replay and
-public admission remain open with their existing owners. AS4 publication and
-integration must name the final exact head. No compiler construction,
+The initial runner increment did not close AS3. Its later accepted transport,
+domain and replay evidence and remaining public admission boundary are recorded
+above. AS4 publication and integration must name each final exact head. No compiler construction,
 authoritative migration, runtime safety proof, C12 execution or original C7
 publication was performed by these checks. Whole-outcome completion is open.

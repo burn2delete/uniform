@@ -12,9 +12,8 @@ The workflow records work and evidence; it does not replace normative authority.
 
 ## Approach and exact files
 
-Create only `specs/runtime-workflow/spec.md`, `plan.md`, `tasks.md` and `evidence.md`,
-using the existing project-local overrides. Shared migration indexes are owned
-by the migration coordinator and are not edited by this package.
+Keep the four workflow artifacts and direct roadmap task link. The roadmap links
+directly to the ledger; retain the entire original migration file as history.
 
 | Canonical truth | Reference | Package use |
 | --- | --- | --- |
@@ -28,13 +27,14 @@ Integrated execution consumes Lower, Legality and Auth facts; service-table and 
 
 ## Validation and evidence
 
-Check ASCII, the exact four-file set, local Markdown target/anchor resolution,
+Check ASCII, the exact seven-file set, local Markdown target/anchor resolution,
 semantic package names and absence of duplicated component checklists.
 Negative acceptance cases are broken/missing links, treating artifact presence
 as implementation completion, or narrowing retained contracts without disposition.
 Run the existing structural documentation and full-language roadmap validators.
-No compiler tests are necessary for these Markdown-only additions, and none
-are claimed. Record commands/results and exact review identity in evidence.md.
+Run focused document/link and language-boundary checks.
+No compiler/runtime execution suite is claimed. Record commands/results and
+exact review identity in evidence.md.
 
 ## Delivery and remaining work
 

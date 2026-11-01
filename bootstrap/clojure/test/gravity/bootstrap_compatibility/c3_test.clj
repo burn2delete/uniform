@@ -196,11 +196,12 @@
          :c3-syntax-diagnostic-ids bootstrap/c3-syntax-diagnostic-ids}]
     (is (= '([syntax-stream serialization]
              [syntax-stream serialization c2-artifact]
-             [syntax-stream serialization c2-artifact gravity-boundary])
+             [syntax-stream serialization c2-artifact gravity-boundary]
+             [syntax-stream serialization c2-artifact gravity-boundary invocation])
            (:arglists (meta #'bootstrap/c3-syntax-verification-report))))
-    (is (= '([artifact])
+    (is (= '([artifact] [artifact invocation])
            (:arglists (meta #'bootstrap/c3-syntax-capability-proof))))
-    (is (= '([source-path artifact])
+    (is (= '([source-path artifact] [source-path artifact invocation])
            (:arglists (meta #'bootstrap/c3-syntax-validate!))))
     (is (= (c3-syntax-verification/with-operations
             operations
@@ -253,7 +254,7 @@
                      :diagnostics-covered?]
                     (repeat true))]
         (with-redefs [bootstrap/c3-syntax-capability-proof
-                      (fn [_]
+                      (fn [_ _]
                         (assoc complete-proof :stable-syntax-ids? false))
                       bootstrap/c3-syntax-fail!
                       (fn [& args] (swap! calls conj args))]

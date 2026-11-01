@@ -8,7 +8,7 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 Adopt the repository's Spec Kit artifact workflow for the Release component
 without copying its normative semantics or creating a second implementation ledger.
-[Component release outcome](../../docs/component-roadmaps/release.md#release-outcome) and [Release canonical remaining work](../../docs/component-roadmaps/release.md#remaining-tasks-and-evidence) retain authority over implementation completion.
+[Component release outcome](../../docs/component-roadmaps/release.md#release-outcome) and [Release canonical remaining work](../../docs/component-roadmaps/release.md#remaining-tasks-and-evidence) retain outcome and acceptance scope; implementation records are edited only in [tasks.md](tasks.md#implementation-tasks), with direct roadmap links to the task ledger.
 The following contracts remain canonical and are linked, not replaced:
 
 - [BOOT1 - Bootstrap Strategy](../../docs/phase-15-bootstrap-and-self-hosting/203-boot1-bootstrap-strategy.md)
@@ -42,9 +42,10 @@ implementation decision and evidence, not a checkbox in this package.
 
 ## Scope and compatibility
 
-Owned files are only `specs/release-workflow/{spec,plan,tasks,evidence}.md`.
-Existing contracts, component/phase tasks, six earlier feature packages,
-source code, tests, CLI assets and runtime behavior remain unchanged.
+Owned files are `specs/release-workflow/{spec,plan,tasks,evidence}.md` and
+the task link in `docs/component-roadmaps/release.md`. Existing contracts, phase tasks,
+other packages, compiler/runtime source, shared helpers and product behavior
+remain unchanged.
 This is artifact workflow migration, not component implementation, wholesale
 contract replacement, external Specify CLI execution or automatic skill discovery.
 

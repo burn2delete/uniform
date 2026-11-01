@@ -12,8 +12,6 @@
      (try
        (let [stage1-stream (stage1-reader-token-stream source-path source-text
                                                        table reader-options)
-             _ (c2-prevalidate-token-depth!
-                source-path source-unit (:tokens stage1-stream))
              token-stream (mapv #(c2-token-record % source-unit)
                                 (:tokens stage1-stream))
              parser-stream (assoc stage1-stream :tokens token-stream)
@@ -35,8 +33,7 @@
            :source-span (source-span source-path 0)
            :reader-options reader-options}
           {:missing-fields [:stack-safe-reader-form-construction]
-           :facts {:maximum-form-depth max-reader-form-depth
-                   :failure-kind :reader-resource-depth-limit
+           :facts {:failure-kind :reader-host-stack-overflow
                    :contained-host-error (.getName (class error))}}))
        (catch clojure.lang.ExceptionInfo ex
          (throw

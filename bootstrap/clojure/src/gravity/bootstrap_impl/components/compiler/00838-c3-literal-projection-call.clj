@@ -9,6 +9,13 @@
        (c3-literal-projection-ops)
        #(apply operation args)))))
 
+(declare ^:private sh04-syntax-literal-index)
+(defn c3-form-index [artifact]
+  (sh04-syntax-literal-index artifact :literal-forms :form-tree :form-id
+    #(c3-literal-projection-call c3-literal-projection/c3-form-index artifact)))
+(defn c3-token-index [artifact]
+  (sh04-syntax-literal-index artifact :literal-tokens :token-stream :token-id
+    #(c3-literal-projection-call c3-literal-projection/c3-token-index artifact)))
 (defn c3-deferred-ratio-descriptor-from-raw
   [raw]
   (c3-literal-projection-call

@@ -10,12 +10,12 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test]
-            [gravity.self-hosting.sh01-impact-test-planner :as impact-planner])
+            [gravity.self-hosting.sh01-impact-test-planner :as impact-planner]
+            [gravity.process-supervision :as process-supervision])
   (:import (java.io ByteArrayOutputStream PushbackReader StringReader)
            (java.nio.charset StandardCharsets)
            (java.nio.file Files LinkOption Path Paths StandardCopyOption
-                            StandardOpenOption)
-           (java.util.concurrent TimeUnit))
+                            StandardOpenOption))
   (:gen-class))
 
 (def schema :gravity/sh07-development-runner-report-v1)
@@ -301,55 +301,33 @@
     (close-capture! capture)
     value))
 
-(defn- process-pids
-  [^Process process]
-  (try
-    (let [handle (.toHandle process)]
-      (with-open [descendants (.descendants handle)]
-        (let [observed (vec (take (inc process-pid-limit)
-                                  (iterator-seq (.iterator descendants))))]
-          {:root (.pid handle)
-           :sampling-failed? false
-           :pids (vec (take process-pid-limit
-                            (map #(.pid ^java.lang.ProcessHandle %)
-                                 observed)))
-           :truncated? (> (count observed) process-pid-limit)})))
-    (catch Throwable _ {:root nil :pids [] :truncated? false
-                        :sampling-failed? true})))
-
 (defn- cleanup-process-tree!
   "Terminate a child and all bounded descendants, returning cleanup evidence."
-  [^Process process]
-  (let [{:keys [pids truncated? sampling-failed?]} (process-pids process)
-        handles
-        (keep #(try
-                 (some-> (java.lang.ProcessHandle/of (long %))
-                         (.orElse nil))
-                 (catch Throwable _ nil))
-              pids)
-        _ (when (.isAlive process)
-            (.destroyForcibly process))
-        _ (doseq [^java.lang.ProcessHandle handle handles]
-            (when (.isAlive handle)
-              (.destroyForcibly handle)))
-        deadline (+ (System/nanoTime)
-                    (* process-cleanup-timeout-ms 1000000))]
-    (loop []
-      (let [alive (filterv #(.isAlive ^java.lang.ProcessHandle %) handles)
-            root-alive? (.isAlive process)]
-        (if (or (and (empty? alive) (not root-alive?))
-                (>= (System/nanoTime) deadline))
-          {:cleanup-complete? (and (empty? alive) (not root-alive?)
-                                   (not truncated?) (not sampling-failed?))
-           :sampling-failed? sampling-failed?
-           :capture-overflow? truncated?
-           :captured-descendant-count (count handles)
-           :root-exited? (not root-alive?)
-           :root-alive-after-kill? root-alive?
-           :descendants-alive-after-kill (count alive)}
-          (do
-            (Thread/sleep 10)
-            (recur)))))))
+  ([^Process process]
+   (cleanup-process-tree! process (process-supervision/retain-owned-process!
+                                   process)))
+  ([^Process _process owned]
+   (let [cleanup (process-supervision/finalize-owned-process!
+                  owned {:grace-ms 0
+                         :timeout-ms process-cleanup-timeout-ms
+                         :descendant-limit process-pid-limit
+                         :raise-fatal? false})
+         sampling-failed? (boolean (:discovery-error cleanup))
+         capture-overflow? (true? (:observation-truncated? cleanup))
+         descendant-pids (vec (:descendant-pids cleanup))
+         root-alive? (boolean (:root-alive? cleanup))
+         tracked-clean? (true? (:tracked-complete? cleanup))]
+     {:cleanup-complete? (and tracked-clean?
+                              (not sampling-failed?)
+                              (not capture-overflow?))
+      :sampling-failed? sampling-failed?
+      :capture-overflow? capture-overflow?
+      :captured-descendant-count (count descendant-pids)
+      :root-exited? (not root-alive?)
+      :root-alive-after-kill? root-alive?
+      :descendants-alive-after-kill (long (or (:descendants-alive cleanup) 0))
+      :observed-pids (:observed-pids cleanup)
+      :survivor-pids (:survivor-pids cleanup)})))
 
 (defn- report-counters?
   [value]
@@ -522,88 +500,125 @@
                      :last-progress nil
                      :last-heartbeat-ms 0
                      :last-elapsed-ms 0})
-        started (System/nanoTime)
-        builder (doto (ProcessBuilder. ^java.util.List command)
-                  (.directory (.toFile (current-working-directory))))]
+        started (System/nanoTime)]
     (try
-      (.put (.environment builder)
-            progress-file-environment (str (:path progress)))
-      (let [process (.start builder)
-            stdout (capture-stream (.getInputStream process))
-            stderr (capture-stream (.getErrorStream process))
-            deadline (+ started (* timeout 1000000))]
-        (loop []
-          (let [now (System/nanoTime)]
-            (sample-state! state (:path progress) route-name started false)
-            (cond
-              ;; Check the deadline before process liveness.  A child that
-              ;; exits successfully after the bound is still a timeout; its
-              ;; late result must never be reinterpreted as a pass.
-              (>= now deadline)
-              (let [cleanup (cleanup-process-tree! process)
-                    _ (close-capture! stdout)
-                    _ (close-capture! stderr)
-                    stdout (capture-value stdout
-                                          process-output-drain-timeout-ms)
-                    stderr (capture-value stderr
-                                          process-output-drain-timeout-ms)
-                    final-state (sample-state! state (:path progress)
-                                               route-name started true)
-                    elapsed (long (/ (- (System/nanoTime) started) 1000000))]
-                {:schema schema
-                 :authority :non-authoritative
-                 :authoritative? false
-                 :route route-name
-                 :status :timeout
-                 :exit-code 124
-                 :elapsed-ms elapsed
-                 :timed-out? true
-                 :selection (route-selection route-name)
-                 :stdout stdout
-                 :stderr stderr
-                 :cleanup cleanup
-                 :progress (select-keys final-state
-                                        [:last-progress :progress-history
-                                         :last-elapsed-ms])
-                 :diagnostic-id "SH07-DEV-TIMEOUT"})
+      (let [process (process-supervision/start-process
+                     command {:working-directory (current-working-directory)
+                              :environment {progress-file-environment
+                                            (str (:path progress))}})
+            owned (process-supervision/retain-owned-process! process)
+            captures (atom {})]
+        (try
+          (let [stdout (capture-stream (.getInputStream process))
+                stderr (do
+                         (swap! captures assoc :stdout stdout)
+                         (capture-stream (.getErrorStream process)))
+                deadline (do
+                           (swap! captures assoc :stderr stderr)
+                           (+ started (* timeout 1000000)))]
+            (loop []
+              (let [now (System/nanoTime)]
+                (process-supervision/observe-owned-process!
+                 owned {:descendant-limit process-pid-limit})
+                (sample-state! state (:path progress) route-name started false)
+                (cond
+                ;; Check the deadline before process liveness.  A child that
+                ;; exits successfully after the bound is still a timeout; its
+                ;; late result must never be reinterpreted as a pass.
+                  (>= now deadline)
+                  (let [cleanup (cleanup-process-tree! process owned)
+                        _ (close-capture! stdout)
+                        _ (close-capture! stderr)
+                        stdout (capture-value stdout
+                                              process-output-drain-timeout-ms)
+                        stderr (capture-value stderr
+                                              process-output-drain-timeout-ms)
+                        final-state (sample-state! state (:path progress)
+                                                   route-name started true)
+                        elapsed (long (/ (- (System/nanoTime) started) 1000000))]
+                    {:schema schema
+                     :authority :non-authoritative
+                     :authoritative? false
+                     :route route-name
+                     :status :timeout
+                     :exit-code 124
+                     :elapsed-ms elapsed
+                     :timed-out? true
+                     :selection (route-selection route-name)
+                     :stdout stdout
+                     :stderr stderr
+                     :cleanup cleanup
+                     :progress (select-keys final-state
+                                            [:last-progress :progress-history
+                                             :last-elapsed-ms])
+                     :diagnostic-id "SH07-DEV-TIMEOUT"})
 
-              (not (.isAlive process))
-            (let [exit-code (.exitValue process)
-                  stdout (capture-value stdout process-output-drain-timeout-ms)
-                  stderr (capture-value stderr process-output-drain-timeout-ms)
-                  final-state (sample-state! state (:path progress)
-                                             route-name started true)
-                  parsed (parse-child-report route-name stdout exit-code)
-                  elapsed (long (/ (- (System/nanoTime) started) 1000000))]
-              (merge
-               {:schema schema
-                :authority :non-authoritative
-                :authoritative? false
-                :route route-name
-                :status (if (:report parsed) (:status (:report parsed)) :failed)
-                :exit-code (if (:report parsed) exit-code 1)
-                :elapsed-ms elapsed
-                :timed-out? false
-                :selection (route-selection route-name)
-                :stdout stdout
-                :stderr stderr
-                :progress (select-keys final-state
-                                       [:last-progress :progress-history
-                                        :last-elapsed-ms])}
-               (if-let [report (:report parsed)]
-                 {:child-report report
-                  :selection-count (:selection-count report)
-                  :artifact-build-count (:artifact-build-count report)}
-                 {:diagnostic-id (:diagnostic-id parsed)
-                  :diagnostic (:diagnostic parsed)})))
+                  (not (.isAlive process))
+                  (let [cleanup (cleanup-process-tree! process owned)
+                        exit-code (try (.exitValue process)
+                                       (catch Throwable _ 1))
+                        stdout (capture-value stdout process-output-drain-timeout-ms)
+                        stderr (capture-value stderr process-output-drain-timeout-ms)
+                        final-state (sample-state! state (:path progress)
+                                                   route-name started true)
+                        parsed (parse-child-report route-name stdout exit-code)
+                        cleanup-ok? (true? (:cleanup-complete? cleanup))
+                        report-status (if (:report parsed)
+                                        (:status (:report parsed))
+                                        :failed)
+                        status (if cleanup-ok? report-status :failed)
+                        observed-exit (if (and cleanup-ok? (:report parsed))
+                                        exit-code
+                                        1)
+                        elapsed (long (/ (- (System/nanoTime) started) 1000000))]
+                    (merge
+                     {:schema schema
+                      :authority :non-authoritative
+                      :authoritative? false
+                      :route route-name
+                      :status status
+                      :exit-code observed-exit
+                      :elapsed-ms elapsed
+                      :timed-out? false
+                      :selection (route-selection route-name)
+                      :stdout stdout
+                      :stderr stderr
+                      :cleanup cleanup
+                      :progress (select-keys final-state
+                                             [:last-progress :progress-history
+                                              :last-elapsed-ms])}
+                     (cond
+                       (not cleanup-ok?)
+                       {:diagnostic-id "SH07-DEV-CLEANUP"
+                        :diagnostic cleanup}
 
-              :else
-              (do
-                (Thread/sleep (long (min 100
-                                         (max 1
-                                              (/ (- deadline (System/nanoTime))
-                                                 1000000)))))
-                (recur))))))
+                       (:report parsed)
+                       {:child-report (:report parsed)
+                        :selection-count (:selection-count (:report parsed))
+                        :artifact-build-count
+                        (:artifact-build-count (:report parsed))}
+
+                       :else
+                       {:diagnostic-id (:diagnostic-id parsed)
+                        :diagnostic (:diagnostic parsed)})))
+
+                  :else
+                  (do
+                    (Thread/sleep (long (min 100
+                                             (max 1
+                                                  (/ (- deadline (System/nanoTime))
+                                                     1000000)))))
+                    (recur))))))
+          (catch Throwable original
+            (try
+              (cleanup-process-tree! process owned)
+              (catch Throwable cleanup-error
+                (when-not (identical? original cleanup-error)
+                  (.addSuppressed ^Throwable original cleanup-error)))
+              (finally
+                (doseq [capture (vals @captures)]
+                  (close-capture! capture))))
+            (throw original))))
       (finally
         (when (:temporary? progress)
           (delete-tree! (:directory progress)))))))

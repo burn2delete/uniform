@@ -29,7 +29,7 @@
     :public-target-support-claim? false}
    :delegates-to
    (if packaged?
-     "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
+     "java -cp target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
      "clojure -M:gravity")
    :replaced-by "Phase 18 self-hosted release artifact"})
 
@@ -45,6 +45,9 @@
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
+   "  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n"
+   "    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n"
+   "    (local hermetic input entry; effectful Reader bridge unavailable)\n"
    "  gravity test\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"
@@ -100,20 +103,29 @@
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-version-record))))
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-help-text))))))
 
+(deftest usage-text-remains-the-entrypoint-compatibility-value
+  (let [usage (cli/cli-usage-text)]
+    (is (= usage entrypoint/usage-text))
+    (is (string? usage))
+    (is (.startsWith usage "usage: clojure -M:gravity "))))
+
 (deftest cli-namespace-contract-is-narrow-and-acyclic
   (let [contract-var
         (get (ns-interns 'gravity.cli) 'namespace-contract)
         contract (var-get contract-var)]
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
+             'sh07-core-input}
            (set (keys (ns-publics 'gravity.cli)))))
     (is (true? (:private (meta contract-var))))
     (is (= 'gravity.cli (:namespace contract)))
-    (is (= :bootstrap-cli-presentation-values
+    (is (= :bootstrap-cli-presentation-and-core-arguments
            (:contract-boundary contract)))
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
+             'sh07-core-input}
            (set (keys (:public-api contract)))))
-    (is (= [:packaged-jvm-cli-state] (:artifact-inputs contract)))
-    (is (= [:bootstrap-version-record :bootstrap-help-text]
+    (is (= [:packaged-jvm-cli-state :selected-sh07-command-arguments] (:artifact-inputs contract)))
+    (is (= [:bootstrap-version-record :bootstrap-help-text
+            :bootstrap-usage-text :sh07-core-input]
            (:artifact-outputs contract)))
     (is (= ['clojure.core]
            (get-in contract [:dependency-direction :requires])))
@@ -129,6 +141,35 @@
     (is (false? (:full-t1-command-surface? contract)))
     (is (false? (:seedless-release? contract)))
     (is (false? (:self-hosted? contract)))))
+
+(deftest selected-core-arguments-preserve-values-and-refuse-before-source-io
+  (let [wrapper (ns-resolve 'gravity.bootstrap 'sh07-public-core-cli-input)
+        reads (atom 0)
+        rejection (fn [parse arguments]
+                    (try (parse arguments) nil
+                         (catch clojure.lang.ExceptionInfo error
+                           {:message (.getMessage error) :data (ex-data error)})))]
+    (is (= '([arguments]) (:arglists (meta #'cli/sh07-core-input))))
+    (is (= :already-selected (get-in (:gravity/namespace-contract (meta #'cli/sh07-core-input))
+                                     [:public-api 'sh07-core-input :command-selection])))
+    (with-redefs [bootstrap/read-gravity-source-text
+                  (fn [_] (swap! reads inc) (throw (AssertionError. "Unexpected target read")))]
+      (doseq [[arguments expected] [[["sh07-core" "module.gravity"] ["module.gravity" {}]]
+                                    [["sh07-core" "module.qst" "--development-current-reader"]
+                                     ["module.qst" {:reader :development-current}]]
+                                    [["sh07-core" ""] ["" {}]]]
+              parse [cli/sh07-core-input wrapper]]
+        (is (= expected (parse arguments))))
+      (doseq [arguments [["sh07-core"] ["sh07-core" nil] ["sh07-core" 0]
+                        ["sh07-core" "--unknown"] ["sh07-core" "module.gravity" "--unknown"]
+                        ["sh07-core" "module.gravity" "extra.gravity"]
+                        ["sh07-core" "module.gravity" "--development-current-reader" "extra"]
+                        ["sh07-core" "module.gravity" "--development-current-reader" "--development-current-reader"]]
+              parse [cli/sh07-core-input wrapper]]
+        (is (= {:message "usage: gravity sh07-core FILE [--development-current-reader]"
+                :data {:id "SH07-CLI-ARGS" :stage :command-line :severity :error}}
+               (rejection parse arguments)))))
+    (is (zero? @reads))))
 
 (deftest diagnostic-presentation-is-sanitized-and-bootstrap-free
   (let [writer (java.io.StringWriter.)

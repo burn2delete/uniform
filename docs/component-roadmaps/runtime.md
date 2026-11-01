@@ -4,6 +4,8 @@ Working name: **Runtime** (proposed). Semantic key: `runtime`.
 Owner role: runtime maintainer; current implementation owner not assigned by this
 proposal. Source baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
+Implementation task authority: [Spec Kit ledger](../../specs/runtime-workflow/tasks.md#implementation-tasks).
+
 ## Purpose and scope
 
 Execute accepted artifacts through explicit service families, never a hidden
@@ -34,15 +36,7 @@ of Build or seed retirement is not required to implement runtime services.
 
 ## Remaining tasks and evidence
 
-All tasks are open; source evidence is a starting point, not acceptance.
-
-| Task | Existing evidence | Required closing evidence |
-| --- | --- | --- |
-| Implement explicit family selection and no-runtime rejection | [Selection validator](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/runtimes/00284-runtime-selection-validate.clj) | Actual service link/load inspection for every claimed profile/target and forbidden-service rejection |
-| Finish managed/native execution, startup, panic and cleanup | [Development evaluator](../../bootstrap/gravity/src/gravity/runtime.gravity) and [native manifest](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00287-minimal-native-runtime-manifest.clj) | Executed startup/failure/resource fixtures and manifest-to-service agreement |
-| Implement memory, concurrency and typed FFI boundaries | [Runtime contracts](../phase-08-runtime-architecture/README.md) | Allocation, lifetime, transfer, race and foreign-failure conformance with explicit providers |
-| Connect distributed/AI replay and interactive execution | [Runtime contracts](../phase-08-runtime-architecture/README.md) | Recorded nondeterminism, replay equality, no duplicated external effect, REPL grant denial |
-| Close enforcement and observability integration | [Capability runtime contract](../phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md) | Denial at actual service hook, redacted diagnostics and source-map preservation |
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/runtime-workflow/tasks.md#implementation-tasks).
 
 The Gravity evaluator explicitly describes a development control representation,
 not a target error ABI. It does not establish seedless execution or all runtime

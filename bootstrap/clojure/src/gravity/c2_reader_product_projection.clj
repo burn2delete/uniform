@@ -6,7 +6,8 @@
   extension invocation records. It does not read source, construct or
   authenticate canonical C2/SH03 products, own policy/options, use caches, or
   grant proof, self-hosting, attestation, or release authority."
-  (:require [gravity.c2-reader-product-projection.policy :as policy]))
+  (:require [gravity.c2-reader-product-projection.policy :as policy]
+            [gravity.c2-reader-product-projection.scalar-spans :as scalar-spans]))
 
 (def ^:private ^:dynamic *operations* {})
 (def ^:private ^:dynamic *active-operation-keys* #{})
@@ -69,6 +70,7 @@
   [source-path products module-context]
   (let [forms-by-id (into {} (map (juxt :form-id identity)
                                   (:form-tree products)))
+        scalar-spans (scalar-spans/root-spans products forms-by-id)
         seed-records
         (mapv
          (fn [idx record]
@@ -81,7 +83,8 @@
                        (:generated-origin node))]
              {:form (:form record)
               :form-id (:form-id node)
-              :span (assoc (:span node) :form-index idx)
+              :span (cond-> (assoc (:span node) :form-index idx)
+                      scalar-spans (merge (scalar-spans (:form-id node))))
               :metadata (or (:metadata node) {})
               :reader-origin {:kind :source
                               :raw-form-kind (:kind node)

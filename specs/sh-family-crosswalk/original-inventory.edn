@@ -1,0 +1,2166 @@
+{:kind :sh-original-acceptance-inventory,
+ :authority :source-provenance-only,
+ :source-commit "15a5499e97798621d270c36dd2546ce98ddd62a9",
+ :source-file-sha256
+ "c625b50f3331e4692804392834a12dc4f0845b449786a69fd1b53b15febde188",
+ :requirements
+ [{:id "SH-00.1",
+   :milestone "SH-00",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 12368,
+    :end-byte 12498,
+    :start-line 189,
+    :end-line 190,
+    :sha256
+    "901ed5800ad757e9360ce90b596286fcec6744b7516062ea0ac0e49b3bf52153",
+    :raw
+    "1. **SH-00.1:** Preserve the exact claimed typed MIR operation subset and its\n   checked lowering request as the comparison input."}}
+  {:id "SH-00.2",
+   :milestone "SH-00",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 12499,
+    :end-byte 12630,
+    :start-line 191,
+    :end-line 192,
+    :sha256
+    "c0b1c4154be37679d56426309973ac8fdd560e3e18c08ee4e8f9aeeaa156d9a6",
+    :raw
+    "2. **SH-00.2:** Produce a genuine Wasm artifact through the declared backend,\n   preserving source, legality and artifact metadata."}}
+  {:id "SH-00.3",
+   :milestone "SH-00",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 12631,
+    :end-byte 12774,
+    :start-line 193,
+    :end-line 194,
+    :sha256
+    "053a3b6922323d11710329f97a30e7da4024c54d171e0c4480ce25547388af8f",
+    :raw
+    "3. **SH-00.3:** Independently validate/execute the accepted artifact and compare\n   its observable result with the declared reference behavior."}}
+  {:id "SH-00.4",
+   :milestone "SH-00",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 12775,
+    :end-byte 12923,
+    :start-line 195,
+    :end-line 196,
+    :sha256
+    "6249fba14dde01ec1d7660644cb60327fce564c9e9e2c2afb533981c07f25ead",
+    :raw
+    "4. **SH-00.4:** Reject malformed MIR, unsupported lowering and mismatched or\n   substituted comparison inputs without target-dependent legalization."}}
+  {:id "SH-00.5",
+   :milestone "SH-00",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 12924,
+    :end-byte 13048,
+    :start-line 197,
+    :end-line 198,
+    :sha256
+    "df892e623bac567b52b258183e7e37f20e1105855ffcfeb26b2464b66b34a915",
+    :raw
+    "5. **SH-00.5:** Retain the independent review, tool identities and bounded\n   comparison results, including all limitations."}}
+  {:id "SH-00.6",
+   :milestone "SH-00",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 13049,
+    :end-byte 13173,
+    :start-line 199,
+    :end-line 200,
+    :sha256
+    "c25a858132d9fdb15e85b74d5d7b4c0326d9cc2310be19f8bf2feab9dfeac260",
+    :raw
+    "6. **SH-00.6:** Keep that accepted work committed with a clean integration\n   baseline and explicit remaining seed boundary."}}
+  {:id "SH-01.1",
+   :milestone "SH-01",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 13888,
+    :end-byte 13967,
+    :start-line 216,
+    :end-line 216,
+    :sha256
+    "c9cde6cf021bd7e0efe91e9ac9934b88e520ed1162331c29a6d0feee5c59ddd9",
+    :raw
+    "1. **SH-01.1:** Name one semantic owner for each compiler stage and public API."}}
+  {:id "SH-01.2",
+   :milestone "SH-01",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 13968,
+    :end-byte 14118,
+    :start-line 217,
+    :end-line 218,
+    :sha256
+    "0d099302d99a663c2f244a6eb8cff9152a2133b600ff1b25665845b9d5a2e543",
+    :raw
+    "2. **SH-01.2:** Name owners for fixtures, tests, artifact generation, coverage\n   and shared routing; no executable shared file has competing writers."}}
+  {:id "SH-01.3",
+   :milestone "SH-01",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 14119,
+    :end-byte 14241,
+    :start-line 219,
+    :end-line 220,
+    :sha256
+    "e20b25cc2d093c44dfd3fbb9686a415c9a5e470b837eecdd4741551188e9fd52",
+    :raw
+    "3. **SH-01.3:** Permit a focused test to be added/run without unrelated edits\n   to a monolithic bootstrap test namespace."}}
+  {:id "SH-01.4",
+   :milestone "SH-01",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 14242,
+    :end-byte 14391,
+    :start-line 221,
+    :end-line 222,
+    :sha256
+    "7b85798339fc51ac83b7c493daea9b62a2b8ed7a375a4722ee0ce8d963080eb1",
+    :raw
+    "4. **SH-01.4:** Keep compatibility entrypoints delegated to their stage owner;\n   reject duplicate semantic implementations masquerading as adapters."}}
+  {:id "SH-01.5",
+   :milestone "SH-01",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 14392,
+    :end-byte 14535,
+    :start-line 223,
+    :end-line 224,
+    :sha256
+    "4b6b9f1e9eeb87331ec948f60bfe75b4ffa0633e8b2054da6e4639d24b168239",
+    :raw
+    "5. **SH-01.5:** Select affected tests correctly, reject unknown selectors and\n   preserve actual failures rather than counting skips as passes."}}
+  {:id "SH-01.6",
+   :milestone "SH-01",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 14536,
+    :end-byte 14672,
+    :start-line 225,
+    :end-line 226,
+    :sha256
+    "4350b77071fde7f264123a40706c8907a54222900e124b565b48cff8fbcf6b87",
+    :raw
+    "6. **SH-01.6:** Verify representative leaf and shared changes follow the\n   ownership boundary without unrelated compiler modifications."}}
+  {:id "SH-02.1",
+   :milestone "SH-02",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 15176,
+    :end-byte 15327,
+    :start-line 239,
+    :end-line 240,
+    :sha256
+    "3d2e151be2b68eb89a68c8710604f75b3dcfbc3fcca6e33750c16f4e2018a67b",
+    :raw
+    "1. **SH-02.1:** Use one reusable envelope contract at two distinct compiler\n   stages, with explicit producer, consumer and artifact schema identities."}}
+  {:id "SH-02.2",
+   :milestone "SH-02",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 15328,
+    :end-byte 15443,
+    :start-line 241,
+    :end-line 242,
+    :sha256
+    "a7470876c5c83e2f5fcc2da76439f6816ecbf4217d521ca04ed3196c5ece1776",
+    :raw
+    "2. **SH-02.2:** Bind source revision, semantic inputs and required preserved\n   facts to the actual output lineage."}}
+  {:id "SH-02.3",
+   :milestone "SH-02",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 15444,
+    :end-byte 15573,
+    :start-line 243,
+    :end-line 244,
+    :sha256
+    "a294e6a8f92eb09deb5365337690fe44c8bd42a558514b46d4e07ff60d5347e5",
+    :raw
+    "3. **SH-02.3:** Compute deterministic path-neutral semantic identity while\n   retaining actual source-path provenance separately."}}
+  {:id "SH-02.4",
+   :milestone "SH-02",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 15574,
+    :end-byte 15708,
+    :start-line 245,
+    :end-line 246,
+    :sha256
+    "26e1a735ccff7aa5f2bfe749a95862f6dad18c749972e128b1a092ac0dc6e85b",
+    :raw
+    "4. **SH-02.4:** Reject stale, substituted and cross-stage inputs even when\n   an attacker changes related redundant fields coherently."}}
+  {:id "SH-02.5",
+   :milestone "SH-02",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 15709,
+    :end-byte 15842,
+    :start-line 247,
+    :end-line 248,
+    :sha256
+    "6b9249895347b05fc7ddba2b01260405131624c3072950f355f158ee6fdf5293",
+    :raw
+    "5. **SH-02.5:** Reject malformed/cyclic/over-bound graphs before uncontrolled\n   traversal; failures are structured and attributable."}}
+  {:id "SH-02.6",
+   :milestone "SH-02",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 15843,
+    :end-byte 15985,
+    :start-line 249,
+    :end-line 250,
+    :sha256
+    "db6aeb8826a6619b87f161c3cbadd9ac2e01ab00fc64017ffb2643a34e911b0b",
+    :raw
+    "6. **SH-02.6:** Exercise valid two-stage composition and invalid envelopes\n   through the real shared verifier, with explicit remaining trust."}}
+  {:id "SH-03.1",
+   :milestone "SH-03",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 16488,
+    :end-byte 16637,
+    :start-line 264,
+    :end-line 265,
+    :sha256
+    "422ca7468c037a6c696a59c28c29e3ec5f1544b02e37d8e07910bc6158a1f488",
+    :raw
+    "1. **SH-03.1:** Decode the claimed bootstrap source/literals, Unicode and\n   newline policy, retaining exact positions and co-canonical source paths."}}
+  {:id "SH-03.2",
+   :milestone "SH-03",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 16638,
+    :end-byte 16780,
+    :start-line 266,
+    :end-line 267,
+    :sha256
+    "d37193bd89e33867ff3fa649ca3602fc40890da80daa912628b1c7a89dc36848",
+    :raw
+    "2. **SH-03.2:** Read lists, vectors, maps, sets and nesting with complete\n   delimiter, token and end-of-input rules for the compiler closure."}}
+  {:id "SH-03.3",
+   :milestone "SH-03",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 16781,
+    :end-byte 16917,
+    :start-line 268,
+    :end-line 269,
+    :sha256
+    "5203ca7739c3140a8ee50085817b17ec57d66c4e0cd2599ba97f13036339b5d5",
+    :raw
+    "3. **SH-03.3:** Read required abbreviations, quoting, metadata and reader\n   extension syntax without executing ungranted host behavior."}}
+  {:id "SH-03.4",
+   :milestone "SH-03",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 16918,
+    :end-byte 17066,
+    :start-line 270,
+    :end-line 271,
+    :sha256
+    "5386b5a5c84f410a8be08d83ad48913c202e07ff92b5b2b5eb72c1cc0e365c77",
+    :raw
+    "4. **SH-03.4:** Reject each malformed encoding, literal, delimiter, extension\n   and resource-bound family with a stable reader diagnostic and span."}}
+  {:id "SH-03.5",
+   :milestone "SH-03",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 17067,
+    :end-byte 17206,
+    :start-line 272,
+    :end-line 273,
+    :sha256
+    "1c03a282d8604e6530366cb782e028ce3737fdb14d0834e53e2e7e86c073699e",
+    :raw
+    "5. **SH-03.5:** Serialize/round-trip source forms and occurrences without\n   losing distinctions needed by syntax, resolution and lowering."}}
+  {:id "SH-03.6",
+   :milestone "SH-03",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 17207,
+    :end-byte 17423,
+    :start-line 274,
+    :end-line 276,
+    :sha256
+    "b1a71b906c1af35d6c2dd138b35388d022cfd6bf6d82a01c78c829a6f0d3208f",
+    :raw
+    "6. **SH-03.6:** Execute the Gravity reader over the declared compiler source\n   subset and compare accepted forms/rejected diagnostics with the stage\n   reference; a Clojure reread cannot supply the claimed behavior."}}
+  {:id "SH-04.1",
+   :milestone "SH-04",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 17897,
+    :end-byte 18030,
+    :start-line 289,
+    :end-line 290,
+    :sha256
+    "20a0545dedfd62cdf602dc55c66c163a3536ee6a1df202069c922fcb78f6cb3a",
+    :raw
+    "1. **SH-04.1:** Construct syntax objects from reader occurrences with value,\n   span, namespace, phase, profile and metadata context."}}
+  {:id "SH-04.2",
+   :milestone "SH-04",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 18031,
+    :end-byte 18156,
+    :start-line 291,
+    :end-line 292,
+    :sha256
+    "4eb4f030e9350e040910b12e95a1e53e75c707452fbf264701ec74e8f3fb86e7",
+    :raw
+    "2. **SH-04.2:** Represent lexical scopes and hygiene marks without accidental\n   capture or conflating same-spelled bindings."}}
+  {:id "SH-04.3",
+   :milestone "SH-04",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 18157,
+    :end-byte 18287,
+    :start-line 293,
+    :end-line 294,
+    :sha256
+    "360fd29fbd825f0d2f629cac9164b631b2729ba396ce30fbb9e01cf397575914",
+    :raw
+    "3. **SH-04.3:** Retain generated-origin chains to both macro producer and\n   originating source, including nested generated forms."}}
+  {:id "SH-04.4",
+   :milestone "SH-04",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 18288,
+    :end-byte 18441,
+    :start-line 295,
+    :end-line 296,
+    :sha256
+    "d49129739a7ade9fac987dffb1d069cfb5a5343555124066835d7d1ebd886187",
+    :raw
+    "4. **SH-04.4:** Serialize/deserialize the full claimed syntax representation\n   with deterministic identity and preserved occurrence/source distinctions."}}
+  {:id "SH-04.5",
+   :milestone "SH-04",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 18442,
+    :end-byte 18580,
+    :start-line 297,
+    :end-line 298,
+    :sha256
+    "9009b2a86eb77e54a9eb40f28527c498b00dc4cab3436830550d564ab6995b05",
+    :raw
+    "5. **SH-04.5:** Reject broken references, origin cycles, invalid scope/mark\n   relations, malformed metadata and over-bound syntax graphs."}}
+  {:id "SH-04.6",
+   :milestone "SH-04",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 18581,
+    :end-byte 18726,
+    :start-line 299,
+    :end-line 300,
+    :sha256
+    "0a7ccae0bb5c2bbab0ea31da14071d0247186314c7d477a83e424cfb870e91a1",
+    :raw
+    "6. **SH-04.6:** Supply real SH-03 -> SH-04 -> SH-05 inputs without host-created\n   syntax facts being mistaken for Gravity construction evidence."}}
+  {:id "SH-05.1",
+   :milestone "SH-05",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 19113,
+    :end-byte 19263,
+    :start-line 311,
+    :end-line 312,
+    :sha256
+    "3ac2e714e5760df35ad6aadbf6a36f9e833c5022525bdd157285effd86a50983",
+    :raw
+    "1. **SH-05.1:** Expand every macro required by the compiler source closure,\n   including recursive expansion to the declared expanded-syntax boundary."}}
+  {:id "SH-05.2",
+   :milestone "SH-05",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 19264,
+    :end-byte 19392,
+    :start-line 313,
+    :end-line 314,
+    :sha256
+    "65fca4807b7869cf240736821d163efe484a3fdf5b9aeb07750d882aa00ea592",
+    :raw
+    "2. **SH-05.2:** Preserve scopes, hygiene, source locations and nested generated\n   origins through introduced and reused syntax."}}
+  {:id "SH-05.3",
+   :milestone "SH-05",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 19393,
+    :end-byte 19535,
+    :start-line 315,
+    :end-line 316,
+    :sha256
+    "b6ddd4636bedbea5e2c29ad08dd2995a3ca8db254122236caeaf29c1eb055252",
+    :raw
+    "3. **SH-05.3:** Enforce phase separation and caller-profile legality; generated\n   code re-enters ordinary resolution/core/type/effect checks."}}
+  {:id "SH-05.4",
+   :milestone "SH-05",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 19536,
+    :end-byte 19681,
+    :start-line 317,
+    :end-line 318,
+    :sha256
+    "642b5e4e1e5fca1259cc6ff7af98e1eee37590ae984fac84cd66a47eb5fa5a81",
+    :raw
+    "4. **SH-05.4:** Reject ungranted compile-time filesystem, environment, network,\n   shell and other effects rather than inheriting seed authority."}}
+  {:id "SH-05.5",
+   :milestone "SH-05",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 19682,
+    :end-byte 19829,
+    :start-line 319,
+    :end-line 320,
+    :sha256
+    "8102bb2168c634ce0083c9d28a4e7dda6cb2795b9c10bb29199a9175d1dbe895",
+    :raw
+    "5. **SH-05.5:** Diagnose invalid expansion shape, unsupported macros, cycles or\n   exhausted bounds, with the macro call and producer attributable."}}
+  {:id "SH-05.6",
+   :milestone "SH-05",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 19830,
+    :end-byte 19958,
+    :start-line 321,
+    :end-line 322,
+    :sha256
+    "f9044a22900564f22a6d2d70950f3ede58c0246a06724cbd12b9bebfe3ff4938",
+    :raw
+    "6. **SH-05.6:** Compare real compiler macro expansions and rejected diagnostic\n   behavior with the accepted prior-stage subset."}}
+  {:id "SH-06.1",
+   :milestone "SH-06",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 20339,
+    :end-byte 20480,
+    :start-line 333,
+    :end-line 334,
+    :sha256
+    "ac188046615aaf2921c038d82f893634da02456fa71946bc2509d16b341453c6",
+    :raw
+    "1. **SH-06.1:** Build the compiler namespace/module graph with imports,\n   aliases, exports, visibility and declared dependency-cycle policy."}}
+  {:id "SH-06.2",
+   :milestone "SH-06",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 20481,
+    :end-byte 20623,
+    :start-line 335,
+    :end-line 336,
+    :sha256
+    "bd35aa5f80c4ebbe9f850525c0526cd563ac6af7d5359fd2318eadb6ac2087f8",
+    :raw
+    "2. **SH-06.2:** Resolve lexical, top-level, qualified and required core bindings\n   with stable identities and correct shadowing/availability."}}
+  {:id "SH-06.3",
+   :milestone "SH-06",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 20624,
+    :end-byte 20754,
+    :start-line 337,
+    :end-line 338,
+    :sha256
+    "3677cb348755ff1dd6109f2622d041d3ad3ca5e54d605e423dd9c5a95218660a",
+    :raw
+    "3. **SH-06.3:** Resolve references, operators, macro-generated names and\n   pattern-bound names in their actual scopes and phases."}}
+  {:id "SH-06.4",
+   :milestone "SH-06",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 20755,
+    :end-byte 20903,
+    :start-line 339,
+    :end-line 340,
+    :sha256
+    "8efeb4a223ab35eae8e5f5a93ff4fda5728c2dbed47f7e2d803fc52a321c177e",
+    :raw
+    "4. **SH-06.4:** Reject unresolved, private, ambiguous, duplicate and illegal\n   cyclic or phase-crossing references with stable binding diagnostics."}}
+  {:id "SH-06.5",
+   :milestone "SH-06",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 20904,
+    :end-byte 21044,
+    :start-line 341,
+    :end-line 342,
+    :sha256
+    "c9c240507b1c4447670288474ea0c926e5cc383b423ea608e128d83e5100d44a",
+    :raw
+    "5. **SH-06.5:** Preserve exact source occurrences, spelling, selected binding\n   identity and resolution order into the Core input contract."}}
+  {:id "SH-06.6",
+   :milestone "SH-06",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 21045,
+    :end-byte 21198,
+    :start-line 343,
+    :end-line 344,
+    :sha256
+    "90eea31f376f27a448d8f21ae4f4802fe1b353c946d218258cb6135fb9374832",
+    :raw
+    "6. **SH-06.6:** Execute resolution over the complete declared compiler source\n   set; coherent forged bindings and changed module inputs fail validation."}}
+  {:id "SH-07.1",
+   :milestone "SH-07",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 22010,
+    :end-byte 22361,
+    :start-line 361,
+    :end-line 365,
+    :sha256
+    "aff52b8e8e86feecaf6caa207d52503f846f75ead08e250c8c94c1d0298e96e7",
+    :raw
+    "1. **SH-07.1 - Values, quotation and references:** Lower compiler-required\n   literals/constructors, quoted DATA, lexical/top-level references, `def`\n   and `var`, preserving binding identity and source mapping. Accept\n   quoted-symbol data without execution; reject malformed quotation,\n   unrecognized forms and invalid reference/definition targets."}}
+  {:id "SH-07.2",
+   :milestone "SH-07",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 22362,
+    :end-byte 22707,
+    :start-line 366,
+    :end-line 370,
+    :sha256
+    "4fd820c2e7c80923b569e21bbb1ee989d13b5573198f50250363f6cb708099ff",
+    :raw
+    "2. **SH-07.2 - Sequencing and bindings:** Lower `if`, `do` and `let` with\n   L2 truthiness, exactly one selected branch, sequential initializer scope\n   and left-to-right evaluation. Include empty/terminal bodies where legal,\n   shadowing and nested control. Reject malformed arity/bindings and lost or\n   reordered evaluated source occurrences."}}
+  {:id "SH-07.3",
+   :milestone "SH-07",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 22708,
+    :end-byte 23112,
+    :start-line 371,
+    :end-line 376,
+    :sha256
+    "020ac64009cf96bd6c1e4ad8da2167c56b823e25c8b6b51304a2389f31b49555",
+    :raw
+    "3. **SH-07.3 - Functions and recursion:** Lower `fn`, calls, `loop` and\n   `recur`, including compiler-required closures, function values and\n   recursive call shapes. Preserve operator/argument evaluation, target,\n   tail position and arity. Reject invalid call/Core shapes, absent or\n   incompatible recur targets and incorrect recur arity. Type compatibility\n   is checked by SH-08, not guessed by C6."}}
+  {:id "SH-07.4",
+   :milestone "SH-07",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 23113,
+    :end-byte 23553,
+    :start-line 377,
+    :end-line 382,
+    :sha256
+    "13ead4e463cd4eadf7b0ba0cab5c9450f59d6631cf832c6c835206d344979336",
+    :raw
+    "4. **SH-07.4 - Mutation and errors:** Lower `set!`, `try` and `throw` with\n   explicit location/RHS order, handler scope/order and normal/error exits;\n   preserve required cleanup semantics. Reject invalid mutable-location\n   shapes, malformed handlers and illegal control placement. Carry type,\n   mutation/error effect, capability and profile obligations to their owners;\n   lowering success does not grant runtime mutation or exceptions."}}
+  {:id "SH-07.5",
+   :milestone "SH-07",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 23554,
+    :end-byte 24218,
+    :start-line 383,
+    :end-line 391,
+    :sha256
+    "b864d1f654b23019e352283b3dd5955387be062ab95f8dcd77792cfc4d5415e4",
+    :raw
+    "5. **SH-07.5 - Match decision structure:** Lower all pattern variants required\n   by the compiler closure, including scalar/quoted-symbol literals,\n   wildcard/binding/default, recursive collection/record/union shapes and\n   guards when used. Preserve scrutinee-once, clause order, branch scope,\n   bindings and structural-failure/guard/body control. Reject duplicate\n   pattern bindings, malformed constructors/guards and unsupported patterns.\n   L7 requires normally returning guards to be Bool, evaluated once after\n   structural success; SH-08 owns that type check and narrowing/totality,\n   SH-09 guard effects, SH-10 moves/borrows, and SH-13 runtime control."}}
+  {:id "SH-07.6",
+   :milestone "SH-07",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 24219,
+    :end-byte 24653,
+    :start-line 392,
+    :end-line 397,
+    :sha256
+    "8985ceadc1cd18fcb3931bfa83783319d86e72259af93e8a746841a925adce5b",
+    :raw
+    "6. **SH-07.6 - Verified canonical Core:** Every required executable form\n   lowers to L2 Core, a declared primitive or an owned domain boundary.\n   Verify child/binding references, source/generated origins, preserved\n   declarations and evaluation records; emit maps/traces and C6 diagnostics.\n   Exercise handwritten/macro-generated equivalents and real SH-06 -> C6\n   composition; missing/forged/reordered products must fail closed."}}
+  {:id "SH-08.1",
+   :milestone "SH-08",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 25946,
+    :end-byte 26098,
+    :start-line 423,
+    :end-line 424,
+    :sha256
+    "d08497194f57a565a3d8acdacba116460a374ef73e6ebada12a6ea4b0d8f2be4",
+    :raw
+    "1. **SH-08.1:** Assign types or structured diagnostics to every compiler Core\n   node, including primitive literals, quoted/meta values and collections."}}
+  {:id "SH-08.2",
+   :milestone "SH-08",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 26099,
+    :end-byte 26240,
+    :start-line 425,
+    :end-line 426,
+    :sha256
+    "61006d97a0f57bad328d5a8377f05b72291d0abcb098b4ce33b65acc4c13f897",
+    :raw
+    "2. **SH-08.2:** Check function parameters/results, direct/indirect calls,\n   closures, recursive functions and recur parameter compatibility."}}
+  {:id "SH-08.3",
+   :milestone "SH-08",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 26241,
+    :end-byte 26386,
+    :start-line 427,
+    :end-line 428,
+    :sha256
+    "0c13ed120ec34f30656becb04a306c2d97cd5e90e7ccd416eb658d82eeb2b977",
+    :raw
+    "3. **SH-08.3:** Check branches/joins, error/handler paths and required\n   record/union/constructor/field operations with consistent environments."}}
+  {:id "SH-08.4",
+   :milestone "SH-08",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 26387,
+    :end-byte 26600,
+    :start-line 429,
+    :end-line 431,
+    :sha256
+    "bbab4d4e359d708da09a0a2420381230bab99bdb0f3cc9f84510e8878bb30772",
+    :raw
+    "4. **SH-08.4:** Produce pattern narrowing and required closed-match coverage;\n   reject incompatible patterns, missing required cases and non-Bool or\n   unestablished guard results, preserving non-returning paths."}}
+  {:id "SH-08.5",
+   :milestone "SH-08",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 26601,
+    :end-byte 26829,
+    :start-line 432,
+    :end-line 434,
+    :sha256
+    "c2accf7e1175288c80c8f7f64a92af104195ece415994050041370daa0955016",
+    :raw
+    "5. **SH-08.5:** Record required generic/protocol instantiations, explicit\n   dynamic/cast boundaries, layout/resource facts and latent function effects;\n   reject unsafe implicit conversions or missing constrained-profile facts."}}
+  {:id "SH-08.6",
+   :milestone "SH-08",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 26830,
+    :end-byte 27029,
+    :start-line 435,
+    :end-line 437,
+    :sha256
+    "c5bae8e83cf2ce34d53e90982436608973dc2bc999788b9147e504bb6f774eea",
+    :raw
+    "6. **SH-08.6:** Verify complete type/constraint coverage on actual compiler\n   Core and its ill-typed variants; unresolved constraints cannot become\n   silent Dynamic fallback or backend-only errors."}}
+  {:id "SH-09.1",
+   :milestone "SH-09",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 27669,
+    :end-byte 27817,
+    :start-line 451,
+    :end-line 452,
+    :sha256
+    "d419665392a71703627ed3e7e42165f4ab08342d68ebf1a3738189e3ef9a9bc6",
+    :raw
+    "1. **SH-09.1:** Compute direct, latent, transitive, thrown-error and residual\n   effects for all compiler constructs, including guards and mutation."}}
+  {:id "SH-09.2",
+   :milestone "SH-09",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 27818,
+    :end-byte 27971,
+    :start-line 453,
+    :end-line 454,
+    :sha256
+    "2ab85764a97a6716e93e32ae1399daa1e020bd820e860398fbe4796bf9212acb",
+    :raw
+    "2. **SH-09.2:** Check function/namespace declarations against the conservative\n   inferred effect set and preserve required evaluation/resource ordering."}}
+  {:id "SH-09.3",
+   :milestone "SH-09",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 27972,
+    :end-byte 28100,
+    :start-line 455,
+    :end-line 456,
+    :sha256
+    "edcdbab536c647c29790464ad0643d8b9fe5c39ea7962c9ed5b1435c110db51b",
+    :raw
+    "3. **SH-09.3:** Validate concrete grant scope, principal, phase and provider;\n   effect presence alone never supplies authority."}}
+  {:id "SH-09.4",
+   :milestone "SH-09",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 28101,
+    :end-byte 28252,
+    :start-line 457,
+    :end-line 458,
+    :sha256
+    "1e0b4fb672491bf79897e9fe28c2dfa2e9875bc99dde871fcbfc1042bdc272a8",
+    :raw
+    "4. **SH-09.4:** Enforce compile-time profile/target/runtime intersection;\n   reject forbidden allocation, dispatch or services before backend emission."}}
+  {:id "SH-09.5",
+   :milestone "SH-09",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 28253,
+    :end-byte 28483,
+    :start-line 459,
+    :end-line 461,
+    :sha256
+    "2430d34fa81f03349c26064ec412298f2cbc1bcab839ac3be23496f8ed947e10",
+    :raw
+    "5. **SH-09.5:** Separate build and runtime effects; reject ambient filesystem,\n   environment, network, shell or registry access and retain required replay\n   obligations rather than silently performing effects during compilation."}}
+  {:id "SH-09.6",
+   :milestone "SH-09",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 28484,
+    :end-byte 28693,
+    :start-line 462,
+    :end-line 464,
+    :sha256
+    "2120dd65e7e1a9f3a9a8c4a5ec565263a090044a0f438a1695e77d29f8d91f28",
+    :raw
+    "6. **SH-09.6:** Emit verified effect/capability/profile records consumed by\n   ownership, safety and MIR; malformed, missing or stale legality facts and\n   illegal real programs receive structured diagnostics."}}
+  {:id "SH-10.1",
+   :milestone "SH-10",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 29181,
+    :end-byte 29326,
+    :start-line 476,
+    :end-line 477,
+    :sha256
+    "1e0b2e907c1e1526c7d5c160981d07cff5fa76eb1b1940c02f92dcd8e70af88a",
+    :raw
+    "1. **SH-10.1:** Represent persistent sharing, owned mutable values, copies,\n   moves and borrows required by the compiler without hidden copying."}}
+  {:id "SH-10.2",
+   :milestone "SH-10",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 29327,
+    :end-byte 29471,
+    :start-line 478,
+    :end-line 479,
+    :sha256
+    "13712d888189b22de4c3f720a3450eacf26a80198b5fe2c9d985b0cf54b9a64f",
+    :raw
+    "2. **SH-10.2:** Enforce immutable-sharing/exclusive-mutation rules and reject\n   overlapping mutable aliases or moving actively borrowed owners."}}
+  {:id "SH-10.3",
+   :milestone "SH-10",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 29472,
+    :end-byte 29612,
+    :start-line 480,
+    :end-line 481,
+    :sha256
+    "9c0d6647d70c83e0634d82c3157b2b65ac3105e426d48d75de5470aec53f036e",
+    :raw
+    "3. **SH-10.3:** Reject uninitialized reads, use after move/consume and invalid\n   partial initialization along branch, loop and error paths."}}
+  {:id "SH-10.4",
+   :milestone "SH-10",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 29613,
+    :end-byte 29757,
+    :start-line 482,
+    :end-line 483,
+    :sha256
+    "c6ec6c83214aabda9059ba9fccd0cb0ccd9d99f2dde699bb1ae8fbdaf025f91f",
+    :raw
+    "4. **SH-10.4:** Track closure/return/global/provider escapes and required\n   region/arena generations; reject references outliving their owners."}}
+  {:id "SH-10.5",
+   :milestone "SH-10",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 29758,
+    :end-byte 29981,
+    :start-line 484,
+    :end-line 486,
+    :sha256
+    "87414bcd1ed0906eaea9202b03ed265f1c340618a1661e2bacbcb26ea9d8e395",
+    :raw
+    "5. **SH-10.5:** Require exactly one valid terminal state or ownership transfer\n   for each required linear resource on normal, error and cleanup paths;\n   runtime checks are explicit and profile-legal, unsafe paths audited."}}
+  {:id "SH-10.6",
+   :milestone "SH-10",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 29982,
+    :end-byte 30132,
+    :start-line 487,
+    :end-line 488,
+    :sha256
+    "62a552be7d742116bf80767f28b20e00fd5543de2a307301a3a0c4eb46e45a1d",
+    :raw
+    "6. **SH-10.6:** Verify complete ownership/lifetime facts and carry them to\n   safety/MIR; malformed or coherently substituted ownership graphs reject."}}
+  {:id "SH-11.1",
+   :milestone "SH-11",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 30676,
+    :end-byte 30834,
+    :start-line 503,
+    :end-line 504,
+    :sha256
+    "3529e85036796c687858e317ff76200a5b22ac698fb08d8c60eaec59ae2c478d",
+    :raw
+    "1. **SH-11.1:** Inventory every dangerous operation in the compiler subset;\n   exactly one outcome is proven-safe, runtime-checked, rejected or unsafe-island."}}
+  {:id "SH-11.2",
+   :milestone "SH-11",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 30835,
+    :end-byte 30983,
+    :start-line 505,
+    :end-line 506,
+    :sha256
+    "52ed20cb2d019dd80ce34dfb5403b50b4b78b239157e507c4d4453ed0c08c29f",
+    :raw
+    "2. **SH-11.2:** Classify bounds, initialization, lifetime, resource and\n   capability operations using actual upstream facts and precise conditions."}}
+  {:id "SH-11.3",
+   :milestone "SH-11",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 30984,
+    :end-byte 31141,
+    :start-line 507,
+    :end-line 508,
+    :sha256
+    "15d12315013516ffd7d3657e7259d3d94bdb64f86248a2d20ec63218d12c574d",
+    :raw
+    "3. **SH-11.3:** Check numeric overflow, division, shifts and conversions under\n   explicit numeric modes; no target UB or silent wrapping/fast-math fallback."}}
+  {:id "SH-11.4",
+   :milestone "SH-11",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 31142,
+    :end-byte 31298,
+    :start-line 509,
+    :end-line 510,
+    :sha256
+    "59965ea9589bf48185185ad4de61fe7face9461ca99f0473fba6f895b3db9468",
+    :raw
+    "4. **SH-11.4:** Emit residual checks with source, guard dominance and defined\n   profile-legal failure behavior; missing proof retains the check or rejects."}}
+  {:id "SH-11.5",
+   :milestone "SH-11",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 31299,
+    :end-byte 31451,
+    :start-line 511,
+    :end-line 512,
+    :sha256
+    "0294bc16651468f11d254bf4a638739f8193dc211aafa055c276b88f83caf6f0",
+    :raw
+    "5. **SH-11.5:** Validate unsafe-island owner, invariants, authority, review,\n   safe wrapper and generated origins; reject incomplete/forbidden islands."}}
+  {:id "SH-11.6",
+   :milestone "SH-11",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 31452,
+    :end-byte 31602,
+    :start-line 513,
+    :end-line 514,
+    :sha256
+    "a5bfb1c3a42f494f2fda93dde4d8857b1d5eb751ae9b116e92a1d4251d1bb7cd",
+    :raw
+    "6. **SH-11.6:** Verify safety fact completeness and proof/check/operation joins;\n   altered evidence fails closed and valid outcomes survive into MIR."}}
+  {:id "SH-12.1",
+   :milestone "SH-12",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 32112,
+    :end-byte 32261,
+    :start-line 527,
+    :end-line 528,
+    :sha256
+    "4f5ab177710d604e83baed130f88086fbbf6fba6e6b927dc71b06b7f7af50c68",
+    :raw
+    "1. **SH-12.1:** Construct modules, globals, functions, blocks, values and\n   operations from actual checked Core for every required operation family."}}
+  {:id "SH-12.2",
+   :milestone "SH-12",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 32262,
+    :end-byte 32417,
+    :start-line 529,
+    :end-line 530,
+    :sha256
+    "5d7672e2d1bceff593002e57c09c82833518d16e199450569b4beed712f46956",
+    :raw
+    "2. **SH-12.2:** Construct valid terminators, dominance, block arguments/joins\n   and data-flow edges; reject missing definitions and invalid CFG structure."}}
+  {:id "SH-12.3",
+   :milestone "SH-12",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 32418,
+    :end-byte 32557,
+    :start-line 531,
+    :end-line 532,
+    :sha256
+    "28258dd5d3379362d202f440cabfa37972639668e0304220e97bfac6ae3761ee",
+    :raw
+    "3. **SH-12.3:** Preserve type, effect/order, capability, profile, source and\n   generated-origin tables with complete operation references."}}
+  {:id "SH-12.4",
+   :milestone "SH-12",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 32558,
+    :end-byte 32714,
+    :start-line 533,
+    :end-line 534,
+    :sha256
+    "a7ecea6aaca00135e547eca89e8316fdf14ec0796ddedb9c1e9e58f2a24a810f",
+    :raw
+    "4. **SH-12.4:** Attach ownership, safety outcomes, proof/unsafe references and\n   residual checks to their exact operations; checks guard the intended work."}}
+  {:id "SH-12.5",
+   :milestone "SH-12",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 32715,
+    :end-byte 32849,
+    :start-line 535,
+    :end-line 536,
+    :sha256
+    "6308b1932766e928760ff5685cbbc3e303dc0414d843d92b14742d469385974c",
+    :raw
+    "5. **SH-12.5:** Represent required domain boundaries with semantic anchors,\n   not opaque target-specific instructions in generic MIR."}}
+  {:id "SH-12.6",
+   :milestone "SH-12",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 32850,
+    :end-byte 33003,
+    :start-line 537,
+    :end-line 538,
+    :sha256
+    "1dda2e03338e5f9a549f8e290b471be5607a04a85409a2f6c2d9185bc0bfa02b",
+    :raw
+    "6. **SH-12.6:** Run the MIR verifier before optimization/lowering, test each\n   malformed/fact-loss family and compare Core-to-MIR semantics on fixtures."}}
+  {:id "SH-13.1",
+   :milestone "SH-13",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 33644,
+    :end-byte 33799,
+    :start-line 552,
+    :end-line 553,
+    :sha256
+    "4dcb406f81cd5ce98123eabc777122c5fd00118a23cf697f07d90e6ca9222581",
+    :raw
+    "1. **SH-13.1:** Execute multiple typed functions with correct argument/result\n   transfer, direct calls and the compiler's required indirect/closure calls."}}
+  {:id "SH-13.2",
+   :milestone "SH-13",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 33800,
+    :end-byte 33930,
+    :start-line 554,
+    :end-line 555,
+    :sha256
+    "78676c5df36c7c26dd051a13f03703788b22611d380e12704d0108ed66108790",
+    :raw
+    "2. **SH-13.2:** Execute recursion and tail recur with correct state updates;\n   reject invalid arity, target and control transfer."}}
+  {:id "SH-13.3",
+   :milestone "SH-13",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 33931,
+    :end-byte 34064,
+    :start-line 556,
+    :end-line 557,
+    :sha256
+    "6bef81b38b68354105b132f2fac5a2d41aa054d392150b6620012bb5c63a5b8e",
+    :raw
+    "3. **SH-13.3:** Execute branches, loops and joins with observable required\n   order and only the selected branch/body work performed."}}
+  {:id "SH-13.4",
+   :milestone "SH-13",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 34065,
+    :end-byte 34206,
+    :start-line 558,
+    :end-line 559,
+    :sha256
+    "40fdb1530558fdc2400da066c88bd00a6e8aae69c93213a953851f194e91b2ca",
+    :raw
+    "4. **SH-13.4:** Execute match decision paths, structural failure and guard\n   failure, preserving single evaluation and branch binding scope."}}
+  {:id "SH-13.5",
+   :milestone "SH-13",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 34207,
+    :end-byte 34341,
+    :start-line 560,
+    :end-line 561,
+    :sha256
+    "d245b51a1dda0e4ff5c709ff40601a796a16481597df2050f198f173a59ee0b6",
+    :raw
+    "5. **SH-13.5:** Execute return/error/handler/cleanup exits without losing\n   effects, ownership, checks or source-attributed failures."}}
+  {:id "SH-13.6",
+   :milestone "SH-13",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 34342,
+    :end-byte 34486,
+    :start-line 562,
+    :end-line 563,
+    :sha256
+    "4cc4948257f734bbff48b93912eb72df7fc360de4369d7652d128d45c41c3ece",
+    :raw
+    "6. **SH-13.6:** Differentially compare Core intent and verified MIR execution;\n   altered CFG, operands, call targets and domain anchors reject."}}
+  {:id "SH-14.1",
+   :milestone "SH-14",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 34992,
+    :end-byte 35146,
+    :start-line 575,
+    :end-line 576,
+    :sha256
+    "f74dcf91d3423234f71929f206179206208075be21e820623d539013e63497a4",
+    :raw
+    "1. **SH-14.1:** Construct/read strings, symbols, keywords and numeric/scalar\n   values with the compiler's required equality, encoding and identity rules."}}
+  {:id "SH-14.2",
+   :milestone "SH-14",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 35147,
+    :end-byte 35304,
+    :start-line 577,
+    :end-line 578,
+    :sha256
+    "23764f15540cab919b09782be1ed34f98133a9adc03fdd6df5074760701de04c",
+    :raw
+    "2. **SH-14.2:** Construct/access persistent lists, vectors, maps and sets;\n   preserve required iteration/evaluation semantics, not host container accidents."}}
+  {:id "SH-14.3",
+   :milestone "SH-14",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 35305,
+    :end-byte 35451,
+    :start-line 579,
+    :end-line 580,
+    :sha256
+    "d6fdc1feaee3edb728aab99ea5d14edf897d99548c2b9d71877db5aef2212281",
+    :raw
+    "3. **SH-14.3:** Construct/access tuples, records and tagged variants with\n   explicit tags, field order, widths/alignment and checked projections."}}
+  {:id "SH-14.4",
+   :milestone "SH-14",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 35452,
+    :end-byte 35609,
+    :start-line 581,
+    :end-line 582,
+    :sha256
+    "7d5c33d0312a8195fa74ab445077c31af9a5ba70c86ae191ac6a7a8a67ad6227",
+    :raw
+    "4. **SH-14.4:** Execute bounded mutable storage and allocation/deallocation or\n   declared no-allocation alternatives with explicit ownership/lifetime facts."}}
+  {:id "SH-14.5",
+   :milestone "SH-14",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 35610,
+    :end-byte 35764,
+    :start-line 583,
+    :end-line 584,
+    :sha256
+    "a3c2e1c78c6b24b1c6b460f58be9ddd4c3669d79f1114a7255b5c4b0e829ced0",
+    :raw
+    "5. **SH-14.5:** Reject invalid indexes, tags, encodings, layouts, allocations\n   and unsupported data regimes with the specified checked failure behavior."}}
+  {:id "SH-14.6",
+   :milestone "SH-14",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 35765,
+    :end-byte 35911,
+    :start-line 585,
+    :end-line 586,
+    :sha256
+    "e373bfc197e50f43f38fd22fc32bccf10bd4e4fe38619bb9d508b5643ef738e1",
+    :raw
+    "6. **SH-14.6:** Verify data/layout facts survive MIR -> target/runtime;\n   representative nested compiler syntax/IR data round-trips without loss."}}
+  {:id "SH-15.1",
+   :milestone "SH-15",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 36487,
+    :end-byte 36644,
+    :start-line 600,
+    :end-line 601,
+    :sha256
+    "f4ddd363ccd45e550aa1db7d91eb7dcc306973e9722789b9228e53246b3f330d",
+    :raw
+    "1. **SH-15.1:** Construct every required bootstrap rejection family as Gravity\n   diagnostic DATA, not host exception text or a generic catch-all classifier."}}
+  {:id "SH-15.2",
+   :milestone "SH-15",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 36645,
+    :end-byte 36786,
+    :start-line 602,
+    :end-line 603,
+    :sha256
+    "3264aa411d1db029b0ac464dac643ef59376a5d69c82aea7aec47706fd17befc",
+    :raw
+    "2. **SH-15.2:** Include stable rule/severity/stage, actual primary and related\n   spans, syntax/artifact identity and generated-origin chain."}}
+  {:id "SH-15.3",
+   :milestone "SH-15",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 36787,
+    :end-byte 36937,
+    :start-line 604,
+    :end-line 605,
+    :sha256
+    "879885a6c61cb6c3c9e8ab43f9214644a3ac0c5c6aa1348b2ab09613ac0f7da8",
+    :raw
+    "3. **SH-15.3:** Include profile/target, typed relevant facts and actionable\n   remediation categories; deterministic ordering/counts match the stream."}}
+  {:id "SH-15.4",
+   :milestone "SH-15",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 36938,
+    :end-byte 37089,
+    :start-line 606,
+    :end-line 607,
+    :sha256
+    "7c581169836267c2180be5ce9e5492acdab3521a5fcb8fd5256f4fcd03881bb2",
+    :raw
+    "4. **SH-15.4:** Render CLI and required bootstrap tool output from the same\n   structured records; wording changes do not silently change semantic IDs."}}
+  {:id "SH-15.5",
+   :milestone "SH-15",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 37090,
+    :end-byte 37238,
+    :start-line 608,
+    :end-line 609,
+    :sha256
+    "66e9446a833fb80aeeefa18cb61e709f5d8eaf7683b3e37f0ba70ea9bf8c6d06",
+    :raw
+    "5. **SH-15.5:** Redact secrets/private values without erasing actionable\n   provenance, and structure genuine internal errors/minimized reproducers."}}
+  {:id "SH-15.6",
+   :milestone "SH-15",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 37239,
+    :end-byte 37390,
+    :start-line 610,
+    :end-line 611,
+    :sha256
+    "b9986dc1eb1143e2486a6f738be0acdce9cb5bd801c8533d7bc4c2bd0219353f",
+    :raw
+    "6. **SH-15.6:** Compare actual rejection outputs across migrated stages and\n   test malformed diagnostics, lost origins and ID/order/redaction changes."}}
+  {:id "SH-16.1",
+   :milestone "SH-16",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 37777,
+    :end-byte 37914,
+    :start-line 622,
+    :end-line 623,
+    :sha256
+    "25aab35af8fca07b619088084668382b44a698721d4e8539d222cc70db2e4e51",
+    :raw
+    "1. **SH-16.1:** Enumerate the finite required bootstrap pass pipeline with\n   inputs/outputs, versions, analyses and deterministic order."}}
+  {:id "SH-16.2",
+   :milestone "SH-16",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 37915,
+    :end-byte 38073,
+    :start-line 624,
+    :end-line 625,
+    :sha256
+    "b905cd4301cc331d94f279aca4d9d2f029cfcfc4f184bdc4a71ecc22bc694cff",
+    :raw
+    "2. **SH-16.2:** Execute each required transformation on actual MIR, including\n   decision records when a pass makes no change; a registry alone is not a pass."}}
+  {:id "SH-16.3",
+   :milestone "SH-16",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 38074,
+    :end-byte 38224,
+    :start-line 626,
+    :end-line 627,
+    :sha256
+    "6cfab055e341f9d1f583bbeb242e25a407b5af4cef27d9d276ac030d811836b4",
+    :raw
+    "3. **SH-16.3:** Preserve facts or declare invalidation and regenerate analyses\n   before their consumers; relevant stale analysis/cache inputs reject."}}
+  {:id "SH-16.4",
+   :milestone "SH-16",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 38225,
+    :end-byte 38378,
+    :start-line 628,
+    :end-line 629,
+    :sha256
+    "160359e3b3f7645b81f542f6b65c12dbaff9a67a66c788ab23ec1ec6bfd1f071",
+    :raw
+    "4. **SH-16.4:** Preserve effect order, ownership, origins and residual checks;\n   erase checks only with surviving/regenerated proof and valid dominance."}}
+  {:id "SH-16.5",
+   :milestone "SH-16",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 38379,
+    :end-byte 38531,
+    :start-line 630,
+    :end-line 631,
+    :sha256
+    "78da69794212fe28fc3181eccbc8e5eb6d03f356608fb254ef705109d5d1ac1f",
+    :raw
+    "5. **SH-16.5:** Verify changed MIR and perform C18-appropriate translation\n   validation/differential checks, including unsound-rewrite counterexamples."}}
+  {:id "SH-16.6",
+   :milestone "SH-16",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 38532,
+    :end-byte 38681,
+    :start-line 632,
+    :end-line 633,
+    :sha256
+    "214df6fd9cf1919b19295a561f4600aa032140bfc94e9ac5db5fc662b5277268",
+    :raw
+    "6. **SH-16.6:** Feed verified optimized MIR to SH-17 with valid decision,\n   invalidation and residual-cost records; no proofless target assumptions."}}
+  {:id "SH-17.1",
+   :milestone "SH-17",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 39279,
+    :end-byte 39430,
+    :start-line 647,
+    :end-line 648,
+    :sha256
+    "c6a4ed83dd09a3c4375b558d6caa9f801ad9465b004529269ba2e5bbf7d900d3",
+    :raw
+    "1. **SH-17.1:** Accept only the actual verified MIR/domain artifact and its\n   current checked facts; stale or substituted inputs fail before emission."}}
+  {:id "SH-17.2",
+   :milestone "SH-17",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 39431,
+    :end-byte 39582,
+    :start-line 649,
+    :end-line 650,
+    :sha256
+    "f31dae1ca26f4b7f1a6672d3f8c825a30950fd92d7b8959300034873a1d76ced",
+    :raw
+    "2. **SH-17.2:** Select explicit profile, target triple/features, backend and\n   artifact kinds; unsupported combinations reject, not silently fallback."}}
+  {:id "SH-17.3",
+   :milestone "SH-17",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 39583,
+    :end-byte 39723,
+    :start-line 651,
+    :end-line 652,
+    :sha256
+    "3294475d8b8df9f02ffe01622a457cbf271fb11fd3428d3c97af0c32311e6b11",
+    :raw
+    "3. **SH-17.3:** Validate ABI, layouts, runtime/provider availability and\n   capability scope; no hidden services or newly granted authority."}}
+  {:id "SH-17.4",
+   :milestone "SH-17",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 39724,
+    :end-byte 39878,
+    :start-line 653,
+    :end-line 654,
+    :sha256
+    "dae1d49222ad763eaa96f01ed183dadc4295ad74b3f0a44c814d146de07da602",
+    :raw
+    "4. **SH-17.4:** Map proof-backed numeric/alias/alignment assumptions to target\n   metadata; reject unjustified no-overflow/no-alias/fast-math assumptions."}}
+  {:id "SH-17.5",
+   :milestone "SH-17",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 39879,
+    :end-byte 40026,
+    :start-line 655,
+    :end-line 656,
+    :sha256
+    "c8e09423d5059bddbff68fed0c0b99027083f28c90e71ece16f4ade357cc8d3e",
+    :raw
+    "5. **SH-17.5:** Preserve origins, effects, safety/proof and dependency records\n   in requests/results, with stable unsupported-feature diagnostics."}}
+  {:id "SH-17.6",
+   :milestone "SH-17",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 40027,
+    :end-byte 40177,
+    :start-line 657,
+    :end-line 658,
+    :sha256
+    "825e28bd86a7ea39658e4de2e9a7cee2afcc16088935930b1ffe4b3d49c64248",
+    :raw
+    "6. **SH-17.6:** Exercise one genuine producer -> C14 -> B1 -> backend handoff\n   and coherent carrier/policy mutations through the reusable interface."}}
+  {:id "SH-18.1",
+   :milestone "SH-18",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 40671,
+    :end-byte 40814,
+    :start-line 671,
+    :end-line 672,
+    :sha256
+    "dc9605756b630ed230008311642cea20958c8cee12697b3315fb59ce69a2b6bc",
+    :raw
+    "1. **SH-18.1:** Compile a real source program through checked Core/MIR and\n   SH-17, not prewritten target text presented as compiler emission."}}
+  {:id "SH-18.2",
+   :milestone "SH-18",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 40815,
+    :end-byte 40969,
+    :start-line 673,
+    :end-line 674,
+    :sha256
+    "b50dc00bd5342b9a8620d3513fe7a21fdccfd0012074ece84af99f8a6139a1e5",
+    :raw
+    "2. **SH-18.2:** Cover typed arguments/results, arithmetic, multiple functions,\n   required collections and explicit stdout in that executable program set."}}
+  {:id "SH-18.3",
+   :milestone "SH-18",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 40970,
+    :end-byte 41128,
+    :start-line 675,
+    :end-line 676,
+    :sha256
+    "740d20aa096e4e9a19751524d36e6b010383b15c279f94dc3b2e61c6f3f5a4e3",
+    :raw
+    "3. **SH-18.3:** Emit and independently compile/verify/link for the exact target\n   ABI/toolchain, retaining compiler/runtime/library identities and artifacts."}}
+  {:id "SH-18.4",
+   :milestone "SH-18",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 41129,
+    :end-byte 41256,
+    :start-line 677,
+    :end-line 678,
+    :sha256
+    "9822d8c84dbf959fef379963bceef988b15e74c526acb0fc68d84d66cb43af00",
+    :raw
+    "4. **SH-18.4:** Execute the binary and compare expected output, exit status\n   and error/check behavior with Gravity semantics."}}
+  {:id "SH-18.5",
+   :milestone "SH-18",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 41257,
+    :end-byte 41410,
+    :start-line 679,
+    :end-line 680,
+    :sha256
+    "720376928970b2aaf949cb6da374539ac1647d71e3208e18b5fc7c83009b7154",
+    :raw
+    "5. **SH-18.5:** Reject unsupported ops, ABI/provider mismatch, illegal profile\n   use and malformed source; preserve tool failures without false success."}}
+  {:id "SH-18.6",
+   :milestone "SH-18",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 41411,
+    :end-byte 41565,
+    :start-line 681,
+    :end-line 682,
+    :sha256
+    "5dd31f8fb5dc467ff331394c73af264e1ddfd47ca709266ca3871ff4ada336b0",
+    :raw
+    "6. **SH-18.6:** Retain source-to-binary provenance/maps and independent\n   execution evidence, with bounded resource/cleanup results and actual omissions."}}
+  {:id "SH-19.1",
+   :milestone "SH-19",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 42130,
+    :end-byte 42277,
+    :start-line 695,
+    :end-line 696,
+    :sha256
+    "1365d930f14f20912d6c808b1f34fbcde384cd3113119c72ac94e7a14506ae9d",
+    :raw
+    "1. **SH-19.1:** Start the compiled compiler/runtime with defined argv, inputs,\n   initialization order, service manifest and process-exit behavior."}}
+  {:id "SH-19.2",
+   :milestone "SH-19",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 42278,
+    :end-byte 42434,
+    :start-line 697,
+    :end-line 698,
+    :sha256
+    "e14daffb288a08f7dbadfb072b880785b9149084d565a96f1dd40bab0e859032",
+    :raw
+    "2. **SH-19.2:** Provide required strings/bytes, bounded allocation and resource\n   lifetime behavior or explicit no-allocation alternatives outside Clojure."}}
+  {:id "SH-19.3",
+   :milestone "SH-19",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 42435,
+    :end-byte 42586,
+    :start-line 699,
+    :end-line 700,
+    :sha256
+    "a0dcf1ff91b518ef9c73a70bec80927248ef8fe11f69ba353f432899df00d40c",
+    :raw
+    "3. **SH-19.3:** Perform compiler-required file reads and stdout/stderr writes\n   under concrete grants, with checked encoding/path/size/error behavior."}}
+  {:id "SH-19.4",
+   :milestone "SH-19",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 42587,
+    :end-byte 42715,
+    :start-line 701,
+    :end-line 702,
+    :sha256
+    "80592b662be45550706b5040fdbcf1885efb3be4072c8c8a7596c1aae41efe05",
+    :raw
+    "4. **SH-19.4:** Report panic, typed errors and safety-check failures with\n   defined exits, source context and resource cleanup."}}
+  {:id "SH-19.5",
+   :milestone "SH-19",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 42716,
+    :end-byte 42854,
+    :start-line 703,
+    :end-line 704,
+    :sha256
+    "10f6edb19d4cb651100cc8e3da645d8d4b39bfe030c04670b2f08ef5daee28a5",
+    :raw
+    "5. **SH-19.5:** Reject ambient authority, unavailable services, wrong provider\n   scope, invalid handles and unsupported runtime policies."}}
+  {:id "SH-19.6",
+   :milestone "SH-19",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 42855,
+    :end-byte 43080,
+    :start-line 705,
+    :end-line 707,
+    :sha256
+    "e76417d3768f768145961a14422db1c463f2de3e7b7548fe3ee06d7dcc7c190c",
+    :raw
+    "6. **SH-19.6:** Execute actual provider operations on the selected native path,\n   account residual trusted code/audits and exclude Clojure from that runtime\n   boundary; validating provider-action DATA alone is insufficient."}}
+  {:id "SH-20.1",
+   :milestone "SH-20",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 43631,
+    :end-byte 43779,
+    :start-line 720,
+    :end-line 721,
+    :sha256
+    "a717b2e086d62068933c23cfe4b88184f8fa6903a9304064d1f845f8911f471c",
+    :raw
+    "1. **SH-20.1:** Produce real required objects/executables and associated\n   artifacts with kinds, schemas, content identities and compiler identity."}}
+  {:id "SH-20.2",
+   :milestone "SH-20",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 43780,
+    :end-byte 43920,
+    :start-line 722,
+    :end-line 723,
+    :sha256
+    "55b0907370ab36f3999df5bc44a65c6d025d978a5ff3612d695e099f2a17a7fd",
+    :raw
+    "2. **SH-20.2:** Emit source/generated-origin maps, profile/target/ABI/runtime\n   manifests, effects/capabilities and safety/proof summaries."}}
+  {:id "SH-20.3",
+   :milestone "SH-20",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 43921,
+    :end-byte 44077,
+    :start-line 724,
+    :end-line 725,
+    :sha256
+    "031345bdcb9e70b346303da1342a10a06449c527adabfd3a1f280f9efa7adfe6",
+    :raw
+    "3. **SH-20.3:** Emit a closed dependency graph binding actual source, compiler,\n   inputs and tool outputs, with canonical path-neutral semantic identities."}}
+  {:id "SH-20.4",
+   :milestone "SH-20",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 44078,
+    :end-byte 44209,
+    :start-line 726,
+    :end-line 727,
+    :sha256
+    "e350cddcdbfb10ed0ee851828899161e917de93c16dc6730cc72bbea67c8d8af",
+    :raw
+    "4. **SH-20.4:** Retain actual-path provenance separately and make manifests\n   and maps consumable/verifiable by independent tools."}}
+  {:id "SH-20.5",
+   :milestone "SH-20",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 44210,
+    :end-byte 44359,
+    :start-line 728,
+    :end-line 729,
+    :sha256
+    "a8e898bf195baf057385b01e00fdec0a16bf43c812510a25f4538fe900c6307c",
+    :raw
+    "5. **SH-20.5:** Enforce development/release distinctions; reject missing,\n   stale, malformed or substituted content and incomplete release evidence."}}
+  {:id "SH-20.6",
+   :milestone "SH-20",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 44360,
+    :end-byte 44519,
+    :start-line 730,
+    :end-line 731,
+    :sha256
+    "84fd2bcff17aea2421b18577818b8d45b32114501d572867b67676a742a7dabe",
+    :raw
+    "6. **SH-20.6:** Validate canonical provenance/SBOM/signature inputs under the\n   applicable release policy; no signed descriptor substitutes for missing bytes."}}
+  {:id "SH-21.1",
+   :milestone "SH-21",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 45082,
+    :end-byte 45230,
+    :start-line 744,
+    :end-line 745,
+    :sha256
+    "f5f2c41ea4ba89afbbdd59b6b8cf7734248e01f8cada9b6d404a63336b5deb7f",
+    :raw
+    "1. **SH-21.1:** Enumerate every compiler module and its input/output schemas,\n   effects, capabilities, preserved facts and required generated code."}}
+  {:id "SH-21.2",
+   :milestone "SH-21",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 45231,
+    :end-byte 45372,
+    :start-line 746,
+    :end-line 747,
+    :sha256
+    "cd96ea25e3b14b73d130aa499a605120341b22a4e63929a93232b6bf621aac17",
+    :raw
+    "2. **SH-21.2:** Compile each module under the declared meta/bootstrap contract\n   through actual type/effect/profile/ownership/safety checks."}}
+  {:id "SH-21.3",
+   :milestone "SH-21",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 45373,
+    :end-byte 45520,
+    :start-line 748,
+    :end-line 749,
+    :sha256
+    "8f5d452b19faacd6635a8c0a75c63ba62e0ce49f26f87492d6cb425a5881ca6b",
+    :raw
+    "3. **SH-21.3:** Reject ambient filesystem, environment, network, shell,\n   registry and undeclared host-service dependencies in compiler execution."}}
+  {:id "SH-21.4",
+   :milestone "SH-21",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 45521,
+    :end-byte 45671,
+    :start-line 750,
+    :end-line 751,
+    :sha256
+    "89ade36995c20bec963bb228f98ad2c6068b35cc59443b816123cf313ab65eec",
+    :raw
+    "4. **SH-21.4:** Re-enter generated compiler code through the normal pipeline,\n   preserving producer origins and rejecting generated illegal behavior."}}
+  {:id "SH-21.5",
+   :milestone "SH-21",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 45672,
+    :end-byte 45817,
+    :start-line 752,
+    :end-line 753,
+    :sha256
+    "c3e83bbe8134f9a5e4900b549b2c352180b0f7fef0dd85a26bf91923f8b507e5",
+    :raw
+    "5. **SH-21.5:** Exercise actual compiler work under explicit grants; test\n   missing, narrowed, wrong-phase and wrong-provider authority denials."}}
+  {:id "SH-21.6",
+   :milestone "SH-21",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 45818,
+    :end-byte 45978,
+    :start-line 754,
+    :end-line 755,
+    :sha256
+    "f1472775f913067573a729cd580e49b2e276b4d5604d3e49d8f78d9fd65533e6",
+    :raw
+    "6. **SH-21.6:** Verify module diagnostics, pass facts and unsafe audits against\n   the complete compiler closure; validating declared policy DATA is not enough."}}
+  {:id "SH-22.1",
+   :milestone "SH-22",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 46482,
+    :end-byte 46635,
+    :start-line 768,
+    :end-line 769,
+    :sha256
+    "4a09875f800d4966895f72e157d7d943a8e4a363b9eb350d5b412a43749f1d76",
+    :raw
+    "1. **SH-22.1:** Enumerate all library APIs transitively required by the\n   compiler/runtime/build closure, with signatures and explicit unsupported APIs."}}
+  {:id "SH-22.2",
+   :milestone "SH-22",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 46636,
+    :end-byte 46789,
+    :start-line 770,
+    :end-line 771,
+    :sha256
+    "ba87a25b000ea9013777dfdb33b0acf6c50398035e36dace6027c188679dc766",
+    :raw
+    "2. **SH-22.2:** Execute required collections, iteration, updates and lookup\n   operations with correct equality, bounds and persistent/mutable semantics."}}
+  {:id "SH-22.3",
+   :milestone "SH-22",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 46790,
+    :end-byte 46933,
+    :start-line 772,
+    :end-line 773,
+    :sha256
+    "205d48373a8dd4139d01f4921f5a4852d36f4ebad8d83dbdc70bbe80765938ee",
+    :raw
+    "3. **SH-22.3:** Execute text/UTF8, symbols/keywords and checked numeric helpers,\n   rejecting malformed data, overflow and invalid conversions."}}
+  {:id "SH-22.4",
+   :milestone "SH-22",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 46934,
+    :end-byte 47087,
+    :start-line 774,
+    :end-line 775,
+    :sha256
+    "ae0200ad5ff46e2ab25924d05a5b8ad1d7494ad8138d64dcb9d424fca49f8c09",
+    :raw
+    "4. **SH-22.4:** Execute required error, artifact-data, canonical serialization\n   and compiler syntax/IR/meta helpers with preserved identity/provenance."}}
+  {:id "SH-22.5",
+   :milestone "SH-22",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 47088,
+    :end-byte 47246,
+    :start-line 776,
+    :end-line 777,
+    :sha256
+    "ce24348cb24790f02d856ce59aa4f58135801cac0b7cbda35cfd213d9cb9c2c1",
+    :raw
+    "5. **SH-22.5:** Enforce effects, grants, safe wrapper and resource contracts on\n   actual IO/provider operations; denied inputs cannot become ambient actions."}}
+  {:id "SH-22.6",
+   :milestone "SH-22",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 47247,
+    :end-byte 47450,
+    :start-line 778,
+    :end-line 780,
+    :sha256
+    "26c0554e70fbe8e61fbe969582ded61ccde520abdb9f4a1f57bca3232922b621",
+    :raw
+    "6. **SH-22.6:** Compile and run compiler clients against these Gravity APIs and\n   paired conformance/rejection cases; a proposed provider request alone does\n   not prove the external operation occurred."}}
+  {:id "SH-23.1",
+   :milestone "SH-23",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 47971,
+    :end-byte 48124,
+    :start-line 793,
+    :end-line 794,
+    :sha256
+    "219d6435fa591035fba4ee57e1be25ccbdfae0b3974fc7122845357e87197cda",
+    :raw
+    "1. **SH-23.1:** Read and validate the fixed compiler project/lock/manifest\n   inputs; reject unlocked, missing, inconsistent or substituted dependencies."}}
+  {:id "SH-23.2",
+   :milestone "SH-23",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 48125,
+    :end-byte 48268,
+    :start-line 795,
+    :end-line 796,
+    :sha256
+    "da5d0729a2836f84d4592ebb0bbc429a2b4565549933f3a6d317062f99930131",
+    :raw
+    "2. **SH-23.2:** Resolve the complete required bootstrap graph deterministically,\n   enforce dependency order and diagnose cycles/missing edges."}}
+  {:id "SH-23.3",
+   :milestone "SH-23",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 48269,
+    :end-byte 48419,
+    :start-line 797,
+    :end-line 798,
+    :sha256
+    "efd9abcee2c475be0c0704f19f8e16cf32d3f31f4a5c4a7393b4efc74e62fd38",
+    :raw
+    "3. **SH-23.3:** Construct and execute explicit compiler/tool/provider build\n   actions with controlled inputs, outputs, effects and capability scopes."}}
+  {:id "SH-23.4",
+   :milestone "SH-23",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 48420,
+    :end-byte 48564,
+    :start-line 799,
+    :end-line 800,
+    :sha256
+    "08830dc1e75c03e090895a92be9210cea8bd39dd922dfb9e374f4ccc3a20b10d",
+    :raw
+    "4. **SH-23.4:** Reject ambient filesystem/environment/network/shell resolution\n   and undeclared fetch/build effects; no host registry fallback."}}
+  {:id "SH-23.5",
+   :milestone "SH-23",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 48565,
+    :end-byte 48719,
+    :start-line 801,
+    :end-line 802,
+    :sha256
+    "0b990a412101b3bf4442f0b7f2fea966428f5796b0bd6ab8ec4910af7247a259",
+    :raw
+    "5. **SH-23.5:** Bind actual output bytes/manifests to source, lock, build recipe\n   and tool identities, with conservative invalidation on changed inputs."}}
+  {:id "SH-23.6",
+   :milestone "SH-23",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 48720,
+    :end-byte 48910,
+    :start-line 803,
+    :end-line 805,
+    :sha256
+    "b52f11ba4c9423bf8fdd6b1898145f744bcb5efcd73d0bfebf68d4c161399d27",
+    :raw
+    "6. **SH-23.6:** Build real compiler components through the Gravity-owned build\n   path without Clojure orchestration; action plans/record verification alone\n   do not close this requirement."}}
+  {:id "SH-24.1",
+   :milestone "SH-24",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 49480,
+    :end-byte 49636,
+    :start-line 818,
+    :end-line 819,
+    :sha256
+    "b50aea3af8c212f74fec2ec7425bf5674227a9c3e54ff254a316d7040df4db35",
+    :raw
+    "1. **SH-24.1:** Accept source/project/target/output requests through a Gravity\n   executable with explicit command parsing and supported-option diagnostics."}}
+  {:id "SH-24.2",
+   :milestone "SH-24",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 49637,
+    :end-byte 49770,
+    :start-line 820,
+    :end-line 821,
+    :sha256
+    "5650fd87484b0f3a8546d9740b05d8779d8a39cc2c730d3a2378f005a59d8f05",
+    :raw
+    "2. **SH-24.2:** Load only declared source/dependency inputs under grants and\n   orchestrate the canonical passes in dependency order."}}
+  {:id "SH-24.3",
+   :milestone "SH-24",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 49771,
+    :end-byte 49908,
+    :start-line 822,
+    :end-line 823,
+    :sha256
+    "9aa59325fd4783701d4964965868efbe5ee42c10822d5e17cd4572bd1e7bb3e7",
+    :raw
+    "3. **SH-24.3:** Implement real `check` and `compile`, required bootstrap\n   verification commands, target selection and artifact writing."}}
+  {:id "SH-24.4",
+   :milestone "SH-24",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 49909,
+    :end-byte 50066,
+    :start-line 824,
+    :end-line 825,
+    :sha256
+    "0a1b66949878a0ee2853e712617f93f7315989539e2e489eb1a779ade9cf2c28",
+    :raw
+    "4. **SH-24.4:** Render structured diagnostics and return defined status codes\n   on rejected source, failed passes/tools, invalid requests and output errors."}}
+  {:id "SH-24.5",
+   :milestone "SH-24",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 50067,
+    :end-byte 50218,
+    :start-line 826,
+    :end-line 827,
+    :sha256
+    "1780297ff9aaf91c7a042278b85cbb8a410b0642f83a32cd1c98c0dac6503dfa",
+    :raw
+    "5. **SH-24.5:** Preserve co-canonical `.gravity`/`.qst` behavior, actual paths,\n   compiler identity, provider policy and output provenance end to end."}}
+  {:id "SH-24.6",
+   :milestone "SH-24",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 50219,
+    :end-byte 50375,
+    :start-line 828,
+    :end-line 829,
+    :sha256
+    "3068a528ec33015c581736b5b49cb65f01cc13757403fab6ad09e96000171e15",
+    :raw
+    "6. **SH-24.6:** Execute the commands using the selected native/runtime/build\n   path; a Clojure wrapper or supplied command-result record is not the driver."}}
+  {:id "SH-25.1",
+   :milestone "SH-25",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 50993,
+    :end-byte 51152,
+    :start-line 843,
+    :end-line 844,
+    :sha256
+    "874cdcc6954fcd33f1f735eba6133dda3b0137f58829e0d6ca6ef95c319b9ff0",
+    :raw
+    "1. **SH-25.1:** Freeze the complete compiler, generated-code, runtime, library\n   and package/build component closure with actual source identities and owners."}}
+  {:id "SH-25.2",
+   :milestone "SH-25",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 51153,
+    :end-byte 51307,
+    :start-line 845,
+    :end-line 846,
+    :sha256
+    "495641654b8acd6d751d9608aaa0fa5f874f2ce07918a5e00c8be1d1aa202a4a",
+    :raw
+    "2. **SH-25.2:** Cover reader, syntax, macros, resolution, Core, types, effects,\n   ownership, safety, MIR, required passes/domain anchors and diagnostics."}}
+  {:id "SH-25.3",
+   :milestone "SH-25",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 51308,
+    :end-byte 51463,
+    :start-line 847,
+    :end-line 848,
+    :sha256
+    "ff9c901272f9fc0bab129c0b7c8a161aff32d7b2d03581807f1e4dc0059fb321",
+    :raw
+    "3. **SH-25.3:** Cover selected lowering/backend, emission, driver, runtime,\n   required library and package/build components, including transitive helpers."}}
+  {:id "SH-25.4",
+   :milestone "SH-25",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 51464,
+    :end-byte 51622,
+    :start-line 849,
+    :end-line 850,
+    :sha256
+    "0a0d206861d6c5b9443235af75871baaf7b7c43752f72d7725ff670d8b5626f4",
+    :raw
+    "4. **SH-25.4:** Actually compile every component from Gravity sources with the\n   Gravity compiler, recording inputs/outputs and accepted dependency ordering."}}
+  {:id "SH-25.5",
+   :milestone "SH-25",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 51623,
+    :end-byte 51777,
+    :start-line 851,
+    :end-line 852,
+    :sha256
+    "29a6c4aa4bfa9b1bea96e1e3b4497ddf1ed8d027b0778694bd4b5da92320d0c3",
+    :raw
+    "5. **SH-25.5:** Reject omitted/replaced components, stale graphs, illegal meta\n   modules, fake output inventories and missing producer-to-consumer links."}}
+  {:id "SH-25.6",
+   :milestone "SH-25",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 51778,
+    :end-byte 51935,
+    :start-line 853,
+    :end-line 854,
+    :sha256
+    "9925b644847bff66cf460c4e70e6d4a410481452bae1d89118102f95684e8a5b",
+    :raw
+    "6. **SH-25.6:** Run the resulting components on real compiler work and their\n   required conformance cases; update BOOT5/TCB with exact remaining seed roles."}}
+  {:id "SH-26.1",
+   :milestone "SH-26",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 52526,
+    :end-byte 52671,
+    :start-line 867,
+    :end-line 868,
+    :sha256
+    "346cf2e1637243cebac8358da47cc5399fd8f5ac258806707b20fde91fe414e6",
+    :raw
+    "1. **SH-26.1:** Identify the prior Gravity compiler artifact and the complete\n   next-stage source/lock/build/environment/runtime/library inputs."}}
+  {:id "SH-26.2",
+   :milestone "SH-26",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 52672,
+    :end-byte 52829,
+    :start-line 869,
+    :end-line 870,
+    :sha256
+    "0338ebb6a25ae1392a2ff501ea48a4fefd41efaa89dcff321f4afee8ca9d3351",
+    :raw
+    "2. **SH-26.2:** Invoke that prior compiler to build every next-stage component\n   from the SH-25 closure, retaining actual tool/process outcomes and outputs."}}
+  {:id "SH-26.3",
+   :milestone "SH-26",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 52830,
+    :end-byte 52987,
+    :start-line 871,
+    :end-line 872,
+    :sha256
+    "10f2c16713f87259b2bb12e3f73fba2ae596b9144c9071d40f9597a524fcca1b",
+    :raw
+    "3. **SH-26.3:** Exclude Clojure execution from candidate compilation, runtime\n   and package/build orchestration; retained audit/recovery seeds are separate."}}
+  {:id "SH-26.4",
+   :milestone "SH-26",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 52988,
+    :end-byte 53134,
+    :start-line 873,
+    :end-line 874,
+    :sha256
+    "bd05ffde68935bad2b5b3e0cfe4e0c26345bcdb616c51e4dbdeafcb21d6839d5",
+    :raw
+    "4. **SH-26.4:** Link/package and execute the next-stage compiler on accepted\n   compiler/application inputs and rejected semantic/legality inputs."}}
+  {:id "SH-26.5",
+   :milestone "SH-26",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 53135,
+    :end-byte 53346,
+    :start-line 875,
+    :end-line 877,
+    :sha256
+    "d1f190ff74cf5854fe8f9657b512a0fcd1b4399fe7799ceb835f3fe2200afda1",
+    :raw
+    "5. **SH-26.5:** Reject missing outputs, substituted builders/components,\n   unauthorized actions and failed or incomplete rebuilds without laundering\n   process plans or supplied records into execution evidence."}}
+  {:id "SH-26.6",
+   :milestone "SH-26",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 53347,
+    :end-byte 53484,
+    :start-line 878,
+    :end-line 879,
+    :sha256
+    "09176b3eecb8068636e3521bc920545dd12265aecfdd1946d71a78f684f7fa74",
+    :raw
+    "6. **SH-26.6:** Produce actual rebuild logs, stage compiler artifacts,\n   conformance and lineage inputs sufficient for SH-27 comparison."}}
+  {:id "SH-27.1",
+   :milestone "SH-27",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 54102,
+    :end-byte 54258,
+    :start-line 893,
+    :end-line 894,
+    :sha256
+    "46f4eb2dbc4c6a5240812c0b69e0f9225e7a438e251ec0ec848ea61070f6eec5",
+    :raw
+    "1. **SH-27.1:** Perform two clean controlled rebuilds of the complete accepted\n   compiler closure; identify stage N and N+1 artifacts, not fixture aliases."}}
+  {:id "SH-27.2",
+   :milestone "SH-27",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 54259,
+    :end-byte 54386,
+    :start-line 895,
+    :end-line 896,
+    :sha256
+    "93581dbfaabfaf2589c16ff8097129582872a0318f216a9fd85ca53b9b9dca8d",
+    :raw
+    "2. **SH-27.2:** Compare actual compiler/output artifacts and canonical manifests\n   under declared byte/content identity modes."}}
+  {:id "SH-27.3",
+   :milestone "SH-27",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 54387,
+    :end-byte 54524,
+    :start-line 897,
+    :end-line 898,
+    :sha256
+    "13959ebfe9dfcb71da46307b710bac0f024c080683089e82a47b209585cedfe9",
+    :raw
+    "3. **SH-27.3:** Compare stable diagnostic codes/spans/facts and conformance\n   results for accepted and rejected programs at both stages."}}
+  {:id "SH-27.4",
+   :milestone "SH-27",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 54525,
+    :end-byte 54671,
+    :start-line 899,
+    :end-line 900,
+    :sha256
+    "97048a97ed96fb062a1d888dd6d9d455ea88e61e4863c9cceddc0b698a6f4898",
+    :raw
+    "4. **SH-27.4:** Compare runtime outputs and required IR modulo nonsemantic IDs;\n   declared bootstrap resource/performance bounds remain enforced."}}
+  {:id "SH-27.5",
+   :milestone "SH-27",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 54672,
+    :end-byte 54829,
+    :start-line 901,
+    :end-line 902,
+    :sha256
+    "b7bfc6fc9890eed8518f9d203e72d86d8090ab27bcd161e103a743983317a67a",
+    :raw
+    "5. **SH-27.5:** Review each permitted delta against its policy; missing output,\n   unexplained semantic drift or an overbroad normalization fails comparison."}}
+  {:id "SH-27.6",
+   :milestone "SH-27",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 54830,
+    :end-byte 54980,
+    :start-line 903,
+    :end-line 904,
+    :sha256
+    "47607b40864376ce6e9dcb964e8baea7f0eb880f184a8a5fc86b61dc67ed0a8c",
+    :raw
+    "6. **SH-27.6:** Link reproducible recipes, actual rebuilds, compiler identities,\n   comparisons and accepted deltas into provenance consumed by SH-28."}}
+  {:id "SH-28.1",
+   :milestone "SH-28",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 55530,
+    :end-byte 55675,
+    :start-line 917,
+    :end-line 918,
+    :sha256
+    "0dbd08e2bdcb54433bfdf1e9759c402676e284f1397cf57e7e1f5acffe5a21c1",
+    :raw
+    "1. **SH-28.1:** Supply diverse or independently anchored actual rebuild\n   evidence with identified tools and a reviewed method/trust limitation."}}
+  {:id "SH-28.2",
+   :milestone "SH-28",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 55676,
+    :end-byte 55829,
+    :start-line 919,
+    :end-line 920,
+    :sha256
+    "bff8f0fee0a0290efa9f85a32f3602a9854e7f1bec2610ee77cf8fe1a69ca3a7",
+    :raw
+    "2. **SH-28.2:** Traverse real compiler lineage to seed inputs; reject gaps,\n   undeclared cycles, substituted anchors and self-asserted builder identity."}}
+  {:id "SH-28.3",
+   :milestone "SH-28",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 55830,
+    :end-byte 55968,
+    :start-line 921,
+    :end-line 922,
+    :sha256
+    "86807f51b1eae4c4495a38c736ac953674fe9f86cf25fdf126fe94a45d15992e",
+    :raw
+    "3. **SH-28.3:** Bind source/dependency/lock/recipe/environment identities to\n   SH-27 conformance, equivalence and actual rebuilt content."}}
+  {:id "SH-28.4",
+   :milestone "SH-28",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 55969,
+    :end-byte 56124,
+    :start-line 923,
+    :end-line 924,
+    :sha256
+    "3da740df9beb43c670e8968486417758f2f1e97e61c3cb83cc1f775fc46b667d",
+    :raw
+    "4. **SH-28.4:** Canonicalize and verify required provenance, SBOM and signatures;\n   revoked builders, compilers, dependencies or signatures block release."}}
+  {:id "SH-28.5",
+   :milestone "SH-28",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 56125,
+    :end-byte 56283,
+    :start-line 925,
+    :end-line 926,
+    :sha256
+    "43426f22bb3ad880625cc58f9913e0347c82e341935065f0fd2f157a9a451eee",
+    :raw
+    "5. **SH-28.5:** Complete unsafe audits and a measured TCB delta, with all\n   residual OS/toolchain/runtime/provider trust explicit; seedless is not trustless."}}
+  {:id "SH-28.6",
+   :milestone "SH-28",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 56284,
+    :end-byte 56472,
+    :start-line 927,
+    :end-line 929,
+    :sha256
+    "14fa2ae9c3062fd16fd554881e0eb4eb6a82bb2b20b737b97bb342b9531cc174",
+    :raw
+    "6. **SH-28.6:** Establish the Clojure seed outside the candidate release\n   compiler/runtime/build path using actual path evidence, not boolean fields\n   or a descriptor-only trust report."}}
+  {:id "SH-29.1",
+   :milestone "SH-29",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 57049,
+    :end-byte 57206,
+    :start-line 942,
+    :end-line 943,
+    :sha256
+    "04c51359b6cc39b3ffb8b5c598a8c7fe0ae83f63c25f625639074fa2722e69e7",
+    :raw
+    "1. **SH-29.1:** Deliver a real public `gravity` executable produced by the\n   accepted self-hosted path; bootstrap-hosted packaging/fallback cannot stand in."}}
+  {:id "SH-29.2",
+   :milestone "SH-29",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 57207,
+    :end-byte 57423,
+    :start-line 944,
+    :end-line 946,
+    :sha256
+    "8d710a8d330e52cb42f521f6d740f88f9ac4fe25fc63f636a2e4e8ea57233c23",
+    :raw
+    "2. **SH-29.2:** Through that executable, build/check the complete compiler,\n   required runtime/library/package/build components and release executable\n   without invoking Clojure inside the claimed release boundary."}}
+  {:id "SH-29.3",
+   :milestone "SH-29",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 57424,
+    :end-byte 57644,
+    :start-line 947,
+    :end-line 949,
+    :sha256
+    "5c5a1f802041fe95dc9f155e16361776c2eb3f6a35fac97f8801462e3e292154",
+    :raw
+    "3. **SH-29.3:** Pass declared full-bootstrap conformance and Phase 18 public\n   command/application cases on both source extensions, including a nontrivial\n   application and stable feature-specific rejected diagnostics."}}
+  {:id "SH-29.4",
+   :milestone "SH-29",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 57645,
+    :end-byte 57801,
+    :start-line 950,
+    :end-line 951,
+    :sha256
+    "7372843ba28b8ebe53447790238488ba33851592920d6eca296fdb0479e92695",
+    :raw
+    "4. **SH-29.4:** Verify actual delivered content against SH-27/28 reproducibility,\n   equivalence, provenance, SBOM, signatures, revocation and TCB evidence."}}
+  {:id "SH-29.5",
+   :milestone "SH-29",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 57802,
+    :end-byte 58037,
+    :start-line 952,
+    :end-line 954,
+    :sha256
+    "868a164a7170fc0ee1345bed368a21449f8b16c58451228f4e06ccc506813724",
+    :raw
+    "5. **SH-29.5:** Demonstrate fail-closed public verification on missing, changed,\n   untrusted or inconsistent release components; publish exact support/limits\n   and retain an explicitly separate bootstrap recovery path if distributed."}}
+  {:id "SH-29.6",
+   :milestone "SH-29",
+   :source
+   {:path "docs/self-hosting-milestone-completion-plan.md",
+    :start-byte 58038,
+    :end-byte 58333,
+    :start-line 955,
+    :end-line 958,
+    :sha256
+    "561ae29b85ab06daaaf51312e18ac33bcf46a5ab2d3508a9838cf68f335d5e2f",
+    :raw
+    "6. **SH-29.6:** Only after the complete gate passes, record\n   `:full-language-compiler-self-hosted? true`, `:clojure-seed-retired? true`,\n   and `:clojure-seed-boundary? false` for that precise supported release.\n   These artifact flags require real evidence and do not assert 240/240 coverage."}}]}
