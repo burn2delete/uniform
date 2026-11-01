@@ -343,6 +343,24 @@ Logs/evidence use `build-main-*`; scripts are
 The 42 full/text comparisons retain their explicitly historical6dc baseline;
 no current-source admission, full safety or release authority is implied.
 
+## Verified CLI main composition
+
+The next normal composition uses actual main
+612367e981ec37072cc3d3525f09263bdc91b264/tree
+efc971c757313a418a7b40a7b14bcdeb7ef8b45e, the verified CLI PR729 merge.
+All five incoming CLI paths remain exact main, including its selected-command
+parser, compatibility wrapper, help golden and evidence. The namespace-map rows
+merge without conflict. Safety's stage, both native components, Var ports,
+pipeline tests and ownership associations remain exact7a1cec47. No semantic,
+policy, authentication or migration-pin changes are introduced.
+
+Fresh checks include CLI and the existing coupled Safety/Build/compiler/runtime
+subjects, language/ownership gates, all42 complete/text controls, whole-stage
+and component conservation, and current compiler provenance. Logs, evidence and
+scripts use `cli-main-*`. Exact independent review, contextual lint, own new-head
+CI and clean current-base integration preflight remain required. Older green
+remains historical, with no acceptance transferred across bases.
+
 ## Loader and snapshot CI main composition
 
 Actual main625b42aa8da25eb897df4b9807372e21108bd8e4/tree
