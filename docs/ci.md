@@ -19,6 +19,26 @@ compiler migration or release acceptance.
 | experimental-source-snapshot | Preview artifact | Preview artifact | Exact SHA source tarball, independently repeated Git archive hash, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Main push only, after all routine checks and packaging pass | Separate contents-write job publishes the source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
 
+### Pull-request stage selection
+
+The six semantic matrix jobs remain present on every pull request. For a
+regular added or modified file in a known stage-owned Reader, Macro,
+Resolution, or checked-Core path, `tools/ci/run.clj` runs that stage and every
+downstream stage, while retaining `static` and `contracts`. Changes spanning
+multiple known stages select the union of those downstream closures. This is
+an execution selection only; it does not change job names, ownership, or the
+portable leaf catalog. The stage table is deliberately allowlisted, so an
+unknown path, a contract/specification change, a dependency or workflow
+change, a tooling change, or any delete/rename/mode/type change falls back to
+the full semantic matrix. If changed-path discovery is missing or malformed,
+the selector also falls back to the full matrix.
+
+Markdown-only pull requests retain the existing static whitespace and contract
+checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
+snapshot repeatability controls from the static job; it never replaces the
+other static controls. The leaves job keeps its separate conservative rule:
+non-Markdown pull requests run the complete portable and Darwin catalogs.
+
 ## Requirements and dependencies
 
 The audited baseline has no checked-in Actions workflow, dependency lockfile,
