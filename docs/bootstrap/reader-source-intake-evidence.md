@@ -85,6 +85,22 @@ conservation, focused checks, independent exact review, own CI and clean
 integration preflight remain required. Older source checks remain bound to
 their actual conserved inputs; scope-only or older-base CI is not transferred.
 
+## Verified Release main composition
+
+The next normal composition uses verified Release PR741 main
+b40ddaaca5aafcd1f955f9b3c73cb6dd965d34bf/tree
+8bd22beb1ab157c6751393a4428078565fcab01f. It has no conflicts. Release code,
+component, tests, evidence and registrations remain exact main. The shared
+namespace map preserves Release's row and merges Reader's row. Reader's
+source-intake body, ports, component wrapper and tests remain unchanged.
+
+Fresh combined tests pass50/732, including real JAR acceptance and tampered
+archive rejection. Native controls still accept two files, retain seven actual
+refusals/host errors and emit two Reader artifacts. Complete current-reader Core
+controls and exact comparisons use `release-main-*`. Ownership/language, docs,
+contextual lint, independent exact review, own CI and clean current-base
+preflight remain gates; previous-base green does not transfer.
+
 ## CI harness environment evidence
 
 The current CI runner tests pass20/221 with the installed linter directory on
