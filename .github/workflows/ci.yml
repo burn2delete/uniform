@@ -187,6 +187,7 @@ jobs:
 
   snapshot:
     name: experimental-source-snapshot
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -195,7 +196,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/clojure
-      - name: Package exact source twice and compare
+      - name: Verify deterministic archive recipe
+        run: clojure -J-Xmx256m -Srepro -M tools/ci/snapshot_test.clj
+      - name: Package exact source archive and checksum
         run: |
           umask 077
           mkdir -p "$RUNNER_TEMP/uniform-snapshot-diagnostic"
@@ -236,7 +239,7 @@ jobs:
   publish:
     name: experimental-prerelease
     needs: [checks, leaves, snapshot]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -251,6 +254,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/main
           cd snapshot/experimental
           sha256sum --check SHA256SUMS
           test -f "uniform-experimental-source-$GITHUB_SHA.tar.gz"
