@@ -20,7 +20,9 @@
 (deftest namespace-contract-is-explicit-and-does-not-admit-plans
   (is (empty? (ns-aliases 'gravity.runtime)))
   (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
-           'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide}
+           'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
+           'hosted-equal 'hosted-less-than 'hosted-greater-than
+           'hosted-less-than-or-equal 'hosted-greater-than-or-equal}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -211,6 +213,96 @@
   (let [plan (:plan (first (filter #(= "rejected" (:disposition %)) @arithmetic-programs)))]
     (doseq [[callee stage] [['subtract-no-arguments #'runtime/hosted-subtract]
                            ['divide-no-arguments #'runtime/hosted-divide]]]
+      (let [calls (atom 0)]
+        (with-redefs-fn {stage (fn [_] (swap! calls inc) :unexpected)}
+          #(is (= "L2-BUILTIN-ARITY"
+                  (:id (diagnostic (fn [] (b/p15-s23-stage2-runtime-execute-function context plan callee [])))))))
+        (is (zero? @calls))))))
+
+(def ^:private comparison-programs
+  (delay (mapv (fn [[extension disposition]]
+                 (assoc (compile-source (str "bootstrap/clojure/fixtures/runtime-comparisons/" disposition extension))
+                        :extension extension :disposition disposition))
+               (for [extension [".gravity" ".qst"] disposition ["accepted" "rejected"]]
+                 [extension disposition]))))
+
+(def ^:private comparison-results
+  '[[equal-unary true] [equal-binary true] [equal-binary-false false]
+    [equal-ternary true] [equal-ternary-false false] [equal-many true]
+    [equal-many-false false] [equal-string true]
+    [less-binary true] [less-binary-false false] [less-ternary true] [less-many-false false]
+    [greater-binary true] [greater-binary-false false] [greater-ternary true] [greater-many-false false]
+    [less-equal-binary true] [less-equal-binary-false false] [less-equal-ternary true]
+    [less-equal-many-false false] [less-equal-equality true]
+    [greater-equal-binary true] [greater-equal-binary-false false] [greater-equal-ternary true]
+    [greater-equal-many-false false] [greater-equal-equality true]])
+
+(deftest paired-real-comparison-plans-retain-booleans-refusals-and-identities
+  (doseq [{:keys [path plan disposition]} @comparison-programs]
+    (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+    (is (= (:plan-id plan)
+           (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+    (if (= "accepted" disposition)
+      (doseq [[callee expected] comparison-results]
+        (let [result (b/p15-s23-stage2-runtime-execute-function context plan callee [])]
+          (is (= expected result))
+          (is (= java.lang.Boolean (class result)))))
+      (doseq [[callee id builtin]
+              '[[equal-no-arguments "L2-BUILTIN-ARITY" =]
+                [less-unary "L2-BUILTIN-ARITY" <] [greater-unary "L2-BUILTIN-ARITY" >]
+                [less-equal-unary "L2-BUILTIN-ARITY" <=] [greater-equal-unary "L2-BUILTIN-ARITY" >=]
+                [less-wrong-operand "L2-BUILTIN-ERROR" <] [greater-wrong-operand "L2-BUILTIN-ERROR" >]
+                [less-equal-wrong-operand "L2-BUILTIN-ERROR" <=] [greater-equal-wrong-operand "L2-BUILTIN-ERROR" >=]]]
+        (let [error (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan callee []))]
+          (is (= id (:id error)))
+          (is (= builtin (:function error)))
+          ;; Retain the legacy source gap; actual source remains in the plan envelope.
+          (is (= {:source nil} (:source-span error)))))))
+  (doseq [disposition ["accepted" "rejected"]]
+    (is (apply = (map #(get-in % [:plan :plan-id])
+                     (filter #(= disposition (:disposition %)) @comparison-programs))))))
+
+(deftest hosted-comparisons-preserve-native-results-and-exceptions
+  (doseq [[operation host inputs]
+          [[runtime/hosted-equal = [[7] [7 7] [7 8] [7 7 7] [7 7 8] [7 7 7 7] ["same" "same"] [nil nil]]]
+           [runtime/hosted-less-than < [[1] [1 2] [2 1] [1 2 3] [1 2 3 2] [Long/MIN_VALUE 0 Long/MAX_VALUE]]]
+           [runtime/hosted-greater-than > [[1] [2 1] [1 2] [3 2 1] [4 3 2 3] [Long/MAX_VALUE 0 Long/MIN_VALUE]]]
+           [runtime/hosted-less-than-or-equal <= [[1] [1 2] [2 1] [1 1 2] [1 2 3 2] [2 2]]]
+           [runtime/hosted-greater-than-or-equal >= [[1] [2 1] [1 2] [2 2 1] [4 3 2 3] [2 2]]]]
+          args inputs]
+    (let [expected (apply host args) actual (operation args)]
+      (is (= expected actual))
+      (is (= (class expected) (class actual)))))
+  (doseq [[operation host] [[runtime/hosted-equal =] [runtime/hosted-less-than <]
+                          [runtime/hosted-greater-than >] [runtime/hosted-less-than-or-equal <=]
+                          [runtime/hosted-greater-than-or-equal >=]]]
+    (let [expected (observed-error #(apply host [])) actual (observed-error #(operation []))]
+      (is (some? expected))
+      (is (= (class expected) (class actual)))
+      (is (= (ex-message expected) (ex-message actual))))))
+
+(deftest private-comparison-wrappers-retain-late-stage-interposition
+  ;; Trusted callback markers only, separate from actual source/plan evidence.
+  (doseq [name '[equal less-than greater-than less-than-or-equal greater-than-or-equal]]
+    (let [compatibility (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-stage2-runtime-" name)))
+          stage (ns-resolve 'gravity.runtime (symbol (str "hosted-" name)))
+          args [2 4] calls (atom []) sentinel (Object.) denied (ex-info "comparison callback" {:id :comparison-callback})]
+      (is (true? (:private (meta compatibility))))
+      (is (= '([args]) (:arglists (meta compatibility))))
+      (with-redefs-fn {stage (fn [received] (swap! calls conj received) sentinel)}
+        #(is (identical? sentinel ((deref compatibility) args))))
+      (is (= 1 (count @calls)))
+      (is (identical? args (first @calls)))
+      (with-redefs-fn {stage (fn [_] (throw denied))}
+        #(is (identical? denied (observed-error (fn [] ((deref compatibility) args)))))))))
+
+(deftest comparison-caller-arity-guards-run-before-the-stage-helper
+  (let [plan (:plan (first (filter #(= "rejected" (:disposition %)) @comparison-programs)))]
+    (doseq [[callee stage] [['equal-no-arguments #'runtime/hosted-equal]
+                           ['less-unary #'runtime/hosted-less-than]
+                           ['greater-unary #'runtime/hosted-greater-than]
+                           ['less-equal-unary #'runtime/hosted-less-than-or-equal]
+                           ['greater-equal-unary #'runtime/hosted-greater-than-or-equal]]]
       (let [calls (atom 0)]
         (with-redefs-fn {stage (fn [_] (swap! calls inc) :unexpected)}
           #(is (= "L2-BUILTIN-ARITY"

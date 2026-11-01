@@ -53,39 +53,23 @@
 
 (defn- p15-s23-stage2-runtime-equal
   [args]
-  (case (count args)
-    1 true
-    2 (= (nth args 0) (nth args 1))
-    3 (= (nth args 0) (nth args 1) (nth args 2))
-    (apply = args)))
+  (gravity.runtime/hosted-equal args))
 
 (defn- p15-s23-stage2-runtime-less-than
   [args]
-  (case (count args)
-    2 (< (nth args 0) (nth args 1))
-    3 (< (nth args 0) (nth args 1) (nth args 2))
-    (apply < args)))
+  (gravity.runtime/hosted-less-than args))
 
 (defn- p15-s23-stage2-runtime-greater-than
   [args]
-  (case (count args)
-    2 (> (nth args 0) (nth args 1))
-    3 (> (nth args 0) (nth args 1) (nth args 2))
-    (apply > args)))
+  (gravity.runtime/hosted-greater-than args))
 
 (defn- p15-s23-stage2-runtime-less-than-or-equal
   [args]
-  (case (count args)
-    2 (<= (nth args 0) (nth args 1))
-    3 (<= (nth args 0) (nth args 1) (nth args 2))
-    (apply <= args)))
+  (gravity.runtime/hosted-less-than-or-equal args))
 
 (defn- p15-s23-stage2-runtime-greater-than-or-equal
   [args]
-  (case (count args)
-    2 (>= (nth args 0) (nth args 1))
-    3 (>= (nth args 0) (nth args 1) (nth args 2))
-    (apply >= args)))
+  (gravity.runtime/hosted-greater-than-or-equal args))
 
 (defn- p15-s23-stage2-runtime-str
   [args]
