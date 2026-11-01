@@ -40,8 +40,10 @@ separate from whole-component completion.
 Build's existing project/lock and package/provenance tasks remain policy
 consumers. Release's component-binding task consumes the actual applicable
 governance evidence. The preserved reconciliation includes two Build receiver
-suffixes and further owner/criterion bindings; their exact composition with
-this checkout remains pending. Reconcile those existing fields and IDs rather
+suffixes and further owner/criterion bindings. This successor now prepares
+the two Build consumer blocks and Release's component-binding consumer criteria
+in their existing tasks; exact affected composition and independent review
+remain pending. Reconcile those existing fields and IDs rather
 than adding duplicate governance producers to Build or Release. Do not import
 a stale whole-file overlay or treat a prior source receipt as current execution.
 
@@ -52,8 +54,9 @@ in evidence.md. `spec.md` and this plan provide current behavior/navigation;
 `docs/component-roadmaps/evolution.md` links to the sole ledger instead of
 copying a generated task table. The preserved branch's projection tool and
 table are historical alternatives, not a new prerequisite here. No compiler
-or runtime source, existing task authority, policy record or accepted evidence
-is changed by this package resumption.
+or runtime source, policy record or accepted evidence is changed by this
+package resumption. The subsequent Build/Release consumer amendments retain
+their original task bodies and statuses and add proposed source criteria only.
 
 For actual implementation, require the positive scenario, each named refusal,
 wrong/stale subject or policy identity, stable GOV diagnostic fields, retained

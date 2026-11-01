@@ -149,6 +149,20 @@ independent review remain pending. The registry now exposes 24 architectural
 component workflows plus this governance outcome; its population is not an
 implementation denominator.
 
+The next successor prepares three governance consumer blocks in the existing
+Build resolution/package-verification tasks and Release component-binding task.
+They continue the preserved Governance/Core composition's SAFE14/SAFE15/GOV10
+policy and visibility interfaces and the existing Release GOV consumers.
+The two task files now contain additional proposed criteria; all original
+task text, identities, Open states, evidence files and historical records are
+preserved. Stripping only the three named added blocks restores the exact
+inspected-main task files. Governance decisions remain with `evolution/...`;
+Build actually enforces selected package policy and verifies content/metadata,
+while Release consumes applicable actual decisions and conformance. No new
+task, acceptance, external action or whole-governance start gate is created.
+Current source/facet/receiver entailment and independent acceptance remain
+pending; this proposed composition cannot inherit an earlier receipt's scope.
+
 ## Dependency navigation and next increment
 
 Use [D2](../docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md)
@@ -320,7 +334,7 @@ integration amendments, global requirement joins, exact first behavior-changing
 selection, independent acceptance and composition with the preserved proposal
 remain pending.
 
-The governance resumption adds the preserved ten-task authority and current
+At the governance-resumption checkpoint, the branch added the preserved ten-task authority and current
 spec/plan/evidence/navigation, without changing any of the 24 existing component
 task or evidence files. Its task source SHA-256 is
 `4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31`.
@@ -330,7 +344,7 @@ preserved aggregate, and all 382 referenced facet IDs and exact current
 source-span hashes. These identity/conservation checks do not prove the
 attached predicates' full entailment or execution; GOV2/GOV9's later explicit
 criteria and all prior review qualifications retain their separate scopes.
-Focused checks now cover 58 changed Markdown files and 2,066 local references,
+Focused checks at that checkpoint covered 58 changed Markdown files and 2,066 local references,
 the 139 existing component routes, 48 preserved historical suffixes and 48
 unchanged task/evidence files. The resumed ten routes are checked separately
 against their preserved task source, not credited as implementation progress.
@@ -343,3 +357,28 @@ entailment or implementation from registry discovery. Whitespace checks passed.
 The historical contract-mapping validator is pinned to its original bounded
 package population and append-only plan patch; it is not a current validator
 for this expanded candidate and was not represented as passing here.
+
+The consumer successor adds only the two Build governance blocks and the
+Release governance consumer block inside existing task records. Focused checks
+passed 61 changed files, including 60 Markdown files and 2,100 local references,
+all 139 existing component task routes and 48 historical spec/plan suffixes.
+All original task/evidence contents are conserved: 46 files are untouched, and
+removing only the three declared blocks restores the other two task files
+byte-for-byte. Task identities/checkbox states and every historical evidence
+file remain unchanged. The ten governance task bytes still match their
+preserved source. Existing package-policy/registry-admission bindings retain
+their two requirement IDs and task targets; all 33 attached facet spans/hashes
+and twelve GOV/SAFE14/SAFE15 source files matched current bytes. This is
+identity/conservation evidence, not full semantic entailment.
+
+Canonical and full-language structural validators passed. The dependency audit
+passed its existing captured-body checks, reported no staged or SH/task cycle
+and still reported `mapping-ready? false`; added consumer criteria acquire no
+historical acceptance. Regression testing first exposed the old 31-package/
+124-artifact expectation after governance registration. Updating that exact
+navigation inventory expectation to 32/128 restored 18 tests / 419 assertions
+passing; no acceptance rule or implementation population was changed. The
+language-boundary gate passed 6 tests / 11 assertions, and whitespace checks
+passed. No compiler, resolver, registry, governance or release operation was
+executed. Current source/task/receiver review, implementation and exact release
+acceptance remain separate unfinished obligations.

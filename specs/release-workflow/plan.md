@@ -25,6 +25,25 @@ signing custody and writer reservations; record failed/unrun work explicitly.
 Independent review and coordinator integration remain separate from author
 validation, and final product acceptance does not close wider language scope.
 
+## Current governance consumer composition
+
+The existing first task now carries the proposed consumer block in
+[tasks.md](tasks.md#implementation-tasks), linking its release evidence to
+[the existing governance producer authority](../evolution-workflow/tasks.md).
+The original task body, IDs, Open states and historical receipts remain intact;
+the additional criteria are a current reconciliation proposal, not accepted
+implementation. The historical four-contract navigation table below keeps its
+original no-amendment scope; it does not describe this later consumer addition.
+
+Select the exact applicable release/change/library/target/experiment/package
+subject and consume real scoped producer/checker outputs and actual conformance,
+including missing/stale/wrong-scope refusals at the real release consumer.
+Retain GOV2 comparison dimensions, GOV7 use/expiry metadata, GOV8 tests/schedules
+and distinct GOV4/GOV9 reviews. Do not require unrelated governance tasks to
+finish before isolated release tooling can develop. Required independent
+current-composition review and exact-candidate release acceptance remain
+separate; no policy approval or final release action is performed here.
+
 ## Historical workflow-transfer plan
 
 # Implementation plan: Release workflow migration

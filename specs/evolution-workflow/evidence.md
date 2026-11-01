@@ -38,6 +38,12 @@ still reports `mapping-ready? false`. Exact scope/counts are in the report.
 
 ## Nonclaims and remaining work
 
+The later Build/Release consumer successor prepares three added source-criteria
+blocks in their existing task records. It preserves all original task bodies
+and statuses, the ten carried governance task bytes and historical receipts;
+it is not an adoption of every preserved source-family field amendment or an
+independent current-composition disposition. See the report for exact checks.
+
 No governance/compiler/runtime/provider/release execution, policy decision,
 namespace transfer, yank, advisory publication or independent review was run
 for this resumption. Current Build/Release receiver-field composition, original

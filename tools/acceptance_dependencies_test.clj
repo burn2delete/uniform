@@ -144,8 +144,9 @@
     (is (= 36 (count (get-in result [:full-language :edges]))))
     (is (= 30 (count (get-in result [:self-hosting :edges]))))
     (is (= 240 (count (:canonical-contract-source-digests result))))
-    (is (= 31 (count (get-in result [:retained-spec-kit :packages]))))
-    (is (= 124 (count (get-in result [:retained-spec-kit :artifact-source-digests]))))
+    ;; Includes the resumed evolution-workflow package; still navigation only.
+    (is (= 32 (count (get-in result [:retained-spec-kit :packages]))))
+    (is (= 128 (count (get-in result [:retained-spec-kit :artifact-source-digests]))))
     (is (= 240 (get-in result [:retained-spec-kit :directly-linked-contracts])))
     (is (empty? (get-in result [:retained-spec-kit :without-direct-package-links])))
     (is (= 5 (count (get-in result [:full-language :coarse-acceptance-cycles]))))

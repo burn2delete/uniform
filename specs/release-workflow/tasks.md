@@ -19,6 +19,45 @@ Evidence baseline: [Overall roadmap](../../docs/implementation-roadmap.md)
 
 Closing evidence: Component outcome receipts, positive/negative programs and explicit unsupported surface
 
+<!-- release-governance-consumer:start -->
+Additional source criteria, proposed current composition: Consume applicable
+actual subject/revision-bound governance evidence from the existing
+`evolution/change-review`, `evolution/rfc-review`,
+`evolution/experiment-lifecycle`, `evolution/library-admission`,
+`evolution/namespace-decision`, `evolution/registry-yank`,
+`evolution/security-response`, `evolution/security-review`,
+`evolution/stabilization-decision` and `evolution/target-support-admission`
+producer interfaces. This task owns release consumption and conformance
+binding, not their reviews, policy decisions or implementation.
+
+For GOV1/GOV6 retain the accountable change/RFC subject, affected contracts,
+required impact/design/test/migration sections and specialist decisions,
+durable state/history, actual implementation/conformance and release-note
+links. GOV2 comparisons identify the real baseline and each affected source,
+semantic, effect/capability, profile/target, diagnostic, artifact, runtime and
+package surface, its classification and required migration/security exception.
+For GOV7 retain explicit opt-in, stable default-off or governed preview,
+profiles, expiry/rollback/exit decisions, actual package/build/export dependency
+metadata and on/off results. For GOV8 retain exact stable surfaces with actual
+history/compatibility/security/migration evidence, or deprecation replacement/
+rationale, diagnostic/schedules/migration and tests through governed removal;
+emergency removal requires both GOV4 and GOV2 records.
+
+Consume applicable GOV3/STD20 library admission, GOV4 security/incident and
+GOV9 distinct current unsafe audits, GOV5 target-tier/profile conformance, and
+GOV10 namespace/yank/advisory/package-policy outputs. Bind each to the exact
+candidate, affected scope, policy/tool/producer identity and actual consumer
+result. Invalidate stale or mismatched evidence. Reject omitted required
+records/consumers, unsupported support or stability claims, ownerless or
+untraceable changes, hidden experiments, expired unreviewed use, premature
+removal, stale unsafe review and unreviewed high-risk release findings with
+owning GOV/STD diagnostics. A schema, supplied decision or old pass cannot
+stand in for the required accountable review or actual conformance. Applicable
+artifacts are dependencies; whole-component completion is not a local start
+gate. The task remains Open and independent exact-release acceptance remains
+separate.
+<!-- release-governance-consumer:end -->
+
 - [ ] `release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler` Complete stage compatibility/equivalence across the claimed compiler
 
 Status: Open
