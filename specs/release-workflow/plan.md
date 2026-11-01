@@ -1,3 +1,32 @@
+# Self-hosting and release implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the historical transfer plan, governance interfaces and source-family work
+below. Read [spec.md](spec.md), the complete applicable BOOT/TEST13/package
+contracts and the selected SH/Phase 18 outcome. Use the existing SH crosswalk
+and dependency representation rather than creating another task or stage graph.
+
+Name the exact complete source/component closure and owners, actual prior and
+next compiler, target/ABI/runtime/build/lock/environment, required real process
+invocations, outputs and comparison mode. Distinguish local implementation,
+stable migration, component construction, actual next-stage rebuild, clean
+equivalence, trust and public delivery. Plans or supplied records are inputs to
+execution machinery, not evidence that a compiler process ran.
+
+Plan real accepted and rejected compiler/application runs plus missing output,
+substituted builder/component, stale/incorrect comparison, seed-boundary and
+required trust/metadata failures relevant to the selected increment. Preserve
+actual process exits, logs, artifacts, diagnostics, exact lineage, conformance
+and residual TCB. Apply focused checks during implementation and the complete
+required stable-candidate suite at admission/release.
+
+Refine only the selected existing authority. Preserve current operation holds,
+signing custody and writer reservations; record failed/unrun work explicitly.
+Independent review and coordinator integration remain separate from author
+validation, and final product acceptance does not close wider language scope.
+
+## Historical workflow-transfer plan
+
 # Implementation plan: Release workflow migration
 
 Spec: [spec.md](spec.md). Owner: backend workflow migration owner.

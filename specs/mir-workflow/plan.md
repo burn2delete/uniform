@@ -1,3 +1,27 @@
+# MIR implementation planning entry
+
+Select one unresolved [existing task](tasks.md#implementation-tasks), preserving
+the historical transfer plan below. Read [spec.md](spec.md), C11 and the owning
+source rule for each selected operation/fact. Resolve actual Gravity semantics,
+temporary transport and current focused fixtures through
+[development verification](../../docs/development-verification.md) and the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md).
+
+Name actual Core and analysis producers, operation families, CFG/data-flow/fact
+tables, source/proof edges, verifier and Opt/Lower consumer. Provide real legal
+construction plus targeted malformed-flow, dominance, stale/missing-fact,
+ordering, check-guard, origin and target-leak mutations relevant to the slice.
+Use an explicit fixture interface for local development and actual producers
+for composition; do not accept a supplied passed report as verification.
+
+Run focused owner checks and affected producer/verifier/consumer composition.
+Record exact artifacts, serialization/invalidation observations and passed,
+failed or unrun cases in the selected existing authority. Preserve C12 and
+other recorded restrictions and reserved writers. Retain independent acceptance,
+complete operation-family coverage and release as separate outcomes.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: MIR task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)

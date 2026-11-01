@@ -78,6 +78,13 @@ profile and safety enforcement, and provider/grant/artifact verification. They
 route to the same existing tasks without adopting pending source-family task
 amendments or promoting old receipts. Runtime handler interpretation, surviving
 checks and actual action/verification boundaries require real composition.
+The downstream entries are [MIR](../specs/mir-workflow/spec.md),
+[Opt](../specs/opt-workflow/spec.md), [Lower](../specs/lower-workflow/spec.md),
+[Emit](../specs/emit-workflow/spec.md) and [Release](../specs/release-workflow/spec.md).
+They route real graph construction/verification, semantics-preserving passes,
+target/ABI/provider lowering, emitted bytes and actual next-stage rebuilds
+through their existing authorities. SH-25 construction, SH-26 actual rebuild,
+SH-27 equivalence, SH-28 trust and SH-29 public delivery remain distinct.
 The other component packages remain discoverable through the existing
 [component registry](../docs/component-roadmaps/README.md#component-registry).
 Their migration specs are not automatically accepted as complete implementation
@@ -207,3 +214,12 @@ suffixes and 18 unchanged task/evidence files. An initial ad hoc route selector
 incorrectly counted an inline historical alias as a task and was corrected to
 select actual checkbox records; no project task or criterion changed. Whitespace
 checks passed. No compiler or privileged action was run for these entries.
+
+The downstream packet extends MIR, Opt, Lower, Emit and Release. Focused checks
+passed 31 changed Markdown files for ASCII and 533 local path/heading references,
+all 72 existing task routes, 28 byte-identical historical spec/plan suffixes and
+28 unchanged task/evidence files. `git diff --check` passed. This verifies
+navigation and conservation across fourteen component entries; it does not
+accept their implementation outcomes, the other ten component specifications,
+the global source partition or a seedless release. No compiler or release
+execution was performed.
