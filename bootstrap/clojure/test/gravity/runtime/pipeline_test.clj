@@ -25,7 +25,7 @@
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal
            'hosted-str 'fail-builtin-error! 'hosted-get 'hosted-builtin
            'bind-values 'execute-value-scoped 'execute-values-scoped
-           'execute-map-entries-scoped 'execute-instructions-scoped}
+           'execute-map-entries-scoped 'execute-instructions-scoped 'execute-instruction-scoped}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -685,3 +685,168 @@
         #(is (identical? marker (apply (deref compatibility) values))))
       (is (= (if (= legacy 'p15-s23-stage2-runtime-bind-values)
                 values (conj values (evaluation-operations))) @received)))))
+
+(def ^:private instruction-programs
+  (delay (mapv (fn [[extension disposition]]
+                 (assoc (compile-source (str "bootstrap/clojure/fixtures/runtime-instructions/" disposition extension))
+                        :extension extension :disposition disposition))
+               (for [extension [".gravity" ".qst"] disposition ["accepted" "rejected"]]
+                 [extension disposition]))))
+
+(deftest paired-instruction-programs-preserve-values-stdout-refusals-and-identities
+  (doseq [{:keys [path plan disposition]} @instruction-programs]
+    (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+    (is (= (:plan-id plan)
+           (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+    (if (= "accepted" disposition)
+      (doseq [[callee expected output] '[[literal 7 ""] [quoted (1 2) ""] [local-value 7 ""] [vector-value [1 2 3] ""] [set-value #{1 2} ""] [map-value {:a 1, :b 2} ""] [sequence-value 3 ""] [if-true 7 ""] [if-false 9 ""] [if-nil 9 ""] [if-zero 1 ""] [let-order [1 3] ""] [loop-value 6 ""] [function-value 8 ""] [get-two 7 ""] [get-three 9 ""] [count-value 2 ""] [str-one "7" ""] [unary-value 7 ""] [equal-two true ""] [assoc-three {:a 7} ""] [generic-two 5 ""] [generic-three 6 ""] [generic-zero "" ""] [print-zero nil "\n"] [print-one nil "7\n"] [print-two nil "a 7\n"] [print-three nil "a 7 b\n"] [sequence-output 7 "a\nb\n"] [argument-output [1 2] "a\nb\n"]]]
+        (let [value (atom nil) stdout (with-out-str (reset! value (b/p15-s23-stage2-runtime-execute-function context plan callee [])))]
+          (is (= expected @value) (str callee)) (is (= output stdout) (str callee))))
+      (doseq [[callee builtin id output] '[[if-test / "L2-BUILTIN-ERROR" ""] [let-initializer + "L2-BUILTIN-ERROR" ""] [loop-initializer / "L2-BUILTIN-ERROR" ""] [bad-count count "L2-BUILTIN-ERROR" ""] [eager-get / "L2-BUILTIN-ERROR" ""] [bad-assoc assoc "L2-BUILTIN-ERROR" ""] [call-argument / "L2-BUILTIN-ERROR" ""] [vector-output / "L2-BUILTIN-ERROR" "before\n"] [print-argument / "L2-BUILTIN-ERROR" ""] [builtin-arity < "L2-BUILTIN-ARITY" ""]]]
+        (let [error (atom nil) stdout (with-out-str (reset! error (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan callee []))))]
+          (is (= id (:id @error)) (str callee))
+          (is (= builtin (:function @error)))
+          (is (= {:source nil} (:source-span @error)))
+          (is (= output stdout)))))
+  (doseq [disposition ["accepted" "rejected"]]
+    (is (apply = (map #(get-in % [:plan :plan-id])
+                     (filter #(= disposition (:disposition %)) @instruction-programs)))))))
+
+(defn- instruction-operations []
+  (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-instruction-operations)))
+
+(deftest instruction-contract-and-data-ports-are-explicit
+  (let [contract (:gravity/namespace-contract (meta #'runtime/execute-instruction-scoped))
+        api (get-in contract [:public-api 'execute-instruction-scoped]) operations (instruction-operations)]
+    (is (= (set (:operation-keys api)) (set (keys operations))))
+    (is (= #{:artifact-println-function :artifact-println-two-function :artifact-function} (set (:data-operation-keys api))))
+    (is (every? var? (vals operations)))
+    (is (= :existing-callers (:instruction-admission-owner api)))
+    (is (= :existing-seed-operations (:call-authority-owner api)))))
+
+(deftest literal-quote-local-and-shape-refusals-retain-identity-and-facts
+  (let [value (Object.) lookups (atom 0)
+        none (reify clojure.lang.ILookup (valAt [_ _] (swap! lookups inc) nil))]
+    (doseq [op [:literal :quote]]
+      (is (identical? value (runtime/execute-instruction-scoped nil nil nil {:op op :value value} nil none))))
+    (is (zero? @lookups)))
+  (let [plan {:source {:path "unit.gravity"}} ops (instruction-operations)]
+    (doseq [value [nil false]]
+      (is (= value (runtime/execute-instruction-scoped nil plan {:x value} {:op :local :name :x} nil ops))))
+    (doseq [[instruction id field value]
+            [[{:op :local :name :missing} "L2-UNKNOWN-SYMBOL" :symbol :missing]
+             [{:op :unknown} "L2-UNKNOWN-CORE-FORM" :operator :unknown]
+             [{:op :throw :value nil} "L2-THROW-ILLEGAL" :reason :malformed-throw-instruction]
+             [{:op :throw :value {:op :literal :value 1} :extra true} "L2-THROW-ILLEGAL" :reason :malformed-throw-instruction]]]
+      (let [error (diagnostic #(runtime/execute-instruction-scoped nil plan {} instruction nil ops))]
+        (is (= id (:id error))) (is (= value (get error field)))
+        (is (= {:source "unit.gravity"} (:source-span error)))))))
+
+(deftest source-throw-retains-actual-bootstrap-token-and-payload-identity
+  ;; Direct trusted-host control evidence only, not source/plan admission or a
+  ;; serializable target error ABI. No opaque token is rewritten for equality.
+  (let [payload (Object.) plan {:source {:path "unit.gravity"} :module {:module 'unit}}
+        error (observed-error #(runtime/execute-instruction-scoped nil plan {}
+                                {:op :throw :value {:op :literal :value payload}} nil (instruction-operations)))]
+    (is (instance? clojure.lang.ExceptionInfo error))
+    (is (identical? payload (:payload (ex-data error))))
+    (is (identical? (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-source-throw-token))
+                   (:gravity.bootstrap/source-throw (ex-data error))))
+    (is (= (:source plan) (:source (ex-data error))))
+    (is (= 'unit (:module (ex-data error)))))
+  (let [events (atom []) throw-operation (clojure.lang.Var/create (fn [& args] (swap! events conj [:original args]) :original))
+        evaluate (clojure.lang.Var/create (fn [& _] (alter-var-root throw-operation (constantly (fn [& _] :changed))) :payload))]
+    (is (= :original (runtime/execute-instruction-scoped nil :plan nil
+                       {:op :throw :value {:op :literal :value 7}} nil
+                       {:source-throw! throw-operation :execute-value-scoped evaluate})))
+    (is (= [[:original '(:plan :payload)]] @events))))
+
+(deftest if-and-let-forward-scopes-and-evaluate-only-ordered-required-instructions
+  (doseq [condition [true false nil 0]]
+    (let [events (atom []) scope (Object.)
+          execute (clojure.lang.Var/create
+                    (fn [_ _ _ instruction received]
+                      (is (identical? scope received)) (swap! events conj instruction)
+                      (case instruction :test condition :then :yes :else :no)))
+          ops (assoc (instruction-operations) :execute-instruction-scoped execute)
+          value (runtime/execute-instruction-scoped nil {} {} {:op :if :test :test :then :then :else :else} scope ops)]
+      (is (= (if condition :yes :no) value))
+      (is (= [:test (if condition :then :else)] @events))))
+  (let [events (atom []) scope (Object.)
+        execute (clojure.lang.Var/create
+                  (fn [_ _ env instruction received]
+                    (is (identical? scope received)) (swap! events conj [instruction env])
+                    (case instruction :a 1 :b (inc (:a env)))))
+        body (clojure.lang.Var/create (fn [_ _ env _ received] (is (identical? scope received)) env))
+        result (runtime/execute-instruction-scoped nil {} {:retained 7}
+                 {:op :let :bindings [{:name :a :expr :a} {:name :b :expr :b}] :body [:body]} scope
+                 (assoc (instruction-operations) :execute-instruction-scoped execute :execute-instructions-scoped body))]
+    (is (= {:retained 7 :a 1 :b 2} result))
+    (is (= [[:a {:retained 7}] [:b {:retained 7 :a 1}]] @events))))
+
+(deftest loop-recurrence-arity-refuses-before-rebinding
+  (let [signal (b/p15-s23-stage2-runtime-recur-signal [1 2]) binds (atom 0)
+        body (clojure.lang.Var/create (fn [& _] signal))
+        bind (clojure.lang.Var/create (fn [& _] (swap! binds inc) :unexpected))
+        error (diagnostic #(runtime/execute-instruction-scoped nil {} {}
+                             {:op :loop :bindings [{:name :x :expr {:op :literal :value 1}}] :body []} nil
+                             (assoc (instruction-operations) :execute-instructions-scoped body :bind-values bind)))]
+    (is (= "L2-RECUR-TARGET" (:id error)))
+    (is (= :loop-arity-mismatch (:reason error)))
+    (is (= 1 (:target-arity error))) (is (= 2 (:actual-arity error)))
+    (is (zero? @binds))))
+
+(deftest println-evaluates-arguments-before-legality-and-does-not-publish-after-denial
+  (let [events (atom []) denied (ex-info "unit effect denial" {:id :unit-denied})
+        values (clojure.lang.Var/create (fn [& _] (swap! events conj :arguments) [7]))
+        deny (clojure.lang.Var/create (fn [_] (swap! events conj :denied) (throw denied)))
+        error (atom nil)
+        stdout (with-out-str (reset! error (observed-error #(runtime/execute-instruction-scoped nil {} {}
+                           {:op :println :args []} nil
+                           (assoc (instruction-operations) :execute-values-scoped values :validate-module-effects! deny)))))]
+    (is (identical? denied @error)) (is (= "" stdout))
+    (is (= [:arguments :denied] @events))))
+
+(deftest unary-artifact-exceptions-retain-their-distinct-boundary
+  ;; A rejecting invocation port tests routing only; it never fakes successful
+  ;; artifact authorization or supplies a source/admission proof.
+  (let [error (ex-info "unit artifact denial" {:id :unit-artifact}) seen (atom []) host-errors (atom 0)
+        invoke (clojure.lang.Var/create (fn [& args] (swap! seen conj args) (throw error)))
+        evaluate (clojure.lang.Var/create (fn [& _] "value"))
+        host-error (clojure.lang.Var/create (fn [& _] (swap! host-errors inc) :unexpected))
+        format-name (clojure.lang.Var/create 'unit-format)
+        observed (observed-error #(runtime/execute-instruction-scoped {:runtime-artifact-plan :unit-selector} {} {}
+                       {:op :builtin-call :function 'str :args [{:op :literal :value "value"}]} nil
+                       (assoc (instruction-operations) :execute-value-scoped evaluate :artifact-invoke invoke
+                              :artifact-function format-name :fail-builtin-error! host-error)))]
+    (is (identical? error observed)) (is (zero? @host-errors))
+    (is (= 'unit-format (second (first @seen))))
+    (is (= ["value"] (nth (first @seen) 2)))))
+
+(deftest compiler-and-module-operation-denials-retain-arguments-and-scopes
+  (let [events (atom []) scope (Object.) denied (ex-info "unit compiler denial" {:id :unit-denied})
+        instruction {:op :builtin-call :function 'unit-compiler :args [{:op :literal :value 7}] :compiler-internal-caller nil}
+        evaluate (clojure.lang.Var/create (fn [& _] (swap! events conj :argument) 7))
+        deny (clojure.lang.Var/create (fn [& args] (swap! events conj args) (throw denied)))
+        error (observed-error #(runtime/execute-instruction-scoped :runtime :plan :env instruction scope
+                  (assoc (instruction-operations) :execute-value-scoped evaluate :invoke-compiler-internal-builtin deny)))]
+    (is (identical? denied error)) (is (= :argument (first @events)))
+    (is (= [:runtime :plan instruction [7] scope] (vec (second @events)))))
+  (doseq [[op key] [[:function-call :execute-call-scoped] [:compiler-module-call :module-execute-call]]]
+    (let [seen (atom nil) scope (Object.) instruction {:op op} denied (ex-info "unit call denial" {:id :unit-denied})
+          deny (clojure.lang.Var/create (fn [& args] (reset! seen args) (throw denied)))]
+      (is (identical? denied (observed-error #(runtime/execute-instruction-scoped :runtime :plan :env instruction scope
+                                       (assoc (instruction-operations) key deny)))))
+      (is (= [:runtime :plan :env instruction scope] (vec @seen))))))
+
+(deftest instruction-compatibility-wrappers-preserve-arities-and-late-stage-port
+  (let [private (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-instruction-scoped)
+        seen (atom []) marker (Object.) values (vec (repeatedly 5 #(Object.)))]
+    (is (true? (:private (meta private))))
+    (is (= '([runtime plan env instruction public-invocation-scope]) (:arglists (meta private))))
+    (is (= '([runtime plan env instruction]) (:arglists (meta #'b/p15-s23-stage2-runtime-execute-instruction))))
+    (with-redefs [runtime/execute-instruction-scoped (fn [& args] (swap! seen conj (vec args)) marker)]
+      (is (identical? marker (apply (deref private) values)))
+      (is (identical? marker (apply b/p15-s23-stage2-runtime-execute-instruction (subvec values 0 4)))))
+    (is (= (conj values (instruction-operations)) (first @seen)))
+    (is (= (conj (subvec values 0 4) nil (instruction-operations)) (second @seen)))))
