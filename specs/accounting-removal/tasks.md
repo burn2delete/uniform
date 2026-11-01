@@ -737,6 +737,15 @@ families, outer pools, metadata carrier safety and the original row's complete
 consumer acceptance remain open. DSE's preserved unrun work and the separate
 unknown historical mode operation are not replayed or reclassified here.
 
+## ACC-12 operative documentation correction
+
+PR522 integrated the two-span development-verification correction at
+`4a798d86`. It removes contradictory instructions to preserve accounting quota
+and work-limit boundaries while retaining source, type, effect, extent and
+transfer checks. Live membership and vector-index work pools remain for their
+actual source owners to migrate. ACC-12 remains partial; this documentation
+correction does not establish source, runtime, Core, C12 or release acceptance.
+
 ## ACC-06 private collection chain integration
 
 PR511 integrated the finite private collection binding-chain change at
@@ -752,3 +761,19 @@ result does not establish authenticated-source, runtime, Core, C12 or release.
 The later PR513 metadata gate found that the new PC test namespace was absent
 from its impact catalog. That separate catalog registration is open with the
 existing metadata owners; the failed gate is not a PC semantic pass.
+
+## ACC-04 BKA header integration
+
+PR524 integrated the finite BKA header and first-debit migration at
+`d63e6096`. The three owners now derive the header and inferred-call result
+without the removed header allowance and cost report. Existing keyword and
+native-view validation precedes authority-vector traversal; source, descriptor,
+type and permission checks remain. Rejected results do not acquire fabricated
+cost reports. This supersedes the BKA-header accounting item in the earlier
+anchor-width assessment.
+
+ACC-04 remains open: independent row, fact, call, edge, child and outer pools,
+runtime policy, PMK and ANE still require their own coherent migrations and
+acceptance. DSE and the separate historical mode operation remain unresolved.
+This finite integration does not establish authenticated-source, runtime, Core,
+C12 or whole-row acceptance. ACC-02 and ACC-03 remain closed.

@@ -67,29 +67,61 @@
           :final-seedless-release? false}}]
     (assoc artifact-base :artifact-id (c4-artifact-id artifact-base))))
 
-(def p18-t02-build-root "target/phase-18/jvm-cli")
+(def p18-t02-jar-path packaged-launcher/packaged-jar-path)
+(def p18-t02-build-root
+  (.getPath (.getParentFile (java.io.File. p18-t02-jar-path))))
 (def p18-t02-classes-dir (str p18-t02-build-root "/classes"))
 (def p18-t02-manifest-path (str p18-t02-build-root "/MANIFEST.MF"))
-(def p18-t02-jar-path (str p18-t02-build-root "/gravity-jvm-cli.jar"))
 (def p18-t02-launcher-source "bootstrap/clojure/java/gravity/cli/Main.java")
-(def p18-t02-bootstrap-source "bootstrap/clojure/src/gravity/bootstrap.clj")
-(def p18-t02-diagnostics-source
-  "bootstrap/clojure/src/gravity/diagnostics.clj")
-(def p18-t02-cli-source "bootstrap/clojure/src/gravity/cli.clj")
-(def p18-t02-darwin-publication-source
-  "bootstrap/clojure/src/gravity/darwin_publication.clj")
+(def p18-t02-source-root "bootstrap/clojure/src")
 (def p18-t02-manifest-entry "META-INF/MANIFEST.MF")
 (def p18-t02-launcher-class-entry "gravity/cli/Main.class")
-(def p18-t02-source-inventory
-  [{:role :launcher :path p18-t02-launcher-source
-    :compiled-jar-entry p18-t02-launcher-class-entry}
-   {:role :bootstrap :path p18-t02-bootstrap-source
-    :jar-entry "gravity/bootstrap.clj"}
-   {:role :cli :path p18-t02-cli-source
-    :jar-entry "gravity/cli.clj"}
-   {:role :diagnostics :path p18-t02-diagnostics-source
-    :jar-entry "gravity/diagnostics.clj"}
-   {:role :darwin-publication :path p18-t02-darwin-publication-source
-    :jar-entry "gravity/darwin_publication.clj"}
-   {:role :deps :path "deps.edn"}])
-(def p18-t02-artifact-dir "docs/artifacts/phase-18/jvm-cli")
+
+(defn p18-t02-production-source-paths
+  ([] (p18-t02-production-source-paths p18-t02-source-root))
+  ([source-root]
+   (let [root (java.nio.file.Paths/get source-root (make-array String 0))
+         paths
+         (with-open [stream
+                     (java.nio.file.Files/walk
+                      root
+                      (make-array java.nio.file.FileVisitOption 0))]
+           (vec (iterator-seq (.iterator stream))))]
+     (when-let [symbolic-link
+                (some #(when (java.nio.file.Files/isSymbolicLink %) %)
+                      paths)]
+       (throw (ex-info "packaged source inventory contains a symbolic link"
+                       {:path (.toString symbolic-link)})))
+     (->> paths
+          (filter #(java.nio.file.Files/isRegularFile
+                    %
+                    (make-array java.nio.file.LinkOption 0)))
+          (map #(.replace (.toString ^java.nio.file.Path %)
+                          (str java.io.File/separator)
+                          "/"))
+          (filter #(or (str/ends-with? % ".clj")
+                       (str/ends-with? % ".cljc")
+                       (str/ends-with? % ".edn")))
+          sort
+          vec))))
+
+(defn p18-t02-production-source-entry
+  [path]
+  {:role :runtime-source
+   :path path
+   :jar-entry (subs path (inc (count p18-t02-source-root)))})
+
+(defn p18-t02-source-inventory
+  "Discover the exact production source inventory for one package operation.
+  This must remain an operation-time function: requiring the bootstrap must not
+  walk the production source tree or retain a cross-operation snapshot."
+  []
+  (vec
+   (concat
+    [{:role :launcher :path p18-t02-launcher-source
+      :compiled-jar-entry p18-t02-launcher-class-entry}]
+    (map p18-t02-production-source-entry
+         (p18-t02-production-source-paths))
+    [{:role :deps :path "deps.edn"}])))
+(def p18-t02-artifact-dir
+  "target/development-loop-batches/phase-18/jvm-cli/artifacts")

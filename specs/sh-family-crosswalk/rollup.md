@@ -7,11 +7,12 @@ current whole-criterion acceptance remain separate and unassessed.
 
 Original source: 15a5499e97798621d270c36dd2546ce98ddd62a9. Task authority amendment: 254a5b50ea5e2825c424248c9216802cc866c0fd.
 
-Source-version adoption: accepted-mapping-only. The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.
+Source-version adoption: pending-source-version-review. The explicit source-version bridge preserves predecessor pins and new owner-accepted Reader evidence.
 
-Every requirement retains its complete acceptance/context text, source bytes,
-lines and SHA256 in original-inventory.edn and crosswalk.edn. Current acceptance
-is unassessed unless an exact scoped task receipt explicitly establishes it.
+Every requirement retains its complete acceptance/context text, source
+locators, lines and SHA256; crosswalk.edn stores each distinct source payload once
+in its source-snapshots table and references it by content digest. Current
+acceptance is unassessed unless an exact scoped task receipt explicitly establishes it.
 
 SH03-SH29 additionally retain the original [shared completion rule](../../docs/self-hosting-milestone-completion-plan.md#three-boundaries-and-one-shared-completion-rule): actual owning execution, rejection/preservation/composition and applicable independently accepted migration evidence. SH00-SH02 keep their historical baseline/process scope.
 

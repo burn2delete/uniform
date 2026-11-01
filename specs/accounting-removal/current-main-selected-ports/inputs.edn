@@ -1,0 +1,19 @@
+{:schema :gravity/current-main-selected-ports-inputs-v1
+ :base {:commit "285dfe747a5f47e118fdacf6c8d9138277f89165"
+        :tree "b4c715d095323f9f1b6a11a15d4fd158751c1a57"
+        :verification :actual-GitHub-main-commit-API}
+ :initial-source-baseline {:commit "81dc3cf271707e37afc80806475155d3c2b654d3"
+                           :tree "7396249023b13780bc457bf97f3b5361e16686d6"
+                           :three-implementation-files :identical-to-base}
+ :donor {:commit "dcaf473d602126c5f226573e77a4b34acc0c2a1d"
+         :tree "8c98b2f678d4e0cbba5931f5aab87a982097bd1d"
+         :review {:path "/tmp/selected-owner-independent-dcaf473d/receipt.edn"
+                  :sha256 "c203a634c9a0f191ba6c36171ec579c0bfa5aeb64c416ab82f830c8fda5ff6f0"
+                  :scope :matching-source-dependencies-only-not-new-composition-acceptance}}
+ :consumer {:commit "b6e5c42976d92d84ae9531d8db9e20fc536f1afd"
+            :call-form :public-sink-and-dedicated-guarded-route
+            :actual-runtime :unrun}
+ :excluded [:920-fence-cut :045-adapter-and-P2-repair :ACC08-protocol
+            :new-domain-authority :held-operation-retry :runtime-admission]
+ :review-route :Accounting-direct-after-intake
+ :publication :not-performed :CI :not-performed :merge :not-performed}

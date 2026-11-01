@@ -66,10 +66,12 @@
      plan (symbol (str prefix "-" function)) arguments)))
 
 (defn- unroll [owner {:keys [start core nodes bindings]}]
-  ;; Both old and proposed helpers accept an explicit supplied allowance.
-  ;; Keep it sufficient to distinguish the chain ceiling from the separate
-  ;; unresolved work pool; no production default or caller is changed.
-  (invoke owner "pc-unroll" [start core nodes bindings 131072]))
+  ;; C7's semantic proof has no accounting allowance; the Effects and emitter
+  ;; adapters retain their independent local allowance interfaces.
+  (invoke owner "pc-unroll"
+          (if (= :c7 owner)
+            [start core nodes bindings]
+            [start core nodes bindings 131072])))
 
 (defn original-observations [owner]
   ;; Run only as an explicitly selected old-source observation, never as a
@@ -95,7 +97,8 @@
                                    :get-call-core-node-id :get :first-call-core-node-id :first
                                    :receiver-links (:links reconstructed) :vector-links []
                                    :entries [] :selected-type :gravity.type/keyword}}
-        descriptor-check #(invoke owner "pc-descriptor-work" [% expected 131072])
+        descriptor-check #(invoke owner "pc-descriptor-work"
+                                  (if (= :c7 owner) [% expected] [% expected 131072]))
         last-index 129
         last-record (get-in input [:core :lexical-bindings last-index])
         bid (:binding-id last-record)

@@ -25,7 +25,7 @@
                    {:source source-path
                     :output-path output-path
                     :allowed-output-roots ["target/" "<current-directory>"]}))
-  (let [source-text (slurp source-path)
+  (let [source-text (read-gravity-source-text source-path)
         _ (validate-stage0-source-profile! source-path source-text)
         _ (validate-stage0-source-safety! source-path source-text)
         macro-artifact (macro-source-artifact source-path source-text)

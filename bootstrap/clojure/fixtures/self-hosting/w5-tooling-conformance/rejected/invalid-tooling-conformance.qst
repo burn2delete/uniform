@@ -335,10 +335,21 @@
                                (get source :provenance)))]
     (assoc request :source changed-source)))
 
+(defn tc-span-without-line [span]
+  (let [fields (vec (keys span))]
+    (loop [index 0 result {}]
+      (if (< index (count fields))
+        (let [field (get fields index)]
+          (recur (+ index 1)
+                 (if (= field :line)
+                   result
+                   (assoc result field (get span field)))))
+        result))))
+
 (defn w5-tooling-conformance-invalid-source-span-missing-request
   [request]
   (assoc request :source-span
-         (dissoc (get request :source-span) :line)))
+         (tc-span-without-line (get request :source-span))))
 
 (defn w5-tooling-conformance-invalid-source-span-extra-request
   [request]

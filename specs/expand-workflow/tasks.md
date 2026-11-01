@@ -8,7 +8,7 @@ Authority transfer baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
 
 This is the sole editable Expand implementation task ledger. The roadmap's
 [current evidence and remaining work](../../docs/component-roadmaps/expand.md#current-evidence-and-remaining-work)
-is generated from these records. IDs preserve the established phase/title slug convention; the original
+is a navigation view of these records. IDs preserve the established phase/title slug convention; the original
 `expand/1` through `expand/5` labels remain unchanged display text. Order is
 display order, not dependency evidence. An unchecked box means not accepted complete. Check a box only with
 explicit `Accepted;` status and an immutable accepted-outcome receipt,

@@ -1,0 +1,178 @@
+# Stage-owned bootstrap namespaces
+
+## Purpose and authority
+
+Replace bootstrap-wide implementation bodies incrementally with namespaces
+that own a compiler stage or ecosystem boundary. Gravity/Uniform remains the
+destination language; Clojure extractions are temporary seed organization.
+This map assigns responsibilities and proposed interfaces, not new language
+semantics or evidence of full implementation.
+
+D0, D1, D2, D3, D6, D8 and D9 govern every row. Contract identifiers below
+resolve through [the document sequence](../document-sequence.md). C1 defines
+stage contracts; C15 defines structured diagnostics; TEST2 defines compiler
+tests. The existing Gravity owners in `bootstrap/gravity/src/gravity/` retain
+semantic authority. Namespace extraction alone does not renew BOOT3/BOOT7
+migration evidence or establish release, self-hosting or seed retirement.
+
+## Dependency direction
+
+Compiler dependencies follow artifact flow:
+
+```text
+reader -> syntax -> macro -> resolution -> checked-core
+  -> types -> effects -> ownership -> safety -> mir
+  -> optimization -> lowering -> backend.*
+```
+
+Arrows mean artifact consumption, not a requirement to import the preceding
+namespace. Passes consume explicit records; producers do not import consumers.
+Profile and capability validation remain compile-time gates before MIR and
+target emission. Checked-core owns core construction; its name alone does not
+certify completion of the later checks. Domain lowering preserves typed-core
+or MIR anchors and exposes C1 verification points even when passes are fused.
+
+`diagnostics` is a shared carrier/schema service. Stage rule decisions stay
+with the producing stage. `runtime` consumes executable artifacts and declared
+services; it cannot repair compiler legality. `standard-library` supplies
+profile/effect/capability-declared source and APIs. `package` supplies resolved
+dependency and authority records; `build` orchestrates explicit pass inputs.
+`tooling` and `cli` consume these APIs and structured diagnostic views.
+`bootstrap` wires temporary seed adapters and equivalence runs; `release`
+consumes build, provenance and bootstrap evidence. No extracted stage imports
+`bootstrap`, `cli`, or `release`. No backend imports a source reader to bypass
+checked IR. Runtime and backend implementations share data contracts, not
+mutual initialization dependencies.
+
+During extraction, compatibility wrappers may pass explicit operations into
+a stage. The stage must not discover bootstrap vars with `resolve`, invoke the
+orchestrator, or treat a supplied callback as proof authority. Keep historical
+interposition at the wrapper when existing tests rely on it. Remove a wrapper
+only after its callers and evidence move to the stage API.
+
+## Boundary and interface assignments
+
+All APIs below are intended stage interfaces unless explicitly listed as
+implemented in the slice record. They do not add callable stubs. `verify`
+means verification under the owning contract, not acceptance of caller claims.
+Every row owns its rule decisions and preserves upstream diagnostic identity.
+Test namespace names are assigned destinations; existing tests remain valid
+owners until moved with their implementation.
+
+| Namespace | Governing contracts; intended boundary | Intended public API and artifact input -> output | Planned diagnostic ownership | Assigned tests: positive / negative |
+| --- | --- | --- | --- | --- |
+| `gravity.reader` | L1, C2; [extension diagnostic data](reader-path-diagnostic-evidence.md), [native source intake](reader-source-intake-evidence.md), [strict decoding](reader-utf8-evidence.md) and artifact assembly | `read-source-text`, `decode-source-bytes`, `read-source-artifact`, `reject-source-path!`; native host path/bytes + explicit owner Vars or source/project/operations -> UTF-8 text and existing stage0 artifacts. Canonical `verify` remains proposed. | Native encoding/extension diagnostic data and source intake sequencing; callers retain path admission and diagnostic publication. No file grant or canonical C2 authority. | `gravity.reader.artifact-test`: real paired file/Reader/Core products and exact provenance / malformed UTF-8, extension refusal, host file errors, dependency/operator lookup order, exception identity and identity drift |
+| `gravity.syntax` | C3; immutable syntax, spans, origins, hygiene | `build`, `verify`, `reader-products-authentic?` plus [pinned plan runtime APIs](syntax-runtime-evidence.md); source/reader products + explicit seed operations -> C3 syntax artifact, plan binding and verification. Remaining adapters are open. | C3 missing spans, identity, hygiene, origin joins, pinned plan and digest refusal, runtime containment; catalog remains with the existing C3 diagnostics helper | `gravity.syntax.pipeline-test`: genuine paired products and plan/template execution / malformed source, forged syntax, source revision, serialization, plan drift, digest tampering and host failure |
+| `gravity.macro` | L4, L12, L16, SAFE12, C4; compile-time expansion | [Pinned execution](macro-runtime-evidence.md) and [artifact/verification APIs](macro-artifacts-evidence.md), including `expand`, `assemble` and `verify`; authenticated syntax + macro/build context -> expanded syntax, trace, origins, identity and verification records | C4 plan/return/trace, artifact/parent/provenance rules and host containment; Gravity and existing C4 helpers retain semantic expansion/capture/build-authority rules | `gravity.macro.pipeline-test`: paired expansion / illegal return, missing grant, parent/output/provenance forgery and stale receipt refusal |
+| `gravity.resolution` | L2, L3, L7, C5; bindings, imports, namespace graph | [Runtime APIs](resolution-runtime-evidence.md), [declaration/core records](resolution-records-evidence.md), [dependency/import records](resolution-imports-evidence.md), [lexical collection](resolution-analysis-evidence.md), [products/identities](resolution-products-evidence.md), [descriptors](resolution-descriptors-evidence.md), [request/candidate assembly](resolution-requests-evidence.md), [verification](resolution-verification-evidence.md) and [execution/digests](resolution-execution-evidence.md); source/toolchain records + operations -> actual Gravity plan/result; expanded syntax + module/catalog inputs -> declarations, imports, scopes, references, edges and request data; resolved analysis -> products, identities, descriptors and private candidates. `run-request!` materializes freshly verified Gravity results and declared digests; `verify` checks completed artifacts through explicit owner operations; `resolve-names` remains proposed, and owner admission/publication remain outside the stage. | Current stage: record/request normalization, product identity, generated-origin recovery, artifact verification failures, C5 source/plan and host containment. Existing owners retain admission and publication; binding/import semantics remain with the Gravity resolver and existing catalog. | `gravity.resolution.pipeline-test`: actual bindings / unresolved or escaped reference, verified module premises, exact generated origin, candidate proof absence, exact digest ordering/index legality, real execution rejection, forged public proof, opaque carriers, fresh replay refusal, identity changes, descriptor provenance, source/plan drift and stale receipt refusal |
+| `gravity.checked-core` | L1, L2, L7, L9, C2-C6, C18; core AST construction and source mapping | [Current source/plan runtime](checked-core-runtime-evidence.md), [form/source projection](checked-core-projection-evidence.md), [lineage/fragment records](checked-core-lineage-evidence.md), [request/reference boundary](checked-core-requests-evidence.md), [semantic products/digests](checked-core-products-evidence.md), [candidate/presentation/diagnostic data](checked-core-artifact-data-evidence.md), [request preflight/test execution](checked-core-execution-evidence.md), [transfer coherence/diagnostics](checked-core-transfer-evidence.md), [typed handler coherence](checked-core-handlers-evidence.md), [match structure/guards](checked-core-match-structure-evidence.md) [verification data/exact comparison](checked-core-verification-data-evidence.md) and [artifact assembly data](checked-core-assembly-data-evidence.md): source/toolchain snapshots + explicit seed cache, scope and operations -> development plan binding, identities and actual Gravity results; verified C5/C2 records -> form trees, occurrence identities, source collection order and exact macro/decimal evidence. `lower` and artifact `verify` remain proposed. | Current stage owns source/plan contract, source/toolchain drift, native carrier transport, host containment, source occurrence/decoding bijections, projected child links, request shape/hash preflight, test-request membership, execution revision bookends, template/resolved replay failures, structural transfer, typed handler and match coherence, verification data/exact comparison, and projection diagnostic construction. Gravity retains lowering semantics; Bootstrap retains migration/admission/publication. | `gravity.checked-core.pipeline-test` and focused existing development kernels: actual current plan, Core kernel and paired source projections / malformed module, carrier, host failure, source/cache drift, forged occurrence/order/decimal links, request/membership tampering, scoped binding/replay drift, transfer/handler/match/order/fact disagreement, replay/report tampering and stale receipt refusal |
+| `gravity.types` | L5, L17, C7; [hosted seed products](types-products-evidence.md) and [current Gravity runtime](types-current-runtime-evidence.md) | Seven native-data product builders plus `compile-plan`, `check-primitives`, `verify-primitives` and `verify-function-result`; explicit source/compiler/runtime operations and Core/result data -> executable C7 plans, unauthenticated primitive templates and replay data. Canonical `check` and `verify` remain proposed; Gravity C7 retains semantic authority. | Stage propagates compiler/runtime and C7 diagnostics; it introduces no type rule or input authority. Existing C7 owns verifier/type decisions and source mapping. | `gravity.c7-type-checker-test` and focused `gravity.self-hosting.sh08-primitive-type-test`: native products, actual current primitive typing and production replay order / incompatible branches, tampered replay and rejected replay before source intake. Canonical type conformance and function-owner admission remain separate. |
+| `gravity.effects` | L6, L15, C8; [hosted seed graph data](effects-graph-data-evidence.md) | `fact-direct-effects`, `effectful-facts`, `effect-graph`; explicit native type/function/module records, callbacks and replay catalog -> direct sets, lazy selected facts and graph data. Canonical `check` and `verify` remain proposed; Gravity retains effect semantics. | Graph construction introduces no rule decisions; existing C8 owns effect/legality/capability/replay/ordering and verifier diagnostics. | `gravity.c8-effect-checker-test`: classification, source/function records, lazy callback capture and compatibility interposition / undeclared-effect data rejected by existing C8. Complete canonical effect conformance remains separate. |
+| `gravity.ownership` | L10, SAFE2-5, C9; [persistent seed data and predicates](ownership-data-evidence.md) | Nine data APIs for persistent records, value forwarding, managed propagation, owner identity, exact key schema and alias predicates; explicit native nodes/operations -> records, identities and boolean outcomes. Canonical `check`/`verify` remain proposed. | Existing callers retain C9-MUT-ALIAS, C9-TRANSFER, C6-VERIFY and diagnostic construction. Stage predicates own persistent sharing/key checks and grant no authority. | `gravity.ownership.pipeline-test`: paired Gravity normalized ownership programs and native-data parity / actual use-after-move refusal, alias/schema tampering, interposition and lookup order |
+| `gravity.safety` | D8, SAFE1/15, C10; [native proof/check records](safety-records-evidence.md) | Nine data APIs for runtime-check/proof records, basis labels, digest/structural predicates, child references and ordered rederivation; explicit native records/operations -> records, identities and predicate outcomes. Canonical `analyze`/`verify` remain proposed. | Existing owners retain outcome classification, C10-NO-OUTCOME/C10-PROOF, source enrichment and diagnostic construction. Digest predicates confer no safety admission. | `gravity.safety.pipeline-test`: actual paired four-outcome Gravity kernels and record parity / real C10-NUMERIC refusal, hash/child tampering, interposition and unsafe/check metadata preservation |
+| `gravity.mir` | C11; [native control-flow and use-dominance rules](mir-control-flow-evidence.md) | `validate-terminator!`, `validate-cfg!`, `valid-dominance-edge?`, `valid-terminator-use?`; explicit native Core/MIR data, expected records and operations -> CFG/rule/predicate outcomes. Canonical `build`/`verify` remain proposed. | Current rules own C11-BLOCK decisions; existing require operation constructs diagnostics and callers retain C11-DOMINANCE refusals. Authentication, full verification and admission remain separate. | `gravity.mir.pipeline-test`: actual paired Gravity fixture/MIR emission and native-rule parity / malformed CFG/terminator, forged definitions/uses and interposition |
+| `gravity.optimization` | D6, C13, SAFE15, PERF1/2/10; [native equality reconstruction](optimization-reconstruction-evidence.md) | `selection`, `rewrite`, `restore`, `output-id`, `extend-evidence`, `translated-record`; explicit MIR-shaped data/operations -> rewrite, exact reconstruction, identity and translation data. Canonical `optimize`/`verify` remain proposed. | C13-VERIFY reconstruction/output-identity mismatch; existing holders retain genuine C11 admission, verification, sealing and publication. | `gravity.optimization.pipeline-test`: actual current Gravity fold/native parity and exact reconstruction / output drift, invalid facts/indices, removed-quota counterexamples and interposition |
+| `gravity.lowering` | C1, C11, C12, C13, C14, B1; [native C14 reconstruction](lowering-reconstruction-evidence.md) | `llvm-record`, `c-record`, `wasm-record` and three exact reconstruction gates; caller-owned optimized MIR/policy/context -> raw reconstruction records or refusal. Canonical `lower`/`verify` remain proposed. | C14-MANIFEST context/reconstruction mismatch; C11 strict comparison propagates, while existing owners retain input admission, target legality, private source invocation and sealing. | `gravity.lowering.pipeline-test`: complete current Gravity C14 module compilation, raw field/provenance transport and exact joins / malformed input, record drift, upstream identity substitution and Var interposition |
+| `gravity.diagnostics` | C15; base carrier, [native phase availability](diagnostic-records-evidence.md) and [private source binding](diagnostic-binding-evidence.md) | `diagnostic`, `fail!`, `stable-id`, `diagnostic-record`, `resolve-request-id`, `bind-private-record`, `verify-private-record`; explicit source/digest operations + original fields/request/candidate -> carrier, native data, private source record or source-owned rejection. Full schema service/public projections remain open. | Carrier and legacy identity preimage, request binding and fresh verification orchestration; Gravity C15 owns source schema/substitution decisions, native C15 rejects unavailable semantic context, and producers retain semantic rules | `gravity.diagnostics-test`, `gravity.c15-diagnostics-test`: complete C15 compilation, private binding, retained data, known/early context and wording-independent identity / malformed fields, missing context, coherent request/candidate substitution, fresh digest drift and operation interposition |
+| `gravity.backend.c` | B1, B2, B13, B14; [C17 emission data](c-emission-evidence.md) | `operation-expression`, `operation-record`, `source-text`, `header-text`, build/ABI/runtime/debug/proof record helpers, `assert-exact!`; caller-validated operation/manifest data -> C text and supporting records. Canonical `emit`/`verify` remain proposed. | B2-MANIFEST exact-data mismatch; existing owner retains input admission and diagnostic publication. | `gravity.backend.c.pipeline-test`: actual current Gravity text/record parity and missing-input refusal / provenance, mismatch, unknown-op non-admission and Var interposition |
+| `gravity.backend.llvm` | B1, B3, B13, B14; [scalar LLVM lowering data](llvm-data-evidence.md) | `operation-rejection`, ordering/label helpers, `operation-line`, `evaluate-operations`, `reconstructed-lowering`; explicit MIR-shaped data/policies -> legality reasons, LLVM text and unverified records. Canonical `emit`/`verify` remain proposed. | Stage owns scalar legality reasons; existing owners retain B1-INPUT/B1-UNSUPPORTED publication and input admission. | `gravity.backend.llvm.pipeline-test`: current Gravity instruction/module parity and real legality refusals / dominance, provenance, policy and Var-port interposition |
+| `gravity.backend.wasm` | B1, B4, B13, B14; [Wasm emission and integer codecs](wasm-codec-evidence.md) | `operation-bytes`, `function-bytes`, `reconstruct`, LEB encoders/decoders and scalar helpers; caller-owned operation/function data -> core-module bytes and integer decoding. Canonical `emit`/`verify` remain proposed. | B1-INPUT join binding, B1-UNSUPPORTED emission, B4-MANIFEST canonical integer/octet format; existing owner retains input admission and diagnostic publication. | `gravity.backend.wasm.pipeline-test`: current Gravity byte parity, real emitted modules and format/operation refusals / canonical widths, offsets, input forwarding, metadata and Var-port ordering |
+| `gravity.backend.jvm` | B1, B5, B13, B14, C14, P4; [internal Java source emission](jvm-source-evidence.md) | Java/value/instruction/module source helpers, `source-map`, `output-paths`, `validate-plan!`; explicit scalar plan and operations -> Java text, partial map/path data or refusal. Canonical `emit`/`verify` remain proposed. | C14-UNSUPPORTED remapping; shared scalar validation, input admission and diagnostic publication remain with existing owners. | `gravity.backend.jvm.pipeline-test`: real Java/module text and plan rejection / malformed controls, unbound locals, arity and Var interposition |
+| `gravity.backend.js` | B1, B6, B13, B14, C14, P4; [internal ESM source emission](js-source-evidence.md) | Source/byte/value/instruction, JSON/map/package/path helpers, target aliases and `validate-plan!`; caller-owned data -> ESM, empty-export declaration, partial v3 map/package text or shape refusal. Canonical `emit`/`verify` remain proposed. | C14-INPUT source-path/plan shape; existing owners retain scalar legality, admission and manifest/runtime validation. | `gravity.backend.js.pipeline-test`: real ESM/declaration/map/package outputs / malformed input shape, escaping, arity and Var interposition |
+| `gravity.backend.mlir` | B1, B7, B13, B14; MLIR dialect lowering | `emit`, `verify`; anchored verified IR + dialect/pass contracts -> MLIR module, lowering manifest | B7 dialect legality, missing anchor and pass evidence | `gravity.backend.mlir-test`: verify emitted module / illegal dialect operation |
+| `gravity.backend.gpu` | B1, B8, P11, B13, B14; GPU kernels | `emit`, `verify`; verified GPU IR + memory/barrier/features -> kernel artifact, launch manifest | B8 memory space, barrier, launch and target legality | `gravity.backend.gpu-test`: validated kernel / illegal memory space or barrier |
+| `gravity.backend.hdl` | B1, B9, P8, B13, B14; clocked hardware | `emit`, `verify`; verified hardware IR + clock/reset/timing facts -> HDL, constraints, trace map | B9 clock/reset, synthesis and hardware profile violations | `gravity.backend.hdl-test`: simulate emitted design / invalid clock crossing or allocation |
+| `gravity.backend.workflow` | B1, B10, B13, B14; durable graph emission | `emit`, `verify`; verified workflow IR + schemas/replay policy -> graph, event schemas, replay manifest | B10 nondeterminism, missing event or authority | `gravity.backend.workflow-test`: graph replay / unrecorded nondeterminism |
+| `gravity.backend.query` | B1, B11, B13, B14; relational lowering | `emit`, `verify`; verified query IR + row/transaction/capability facts -> parameterized query plan, schema/map | B11 row/schema, transaction and database authority | `gravity.backend.query-test`: parameterized plan / schema mismatch or missing database grant |
+| `gravity.backend.mobile` | B1, B12, B13, B14; platform packaging/adapters | `emit`, `verify`; verified mobile IR + platform lifecycle/permissions -> mobile artifacts and permission manifest | B12 platform/lifecycle/permission mismatch | `gravity.backend.mobile-test`: platform package / undeclared permission or unsupported lifecycle |
+| `gravity.runtime` | L2, SAFE9, R1, R4, R11, R12, BOOT8; [hosted arithmetic](runtime-arithmetic-evidence.md), [comparisons](runtime-comparisons-evidence.md), [value/error adapters](runtime-values-evidence.md), [ordinary builtin dispatch](runtime-dispatch-evidence.md), [evaluation carriers](runtime-evaluation-evidence.md), [instruction execution](runtime-instructions-evidence.md), [builtin policy/rule data](runtime-builtin-policy-evidence.md) and [hosted seed invocation](runtime-invocation-evidence.md) | `execute-function-scoped`, `execute-function`, `artifact-invoke`, `execute-plan`, `hosted-add`, `hosted-subtract`, `hosted-multiply`, `hosted-divide`, `hosted-equal`, `hosted-less-than`, `hosted-greater-than`, `hosted-less-than-or-equal`, `hosted-greater-than-or-equal`, `hosted-str`, `fail-builtin-error!`, `hosted-get`, `hosted-builtin`, `bind-values`, `execute-value-scoped`, `execute-values-scoped`, `execute-map-entries-scoped`, `execute-instructions-scoped`, `execute-instruction-scoped`, `executor-rule-record`, `fail-call-arity!`, `assert-min-arity!`, `assert-exact-arity!`, `assert-between-arity!`, `assert-even-arity!`, `hosted-unary-builtin`; compiled plan/context/arguments + explicit seed operations -> result, instruction/environment/argument/map/sequence/rule data and writer effects, hosted numeric/boolean/string/lookup value and legacy error facts and legacy stdout/execution record. Canonical `execute`/`runtime-manifest` remain proposed. | Function lookup/main-arity, ordinary builtin selection/arity placement, carrier traversal/recur-check placement, instruction/core control, arity facts/guards, unary selection/rule data and legacy host-error facts stay with the stage; Bootstrap retains five reserved cases and outer error translation. Existing operations retain scope/call authority, effect legality, recurrence/formatting, recurrence facts, generic error/failure transport and executor diagnostics. Arithmetic/comparison helpers own no diagnostics or canonical numeric/equality authority. No new authority or plan authentication. | `gravity.runtime.pipeline-test` and existing exact binder/artifact regressions: actual paired plans/arithmetic/comparisons/value adapters/builtin dispatch/evaluation carriers/instruction/stdout/builtin policy/runtime formatter, scope order and metadata / real lookup/arity/operand refusals, lookup/failure operation order and identity, ordinary/evaluation port inventories, late arity/helper order, plan-entry order and vector/list traversal, instruction/arity facts, legacy rule data/refusal and late data lookup, opaque throw-token identity and denying call/effect ports, native denial before function lookup and entry denial before execution |
+| `gravity.standard-library` | L13, STD1-3, STD5-6, STD8, STD20; [native call metadata and source kernel](standard-library-kernel-evidence.md) | `record-call!`, `module-manifest`, `execute-request`, `verify-result`; explicit native Vars/call data or trusted source invocation + original request/candidate -> legacy metadata or experimental meta-profile source values/refusals and replay verification. Canonical module resolution and full export verification remain open. | Source kernel retains index/numeric/carrier/effect/opt-in and replay decisions; native operation errors propagate. Legacy compile/proof/safety labels are data, not admission. | `gravity.standard-library.pipeline-test`: complete paired source compilation, vector update/lookup, checked i64 addition and metadata/Var transport / bounds, overflow, coherent substitutions and failed-verification withholding |
+| `gravity.package` | PKG1, PKG4-6, PKG8-10, PKG12; [direct exact selection and status policy](package-selection-evidence.md) | `decide-policy`, `select-exact`; supplied package/lock records, direct exact constraints, grants, profile/target and policy -> deterministic selection/variant/history or refusal records. Canonical `resolve-dependencies`/`verify` remain proposed. | Native PKG5001-7, PKG1007 and PACKAGE-POLICY-INPUT; registry denial precedes metadata reporting. Authentication and admission remain outside the stage. | `gravity.package.pipeline-test`, existing build package-policy/selection tests: actual file-hash/provenance transport, locked history and late policy ports / version, capability/effect, variant, unsafe state, private grant, yank and revocation refusal |
+| `gravity.build` | PKG2, PKG7, C1/C15/C16; [native metadata checks](build-validation-evidence.md) | `check-graph-effects!`, `check-offline-recipe!`; trusted native module + supplied graph/recipe + late diagnostic Var -> nil or unchanged refusal; canonical build/plan remain proposed | Stage decides PKG2001 node-effect subset and PKG7003 disabled network; existing caller constructs diagnostics and retains all other legality/admission | `gravity.build.pipeline-test`: complete paired instruction plans execute / real metadata failures before execution, exact diagnostic and late-root parity |
+| `gravity.tooling` | L2-3, T1-13, C15; [native coverage and static source evidence](tooling-evidence.md) | `coverage-record`, `check-evidence`, `execute-evidence`, `verify-evidence`; explicit native Vars/report data or trusted source invocation + original request/candidate -> legacy coverage data, incomplete non-authoritative W5 results, fresh replay or refusal. Canonical inspect/format/lint remain proposed. | Existing caller retains native diagnostics/admission; Gravity W5 owns static evidence and substitution rules. Complete/proof/task labels are supplied data; no tool services or authority are performed. | `gravity.tooling.pipeline-test` and existing W5 kernel tests: complete paired source/fixture execution, exact source/plan identities and native Var transport / real evidence/provenance refusals, coherent substitution, result withholding and lookup order |
+| `gravity.cli` | T1, C15; [presentation and selected Core arguments](cli-core-arguments-evidence.md) | `p18-cli-version-record`, `p18-cli-help-text`, `cli-usage-text`, `sh07-core-input`; explicit packaged state or already selected Core argv -> version/help/usage or path/options data. Launcher shape routing and exits, entrypoint dispatch, and source operations retain their existing owners. | SH07-CLI-ARGS before source IO; Reader/Core own decoding, legality and authentication; existing presentation owns rendering | `gravity.cli-test` and focused public ingress tests: complete current-reader Core emission in both extensions, bootstrap-free presentation/shape failures, and exact data/body conservation / malformed flags before IO, no authority or full T1 claim |
+| `gravity.bootstrap` | BOOT1-8; seed composition and compatibility | Existing adapters and `-main`; [module literal data](bootstrap-literals-evidence.md) via `gravity.bootstrap.module-literals/materialize!`: explicit diagnostic Var + parsed form -> inert literal data or refusal; source + seed/stage records -> stage artifacts | Caller retains BOOT2006 shape refusals and all source/admission guards; helper grants no authority | `gravity.bootstrap.module-literals-test`, `gravity.bootstrap-test` and focused self-hosting kernels: complete paired development plans and quota-free valid data / real malformed literals, duplicate declarations and substituted source |
+| `gravity.release` | PKG3/PKG7/PKG10/PKG12, T1, BOOT8; [native JAR inventory reports](release-inventory-evidence.md) | `jar-source-inventory-report`, `jar-inventory-report`; observed native entry names + explicit late expected-inventory Vars -> exact source/file reports. Canonical `assemble`/`verify-release` remain proposed. | Stage decides inventory membership, order and duplicates; Bootstrap retains P18T02006 construction, archive IO and all release authority. | `gravity.release.pipeline-test`: actual disposable JAR and canonical source order / actual unexpected archive member, omissions, duplicates, ordering and late Var/dependency failures |
+
+The [Runtime control extraction](runtime-control-evidence.md) adds `map-entry`,
+`fail-recur!`, `nontail-value!`, `execute-generic-builtin-call-scoped` and
+`execute-call-scoped` for trusted native map/recurrence/call carriers and late
+operation Vars. It owns map lookup, recurrence refusal facts and call sequencing;
+Bootstrap retains opaque representation, source throw tokens, authorization,
+external execution and publication. Tests in `gravity.runtime.pipeline-test`
+cover paired real call/recurrence plans and actual arity/operand refusals,
+sorted comparator isolation, nil entries, exception identity, late ports and
+authorization before argument evaluation. This adds no admission or canonical
+runtime conformance. Dependency direction follows the Runtime row above.
+
+The [native Effects report extraction](effects-reports-evidence.md) adds
+`native-verifier-report`, `native-capability-proof` and
+`validate-native-report!` for existing trusted graph/catalog/report records and
+explicit projection/failure callbacks. The stage owns native report predicates,
+legacy boolean projection and ordered missing-field refusal selection; the C8
+facade retains operation interposition and diagnostic transport. Tests in
+`gravity.c8-effect-checker-test` cover native accepted reports, each failed
+predicate, callback/exception identity, first-failure order and truthy-data
+compatibility. Retained paired source products emit actual graphs and reports;
+the pure-source ordering refusal is preserved. This adds no canonical C8 or
+grant/provider authority. Existing native verification consumes the stage;
+dependency direction otherwise follows the Effects row above.
+
+## Incremental extraction and acceptance
+
+Extract executable behavior, not empty namespaces or a second compiler.
+Preserve existing API arities, diagnostics, actual supplied paths, extension
+provenance and deterministic artifact identity. Keep `.gravity` and `.qst`
+first-class. Record exactly which execution paths and source spellings ran.
+
+Each slice must identify owning contract documents and exact paths; emit or
+compile a real accepted artifact; reject a real invalid input; exercise affected
+composition, interposition, identity and adversarial cases; state residual host
+boundaries and unrun claims. Use focused tests and the language-boundary gate.
+Do not refresh frozen migration fingerprints merely to make development pass.
+
+Open the slice as an early draft PR, maintain its evidence as implementation
+progresses, freeze a clean named-branch commit, and obtain independent
+acceptance of the exact source and any later lifecycle metadata. Apply the
+existing [workstream lifecycle](../workstream-governance.md), current-base
+integration preflight and required GitHub checks before the coordinator merges
+to main. A self-audit, green tests or this map cannot confer acceptance.
+
+## Reader artifact assembly slice
+
+The first extraction covered here moves the body of the existing
+`gravity.bootstrap/read-source-artifact` into `gravity.reader`. Its public API
+is `read-source-artifact [source-path source-text project-context operations]`.
+The compatibility API retains its existing two- and three-argument forms.
+Explicit operations retain the original reader, namespace-shape validation,
+syntax construction, source identity, extension and byte-count behavior.
+
+This slice owns assembly of the existing `:gravity/stage0-reader-artifact`.
+It preserves records, source maps, namespace clause syntax, metadata, source
+identity and pass declarations. Parsing and diagnostic decisions remain with
+the supplied existing reader operations. It does not implement a new decoder,
+canonical C2 authentication, C3 validation, macro expansion or a self-hosted
+reader. The direct API is seed composition, not a public authority boundary:
+caller-supplied operations are trusted implementation dependencies, not proof
+certificates. Existing authenticated consumers retain their own verification.
+
+The [syntax pipeline extraction](syntax-pipeline-evidence.md) additionally moves
+C3 construction and reader association verification into `gravity.syntax`.
+The [syntax runtime extraction](syntax-runtime-evidence.md) moves pinned plan
+authentication, execution, result admission and digest resolution into the
+same namespace. SH04 reader/envelope and rich-object host adaptation and the
+other syntax helper boundaries remain open. The
+[reader view extraction](syntax-reader-views-evidence.md) additionally moves
+registered-literal projection and authenticated reader views into the stage.
+The [assembly extraction](syntax-assembly-evidence.md) moves semantic bindings,
+stream replay/serialization, generated syntax and envelope assembly while
+retaining explicit seed descriptor and native-index operations.
+The [descriptor/index extraction](syntax-descriptors-evidence.md) moves those
+algorithms into the stage while retaining explicit seed lifetime and root
+configuration. Earlier C3 helpers and bootstrap definitions remain open.
+`gravity.diagnostics` and the existing narrow helper namespaces remain partial
+extractions. Other destination interfaces in the table remain proposed;
+existing Gravity modules, hosted facades and tests retain their current status.
+Follow-on slices should move the owning behavior and its real tests before
+adopting the proposed destination API. See the adjacent slice evidence record
+for executed checks and exact unsupported claims.

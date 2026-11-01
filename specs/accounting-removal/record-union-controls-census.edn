@@ -1,0 +1,323 @@
+{:nonclaims
+ [:authenticated-source-admission
+  :executable-record-union-support
+  :whole-accounting-removal
+  :historical-helper-equivalence
+  :main-acceptance
+  :PR502-closure
+  :release
+  :self-hosting],
+ :tests
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :base-sha256
+  "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+  :candidate-sha256
+  "df377565ef47460364b3997d5d0ef8df710d31d228c42283150da9c3fb0ff74b",
+  :all-prior-bytes-unchanged true,
+  :raw-copy-identical true,
+  :controls
+  [{:name record-union-descriptor-rows-have-no-count-quota,
+    :raw-historical-span-sha256
+    "5e1dd27e8ce47128ec56106dcafb51a080a9c92473735c643d417e7907156efc",
+    :complete-form-sha256
+    "1a82224e3d1ee58c29c0210424da9993836fb18266c1edba72812e3ba5b532f1",
+    :genuine-execution :UNRUN}
+   {:name union-branch-definitions-have-no-count-quota,
+    :raw-historical-span-sha256
+    "241fdc205a7da69cfc54dc744313511cc1a1c295d3384c82b76246b0411f2aa7",
+    :complete-form-sha256
+    "eaaeb6a779664db2b385444188f76e61438859f1c0d2ccab6756f09e9120b5a6",
+    :genuine-execution :UNRUN}]},
+ :integration :UNRUN,
+ :independent-acceptance :pending,
+ :production
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :base-file-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  :all-production-bytes-unchanged true,
+  :roots
+  [sh08-ru-check-family
+   sh08-ru-all-field-schemas-valid?
+   sh08-ru-all-field-values-valid?
+   sh08-ru-all-variant-schemas-valid?
+   sh08-ru-all-match-branches-valid?
+   sh08-ram-symbol-vector?
+   sh08-ram-match-shape?
+   sh08-ram-resolve-program],
+  :transitive-syntactic-source-definitions
+  [{:name sh08-ft-index,
+    :base-form-sha256
+    "7e57c3eeb878453bd7683a75882a16d955a99225bd2d9e1d0b2b173d114ae694",
+    :historical-form-sha256
+    "7e57c3eeb878453bd7683a75882a16d955a99225bd2d9e1d0b2b173d114ae694",
+    :historical-form-identical true,
+    :source-call-targets []}
+   {:name sh08-ft-node-index,
+    :base-form-sha256
+    "6d03ad4326f65a9cb0912454b368ff280ddcb8581d154ead3b978d4d5656a11d",
+    :historical-form-sha256
+    "6d03ad4326f65a9cb0912454b368ff280ddcb8581d154ead3b978d4d5656a11d",
+    :historical-form-identical true,
+    :source-call-targets [sh08-ft-index]}
+   {:name sh08-ft-record-shape?,
+    :base-form-sha256
+    "8984957ee80a077fccd855bd47bf75ef7e7cb2f84a11698cdb49468b6d200ecf",
+    :historical-form-sha256
+    "8984957ee80a077fccd855bd47bf75ef7e7cb2f84a11698cdb49468b6d200ecf",
+    :historical-form-identical true,
+    :source-call-targets []}
+   {:name sh08-ft-unique-records?,
+    :base-form-sha256
+    "d50a01912f7ba1f48b49ed679fe8080221e77956e0a5323102e8c61927a254d2",
+    :historical-form-sha256
+    "d50a01912f7ba1f48b49ed679fe8080221e77956e0a5323102e8c61927a254d2",
+    :historical-form-identical true,
+    :source-call-targets [sh08-ft-index]}
+   {:name sh08-ram-match-shape?,
+    :base-form-sha256
+    "8f0ba5202aa18d1f0c2e31267077c102cd35bdde29df71dc95d3ce1782f68f89",
+    :historical-form-sha256
+    "8f0ba5202aa18d1f0c2e31267077c102cd35bdde29df71dc95d3ce1782f68f89",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ft-record-shape? sh08-ram-symbol-vector?]}
+   {:name sh08-ram-program-error,
+    :base-form-sha256
+    "4db7e96d0a98dc8e66ca7376a475b01e003bdaab3f379b064b711851e29983bc",
+    :historical-form-sha256
+    "4db7e96d0a98dc8e66ca7376a475b01e003bdaab3f379b064b711851e29983bc",
+    :historical-form-identical true,
+    :source-call-targets []}
+   {:name sh08-ram-program-shape?,
+    :base-form-sha256
+    "2e70484977474d9e588448a999e1d9871bb955b9de60d00787bdd5c722d37404",
+    :historical-form-sha256
+    "2e70484977474d9e588448a999e1d9871bb955b9de60d00787bdd5c722d37404",
+    :historical-form-identical true,
+    :source-call-targets [sh08-ft-record-shape?]}
+   {:name sh08-ram-resolve-branches,
+    :base-form-sha256
+    "66f8fdae5157bbea77fa7bd8b6b10f858d622947c579bd07e71d27f633315da0",
+    :historical-form-sha256
+    "66f8fdae5157bbea77fa7bd8b6b10f858d622947c579bd07e71d27f633315da0",
+    :historical-form-identical true,
+    :source-call-targets [sh08-ru-family-from-core]}
+   {:name sh08-ram-resolve-program,
+    :base-form-sha256
+    "77758645ea4c3f0bb01c5f6a9bc57fa584e18ef1adde304b987763527cd76d80",
+    :historical-form-sha256
+    "77758645ea4c3f0bb01c5f6a9bc57fa584e18ef1adde304b987763527cd76d80",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ram-match-shape?
+     sh08-ram-program-error
+     sh08-ram-program-shape?
+     sh08-ram-resolve-branches
+     sh08-ru-family-from-core]}
+   {:name sh08-ram-symbol-vector?,
+    :base-form-sha256
+    "e136c6e02787860d098563fb61c41e3e67e7412e937937e499543d66c4af067e",
+    :historical-form-sha256
+    "e136c6e02787860d098563fb61c41e3e67e7412e937937e499543d66c4af067e",
+    :historical-form-identical true,
+    :source-call-targets []}
+   {:name sh08-ru-all-field-schemas-valid?,
+    :base-form-sha256
+    "3631e70df517e6ba64afb92144ed65fc0729b2cad142589d1ee529697bab6f71",
+    :historical-form-sha256
+    "eb47f1e47d3872ed2972dabdf607f50cb8f15d74223f0a409343a9102dc89c96",
+    :historical-form-identical false,
+    :source-call-targets
+    [sh08-ft-unique-records?
+     sh08-ru-all-record-shapes?
+     sh08-ru-supported-type?]}
+   {:name sh08-ru-all-field-values-valid?,
+    :base-form-sha256
+    "df57f2beaa3a9fb969bb76a5633ddccdb1d659ebf7e66fda30752ac6e8ea331f",
+    :historical-form-sha256
+    "f32cd23b5024d32d3f05f9077aa351ed146f7f15f3160dee8180e3ead489b365",
+    :historical-form-identical false,
+    :source-call-targets
+    [sh08-ft-unique-records? sh08-ru-all-record-shapes?]}
+   {:name sh08-ru-all-match-branches-valid?,
+    :base-form-sha256
+    "96a7030b8db63567546e415450308d03d0351f994c95cf865a034cd2ddb229ab",
+    :historical-form-sha256
+    "c3d0ce688fdb8fdf31f0c68f2f01ae14d2d5f62e8ea28e6303710e5ba0625401",
+    :historical-form-identical false,
+    :source-call-targets
+    [sh08-ft-unique-records? sh08-ru-all-record-shapes?]}
+   {:name sh08-ru-all-record-shapes?,
+    :base-form-sha256
+    "84c23dcf164e792e19864e442920e89f1540a820cc2f32430ade64794ef80c5f",
+    :historical-form-sha256
+    "84c23dcf164e792e19864e442920e89f1540a820cc2f32430ade64794ef80c5f",
+    :historical-form-identical true,
+    :source-call-targets [sh08-ft-record-shape?]}
+   {:name sh08-ru-all-variant-schemas-valid?,
+    :base-form-sha256
+    "99fc23145709dd9d99e0dbe8c6ab8325dddf943ef40c46a020ca120ce57e301f",
+    :historical-form-sha256
+    "5e027c663a12fa2669c3ce8e36ce59ae983e2ecfc895633e619030d8513c0fce",
+    :historical-form-identical false,
+    :source-call-targets
+    [sh08-ft-unique-records?
+     sh08-ru-all-record-shapes?
+     sh08-ru-supported-type?]}
+   {:name sh08-ru-check-family,
+    :base-form-sha256
+    "851d4fc9c448107c36025c569e12f65d70aa7566f292ed44ec8bb81b6f43963b",
+    :historical-form-sha256
+    "851d4fc9c448107c36025c569e12f65d70aa7566f292ed44ec8bb81b6f43963b",
+    :historical-form-identical true,
+    :source-call-targets [sh08-ru-check-record sh08-ru-family-shape?]}
+   {:name sh08-ru-check-match,
+    :base-form-sha256
+    "ca5297c970c953373e05d458816b5142e8c95944ca9ca0c61ffffd48ec29f36d",
+    :historical-form-sha256
+    "ca5297c970c953373e05d458816b5142e8c95944ca9ca0c61ffffd48ec29f36d",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-first-branch-type-mismatch
+     sh08-ru-first-invalid-branch
+     sh08-ru-first-missing-variant
+     sh08-ru-name-values
+     sh08-ru-value-type]}
+   {:name sh08-ru-check-record,
+    :base-form-sha256
+    "f49bea98471bcdc23c27a92135e09928183c301e89477c0f48879d825094db0f",
+    :historical-form-sha256
+    "f49bea98471bcdc23c27a92135e09928183c301e89477c0f48879d825094db0f",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-check-union
+     sh08-ru-entry-by
+     sh08-ru-first-field-type-mismatch
+     sh08-ru-first-missing-field
+     sh08-ru-name-values]}
+   {:name sh08-ru-check-union,
+    :base-form-sha256
+    "a4682adeb190844281d7258e8c844b4666497e29728bc743cce9ad163c527c71",
+    :historical-form-sha256
+    "a4682adeb190844281d7258e8c844b4666497e29728bc743cce9ad163c527c71",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-check-match
+     sh08-ru-entry-by
+     sh08-ru-name-values
+     sh08-ru-value-type]}
+   {:name sh08-ru-definition-matches,
+    :base-form-sha256
+    "91871d0458ef0634492b8ff79d78b87641dd22325be33bc9fee8752af443eb4a",
+    :historical-form-sha256
+    "91871d0458ef0634492b8ff79d78b87641dd22325be33bc9fee8752af443eb4a",
+    :historical-form-identical true,
+    :source-call-targets []}
+   {:name sh08-ru-entry-by,
+    :base-form-sha256
+    "7ce085c2a9dbc63ccd13b99e7f693b21b3bb474485a7d728d836a760cc1f9ea7",
+    :historical-form-sha256
+    "7ce085c2a9dbc63ccd13b99e7f693b21b3bb474485a7d728d836a760cc1f9ea7",
+    :historical-form-identical true,
+    :source-call-targets [sh08-ru-entry-by]}
+   {:name sh08-ru-family-from-core,
+    :base-form-sha256
+    "f45039428fe8158862735d997522be61a2cf21f4e9cb6ceab30c716569aab255",
+    :historical-form-sha256
+    "f45039428fe8158862735d997522be61a2cf21f4e9cb6ceab30c716569aab255",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ft-node-index sh08-ru-definition-matches]}
+   {:name sh08-ru-family-shape?,
+    :base-form-sha256
+    "3dc1487dd30d94c5589fd45c38a2b7bb1aebda28e6f95833c19ccdf9ebc2190f",
+    :historical-form-sha256
+    "3dc1487dd30d94c5589fd45c38a2b7bb1aebda28e6f95833c19ccdf9ebc2190f",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ft-record-shape?
+     sh08-ru-all-field-schemas-valid?
+     sh08-ru-all-field-values-valid?
+     sh08-ru-all-match-branches-valid?
+     sh08-ru-all-variant-schemas-valid?]}
+   {:name sh08-ru-first-branch-type-mismatch,
+    :base-form-sha256
+    "9593583cba90b6f375d367f2d77edf3b0e07e5017be8982d58afc87dfb9acf16",
+    :historical-form-sha256
+    "9593583cba90b6f375d367f2d77edf3b0e07e5017be8982d58afc87dfb9acf16",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-first-branch-type-mismatch sh08-ru-value-type]}
+   {:name sh08-ru-first-field-type-mismatch,
+    :base-form-sha256
+    "18e8835ed0a9974710f42ffdf187dee92027ebf41582af742aeb8958246b47a2",
+    :historical-form-sha256
+    "18e8835ed0a9974710f42ffdf187dee92027ebf41582af742aeb8958246b47a2",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-entry-by
+     sh08-ru-first-field-type-mismatch
+     sh08-ru-value-type]}
+   {:name sh08-ru-first-invalid-branch,
+    :base-form-sha256
+    "5d60d89ec2059cf4a2df4bbabc89e8bc993efc6ed0eb511e15fc9b95c4cdad40",
+    :historical-form-sha256
+    "5d60d89ec2059cf4a2df4bbabc89e8bc993efc6ed0eb511e15fc9b95c4cdad40",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-entry-by sh08-ru-first-invalid-branch]}
+   {:name sh08-ru-first-missing-field,
+    :base-form-sha256
+    "90acbdca2b45ff4e053db6a7da621855abb89ae82a5f750afb70f46b2796ec8f",
+    :historical-form-sha256
+    "90acbdca2b45ff4e053db6a7da621855abb89ae82a5f750afb70f46b2796ec8f",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-entry-by sh08-ru-first-missing-field]}
+   {:name sh08-ru-first-missing-variant,
+    :base-form-sha256
+    "e21139e73f81711338483cee04ea125078f945005f4c1233bc0671e0879c8e16",
+    :historical-form-sha256
+    "e21139e73f81711338483cee04ea125078f945005f4c1233bc0671e0879c8e16",
+    :historical-form-identical true,
+    :source-call-targets
+    [sh08-ru-entry-by sh08-ru-first-missing-variant]}
+   {:name sh08-ru-name-values,
+    :base-form-sha256
+    "9727182708b619f3dc0535c5c90d83c96b66b000cf726056e81065e04c73bce3",
+    :historical-form-sha256
+    "9727182708b619f3dc0535c5c90d83c96b66b000cf726056e81065e04c73bce3",
+    :historical-form-identical true,
+    :source-call-targets []}
+   {:name sh08-ru-supported-type?,
+    :base-form-sha256
+    "e0e301f9db8355f49ff6cf9d03dcabd02c0e8deba599dffd1971f4ebd907d1d9",
+    :historical-form-sha256
+    "1dce923de0170908cada9c1a55df96b977ce34b4501f48cd88c320c77a7407fd",
+    :historical-form-identical false,
+    :source-call-targets []}
+   {:name sh08-ru-value-type,
+    :base-form-sha256
+    "b45dc9c16d5185f363c20737fc76afb2512c5c6168d2e55d8f00e1dfb277af10",
+    :historical-form-sha256
+    "915459d76c5809517f041c8adbc561f062d35f75f405ba4ea197186747a2869b",
+    :historical-form-identical false,
+    :source-call-targets []}],
+  :closure-not-runtime-reachability true},
+ :kind :record-union-original-controls,
+ :generator
+ {:language :clojure,
+  :sha256
+  "1b29f13955f41f86b7d3c7673930149e362af63c017dc4a4edce3b68134c98e8",
+  :preserved-locally true},
+ :base-tree "2b2168fe83fc08a7b4a882d75650c5b6e6eac31d",
+ :validation
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :source-checks :passed,
+  :genuine-execution :UNRUN},
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

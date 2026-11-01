@@ -1978,3 +1978,46 @@ A later PR513 compiler-free metadata gate rejected the new
 non-slice namespace. Its owners are coordinating the required impact-catalog
 registration; that gate remains nonpassing and does not replace the original
 PR511 semantic or CI receipts.
+
+## PR522 operative documentation integration
+
+PR522 merged as `4a798d86b78f14599f7acfbdb809cbd08e74ef1e` over
+`3a8b90c190c5756e1cce551c0a92503b5bbc5d3a`. The fetched tree
+`4b356262cc2c7226818edc96976c7c13fab75e0a` equals independently reviewed
+head `8639657fb6a55e66f1a5de6f21d500464aee8b77`; the source branch is
+retained. The two documentation spans remove conflicting quota/work-limit
+instructions and require coherent source-owner migration while preserving
+source identity, type, effect, transfer, index and extent legality checks.
+
+The independently reviewed documentation gate passed 240 documents, 19 phase
+indexes and roadmap at the earlier composed `763521e2` head. Its unchanged
+consumed inputs were verified at the final candidate; no fresh execution is
+claimed. The earlier cancelled CI remains nonpassing history. Final-head CI
+`40634871650` passed seven routine jobs, with Core and prerelease skipped.
+The live membership/vector-index accounting consumers and original ACC-12
+dependencies remain open; this documentation-only result does not establish
+source, B51, Core, C12 or release acceptance.
+
+## PR524 BKA header and first-debit integration
+
+PR524 merged as `d63e6096d61d8662bcff0f20b33ad80c633fbfa8` over
+`4a798d86b78f14599f7acfbdb809cbd08e74ef1e`. The merged tree
+`6119e7a642ec1d157396e7c96e26f374bf9889ea` matches the independently reviewed
+candidate `f8a77dd856e0c2160d08b2df53b6088c5f477966`. The source branch is
+retained. C7, Effects and emitter removed BKA header allowance and first-debit
+accounting while retaining source and semantic validation. Native authority
+views are validated before the profile and target vectors are traversed.
+
+The corrected normalized three-owner panel passed 18 tests and 692 assertions
+with natural exit zero, actual 2 GiB, complete capture, identical clean
+bookends and completed cleanup. It retained the final-field mutation warning
+in stderr. Its receipt SHA-256 is
+`eac8892a2dc42dc655abf5aacc472576d248c8d3120daab6b3271d7b4b6997cf`.
+The earlier candidate panel failed with six failures and one error and
+truncated stdout; it remains a separate nonpassing result. Final-head CI
+`40637458409` passed seven routine jobs, with Core and prerelease skipped.
+Independent review accepted the merge and exact tree.
+
+Other work pools and BKA runtime policy remain open, as do PMK, ANE and the
+separate DSE and historical mode boundaries. No authenticated-source, runtime,
+Core, C12, release or whole ACC-04 acceptance follows from this finite result.
