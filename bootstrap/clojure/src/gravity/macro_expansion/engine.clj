@@ -9,6 +9,29 @@
     {:input-hash (str "sha256:" (hash (pr-str input)))
      :output-hash (str "sha256:" (hash (pr-str output)))}))
 
+(def ^:private ^:dynamic *expansion-digest-context* nil)
+
+(defn- expansion-digest-context
+  [input output ops]
+  {:input input
+   :output output
+   :hash-op (operations/operation ops :sha256-hex digest/sha256-hex)
+   :digests (volatile! nil)})
+
+(defn- expansion-digests-for-context
+  [input output ops]
+  (let [hash-op (operations/operation ops :sha256-hex digest/sha256-hex)
+        context *expansion-digest-context*]
+    (if (and (map? context)
+             (= input (:input context))
+             (= output (:output context))
+             (identical? hash-op (:hash-op context)))
+      (or @(:digests context)
+          (let [digests (expansion-digests input output ops)]
+            (vreset! (:digests context) digests)
+            digests))
+      (expansion-digests input output ops))))
+
 (defn- generated-origin-with-digests
   [macro syntax digests]
   (when-not (:omit-generated-origin? macro)
@@ -22,7 +45,7 @@
   [macro syntax input output ops]
   (when-not (:omit-generated-origin? macro)
     (generated-origin-with-digests
-     macro syntax (expansion-digests input output ops))))
+     macro syntax (expansion-digests-for-context input output ops))))
 
 (defn macro-call
   [registry form]
@@ -90,7 +113,7 @@
   [module macro syntax input output generated-origin depth ops]
   (trace-record-with-digests
    module macro syntax generated-origin depth
-   (expansion-digests input output ops)))
+   (expansion-digests-for-context input output ops)))
 
 (defn distinct-by-pr-str
   [values]
@@ -139,13 +162,16 @@
                   input form
                   output (expand-macro module macro (vec (rest form))
                                        (:span syntax))
+                  digest-context (expansion-digest-context input output ops)
                   [origin digests]
-                  (if origin-record-op
-                    [(origin-record-op macro syntax input output) nil]
-                    (let [digests (when-not (:omit-generated-origin? macro)
-                                    (expansion-digests input output ops))]
-                      [(generated-origin-with-digests macro syntax digests)
-                       digests]))]
+                  (binding [*expansion-digest-context* digest-context]
+                    (if origin-record-op
+                      [(origin-record-op macro syntax input output) nil]
+                      (let [digests (when-not (:omit-generated-origin? macro)
+                                      (expansion-digests-for-context
+                                       input output ops))]
+                        [(generated-origin-with-digests macro syntax digests)
+                         digests])))]
               (when (empty? origin)
                 (operations/fail!
                  ops "L4-PROVENANCE-MISSING"
@@ -154,15 +180,18 @@
                   :macro (:identity macro)
                   :remediation
                   "Attach generated-origin metadata linking output syntax to the macro call site."}))
-              (let [digests (or digests
-                                (when (nil? trace-record-op)
-                                  (expansion-digests input output ops)))]
-                (swap! trace conj
-                       (if trace-record-op
-                         (trace-record-op module macro syntax input output origin
-                                          depth)
-                         (trace-record-with-digests
-                          module macro syntax origin depth digests)))
+              (let [record
+                    (binding [*expansion-digest-context* digest-context]
+                      (let [digests (or digests
+                                        (when (nil? trace-record-op)
+                                          (expansion-digests-for-context
+                                           input output ops)))]
+                        (if trace-record-op
+                          (trace-record-op module macro syntax input output origin
+                                           depth)
+                          (trace-record-with-digests
+                           module macro syntax origin depth digests))))]
+                (swap! trace conj record)
                 (recur (-> syntax
                            (assoc :form output
                                   :origin :generated
