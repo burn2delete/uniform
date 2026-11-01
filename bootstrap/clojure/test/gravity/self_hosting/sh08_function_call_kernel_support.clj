@@ -7,7 +7,9 @@
   (:require [clojure.java.io :as io]
             [clojure.walk :as walk]
             [clojure.string :as str]
-            [gravity.bootstrap :as bootstrap]))
+            [gravity.bootstrap :as bootstrap])
+  (:import [java.nio.charset StandardCharsets]
+           [java.util.concurrent TimeUnit]))
 
 (def stage2-runtime
   {:engine :stage2-runtime-iteration-test})
@@ -103,6 +105,43 @@
 (defn path
   [relative]
   (str (.resolve @root relative)))
+
+(def ^:private fresh-sh09-load-probe-expression
+  "(require 'gravity.self-hosting.sh09-private-self-effect-test
+             'gravity.self-hosting.sh09-evidence-metadata-test)
+    (let [loaded (set (map ns-name (all-ns)))
+          old-namespaces '#{gravity.self-hosting.sh08-function-call-type-test
+                            gravity.self-hosting.sh09-body-effect-test}
+          focused-namespaces '#{gravity.self-hosting.sh09-private-self-effect-test
+                               gravity.self-hosting.sh09-evidence-metadata-test}
+          result {:old-loaded (mapv #(contains? loaded %) old-namespaces)
+                  :focused-loaded (mapv #(contains? loaded %) focused-namespaces)}]
+      (println \"SH09-FOCUSED-LOAD-ISOLATION\" (pr-str result))
+      (System/exit (if (and (every? false? (:old-loaded result))
+                             (every? true? (:focused-loaded result)))
+                     0
+                     9)))")
+
+(defn fresh-sh09-load-probe
+  "Require both focused SH-09 namespaces in a new JVM without running tests."
+  []
+  (let [command ["clojure"
+                 "-Sdeps"
+                 "{:paths [\"bootstrap/clojure/src\" \"bootstrap/clojure/test\"]}"
+                 "-M"
+                 "-e"
+                 fresh-sh09-load-probe-expression]
+        builder (doto (ProcessBuilder. ^java.util.List command)
+                  (.directory (io/file (path ".")))
+                  (.redirectErrorStream true))
+        process (.start builder)
+        completed? (.waitFor process 60 TimeUnit/SECONDS)]
+    (when-not completed?
+      (.destroyForcibly process)
+      (.waitFor process 5 TimeUnit/SECONDS))
+    {:completed? completed?
+     :exit (.exitValue process)
+     :output (String. (.readAllBytes (.getInputStream process)) StandardCharsets/UTF_8)}))
 
 (defn- compile-plan
   []
