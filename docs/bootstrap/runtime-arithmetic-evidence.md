@@ -101,9 +101,8 @@ Actual main 7ad0edc7abcc7ea7b8f536e8363bd66ad2329453/tree
 removal, PR746 host custody and PR748 read-only release verification. The
 [ordinary-development record](current-ordinary-composition-evidence.md)
 distinguishes current semantics from immutable historical A1 evidence.
-All incoming implementation and tests remain preserved; Safety's shared
-registrations are rebuilt from exact main plus its frozen association,
-including the new process helper and unchanged primary catalog formulas.
+All incoming implementation, tests and shared owner registrations remain
+exact main, including the new process helper and primary catalog formulas.
 Stage algorithms and fixtures remain conserved. Fresh current-base controls,
 catalog identities, ownership/language, contextual lint and independent review
 remain required. Old-base CI supplies no current integration eligibility.
@@ -115,3 +114,35 @@ controls still accept both spellings with25 nodes/one target read/source8e63
 and recomputed Core16ec. Contextual lint passes3 paths/0 warnings/0 blockers.
 Terminal lint receipts are archived outside the source checkout. Source
 admission, historical denied routes and migration pins remain unchanged.
+
+## Real compiler main and delegated byte capture
+
+Actual main bf5c4c36a4e7ca01b212b15a4018bceceb57a9cc/tree
+05145f228cde86f0dfea69c7da05f680cafee4b4 replaces release fixture
+response tables with compiler execution. Its run/release paths and tests
+remain preserved. Source intake now delegates bytes to the existing
+sh03-reader-read-target-source-bytes! owner, preserving regular-file and
+final-link checks and C2-ENCODING file diagnostics. No source-size quota
+is introduced. The owner declaration and component EOF are preserved.
+
+This candidate retains main's Reader compatibility body and byte-owner
+operation exactly. The separate Reader-intake PR makes four late owner
+ports explicit; that extraction is not part of this candidate. Current source
+controls continue through the existing owner without new authority.
+
+## Verified bf5 ordinary source checks
+
+Fresh Runtime coupled20/443 and ownership/language46/1136 pass. Actual plans
+execute18 positive arithmetic cases and reject8 real cases per spelling.
+All4 complete source/plan/result/refusal records and their original serialized
+forms remain exact. The entire component, old Runtime bodies, Bootstrap
+loader and builtin dispatcher pass current-base conservation. Contextual lint
+passes3 paths/0 warnings/0 blockers. Fresh complete Core controls accept both source spellings with25 nodes,
+one target read, source8e63 and recomputed Core16ec. All7 complete data and
+original serialized pairs pass. The legacy nil builtin diagnostic source is
+retained; actual paths remain in the enclosing source/plan/control records.
+Terminal lint receipts are archived outside the checkout. Documentation,
+roadmap and governance validators pass. Independent exact-source acceptance,
+own current-head CI and clean current-base preflight remain integration gates.
+Older CI and immutable authority records are historical; no new authentication,
+migration, release, self-hosting or complete namespace claim is made.
