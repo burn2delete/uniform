@@ -1180,7 +1180,8 @@
   (let [custody (broker/retain-process-start-custody!)]
     (try
       (let [process (process-supervision/start-process
-                     command {:working-directory working-directory})]
+                     (vec (map str command))
+                     {:working-directory working-directory})]
         (when custody
           (broker/record-started-process! custody process)
           (broker/record-started-ownership! custody (retain-owned-process! process)))
@@ -1700,15 +1701,8 @@
         (throw fatal)
         captured))))
 
-(defn- handle-descendants
-  [^java.lang.ProcessHandle root]
-  (process-supervision/handle-descendants root))
-
 (defrecord RetainedProcess
     [process handles discovery-error cleanup-error wait-throwable terminal owner-thread-id])
-
-(defn- retain-process-error! [cell error]
-  (process-supervision/retain-process-error! cell error))
 
 (defn- require-retained-process! [owned]
   (when-not (and (instance? RetainedProcess owned)
@@ -1740,38 +1734,9 @@
   (require-retained-process! owned)
   (process-supervision/retained-process-handles owned))
 
-(defn- observe-owned-process! [owned]
-  (require-retained-process! owned)
-  (process-supervision/observe-owned-process!
-   owned {:handle-descendants-fn handle-descendants
-          :retain-error-fn retain-process-error!}))
-
-(defn- alive-handle?
-  [^java.lang.ProcessHandle handle owned]
-  (process-supervision/alive-handle? handle owned))
-
-(defn- request-handle-termination!
-  [^java.lang.ProcessHandle handle forcibly? owned]
-  (process-supervision/request-handle-termination!
-   handle forcibly? owned))
-
 (defn- reap-process-handle!
   [^java.lang.ProcessHandle handle deadline owned]
   (process-supervision/reap-process-handle! handle deadline owned))
-
-(defn- retained-root-alive? [owned]
-  (process-supervision/retained-root-alive? owned))
-
-(defn- terminate-retained-process! [owned]
-  (process-supervision/terminate-owned-process!
-   owned {:grace-ms process-cleanup-grace-ms
-          :timeout-ms process-cleanup-timeout-ms
-          :observe-fn observe-owned-process!
-          :alive-fn alive-handle?
-          :request-fn request-handle-termination!
-          :reap-fn reap-process-handle!
-          :root-alive-fn retained-root-alive?}))
-
 
 (defn finalize-owned-process!
   "Finalize retained handles once on the retaining thread; repeat calls reuse
@@ -1781,10 +1746,11 @@
   tracked fact; source-bound creation knowledge belongs to its exact method,
   not to an all-OS registry or an inferred meaning for the unknown field."
   [owned]
+  (require-retained-process! owned)
   (process-supervision/finalize-owned-process!
-   owned {:require-fn require-retained-process!
-          :terminate-fn terminate-retained-process!
-          :fatal-fn rethrow-fatal!}))
+   owned {:grace-ms process-cleanup-grace-ms
+          :timeout-ms process-cleanup-timeout-ms
+          :reap-fn reap-process-handle!}))
 
 (defn- wait-for-process
   "Waits for a process with an optional bound and never hides interruption.
@@ -1793,11 +1759,7 @@
   not request a timeout.  Cleanup paths always use the bounded form below."
   [^Process process timeout-ms owned]
   (process-supervision/wait-for-process!
-   process timeout-ms owned
-   {:observe-fn observe-owned-process!
-    :fatal-fn rethrow-fatal!
-    :restore-fn restore-interrupt!
-    :interrupted-fn interrupted-throwable?}))
+   process timeout-ms owned))
 
 (defn- bounded-process-wait
   [^Process process timeout-ms]

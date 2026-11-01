@@ -2,9 +2,9 @@
   "Small, dependency-free ownership primitives for bounded child processes.
 
   The substrate retains the actual Process and ProcessHandle objects returned by
-  the JVM.  It never reconstructs ownership from numeric PIDs.  Callers supply
-  their result policy and, where needed, callbacks for diagnostics or timing;
-  this namespace only owns launch, observation, bounded waiting, and cleanup."
+  the JVM.  It never reconstructs ownership from numeric PIDs.  Callers choose
+  their result policy and host bounds; this namespace owns launch, observation,
+  bounded waiting, and cleanup."
   (:import [java.io File]
            [java.lang Process ProcessHandle]
            [java.util.concurrent TimeUnit]
@@ -85,16 +85,31 @@
      (.start builder))))
 
 (defn handle-descendants
-  "Return the currently observable raw descendant handles for one handle."
-  [^ProcessHandle root]
-  (try
-    (with-open [descendants (.descendants root)]
-      {:handles (vec (iterator-seq (.iterator descendants)))
-       :error nil})
-    (catch Throwable throwable
-      (restore-interrupt! throwable)
-      {:handles []
-       :error throwable})))
+  "Return currently observable raw descendant handles without exceeding a
+  caller-supplied host observation bound."
+  ([^ProcessHandle root]
+   (handle-descendants root nil))
+  ([^ProcessHandle root descendant-limit]
+   (try
+     (with-open [descendants (.descendants root)]
+       (let [limit (when (some? descendant-limit)
+                     (max 0 (long descendant-limit)))
+             iterator (.iterator descendants)
+             sampled
+             (loop [handles []]
+               (if (.hasNext iterator)
+                 (let [handles (conj handles (.next iterator))]
+                   (if (and limit (> (count handles) limit))
+                     {:handles (vec (take limit handles))
+                      :truncated? true}
+                     (recur handles)))
+                 {:handles handles :truncated? false}))]
+         (assoc sampled :error nil)))
+     (catch Throwable throwable
+       (restore-interrupt! throwable)
+       {:handles []
+        :truncated? false
+        :error throwable}))))
 
 (defn retain-process-error!
   "Keep the first ordinary error, while promoting a later fatal cause and
@@ -166,40 +181,34 @@
 
 (defn- process-handle-limit-error?
   [throwable]
-  (= :process-handle-limit (:id (ex-data throwable))))
+  (and throwable
+       (or (= :process-handle-limit (:id (ex-data throwable)))
+           (some #(= :process-handle-limit (:id (ex-data %)))
+                 (.getSuppressed ^Throwable throwable)))))
 
 (defn observe-owned-process!
   "Refresh every retained handle, preserving handles that disappear from a
-  later enumeration.  :max-handles is an optional host observation bound; it
+  later enumeration.  :descendant-limit is an optional host observation bound; it
   records an incomplete observation rather than becoming a semantic pass."
   ([owned]
    (observe-owned-process! owned {}))
-  ([owned {:keys [handle-descendants-fn retain-error-fn max-handles]}]
+  ([owned {:keys [descendant-limit]}]
    (require-owned-process! owned)
-   (let [discover (or handle-descendants-fn handle-descendants)
-         retain-error (or retain-error-fn retain-process-error!)]
-     ;; Revisit retained descendants as well as the root: a known child can
-     ;; fork after root exit.  Absence from a later enumeration never drops a
-     ;; handle already retained by this owner.
-     (doseq [handle (vec @(:handles owned))]
-       (let [{:keys [handles error]} (discover handle)
-             handles (if max-handles
-                       (vec (take (inc (long max-handles)) handles))
-                       handles)]
-         (when error (retain-error (:discovery-error owned) error))
-         (swap! (:handles owned) #(vec (distinct (concat % handles))))))
-     (when (and max-handles
-                (> (count @(:handles owned)) (long max-handles))
-                (not (process-handle-limit-error? @(:discovery-error owned))))
-       (retain-error (:discovery-error owned)
-                     (ex-info "Process handle observation bound exceeded"
-                              {:id :process-handle-limit
-                               :limit (long max-handles)}))
-       ;; Retain only the bounded, actual handles.  The recorded observation
-       ;; error makes the cleanup result fail closed about omitted descendants.
-       (swap! (:handles owned)
-              #(vec (take (long max-handles) %))))
-     owned)))
+   ;; Revisit retained descendants as well as the root: a known child can
+   ;; fork after root exit.  Absence from a later enumeration never drops a
+   ;; handle already retained by this owner.
+   (doseq [handle (vec @(:handles owned))]
+     (let [{:keys [handles error truncated?]}
+           (handle-descendants handle descendant-limit)]
+       (when error (retain-process-error! (:discovery-error owned) error))
+       (when truncated?
+         (retain-process-error!
+          (:discovery-error owned)
+          (ex-info "Process handle observation bound exceeded"
+                   {:id :process-handle-limit
+                    :limit (long descendant-limit)})))
+       (swap! (:handles owned) #(vec (distinct (concat % handles))))))
+   owned))
 
 (defn alive-handle?
   [^ProcessHandle handle owned]
@@ -249,22 +258,18 @@
   (long (.pid handle)))
 
 (defn terminate-owned-process!
-  "Bounded descendant-first cleanup for one retained process.
-
-  Callbacks are supplied so compatibility callers can preserve existing
-  diagnostics and test seams while sharing the ownership transaction."
+  "Bounded descendant-first cleanup for one retained process."
   ([owned]
    (terminate-owned-process! owned {}))
-  ([owned {:keys [grace-ms timeout-ms observe-fn observe-options alive-fn
-                 request-fn reap-fn root-alive-fn]
+  ([owned {:keys [grace-ms timeout-ms descendant-limit reap-fn]
            :or {grace-ms 100 timeout-ms 1500}}]
    (require-owned-process! owned)
-   (let [observe! (or observe-fn
-                      #(observe-owned-process! % (or observe-options {})))
-         alive? (or alive-fn alive-handle?)
-         request! (or request-fn request-handle-termination!)
+   (let [observe! #(observe-owned-process!
+                    % {:descendant-limit descendant-limit})
+         alive? alive-handle?
+         request! request-handle-termination!
          reap! (or reap-fn reap-process-handle!)
-         root-alive? (or root-alive-fn retained-root-alive?)
+         root-alive? retained-root-alive?
          root (first @(:handles owned))
          started (System/nanoTime)
          grace-deadline (+ started (* (long grace-ms) 1000000))
@@ -351,21 +356,26 @@
 (defn finalize-owned-process!
   "Finalize one retained process once on its owner thread.
 
-  :terminate-fn may provide a caller-specific result policy.  :fatal-fn is
-  called for recorded discovery/cleanup errors; ordinary errors remain in the
-  result and never become a false clean claim."
+  Recorded discovery/cleanup errors are rethrown when :raise-fatal? is true;
+  ordinary errors remain in the result and never become a false clean claim."
   ([owned]
    (finalize-owned-process! owned {}))
-  ([owned {:keys [require-fn terminate-fn fatal-fn]}]
-   ((or require-fn require-owned-process!) owned)
+  ([owned {:keys [grace-ms timeout-ms descendant-limit reap-fn raise-fatal?]
+           :or {raise-fatal? true}}]
+   (require-owned-process! owned)
    (let [terminal (:terminal owned)]
      (if (compare-and-set! terminal nil :finalizing)
        (try
-         (let [result ((or terminate-fn terminate-owned-process!) owned)]
-           (when-let [error @(:discovery-error owned)]
-             ((or fatal-fn rethrow-fatal!) error))
-           (when-let [error @(:cleanup-error owned)]
-             ((or fatal-fn rethrow-fatal!) error))
+         (let [result (terminate-owned-process!
+                       owned {:grace-ms grace-ms
+                              :timeout-ms timeout-ms
+                              :descendant-limit descendant-limit
+                              :reap-fn reap-fn})]
+           (when raise-fatal?
+             (when-let [error @(:discovery-error owned)]
+               (rethrow-fatal! error))
+             (when-let [error @(:cleanup-error owned)]
+               (rethrow-fatal! error)))
            (reset! terminal {:result result})
            result)
          (catch Throwable error
@@ -380,38 +390,31 @@
 (defn wait-for-process!
   "Wait with an optional bound while repeatedly observing retained handles."
   ([^Process process timeout-ms owned]
-   (wait-for-process! process timeout-ms owned {}))
-  ([^Process process timeout-ms owned
-    {:keys [observe-fn observe-options fatal-fn restore-fn interrupted-fn]}]
-   (let [observe! (or observe-fn
-                      #(observe-owned-process! % (or observe-options {})))
-         fatal! (or fatal-fn rethrow-fatal!)
-         restore! (or restore-fn restore-interrupt!)
-         interrupted? (or interrupted-fn interrupted-throwable?)]
-     (try
-       (let [deadline (when timeout-ms
-                        (+ (System/nanoTime) (* (long timeout-ms) 1000000)))]
-         (loop []
-           (observe! owned)
-           (when-let [error @(:discovery-error owned)] (fatal! error))
-           (let [remaining (when deadline
-                             (max 0 (quot (- deadline (System/nanoTime))
-                                          1000000)))
-                 completed? (.waitFor process
-                                      (long (min 50 (or remaining 50)))
-                                      TimeUnit/MILLISECONDS)]
-             (observe! owned)
-             (cond completed? {:completed? true :interrupted? false}
-                   (and deadline (>= (System/nanoTime) deadline))
-                   {:completed? false :interrupted? false}
-                   :else (recur)))))
-       (catch Throwable throwable
-         (reset! (:wait-throwable owned) throwable)
-         (fatal! throwable)
-         (restore! throwable)
-         {:completed? false
-          :interrupted? (interrupted? throwable)
-          :error (throwable-message throwable)})))))
+   (try
+     (let [deadline (when timeout-ms
+                      (+ (System/nanoTime) (* (long timeout-ms) 1000000)))]
+       (loop []
+         (observe-owned-process! owned)
+         (when-let [error @(:discovery-error owned)]
+           (rethrow-fatal! error))
+         (let [remaining (when deadline
+                           (max 0 (quot (- deadline (System/nanoTime))
+                                        1000000)))
+               completed? (.waitFor process
+                                    (long (min 50 (or remaining 50)))
+                                    TimeUnit/MILLISECONDS)]
+           (observe-owned-process! owned)
+           (cond completed? {:completed? true :interrupted? false}
+                 (and deadline (>= (System/nanoTime) deadline))
+                 {:completed? false :interrupted? false}
+                 :else (recur)))))
+     (catch Throwable throwable
+       (reset! (:wait-throwable owned) throwable)
+       (rethrow-fatal! throwable)
+       (restore-interrupt! throwable)
+       {:completed? false
+        :interrupted? (interrupted-throwable? throwable)
+        :error (throwable-message throwable)}))))
 
 (defn bounded-process-wait!
   [^Process process timeout-ms]

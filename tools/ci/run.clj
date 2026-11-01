@@ -101,15 +101,20 @@
         (process-supervision/handle-descendants (.toHandle process))]
     (if error (throw error) handles)))
 
+(defn- tracked-cleanup?
+  [cleanup]
+  (and (true? (:tracked-complete? cleanup))
+       (false? (:root-alive? cleanup))
+       (zero? (long (or (:descendants-alive cleanup) 0)))
+       (empty? (or (:survivor-pids cleanup) []))))
+
 (defn stop!
   ([^Process process children]
    (stop! process children (process-supervision/retain-owned-process! process)))
   ([^Process process children owned]
    (swap! (:handles owned) #(vec (distinct (concat % children))))
    (let [cleanup (process-supervision/finalize-owned-process!
-                  owned {:terminate-fn
-                         #(process-supervision/terminate-owned-process!
-                           % {:grace-ms 0 :timeout-ms 5000})})]
+                  owned {:grace-ms 0 :timeout-ms 5000})]
      (when (or (:cleanup-error cleanup) (:discovery-error cleanup))
        (throw (ex-info "Owned process cleanup failed"
                        {:cleanup cleanup})))
@@ -117,22 +122,37 @@
 
 (defn await! [^Process process seconds]
   (let [owned (process-supervision/retain-owned-process! process)
-        waited (process-supervision/wait-for-process!
-                process (long (* seconds 1000)) owned)
-        cleanup (stop! process [] owned)
-        completed? (:completed? waited)
-        error? (some? (:error waited))
-        exit-code (if (and completed? (not error?))
-                    (try (.exitValue process)
-                         (catch Throwable _ 1))
-                    (if completed? 1 124))]
-    {:status (cond (not completed?) :timeout
-                   error? :failed
-                   (zero? exit-code) :passed
-                   :else :failed)
-     :exit-code exit-code
-     :pid (.pid process)
-     :descendant-pids (:descendant-pids cleanup)}))
+        cleanup-attempted? (atom false)]
+    (try
+      (let [waited (process-supervision/wait-for-process!
+                    process (long (* seconds 1000)) owned)
+            cleanup (do
+                      (reset! cleanup-attempted? true)
+                      (stop! process [] owned))
+            completed? (:completed? waited)
+            error? (some? (:error waited))
+            exit-code (if (and completed? (not error?))
+                        (try (.exitValue process)
+                             (catch Throwable _ 1))
+                        (if completed? 1 124))
+            cleanup-ok? (tracked-cleanup? cleanup)]
+        {:status (cond (not cleanup-ok?) :failed
+                       (not completed?) :timeout
+                       error? :failed
+                       (zero? exit-code) :passed
+                       :else :failed)
+         :exit-code (if cleanup-ok? exit-code 1)
+         :pid (.pid process)
+         :descendant-pids (:descendant-pids cleanup)})
+      (catch Throwable original
+        (when-not @cleanup-attempted?
+          (try
+            (reset! cleanup-attempted? true)
+            (stop! process [] owned)
+            (catch Throwable cleanup-error
+              (when-not (identical? original cleanup-error)
+                (.addSuppressed ^Throwable original cleanup-error)))))
+        (throw original)))))
 
 (defn execute!
   ([id seconds argv] (execute! id seconds argv nil))
