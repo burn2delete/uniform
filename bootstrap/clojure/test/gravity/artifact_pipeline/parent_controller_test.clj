@@ -15,7 +15,9 @@
 
 (defn fixture []
   (let [events (atom []) time (atom 0) leases (atom {})
-        guards (mapv #(hash-map :kind % :root (str "/fake/" (name %)) :source-id (str "fixture/" (name %)))
+        guards (mapv #(merge {:kind % :root (str "/fake/" (name %)) :source-id (str "fixture/" (name %))}
+                             (if (= :broker %) {:acquisition :broker :resource-class :exclusive}
+                                 {:acquisition :non-broker :acquire-function "fake-function-source"}))
                      [:broker :exclusive :canonical])
         participants [{:owner :fixture :roots (mapv :root guards)}]
         request {:id "fake-once" :source controller/source :selector controller/selector :argv controller/argv
@@ -31,12 +33,14 @@
         result {:status :passed :exit-code 0 :wait-interrupted? false :output-truncated? false :capture-failed? false
                 :cleanup-failed? false :cleanup-root-alive? false :timeout-containment-unproven? false
                 :stdout "actual fake capture" :stderr "" :stdout-bytes 19N :stderr-bytes 0}
+        acquire (fn [guard _] (let [lease (Object.)]
+                                (swap! events conj [:acquire (:kind guard)])
+                                (swap! leases assoc (:kind guard) lease) lease))
         ports {:clock (fn [] @time)
                :admit (fn [& _] (swap! events conj :admit) true)
                :reserve (fn [& _] (swap! events conj :reserve) true)
-               :acquire (fn [guard _] (let [lease (Object.)]
-                                        (swap! events conj [:acquire (:kind guard)])
-                                        (swap! leases assoc (:kind guard) lease) lease))
+               :acquire (fn [guard remaining] (acquire guard remaining))
+               :acquire-guard (fn [guard remaining] (acquire guard remaining))
                :validate (fn [guard lease] (swap! events conj [:validate (:kind guard)]) lease)
                :release (fn [guard lease]
                           (is (identical? lease (get @leases (:kind guard))))
@@ -121,9 +125,9 @@
       (is (not-any? #(and (vector? %) (= :publish (first %))) @(:events f))))))
 
 (deftest partial-lock-failure-releases-original-leases-in-reverse-order
-  (let [f (fixture) acquire (get-in f [:ports :acquire]) error (Exception. "lock failure")
-        r (execute f {:acquire (fn [guard budget]
-                                 (if (= :canonical (:kind guard)) (throw error) (acquire guard budget)))})]
+  (let [f (fixture) acquire (get-in f [:ports :acquire-guard]) error (Exception. "lock failure")
+        r (execute f {:acquire-guard (fn [guard budget]
+                                       (if (= :canonical (:kind guard)) (throw error) (acquire guard budget)))})]
     (is (identical? error (:error r)))
     (is (= [[:release :exclusive] [:release :broker]]
            (filter #(and (vector? %) (= :release (first %))) @(:events f))))
@@ -193,12 +197,13 @@
       (finally (Thread/interrupted)))))
 
 (deftest wrapped-normal-broker-interruption-keeps-original-error-and-flag
-  (let [f (fixture) acquire (get-in f [:ports :acquire])
+  (let [f (fixture) guards (vec (reverse (get-in f [:request :guards])))
+        request (-> (:request f) (assoc :guards guards) (assoc-in [:coverage :ordered-guards] guards))
+        observation (select-keys request controller/identity-fields)
         original (ex-info "broker interrupted" {:id "SH01-BROKER-INTERRUPTED"} (InterruptedException. "wait"))]
     (try
-      (let [r (execute f {:acquire (fn [guard budget]
-                                     (if (= :exclusive (:kind guard)) (throw original) (acquire guard budget)))
-                          :release (fn [& _] (Thread/interrupted) {:status :released})})
+      (let [r (execute f {:acquire (fn [& _] (throw original))
+                          :release (fn [& _] (Thread/interrupted) {:status :released})} request observation)
             flag-at-return (.isInterrupted (Thread/currentThread))]
         (is (identical? original (:error r)))
         (is flag-at-return)
@@ -238,3 +243,49 @@
         r (execute f {:publish (fn [& _] (swap! writes inc) (swap! (:time f) + 101) {:status :published})})]
     (is (= :failed (:status r))) (is (= :whole-deadline (reason r)))
     (is (= 1 @writes)) (is (= :unknown (:publication r)))))
+
+(deftest two-brokers-and-implicit-canonical-acquisition-refuse-before-every-port
+  (let [f (fixture) guards (get-in f [:request :guards])]
+    (doseq [invalid [(assoc-in guards [1 :acquisition] :broker)
+                     (assoc-in guards [2 :acquisition] :broker)
+                     (assoc-in guards [0 :acquisition] :non-broker)
+                     (update guards 2 dissoc :acquire-function)
+                     (assoc-in guards [2 :acquire-function] "foreign-function")]]
+      (let [calls (atom [])
+            request (-> (:request f) (assoc :guards invalid) (assoc-in [:coverage :ordered-guards] invalid))
+            ports (into {} (map (fn [port] [port (fn [& _] (swap! calls conj port))]) controller/port-names))
+            result (controller/run! (controller/bind-controller request ports)
+                                    (select-keys request controller/identity-fields))]
+        (is (= :refused (:status result)))
+        (is (some #{:source-bound-ordered-guards} (:missing result)))
+        (is (empty? @calls)))))
+  (let [f (fixture) shared (fn [& _] (swap! (:events f) conj :shared-acquire))]
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (execute f {:acquire shared :acquire-guard shared})))
+    (is (empty? @(:events f)))))
+
+(deftest single-exclusive-broker-and-explicit-canonical-function-preserve-declared-order
+  (doseq [reverse? [false true]]
+    (let [f (fixture) guards (filterv #(not= :exclusive (:kind %)) (get-in f [:request :guards]))
+          guards (if reverse? (vec (reverse guards)) guards)
+          request (-> (:request f) (assoc :guards guards) (assoc-in [:coverage :ordered-guards] guards))
+          observation (select-keys request controller/identity-fields)
+          broker-calls (atom 0) canonical-calls (atom 0)
+          broker (get-in f [:ports :acquire]) canonical (get-in f [:ports :acquire-guard])
+          result (execute f {:acquire (fn [guard remaining]
+                                        (swap! broker-calls inc)
+                                        (is (= :broker (:acquisition guard)))
+                                        (is (= :exclusive (:resource-class guard)))
+                                        (broker guard remaining))
+                             :acquire-guard (fn [guard remaining]
+                                              (swap! canonical-calls inc)
+                                              (is (= :canonical (:kind guard)))
+                                              (is (= :non-broker (:acquisition guard)))
+                                              (canonical guard remaining))
+                             :observe (fn [] observation)} request observation)]
+      (is (= :passed (:status result)))
+      (is (= 1 @broker-calls @canonical-calls))
+      (is (= (mapv #(vector :acquire (:kind %)) guards)
+             (filter #(and (vector? %) (= :acquire (first %))) @(:events f))))
+      (is (= (mapv #(vector :release (:kind %)) (reverse guards))
+             (filter #(and (vector? %) (= :release (first %))) @(:events f)))))))
