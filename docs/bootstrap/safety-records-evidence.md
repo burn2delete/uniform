@@ -314,3 +314,29 @@ its absence is no source-Core, release or self-hosting evidence. Core's genuine
 current-reader controls and Safety's normalized C10/native data remain distinct
 evidence boundaries. Fresh exact-base checks, review, own CI and clean
 integration preflight remain required.
+
+## Loader and snapshot CI main composition
+
+Actual main625b42aa8da25eb897df4b9807372e21108bd8e4/tree
+54ac1c4bbcb47e492d2457e068e1765b2c675615 includes shared test support and
+direct bootstrap data loading. The conflict-free composition preserves all123
+incoming loader paths exactly. Fresh coupled tests pass71/2838, ownership
+38/1093, language6/11, docs240/19, roadmap and governance. All42 complete and
+serialized pairs still match the explicitly historical clean6dc control;
+source hashes, fixture/native identities and all four C10 outcomes recompute.
+Whole stage, both components and the single require delta conserve against625.
+The actual157-function C10 source/plan and fixed-seed/native-Clojure provenance
+remain exact; captured current Gravity emitter/runtime files are not executed.
+Contextual lint7 paths/3486 unchanged baseline warnings/0 blockers passes;
+terminal receipts are archived outside the clean source checkout.
+
+The next actual main is b363c32b5569e4ea76df852abd142be7c067292e/tree
+49b5e7fa4d82a8d41fb3a8ffec876d39b8b8e495. Its only delta from625 is CI
+workflow/docs and snapshot tooling/tests, all four preserved exactly. Safety
+algorithms, ports, controls and compiler/runtime execution inputs are unchanged.
+Actual b363 is the integration base. Updated-base conservation/provenance,
+independent acceptance, own CI and clean preflight remain gates. Prior green
+or cancelled runs supply no new-tuple acceptance. Logs/evidence use
+`loader-main-*`. One script passed to the development test runner stopped at
+selection parsing; the correct direct script invocation passes. No guard,
+pin, runner or semantic comparison was weakened.
