@@ -369,6 +369,24 @@ omitted test sources from the script classpath and stopped before subject
 execution. Their `cli-main-*-classpath-nonpass.log` files remain; corrected
 explicit classpaths pass without changing subjects, guards, pins or semantics.
 
+## Verified Reader main composition
+
+The next normal composition uses actual main
+ec15f95051e6e9e674974d43f5a14e6555cf176a/tree
+118c6a279533a1e796d34287dc2fba526a92991f, the verified Reader PR739 merge.
+Reader implementation, compatibility component, tests and evidence remain
+byte-identical to main. The shared map preserves the Reader row and merges the
+Safety row without conflict. Safety algorithms, ports, native components,
+pipeline tests and ownership metadata remain exact7b41af13. No semantic or
+authority changes are introduced by this composition.
+
+Fresh coupled tests include the Reader decoder and CLI. Controls, provenance
+and conservation scripts use `reader-main-*`, retaining the original42-pair
+historical baseline explicitly. Prior-base CI and review remain historical;
+new exact-source acceptance, contextual lint, own CI and clean current-base
+integration preflight are required. No release, source authentication, safety
+completion or self-hosting credit transfers.
+
 ## Loader and snapshot CI main composition
 
 Actual main625b42aa8da25eb897df4b9807372e21108bd8e4/tree
