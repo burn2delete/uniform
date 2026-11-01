@@ -9,50 +9,39 @@
 ;; sidecar for the entrypoint-only closed runtime language.  Raw C2/C3 ids and
 ;; actual paths are provenance, never semantic identity inputs.
 
-(def p15-s23-closed-core-max-plan-nodes 128)
-(def p15-s23-closed-core-max-plan-depth 128)
-(def p15-s23-closed-core-max-derived-nodes 384)
-(def p15-s23-closed-core-max-source-bytes (* 1024 1024))
-(def p15-s23-closed-core-max-artifact-scalar-bytes (* 8 1024 1024))
-(def p15-s23-closed-core-max-integer-bits 256)
-(def p15-s23-closed-core-max-serialized-values
-  (* p15-s23-closed-core-max-derived-nodes
-     (inc p15-s23-closed-core-max-plan-depth)
-     8))
-
-(defn p15-s23-closed-core-bounded-utf8-count
-  [^String value maximum-bytes]
+(defn p15-s23-closed-core-utf8-count
+  [^String value]
   (let [length (.length value)]
-    (if (> length maximum-bytes)
+    (loop [idx 0
+           bytes 0]
+      (if (< idx length)
+        (let [code (int (.charAt value idx))]
+          (cond
+            (<= 0xD800 code 0xDBFF)
+            (if (and (< (inc idx) length)
+                     (let [low (int (.charAt value (inc idx)))]
+                       (<= 0xDC00 low 0xDFFF)))
+              (recur (+ idx 2) (+ bytes 4))
+              {:status :invalid-surrogate :index idx :bytes bytes})
+
+            (<= 0xDC00 code 0xDFFF)
+            {:status :invalid-surrogate :index idx :bytes bytes}
+
+            :else
+            (recur (inc idx)
+                   (+ bytes (cond
+                              (<= code 0x7F) 1
+                              (<= code 0x7FF) 2
+                              :else 3)))))
+        {:status :valid :bytes bytes}))))
+
+(defn p15-s23-closed-core-diagnostic-utf8-count
+  [^String value maximum-bytes]
+  (let [observation (p15-s23-closed-core-utf8-count value)]
+    (if (and (= :valid (:status observation))
+             (> (:bytes observation) maximum-bytes))
       {:status :over-limit :bytes (inc maximum-bytes)}
-      (loop [idx 0
-             bytes 0]
-        (if (< idx length)
-          (let [code (int (.charAt value idx))]
-            (cond
-              (<= 0xD800 code 0xDBFF)
-              (if (and (< (inc idx) length)
-                       (let [low (int (.charAt value (inc idx)))]
-                         (<= 0xDC00 low 0xDFFF)))
-                (let [next-bytes (+ bytes 4)]
-                  (if (> next-bytes maximum-bytes)
-                    {:status :over-limit :bytes next-bytes}
-                    (recur (+ idx 2) next-bytes)))
-                {:status :invalid-surrogate :index idx :bytes bytes})
-
-              (<= 0xDC00 code 0xDFFF)
-              {:status :invalid-surrogate :index idx :bytes bytes}
-
-              :else
-              (let [width (cond
-                            (<= code 0x7F) 1
-                            (<= code 0x7FF) 2
-                            :else 3)
-                    next-bytes (+ bytes width)]
-                (if (> next-bytes maximum-bytes)
-                  {:status :over-limit :bytes next-bytes}
-                  (recur (inc idx) next-bytes)))))
-          {:status :valid :bytes bytes})))))
+      observation)))
 
 (def p15-s23-closed-core-allowed-operations
   #{:literal :quote :local :do :if :let})
@@ -95,23 +84,17 @@
   [plan]
   (loop [pending
          (vec (mapcat :instructions (vals (:functions plan))))
-         operations #{}
-         visited 0]
+         operations #{}]
     (if-let [instruction (peek pending)]
-      (let [pending (pop pending)
-            visited (inc visited)]
+      (let [pending (pop pending)]
         (when-not (and (map? instruction)
-                       (keyword? (:op instruction))
-                       (<= visited p15-s23-closed-core-max-plan-nodes))
+                       (keyword? (:op instruction)))
           (p15-s23-closed-core-fail!
            "C6-VERIFY" (or (get-in plan [:source :path]) "<closed-plan>")
            instruction
-           {:missing-fact :bounded-concrete-plan-operation-inventory
-            :observed-plan-nodes visited
-            :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes}))
+           {:missing-fact :concrete-plan-operation-inventory}))
         (recur (into pending (c-backend-instruction-children instruction))
-               (conj operations (:op instruction))
-               visited))
+               (conj operations (:op instruction))))
       operations)))
 
 (defn p15-s23-closed-core-preflight-effect-requirements
@@ -120,11 +103,9 @@
   [plan]
   (loop [pending (vec (mapcat :instructions (vals (:functions plan))))
          effects #{}
-         capabilities #{}
-         visited 0]
+         capabilities #{}]
     (if-let [instruction (peek pending)]
       (let [pending (pop pending)
-            visited (inc visited)
             operation (:op instruction)
             str-call? (and (= :builtin-call operation)
                            (= 'str (:function instruction)))
@@ -135,16 +116,13 @@
                            str-call? (conj :memory/allocator)
                            (= :println operation) (conj :io/stdout))]
         (when-not (and (map? instruction)
-                       (keyword? operation)
-                       (<= visited p15-s23-closed-core-max-plan-nodes))
+                       (keyword? operation))
           (p15-s23-closed-core-fail!
            "C6-VERIFY" (or (get-in plan [:source :path]) "<closed-plan>")
            instruction
-           {:missing-fact :bounded-preflight-effect-requirement-inventory
-            :observed-plan-nodes visited
-            :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes}))
+           {:missing-fact :preflight-effect-requirement-inventory}))
         (recur (into pending (c-backend-instruction-children instruction))
-               effects capabilities visited))
+               effects capabilities))
       {:required-effects effects
        :required-capabilities capabilities})))
 
@@ -172,15 +150,6 @@
    p15-s23-closed-core-known-effects
    :recognized-but-uncredited-capabilities
    p15-s23-closed-core-known-capabilities
-   :bounds {:maximum-plan-nodes p15-s23-closed-core-max-plan-nodes
-            :maximum-plan-depth p15-s23-closed-core-max-plan-depth
-            :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes
-            :maximum-source-bytes p15-s23-closed-core-max-source-bytes
-            :maximum-artifact-scalar-bytes
-            p15-s23-closed-core-max-artifact-scalar-bytes
-            :maximum-integer-bits p15-s23-closed-core-max-integer-bits
-            :maximum-serialized-values
-            p15-s23-closed-core-max-serialized-values}
    :entrypoint-only? true
    :complete-for-pure-closed-slice? true
    :whole-language? false

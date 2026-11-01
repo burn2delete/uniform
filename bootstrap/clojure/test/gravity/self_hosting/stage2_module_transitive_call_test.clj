@@ -31,17 +31,29 @@
         seen (atom 0)]
     (is (= [a b c] (collect a)))
     (is (= [(artifact 1 [c b]) b c] (collect (artifact 1 [c b]))))
+    (let [repeated (artifact 1 (vec (repeat 257 c)))
+          expanded (collect repeated)]
+      (is (= [repeated c] expanded)))
+    (let [unique (artifact 1 (mapv #(artifact % (if (= % 2) [(artifact 258 [])] [])) (range 2 258)))
+          expanded (collect unique)]
+      (is (= 258 (count expanded)))
+      (is (= (set (map id (range 1 259))) (set (map :artifact-id expanded)))))
     (is (= :conflicting-module-artifact
            (reason #(collect (artifact 1 [b (assoc c :extra :different-provenance)])))))
     (doseq [[value expected]
-            [[(artifact 1 (vec (repeat 257 c))) :bounded-module-dependencies]
-             [(artifact 1 (mapv #(artifact % (if (= % 2) [(artifact 258 [])] [])) (range 2 258))) :module-closure-limit]
-             [(assoc c :artifact-id :not-a-digest) :module-artifact-id-required]
+            [[(assoc c :artifact-id :not-a-digest) :module-artifact-id-required]
              [(assoc c :untrusted (Object.)) :bounded-module-artifact-carrier]]]
       (with-redefs [bootstrap/p15-s23-stage2-module-source (fn [_] (swap! seen inc))]
         (is (= expected (reason #(bootstrap/p15-s23-stage2-module-bundle
                                   {} "unused" "unused" {:caller-resolution-artifact value :dependency-plans []}))))))
     (is (zero? @seen))))
+
+(deftest stage2-module-instruction-traversal-development-kernel
+  (let [instructions (vec (repeat 262145 {:op :literal :value nil}))
+        plan {:functions {'main {:instructions instructions}}}
+        result (bootstrap/p15-s23-stage2-module-instructions plan)]
+    (is (= 262145 (count result)))
+    (is (= instructions result))))
 
 (deftest stage2-module-transitive-routing-development-kernel
   ;; Deliberately normalized source/compile substitutions isolate bundle logic;

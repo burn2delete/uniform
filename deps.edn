@@ -1,7 +1,10 @@
 {:paths ["bootstrap/clojure/src"]
  :aliases
  {:gravity
-  {:main-opts ["-m" "gravity.bootstrap"]}
+  {:main-opts ["-m" "gravity.cli.launcher"]}
+
+  :packaged-gravity
+  {:main-opts ["-m" "gravity.cli.packaged-launcher"]}
 
   :test
   {:extra-paths ["bootstrap/clojure/test"]
@@ -45,4 +48,5 @@
 
   :project-structure-runner-unit
   {:extra-paths ["bootstrap/clojure/test"]
-   :main-opts ["-m" "gravity.project-structure-test-runner-unit"]}}}
+   :main-opts ["-m" "gravity.development-test-runner"
+               "--namespace" "gravity.project-structure-test-runner-test"]}}}

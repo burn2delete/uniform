@@ -718,9 +718,7 @@
         leaf-incremental-operations
         (assoc leaf-canonical-operations
                :c2-form-graph-metrics
-               c2-lexical-validation/c2-form-graph-metrics
-               :max-reader-form-graph-depth
-               bootstrap/max-reader-form-graph-depth)
+               c2-lexical-validation/c2-form-graph-metrics)
         incremental-hashes
         (bootstrap/c2-incremental-hashes
          source-unit token-stream form-tree syntax-seeds
@@ -858,47 +856,36 @@
         (is (= source-path path))
         (is (= :reader-form-cycle
                (get-in extra [:facts :failure-kind])))))
-    (is (= (inc bootstrap/max-reader-form-depth)
-           bootstrap/max-reader-form-graph-depth))
-    (is (integer? bootstrap/max-reader-form-graph-depth))
-    (is (pos? bootstrap/max-reader-form-graph-depth))
-    (is (= :accepted
-           (c2-artifact-identity/with-operations
-            {:max-reader-form-graph-depth
-             bootstrap/max-reader-form-graph-depth}
-            (constantly :accepted))))
     (is (thrown? clojure.lang.ExceptionInfo
                  (c2-artifact-identity/with-operations
-                  {:max-reader-form-graph-depth 0}
+                  {:max-reader-form-graph-depth 513}
                   (constantly :unreachable))))
-    (let [failure-calls (atom [])]
-      (with-redefs [bootstrap/c2-form-graph-metrics
-                    (fn [_]
-                      {:acyclic? true
-                       :processed-form-count 0
-                       :max-form-depth bootstrap/max-reader-form-graph-depth})
-                    bootstrap/c2-reader-fail!
-                    (fn [& args]
-                      (swap! failure-calls conj args))]
-        (bootstrap/c2-incremental-hashes source-unit [] [] [] [] []))
-      (is (empty? @failure-calls)))
-    (let [failure-calls (atom [])]
-      (with-redefs [bootstrap/c2-form-graph-metrics
-                    (fn [_]
-                      {:acyclic? true
-                       :processed-form-count 0
-                       :max-form-depth (inc bootstrap/max-reader-form-graph-depth)})
-                    bootstrap/c2-reader-fail!
-                    (fn [& args]
-                      (swap! failure-calls conj args))]
-        (bootstrap/c2-incremental-hashes source-unit [] [] [] [] []))
-      (is (= 1 (count @failure-calls)))
-      (let [[id path _ extra] (first @failure-calls)]
-        (is (= "C2-HASH" id))
-        (is (= source-path path))
-        (is (= :reader-resource-depth-limit
-               (get-in extra [:facts :failure-kind])))
-        (is (= (inc bootstrap/max-reader-form-graph-depth)
-               (get-in extra [:facts :observed-form-depth])))
-        (is (= bootstrap/max-reader-form-graph-depth
-               (get-in extra [:facts :maximum-form-depth])))))))
+    (doseq [depth [512 513 514 4096]]
+      (let [failure-calls (atom []) metric-calls (atom 0)]
+        (with-redefs [bootstrap/c2-form-graph-metrics
+                      (fn [_]
+                        (swap! metric-calls inc)
+                        {:acyclic? true :processed-form-count 0 :max-form-depth depth})
+                      bootstrap/c2-reader-fail!
+                      (fn [& args] (swap! failure-calls conj args))]
+          (is (= :stable (:status (bootstrap/c2-incremental-hashes source-unit [] [] [] [] [])))))
+        (is (= 1 @metric-calls))
+        (is (empty? @failure-calls))))))
+
+(deftest c2-host-oracle-stack-failure-remains-contained-without-quota-facts
+  (let [path "src/stack.gravity"
+        context (bootstrap/reader-project-context-for-source path)
+        error (with-redefs [bootstrap/stage1-reader-token-stream
+                            (fn [& _] (throw (StackOverflowError. "controlled host stack")))]
+                (try
+                  (bootstrap/c2-reader-products-clojure-oracle
+                    path "x" bootstrap/standard-reader-options context)
+                  nil
+                  (catch clojure.lang.ExceptionInfo ex (ex-data ex))))]
+    (is (= "C2-HASH" (:id error)))
+    (is (= [:stack-safe-reader-form-construction] (:missing-fields error)))
+    (is (= :reader-host-stack-overflow (get-in error [:facts :failure-kind])))
+    (is (= "java.lang.StackOverflowError" (get-in error [:facts :contained-host-error])))
+    (is (not (contains? (:facts error) :maximum-form-depth)))
+    (is (= (assoc (bootstrap/source-span path 0) :file (:source-id error)) (:source-span error)))
+    (is (= bootstrap/standard-reader-options (:reader-options error)))))

@@ -41,6 +41,8 @@
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj"
         :role :runner}
+       {:path "bootstrap/clojure/src/gravity/process_supervision.clj"
+        :role :transitive}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj"
@@ -115,6 +117,8 @@
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj"
         :role :runner}
+       {:path "bootstrap/clojure/src/gravity/process_supervision.clj"
+        :role :transitive}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj"
@@ -156,6 +160,10 @@
         :root "bootstrap/clojure/test" :suffix ".class"}]
       :inputs
       [{:path "bootstrap/clojure/src/gravity/c2_artifact_identity.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation.clj" :role :production}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj" :role :transitive}
+       {:path "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/digest.clj" :role :production}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/artifacts.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/canonical.clj" :role :transitive}
@@ -163,10 +171,12 @@
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/operations.clj" :role :transitive}
        {:path "bootstrap/clojure/src/gravity/c2_artifact_identity/projections.clj" :role :transitive}
        {:path "bootstrap/clojure/test/gravity/c2_artifact_identity_test.clj" :role :test}
+       {:path "bootstrap/clojure/test/gravity/build/producer_git_observation.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_component_test_dependencies.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj" :role :runner}
+       {:path "bootstrap/clojure/src/gravity/process_supervision.clj" :role :transitive}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check.clj" :role :runner}
@@ -176,9 +186,33 @@
        {:path "docs/self-hosting-slice-ownership.edn" :role :contract}
        {:path "deps.edn" :role :classpath}]}
      :test-policy {:deterministic? true :performance? false
-                   :proof? false :freshness-required? false}}]}]
+                   :proof? false :freshness-required? true}}]}]
  :standalone-tests
- [{:test-id "module-census"
+ [{:test-id "reader-dispatch"
+   :path "bootstrap/clojure/test/gravity/reader/dispatch_test.clj"
+   :namespace gravity.reader.dispatch-test
+   :jvm-group "reader-dispatch"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "reader-normal-dispatch"
+   :path "bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+   :namespace gravity.reader.normal-dispatch-test
+   :jvm-group "reader-normal-dispatch"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "private-collection-chain"
+   :path "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj"
+   :namespace gravity.self-hosting.private-collection-chain-test
+   :jvm-group "private-collection-chain"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "resolution-parent-mutation"
+   :path "bootstrap/clojure/test/gravity/self_hosting/resolution_parent_mutation_test.clj"
+   :namespace gravity.self-hosting.resolution-parent-mutation-test
+   :jvm-group "resolution-parent-mutation"
+   :test-policy {:deterministic? true :performance? false
+                 :proof? false :freshness-required? true}}
+  {:test-id "module-census"
    :path "bootstrap/clojure/test/gravity/self_hosting/module_census_test.clj"
    :namespace gravity.self-hosting.module-census-test
    :jvm-group "module-census"
@@ -314,6 +348,14 @@
    :path "bootstrap/clojure/test/gravity/self_hosting/mir_source_snapshot_test.clj"
    :namespace gravity.self-hosting.mir-source-snapshot-test
    :jvm-group "mir-source-snapshot"
+   :test-policy {:deterministic? true
+                 :performance? false
+                 :proof? false
+                 :freshness-required? true}}
+  {:test-id "macro-run-storage"
+   :path "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
+   :namespace gravity.self-hosting.macro-run-storage-test
+   :jvm-group "macro-run-storage"
    :test-policy {:deterministic? true
                  :performance? false
                  :proof? false

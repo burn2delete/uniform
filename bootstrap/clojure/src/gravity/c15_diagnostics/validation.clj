@@ -2,6 +2,21 @@
   (:require [gravity.c15-diagnostics.operations :as operations]
             [gravity.c15-diagnostics.records :as records]
             [gravity.compiler-verification-shared :as shared]))
+(defn context-valid? [diagnostic]
+  (let [unavailable? (contains? #{:read-source :compiler-diagnostics} (:stage diagnostic))]
+    (every? (fn [field]
+              (and (contains? diagnostic field)
+                   (let [value (get diagnostic field)]
+                     (or (keyword? value) (and unavailable? (nil? value))))))
+            [:profile :target])))
+(defn primary-valid? [diagnostic]
+  (let [primary (:primary diagnostic)
+        syntax-id (:syntax-id primary)]
+    (and (map? primary)
+         (every? #(get primary %) [:span :artifact])
+         (contains? primary :syntax-id)
+         (or (keyword? syntax-id) (and (string? syntax-id) (seq syntax-id))
+             (and (nil? syntax-id) (contains? #{:read-source :compiler-diagnostics} (:stage diagnostic)))))))
 (defn fail! [configuration id source-path subject extra]
   (operations/invoke :c15-diagnostics-fail!
                      (fn [rule path item fields]
@@ -11,10 +26,11 @@
                                                     "compiler diagnostic validation failed")
                                           (merge {:source-span (or (:source-span item) (records/source-span path 0))
                                                   :diagnostic-family :compiler-diagnostics
-                                                  :stage (or (:stage item) :c15-compiler-diagnostics)
+                                                  :stage (or (:stage item) :compiler-diagnostics)
                                                   :offending-diagnostic-id (:diagnostic-id item)
                                                   :schema-field (:schema-field item) :artifact-id (:artifact-id item)
                                                   :profile (:profile item) :target (:target item)
+                                                  :syntax-id (get-in item [:primary :syntax-id])
                                                   :remediation "Regenerate structured diagnostic artifacts with stable ids, primary spans, origin chains, facts, remediation, redaction, deterministic ordering, and golden fixtures."}
                                                  fields)))
                      id source-path subject extra))
@@ -22,10 +38,11 @@
   (when-let [fail-kind (:fail overrides)]
     (let [[id subject-kind] (get (:compiler-verification-override-diagnostics configuration) fail-kind)]
       (when (contains? (set (:c15-diagnostics-diagnostic-ids configuration)) id)
-        (fail! configuration id source-path {:stage subject-kind :diagnostic-id (str "c15-invalid-" (name fail-kind))
+        (fail! configuration id source-path {:stage :compiler-diagnostics
+                                              :diagnostic-id (str "c15-invalid-" (name fail-kind))
                                               :schema-field fail-kind :artifact-id (str "c15-diagnostic-artifact-" (name fail-kind))
-                                              :profile :hosted :target :jvm}
-               {:missing-fields [fail-kind]})))))
+                                              :profile nil :target nil}
+               {:missing-fields [fail-kind] :subject-kind subject-kind})))))
 (defn validate! [configuration source-path artifact]
   (let [required (set (:c15-diagnostic-required-fields configuration))
         schema-fields (set (get-in artifact [:diagnostic-schema :required-fields]))
@@ -42,7 +59,9 @@
                                                        {:missing-fields (vec (remove present required))})))
       (when-not (= (:diagnostic-id diagnostic) (records/stable-id (dissoc diagnostic :diagnostic-id :ordering-key)))
         (fail! configuration "C15-ID" source-path diagnostic {:missing-fields [:stable-id]}))
-      (when-not (every? #(get-in diagnostic [:primary %]) [:span :syntax-id :artifact])
+      (when-not (context-valid? diagnostic)
+        (fail! configuration "C15-SCHEMA" source-path diagnostic {:missing-fields [:phase-context]}))
+      (when-not (primary-valid? diagnostic)
         (fail! configuration "C15-SPAN" source-path diagnostic {:missing-fields [:primary]}))
       (when (and (:generated? diagnostic) (or (empty? (:origin-chain diagnostic))
                                                (not-any? #(= :generated-by (:role %)) (:related diagnostic))))

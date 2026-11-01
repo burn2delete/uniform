@@ -8,21 +8,28 @@
   intentionally separate from `sh07-core-artifact-verification`, whose fresh
   replay remains the authoritative admission verifier.  A session is bound to
   the exact upstream artifact and expected artifact identity; stale or
-  substituted candidates fail closed without rebuilding the expected product."
-  [resolution-artifact]
+  substituted candidates fail closed without rebuilding the expected product.
+  The explicit invocation is forwarded unchanged to both fresh construction
+  and upstream verification; it does not turn development replay into admission."
+  ([resolution-artifact] (sh07-core-verification-session resolution-artifact nil))
+  ([resolution-artifact invocation]
   (let [upstream-snapshot
         (sh07-core-verification-session-upstream-snapshot resolution-artifact)
         source-path (:source-path upstream-snapshot)
         expected
         (try
-          (sh07-core-from-resolution-artifact resolution-artifact)
+          (if (some? invocation)
+            (sh07-core-from-resolution-artifact resolution-artifact invocation)
+            (sh07-core-from-resolution-artifact resolution-artifact))
           (catch InterruptedException interrupted
             (.interrupt (Thread/currentThread))
             (throw interrupted))
           (catch Throwable _ nil))
         upstream-verification
         (try
-          (sh06-resolution-artifact-verification resolution-artifact)
+          (if (some? invocation)
+            (sh06-resolution-artifact-verification resolution-artifact ::legacy invocation)
+            (sh06-resolution-artifact-verification resolution-artifact))
           (catch InterruptedException interrupted
             (.interrupt (Thread/currentThread))
             (throw interrupted))
@@ -58,7 +65,7 @@
                 (= :passed (:status upstream-verification)))
        (sh07-core-verification-session-binding
         upstream-snapshot expected upstream-verification))
-     :failure-reason failure-reason}))
+     :failure-reason failure-reason})))
 
 (defn- sh07-core-verification-session-valid?
   [artifact session]
@@ -164,39 +171,21 @@
                         reader-path invocation)]
          (sh07-core-from-resolution-artifact resolved invocation))))))
 
-(defn sh07-core-artifact-identity-input
-  [artifact]
-  (get-in artifact
-          [:gravity-core-boundary :canonical-core-artifact
-           :identity-preimage]))
+(defn
+ sh07-core-artifact-identity-input
+ [artifact]
+ (gravity.checked-core/artifact-identity-input
+  artifact
+  (checked-core-stage-operations)))
 
-(defn- sh07-core-verification-report
-  [artifact expected upstream-verification]
-  (let [source-path (or (get-in artifact [:provenance :source-path])
-                        "<sh07-core-verification>")
-        checks
-        (if (nil? expected)
-          {:contained-verification? false}
-          (try
-            (sh07-core-verification-checks
-             artifact expected upstream-verification)
-            (catch InterruptedException interrupted
-              (.interrupt (Thread/currentThread))
-              (throw interrupted))
-            (catch Throwable _
-              {:contained-verification? false})))
-        failed (vec (for [[check passed?] checks
-                          :when (not (true? passed?))]
-                      check))
-        boundary (:gravity-core-boundary artifact)]
-    {:artifact :gravity/sh07-core-artifact-verification
-     :status (if (empty? failed) :passed :failed)
-     :checks checks
-     :failed-checks failed
-     :source-path source-path
-     :template-verification (:template-verification boundary)
-     :resolved-verification (:resolved-verification boundary)
-     :upstream-verification upstream-verification}))
+(defn-
+ sh07-core-verification-report
+ [artifact expected upstream-verification]
+ (#'gravity.checked-core/verification-report
+  artifact
+  expected
+  upstream-verification
+  (checked-core-stage-operations)))
 
 (defn sh07-core-artifact-verification-against-expected
   "Verify an SH-07 candidate against a previously authenticated session.

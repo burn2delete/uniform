@@ -33,13 +33,6 @@
                  :remediation :restrict_to_public_runtime_derived_c_subset}
                 facts)))
 
-(defn bounds-fail!
-  [source-path message facts]
-  (fail! "P15NS003" message source-path
-         (merge {:diagnostic-family :native-plan-specialization-bound
-                 :remediation :reduce_the_authenticated_plan_or_output}
-                facts)))
-
 (defn helper-contract-fail!
   [source-path message facts]
   (fail! "P15GCE001" message source-path

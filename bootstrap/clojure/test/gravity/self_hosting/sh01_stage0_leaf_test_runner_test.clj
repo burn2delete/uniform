@@ -1,11 +1,12 @@
 (ns gravity.self-hosting.sh01-stage0-leaf-test-runner-test
   "Contract tests for the bootstrap-free Stage 0 leaf catalog and CLI.
 
-  Running all 47 leaf namespaces remains the :leaf-test command's aggregate
+  Running all reviewed leaf namespaces remains the :leaf-test command's aggregate
   acceptance check; this namespace also exercises its adversarial boundaries."
-  (:require [clojure.string :as str]
-            [clojure.test :as test]
-            [clojure.test :refer [deftest is testing]]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [clojure.string :as str]
+            [clojure.test :as test :refer [deftest is testing]]
             [gravity.bootstrap-free-leaf-test-runner :as runner])
   (:import [java.lang ProcessHandle]
            [java.nio.file Files Path]
@@ -119,10 +120,113 @@
                      runner/catalog)]
     (is (= "gravity/stage0-clojure-components-v1"
            (get contract "schema")))
-    (is (= 48 (count expected)))
+    (is (= 55 (count (get contract "components"))))
+    (is (= 4 (count (get contract "auxiliary_bootstrap_free_tests"))))
+    (is (= 53 (count expected)))
     (is (= expected actual))
-    (is (= {:foundation-reader 9 :c2-c3 12 :compiler 27}
+    (is (= {:foundation-reader 9 :c2-c3 16 :compiler 28}
            (frequencies (map :group expected))))))
+
+(deftest auxiliary-tests-retain-explicit-production-source-associations
+  (let [entries (into {} (map (juxt :id identity)) runner/catalog)
+        sources {"c2-reader-scalar-spans" "c2_reader_product_projection/scalar_spans.clj"
+                 "c3-literal-indexes" "c3_literal_projection/indexes.clj"
+                 "c3-reader-expansions" "c3_reader_expansions.clj"
+                 "c3-reader-lossless-span" "c3_literal_projection/spans.clj"}]
+    (doseq [[id suffix] sources]
+      (is (= (str "bootstrap/clojure/src/gravity/" suffix)
+             (:source-path (get entries id))))
+      (is (= :c2-c3 (:group (get entries id)))))
+    (is (= (count runner/catalog) (count (distinct (map :source-path runner/catalog)))))))
+
+(defn- project-namespace-path [namespace-symbol]
+  (let [relative (str (-> (str namespace-symbol)
+                          (str/replace "." "/")
+                          (str/replace "-" "_")) ".clj")
+        paths (map #(str "bootstrap/clojure/" % "/" relative) ["src" "test"])]
+    (or (some #(when (.isFile (io/file %)) %) paths)
+        (throw (ex-info "Project require has no source file" {:namespace namespace-symbol})))))
+
+(defn- project-require-closure [root]
+  (loop [pending [root] paths #{}]
+    (if-let [namespace-symbol (peek pending)]
+      (let [path (project-namespace-path namespace-symbol)]
+        (if (contains? paths path)
+          (recur (pop pending) paths)
+          (let [form (binding [*read-eval* false]
+                       (with-open [reader (java.io.PushbackReader. (io/reader path))]
+                         (read reader)))
+                dependencies (for [clause (drop 2 form)
+                                   :when (and (seq? clause) (= :require (first clause)))
+                                   spec (rest clause)
+                                   :let [dependency (if (vector? spec) (first spec) spec)]
+                                   :when (and (symbol? dependency)
+                                              (str/starts-with? (str dependency) "gravity."))]
+                               dependency)]
+            (recur (into (pop pending) dependencies) (conj paths path)))))
+      paths)))
+
+(deftest auxiliary-transitive-requires-match-reviewed-helper-closures
+  (let [c2 #{"c2_reader_product_projection.clj"
+             "c2_reader_product_projection/policy.clj"
+             "c2_reader_product_projection/scalar_spans.clj"}
+        c3 #{"c3_literal_projection.clj" "c3_literal_projection/policy.clj"
+             "c3_literal_projection/characters.clj" "c3_literal_projection/indexes.clj"
+             "c3_literal_projection/spans.clj" "reader_primitives.clj"}
+        cases {'gravity.c2-reader-scalar-spans-test [c2 #{}]
+               'gravity.c3-literal-indexes-test [c3 #{}]
+               'gravity.c3-reader-expansions-test [(conj c3 "c3_reader_expansions.clj") #{}]
+               'gravity.c3-reader-lossless-span-test
+               [(into (conj c3 "syntax_object_stream.clj") c2)
+                #{"bootstrap/clojure/test/gravity/c3_literal_projection_test.clj"}]}]
+    (doseq [[namespace-symbol [sources fixtures]] cases]
+      (is (= (into (conj fixtures (project-namespace-path namespace-symbol))
+                   (map #(str "bootstrap/clojure/src/gravity/" %) sources))
+             (project-require-closure namespace-symbol))
+          namespace-symbol))
+    (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest unknown-and-missing-test-surfaces-still-fail-closed
+  (with-redefs [runner/owned-top-level-test-paths
+                (fn [] (conj (mapv :test-path runner/catalog)
+                             "bootstrap/clojure/test/gravity/unreviewed_test.clj"))]
+    (is (= "S0LEAF-CATALOG-SURFACE"
+           (:id (exception-data #(runner/validate-catalog!))))))
+  (is (= "S0LEAF-CATALOG-SURFACE"
+         (:id (exception-data #(runner/validate-catalog! (vec (rest runner/catalog)))))))
+  (let [changed (assoc-in runner/catalog [0 :source-path]
+                          (:source-path (second runner/catalog)))]
+    (is (some? (exception-data #(runner/validate-catalog! changed))))))
+
+(deftest auxiliary-owner-and-execution-metadata-cannot-drift
+  (let [contract (runner/read-strict-component-contract)
+        associations (:auxiliary-test-associations
+                      (edn/read-string
+                       (slurp (runner/repository-path "docs/self-hosting-slice-ownership.edn"))))
+        prefix ["auxiliary_bootstrap_free_tests" 0]
+        test-path (get-in contract (into prefix ["test" "path"]))]
+    (is (= 4 (count associations)))
+    (doseq [[suffix bad] [[["owner"] "another-owner"]
+                          [["source" "namespace"] "gravity.forged"]
+                          [["source" "path"] "bootstrap/clojure/src/gravity/bootstrap.clj"]
+                          [["test" "namespace"] "gravity.forged-test"]
+                          [["test" "lane"] "compatibility"]
+                          [["test" "execution_requires_bootstrap"] true]
+                          [["leaf_execution_group"] "compiler"]
+                          [["unknown"] true]]]
+      (is (= "S0LEAF-AUXILIARY-METADATA"
+             (:id (exception-data
+                   #(runner/component-contract-leaf-tuples
+                     (assoc-in contract (into prefix suffix) bad) associations))))
+          suffix))
+    (doseq [bad [(dissoc associations test-path)
+                 (assoc associations "unreviewed_test.clj" (get associations test-path))]]
+      (is (= "S0LEAF-AUXILIARY-OWNERSHIP"
+             (:id (exception-data #(runner/component-contract-leaf-tuples contract bad))))))
+    (is (= "S0LEAF-AUXILIARY-METADATA"
+           (:id (exception-data
+                 #(runner/component-contract-leaf-tuples
+                   contract (assoc-in associations [test-path :owner] :another-owner))))))))
 
 (deftest component-contract-json-is-strict
   (doseq [text ["{\"a\": 1, \"a\": 2}"
@@ -177,7 +281,7 @@
   (testing "groups retain catalog order"
     (let [selected (runner/select-entries
                     (runner/parse-args ["--group" "c2-c3"]))]
-      (is (= 12 (count selected)))
+      (is (= 16 (count selected)))
       (is (= selected (vec (sort-by (comp str :namespace) selected))))
       (is (every? #(= :c2-c3 (:group %)) selected))))
   (testing "listing does not run selected tests"
@@ -187,7 +291,7 @@
           lines (->> (str/split-lines output)
                      (remove str/blank?)
                      vec)]
-      (is (= 12 (count lines)))
+      (is (= 16 (count lines)))
       (is (= lines (vec (sort lines))))))
   (is (nil? (find-ns 'gravity.bootstrap))))
 

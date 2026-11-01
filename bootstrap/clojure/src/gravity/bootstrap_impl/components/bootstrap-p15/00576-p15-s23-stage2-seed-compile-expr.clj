@@ -117,12 +117,19 @@
         (p15-s23-stage2-module-compile-call emitter module locals form child-module)
 
         (contains? builtin-functions callee)
+        (do
+          (when (= 'build-read-declared-input callee)
+            (when-not (= 1 (count (rest form)))
+              (fail! "L2-BUILTIN-ARITY" "Build input call requires one argument"
+                     {:source-span {:source (:source-path module)} :function callee
+                      :expected-arity 1 :actual-arity (count (rest form))}))
+            (declared-reader-bridge/validate-call! module (count (rest form))))
         {:op (get-in emitter [:call-rules :builtin-op] :builtin-call)
          :function callee
          :args (mapv (fn [index argument]
                        (p15-s23-stage2-seed-compile-expr
                         emitter (child-module index) locals argument))
-                     (range 1 (count form)) (rest form))}
+                     (range 1 (count form)) (rest form))})
 
         (contains? (:function-table module) callee)
         {:op (get-in emitter [:call-rules :function-op] :function-call)
