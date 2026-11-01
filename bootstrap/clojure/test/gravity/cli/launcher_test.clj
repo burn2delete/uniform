@@ -35,6 +35,7 @@
   (str "(require 'gravity.cli.launcher)"
        " (gravity.cli.launcher/-main " (pr-str argument) ")"
        " (prn {:bootstrap-loaded (boolean (find-ns 'gravity.bootstrap))"
+       " :entrypoint-loaded (boolean (find-ns 'gravity.cli.entrypoint))"
        " :cli-loaded (boolean (find-ns 'gravity.cli))"
        " :packaged-jvm-cli? (= \"true\""
        " (System/getProperty \"gravity.packaged.jvm.cli\"))})"))
@@ -51,6 +52,7 @@
          "") "))"
        "   (prn {:exit-code @exit-code"
        "         :bootstrap-loaded (boolean (find-ns 'gravity.bootstrap))"
+       "         :entrypoint-loaded (boolean (find-ns 'gravity.cli.entrypoint))"
        "         :cli-loaded (boolean (find-ns 'gravity.cli))}))"))
 
 (defn- expected-presentation
@@ -68,6 +70,7 @@
         (is (= 0 exit) (pr-str {:err err :marker marker}))
         (is (= (expected-presentation argument packaged?) presentation))
         (is (= {:bootstrap-loaded false
+                :entrypoint-loaded false
                 :cli-loaded true
                 :packaged-jvm-cli? packaged?}
                marker))))))
@@ -81,6 +84,7 @@
         (is (= (str (cli/cli-usage-text) "\n") err))
         (is (= {:exit-code 2
                 :bootstrap-loaded false
+                :entrypoint-loaded false
                 :cli-loaded true}
                marker))))))
 
@@ -111,11 +115,13 @@
               "     #(gravity.cli.launcher/-main \"build\" \"--bad\"))"
               "   (prn {:exit-code @exit-code"
               "         :bootstrap-loaded (boolean (find-ns 'gravity.bootstrap))"
+              "         :entrypoint-loaded (boolean (find-ns 'gravity.cli.entrypoint))"
               "         :cli-loaded (boolean (find-ns 'gravity.cli))}))"))]
     (is (= 0 exit) (pr-str {:err err :marker marker}))
     (is (str/includes? err "\"code\":\"T1006\""))
     (is (= {:exit-code 2
             :bootstrap-loaded false
+            :entrypoint-loaded true
             :cli-loaded true}
            marker))))
 

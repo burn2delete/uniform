@@ -3,8 +3,7 @@
   (:require [gravity.cli :as cli]
             [gravity.cli.commands.bootstrap :as bootstrap-commands]
             [gravity.cli.commands.compiler :as compiler-commands]
-            [gravity.cli.commands.platform :as platform-commands]
-            [gravity.cli.entrypoint :as cli-entrypoint]))
+            [gravity.cli.commands.platform :as platform-commands]))
 
 (def ^:private bootstrap-command-names
   (into #{"--assert-seedless-release" "assert-seedless-release"
@@ -36,6 +35,13 @@
     (println (cli/cli-usage-text)))
   (exit! 2))
 
+(defn- run-build!
+  [arguments]
+  ;; Keep the presentation and shape-error paths independent of the larger
+  ;; entrypoint/dispatch graph. Only the complete build command needs this
+  ;; existing process-boundary adapter.
+  ((requiring-resolve 'gravity.cli.entrypoint/run-build!) arguments exit!))
+
 (defn -main
   [& arguments]
   (case (first arguments)
@@ -47,7 +53,7 @@
 
     nil (usage-error!)
     (if (= "build" (first arguments))
-      (cli-entrypoint/run-build! arguments exit!)
+      (run-build! arguments)
       (if (contains? bootstrap-command-names (first arguments))
         (apply (bootstrap-main) arguments)
         (usage-error!)))))
