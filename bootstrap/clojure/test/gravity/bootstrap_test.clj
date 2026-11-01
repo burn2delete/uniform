@@ -44173,6 +44173,98 @@
            (get-in policy [:target-selection :selection])))
     (is (true? (:clojure-seed-boundary? policy)))))
 
+(deftest p18-public-self-host-verify-does-not-write-missing-proof
+  (with-temp-directory
+    "gravity-p18-self-host-verify-"
+    (fn [directory]
+      (let [final-proof-path (str (.resolve directory "missing-final-proof.edn"))
+            verify-proof-path (str (.resolve directory "verify-proof.edn"))
+            diagnostics-path (str (.resolve directory "diagnostics.edn"))
+            artifact
+            (with-redefs [bootstrap/p18-t06-final-proof-path final-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-proof-path
+                          verify-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-diagnostics-path
+                          diagnostics-path]
+              (bootstrap/p18-t04-public-self-host-verify-command-artifact!))
+            command-diagnostic
+            (with-redefs [bootstrap/p18-t06-final-proof-path final-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-proof-path
+                          verify-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-diagnostics-path
+                          diagnostics-path]
+              (diagnostic-id
+               #(bootstrap/p18-t04-public-self-host-verify-command!
+                 ["self-host" "verify"])))]
+        (is (= :incomplete (:status artifact)))
+        (is (= :missing
+               (get-in artifact
+                       [:p18-final-release-proof-verification :failure])))
+        (is (false? (get-in artifact
+                             [:p18-final-release-proof-verification
+                              :authenticated?])))
+        (is (= "P18T04007" command-diagnostic))
+        (is (not (.exists (java.io.File. final-proof-path))))
+        (is (not (.exists (java.io.File. verify-proof-path))))
+        (is (not (.exists (java.io.File. diagnostics-path))))))))
+
+(deftest p18-public-self-host-verify-rejects-tampered-proof-and-export-writes
+  (with-temp-directory
+    "gravity-p18-self-host-verify-"
+    (fn [directory]
+      (let [current-proof
+            (edn/read-string
+             (slurp bootstrap/p18-t06-final-proof-path))
+            final-proof-path (str (.resolve directory "tampered-final-proof.edn"))
+            verify-proof-path (str (.resolve directory "verify-proof.edn"))
+            diagnostics-path (str (.resolve directory "diagnostics.edn"))]
+        (spit final-proof-path
+              (pr-str (assoc current-proof :artifact-id "sha256:tampered")))
+        (with-redefs [bootstrap/p18-t06-final-proof-path final-proof-path
+                      bootstrap/p18-t04-public-self-host-verify-proof-path
+                      verify-proof-path
+                      bootstrap/p18-t04-public-self-host-verify-diagnostics-path
+                      diagnostics-path]
+          (let [artifact
+                (bootstrap/p18-t04-public-self-host-verify-command-artifact!)]
+            (is (= :incomplete (:status artifact)))
+            (is (false? (get-in artifact
+                                 [:p18-final-release-proof-verification
+                                  :artifact-id-matches?])))
+            (is (false? (get-in artifact
+                                 [:p18-final-release-proof-verification
+                                  :authenticated?])))
+            (is (= #{"P18T04007"}
+                   (set (map :diagnostic (:diagnostics artifact)))))
+            (is (not (.exists (java.io.File. verify-proof-path))))
+            (is (not (.exists (java.io.File. diagnostics-path)))))
+          (let [exported
+                (bootstrap/p18-t04-write-public-self-host-verify-command-artifacts!)]
+            (is (= :incomplete (:status exported)))
+            (is (.isFile (java.io.File. verify-proof-path)))
+            (is (.isFile (java.io.File. diagnostics-path)))))))))
+
+(deftest p18-public-self-host-verify-complete-route-does-not-export
+  (with-temp-directory
+    "gravity-p18-self-host-verify-"
+    (fn [directory]
+      (let [verify-proof-path (str (.resolve directory "verify-proof.edn"))
+            diagnostics-path (str (.resolve directory "diagnostics.edn"))
+            output
+            (with-out-str
+              (with-redefs
+                [bootstrap/p18-t04-public-self-host-verify-command-artifact!
+                 (fn [] {:kind :gravity/p18-t04-public-self-host-verify-command-proof
+                         :status :complete})
+                 bootstrap/p18-t04-write-public-self-host-verify-command-artifacts!
+                 (fn [] (throw (ex-info "verification must not export"
+                                        {:id "unexpected-export"})))]
+                (bootstrap/p18-t04-public-self-host-verify-command!
+                 ["self-host" "verify"])))]
+        (is (str/includes? output ":status :complete"))
+        (is (not (.exists (java.io.File. verify-proof-path))))
+        (is (not (.exists (java.io.File. diagnostics-path))))))))
+
 (defn -main
   [& _]
   (let [result (run-tests 'gravity.diagnostics-test

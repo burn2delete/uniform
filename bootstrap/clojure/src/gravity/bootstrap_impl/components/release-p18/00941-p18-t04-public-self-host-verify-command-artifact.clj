@@ -1,11 +1,147 @@
 
 
+(defn- p18-t04-incomplete-final-release-proof
+  [reason]
+  {:kind :gravity/p18-t06-final-release-proof
+   :task "P18-T06"
+   :status :incomplete
+   :final-release? false
+   :seedless-release? false
+   :clojure-seed-boundary? true
+   :next-required-capability
+   :self_hosted_public_binary_final_verification
+   :verification-failure reason})
+
+(defn- p18-t04-read-final-release-proof
+  []
+  (try
+    (if-let [proof (p18-t03-read-edn-artifact p18-t06-final-proof-path)]
+      {:proof proof
+       :present? true
+       :readable? true}
+      {:proof (p18-t04-incomplete-final-release-proof :missing)
+       :present? false
+       :readable? false
+       :failure :missing})
+    (catch Throwable error
+      {:proof (p18-t04-incomplete-final-release-proof :unreadable)
+       :present? true
+       :readable? false
+       :failure :unreadable
+       :error (str error)})))
+
+(defn- p18-t04-artifact-id-matches?
+  [artifact]
+  (try
+    (and (map? artifact)
+         (string? (:artifact-id artifact))
+         (= (:artifact-id artifact)
+            (c4-artifact-id (dissoc artifact :artifact-id))))
+    (catch Throwable _
+      false)))
+
+(defn- p18-t04-current-binary?
+  [release-binary]
+  (let [path (:path release-binary)
+        content-hash (:content-hash release-binary)]
+    (and (string? path)
+         (= p18-t06-release-binary-path path)
+         (string? content-hash)
+         (= content-hash (p18-file-sha256 path)))))
+
+(defn- p18-t04-current-p15-proof?
+  [current-p15-proof recorded-p15-proof]
+  (= (select-keys current-p15-proof
+                 [:kind :artifact :artifact-id :proof-id :status
+                  :full-language-compiler-self-hosted?
+                  :clojure-seed-retired? :clojure-seed-boundary?])
+     (select-keys recorded-p15-proof
+                  [:kind :artifact :artifact-id :proof-id :status
+                   :full-language-compiler-self-hosted?
+                   :clojure-seed-retired? :clojure-seed-boundary?])))
+
+(defn- p18-t04-current-release-provenance?
+  [proof]
+  (let [release-binary (:release-binary proof)
+        path (:path release-binary)
+        content-hash (:content-hash release-binary)
+        provenance (:provenance-record proof)
+        sbom (:sbom-record proof)
+        signing (:signing-record proof)]
+    (and (= :gravity/p18-t06-provenance (:artifact provenance))
+         (= :gravity/p18-t06-sbom (:artifact sbom))
+         (= :gravity/p18-t06-release-signing-record (:artifact signing))
+         (p18-t04-artifact-id-matches? provenance)
+         (p18-t04-artifact-id-matches? sbom)
+         (p18-t04-artifact-id-matches? signing)
+         (= :complete (:status provenance))
+         (= :complete (:status sbom))
+         (= :complete (:status signing))
+         (= path (get-in provenance [:subject :path]))
+         (= content-hash (get-in provenance [:subject :content-hash]))
+         (= path (get-in sbom [:subject :path]))
+         (= content-hash (get-in sbom [:subject :content-hash]))
+         (= content-hash
+            (get-in signing [:payload :release-binary-content-hash])))))
+
+(defn- p18-t04-final-proof-verification
+  [p15-final-proof]
+  (let [{:keys [proof present? readable? failure error]}
+        (p18-t04-read-final-release-proof)
+        complete-record?
+        (and (= :gravity/p18-t06-final-release-proof (:kind proof))
+             (= "P18-T06" (:task proof))
+             (contains? p18-t06-supported-targets (:target proof))
+             (= :complete (:status proof))
+             (true? (:final-release? proof))
+             (true? (:seedless-release? proof))
+             (false? (:clojure-seed-boundary? proof)))
+        boundary (:release-boundary-record proof)
+        complete-boundary?
+        (and (= :gravity/p18-t06-final-release-boundary (:artifact boundary))
+             (= "P18-T06" (:task boundary))
+             (p18-t04-artifact-id-matches? boundary)
+             (= :complete (:status boundary))
+             (true? (:final-release? boundary))
+             (false? (:clojure-seed-boundary? boundary)))
+        release-binary-current?
+        (p18-t04-current-binary? (:release-binary proof))
+        p15-final-proof-current?
+        (p18-t04-current-p15-proof?
+         p15-final-proof (:p15-final-seed-retirement-proof proof))
+        provenance-current?
+        (p18-t04-current-release-provenance? proof)
+        authenticated?
+        (and present?
+             readable?
+             (p18-t04-artifact-id-matches? proof)
+             release-binary-current?
+             p15-final-proof-current?
+             (or (not complete-record?)
+                 (and complete-boundary? provenance-current?)))]
+    {:proof proof
+     :verification
+     {:path p18-t06-final-proof-path
+      :present? present?
+      :readable? readable?
+      :artifact-id-matches? (p18-t04-artifact-id-matches? proof)
+      :release-binary-current? release-binary-current?
+      :p15-final-proof-current? p15-final-proof-current?
+      :complete-boundary-authenticated? complete-boundary?
+      :provenance-current? provenance-current?
+      :authenticated? authenticated?
+      :failure failure
+      :error error}}))
+
 (defn p18-t04-public-self-host-verify-command-artifact!
   []
   (let [p15-final-proof (p18-t06-current-p15-final-seed-proof)
-        p18-final-proof (p18-t06-write-final-release-artifacts!)
-        complete? (p18-t04-self-host-verify-complete?
-                   p15-final-proof p18-final-proof)
+        {:keys [proof verification]}
+        (p18-t04-final-proof-verification p15-final-proof)
+        p18-final-proof proof
+        complete? (and (p18-t04-self-host-verify-complete?
+                        p15-final-proof proof)
+                       (:authenticated? verification))
         compiler-source (p18-t04-self-host-verify-compiler-source)
         diagnostics
         (if complete?
@@ -24,6 +160,7 @@
              (select-keys p18-final-proof
                           [:kind :artifact-id :status :final-release?
                            :seedless-release? :clojure-seed-boundary?])
+             :p18-final-release-proof-verification verification
              :compiler-source compiler-source
              :proof-artifact-path
              p18-t04-public-self-host-verify-proof-path
@@ -49,6 +186,7 @@
                       [:kind :artifact-id :status :target :final-release?
                        :seedless-release? :clojure-seed-boundary?
                        :next-required-capability])
+         :p18-final-release-proof-verification verification
          :p18-final-release-proof-path p18-t06-final-proof-path
          :p18-release-binary-path p18-t06-release-binary-path
          :bootstrap-hosted? true
@@ -87,7 +225,7 @@
                (= "verify" (second args))
                (= 2 (count args)))
     (p18-t04-public-self-host-verify-usage! args)
-    (let [artifact (p18-t04-write-public-self-host-verify-command-artifacts!)]
+    (let [artifact (p18-t04-public-self-host-verify-command-artifact!)]
       (if (= :complete (:status artifact))
         (prn artifact)
         (p18-t04-fail!
