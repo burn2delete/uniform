@@ -90,6 +90,18 @@
        "         :entrypoint-loaded (boolean (find-ns 'gravity.cli.entrypoint))"
        "         :cli-loaded (boolean (find-ns 'gravity.cli))}))"))
 
+(defn- invalid-build-expression
+  []
+  (str "(require 'gravity.cli.launcher)"
+       " (let [exit-code (atom nil)]"
+       "   (with-redefs-fn {(ns-resolve 'gravity.cli.launcher 'exit!)"
+       "                      (fn [status] (reset! exit-code status))}"
+       "     #(gravity.cli.launcher/-main \"build\" \"--bad\"))"
+       "   (prn {:exit-code @exit-code"
+       "         :bootstrap-loaded (boolean (find-ns 'gravity.bootstrap))"
+       "         :entrypoint-loaded (boolean (find-ns 'gravity.cli.entrypoint))"
+       "         :cli-loaded (boolean (find-ns 'gravity.cli))}))"))
+
 (defn- expected-presentation
   [argument packaged?]
   (if (#{"help" "--help" "-h"} argument)
@@ -152,6 +164,21 @@
     (is (= "{\"status\":\"passed\"}" presentation))
     (is (= {:called ["build" "--reader-inputs" "{}"]
             :exit-code nil
+            :bootstrap-loaded false
+            :entrypoint-loaded true
+            :cli-loaded true}
+           marker)))
+  (let [{:keys [exit err presentation marker]}
+        (child-observation false (invalid-build-expression))]
+    (is (= 0 exit) (pr-str {:err err :marker marker}))
+    (is (= "" presentation))
+    (is (= (str "{\"status\":\"rejected\",\"code\":\"T1006\","
+                "\"reason\":\"command-shape\",\"profile\":\"meta\","
+                "\"target\":\"jvm\",\"phase\":\"build\","
+                "\"capability\":\"fs/read\",\"exitCode\":2,"
+                "\"runtimeAccepted\":false}\n")
+           (without-known-java-tool-options-banner err)))
+    (is (= {:exit-code 2
             :bootstrap-loaded false
             :entrypoint-loaded true
             :cli-loaded true}
