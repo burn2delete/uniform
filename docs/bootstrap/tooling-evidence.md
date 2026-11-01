@@ -36,6 +36,40 @@ plan, fabricated accepted artifact, pin refresh or new seed primitive is an
 acceptable substitute. The failed log remains
 /tmp/uniform-tooling-evidence-current-main-control.log.
 
+## Actual source repairs before native extraction
+
+The complete source now passes the existing W5 development regression: 11
+tests / 669 assertions, zero failures/errors. The conflicting alias is removed,
+retaining the original predicate and its public delegator. The other fourteen
+function-valued aliases become explicit Gravity function delegators with their
+original callable arguments. This supplies named-call behavior; it does not
+claim first-class alias identity or runtime redefinition semantics. The fixed
+seed and module-definition/literal admission checks remain unchanged.
+
+The source now implements boolean negation through a private Gravity if-based
+helper and expresses the one short-circuit string conjunction through nested
+if forms. Both rejected fixture spellings remove only the line field using
+existing keys/vec/get/assoc/loop operations and retain every other map field.
+The loop index guard enforces valid vector access, not a work allowance. The
+entire engine and both complete accepted/rejected fixtures execute through the
+existing development route; no source projection or synthetic plan is used.
+
+Each newly exposed nonpass remains recorded. The first repair still rejected
+unsupported function-valued literal aliases. The explicit-delegator repair
+exposed unsupported not in the engine and nth in the fixture helper. Replacing
+those with Gravity core expressions allowed both whole rejected fixtures to
+compile, while the engine then rejected its remaining and form. Replacing that
+single guard produced the successful complete regression. The first two repair
+runs each report 11 / 53 with 43 errors; the next reports 11 / 53 with 41 errors.
+Their logs use the repaired-source-regression, explicit-source-functions-
+regression and core-expressions-regression suffixes under
+/tmp/uniform-tooling-evidence-. The successful log uses source-guards-regression.
+No failed input is called accepted, and no test or compiler guard is weakened.
+
+These are working-source repair observations over the scope commit, before
+the native extraction and final metadata. They do not confer integration,
+tooling completion, source authentication or migration authority.
+
 ## Required artifacts and acceptance
 
 Retain actual source text/hashes, full plans and deterministic identities,
