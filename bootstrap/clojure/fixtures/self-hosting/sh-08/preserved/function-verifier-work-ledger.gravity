@@ -1,0 +1,4 @@
+(ns self-hosting.sh08.function-verifier-work-ledger
+  (:profile :meta) (:target :jvm)
+  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
+(defn tone [] :- Keyword (get {:warm :amber :cool :violet} :cool))

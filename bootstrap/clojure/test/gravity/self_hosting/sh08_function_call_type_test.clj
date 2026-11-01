@@ -23416,3 +23416,145 @@
     (doseq [[namespace name] [[nil ""] ["" ""] ["qualified" ""] [nil "valid"]]]
       (is (= :accepted (:status (data (clojure.lang.Symbol/intern namespace name))))))
     (is (empty? @callbacks))))
+
+(defn- verifier-current-core-products
+  ([stage] (verifier-current-core-products "function-verifier-work-ledger" stage))
+  ([basename stage]
+   (let [source-path (fixture-path "preserved" basename ".gravity")
+         text (slurp source-path)
+         resolved (function-work-policy-current-resolution source-path text
+                    {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
+         artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
+         boundary (:gravity-core-boundary artifact)]
+     {:source-path source-path :source-text text :resolved resolved :core-wrapper artifact
+      :core (:canonical-core-artifact boundary)
+      :forms (get-in boundary [:authenticated-core-request :forms])
+      :bindings (get-in boundary [:authenticated-core-request :binding-table])})))
+
+(deftest ordinary-function-construction-preserves-semantic-results
+  ;; This uses original source/Core construction, not an authenticated B47
+  ;; request, public verifier, Effects/emitter body verifier or C12 execution.
+  (let [stage (fn [name operation]
+                (prn {:ordinary-function-construction :source-transport :stage name :event :start})
+                (let [result (operation)]
+                  (prn {:ordinary-function-construction :source-transport :stage name :event :complete})
+                  result))
+        {:keys [resolved core-wrapper core forms bindings]} (verifier-current-core-products stage)
+        construct #(invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-allowance
+                              [% bindings forms {} 65536])
+        result (construct core)
+        ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports [core bindings forms {}])]
+    (is (= :accepted (:status resolved) (:status core-wrapper)))
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (is (= result ordinary))
+    (is (= [{:definition-name 'tone :return :gravity.type/keyword}]
+           (mapv #(select-keys % [:definition-name :return]) (:function-type-table result))))
+    (is (= [[:direct-map-get :gravity.type/keyword :cool]]
+           (mapv (juxt :dispatch :result-type #(get-in % [:applied-map-get :key])) (:call-type-facts result))))
+    (is (= (:type-table result) (get-in result [:typed-core :types]) (get-in result [:identity-input :type-table])))
+    (is (= (:constraint-ledger result) (get-in result [:typed-core :constraints])
+           (get-in result [:identity-input :constraint-ledger])))
+    (is (every? #(not-any? (fn [key] (contains? % key)) [:ordinary-work-count :effective-work-policy])
+                [result (:typed-core result) (:identity-input result)]))
+    (doseq [[changed reason] [[nil :sh07-shaped-core-map-required]
+                              [(assoc core :artifact :invalid) :malformed-sh07-core-shape]
+                              [(update core :nodes conj (first (:nodes core))) :malformed-sh07-core-shape]]]
+      (let [rejected (construct changed)
+            repeated (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports [changed bindings forms {}])]
+        (is (= :rejected (:status rejected)))
+        (is (= reason (get-in rejected [:diagnostics 0 :reason])))
+        (is (= rejected repeated))
+        (is (seq (:diagnostics rejected)))
+        (is (every? #(= "C7-VERIFY" (:rule %)) (:diagnostics rejected)))))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(deftest qualified-map-get-construction-preserves-semantic-results
+  ;; This uses original source/Core construction, not an authenticated B47
+  ;; request, public verifier, Effects/emitter body verifier or C12 execution.
+  (let [stage (fn [name operation]
+                (prn {:ordinary-function-construction :source-transport :stage name :event :start})
+                (let [result (operation)]
+                  (prn {:ordinary-function-construction :source-transport :stage name :event :complete})
+                  result))
+        {:keys [resolved core-wrapper core forms bindings]} (verifier-current-core-products "function-verifier-qualified-map-get" stage)
+        construct #(invoke-c7 'sh08-ft-function-type-core-artifact-with-imports-and-allowance
+                              [% bindings forms {} 65536])
+        result (construct core)
+        ordinary (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports [core bindings forms {}])]
+    (is (= :accepted (:status resolved) (:status core-wrapper)))
+    (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
+    (is (= result ordinary))
+    (is (= [{:definition-name 'shade :return :gravity.type/keyword}]
+           (mapv #(select-keys % [:definition-name :return]) (:function-type-table result))))
+    (is (= [[:direct-map-get :gravity.type/keyword :shade]]
+           (mapv (juxt :dispatch :result-type #(get-in % [:applied-map-get :key])) (:call-type-facts result))))
+    (is (= (:type-table result) (get-in result [:typed-core :types]) (get-in result [:identity-input :type-table])))
+    (is (= (:constraint-ledger result) (get-in result [:typed-core :constraints])
+           (get-in result [:identity-input :constraint-ledger])))
+    (is (every? #(not-any? (fn [key] (contains? % key)) [:ordinary-work-count :effective-work-policy])
+                [result (:typed-core result) (:identity-input result)]))
+    (doseq [[changed reason] [[nil :sh07-shaped-core-map-required]
+                              [(assoc core :artifact :invalid) :malformed-sh07-core-shape]
+                              [(update core :nodes conj (first (:nodes core))) :malformed-sh07-core-shape]]]
+      (let [rejected (construct changed)
+            repeated (invoke-c7 'sh08-ft-function-type-core-artifact-with-imports [changed bindings forms {}])]
+        (is (= :rejected (:status rejected)))
+        (is (= reason (get-in rejected [:diagnostics 0 :reason])))
+        (is (= rejected repeated))
+        (is (seq (:diagnostics rejected)))
+        (is (every? #(= "C7-VERIFY" (:rule %)) (:diagnostics rejected)))))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(deftest function-verifier-source-reconstruction-and-tampering
+  (doseq [[basename definition key] [["function-verifier-work-ledger" 'tone :cool]
+                                   ["function-verifier-qualified-map-get" 'shade :shade]]]
+    (let [source-path (fixture-path "preserved" basename ".gravity")
+          source-text (slurp source-path)
+          companion (fixture-path "preserved" basename ".qst")
+          {:keys [core request]} (function-work-policy-current-source source-path)
+          produced (invoke-c7 'sh08-function-type-core-artifact [request])]
+      (is (= source-text (slurp companion)))
+      (is (= :accepted (:status core) (:status produced)))
+      (when (= :accepted (:status produced))
+        (is (= [{:definition-name definition :return :gravity.type/keyword}]
+               (mapv #(select-keys % [:definition-name :return]) (:function-type-table produced))))
+        (is (= [[:direct-map-get :gravity.type/keyword key]]
+               (mapv (juxt :dispatch :result-type #(get-in % [:applied-map-get :key])) (:call-type-facts produced))))
+        (is (seq (:constraint-ledger produced)))
+        (is (seq (get-in produced [:typed-core :types])))
+        (let [verified (invoke-c7 'sh08-verify-function-type-result [request produced])]
+          (is (= :passed (:status verified)))
+          (is (= produced (:expected verified) (:candidate verified))))
+        (doseq [candidate [(assoc produced :schema-version :forged)
+                           (assoc produced :status :rejected)
+                           (assoc-in produced [:typed-core :types] {})
+                           (assoc produced :constraint-ledger [])
+                           (assoc-in produced [:function-type-table 0 :return] :gravity.type/string)
+                           (assoc-in produced [:module :namespace] 'forged.module)
+                           (assoc-in produced [:identity-input :constraint-ledger] [])
+                           (assoc produced :unknown-verifier-field true)]]
+          (is (= :rejected (:status (invoke-c7 'sh08-verify-function-type-result [request candidate])))))))))
