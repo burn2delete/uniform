@@ -29,7 +29,7 @@
     :public-target-support-claim? false}
    :delegates-to
    (if packaged?
-     "java -cp target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
+     "java -Dgravity.packaged.jvm.cli=true -cp target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar:<clojure-runtime-classpath> clojure.main -m gravity.cli.launcher"
      "clojure -M:gravity")
    :replaced-by "Phase 18 self-hosted release artifact"})
 
