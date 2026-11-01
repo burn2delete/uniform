@@ -94,3 +94,24 @@ literal construction. No new native/backend, compiler admission, migration,
 self-hosting, release, seed retirement or namespace-completion claim follows.
 
 Development results do not confer integration or migration acceptance.
+
+## Tooling main composition
+
+The normal composition after source
+`4464840f1a5256a7635cd24db798d147f1861694` uses actual Tooling main
+`fd159988ab06ee0397505718e9bd96bbf8df8228`. Three genuine registration
+conflicts are resolved by reconstructing five complete metadata files from
+main and appending the existing literal helper association/test and require.
+The helper, wrapper component, focused tests and original literal regression
+remain byte-identical to446. All incoming Tooling source, wrapper, tests, three
+Gravity repair files and evidence remain exact main. Catalog/count formulas,
+authority pins and CI policy remain unchanged.
+
+Fresh combined literal, Standard Library, Tooling and complete W5 regressions
+pass 28/913. Ownership inventory passes 37/1076 and language boundary 6/11.
+Five full/serialized record pairs remain exact against the clean f972 control;
+both long-string modules still compile/execute, retain their actual source
+hashes and recompute their full plan ids. The complete component and exact
+single literal-helper require conserve against fd159. Current source review,
+contextual lint, own CI and a clean integration preflight remain required;
+earlier-head results confer no new-base integration credit.
