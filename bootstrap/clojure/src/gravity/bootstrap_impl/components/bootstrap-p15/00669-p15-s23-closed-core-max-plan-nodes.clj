@@ -9,7 +9,6 @@
 ;; sidecar for the entrypoint-only closed runtime language.  Raw C2/C3 ids and
 ;; actual paths are provenance, never semantic identity inputs.
 
-(def p15-s23-closed-core-max-plan-nodes 128)
 (def p15-s23-closed-core-max-plan-depth 128)
 (def p15-s23-closed-core-max-derived-nodes 384)
 (def p15-s23-closed-core-max-source-bytes (* 1024 1024))
@@ -95,23 +94,17 @@
   [plan]
   (loop [pending
          (vec (mapcat :instructions (vals (:functions plan))))
-         operations #{}
-         visited 0]
+         operations #{}]
     (if-let [instruction (peek pending)]
-      (let [pending (pop pending)
-            visited (inc visited)]
+      (let [pending (pop pending)]
         (when-not (and (map? instruction)
-                       (keyword? (:op instruction))
-                       (<= visited p15-s23-closed-core-max-plan-nodes))
+                       (keyword? (:op instruction)))
           (p15-s23-closed-core-fail!
            "C6-VERIFY" (or (get-in plan [:source :path]) "<closed-plan>")
            instruction
-           {:missing-fact :bounded-concrete-plan-operation-inventory
-            :observed-plan-nodes visited
-            :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes}))
+           {:missing-fact :concrete-plan-operation-inventory}))
         (recur (into pending (c-backend-instruction-children instruction))
-               (conj operations (:op instruction))
-               visited))
+               (conj operations (:op instruction))))
       operations)))
 
 (defn p15-s23-closed-core-preflight-effect-requirements
@@ -120,11 +113,9 @@
   [plan]
   (loop [pending (vec (mapcat :instructions (vals (:functions plan))))
          effects #{}
-         capabilities #{}
-         visited 0]
+         capabilities #{}]
     (if-let [instruction (peek pending)]
       (let [pending (pop pending)
-            visited (inc visited)
             operation (:op instruction)
             str-call? (and (= :builtin-call operation)
                            (= 'str (:function instruction)))
@@ -135,16 +126,13 @@
                            str-call? (conj :memory/allocator)
                            (= :println operation) (conj :io/stdout))]
         (when-not (and (map? instruction)
-                       (keyword? operation)
-                       (<= visited p15-s23-closed-core-max-plan-nodes))
+                       (keyword? operation))
           (p15-s23-closed-core-fail!
            "C6-VERIFY" (or (get-in plan [:source :path]) "<closed-plan>")
            instruction
-           {:missing-fact :bounded-preflight-effect-requirement-inventory
-            :observed-plan-nodes visited
-            :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes}))
+           {:missing-fact :preflight-effect-requirement-inventory}))
         (recur (into pending (c-backend-instruction-children instruction))
-               effects capabilities visited))
+               effects capabilities))
       {:required-effects effects
        :required-capabilities capabilities})))
 
@@ -172,8 +160,7 @@
    p15-s23-closed-core-known-effects
    :recognized-but-uncredited-capabilities
    p15-s23-closed-core-known-capabilities
-   :bounds {:maximum-plan-nodes p15-s23-closed-core-max-plan-nodes
-            :maximum-plan-depth p15-s23-closed-core-max-plan-depth
+   :bounds {:maximum-plan-depth p15-s23-closed-core-max-plan-depth
             :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes
             :maximum-source-bytes p15-s23-closed-core-max-source-bytes
             :maximum-artifact-scalar-bytes

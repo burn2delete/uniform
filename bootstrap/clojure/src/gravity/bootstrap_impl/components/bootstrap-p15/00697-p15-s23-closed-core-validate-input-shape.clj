@@ -105,7 +105,7 @@
      {:missing-fact :typed-closed-core-artifact-fields}))
   (let [bounds (:bounds artifact)
         bounded-fields
-        [:maximum-plan-nodes :maximum-plan-depth :maximum-derived-nodes
+        [:maximum-plan-depth :maximum-derived-nodes
          :maximum-source-bytes :maximum-artifact-scalar-bytes
          :maximum-integer-bits :observed-source-bytes
          :observed-plan-nodes :observed-plan-depth :observed-derived-nodes]]

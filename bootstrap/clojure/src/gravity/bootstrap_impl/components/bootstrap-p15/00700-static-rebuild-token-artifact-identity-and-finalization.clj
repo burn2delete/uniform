@@ -137,7 +137,6 @@
                           :maximum-artifact-scalar-bytes
                           p15-s23-closed-core-max-artifact-scalar-bytes,
                           :maximum-source-bytes p15-s23-closed-core-max-source-bytes,
-                          :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes,
                           :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes,
                           :observed-source-bytes source-byte-count,
                           :observed-derived-nodes (count nodes),

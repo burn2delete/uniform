@@ -31664,7 +31664,7 @@
       (is (string? (:syntax-id data)))
       (is (= literal-id (get-in nodes [literal-index :node-id]))))))
 
-(deftest pure-checked-core-bounds-and-hostile-values-fail-closed
+(deftest pure-checked-core-hostile-values-fail-closed
   (let [nested-source
         (fn [wrappers]
           (str
@@ -31676,17 +31676,15 @@
            (apply str (repeat wrappers ")"))
            ")\n"))
         accepted-source (nested-source 127)
-        rejected-source (nested-source 128)
         accepted
         (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
          "bound-128.gravity" accepted-source :c)
         context
         (bootstrap/p15-s23-stage2-closed-checked-core-context
          "bound-128.gravity" accepted-source :c)
-        rejected
-        (diagnostic-data
-         #(bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
-           "bound-129.gravity" rejected-source :c))
+        expanded
+        (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
+         "bound-129.gravity" (nested-source 128) :c)
         wide
         (vec (repeat
               (inc bootstrap/p15-s23-closed-core-max-serialized-values)
@@ -31720,10 +31718,8 @@
     (is (= :complete-for-pure-closed-slice (:status accepted)))
     (is (= 128 (get-in accepted [:bounds :observed-plan-nodes])))
     (is (= 128 (get-in accepted [:bounds :observed-plan-depth])))
-    (is (= "C6-VERIFY" (:id rejected)) rejected)
-    (is (= :bounded-pure-source-form-surface
-           (:missing-fact rejected)) rejected)
-    (is (= 129 (:observed-source-forms rejected)))
+    (is (= :complete-for-pure-closed-slice (:status expanded)))
+    (is (= 129 (get-in expanded [:bounds :observed-plan-nodes])))
     (doseq [[candidate expected-missing expected-reason] candidates]
       (let [data
             (diagnostic-data

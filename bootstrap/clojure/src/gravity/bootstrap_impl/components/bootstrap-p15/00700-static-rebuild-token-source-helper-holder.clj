@@ -87,7 +87,6 @@
           source-path
           {:missing-fact :host-stack-containment}
           {:contained-host-error (.getName (class error)),
-           :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes,
            :maximum-plan-depth p15-s23-closed-core-max-plan-depth}))
       (catch clojure.lang.ExceptionInfo ex (throw ex))
       (catch

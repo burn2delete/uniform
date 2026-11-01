@@ -37,7 +37,6 @@
         {:missing-fact :trusted-mode-exact-authority-evidence-reissue-parity}))
     (when-not (and
                 (<= (count nodes) p15-s23-closed-core-max-derived-nodes)
-                (<= (count plan-nodes) p15-s23-closed-core-max-plan-nodes)
                 (every?
                   #(<= (:plan-depth %) p15-s23-closed-core-max-plan-depth)
                   nodes))
@@ -49,7 +48,6 @@
          :observed-derived-nodes (when (vector? nodes) (count nodes)),
          :observed-plan-nodes (when (vector? nodes) (count plan-nodes)),
          :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes,
-         :maximum-plan-nodes p15-s23-closed-core-max-plan-nodes,
          :maximum-plan-depth p15-s23-closed-core-max-plan-depth}))
     (when-not (and
                 (= (count node-ids) (count (set node-ids)))

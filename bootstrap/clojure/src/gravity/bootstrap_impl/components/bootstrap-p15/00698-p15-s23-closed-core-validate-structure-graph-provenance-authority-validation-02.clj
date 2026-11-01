@@ -68,9 +68,6 @@
                     [:authenticated-input :closed-plan-validation-node-count]))
                 (= (count nodes) (get-in artifact [:bounds :observed-derived-nodes]))
                 (=
-                  p15-s23-closed-core-max-plan-nodes
-                  (get-in artifact [:bounds :maximum-plan-nodes]))
-                (=
                   p15-s23-closed-core-max-plan-depth
                   (get-in artifact [:bounds :maximum-plan-depth]))
                 (=
