@@ -15,7 +15,7 @@ compiler migration or release acceptance.
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise full fresh catalog | Full fresh catalog | 51 portable namespaces on Ubuntu and the Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every namespace gets a fresh JVM; the partition is exhaustive and disjoint. Unknown paths fall back to all 52; no cross-run result cache. This is not the full compiler suite. |
 | darwin-unsupported-host | Same conservative selection as leaves | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
-| source-Core-readiness | Omitted | Explicitly failing unavailable gate | Genuine selected-current-Reader construction plus independent verification is not yet available on main. Never treated as a pass or simulated using mocks. |
+| source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
 | experimental-source-snapshot | Preview artifact | Preview artifact | Exact SHA source tarball, independently repeated Git archive hash, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Main push only, after all routine checks and packaging pass | Separate contents-write job publishes the source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
 
@@ -170,9 +170,11 @@ Before enabling required checks, observe stable real GitHub runs. Proposed
 initial names are `static`, `projections`, `bootstrap`,
 `fresh-leaf-regressions / portable`, and `fresh-leaf-regressions / darwin`.
 Include `darwin-unsupported-host` after its stable real runs are observed.
-Keep `source-Core-readiness` non-required until the
-real public route is reviewed and passing. Main tests check the push SHA,
-not a cherry-picked candidate or synthetic source fixture.
+Do not add a green `source-Core-readiness` substitute: the former job had no
+genuine compiler execution and is intentionally absent. Keep the actual
+public `gravity self-host verify` route fail-closed until its release proof is
+complete. Main tests check the push SHA, not a cherry-picked candidate or
+synthetic source fixture.
 
 Existing finite task authorities remain `specs/build-workflow/tasks.md`
 (`build-implementation-tasks`) and `specs/release-workflow/tasks.md`
