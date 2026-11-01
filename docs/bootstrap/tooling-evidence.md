@@ -3,20 +3,22 @@
 ## Declared boundary and contracts
 
 D1, D2, D3, D8, D9, L2, L3, T1-T13, C15, BOOT8 and TEST2 govern
-this increment from actual main 6dcba8de85797f4f19b865db89e44ef4bd0c5dba.
-The declared native extraction is the existing p13-tooling-proof builder in
-component 00349. The proposed gravity.tooling coverage-record API consumes
+this increment. Scope begins at main 6dcba8de85797f4f19b865db89e44ef4bd0c5dba;
+the implementation composes actual Ownership main
+a1174ebcaac1a8795f3a9f6f9a139f6fd4e46dda. The existing p13-tooling-proof
+builder moves from component 00349 to gravity.tooling. Its coverage-record API consumes
 explicit document/diagnostic Vars, presence and task-status operations, and
 native report data. It returns the existing coverage record without granting
 authority. Bootstrap retains compatibility and diagnostic construction.
 
-The proposed source APIs check-evidence, execute-evidence and verify-evidence
+The source APIs check-evidence, execute-evidence and verify-evidence
 consume an explicit trusted invocation operation and original request/candidate
 data. The existing complete Gravity W5 tooling-conformance kernel owns static
 evidence rules. Fresh source replay must precede exposing a private result;
 failed verification must withhold that result. Compiler and source diagnostics
-propagate unchanged. The stage may require Clojure set helpers and must not
-import Bootstrap, CLI, build, release or an authoritative verifier.
+propagate unchanged. The stage requires only Clojure set helpers and does not
+import Bootstrap, CLI, build, release or an authoritative verifier. Public Var
+metadata declares exact arguments, inputs/outputs, diagnostics and direction.
 
 ## Observed baseline and repair scope
 
@@ -70,7 +72,71 @@ These are working-source repair observations over the scope commit, before
 the native extraction and final metadata. They do not confer integration,
 tooling completion, source authentication or migration authority.
 
-## Required artifacts and acceptance
+## Working extraction and actual artifacts
+
+Source repairs are committed as 44b55d2aa17a336272dd722e1061ebd48e69f57b,
+tree 62e454f5c1fbd4e2496b84ed7b1aef383cb38881. A normal merge with actual
+Ownership main has no conflicts and produces local composition
+ebe61cf17b34c15e7fac38942a46edc77eeaf2f3. The before producer runs at that
+clean committed composition; the after producer runs with the native extraction
+before its final tests and registration. These are ordinary development
+observations, not release, migration or authoritative production bookends.
+
+The complete repaired Gravity engine compiles with 50 functions, both accepted
+fixtures with 16 and both rejected fixtures with 46. Each spelling executes
+an accepted incomplete record whose verifier gate remains blocked. Actual
+source, narrative and missing-span mutations reject W5-TC-SOURCE or
+W5-TC-NARRATIVE. Four forged results per spelling reject W5-TC-SUBSTITUTION.
+Accepted and rejected original results pass fresh replay without changing
+their original status, provenance or authority. No tool service is invoked.
+
+Nine complete and serialized captures match before/after: the five whole
+source/plan records, two full request/result/replay/refusal sets, and native
+inputs/results for four supplied-data cases. All five actual source texts and
+hashes match files, and all five declared full-plan IDs recompute without
+normalization. Empty and altered native coverage records retain their boolean
+counterexamples even though the inherited status/task labels say complete.
+Those labels remain compatibility data. Native records fail the W5 request
+schema rather than acquiring authority from their status.
+
+The native body and wrapper arity conserve against main a117 with only four
+explicit late Var ports substituted. The whole component outside its single
+wrapper and the single Tooling require are conserved. Adversarial tests show
+document Vars are read after original input lookup, and callback resolution
+precedes argument lookup even when that lookup changes the callback root.
+Real coherently substituted source results fail replay against the original
+request; failed fresh verification returns the source refusal and withholds
+the private result.
+
+The engine source SHA is
+47a023a706d2c4264d5dac02368b3a6187b9ae35d28256fc73870bf8a103d09c;
+its plan ID is
+sha256:7e4e2a94818cea4442e19a74bca2c52943778446f30c8e38dde4892a80e8d11d.
+Execution uses the existing fixed Stage2 compiler.gravity seed, SHA
+57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527,
+and native Clojure gravity.runtime/component 00593. All five seed/native and
+non-executed Gravity input files match actual main a117; the repaired kernel
+matches commit 44b55. The changed Gravity emitter/runtime modules are not
+executed. Inherited compiler stamps remain seed metadata, not refreshed
+compiler, migration or authentication evidence.
+
+The focused stage tests pass 7 / 90; the complete existing W5 source regression
+passes 11 / 669. Registration passes 35 / 1046 and the language boundary 6 / 11.
+The SH-24/master-coordinator helper and nested standalone test preserve primary
+component pairs, the 53-leaf catalog/hash and count formulas. No SH-24 driver
+or tooling completion follows. Two temporary evidence scripts first failed
+strict parsing on an extra bracket or parenthesis before evaluation; both
+complete corrected scripts were parsed to EOF before use. Their failures and
+all earlier source nonpasses remain recorded.
+
+Final combined Tooling/W5/Ownership/Package/Runtime checks pass 31 tests / 1012
+assertions, zero failures/errors. Docs validate 240 / 19; roadmap and governance
+pass. Evidence records use /tmp/uniform-tooling-evidence/; producer,
+conservation, provenance and command logs use /tmp/uniform-tooling-evidence-*.
+Contextual lint, exact independent acceptance, own CI and clean current-main
+integration preflight remain required.
+
+## Acceptance boundary
 
 Retain actual source text/hashes, full plans and deterministic identities,
 original requests, complete accepted/rejected results, source replay refusals,
@@ -81,7 +147,8 @@ Register the real helper, consumer, owner and standalone test without changing
 primary component pairs, the leaf catalog or count formulas. Integration needs
 focused and affected regressions, the language boundary, contextual lint,
 docs/roadmap/governance, independent exact acceptance, own CI and clean
-current-main preflight. This scope record provides no implementation credit.
+current-main preflight. The initial scope commit alone provides no
+implementation or integration credit.
 
 ## Unsupported boundaries
 

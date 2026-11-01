@@ -290,6 +290,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/ownership.clj", "namespace": "gravity.ownership"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00694-p15-s23-closed-core-persistent-aliasing-valid.clj", "namespace": "gravity.bootstrap", "owner": "sh-ownership"},
       "test": {"path": "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj", "namespace": "gravity.ownership.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "tooling-evidence",
+      "kind": "production-stage-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/tooling.clj", "namespace": "gravity.tooling"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/platform-phases/00349-p13-tooling-proof.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
+      "test": {"path": "bootstrap/clojure/test/gravity/tooling/pipeline_test.clj", "namespace": "gravity.tooling.pipeline-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [
