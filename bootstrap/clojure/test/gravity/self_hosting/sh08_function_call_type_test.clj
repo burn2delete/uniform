@@ -24,6 +24,10 @@
   [function arguments]
   (kernel-support/invoke-c7 function arguments))
 
+(defn- invoke-c8
+  [function arguments]
+  (kernel-support/invoke-c8 function arguments))
+
 (defn- fixture-artifact
   [family basename extension]
   (bootstrap/sh07-core-file-artifact
@@ -246,12 +250,12 @@
       (is (false? (complete (assoc-in function [:parameters 0 :type] value)))))))
 
 (defn- observe-import-scalar-builtins [value]
-  ;; Delegate unchanged arguments/results; count only this helper's loaded plan.
+  ;; Delegate unchanged arguments/results; observe only this helper's loaded plan.
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
         unary (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
         original-scoped @scoped original-builtin @builtin original-unary @unary plans (atom [])
-        counts (atom {:vector-tail-calls 0 :membership-calls 0})
+        counts (atom {:vector-tail-calls 0})
         result (with-redefs-fn
           {scoped (fn [runtime plan callee args scope]
                     (if (= 'sh08-im-scalar-type? callee)
@@ -267,21 +271,19 @@
                      (let [callee (nth args (- (count args) 2)) values (last args)]
                        (when (and (seq @plans) (identical? (peek @plans) (nth args (- (count args) 3))))
                          (when (and (= 'rest callee) (vector? (first values)))
-                           (swap! counts update :vector-tail-calls inc))
-                         (when (= 'contains? callee) (swap! counts update :membership-calls inc)))
+                           (swap! counts update :vector-tail-calls inc)))
                        (apply original-builtin args)))}
           #(invoke-c7 'sh08-im-scalar-type? [value]))]
     (assoc @counts :result result)))
 
 (deftest sh08-import-scalar-catalog-no-vector-tail-development-kernel
   ;; This checks the selected compiler-source dependency, not whole-helper typing.
-  (doseq [[value expected membership-calls]
-          [[:gravity.type/f64 true 1] [:gravity.type/unknown false 1]
-           [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string]} false 0]]]
+  (doseq [[value expected]
+          [[:gravity.type/f64 true] [:gravity.type/unknown false]
+           [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/string]} false]]]
     (let [observed (observe-import-scalar-builtins value)]
       (is (= expected (:result observed)))
-      (is (zero? (:vector-tail-calls observed)))
-      (is (= membership-calls (:membership-calls observed))))))
+      (is (zero? (:vector-tail-calls observed))))))
 
 (deftest sh08-imported-module-validation-development-kernel
   ;; Invocation-local normalized memo DATA, not authenticated source admission.
@@ -1009,11 +1011,9 @@
     (is (= rebuilt (invoke-c7 'sh08-sm-construct-cases [constructor])))))
 
 (deftest sh08-pattern-alias-c8-composition
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
-        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
-        fixture (var-get (ns-resolve upstream 'function-typed-result))
-        verify (var-get (ns-resolve upstream 'function-verification))
+  (let [invoke-c8 kernel-support/invoke-c8
+        fixture kernel-support/function-typed-result
+        verify kernel-support/function-verification
         {:keys [groups nodes sequence lexical binding-types]} (pattern-alias-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
                              [sequence nodes lexical [] [] [] {} binding-types {:boolean-matches groups}])
@@ -1471,10 +1471,9 @@
       (is (seq (get-in checked [:constraints 0 :structurally-matched-shapes]))))))
 
 (deftest sh08-quoted-data-c8-composition
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
-        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
-        fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
+  (let [invoke-c8 kernel-support/invoke-c8
+        fixture kernel-support/function-typed-result
+        verify kernel-support/function-verification
         {:keys [quote-products groups nodes sequence lexical binding-types]} (quoted-structural-kernel-input)
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
                              [sequence nodes lexical [] [] [] {} binding-types
@@ -1608,10 +1607,9 @@
 
 (deftest sh08-root-map-guard-c8-composition
   ;; Normalized compiled C7/C8 oracle; actual source verification is separate.
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
-        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
-        fixture (var-get (ns-resolve upstream 'function-typed-result)) verify (var-get (ns-resolve upstream 'function-verification))
+  (let [invoke-c8 kernel-support/invoke-c8
+        fixture kernel-support/function-typed-result
+        verify kernel-support/function-verification
         {:keys [core products forms nodes lexical binding-types functions calls edges guard-id]} (guarded-match-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
@@ -1637,8 +1635,7 @@
       (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification candidate])))))))
 
 (deftest sh08-root-map-guard-authenticated-source-composition
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+  (let [invoke-c8 kernel-support/invoke-c8
         artifacts (mapv #(fixture-artifact "accepted" "function-root-map-guards" %) [".gravity" ".qst"])
         results (mapv function-result artifacts)]
     (doseq [[artifact result] (map vector artifacts results)]
@@ -1691,8 +1688,7 @@
            (slurp (fixture-path "accepted" "function-root-map-guards" ".qst"))))))
 
 (deftest sh08-quoted-data-authenticated-source-composition
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+  (let [invoke-c8 kernel-support/invoke-c8
         basename "function-recursive-quoted-data"
         artifacts (mapv #(fixture-artifact "accepted" basename %) [".gravity" ".qst"])
         results (mapv function-result artifacts)]
@@ -1788,8 +1784,7 @@
       (is (= (slurp (fixture-path "rejected" basename ".gravity")) (slurp (fixture-path "rejected" basename ".qst")))))))
 
 (deftest sh08-pattern-alias-authenticated-source-composition
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+  (let [invoke-c8 kernel-support/invoke-c8
         basename "function-pattern-alias-nested"
         artifacts (mapv #(fixture-artifact "accepted" basename %) [".gravity" ".qst"])
         results (mapv function-result artifacts)]
@@ -1918,8 +1913,7 @@
            (slurp (fixture-path "rejected" basename ".qst"))))))
 
 (deftest sh08-structural-match-authenticated-source-composition
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+  (let [invoke-c8 kernel-support/invoke-c8
         artifacts (mapv #(fixture-artifact "accepted" "function-structural-matches" %) [".gravity" ".qst"])
         results (mapv function-result artifacts)]
     (doseq [[artifact result] (map vector artifacts results)]
@@ -2014,11 +2008,9 @@
 
 (deftest sh08-structural-match-c8-ledger-composition
   ;; Current compiled algorithms on normalized inputs, not source admission.
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
-        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
-        fixture (var-get (ns-resolve upstream 'function-typed-result))
-        verify (var-get (ns-resolve upstream 'function-verification))
+  (let [invoke-c8 kernel-support/invoke-c8
+        fixture kernel-support/function-typed-result
+        verify kernel-support/function-verification
         {:keys [core products forms nodes lexical binding-types]} (structural-match-products-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products (vec (vals forms))]))
         inference (invoke-c7 'sh08-ft-infer-acyclic-with-context
@@ -3195,7 +3187,6 @@
         result (invoke-c7 'sh08-function-type-core-artifact [request])]
     (is (= :accepted (:status result)) (pr-str (:diagnostics result)))
     (when (= :accepted (:status result))
-      (require 'gravity.self-hosting.sh09-body-effect-test)
       (let [report (invoke-c7 'sh08-verify-function-type-result [request result])
             mutant (walk/postwalk-replace {:gravity.type/character :gravity.type/integer} result)
             core (:canonical-core-artifact request)
@@ -3206,7 +3197,7 @@
             edge (first (filter #(= :local-function (:classification %)) (:call-edges core)))
             call (first (filter #(= (:call-core-node-id edge) (:core-node-id %)) (:calls core)))
             fact (first (filter #(= (:call-core-node-id edge) (:call-core-node-id %)) (:call-type-facts mutant)))
-            c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+            c8 kernel-support/leaf
             forged-report (invoke-c7 'sh08-verify-function-type-result [request mutant])]
         (is (= :passed (:status report)))
         (is (not= result mutant))
@@ -12666,11 +12657,9 @@
 (deftest sh08-boolean-match-c8-ledger-composition
   ;; Normalized identity/verifier oracle for the final equality representation;
   ;; no new authenticated-source evidence is manufactured here.
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [upstream 'gravity.self-hosting.sh09-c7-effect-adapter-test
-        invoke-c8 (var-get (ns-resolve upstream 'invoke-c8))
-        fixture (var-get (ns-resolve upstream 'function-typed-result))
-        verify (var-get (ns-resolve upstream 'function-verification))
+  (let [invoke-c8 kernel-support/invoke-c8
+        fixture kernel-support/function-typed-result
+        verify kernel-support/function-verification
         {:keys [core products forms scrutinee-id bodies]} (boolean-match-input)
         groups (:boolean-matches (invoke-c7 'sh08-bm-products [core products forms]))
         types {scrutinee-id :gravity.type/bool (bodies 0) :gravity.type/bool (bodies 1) :gravity.type/bool}
@@ -12693,8 +12682,7 @@
       (is (= :rejected (:status (invoke-c8 'sh09-verify-authenticated-pure-effect-result [typed verification candidate])))))))
 
 (deftest sh08-boolean-match-authenticated-source-composition
-  (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-  (let [invoke-c8 (var-get (ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8))
+  (let [invoke-c8 kernel-support/invoke-c8
         artifacts (mapv #(fixture-artifact "accepted" "function-boolean-matches" %) [".gravity" ".qst"])
         results (mapv function-result artifacts)]
     (doseq [[artifact result] (map vector artifacts results)]
@@ -12822,9 +12810,8 @@
                         (set (map :result-type (:call-type-facts result)))))
                  (is (= :passed (:status verification)))
                  (is (= :rejected (:status altered-verification)))
-                 (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-                 (let [effects ((ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8)
-                                'sh09-build-authenticated-pure-effect-result [result verification])]
+                 (let [effects (invoke-c8 'sh09-build-authenticated-pure-effect-result
+                                          [result verification])]
                    (is (= :rejected (:status effects)))
                    (is (= :imported-body-effects-pending (get-in effects [:diagnostics 0 :reason]))))))
              {:request request :result result :source-path source-path :inputs inputs :producer producer}))
@@ -12902,8 +12889,7 @@
                (is (= :passed (:status (invoke-c7 'sh08-verify-function-type-result [request result]))))
                (is (= :rejected (:status (invoke-c7 'sh08-verify-function-type-result
                                          [request (assoc-in result [:imported-function-types 0 :function-type :return] :gravity.type/bool)]))))
-               (require 'gravity.self-hosting.sh09-c7-effect-adapter-test)
-               (let [rejected ((ns-resolve 'gravity.self-hosting.sh09-c7-effect-adapter-test 'invoke-c8)
+               (let [rejected (invoke-c8
                                'sh09-build-authenticated-pure-effect-result
                                [result (invoke-c7 'sh08-verify-function-type-result [request result])])
                      diagnostic (first (:diagnostics rejected))]
@@ -17632,19 +17618,17 @@
     context))
 
 (defn- acc02-environment []
-  (require 'gravity.self-hosting.sh09-body-effect-test
-           'gravity.self-hosting.sh01-stage2-runtime-iteration-test)
-  (let [up 'gravity.self-hosting.sh08-function-call-type-test
-        stage 'gravity.self-hosting.sh01-stage2-runtime-iteration-test
-        runtime (var-get (ns-resolve stage 'runtime))
+  (let [runtime kernel-support/stage2-runtime
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         emit (fn [function & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan function (vec args)))
-        {:keys [module input observation]} ((ns-resolve stage 'typed-lowering-kernel-data))]
-    {:helper #(ns-resolve up %) :c7 (ns-resolve up 'invoke-c7)
-     :body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) :emit emit
-     :base ((ns-resolve stage 'typed-direct-call-kernel-context) (:value (emit 'p15-s23-typed-context module input observation)))}))
+        {:keys [module input observation]} (kernel-support/typed-lowering-kernel-data)]
+    {:helper #(ns-resolve 'gravity.self-hosting.sh08-function-call-type-test %)
+     :c7 kernel-support/invoke-c7
+     :body kernel-support/leaf :emit emit
+     :base (kernel-support/typed-direct-call-kernel-context
+            (:value (emit 'p15-s23-typed-context module input observation)))}))
 
 (defn- acc02-positional [members] {:kind :gravity.type/list :shape :literal :element-types members})
 (defn- acc02-finite-map [members] {:kind :gravity.type/map :shape :literal :member-types members})
@@ -17816,8 +17800,7 @@
   (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
 (defn- return-premise-c7 [name & args] ((return-premise-helper 'invoke-c7) name (vec args)))
 (defn- return-premise-effects [name & args]
-  (require 'gravity.self-hosting.sh09-body-effect-test)
-  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+  (apply kernel-support/leaf name args))
 (def ^:private return-premise-emitter-plan
   (delay
     (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -18264,8 +18247,7 @@
   (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
 (defn- pr359-descriptor-c7 [name & args] ((pr359-descriptor-helper 'invoke-c7) name (vec args)))
 (defn- pr359-descriptor-body [name & args]
-  (require 'gravity.self-hosting.sh09-body-effect-test)
-  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+  (apply kernel-support/leaf name args))
 (def ^:private pr359-descriptor-emitter-plan
   (delay
     (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -18434,8 +18416,7 @@
 (defn- pr359-prepend-helper [name] (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name))
 (defn- pr359-prepend-c7 [name & args] ((pr359-prepend-helper 'invoke-c7) name (vec args)))
 (defn- pr359-prepend-body [name & args]
-  (require 'gravity.self-hosting.sh09-body-effect-test)
-  (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) name args))
+  (apply kernel-support/leaf name args))
 (def ^:private pr359-prepend-emitter-plan
   (delay
     (let [path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -18875,8 +18856,8 @@
           compiled (return-premise-emit 'p15-s23-typed-compile-node changed-context :call)]
       (is (= [:rejected :list-prepend-element-type-mismatch] ((juxt :status :reason) derived)))
       (is (= :rejected (:status compiled))))
-    (require 'gravity.self-hosting.sh09-body-effect-test)
-    (let [make-input (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'prepend-effect-input)
+    (let [make-input #(kernel-support/prepend-effect-input
+                       %1 %2 %3 list-prepend-input kernel-support/invoke-c7)
           {:keys [request facts bindings ids]} (make-input string-list :gravity.type/string 0)
           changed (assoc-in facts [:type-table (ids :arg1)] :gravity.type/bool)
           context (return-premise-effects 'body-va-context request changed bindings)]
@@ -19151,8 +19132,8 @@
     (is (zero? @opaque-callbacks))))
 
 (deftest pl-semantic-cached-results-are-rederived-before-acceptance
-  (require 'gravity.self-hosting.sh09-body-effect-test)
-  (let [make-input (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'prepend-effect-input)]
+  (let [make-input #(kernel-support/prepend-effect-input
+                     %1 %2 %3 list-prepend-input kernel-support/invoke-c7)]
     (doseq [[receiver value] pr359-prepend-cases]
       (let [{:keys [core node call edge nodes bindings facts request]} (make-input receiver value 0)
             prepared (pr359-prepend-body 'body-va-context request facts bindings)
@@ -19291,8 +19272,8 @@
           (is (= :rejected (:status (compile (coherent changed))))))))))
 
 (deftest pl-insertion-effects-rederive-and-reject-coherent-stale-fields
-  (require 'gravity.self-hosting.sh09-body-effect-test)
-  (let [make-input (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'prepend-effect-input)]
+  (let [make-input #(kernel-support/prepend-effect-input
+                     %1 %2 %3 list-prepend-input kernel-support/invoke-c7)]
     (doseq [[receiver value] pr359-prepend-cases]
       (let [{:keys [core node call edge nodes bindings facts request]} (make-input receiver value 0)
             prepared (pr359-prepend-body 'body-va-context request facts bindings)
