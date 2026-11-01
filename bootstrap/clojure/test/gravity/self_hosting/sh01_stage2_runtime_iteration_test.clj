@@ -6,7 +6,7 @@
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh08-function-call-kernel-support :as body-support]))
 
-(def ^:private runtime {:engine :stage2-runtime-iteration-test})
+(def ^:private runtime body-support/stage2-runtime)
 (def ^:private plan {:source {:path "stage2-runtime-iteration-test.gravity"}})
 (def ^:private compiler-plan
   {:compiler-artifact-plan? true
@@ -86,62 +86,8 @@
                    (:gravity.bootstrap/source-throw (ex-data failure)))))
 
 (defn- typed-lowering-kernel-data
-  ([] (typed-lowering-kernel-data false))
-  ([throw?]
-  ;; Normalized DATA checks the Gravity consumer joins, not C7 authentication.
-  (let [source-path "in-memory-typed.gravity"
-        ns-form '(ns example.typed (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
-        body (if throw? '(throw problem) 'problem)
-        body-id (if throw? :throw :reference) body-form-id (if throw? :throw-form :body-form)
-        fn-form (list 'fn '[problem :- String] :- 'String body)
-        definition-form (list 'def 'identity fn-form)
-        expanded [definition-form] source-text (str/join "\n" (map pr-str (cons ns-form expanded)))
-        declaration {:type-binding-id :string :type-id :gravity.type/string :type-symbol 'String :type-form-id :type-form :type-syntax-id :type}
-        signature {:body-source-child-index 4 :parameter-source-child-indexes [0] :parameters [declaration] :return declaration}
-        source (fn [form-id syntax-id] {:form-id form-id :syntax-id syntax-id})
-        nodes [{:node-id :reference :core-form :reference :children [] :attributes {:binding-id :parameter} :source (source :body-form :body)}
-               {:node-id :function :core-form :fn :children [body-id] :resolved-binding-ids [:parameter]
-                :attributes {:parameters '[problem] :signature signature} :source (source :function-form :fn)}
-               {:node-id :definition :core-form :def :children [:function] :source (source :definition-form :def)}]
-        nodes (if throw? (conj nodes {:node-id :throw :core-form :throw :children [:reference] :source (source :throw-form :throw)}) nodes)
-        forms [{:form-id :definition-form :syntax-id :def :value definition-form :child-form-ids [:def-op :name-form :function-form]}
-               {:form-id :function-form :syntax-id :fn :value fn-form :child-form-ids [:fn-op :parameter-form :return-marker :type-form body-form-id]}
-               {:form-id :parameter-form :syntax-id :parameters :value '[problem :- String] :child-form-ids [:parameter-name :parameter-marker :type-form]}
-               {:form-id :parameter-name :syntax-id :parameter-name :value 'problem :scope-id :function-scope}
-               {:form-id :type-form :syntax-id :type :value 'String}
-               {:form-id :body-form :syntax-id :body :value 'problem}]
-        forms (if throw? (conj forms {:form-id :throw-form :syntax-id :throw :value body :child-form-ids [:throw-operator :body-form]}) forms)
-        forms (mapv #(assoc % :parent-form-id (case (:form-id %) :definition-form nil :function-form :definition-form
-                                                :parameter-name :parameter-form :body-form (if throw? :throw-form :function-form)
-                                                :function-form)) forms)
-        bindings [{:binding-id :parameter :name 'problem :kind :local :binding-class :lexical
-                   :definition-syntax-id :parameter-name :scope-id :function-scope}
-                  {:binding-id :string :name 'String :kind :type :binding-class :core :namespace 'gravity.core}]
-        module {:module 'example.typed :source-path source-path :forms expanded :profile :meta :target :jvm :safety :safe
-                :effects #{} :capabilities #{} :exports []}
-        core-module {:namespace 'example.typed :profile :meta :target :jvm :safety :safe :effects [] :capabilities [] :exports []}
-        record {:definition-name 'identity :definition-kind :named-top-level :function-syntax-id :fn :function-core-node-id :function
-                :definition-core-node-id :definition :body-core-node-id body-id :parameter-binding-ids [:parameter]
-                :fixed-arity 1 :signature signature}
-        function {:definition-name 'identity :function-id :fn :function-core-node-id :function :body-core-node-id body-id
-                  :parameter-binding-ids [:parameter] :parameters [{:binding-id :parameter :type :gravity.type/string}]
-                  :fixed-arity 1 :return :gravity.type/string :signature signature :thrown-error-effects (if throw? [:gravity.type/string] [])}
-        core {:artifact-id :core :module core-module :nodes nodes :function-records [record] :root-core-node-ids [:definition]}
-        reader {:source-unit-record {:path source-path :bytes-hash (str "sha256:" (bootstrap/sha256-hex source-text))}
-                :token-stream [{:raw source-text}]}
-        macro-artifact {:expanded-forms expanded :gravity-macro-boundary {:authenticated-sh04-artifact {:c2-reader-artifact reader}}}
-        request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:module core-module :forms forms :binding-table bindings :top-level-form-ids [:definition-form]}
-                  :authenticated-wrapper {:sh06-resolution-artifact {:sh05-macro-artifact macro-artifact}}}}
-        typed {:status :accepted :module core-module :sh07-shaped-artifact-id :core :function-type-table [function]
-               :type-table (cond-> {:reference :gravity.type/string :function function :definition function} throw? (assoc :throw :gravity.type/never))}
-        report {:artifact :gravity/sh08-function-type-verification :status :passed :expected typed :candidate typed}
-        input {:request request :typed typed :verification report}
-        observation {:verification report :source {:path source-path :text source-text :sha256 (get-in reader [:source-unit-record :bytes-hash])}
-                     :compiler-sources {:c7 {:source {:sha256 :current-c7} :plan-id :c7-plan}
-                                        :lowering {:source {:sha256 :current-lowering} :plan-id :lowering-plan}}}
-        definition {:name 'identity :params '[problem] :body (list body) :definition-form :def-fn :arity 1 :body-form-count 1
-                    :source-declarations {:parameters '[problem :- String] :return '[:- String]}}]
-    {:module module :input input :observation observation :definition definition})))
+  ([] (body-support/typed-lowering-kernel-data))
+  ([throw?] (body-support/typed-lowering-kernel-data throw?)))
 
 (defn- typed-raw-literal-kernel-data [raw-value canonical-value kind type]
   (let [{:keys [module input observation]} (typed-lowering-kernel-data)
@@ -3748,44 +3694,7 @@
       (is (identical? fatal result)))))
 
 (defn- typed-direct-call-kernel-context [base]
-  (let [source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain nil :generated-origin nil})
-        record (assoc (get-in base [:records 'identity]) :definition-binding-id :target-binding)
-        call {:core-node-id :call :operator-node-id :operator :operator-binding-id :target-binding :argument-node-ids [:argument]
-              :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :result-policy :call-result}
-        edge {:ordinal 0 :call-core-node-id :call :caller-function-syntax-id :caller-fn :caller-function-core-node-id :caller-core
-              :callee-binding-id :target-binding :callee-definition-syntax-id :target-name :callee-function-syntax-id :fn :callee-function-core-node-id :function
-              :argument-core-node-ids [:argument] :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :classification :local-function}
-        module (get-in base [:core :module])
-        fact {:artifact :gravity/c7-call-type-fact
-              :fact-id-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id :call :callee-function-syntax-id :fn
-                                :argument-types [:gravity.type/string] :result-type :gravity.type/string}
-              :call-core-node-id :call :caller-function-syntax-id :caller-fn :callee-function-syntax-id :fn
-              :argument-types [:gravity.type/string] :result-type :gravity.type/string :evaluation-order :operator-then-arguments
-              :source-span nil :syntax-id :call-form :origin-chain nil :generated-origin nil
-              :profile (:profile module) :target (:target module) :effects (:effects module) :capabilities (:capabilities module) :status :inferred}
-        row {:constraint-id-request {:domain :gravity/sh08-function-call-constraint-v1 :call-core-node-id :call :callee-function-syntax-id :fn}
-             :kind :equality :lhs :fn :rhs [{:parameter :parameter :argument :gravity.type/string :chosen :gravity.type/string}]
-             :origin nil :profile :meta :target :jvm :status :solved :diagnostics []}]
-    (-> base (assoc :locals {:caller-parameter 'problem} :parameter-types {:caller-parameter :gravity.type/string}
-                    :current-function {:function-syntax-id :caller-fn :function-core-node-id :caller-core}
-                    :calls {:call call} :edges {:call edge} :call-facts {:call fact} :call-order {:call 0} :recursion-components [] :ledger [row])
-        (assoc-in [:core :function-records] [record]) (assoc-in [:records 'identity] record)
-        (assoc-in [:bindings :target-binding] {:binding-id :target-binding :name 'identity :definition-syntax-id :target-name
-                                              :binding-class :namespace :kind :function :namespace (:namespace module)})
-        (update :nodes merge {:operator {:node-id :operator :core-form :reference :children [] :resolved-binding-ids [:target-binding]
-                                         :attributes {:binding-id :target-binding :symbol 'identity :position :operator :binding-class :namespace :definition-syntax-id :target-name}
-                                         :source (source :operator-form)}
-                              :argument {:node-id :argument :core-form :reference :children [] :resolved-binding-ids [:caller-parameter]
-                                         :attributes {:binding-id :caller-parameter} :source (source :argument-form)}
-                              :call {:node-id :call :core-form :call :children [:operator :argument] :resolved-binding-ids [:target-binding]
-                                     :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1] :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
-                                     :evaluation {:kind :operator-then-arguments :owner-function-syntax-id :caller-fn
-                                                  :order [{:index 0 :core-node-id :operator} {:index 1 :core-node-id :argument}]} :source (source :call-form)}})
-        (update :types merge {:operator (get-in base [:functions 'identity]) :argument :gravity.type/string :call :gravity.type/string})
-        (update :forms merge {:name-form {:form-id :name-form :syntax-id :target-name :value 'identity :parent-form-id :definition-form}
-                              :call-form {:form-id :call-form :syntax-id :call-form :kind :list :child-form-ids [:operator-form :argument-form]}
-                              :operator-form {:form-id :operator-form :syntax-id :operator-form :kind :symbol :value 'identity :parent-form-id :call-form}
-                              :argument-form {:form-id :argument-form :syntax-id :argument-form :kind :symbol :value 'problem :parent-form-id :call-form}}))))
+  (body-support/typed-direct-call-kernel-context base))
 
 (deftest current-gravity-integral-ordering-fixtures-development-kernel
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]

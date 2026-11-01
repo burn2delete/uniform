@@ -127,9 +127,11 @@
                     (case function sh08-function-type-core-artifact typed
                           sh08-verify-function-type-result verification))
                   seal-binding (fn [& _] (swap! seals inc) (throw (ex-info "Unexpected type-only seal" {})))]
-      (is (= expected (fresh-type-products relative)))
+      ;; Development timing is a non-authoritative receipt, not part of the
+      ;; normalized product contract under test.
+      (is (= expected (dissoc (fresh-type-products relative) :development-timing)))
       (is (= cycle @events))
-      (is (= expected (fresh-type-products relative)))
+      (is (= expected (dissoc (fresh-type-products relative) :development-timing)))
       (is (= (vec (concat cycle cycle)) @events))
       (is (= 0 @seals))
       (reset! events [])
@@ -2311,34 +2313,11 @@
 ))))))
 
 (defn- prepend-effect-input [receiver value ordinal]
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [input-fn (sh08-helper 'list-prepend-input) c7 (sh08-helper 'invoke-c7)
-        base (input-fn receiver value) ids (zipmap (keys (:nodes base)) (map sha (range (+ 1800 (* 10 ordinal)) (+ 1810 (* 10 ordinal)))))
-        source #(-> % (update :form-id ids) (update :syntax-id ids))
-        node-list (mapv (fn [node] (-> node (update :node-id ids) (update :children #(mapv ids %)) (update :source source)
-                                       (update-in [:evaluation :order] #(mapv (fn [entry] (update entry :core-node-id ids)) %)))) (get-in base [:core :nodes]))
-        forms (into {} (for [[id form] (:forms base)]
-                         [(ids id) (-> form (update :form-id ids) (update :syntax-id ids) (update :parent-form-id ids)
-                                      (update :child-form-ids #(mapv ids %)))]))
-        call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
-                 (update :argument-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
-        edge (-> (:edge base) (assoc :ordinal ordinal) (update :call-core-node-id ids)
-                 (update :argument-core-node-ids #(mapv ids %)) (update :ordered-evaluation-node-ids #(mapv ids %)))
-        module (assoc (:module base) :effects [:memory/allocate])
-        core (assoc (:core base) :module module :nodes node-list :calls [call] :call-edges [edge])
-        nodes (into {} (map (juxt :node-id identity) node-list)) node (get nodes (:core-node-id call))
-        types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
-        prepend-owner? (or (= receiver :gravity.type/list) (= :gravity.type/list (:kind receiver))
-                           (= receiver :gravity.type/set) (= :gravity.type/set (:kind receiver)))
-        prefix (if prepend-owner? "sh08-pl-" "sh08-va-")
-        result (c7 (symbol (str prefix "derive")) [core node call edge nodes (:bindings base) types forms])
-        descriptor (:descriptor result)
-        facts {:module module :type-table (assoc types (:operator-node-id call) descriptor (:node-id node) (:type result))
-               :function-type-table [] :call-type-facts [(c7 (symbol (str prefix "call-fact")) [descriptor module])]
-               :constraint-ledger [(c7 (symbol (str prefix "constraint")) [descriptor])]}]
-    {:core core :nodes nodes :node node :forms forms :call call :edge edge :ids ids :bindings (:bindings base)
-     :descriptor descriptor :result result :facts facts
-     :request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}}))
+  (kernel-support/prepend-effect-input
+   receiver value ordinal
+   (fn [receiver value]
+     (kernel-support/integral-ordering-input 'conj [receiver value]))
+   kernel-support/invoke-c7))
 
 (deftest body-nil-if-join-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
