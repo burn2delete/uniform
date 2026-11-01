@@ -92,3 +92,42 @@ history; no helper, privacy, suppression or policy changes are made to remove
 them. A committed-source contextual comparison must classify the actual diff
 before lint can pass. Final controls also retain the original private helper
 docstring; this metadata restoration changes no body or operation port.
+
+## Completed local controls and current-main reconciliation
+
+Final focused checks pass31/1630, including preserved private doc metadata.
+The three existing exact small-argument, vector/list body and non-tail recur
+kernels pass3/11. The language gate passes again after the metadata restoration.
+Committed-source contextual lint correctly recognizes all four existing
+warnings and reports zero blockers across the three changed Clojure paths.
+Its terminal receipts and the original nonpass are retained outside the checkout.
+Docs240/19, roadmap and governance185 pass.
+
+All seven complete data and original serialized pairs pass: four actual source/
+plan/result/refusal records, arguments and both complete public current Core
+artifacts. Both spellings retain25 Core nodes, one target read, source8e63 and
+recomputed Core16ec. The before source controls run at4921a5a4; the original
+Core producer starts at scope22d62927 with fixture files present and completes
+after the fixture-only commit. Their production source is byte-identical to
+2fd142d2. After controls use the working extraction later committed6c467c7e;
+final controls include the preserved private docstring. These are accurate
+working-source observations, not execution at a later candidate head. No root,
+pin, mode, authentication callback or returned field is substituted. The
+earlier pre-metadata-restoration records and successful full comparison remain
+history; final controls also pass the complete comparison independently.
+
+PR754 integrates as mainbd25c0b44617cfb0233ae437582279c0218f9ade,
+tree b0a7201b064bc6fdbc76415130f09a884d13df4e, identical to the initial
+production source2fd142d2. A normal merge reconciles this isolated successor
+as8a9510517678d43e020b0204064b73906e723f8d without any file changes;
+its tree remains6eab00a5710a1d4ae47a6c161bb5a2af10b49a5b. The exact
+main-to-candidate scope is nine paths. Component reconstruction preserves all
+other00590 code, all17 prior Runtime bodies, Bootstrap and seven other caller/
+consumer components. No predecessor work is replayed or credited again.
+
+Scripts/logs/products use uniform-runtime-evaluation-* under /tmp; complete
+Core products use runtime-evaluation-before/after under
+uniform-cli-core-arguments-evidence. Exact independent acceptance, this
+implementation's own CI and current-main clean integration preflight remain
+required. No complete namespace, canonical runtime or migration credit follows
+from the local controls.
