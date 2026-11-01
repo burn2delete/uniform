@@ -133,7 +133,8 @@
                (true? (:executable? record))
                (str/includes? (:out version-result)
                               ":phase \"P18-T06\""))]
-      (and (map? fixture)
+      (and matches-expected?
+           (map? fixture)
            (= artifact-inspection-final-release?
               (:artifact-inspection-final-release? record))
            (= (= expected-stdout (:out executable-result))
@@ -181,7 +182,8 @@
                    "-o" (:output-path fixture)]
                   (:command record))
                diagnostic-present?)]
-      (and (map? fixture)
+      (and matches-expected?
+           (map? fixture)
            (= diagnostic-present?
               (:stable-diagnostic-through-final-release? record))
            (= matches-expected? (:matches-expected? record))))

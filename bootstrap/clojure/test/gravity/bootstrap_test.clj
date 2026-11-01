@@ -44516,6 +44516,29 @@
                    (assoc candidate
                           :diagnostics diagnostics
                           :capability-based-proof capability))))
+              failed-accepted-record
+              (-> (get-in complete-proof
+                          [:accepted-command-proofs 0])
+                  (assoc :status :failed
+                         :matches-expected? false)
+                  (assoc-in [:check-result :exit] 1))
+              recomputed-failed-accepted
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:accepted-command-proofs 0]
+                         failed-accepted-record))
+              non-rejected-record
+              (-> (get-in complete-proof
+                          [:rejected-command-proofs 0])
+                  (assoc :stable-diagnostic-through-final-release? false
+                         :matches-expected? false)
+                  (assoc-in [:result :exit] 0)
+                  (assoc-in [:result :err] ""))
+              recomputed-non-rejected
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:rejected-command-proofs 0]
+                         non-rejected-record))
               recomputed-compile-flag-failure
               (fn [flag value]
                 (let [compile-artifact
@@ -44636,6 +44659,10 @@
                  recomputed-failed-command]
                 [:recomputed-failed-status
                  recomputed-failed-status]
+                [:recomputed-failed-accepted
+                 recomputed-failed-accepted]
+                [:recomputed-non-rejected
+                 recomputed-non-rejected]
                 [:recomputed-failed-rejected
                  recomputed-failed-rejected]
                 [:recomputed-evil-command-artifact
@@ -44744,6 +44771,16 @@
           (is (true? (get-in valid-artifact
                              [:p18-final-release-proof-verification
                               :complete-boundary-authenticated?])))
+          (is (every? bootstrap/p18-t06-accepted-command-proof-valid?
+                      complete-accepted-command-proofs))
+          (is (every? bootstrap/p18-t06-rejected-command-proof-valid?
+                      complete-rejected-command-proofs))
+          (is (false?
+               (bootstrap/p18-t06-accepted-command-proof-valid?
+                failed-accepted-record)))
+          (is (false?
+               (bootstrap/p18-t06-rejected-command-proof-valid?
+                non-rejected-record)))
           (is (str/includes? valid-output ":status :complete"))
           (is (not (.exists (java.io.File. verify-proof-path))))
           (is (not (.exists (java.io.File. diagnostics-path))))
