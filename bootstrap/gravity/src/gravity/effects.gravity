@@ -1,5 +1,6 @@
 ; L6/C8: bounded body effects over authenticated canonical core.
 (ns gravity.effects (:profile :meta) (:target :jvm)
+  (:requires [gravity.compiler.atomic-equality-artifacts :as atomic-equality])
   (:exports [build-body-effect-result verify-body-effect-result
              sh09-adapter-function-top-level-keys sh09-adapter-function-typed-core
              sh09-adapter-function-identity-domain sh09-adapter-function-identity-input
@@ -12273,28 +12274,6 @@
                                :cross-family :actual-value-families)
             :invalidation (conj (get header :invalidation) :nil-or-types)) header)) nil)) nil))
 
-(defn body-ae-constraint [descriptor]
-  {:constraint-id-request {:domain :gravity/sh08-atomic-equality-constraint-v1 :application descriptor}
-   :kind :equality :producer-rule :sh08-atomic-equality-v1
-   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :atomic-equality}
-   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
-   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
-              :direct-effects (get descriptor :direct-effects)}
-   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
-   :status :solved :diagnostics []})
-
-(defn body-ae-call-fact [descriptor module]
-  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
-    {:artifact :gravity/c7-call-type-fact
-     :fact-id-request {:domain :gravity/sh08-atomic-equality-call-type-fact-v1 :application descriptor}
-     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
-     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
-     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
-     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
-     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
-     :dispatch :direct-atomic-equality :applied-atomic-equality descriptor :effect-facts-source :audited-atomic-value-intrinsic}))
-
-
 (defn body-ae-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
@@ -13915,8 +13894,8 @@
                      (= (get child :source) (get (body-ma-form-node {} form) :source))
                      (if (= i 0) (= (get form :value) (get (get child :attributes) :symbol)) true)])
                  (recur (+ i 1)) false))))
-         (= (body-ae-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
-         (= [(body-ae-constraint descriptor)] rows)]) false)))))) false)))
+         (= (atomic-equality/atomic-equality-call-fact descriptor (get core :module)) (body-by (get facts :call-type-facts) :call-core-node-id (get node :node-id)))
+         (= [(atomic-equality/atomic-equality-constraint descriptor)] rows)]) false)))))) false)))
 
 (defn body-ae-node? [node facts core]
   (let [context (get facts :equality-context) id (get node :node-id)]
@@ -18848,7 +18827,7 @@ true
                         (body-le-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id))) (body-ve-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))))
                     (if (= :direct-integral-equality (get (get call-facts id) :dispatch))
                       (body-ie-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))
-                      (body-ae-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))))) equality-rows)
+                      (atomic-equality/atomic-equality-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))))) equality-rows)
               (if (= :direct-not (get (get call-facts id) :dispatch))
                 (conj not-rows (body-nt-constraint (get (get facts :type-table) (get (get calls id) :operator-node-id)))) not-rows)
               (if (contains? #{:direct-map-contains :direct-keyword-set-contains :direct-character-set-contains :direct-string-set-contains :direct-symbol-set-contains :direct-integer-set-contains} (get (get call-facts id) :dispatch))

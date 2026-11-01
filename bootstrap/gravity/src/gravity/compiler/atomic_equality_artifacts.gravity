@@ -1,0 +1,30 @@
+; Shared pure constructors for the C7 atomic-equality artifact schema.
+; Passes retain their own source, type, effect, and provenance validation.
+(ns gravity.compiler.atomic-equality-artifacts
+  (:profile :meta)
+  (:target :jvm)
+  (:exports [atomic-equality-constraint atomic-equality-call-fact])
+  (:effects #{})
+  (:capabilities #{})
+  (:safety :safe))
+
+(defn atomic-equality-constraint [descriptor]
+  {:constraint-id-request {:domain :gravity/sh08-atomic-equality-constraint-v1 :application descriptor}
+   :kind :equality :producer-rule :sh08-atomic-equality-v1
+   :lhs {:core-node-id (get descriptor :call-core-node-id) :projection :atomic-equality}
+   :rhs (get descriptor :result-type) :dependencies descriptor :origin (get (get descriptor :source) :origin-chain)
+   :solution {:result-type (get descriptor :result-type) :application (get descriptor :application)
+              :direct-effects (get descriptor :direct-effects)}
+   :invalidation (get descriptor :invalidation) :profile (get descriptor :profile) :target (get descriptor :target)
+   :status :solved :diagnostics []})
+
+(defn atomic-equality-call-fact [descriptor module]
+  (let [source (get descriptor :source) edge (get descriptor :source-edge)]
+    {:artifact :gravity/c7-call-type-fact
+     :fact-id-request {:domain :gravity/sh08-atomic-equality-call-type-fact-v1 :application descriptor}
+     :call-core-node-id (get descriptor :call-core-node-id) :caller-function-syntax-id (get edge :caller-function-syntax-id)
+     :callee-function-syntax-id nil :argument-types (get descriptor :argument-types) :result-type (get descriptor :result-type)
+     :evaluation-order :operator-then-arguments :source-span (get source :semantic-span) :syntax-id (get source :syntax-id)
+     :origin-chain (get source :origin-chain) :generated-origin (get source :generated-origin)
+     :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
+     :dispatch :direct-atomic-equality :applied-atomic-equality descriptor :effect-facts-source :audited-atomic-value-intrinsic}))
