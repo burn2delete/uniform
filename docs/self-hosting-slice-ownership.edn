@@ -94,7 +94,11 @@
   ["docs/self-hosting-slice-backlog.md"]}
 
  :production-helper-associations
- {"bootstrap/clojure/src/gravity/release.clj"
+ {"bootstrap/clojure/src/gravity/safety.clj"
+  {:namespace gravity.safety :owner :sh-safety :slice "SH-11"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj"
+   :test-path "bootstrap/clojure/test/gravity/safety/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/release.clj"
   {:namespace gravity.release :owner :master-coordinator :slice "SH-00"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00906-p18-t02-source-material.clj"
    :test-path "bootstrap/clojure/test/gravity/release/pipeline_test.clj"}
@@ -200,7 +204,8 @@
  {"bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj" {:owner :sh-reader, :source-path "bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj", :source-namespace gravity.c2-reader-product-projection.scalar-spans}, "bootstrap/clojure/test/gravity/c3_literal_indexes_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj", :source-namespace gravity.c3-literal-projection.indexes}, "bootstrap/clojure/test/gravity/c3_reader_expansions_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_reader_expansions.clj", :source-namespace gravity.c3-reader-expansions}, "bootstrap/clojure/test/gravity/c3_reader_lossless_span_test.clj" {:owner :sh-syntax, :source-path "bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj", :source-namespace gravity.c3-literal-projection.spans}}
 
  :module-owners
- {"bootstrap/clojure/src/gravity/release.clj" :master-coordinator
+ {"bootstrap/clojure/src/gravity/safety.clj" :sh-safety
+  "bootstrap/clojure/src/gravity/release.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/build.clj" :sh-package-build
   "bootstrap/clojure/src/gravity/bootstrap/module_literals.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/tooling.clj" :master-coordinator
@@ -433,7 +438,9 @@
   "bootstrap/clojure/test/gravity/syntax_origin_test.clj" :sh-syntax}
 
  :standalone-test-owners
- {"bootstrap/clojure/test/gravity/release/pipeline_test.clj"
+ {"bootstrap/clojure/test/gravity/safety/pipeline_test.clj"
+  {:namespace gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
+  "bootstrap/clojure/test/gravity/release/pipeline_test.clj"
   {:namespace gravity.release.pipeline-test :slice "SH-00" :owner :master-coordinator}
   "tools/ci/run_test.clj"
   {:namespace ci.run-test :slice "SH-01" :owner :master-coordinator}

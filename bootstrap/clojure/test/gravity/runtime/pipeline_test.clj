@@ -19,7 +19,8 @@
 
 (deftest namespace-contract-is-explicit-and-does-not-admit-plans
   (is (empty? (ns-aliases 'gravity.runtime)))
-  (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan}
+  (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
+           'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -136,3 +137,82 @@
     (with-redefs-fn {scoped (fn [& args] (reset! seen (vec args)) :interposed-scope)}
       #(is (= :interposed-scope (b/p15-s23-stage2-runtime-execute-function context {} 'f [1]))))
     (is (= [context {} 'f [1] nil] @seen))))
+
+(def ^:private arithmetic-programs
+  (delay (mapv (fn [[extension disposition]]
+                 (assoc (compile-source (str "bootstrap/clojure/fixtures/runtime-arithmetic/" disposition extension))
+                        :extension extension :disposition disposition))
+               (for [extension [".gravity" ".qst"] disposition ["accepted" "rejected"]]
+                 [extension disposition]))))
+
+(def ^:private arithmetic-results
+  [['add-zero 0] ['add-unary 7] ['add-binary 9] ['add-ternary 6] ['add-many 15]
+   ['subtract-unary -7] ['subtract-binary 5] ['subtract-ternary 4] ['subtract-many 10]
+   ['multiply-zero 1] ['multiply-unary 7] ['multiply-binary 20] ['multiply-ternary 24] ['multiply-many 120]
+   ['divide-unary 1/2] ['divide-binary 9/2] ['divide-ternary 4] ['divide-many 1]])
+
+(deftest paired-real-arithmetic-plans-preserve-values-refusals-and-identities
+  (doseq [{:keys [path plan disposition]} @arithmetic-programs]
+    (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+    (is (= (:plan-id plan)
+           (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+    (if (= "accepted" disposition)
+      (doseq [[callee expected] arithmetic-results]
+        (is (= expected (b/p15-s23-stage2-runtime-execute-function context plan callee []))))
+      (doseq [[callee id builtin]
+              [['divide-zero "L2-BUILTIN-ERROR" '/] ['unary-zero "L2-BUILTIN-ERROR" '/]
+               ['overflow-add "L2-BUILTIN-ERROR" '+] ['overflow-subtract "L2-BUILTIN-ERROR" '-]
+               ['overflow-multiply "L2-BUILTIN-ERROR" '*] ['wrong-operand "L2-BUILTIN-ERROR" '+]
+               ['subtract-no-arguments "L2-BUILTIN-ARITY" '-] ['divide-no-arguments "L2-BUILTIN-ARITY" '/]]]
+        (let [error (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan callee []))]
+          (is (= id (:id error)))
+          (is (= builtin (:function error)))
+          ;; The legacy dispatcher has no diagnostic source path at this seam.
+          ;; Actual source paths remain in the compiled-plan/control envelope.
+          (is (= {:source nil} (:source-span error)))))))
+  (doseq [disposition ["accepted" "rejected"]]
+    (is (apply = (map #(get-in % [:plan :plan-id])
+                     (filter #(= disposition (:disposition %)) @arithmetic-programs))))))
+
+(deftest hosted-arithmetic-retains-native-values-classes-and-failure-kinds
+  (doseq [[operation host inputs]
+          [[runtime/hosted-add + [[] [4] [1 2] [1 2 3] [1 2 3 4 5] [1M 2M] [1N 2N]]]
+           [runtime/hosted-subtract - [[4] [9 4] [9 2 3] [20 1 2 3 4] [1/2 1/4]]]
+           [runtime/hosted-multiply * [[] [4] [2 3] [2 3 4] [1 2 3 4 5] [1M 2M]]]
+           [runtime/hosted-divide / [[2] [9 2] [24 3 2] [120 2 3 4 5]]]]
+          args inputs]
+    (let [expected (apply host args) actual (operation args)]
+      (is (= expected actual))
+      (is (= (class expected) (class actual)))))
+  (doseq [[operation host args]
+          [[runtime/hosted-add + [Long/MAX_VALUE 1]]
+           [runtime/hosted-subtract - []] [runtime/hosted-multiply * [Long/MAX_VALUE 2]]
+           [runtime/hosted-divide / []] [runtime/hosted-divide / [1 0]]
+           [runtime/hosted-add + ["wrong" 1]]]]
+    (let [expected (observed-error #(apply host args)) actual (observed-error #(operation args))]
+      (is (some? expected))
+      (is (= (class expected) (class actual)))
+      (is (= (ex-message expected) (ex-message actual))))))
+
+(deftest private-arithmetic-wrappers-retain-late-stage-interposition
+  ;; Trusted callback markers only, never source or authority evidence.
+  (doseq [name '[add subtract multiply divide]]
+    (let [compatibility (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-stage2-runtime-" name)))
+          stage (ns-resolve 'gravity.runtime (symbol (str "hosted-" name)))
+          args [2 4] calls (atom []) sentinel (Object.)]
+      (is (true? (:private (meta compatibility))))
+      (is (= '([args]) (:arglists (meta compatibility))))
+      (with-redefs-fn {stage (fn [received] (swap! calls conj received) sentinel)}
+        #(is (identical? sentinel ((deref compatibility) args))))
+      (is (= 1 (count @calls)))
+      (is (identical? args (first @calls))))))
+
+(deftest arithmetic-caller-arity-guards-run-before-the-stage-helper
+  (let [plan (:plan (first (filter #(= "rejected" (:disposition %)) @arithmetic-programs)))]
+    (doseq [[callee stage] [['subtract-no-arguments #'runtime/hosted-subtract]
+                           ['divide-no-arguments #'runtime/hosted-divide]]]
+      (let [calls (atom 0)]
+        (with-redefs-fn {stage (fn [_] (swap! calls inc) :unexpected)}
+          #(is (= "L2-BUILTIN-ARITY"
+                  (:id (diagnostic (fn [] (b/p15-s23-stage2-runtime-execute-function context plan callee [])))))))
+        (is (zero? @calls))))))

@@ -145,15 +145,16 @@
 
 (deftest namespace-contract-is-narrow-and-preserves-compatibility-arities
   (let [contract (:gravity/namespace-contract (meta #'reader/read-source-artifact))]
-    (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text} (set (keys (ns-publics 'gravity.reader)))))
+    (is (= #{'read-source-artifact 'decode-source-bytes 'read-source-text 'reject-source-path!} (set (keys (ns-publics 'gravity.reader)))))
     (is (empty? (ns-aliases 'gravity.reader)))
-    (is (= :native-source-intake-and-stage0-reader-artifact-assembly (:contract-boundary contract)))
+    (is (= :native-source-intake-diagnostics-and-stage0-reader-artifact-assembly (:contract-boundary contract)))
     (is (= ['clojure.core] (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
     (is (= (set (:operation-inputs contract)) (set (keys (operations)))))
-    (is (= ["L1-SOURCE-ENCODING"] (get-in contract [:diagnostic-ownership :owns])))
-    (is (= ["L1-SOURCE-EXTENSION" "C2-ENCODING"] (get-in contract [:diagnostic-ownership :delegates])))
+    (is (= ["L1-SOURCE-ENCODING" "L1-SOURCE-EXTENSION"] (get-in contract [:diagnostic-ownership :owns])))
+    (is (= :supplied-caller (get-in contract [:diagnostic-ownership :admission-owner])))
+    (is (= ["C2-ENCODING"] (get-in contract [:diagnostic-ownership :delegates])))
     (is (true? (get-in contract [:public-api 'read-source-text :opens-source?])))
     (is (false? (get-in contract [:public-api 'read-source-text :grants-file-authority?])))
     (is (true? (:clojure-seed-boundary? contract)))
@@ -385,3 +386,98 @@
             (doseq [invoke [read-native-source bootstrap/read-gravity-source-text]]
               (is (= expected (ex-data (rejection #(invoke path)))))))
           (finally (java.nio.file.Files/deleteIfExists link)))))))
+
+(defn- direct-path-refusal [path captured-bytes]
+  (reader/reject-source-path! #'bootstrap/gravity-source-extension
+                              #'bootstrap/co-canonical-source-extensions
+                              #'bootstrap/sha256-bytes-hex #'bootstrap/fail!
+                              path captured-bytes))
+
+(deftest source-path-refusals-preserve-real-file-and-supplied-snapshot-provenance
+  (let [captured (.getBytes "original source snapshot" java.nio.charset.StandardCharsets/UTF_8)]
+    (with-native-source-file
+      ".txt" captured
+      (fn [path]
+        (let [one (ex-data (rejection #(bootstrap/source-path-policy-fail! path)))
+              two (ex-data (rejection #(bootstrap/source-path-policy-fail! path captured)))
+              direct (ex-data (rejection #(direct-path-refusal path captured)))
+              expected-hash (str "sha256:" (bootstrap/sha256-bytes-hex captured))]
+          (is (= one two direct))
+          (is (= "L1-SOURCE-EXTENSION" (:id direct)))
+          (is (= {:source path :byte-start 0 :byte-end 0} (:source-span direct)))
+          (is (= expected-hash (:source-id direct) (get-in direct [:facts :bytes-hash])
+                 (get-in direct [:primary :artifact]) (get-in direct [:origin-chain 0 :source-id])))
+          (is (= (alength captured) (get-in direct [:facts :byte-count])))
+          (is (= [".gravity" ".qst"] (get-in direct [:facts :allowed-extensions])))
+          (is (nil? (:profile direct)))
+          (is (nil? (:target direct)))
+          (spit path "changed on disk")
+          (is (= direct (ex-data (rejection #(direct-path-refusal path captured)))))
+          (is (not= expected-hash
+                    (:source-id (ex-data (rejection #(bootstrap/source-path-policy-fail! path))))))
+          (java.nio.file.Files/delete (.toPath (java.io.File. path)))
+          (let [missing (ex-data (rejection #(bootstrap/source-path-policy-fail! path)))]
+            (is (= "L1-SOURCE-EXTENSION" (:id missing)))
+            (is (= path (get-in missing [:source-span :source])))
+            (is (not (contains? (:facts missing) :bytes-hash)))
+            (is (not (contains? (:facts missing) :byte-count)))))))))
+
+(deftest source-path-wrapper-retains-late-stage-interposition
+  (let [captured (byte-array [1 2]) observed (atom nil)]
+    (with-redefs [reader/reject-source-path! (fn [& args] (reset! observed (vec args)) :stage-observed)]
+      (is (= :stage-observed (bootstrap/source-path-policy-fail! "module.txt" captured)))
+      (is (= [#'bootstrap/gravity-source-extension #'bootstrap/co-canonical-source-extensions
+              #'bootstrap/sha256-bytes-hex #'bootstrap/fail! "module.txt" captured] @observed))
+      (is (identical? captured (last @observed))))))
+
+(deftest one-argument-path-wrapper-keeps-its-own-late-two-argument-call
+  (let [original bootstrap/source-path-policy-fail! captured (byte-array [4 5 6])
+        observed (atom nil)]
+    (with-native-source-file
+      ".txt" captured
+      (fn [path]
+        (with-redefs [bootstrap/source-path-policy-fail!
+                      (fn [selected supplied] (reset! observed [selected (vec supplied)]) :late-two-arity)]
+          (is (= :late-two-arity (original path)))
+          (is (= [path [4 5 6]] @observed)))))))
+
+(deftest source-path-dependencies-retain-operator-and-argument-lookup-order
+  ;; Trusted host interposition only; these labels/hash do not authenticate data.
+  (let [events (atom []) received (atom nil)
+        after-extension (fn [& _] (swap! events conj :after-extension-failure) :after-extension)
+        after-hash (fn [_ _ data] (swap! events conj :after-hash-failure)
+                     (reset! received data) :after-hash)]
+    (with-redefs [bootstrap/sha256-bytes-hex
+                  (fn [_] (swap! events conj :hash)
+                    (alter-var-root #'bootstrap/fail! (constantly after-hash)) "synthetic-byte-hash")
+                  bootstrap/gravity-source-extension
+                  (fn [_] (swap! events conj :extension)
+                    (alter-var-root #'bootstrap/fail! (constantly after-extension))
+                    (alter-var-root #'bootstrap/co-canonical-source-extensions (constantly #{".after"}))
+                    ".observed")
+                  bootstrap/co-canonical-source-extensions #{".before"}
+                  bootstrap/fail! (fn [& _] :before-hash)]
+      (is (= :after-hash (direct-path-refusal "module.txt" (byte-array [1]))))
+      (is (= [:hash :extension :after-hash-failure] @events))
+      (is (= ".observed" (get-in @received [:facts :actual-extension])))
+      (is (= [".after"] (get-in @received [:facts :allowed-extensions])))
+      (is (= "sha256:synthetic-byte-hash" (:source-id @received)))
+      (is (= :after-extension (direct-path-refusal "module.txt" nil)))
+      (is (= [:hash :extension :after-hash-failure :extension :after-extension-failure] @events)))))
+
+(deftest source-path-dependency-exceptions-retain-the-original-identity
+  (doseq [dependency [#'bootstrap/sha256-bytes-hex #'bootstrap/gravity-source-extension #'bootstrap/fail!]]
+    (let [sentinel (IllegalStateException. "original source-path dependency exception")
+          outcome (with-redefs-fn {dependency (fn [& _] (throw sentinel))}
+                    #(try (direct-path-refusal "module.txt" (byte-array [1]))
+                       (catch Throwable error error)))]
+      (is (identical? sentinel outcome)))))
+
+(deftest source-path-api-declares-no-input-admission-or-file-access
+  (let [contract (:gravity/namespace-contract (meta #'reader/reject-source-path!))
+        api (get-in contract [:public-api 'reject-source-path!])]
+    (is (= (:arglists (meta #'reader/reject-source-path!)) (:arglists api)))
+    (is (= :none (:admission api)))
+    (is (false? (:opens-source? api)))
+    (is (= '([source-path] [source-path bytes])
+           (:arglists (meta #'bootstrap/source-path-policy-fail!))))))

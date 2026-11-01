@@ -328,10 +328,17 @@
 (def ^:private process-supervision-helper-consumer "tools/ci/run.clj")
 (def ^:private process-supervision-helper-test "tools/ci/run_test.clj")
 
+(def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
+(def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
+(def ^:private safety-stage-test "bootstrap/clojure/test/gravity/safety/pipeline_test.clj")
+
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {release-inventory-stage-path
+    (and (= {safety-stage-path
+             {:namespace 'gravity.safety :owner :sh-safety :slice "SH-11"
+              :consumer-path safety-stage-consumer :test-path safety-stage-test}
+             release-inventory-stage-path
              {:namespace 'gravity.release :owner :master-coordinator :slice "SH-00"
               :consumer-path release-inventory-stage-consumer :test-path release-inventory-stage-test}
              build-validation-stage-path
@@ -451,6 +458,9 @@
          (= :master-coordinator (get-in record [:module-owners release-inventory-stage-path]))
          (= {:namespace 'gravity.release.pipeline-test :slice "SH-00" :owner :master-coordinator}
             (get-in record [:standalone-test-owners release-inventory-stage-test]))
+         (= :sh-safety (get-in record [:module-owners safety-stage-path]))
+         (= {:namespace 'gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
+            (get-in record [:standalone-test-owners safety-stage-test]))
          (= :sh-target-jvm (get-in record [:module-owners jvm-source-stage-path]))
          (= {:namespace 'gravity.backend.jvm.pipeline-test :slice "SH-00" :owner :sh-target-jvm}
             (get-in record [:standalone-test-owners jvm-source-stage-test]))
@@ -604,6 +614,11 @@
               "source" {"path" process-supervision-helper-path "namespace" "gravity.process-supervision"}
               "consumer" {"path" process-supervision-helper-consumer "namespace" "ci.run" "owner" "master-coordinator"}
               "test" {"path" process-supervision-helper-test "namespace" "ci.run-test"
+                      "registration" "standalone"}}
+             {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
+              "source" {"path" safety-stage-path "namespace" "gravity.safety"}
+              "consumer" {"path" safety-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-safety"}
+              "test" {"path" safety-stage-test "namespace" "gravity.safety.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
 
@@ -1548,4 +1563,28 @@
     (doseq [bad [(assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest safety-records-helper-has-a-real-consumer-and-standalone-test
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        helper-index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "safety-records")]
+    (is (not (neg? helper-index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [safety-stage-path safety-stage-consumer safety-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path safety-stage-path)))]
+        (is (= 'gravity.safety (second (read reader))))))
+    (doseq [bad [(update record :module-owners dissoc safety-stage-path)
+                 (assoc-in record [:module-owners safety-stage-path] :master-coordinator)
+                 (assoc-in record [:standalone-test-owners safety-stage-test :owner] :sh-core)
+                 (assoc-in record [:production-helper-associations safety-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations safety-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations safety-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" helper-index "test" "registration"] "bootstrap-free")
+                 (assoc-in contract ["production_helpers" helper-index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
       (is (not (production-helper-registration-valid? record bad))))))
