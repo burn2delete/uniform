@@ -220,7 +220,11 @@
                                bytes (read-bytes path)
                                forms (source-forms! path bytes)
                                forms-tree (tree-seq coll? seq forms)
-                               loads (filter #(and (seq? %) (= 'load (first %))) forms-tree)
+                               loads (filter #(and (seq? %)
+                                                   (contains? #{'load 'clojure.core/load
+                                                                'load-file 'clojure.core/load-file}
+                                                              (first %)))
+                                             forms-tree)
                                namespace-change? (some #(and (seq? %)
                                                              (#{'ns 'in-ns 'clojure.core/ns
                                                                 'clojure.core/in-ns}

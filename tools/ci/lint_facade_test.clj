@@ -87,7 +87,10 @@
     (is (thrown? Exception (context/c2-pass-cache-plan!
                             (read-inputs (dissoc inputs c2-fragment)))))
     (doseq [body ["(def broken [" "(in-ns 'gravity.other)"
-                  "(load \"/gravity/c2_pass_cache/unreviewed\")"]]
+                  "(load \"/gravity/c2_pass_cache/unreviewed\")"
+                  "(clojure.core/load \"/gravity/c2_pass_cache/unreviewed\")"
+                  "(load-file \"/gravity/c2_pass_cache/unreviewed\")"
+                  "(clojure.core/load-file \"/gravity/c2_pass_cache/unreviewed\")"]]
       (is (thrown? Exception (context/c2-pass-cache-plan!
                               (read-inputs (assoc inputs c2-fragment (utf8 body)))))))
     (let [adapter-request (str context/c2-pass-cache-prefix "adapter_request.clj")
