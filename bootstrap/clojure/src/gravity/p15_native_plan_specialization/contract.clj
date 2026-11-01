@@ -33,8 +33,9 @@
   ;; predicate, not a depth or work budget: every supplied operand is still
   ;; visited and checked against the same printable-ASCII contract.
   (loop [pending [instruction]]
-    (if-let [current (peek pending)]
-      (let [pending (pop pending)]
+    (if (seq pending)
+      (let [current (peek pending)
+            pending (pop pending)]
         (case (:op current)
           (:literal :quote)
           (if (printable-ascii-string? (:value current))
@@ -56,8 +57,9 @@
   ;; those blocks explicitly so malformed or deep-but-valid plans cannot leak
   ;; a host StackOverflowError from this admission predicate.
   (loop [pending [instruction]]
-    (if-let [current (peek pending)]
-      (let [pending (pop pending)]
+    (if (seq pending)
+      (let [current (peek pending)
+            pending (pop pending)]
         (case (:op current)
           (:literal :quote)
           (recur pending)

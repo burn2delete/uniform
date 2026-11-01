@@ -402,13 +402,25 @@
         (contract/helper-safety-proof
           {:entrypoint 'main
            :functions {'main {:instructions [malformed]}}}
+          :test-helper)
+        nil-child-proof
+        (contract/helper-safety-proof
+          {:entrypoint 'main
+           :functions {'main {:instructions [{:op :do :body [nil]}]}}}
+          :test-helper)
+        false-child-proof
+        (contract/helper-safety-proof
+          {:entrypoint 'main
+           :functions {'main {:instructions [{:op :do :body [false]}]}}}
           :test-helper)]
     (is (true? (:safe? proof)) proof)
     (is (= :test-helper (get-in proof [:facts :contract])) proof)
     (is (false? (:safe? malformed-proof)) malformed-proof)
     (is (= :gravity-c-emitter-printable-ascii-subset
            (get-in malformed-proof [:facts :missing-fact]))
-        malformed-proof)))
+        malformed-proof)
+    (is (false? (:safe? nil-child-proof)) nil-child-proof)
+    (is (false? (:safe? false-child-proof)) false-child-proof)))
 
 (deftest closed-core-value-domain-accepts-former-scalar-limits
   (let [large-string (apply str (repeat (inc (* 8 1024 1024)) "x"))
