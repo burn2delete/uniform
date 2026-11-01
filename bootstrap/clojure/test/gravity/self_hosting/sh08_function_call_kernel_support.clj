@@ -5,7 +5,71 @@
   The SH-08 type kernels and the SH-09 body consumers use the same delayed C7
   plan, verification context, and source-linked development builders."
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [gravity.bootstrap :as bootstrap]))
+
+(def stage2-runtime
+  {:engine :stage2-runtime-iteration-test})
+
+(defn typed-lowering-kernel-data
+  ([] (typed-lowering-kernel-data false))
+  ([throw?]
+   ;; Normalized DATA checks the Gravity consumer joins, not C7 authentication.
+   (let [source-path "in-memory-typed.gravity"
+         ns-form '(ns example.typed (:profile :meta) (:target :jvm) (:effects #{}) (:capabilities #{}) (:safety :safe))
+         body (if throw? '(throw problem) 'problem)
+         body-id (if throw? :throw :reference)
+         body-form-id (if throw? :throw-form :body-form)
+         fn-form (list 'fn '[problem :- String] :- 'String body)
+         definition-form (list 'def 'identity fn-form)
+         expanded [definition-form]
+         source-text (str/join "\n" (map pr-str (cons ns-form expanded)))
+         declaration {:type-binding-id :string :type-id :gravity.type/string :type-symbol 'String :type-form-id :type-form :type-syntax-id :type}
+         signature {:body-source-child-index 4 :parameter-source-child-indexes [0] :parameters [declaration] :return declaration}
+         source (fn [form-id syntax-id] {:form-id form-id :syntax-id syntax-id})
+         nodes [{:node-id :reference :core-form :reference :children [] :attributes {:binding-id :parameter} :source (source :body-form :body)}
+                {:node-id :function :core-form :fn :children [body-id] :resolved-binding-ids [:parameter]
+                 :attributes {:parameters '[problem] :signature signature} :source (source :function-form :fn)}
+                {:node-id :definition :core-form :def :children [:function] :source (source :definition-form :def)}]
+         nodes (if throw? (conj nodes {:node-id :throw :core-form :throw :children [:reference] :source (source :throw-form :throw)}) nodes)
+         forms [{:form-id :definition-form :syntax-id :def :value definition-form :child-form-ids [:def-op :name-form :function-form]}
+                {:form-id :function-form :syntax-id :fn :value fn-form :child-form-ids [:fn-op :parameter-form :return-marker :type-form body-form-id]}
+                {:form-id :parameter-form :syntax-id :parameters :value '[problem :- String] :child-form-ids [:parameter-name :parameter-marker :type-form]}
+                {:form-id :parameter-name :syntax-id :parameter-name :value 'problem :scope-id :function-scope}
+                {:form-id :type-form :syntax-id :type :value 'String}
+                {:form-id :body-form :syntax-id :body :value 'problem}]
+         forms (if throw? (conj forms {:form-id :throw-form :syntax-id :throw :value body :child-form-ids [:throw-operator :body-form]}) forms)
+         forms (mapv #(assoc % :parent-form-id (case (:form-id %) :definition-form nil :function-form :definition-form
+                                                   :parameter-name :parameter-form :body-form (if throw? :throw-form :function-form)
+                                                   :function-form)) forms)
+         bindings [{:binding-id :parameter :name 'problem :kind :local :binding-class :lexical
+                    :definition-syntax-id :parameter-name :scope-id :function-scope}
+                   {:binding-id :string :name 'String :kind :type :binding-class :core :namespace 'gravity.core}]
+         module {:module 'example.typed :source-path source-path :forms expanded :profile :meta :target :jvm :safety :safe
+                 :effects #{} :capabilities #{} :exports []}
+         core-module {:namespace 'example.typed :profile :meta :target :jvm :safety :safe :effects [] :capabilities [] :exports []}
+         record {:definition-name 'identity :definition-kind :named-top-level :function-syntax-id :fn :function-core-node-id :function
+                 :definition-core-node-id :definition :body-core-node-id body-id :parameter-binding-ids [:parameter]
+                 :fixed-arity 1 :signature signature}
+         function {:definition-name 'identity :function-id :fn :function-core-node-id :function :body-core-node-id body-id
+                   :parameter-binding-ids [:parameter] :parameters [{:binding-id :parameter :type :gravity.type/string}]
+                   :fixed-arity 1 :return :gravity.type/string :signature signature :thrown-error-effects (if throw? [:gravity.type/string] [])}
+         core {:artifact-id :core :module core-module :nodes nodes :function-records [record] :root-core-node-ids [:definition]}
+         reader {:source-unit-record {:path source-path :bytes-hash (str "sha256:" (bootstrap/sha256-hex source-text))}
+                 :token-stream [{:raw source-text}]}
+         macro-artifact {:expanded-forms expanded :gravity-macro-boundary {:authenticated-sh04-artifact {:c2-reader-artifact reader}}}
+         request {:canonical-core-artifact core :b47-context {:authenticated-core-request {:module core-module :forms forms :binding-table bindings :top-level-form-ids [:definition-form]}
+                   :authenticated-wrapper {:sh06-resolution-artifact {:sh05-macro-artifact macro-artifact}}}}
+         typed {:status :accepted :module core-module :sh07-shaped-artifact-id :core :function-type-table [function]
+                :type-table (cond-> {:reference :gravity.type/string :function function :definition function} throw? (assoc :throw :gravity.type/never))}
+         report {:artifact :gravity/sh08-function-type-verification :status :passed :expected typed :candidate typed}
+         input {:request request :typed typed :verification report}
+         observation {:verification report :source {:path source-path :text source-text :sha256 (get-in reader [:source-unit-record :bytes-hash])}
+                      :compiler-sources {:c7 {:source {:sha256 :current-c7} :plan-id :c7-plan}
+                                         :lowering {:source {:sha256 :current-lowering} :plan-id :lowering-plan}}}
+         definition {:name 'identity :params '[problem] :body (list body) :definition-form :def-fn :arity 1 :body-form-count 1
+                     :source-declarations {:parameters '[problem :- String] :return '[:- String]}}]
+     {:module module :input input :observation observation :definition definition})))
 
 (defn repository-root
   []
@@ -233,6 +297,19 @@
      {:caller-resolution-artifact caller
       :dependency-plans [dependency-plan]})))
 
+(def ^:private c8-source-relative-path
+  "bootstrap/gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
+
+(def c8-plan
+  (delay (compile-c8-module-bundle (path c8-source-relative-path))))
+
+(defn invoke-c8
+  [function arguments]
+  (bootstrap/p15-s23-stage2-runtime-execute-function
+   {:engine :gravity-sh09-c7-effect-adapter-test
+    :compiler-artifact-plan? true}
+   @c8-plan function arguments))
+
 (def ^:private effects-plan
   (delay
     (let [source (path effects-source-relative-path)
@@ -308,3 +385,212 @@
   (-> candidate
       (assoc :effect-graph graph)
       (assoc-in [:identity-input :effect-graph] graph)))
+
+(def ^:private function-sha-a
+  "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+(def ^:private function-sha-b
+  "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+(def ^:private function-sha-c
+  "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc")
+(def ^:private function-sha-d
+  "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd")
+(def ^:private function-sha-e
+  "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+
+(defn function-typed-result
+  [actual-path]
+  (let [module
+        {:namespace 'gravity.self-hosting.sh09.function-synthetic
+         :profile :meta :target :jvm
+         :effects [] :capabilities [] :safety :safe}
+        functions
+        [{:artifact :gravity/c7-function-type
+          :function-id function-sha-a
+          :function-core-node-id function-sha-b
+          :body-core-node-id function-sha-c
+          :latent-effects []
+          :capabilities []
+          :thrown-error-effects [:pending-sh09]
+          :profile :meta
+          :target :jvm
+          :source-span {:source "function.gravity"
+                        :start-byte 0 :end-byte 1}
+          :status :inferred}]
+        calls
+        [{:artifact :gravity/c7-call-type-fact
+          :fact-id-request
+          {:domain :gravity/sh08-call-type-fact-v1
+           :call-core-node-id function-sha-d
+           :callee-function-syntax-id function-sha-a
+           :argument-types [:gravity.type/bool]
+           :result-type :gravity.type/bool}
+          :call-core-node-id function-sha-d
+          :caller-function-syntax-id function-sha-a
+          :callee-function-syntax-id function-sha-a
+          :argument-types [:gravity.type/bool]
+          :result-type :gravity.type/bool
+          :evaluation-order :operator-then-arguments
+          :syntax-id function-sha-e
+          :source-span {:source "function.gravity"
+                        :start-byte 2 :end-byte 3}
+          :origin-chain []
+          :generated-origin []
+          :profile :meta
+          :target :jvm
+          :effects []
+          :capabilities []
+          :status :inferred}]
+        proof {:domain :gravity/sh08-authoritative-higher-order-proof-v1}
+        typed-core
+        {:artifact :gravity/typed-core
+         :core-input function-sha-e
+         :module module
+         :types {function-sha-d :gravity.type/bool}
+         :constraints []
+         :function-types functions
+         :local-bindings []
+         :calls calls
+         :diagnostics []
+         :higher-order-proof proof
+         :higher-order-call-facts []}
+        function-products
+        {:function-records []
+         :call-edges []
+         :recursion-components []
+         :lexical-bindings []}
+        identity
+        {:domain :gravity/sh08-authoritative-higher-order-type-v1
+         :sh07-shaped-artifact-id function-sha-e
+         :module module
+         :function-records (:function-records function-products)
+         :call-edges (:call-edges function-products)
+         :recursion-components (:recursion-components function-products)
+         :lexical-bindings (:lexical-bindings function-products)
+         :function-type-table functions
+         :local-binding-facts []
+         :call-type-facts calls
+         :constraint-ledger []
+         :type-table {function-sha-d :gravity.type/bool}
+         :convergence {:status :converged}
+         :pending [:records :unions]
+         :higher-order-proof proof}]
+    {:artifact :gravity/sh08-function-typed-core-template
+     :schema-version 3
+     :status :accepted
+     :scope :capture-free-higher-order-fixed-arity-one-hop
+     :authentication-status :host-resolved-b47-verification-boundary
+     :module module
+     :sh07-shaped-artifact-id function-sha-e
+     :function-products function-products
+     :function-type-table functions
+     :local-binding-facts []
+     :call-type-facts calls
+     :constraint-ledger []
+     :type-table {function-sha-d :gravity.type/bool}
+     :convergence {:status :converged}
+     :typed-core typed-core
+     :diagnostics []
+     :artifact-id-request identity
+     :identity-input identity
+     :identity-resolution :coordinator-digest-required
+     :provenance {:actual-source-path actual-path}
+     :pending [:records :unions]
+     :higher-order-proof proof
+     :higher-order-call-facts []}))
+
+(defn function-verification
+  [typed]
+  {:artifact :gravity/sh08-function-type-verification
+   :status :passed
+   :checks [:coherent-b47-function-records
+            :path-neutral-identity-input]
+   :expected typed
+   :candidate typed})
+
+(defn typed-direct-call-kernel-context
+  [base]
+  (let [source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain nil :generated-origin nil})
+        record (assoc (get-in base [:records 'identity]) :definition-binding-id :target-binding)
+        call {:core-node-id :call :operator-node-id :operator :operator-binding-id :target-binding :argument-node-ids [:argument]
+              :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :result-policy :call-result}
+        edge {:ordinal 0 :call-core-node-id :call :caller-function-syntax-id :caller-fn :caller-function-core-node-id :caller-core
+              :callee-binding-id :target-binding :callee-definition-syntax-id :target-name :callee-function-syntax-id :fn :callee-function-core-node-id :function
+              :argument-core-node-ids [:argument] :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :classification :local-function}
+        module (get-in base [:core :module])
+        fact {:artifact :gravity/c7-call-type-fact
+              :fact-id-request {:domain :gravity/sh08-call-type-fact-v1 :call-core-node-id :call :callee-function-syntax-id :fn
+                                :argument-types [:gravity.type/string] :result-type :gravity.type/string}
+              :call-core-node-id :call :caller-function-syntax-id :caller-fn :callee-function-syntax-id :fn
+              :argument-types [:gravity.type/string] :result-type :gravity.type/string :evaluation-order :operator-then-arguments
+              :source-span nil :syntax-id :call-form :origin-chain nil :generated-origin nil
+              :profile (:profile module) :target (:target module) :effects (:effects module) :capabilities (:capabilities module) :status :inferred}
+        row {:constraint-id-request {:domain :gravity/sh08-function-call-constraint-v1 :call-core-node-id :call :callee-function-syntax-id :fn}
+             :kind :equality :lhs :fn :rhs [{:parameter :parameter :argument :gravity.type/string :chosen :gravity.type/string}]
+             :origin nil :profile :meta :target :jvm :status :solved :diagnostics []}]
+    (-> base (assoc :locals {:caller-parameter 'problem} :parameter-types {:caller-parameter :gravity.type/string}
+                    :current-function {:function-syntax-id :caller-fn :function-core-node-id :caller-core}
+                    :calls {:call call} :edges {:call edge} :call-facts {:call fact} :call-order {:call 0} :recursion-components [] :ledger [row])
+        (assoc-in [:core :function-records] [record]) (assoc-in [:records 'identity] record)
+        (assoc-in [:bindings :target-binding] {:binding-id :target-binding :name 'identity :definition-syntax-id :target-name
+                                              :binding-class :namespace :kind :function :namespace (:namespace module)})
+        (update :nodes merge {:operator {:node-id :operator :core-form :reference :children [] :resolved-binding-ids [:target-binding]
+                                         :attributes {:binding-id :target-binding :symbol 'identity :position :operator :binding-class :namespace :definition-syntax-id :target-name}
+                                         :source (source :operator-form)}
+                              :argument {:node-id :argument :core-form :reference :children [] :resolved-binding-ids [:caller-parameter]
+                                         :attributes {:binding-id :caller-parameter} :source (source :argument-form)}
+                              :call {:node-id :call :core-form :call :children [:operator :argument] :resolved-binding-ids [:target-binding]
+                                     :attributes {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1] :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call}
+                                     :evaluation {:kind :operator-then-arguments :owner-function-syntax-id :caller-fn
+                                                  :order [{:index 0 :core-node-id :operator} {:index 1 :core-node-id :argument}]} :source (source :call-form)}})
+        (update :types merge {:operator (get-in base [:functions 'identity]) :argument :gravity.type/string :call :gravity.type/string})
+        (update :forms merge {:name-form {:form-id :name-form :syntax-id :target-name :value 'identity :parent-form-id :definition-form}
+                              :call-form {:form-id :call-form :syntax-id :call-form :kind :list :child-form-ids [:operator-form :argument-form]}
+                              :operator-form {:form-id :operator-form :syntax-id :operator-form :kind :symbol :value 'identity :parent-form-id :call-form}
+                              :argument-form {:form-id :argument-form :syntax-id :argument-form :kind :symbol :value 'problem :parent-form-id :call-form}}))))
+
+(defn prepend-effect-input
+  [receiver value ordinal input-fn c7]
+  (let [base (input-fn receiver value)
+        sha (fn [n] (str "sha256:" (format "%064x" n)))
+        ids (zipmap (keys (:nodes base))
+                    (map sha (range (+ 1800 (* 10 ordinal)) (+ 1810 (* 10 ordinal)))))
+        source #(-> % (update :form-id ids) (update :syntax-id ids))
+        node-list (mapv (fn [node]
+                          (-> node
+                              (update :node-id ids)
+                              (update :children #(mapv ids %))
+                              (update :source source)
+                              (update-in [:evaluation :order]
+                                         #(mapv (fn [entry] (update entry :core-node-id ids)) %))))
+                        (get-in base [:core :nodes]))
+        forms (into {}
+                    (for [[id form] (:forms base)]
+                      [(ids id)
+                       (-> form (update :form-id ids) (update :syntax-id ids)
+                           (update :parent-form-id ids) (update :child-form-ids #(mapv ids %)))]))
+        call (-> (:call base) (update :core-node-id ids) (update :operator-node-id ids)
+                 (update :argument-node-ids #(mapv ids %))
+                 (update :ordered-evaluation-node-ids #(mapv ids %)))
+        edge (-> (:edge base) (assoc :ordinal ordinal) (update :call-core-node-id ids)
+                 (update :argument-core-node-ids #(mapv ids %))
+                 (update :ordered-evaluation-node-ids #(mapv ids %)))
+        module (assoc (:module base) :effects [:memory/allocate])
+        core (assoc (:core base) :module module :nodes node-list :calls [call] :call-edges [edge])
+        nodes (into {} (map (juxt :node-id identity) node-list))
+        node (get nodes (:core-node-id call))
+        types (into {} (map (fn [[id type]] [(ids id) type]) (:types base)))
+        prepend-owner? (or (= receiver :gravity.type/list) (= :gravity.type/list (:kind receiver))
+                           (= receiver :gravity.type/set) (= :gravity.type/set (:kind receiver)))
+        prefix (if prepend-owner? "sh08-pl-" "sh08-va-")
+        result (c7 (symbol (str prefix "derive"))
+                   [core node call edge nodes (:bindings base) types forms])
+        descriptor (:descriptor result)
+        facts {:module module
+               :type-table (assoc types (:operator-node-id call) descriptor (:node-id node) (:type result))
+               :function-type-table []
+               :call-type-facts [(c7 (symbol (str prefix "call-fact")) [descriptor module])]
+               :constraint-ledger [(c7 (symbol (str prefix "constraint")) [descriptor])]}]
+    {:core core :nodes nodes :node node :forms forms :call call :edge edge :ids ids
+     :bindings (:bindings base) :descriptor descriptor :result result :facts facts
+     :request {:canonical-core-artifact core
+               :b47-context {:authenticated-core-request {:forms (vec (vals forms))}}}}))
