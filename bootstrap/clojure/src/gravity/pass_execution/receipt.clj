@@ -55,15 +55,6 @@
               (diagnostics/fail! "C18-EVIDENCE"
                                  "evidence operation must return a vector"
                                  {:pass (:pass pass-contract)}))
-          _ (when (or (> (count verifier-reports)
-                         config/maximum-evidence-records)
-                      (> (count evidence-records)
-                         config/maximum-evidence-records))
-              (diagnostics/fail! "C18-EVIDENCE"
-                                 "pass evidence exceeds its record bound"
-                                 {:pass (:pass pass-contract)
-                                  :maximum-records
-                                  config/maximum-evidence-records}))
           _ (doseq [report verifier-reports]
               (validation/validate-verifier-report-shape!
                report output-id (:stage execution-request)))
