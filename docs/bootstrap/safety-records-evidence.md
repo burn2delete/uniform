@@ -239,6 +239,25 @@ The new complete tuple requires its own exact reviews, contextual lint, CI and
 clean current-main integration preflight. No authority, release, self-hosting,
 seed-retirement, full safety or namespace-completion claim is added.
 
+## Verified Release main composition
+
+The next normal composition uses verified Release PR741 main
+b40ddaaca5aafcd1f955f9b3c73cb6dd965d34bf/tree
+8bd22beb1ab157c6751393a4428078565fcab01f. Three registration conflicts are
+resolved by reconstructing five complete metadata files from that main and
+the existing immutable Safety association/test. Release code, component, tests
+and evidence remain byte-identical to main. Shared registry, ownership,
+Bootstrap imports and map rows preserve both stages, including unique helper
+identities. Safety algorithms, native components, ports and pipeline tests are
+unchanged. Primary catalog counts and completion formulas remain unchanged.
+
+Fresh combined tests pass98/3256, including the real Release archive checks.
+Current controls compile both C10 spellings and retain all four safety outcomes
+and C10-NUMERIC refusal. Scripts and products use `release-main-*`; full/text
+comparisons, current provenance, conservation, ownership/language, docs, lint,
+independent exact acceptance, own CI and clean preflight remain the integration
+gates. Previous CI binds its older base and cannot accept this composition.
+
 ## CI harness environment evidence
 
 The current CI runner tests pass20/221 with the installed linter directory on
