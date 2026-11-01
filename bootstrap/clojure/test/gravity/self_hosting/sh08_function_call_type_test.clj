@@ -49,77 +49,13 @@
         (swap! verification-reports assoc artifact report)
         report)))
 
-(defn- sh08-verification-preimage
-  [artifact report]
-  (let [boundary (:gravity-core-boundary artifact)
-        core (:canonical-core-artifact boundary)]
-    {:domain :gravity/sh08-b47-verification-binding-v1
-     :verified-artifact-id (:artifact-id artifact)
-     :opaque-provenance-binding-id
-     (:provenance-binding-id core)
-     :authenticated-wrapper artifact
-     :canonical-core-artifact core
-     :authenticated-core-request (:authenticated-core-request boundary)
-     :canonical-identity-preimage (:identity-preimage core)
-     :authenticated-envelope-descriptor
-     (:authenticated-envelope-descriptor boundary)
-     :authenticated-envelope (:authenticated-envelope boundary)
-     :provenance-binding-preimage (:provenance-binding-preimage core)
-     :verification-report report}))
-
 (defn- coordinator-verification
   [artifact report]
-  (let [boundary (:gravity-core-boundary artifact)
-        core (:canonical-core-artifact boundary)
-        source-path (get-in artifact [:provenance :source-path])
-        extension (if (.endsWith source-path ".qst") ".qst" ".gravity")
-        preimage (sh08-verification-preimage artifact report)
-        digest (bootstrap/p15-s23-c11-mir-digest preimage)]
-    {:artifact :gravity/sh07-b47-coordinator-verification-v16
-     :schema-version 16
-     :boundary :clojure-coordinator-verifier
-     :verified-artifact-id (:artifact-id artifact)
-     :verified-identity-input
-     (bootstrap/sh07-core-artifact-identity-input artifact)
-     :verified-source-path source-path
-     :verified-source-extension extension
-     :report report
-     :check-catalog (set (keys (:checks report)))
-     :opaque-provenance-binding-id
-     (:provenance-binding-id core)
-     :provenance-binding-preimage (:provenance-binding-preimage core)
-     :authenticated-envelope-descriptor
-     (:authenticated-envelope-descriptor boundary)
-     :authenticated-envelope (:authenticated-envelope boundary)
-     :verification-digest-resolution
-     {:ordinal 0
-      :purpose :sh08-b47-verification-binding
-      :preimage preimage
-      :digest digest}}))
+  (kernel-support/coordinator-verification artifact report))
 
 (defn- b47-context
   [artifact report coordinator]
-  (let [boundary (:gravity-core-boundary artifact)
-        core (:canonical-core-artifact boundary)]
-    {:artifact-id (:artifact-id artifact)
-     :artifact-status (:status artifact)
-     :artifact-kind (:kind artifact)
-     :input-domain :gravity/sh07-b47-canonical-core-v16
-     :identity-input (:identity-preimage core)
-     :authenticated-core-request (:authenticated-core-request boundary)
-     :canonical-core-artifact core
-     :provenance (:provenance artifact)
-     :lineage (get-in boundary [:authenticated-core-request :lineage])
-     :authenticated-wrapper artifact
-     :verification
-     {:status (:status report)
-      :checks (:checks report)
-      :failed-checks (:failed-checks report)
-      :receipt-context :gravity/sh07-b47-verification-v16
-      :opaque-provenance-binding-id
-      (:opaque-provenance-binding-id coordinator)
-      :verification-digest
-      (get-in coordinator [:verification-digest-resolution :digest])}}))
+  (kernel-support/b47-context artifact report coordinator))
 
 (def ^:dynamic ^:private *function-request-cache*
   ;; These verified request bundles retain the complete authenticated wrapper,
