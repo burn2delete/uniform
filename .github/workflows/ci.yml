@@ -39,6 +39,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/clojure
+        with:
+          install-static-tools: ${{ matrix.mode == 'static' }}
       - name: Install workflow syntax checker
         if: matrix.mode == 'static'
         run: |
