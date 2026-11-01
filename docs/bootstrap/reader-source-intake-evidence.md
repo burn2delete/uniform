@@ -9,14 +9,17 @@ provenance, stage boundaries and regression evidence.
 
 ## Declared boundary
 
-The new stage API takes a path and three explicit late owner Vars: the existing
-co-canonical extension predicate, path-policy refusal and captured-byte decoder.
-It retains extension refusal before valid-path byte capture, the existing Java
-file read, exact path transport and UTF-8 decoding. Bootstrap keeps the public
-compatibility function, source-policy diagnostic construction and its invalid
-extension hash capture. Existing stage decoding and artifact assembly remain
-unchanged. No source-callable builtin, capability grant or alternate admission
-path is introduced.
+The stage API takes a path and four explicit late owner Vars: the existing
+co-canonical extension predicate, path-policy refusal, captured-byte decoder
+and source-byte owner. It retains extension refusal before valid-path byte
+capture, the supplied byte-owner operation, exact path transport and UTF-8
+decoding. Bootstrap keeps the public compatibility function and the
+one-argument invalid-extension byte capture. The separately recorded path
+diagnostic slice moves two-argument diagnostic construction and hashing to
+gravity.reader; source intake calls its supplied policy owner in either
+composition. Existing stage decoding and artifact assembly remain exact.
+No source-callable builtin, capability grant or alternate admission path
+is introduced.
 
 ## Evidence obligations
 
@@ -36,13 +39,14 @@ commit carries no implementation credit or new authority.
 
 ## Implemented development evidence
 
-The exact former file-read body now lives in `gravity.reader/read-source-text`.
-Its three owner lookups are explicit late Var ports. Bootstrap's compatibility
-arity remains `[path]`; its extension diagnostic/hash capture and all surrounding
-component behavior remain unchanged. Existing decoder and artifact assembly
-bodies remain exact. Metadata and the stage map distinguish native file capture
-from supplied-byte decoding and assign the extension refusal to its existing
-owner. No Bootstrap or CLI dependency is introduced into Reader.
+The source-intake body now lives in gravity.reader/read-source-text with
+four explicit late Var ports after the main byte-owner composition below.
+Bootstrap's compatibility arity remains [path]. The intake extraction
+preserves the supplied path-policy behavior; two-argument refusal/hash
+ownership is described by the separate path-diagnostic slice. Existing
+decoder and artifact assembly bodies remain exact. Metadata and the stage
+map distinguish delegated native capture from supplied-byte decoding.
+No Bootstrap or CLI dependency is introduced into Reader.
 
 Real native controls accept two files, reject malformed UTF-8 and invalid
 extensions with their original complete diagnostics, and preserve actual missing
@@ -212,3 +216,46 @@ controls still accept both spellings with25 nodes/one target read/source8e63
 and recomputed Core16ec. Contextual lint passes3 paths/0 warnings/0 blockers.
 Terminal lint receipts are archived outside the source checkout. Source
 admission, historical denied routes and migration pins remain unchanged.
+
+## Real compiler main and delegated byte capture
+
+Actual main bf5c4c36a4e7ca01b212b15a4018bceceb57a9cc/tree
+05145f228cde86f0dfea69c7da05f680cafee4b4 replaces release fixture
+response tables with compiler execution. Its run/release paths and tests
+remain preserved. Source intake now delegates bytes to the existing
+sh03-reader-read-target-source-bytes! owner, preserving regular-file and
+final-link checks and C2-ENCODING file diagnostics. No source-size quota
+is introduced. The owner declaration and component EOF are preserved.
+
+Reader intake now receives four late Vars: predicate, path refusal, decoder
+and byte owner. Its body is the exact main body with those owner lookups
+made explicit; it performs no direct file access. Decoder lookup remains
+after path policy and before byte capture. Owner failures propagate exactly.
+New isolated tests verify late capture lookup, decoder-before-capture order,
+dependency exception identity and final symbolic-link refusal. Main's
+structured C2 file failures intentionally supersede the older raw host file
+errors; the old control records remain historical. The direct main Reader
+component in the Runtime worktree is unmodified and supplies the native
+before-control; all native before/after products match completely.
+
+Reader intake focused checks pass17/245 and coupled checks39/545; its
+ownership/language checks pass46/1136. The stacked diagnostic slice keeps
+its exact refusal body and six tests while inheriting the byte owner; focused
+checks pass23/279. Fresh complete Core, current-base conservation, lint,
+independent exact review, own CI and clean preflight remain required.
+No file grant, source authentication, historical restricted route, mode,
+admission pin or full Reader/runtime/release claim is added.
+
+## Verified bf5 ordinary source checks
+
+Reader intake focused17/245, coupled39/545 and ownership/language46/1136 pass.
+All4 complete data and original serialized native/Core product pairs pass.
+Current Core accepts both spellings with25 nodes, one target read, source8e63
+and recomputed Core16ec. Native before/after controls preserve the existing
+byte owner's real regular-file, missing-file and final-link refusals.
+Contextual lint passes3 paths/0 warnings/0 blockers.
+Terminal lint receipts are archived outside the checkout. Documentation,
+roadmap and governance validators pass. Independent exact-source acceptance,
+own current-head CI and clean current-base preflight remain integration gates.
+Older CI and immutable authority records are historical; no new authentication,
+migration, release, self-hosting or complete namespace claim is made.
