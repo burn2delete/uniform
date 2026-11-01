@@ -9221,9 +9221,12 @@
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
      :dispatch :direct-keyword-set-contains :applied-keyword-set-contains descriptor :effect-facts-source :audited-keyword-set-membership-intrinsic}))))))
 
-(defn body-ksm-finish [header]
+(defn body-normal-or-never-result-finish [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn body-ksm-finish [header]
+  (body-normal-or-never-result-finish header))
 
 (defn body-sysm-ledger-ids? [ledger]
   (loop [remaining ledger]
@@ -9346,8 +9349,7 @@
 
 
 (defn body-mc-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-mc-context [request facts bindings]
   (let [core (get request :canonical-core-artifact)
@@ -9785,8 +9787,7 @@
      :dispatch :direct-map-predicate :applied-map-predicate descriptor :effect-facts-source :audited-map-predicate-intrinsic}))
 
 (defn body-mapp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-mapp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -9937,8 +9938,7 @@
      :dispatch :direct-set-predicate :applied-set-predicate descriptor :effect-facts-source :audited-set-predicate-intrinsic}))
 
 (defn body-setp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-setp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -10099,8 +10099,7 @@
      :dispatch :direct-list-predicate :applied-list-predicate descriptor :effect-facts-source :audited-list-predicate-intrinsic}))
 
 (defn body-listp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-listp-source-groups? [core forms calls]
   (loop [groups [[(get core :nodes) :node-id]
@@ -10309,8 +10308,7 @@
      :dispatch :direct-symbol-predicate :applied-symbol-predicate descriptor :effect-facts-source :audited-symbol-predicate-intrinsic}))
 
 (defn body-symp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-symp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -10464,8 +10462,7 @@
      :dispatch :direct-boolean-predicate :applied-boolean-predicate descriptor :effect-facts-source :audited-boolean-predicate-intrinsic}))
 
 (defn body-boolp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-boolp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -10636,8 +10633,7 @@
      :dispatch :direct-character-predicate :applied-character-predicate descriptor :effect-facts-source :audited-character-predicate-intrinsic}))
 
 (defn body-chp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-chp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -10809,8 +10805,7 @@
      :dispatch :direct-nil-predicate :applied-nil-predicate descriptor :effect-facts-source :audited-nil-predicate-intrinsic}))
 
 (defn body-nilp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-nilp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -11316,8 +11311,7 @@
          (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic))))})))
 
 (defn body-ane-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-ane-core-identities? [core calls]
   (if (loop [remaining calls]
@@ -11550,8 +11544,7 @@
      :dispatch :direct-keyword-predicate :applied-keyword-predicate descriptor :effect-facts-source :audited-keyword-predicate-intrinsic}))
 
 (defn body-kp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-kp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -11701,8 +11694,7 @@
      :dispatch :direct-string-predicate :applied-string-predicate descriptor :effect-facts-source :audited-string-predicate-intrinsic}))
 
 (defn body-strp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-strp-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -11851,8 +11843,7 @@
      :dispatch :direct-integer-predicate :applied-integer-predicate descriptor :effect-facts-source :audited-integer-predicate-intrinsic}))
 
 (defn body-ip-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-ip-context [request facts bindings]
   (let [core (get request :canonical-core-artifact) calls (get core :calls)
@@ -12005,8 +11996,7 @@
 
 
 (defn body-vp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 
 (defn body-vp-context [request facts bindings]
@@ -12156,8 +12146,7 @@
 
 
 (defn body-nt-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-nt-context [request facts bindings]
   (let [core (get request :canonical-core-artifact)
@@ -12296,8 +12285,7 @@
 
 
 (defn body-ae-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-ie-type? [type]
   (if (keyword? type)
@@ -13062,8 +13050,7 @@
      :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact))))))
 
 (defn body-kse-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-kse-call-valid? [core facts bindings node call edge nodes]
   (if (if (body-bka-entry? node call nodes bindings (get facts :type-table) (get core :module)) true
@@ -13251,8 +13238,7 @@
      :dispatch :direct-list-equality :applied-list-equality descriptor :effect-facts-source :audited-list-value-intrinsic}))
 
 (defn body-le-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 (defn body-le-call-valid? [core facts bindings node call edge nodes]
   (if (body-sse-call-ids? node call)
@@ -13511,8 +13497,7 @@
 
 
 (defn body-ve-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (body-normal-or-never-result-finish header))
 
 
 (defn body-ve-call-valid? [core facts bindings node call edge nodes]
