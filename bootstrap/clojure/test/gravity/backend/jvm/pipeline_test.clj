@@ -1,5 +1,6 @@
 (ns gravity.backend.jvm.pipeline-test
-  (:require [clojure.string :as str]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.test :refer [deftest is]]
             [gravity.backend.jvm :as jvm]
             [gravity.bootstrap :as bootstrap]))
@@ -138,40 +139,40 @@
 
 (defn- file-bytes [file]
   (mapv #(bit-and (int %) 255)
-        (java.nio.file.Files/readAllBytes (.toPath (clojure.java.io/file file)))))
+        (java.nio.file.Files/readAllBytes (.toPath (io/file file)))))
 
 (defn- remove-test-directory! [directory]
-  (doseq [file (reverse (file-seq (clojure.java.io/file directory)))]
+  (doseq [file (reverse (file-seq (io/file directory)))]
     (java.nio.file.Files/deleteIfExists (.toPath file))))
 
 (defn- toolchain-products [directory extension]
   ;; Only ordinary fixed-seed source compilation and trusted internal output
   ;; helpers are used here. No packet, authority token or B1 admission is minted.
   (let [source-path (.getCanonicalPath
-                     (clojure.java.io/file
+                     (io/file
                       (str "bootstrap/clojure/fixtures/jvm-toolchain/accepted" extension)))
         source-text (slurp source-path :encoding "UTF-8")
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
         input (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path source-text)
         java-source (native "java-source" input)
         source-map (native "source-map" source-text java-source)
-        work (clojure.java.io/file directory "work")
+        work (io/file directory "work")
         paths (native "output-paths" (.getPath work))
-        _ (native "write-file!" (.toPath (clojure.java.io/file (:java-source paths))) java-source)
-        _ (native "write-file!" (.toPath (clojure.java.io/file (:module-source paths))) bootstrap/jvm-backend-module-source)
-        classes (clojure.java.io/file work "classes")
+        _ (native "write-file!" (.toPath (io/file (:java-source paths))) java-source)
+        _ (native "write-file!" (.toPath (io/file (:module-source paths))) bootstrap/jvm-backend-module-source)
+        classes (io/file work "classes")
         _ (.mkdirs classes)
         command ["javac" "--release" "21" "-encoding" "UTF-8" "-g:source,lines"
                  "-proc:none" "-implicit:none" "-Werror" "-d" (.getPath classes)
                  (:module-source paths) (:java-source paths)]
         compiler-result (native "run-process!" command source-path "B5-TARGET"
                                 "javac rejected generated Java 21 source")
-        _ (native "write-deterministic-jar!" (.toPath (clojure.java.io/file (:jar paths))) (.toPath classes))
-        jar-record (native "jar-record" (.toPath (clojure.java.io/file (:jar paths))))
-        class-major (native "classfile-major" (.toPath (clojure.java.io/file (:class-file paths))))
-        duplicate (clojure.java.io/file directory "second.jar")
+        _ (native "write-deterministic-jar!" (.toPath (io/file (:jar paths))) (.toPath classes))
+        jar-record (native "jar-record" (.toPath (io/file (:jar paths))))
+        class-major (native "classfile-major" (.toPath (io/file (:class-file paths))))
+        duplicate (io/file directory "second.jar")
         _ (native "write-deterministic-jar!" (.toPath duplicate)
-                  (.toPath (clojure.java.io/file work "classes")))
+                  (.toPath (io/file work "classes")))
         artifacts (into (sorted-map)
                         (for [kind [:java-source :module-source :class-file :module-class :jar]]
                           [kind {:path (get paths kind) :bytes (file-bytes (get paths kind))}]))
@@ -195,15 +196,15 @@
                       #(native "run-process!" command source-path "B5-TARGET"
                                "javac rejected generated Java 21 source"))
         _ (spit (:java-source paths) java-source)
-        wrong-class (let [path (.toPath (clojure.java.io/file (:class-file paths)))
+        wrong-class (let [path (.toPath (io/file (:class-file paths)))
                           bytes (java.nio.file.Files/readAllBytes path)]
                       (aset-byte bytes 7 (byte 64))
                       (java.nio.file.Files/write path bytes (make-array java.nio.file.OpenOption 0))
                       (native "classfile-major" path))
         tamper (observe-toolchain #(native "validate-content-hashes!" source-path manifest paths))
-        existing (observe-toolchain #(native "write-file!" (.toPath (clojure.java.io/file (:java-source paths))) "replacement"))
+        existing (observe-toolchain #(native "write-file!" (.toPath (io/file (:java-source paths))) "replacement"))
         rejected-path (.getCanonicalPath
-                       (clojure.java.io/file
+                       (io/file
                         (str "bootstrap/clojure/fixtures/jvm-toolchain/rejected" extension)))
         rejected-source (slurp rejected-path :encoding "UTF-8")
         rejected-emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! rejected-path :jvm))
@@ -229,7 +230,7 @@
                             (make-array java.nio.file.attribute.FileAttribute 0)))]
     (try
       (doseq [extension [".gravity" ".qst"]
-              :let [root (clojure.java.io/file directory (subs extension 1))
+              :let [root (io/file directory (subs extension 1))
                     _ (.mkdirs root)
                     product (toolchain-products (.getPath root) extension)]]
         (is (= :passed (:validation product) (:hash-validation product)))
@@ -296,7 +297,7 @@
     (is (= "javac 21.0.1" (get-in (vec @observed) [4 :observed-version]))))
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "gravity-jvm-hash-test-" (make-array java.nio.file.attribute.FileAttribute 0)))
-        file (clojure.java.io/file directory "content")
+        file (io/file directory "content")
         failure (ex-info "late hash refusal" {:id :late})
         fail-var #'bootstrap/jvm-backend-fail!
         hash-var #'bootstrap/sha256-bytes-hex
@@ -332,14 +333,14 @@
 (deftest jar-entry-order-late-interposition-and-create-new
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "gravity-jvm-jar-test-" (make-array java.nio.file.attribute.FileAttribute 0)))
-        classes (clojure.java.io/file directory "classes")
-        file (clojure.java.io/file directory "result.jar")
+        classes (io/file directory "classes")
+        file (io/file directory "result.jar")
         stored-var #'bootstrap/jvm-backend-stored-jar-entry!
         old-stored @stored-var
         entries (atom [])]
     (try
       (doseq [name ["gravity/stage2/Program.class" "module-info.class"]]
-        (native "write-file!" (.toPath (clojure.java.io/file classes name)) "opaque class bytes"))
+        (native "write-file!" (.toPath (io/file classes name)) "opaque class bytes"))
       (with-redefs-fn {stored-var
                       (fn [output name bytes]
                         (swap! entries conj [:first name])
@@ -364,7 +365,7 @@
       (finally (remove-test-directory! directory)))))
 
 (deftest real-process-unavailable-tool-and-temporary-output-cleanup
-  (let [temporary (clojure.java.io/file (System/getProperty "java.io.tmpdir"))
+  (let [temporary (io/file (System/getProperty "java.io.tmpdir"))
         outputs (fn [] (set (map #(.getName ^java.io.File %)
                                  (filter #(re-matches #"gravity-jvm-(?:out|err)-.*" (.getName ^java.io.File %))
                                          (.listFiles temporary)))))
