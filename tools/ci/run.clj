@@ -135,7 +135,7 @@
             exit-code (cond
                         error? 1
                         completed? (try (.exitValue process)
-                                       (catch Throwable _ 1))
+                                        (catch Throwable _ 1))
                         :else 124)
             cleanup-ok? (tracked-cleanup? cleanup)]
         {:status (cond (not cleanup-ok?) :failed
