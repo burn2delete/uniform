@@ -156,6 +156,40 @@
         (delete-file! source-directory)
         (delete-file! script-file)))))
 
+(deftest release-wrapper-routes-check-once
+  (let [root-directory (System/getProperty "user.dir")
+        script-file (write-test-release-script! root-directory)
+        fake-bin (temporary-directory "gravity-p18-t06-route-bin-")
+        route-log (File/createTempFile "gravity-p18-t06-route-" ".txt")
+        fake-clojure
+        (write-executable!
+         (io/file fake-bin "clojure")
+         "#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >> \"$T06_ROUTE_LOG\"\nexit 0\n")
+        path-environment
+        {"PATH" (str (.getAbsolutePath ^File fake-bin)
+                      File/pathSeparator
+                      (or (System/getenv "PATH") ""))
+         "T06_ROUTE_LOG" (.getAbsolutePath route-log)}]
+    (try
+      (doseq [[label source operation]
+              [["ordinary" "/tmp/t06-ordinary.gravity" "check"]
+               ["specialized" "/tmp/compiler-c3-capture.gravity"
+                "compiler-c3-syntax"]]]
+        (spit route-log "")
+        (let [result
+              (bootstrap/p18-shell-run
+               path-environment
+               [(.getAbsolutePath ^File script-file) "check" source])
+              calls (str/split-lines (slurp route-log))]
+          (testing (str label " route")
+            (is (zero? (:exit result)))
+            (is (= [(str "-M:gravity " operation " " source)] calls)))))
+      (finally
+        (delete-file! fake-clojure)
+        (delete-file! fake-bin)
+        (delete-file! route-log)
+        (delete-file! script-file)))))
+
 (deftest release-wrapper-delegates-self-host-and-keeps-output-validation
   (let [root-directory (System/getProperty "user.dir")
         script-file (write-test-release-script! root-directory)

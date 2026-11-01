@@ -6,5 +6,4 @@
     "    *.gravity|*.qst) ;;\n"
     "    *) emit_diagnostic 'P18T06004' ;;\n"
     "  esac\n"
-    "  (cd \"$root_dir\" && clojure -M:gravity check \"$source\")\n"
     "\n"))
