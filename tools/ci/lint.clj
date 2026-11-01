@@ -46,15 +46,115 @@
           (cond-> (assoc finding :row (first old-rows))
             (:end-row finding) (assoc :end-row (last old-rows))))))))
 
+(def definition-symbols
+  '#{def defn defn- defmacro defonce defmulti defmethod defprotocol deftype defrecord})
+
+(defn definition-identity [form]
+  (let [head (first form)
+        name (second form)]
+    (when (and (seq? form)
+               (contains? definition-symbols head)
+               (symbol? name))
+      [head name])))
+
+(defn source-definitions [lines]
+  (if-not (seq lines)
+    []
+    (try
+      (binding [*read-eval* false
+                *data-readers* {}
+                *default-data-reader-fn* (fn [tag _]
+                                           (throw (ex-info "Unsupported definition source tag"
+                                                           {:tag tag})))]
+        (let [reader (clojure.lang.LineNumberingPushbackReader.
+                      (java.io.StringReader. (str/join "\n" lines)))
+              eof (Object.)]
+          (with-open [_ reader]
+            (loop [definitions [] context [] previous-end 0]
+              (let [reader-line (.getLineNumber reader)
+                    form (read {:eof eof} reader)]
+                (if (identical? eof form)
+                  (with-meta definitions {:source-context context})
+                  (let [start (max (if (pos? previous-end) (inc previous-end) 1)
+                                   reader-line)
+                        end (max start (.getLineNumber reader))
+                        identity (definition-identity form)
+                        source-lines (subvec (vec lines)
+                                             (dec start)
+                                             (min end (count lines)))
+                        entry {:form form :source-lines source-lines}]
+                    (recur (if identity
+                             (conj definitions
+                                   (assoc entry :identity identity
+                                          :start start :end end
+                                          :preceding-context context))
+                             definitions)
+                           (if identity context (conj context entry))
+                           end))))))))
+      (catch Exception _ []))))
+
+(defn moved-definition-warning
+  [finding {:keys [before after before-definitions after-definitions]}]
+  (when (and (= :warning (:level finding))
+             (seq before) (seq after)
+             (pos-int? (:row finding))
+             (pos-int? (:end-row finding))
+             (<= (:row finding) (:end-row finding)))
+    (let [start (:row finding)
+          end (:end-row finding)
+          current-definitions (or after-definitions (source-definitions after))
+          baseline-definitions (or before-definitions (source-definitions before))
+          current-context (:source-context (meta current-definitions))
+          baseline-context (:source-context (meta baseline-definitions))
+          current-candidates (filter #(and (<= (:start %) start)
+                                           (<= end (:end %)))
+                                     current-definitions)
+          matches (keep (fn [current]
+                          (let [identity (:identity current)
+                                current-same (filter #(= identity (:identity %))
+                                                     current-definitions)
+                                baseline-same (filter #(= identity (:identity %))
+                                                      baseline-definitions)
+                                baseline (first baseline-same)]
+                            (when (and (= 1 (count current-same))
+                                       (= 1 (count baseline-same))
+                                       (= (:form current) (:form baseline))
+                                       (= (:source-lines current)
+                                          (:source-lines baseline))
+                                       (= (:preceding-context current)
+                                          (:preceding-context baseline))
+                                       (= current-context baseline-context))
+                              [current baseline])))
+                        current-candidates)]
+      (when (= 1 (count matches))
+        (let [[current baseline] (first matches)
+              offset (- (:start baseline) (:start current))
+              mapped-start (+ start offset)
+              mapped-end (+ end offset)]
+          (when (and (pos-int? mapped-start)
+                     (pos-int? mapped-end)
+                     (<= mapped-start mapped-end (count before)))
+            (assoc finding :row mapped-start :end-row mapped-end)))))))
+
 (defn classify [baseline current sources]
-  (loop [findings current available (frequencies baseline) existing [] blocking []]
-    (if-let [finding (first findings)]
-      (let [mapped (mapped-warning finding (get sources (:filename finding)))
-            matched? (pos? (get available mapped 0))]
-        (recur (next findings) (if matched? (update available mapped dec) available)
-               (cond-> existing matched? (conj finding))
-               (cond-> blocking (and (not matched?) (#{:warning :error} (:level finding))) (conj finding))))
-      {:baseline-warnings existing :blocking blocking})))
+  (let [sources (into {}
+                      (map (fn [[filename source]]
+                             [filename (assoc source
+                                              :before-definitions
+                                              (source-definitions (:before source))
+                                              :after-definitions
+                                              (source-definitions (:after source)))])
+                           sources))]
+    (loop [findings current available (frequencies baseline) existing [] blocking []]
+      (if-let [finding (first findings)]
+        (let [source (get sources (:filename finding))
+              mapped (or (mapped-warning finding source)
+                         (moved-definition-warning finding source))
+              matched? (pos? (get available mapped 0))]
+          (recur (next findings) (if matched? (update available mapped dec) available)
+                 (cond-> existing matched? (conj finding))
+                 (cond-> blocking (and (not matched?) (#{:warning :error} (:level finding))) (conj finding))))
+        {:baseline-warnings existing :blocking blocking}))))
 
 (defn read-one! [path]
   (with-open [reader (java.io.PushbackReader. (io/reader path))]
