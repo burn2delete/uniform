@@ -1,57 +1,44 @@
-# Feature specification: Syntax workflow migration
+# Feature specification: Syntax implementation task authority
 
 Status: prepared; independent review and integration pending.
-Owner: Frontend Spec Kit migration maintainer. Component owner role: compiler syntax maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Owner role: compiler syntax maintainer; existing implementation reservations unchanged.
+Baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
 
 ## Purpose and canonical contracts
 
-Make the existing Syntax component navigable through the repository's Spec Kit
-spec -> plan -> tasks -> evidence workflow without replacing its normative
-contracts or copying its implementation task ledger.
+Make [tasks.md](tasks.md#implementation-tasks) the sole editable ledger for the
+five existing Syntax implementation tasks. The [component roadmap](../../docs/component-roadmaps/syntax.md)
+retains release acceptance, interfaces and source evidence and links directly
+to the ledger. No implementation status is advanced.
 
-- [Owning compiler contract](../../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md) remains normative.
-- [Upstream language contract](../../docs/phase-01-core-language/011-l1-surface-syntax-specification.md) remains normative.
-- [Component roadmap](../../docs/component-roadmaps/syntax.md) owns implementation status and release acceptance.
-- [Canonical inventory](../../docs/document-inventory.json) owns contract identity.
+The [Syntax contract](../../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md)
+and [surface language contract](../../docs/phase-01-core-language/011-l1-surface-syntax-specification.md)
+remain normative. The canonical inventory and development verification workflow
+are unchanged. This is task authority migration, not compiler implementation.
 
-## User scenarios and acceptance
+## Acceptance
 
-### US1 - Find the next real component task
+- All five original titles, status and exit-evidence records remain in the
+  ledger; established phase/title-derived IDs remain.
+- Exactly one editable implementation ledger exists. Historical migration
+  checkboxes remain frozen outside its marked region and are not task progress.
+- The ledger preserves task identity, status, criteria and explicit history;
+  its roadmap link remains the navigation boundary.
+- No task is accepted complete, dependency edge invented or global progress
+  percentage derived from this migration or its tests.
 
-A maintainer follows [the plan](plan.md#canonical-work-and-handoffs) to syntax/1 through syntax/5 in the owning table.
-The link resolves to the existing canonical table, not a copied checklist.
-An unresolved link, copied implementation status or claim of completed language
-behavior from these documents rejects this migration increment.
+## Scope and boundaries
 
-### US2 - Distinguish migration from implementation completion
+Only Syntax's four workflow artifacts and its roadmap change. Reader's accepted
+workflow remains unchanged.
+Existing release criteria, normative semantics, compiler code, diagnostic and
+wire identities are unchanged. Independent evidence acceptance is still
+required for a checked implementation outcome; syntax validation is not proof.
+No external Specify CLI execution or automatic discovery is claimed.
 
-[Tasks](tasks.md) tracks only this package's documentation migration.
-[Evidence](evidence.md) distinguishes prepared artifacts, validation, independent
-review and integration. Component acceptance remains at its owning roadmap.
-The component roadmap records open release acceptance. Source inspection and hosted projections are not accepted full syntax/hygiene conformance.
+## Naming and evidence
 
-## Scope and compatibility
-
-Own only `specs/syntax-workflow/{spec,plan,tasks,evidence}.md`.
-Do not modify compiler code, normative documents, component task rows, existing
-feature packages, schemas, diagnostics or wire IDs. No automatic command
-discovery, external Specify CLI execution or whole-project migration is claimed.
-
-## Evidence and outcome ownership
-
-The migration maintainer owns these artifacts and link validation. The compiler syntax maintainer
-owns implementation evidence under existing reservations; this package transfers
-no implementation ownership. An independent reviewer owns the review disposition;
-Deus coordinates integration. Exact result identities belong in [evidence](evidence.md).
-
-## Unresolved items
-
-Independent review and integration of this new package are pending. Existing
-component questions remain in [the roadmap](../../docs/component-roadmaps/syntax.md), not new approval gates here.
-
-## Implementation naming review
-
-The semantic package name is `syntax-workflow`. Planning identifiers appear
-only in retained contract references. Follow [semantic naming guidance](../../.specify/semantic-names.md);
-this migration adds no implementation namespace or legacy rename.
+Existing `syntax/N` display labels remain traceability metadata. Explicit task
+identities preserve the dashboard's established phase/title convention.
+Observations, independent review and integration are recorded separately in
+[evidence](evidence.md).

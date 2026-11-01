@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-These are the authoritative task/outcome sections; do not copy their task rows here:
+Edit the twelve service records only in [tasks.md](tasks.md#implementation-tasks). These original roadmap sections link to the ledger and retain unchanged acceptance boundaries:
 
 - [finite service outcomes and remaining work](../../docs/component-roadmaps/tools.md#finite-service-outcomes-and-remaining-work)
 - [acceptance and integration](../../docs/component-roadmaps/tools.md#acceptance-and-integration)
@@ -18,8 +18,8 @@ These are the authoritative task/outcome sections; do not copy their task rows h
 
 1. `spec.md`: scope, retained contract navigation and accepted/rejected workflow behavior.
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
-3. `tasks.md`: only migration preparation, validation, review and integration tasks.
-4. `evidence.md`: exact observed documentation checks, pending acceptance and implementation nonclaims.
+3. `tasks.md`: twelve service records and the entire unchanged historical migration file, clearly separated.
+4. `evidence.md`: observed checks and implementation nonclaims.
 
 Central migration inventory/schema is owned separately. This package does not write shared indexes or transfer implementation ownership.
 
@@ -38,3 +38,13 @@ Publish the prepared slice as a draft. An independent reviewer checks mapping, a
 ## Names, callers and compatibility
 
 Package key `tools-workflow` is semantic. No imports, load order, manifests, source hashes, schemas or public APIs are changed. Historical planning IDs in canonical links remain traceability only.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [D6](../../docs/phase-00-foundation-and-thesis/007-d6-performance-philosophy-and-charter.md#requirements): Performance inspection and benchmark reporting must retain source/compiler/target/harness identity. Reports do not establish optimizer correctness or realtime latency.
+- [PERF6](../../docs/phase-04-performance-model/064-perf6-profile-guided-optimization-design.md#requirements): Profile-data producers expose identity, redaction/retention and hot/cold maps; collected data alone is not an accepted PGO transformation.

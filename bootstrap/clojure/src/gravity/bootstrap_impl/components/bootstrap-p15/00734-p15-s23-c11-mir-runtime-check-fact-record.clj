@@ -186,11 +186,6 @@
             :do :if :let :str :println :function
             :runtime-check]
            :maximum-conditionals 1
-           :maximum-module-carrier-nodes
-           p15-s23-c11-mir-max-carrier-nodes
-           :maximum-final-artifact-carrier-nodes
-           p15-s23-c11-mir-max-final-artifact-carrier-nodes
-           :maximum-carrier-depth 256
            :whole-c11? false
            :self-hosted? false}})
 

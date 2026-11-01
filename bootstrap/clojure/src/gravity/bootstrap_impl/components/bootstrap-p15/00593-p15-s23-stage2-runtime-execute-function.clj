@@ -1,108 +1,42 @@
-(declare p15-s23-stage2-module-entry-scope! p15-s23-stage2-module-scope? p15-s23-stage2-module-execute-function)
+(declare p15-s23-stage2-module-entry-scope! p15-s23-stage2-module-scope? p15-s23-stage2-module-execute-function
+         p15-s23-runtime-stage-operations)
 
 (defn- p15-s23-stage2-runtime-execute-function-scoped
   [runtime plan callee args public-invocation-scope]
-  (let [public-invocation-scope
-        (p15-s23-stage2-module-entry-scope! plan callee args public-invocation-scope)]
-  (p15-s23-sh07-b51-assert-scoped-function-entry!
-   runtime plan callee args (if (p15-s23-stage2-module-scope? public-invocation-scope) nil public-invocation-scope))
-  (let [definition (get-in plan [:functions callee])
-        params (:params definition)
-        instructions (:instructions definition)]
-    (when-not definition
-      (fail! "L2-UNKNOWN-CORE-FORM"
-             "stage2 runtime plan references an unknown function"
-             {:source-span {:source (get-in plan [:source :path])}
-              :function callee
-              :remediation "Regenerate the stage2 instruction plan from source."}))
-    (when-not (= (count params) (count args))
-      (p15-s23-stage2-runtime-fail-call-arity!
-       "L2-FUNCTION-ARITY" plan callee args (count params)))
-    (loop [env (p15-s23-stage2-runtime-bind-values {} params args)]
-      (let [result
-            (p15-s23-stage2-runtime-execute-instructions-scoped
-             runtime plan env instructions public-invocation-scope)]
-        (if (p15-s23-stage2-runtime-recur-signal? result)
-          (let [values (p15-s23-stage2-runtime-recur-values result)]
-            (when-not (= (count params) (count values))
-              (p15-s23-stage2-runtime-recur-fail!
-               plan (count params) (count values)
-               :function-arity-mismatch))
-            (recur
-             (p15-s23-stage2-runtime-bind-values {} params values)))
-          result))))))
+  (gravity.runtime/execute-function-scoped runtime plan callee args public-invocation-scope
+                                           (p15-s23-runtime-stage-operations)))
 
 (defn p15-s23-stage2-runtime-execute-function
   [runtime plan callee args]
-  (if (= :gravity/stage2-compiler-artifact-module-bundle (:kind plan))
-    (p15-s23-stage2-module-execute-function runtime plan callee args)
-    (p15-s23-stage2-runtime-execute-function-scoped runtime plan callee args nil)))
+  (gravity.runtime/execute-function runtime plan callee args (p15-s23-runtime-stage-operations)))
 
 (defn p15-s23-stage2-runtime-artifact-invoke
-  "Generic host runner for a Gravity-authored runtime function plan.
-
-  The runner performs only plan lookup, arity validation, and invocation.  It
-  deliberately records the remaining Clojure interpreter boundary in the
-  caller's manifest; runtime semantics (the formatting function itself) come
-  from the compiled Gravity source artifact."
   [runtime function args]
-  (let [artifact-plan (:runtime-artifact-plan runtime)
-        definition (get-in artifact-plan [:functions function])]
-    (when-not (and (map? artifact-plan) (map? definition))
-      (p15-s23-stage2-runtime-executor-fail!
-       "P15S23X002"
-       (:runtime-artifact-source-path runtime)
-       artifact-plan
-       {:missing-fact :runtime-artifact-function
-        :function function}))
-    (when-not (= (:arity definition) (count args))
-      (p15-s23-stage2-runtime-executor-fail!
-       "P15S23X002"
-       (:runtime-artifact-source-path runtime)
-       definition
-       {:missing-fact :runtime-artifact-function-arity
-        :function function
-        :expected-arity (:arity definition)
-        :actual-arity (count args)}))
-    (p15-s23-stage2-runtime-execute-function
-     ;; Disable nested artifact formatting while running the pure runtime
-     ;; function set.  Its body may use normal stage2 builtins such as `str`.
-     (dissoc runtime :runtime-artifact-plan)
-     artifact-plan
-     function
-     args)))
+  (gravity.runtime/artifact-invoke runtime function args (p15-s23-runtime-stage-operations)))
 
 (defn p15-s23-stage2-runtime-execute-plan
   [runtime plan]
-  (let [main-function (get-in plan [:functions (:entrypoint plan)])
-        params (:params main-function)
-        result (atom nil)
-        stdout
-        (with-out-str
-          (when-not main-function
-            (fail! "L3-UNKNOWN-ALIAS"
-                   "stage2 runtime plan requires a main function"
-                   {:source-span {:source (get-in plan [:source :path])}
-                    :remediation "Regenerate the stage2 plan from a module with main."}))
-          (when-not (empty? params)
-            (fail! "L2-MAIN-ARITY"
-                   "stage2 runtime main must take no arguments"
-                   {:source-span {:source (get-in plan [:source :path])}
-                    :params params
-                    :remediation "Use (defn main [] ...)."}))
-          (reset! result
-                  (p15-s23-stage2-runtime-execute-instructions
-                   runtime plan {} (:instructions main-function))))]
-	    {:artifact :gravity/p15-s23-stage2-runtime-execution-record
-	     :runtime-engine (:engine runtime)
-	     :plan-id (:plan-id plan)
-	     :plan-kind (:kind plan)
-     :entrypoint (:entrypoint plan)
-     :stdout stdout
-     :entrypoint-result @result
-     :instruction-summary (:instruction-summary plan)
-	     :effect-summary (:effect-summary plan)
-	     :status :complete}))
+  (gravity.runtime/execute-plan runtime plan (p15-s23-runtime-stage-operations)))
+
+(defn- p15-s23-runtime-stage-operations []
+  {:native-scope! #'declared-reader-bridge/native-scope!
+   :module-entry-scope! #'p15-s23-stage2-module-entry-scope!
+   :registered-scope? #'declared-reader-bridge/registered-scope?
+   :assert-function-entry! #'declared-reader-bridge/assert-function-entry!
+   :assert-scoped-function-entry! #'p15-s23-sh07-b51-assert-scoped-function-entry!
+   :module-scope? #'p15-s23-stage2-module-scope?
+   :fail! #'fail!
+   :fail-call-arity! #'p15-s23-stage2-runtime-fail-call-arity!
+   :bind-values #'p15-s23-stage2-runtime-bind-values
+   :execute-instructions-scoped #'p15-s23-stage2-runtime-execute-instructions-scoped
+   :recur-signal? #'p15-s23-stage2-runtime-recur-signal?
+   :recur-values #'p15-s23-stage2-runtime-recur-values
+   :recur-fail! #'p15-s23-stage2-runtime-recur-fail!
+   :module-execute-function #'p15-s23-stage2-module-execute-function
+   :execute-function-scoped #'p15-s23-stage2-runtime-execute-function-scoped
+   :executor-fail! #'p15-s23-stage2-runtime-executor-fail!
+   :execute-function #'p15-s23-stage2-runtime-execute-function
+   :execute-instructions #'p15-s23-stage2-runtime-execute-instructions})
 
 	(def p15-s23-stage2-runtime-kernel-required-preserves
 	  #{:source-spans :diagnostic-codes :instruction-semantics

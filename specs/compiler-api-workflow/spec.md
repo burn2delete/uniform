@@ -9,7 +9,7 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 Public artifact/context APIs, built-in pass orchestration, plugin host registration and execution-bound pass evidence.
 
-Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/compiler-api.md). Language rules stay in their retained contracts; implementation tasks stay in that roadmap. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
+Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/compiler-api.md). Language rules stay in their retained contracts; implementation tasks are edited only in [tasks.md](tasks.md#implementation-tasks), with direct roadmap links to the task ledger. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
 
 [Inventory](../../docs/document-inventory.json) entries routed for this component are listed below as reviewable navigation, not proof of semantic conformance or exclusive ownership. The routing proposal must be reconciled centrally; cross-component links are legitimate.
 
@@ -39,7 +39,7 @@ Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap]
 
 ### US1 - Find and execute the next canonical slice
 
-A contributor starts here, follows plan.md to the existing task source, selects a finite owned slice and records actual validation in its implementation evidence. Acceptance: all four artifacts and retained-contract/task links resolve; no implementation checklist is copied. Rejection: a missing target, substituted normative authority, fabricated passing result or copied implementation ledger blocks workflow acceptance.
+A contributor starts here, follows plan.md to the existing task source, selects a finite owned slice and records actual validation in its implementation evidence. Acceptance: all four artifacts and retained-contract/task links resolve; there is no second editable implementation checklist. Rejection: a missing target, substituted normative authority, fabricated passing result or duplicate editable implementation ledger blocks workflow acceptance.
 
 ### US2 - Distinguish workflow adoption from product completion
 
@@ -47,7 +47,7 @@ A reader sees preparation, independent review and integration separately in task
 
 ## Scope and compatibility
 
-Own only `specs/compiler-api-workflow/{spec.md,plan.md,tasks.md,evidence.md}`. No compiler/runtime source, existing contract, shared roadmap, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
+Own `specs/compiler-api-workflow/{spec.md,plan.md,tasks.md,evidence.md}` and its direct roadmap navigation. No compiler/runtime source, existing contract, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
 
 ## Evidence and outcome ownership
 
@@ -60,3 +60,28 @@ Plugin isolation and version-compatibility policy remain decisions of the compil
 ## Implementation naming review
 
 The semantic key `compiler-api` names this package. Planning IDs appear only in contract references. No implementation namespaces are added or renamed; meaningful protocol and diagnostic IDs remain unchanged. Follow [semantic naming](../../.specify/semantic-names.md).
+
+## Finite plugin and domain source composition
+
+This later increment extracts the reviewed C17/C12 consumer and prerequisite
+producer criteria, initially over main `70dcb2220701529dbb02bd2317a822eb3ac72fed`.
+The current declared base is `787637b9ae780a7cfef7ca5763611882a8f2b629`.
+The [composition record](domain-contract-source-composition.edn) binds both
+archived exact source review receipts and six exact current criterion spans. Four
+prior main outcomes and their Open statuses remain, and the existing canonical
+domain-IR outcome becomes the fifth local record. No global task denominator
+is adopted. The four source files are copied exactly from their declared
+reviewed-source context; normative language documents and compiler/runtime code
+remain unchanged.
+
+The isolated main composition is a new candidate requiring independent affected
+composition review. Earlier source acceptance is conditional evidence for these
+exact predicates, not acceptance of this new main tree, whole dependencies,
+all of C1/C18, or implementation support. The small SH update preserves prior
+source-version history and numeric routing associations, adds the literal domain
+key and current source pins, and keeps every whole-criterion assessment
+unassessed. The retained Pass Evidence criterion names one source-context file;
+its [scoped excerpt](../requirement-reconciliation/domain-gap-completion.edn)
+contains only that criterion's original record and ten source-facet witnesses,
+with captured before/after fields explicitly historical. The global database,
+other 69 records and their acceptance are not imported.

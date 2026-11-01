@@ -64,8 +64,28 @@
              source-path :complete-sh03-reader-deferment-projection
              gravity-deferred-projection
              {:expected-deferred-count (count deferred-records)}))
-        extension-records (c2-reader-extension-invocations form-tree)
+        resource? (= (reader-resource-policy) (get-in result [:source-unit :reader-options]))
+        sealed? (or resource? (reader-pure-text/raw-policy? (get-in result [:source-unit :reader-options])))
+        extension-records
+        (if sealed?
+          (let [record (if resource? (reader-resource-record! result) (reader-pure-text/record! result))]
+            [(assoc record :tag (if resource? 'resource 'text)
+                    :invocations
+                    (mapv (fn [invocation]
+                            ;; Project occurrence references; preserve the actual
+                            ;; Gravity input/returned seeds and invocation intact.
+                            (assoc invocation
+                                   :form-id (form-id-map (:form-id invocation))
+                                   :payload-form-id (form-id-map (:payload-form-id invocation))
+                                   :span (sh03-reader-path-span source-path source-id (:span invocation))
+                                   :raw (sh03-reader-accepted-raw-text!
+                                         source-path source-bytes source-content-id scalar-boundaries
+                                         (:raw invocation) (:span invocation))))
+                          (:invocations record)))])
+          (c2-reader-extension-invocations form-tree))
         gravity-extension-projection
+        (if sealed?
+          extension-records
         (mapv
          (fn [record]
            (let [tag (symbol (sh03-reader-codepoints-text!
@@ -92,7 +112,7 @@
                         (:span invocation))})
                (:invocations record))
               :status (:status record)}))
-         (:reader-extension-invocation-records result))
+         (:reader-extension-invocation-records result)))
         _ (when-not (= extension-records gravity-extension-projection)
             (sh03-reader-boundary-fail!
              source-path :complete-sh03-reader-extension-projection
@@ -134,7 +154,7 @@
 (defn- sh03-reader-adapter-summary
   [result source-unit token-stream form-tree extension-records
    token-id-map form-id-map]
-  {:slice :SH-03
+  (cond-> {:slice :SH-03
    :status :accepted
    :adapter-contract :gravity/sh03-to-c2-reader-products-v2
    :source-unit-id (get-in result [:incremental-reader-hashes :source-unit])
@@ -154,4 +174,8 @@
    :adapted-extension-invocation-set-id
    (reader-canonical-hash (c2-extension-hash-input extension-records))
    :token-id-projection-id (reader-canonical-hash token-id-map)
-   :form-id-projection-id (reader-canonical-hash form-id-map)})
+   :form-id-projection-id (reader-canonical-hash form-id-map)}
+    (reader-pure-text/raw-policy? (get-in result [:source-unit :reader-options]))
+    (assoc :pure-text-record-id (reader-canonical-hash (reader-pure-text/record! result)))
+    (= (reader-resource-policy) (get-in result [:source-unit :reader-options]))
+    (assoc :resource-record-id (reader-canonical-hash (reader-resource-record! result)))))

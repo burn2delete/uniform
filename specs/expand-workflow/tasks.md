@@ -1,3 +1,62 @@
+# Tasks: Expand implementation workflow
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Owner role: compiler expand maintainer; existing implementation reservations are unchanged.
+Authority transfer baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
+
+## Implementation tasks
+
+This is the sole editable Expand implementation task ledger. The roadmap's
+[current evidence and remaining work](../../docs/component-roadmaps/expand.md#current-evidence-and-remaining-work)
+is a navigation view of these records. IDs preserve the established phase/title slug convention; the original
+`expand/1` through `expand/5` labels remain unchanged display text. Order is
+display order, not dependency evidence. An unchecked box means not accepted complete. Check a box only with
+explicit `Accepted;` status and an immutable accepted-outcome receipt,
+independently reviewed by the responsible owner. Structural validation cannot
+grant acceptance. No task closes through this authority transfer.
+
+<!-- expand-implementation-tasks:start -->
+
+- [ ] `expand/current-evidence-and-remaining-work/expand1-execute-syntax-macros` expand/1: Execute syntax macros
+
+Status: Open; partial source evidence above is not closure
+
+Concrete exit evidence: Implement syntax-object invocation and macro environment/version checks, validating returned graphs and compile phases.
+
+- [ ] `expand/current-evidence-and-remaining-work/expand2-record-hygiene-and-safety` expand/2: Record hygiene and safety
+
+Status: Open; partial source evidence above is not closure
+
+Concrete exit evidence: Preserve definition/call/generated origins, explicit capture and unsafe declarations; reject undeclared authority capture or missing unsafe metadata.
+
+- [ ] `expand/current-evidence-and-remaining-work/expand3-authorize-compile-time-effects` expand/3: Authorize compile-time effects
+
+Status: Open; partial source evidence above is not closure
+
+Concrete exit evidence: Require declared grants, redacted logs and replay inputs for effectful expansion; reject ambient host effects and unreplayable hermetic expansion.
+
+- [ ] `expand/current-evidence-and-remaining-work/expand4-validate-reuse-and-termination` expand/4: Validate reuse and termination
+
+Status: Open; partial source evidence above is not closure
+
+Concrete exit evidence: Bind cache reuse to every semantic input and replay record; diagnose actual expansion cycles/phase errors without node, size or work quotas.
+
+- [ ] `expand/current-evidence-and-remaining-work/expand5-integrate-generated-programs` expand/5: Integrate generated programs
+
+Status: Open; partial source evidence above is not closure
+
+Concrete exit evidence: Feed generated core forms through the same resolution/type/effect/profile/safety path as handwritten forms and retain expansion trace comparison evidence.
+
+<!-- expand-implementation-tasks:end -->
+
+## Historical migration record
+
+The original scaffold below is frozen history at the transfer baseline, not
+implementation work or a completion denominator. Its pending review/integration
+text records what that scaffold stated, not a fresh claim about its merged PR.
+The implementation authority above supersedes its navigation-only rule; no
+historical checkbox is reclassified.
+
 # Tasks: Expand workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)

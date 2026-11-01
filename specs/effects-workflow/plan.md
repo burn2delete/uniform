@@ -1,58 +1,87 @@
-# Implementation plan: Effects workflow migration
+# Implementation plan: Effects task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)
-Migration owner: checked-IR documentation workstream.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Owner role: compiler effects maintainer.
+Input revision: `fcb23737be00f646a74200fc26faaa8908f77164`.
 
 ## Contract alignment
 
 The [canonical inventory](../../docs/document-inventory.json) and owning
-contracts remain normative. The [constitution](../../.specify/memory/constitution.md)
-and [development workflow](../../docs/development-verification.md) retain their
-semantic, provenance and execution boundaries. This new documentation migration
-does not reopen historical accepted increments.
+contracts remain normative. Follow the [constitution](../../.specify/memory/constitution.md),
+[development workflow](../../docs/development-verification.md) and
+[compiler architecture phase](../../docs/phase-06-compiler-architecture/README.md).
+Only task editing authority changes; language and compiler semantics do not.
 
-The following retained references are routed here for navigation. Cross-cutting
-contracts may also be used by other component packages; inclusion is not
-exclusive ownership or semantic conformance acceptance.
+Retain these references for navigation. Cross-cutting contracts may also be used
+by other component packages; inclusion is not exclusive ownership or semantic
+conformance acceptance.
 
 - [L6: Effect System Specification](../../docs/phase-01-core-language/016-l6-effect-system-specification.md)
 - [L11: Concurrency Model Specification](../../docs/phase-01-core-language/021-l11-concurrency-model-specification.md)
 - [C8: Effect Checker Design](../../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md)
 - [TEST11: Formal Semantics and Verification Plan](../../docs/phase-14-testing-verification-and-conformance/200-test11-formal-semantics-and-verification-plan.md)
 
+## Canonical work and handoffs
+
+- Implementation work: [five authoritative records](tasks.md#implementation-tasks).
+- Roadmap navigation: [sole task ledger](tasks.md#implementation-tasks).
+- Completion criteria: [owning acceptance checklist](../../docs/component-roadmaps/effects.md#acceptance-criteria-yesno).
+- Release outcome: [component finish line](../../docs/component-roadmaps/effects.md#release-outcome).
+- Overall composition: [integration outcomes](../../docs/component-roadmaps/README.md#integration-outcomes).
+- Input: Typed core, function/call graph, declared effects, macro build-effect records, profile rules and capability requirement mappings.
+- Output: Effect graph, function/module summaries, ordering constraints, build/replay records, capability requirements and diagnostics.
+
+Types, Core and Resolve supply real identities and call edges. Auth and Legality
+consume summaries; MIR preserves ordering. Provider schemas and fixtures may
+progress independently of full Runtime completion. Record order adds no
+dependency graph or overall completion score.
+
 ## Approach and exact files
 
-Use the existing project-local spec/plan/tasks overrides. Add only this package's
-four Markdown artifacts. Preserve existing feature packages and historical
-receipts. A central migration index is integrated separately; no shared index
-or component page is edited here.
-
-- [Implementation task source](../../docs/component-roadmaps/effects.md#current-evidence-and-remaining-work): select and update implementation work there, never by copying its checklist into this package.
-- [Component acceptance](../../docs/component-roadmaps/effects.md#acceptance-criteria-yesno): retains the semantic finish line.
-- [Component release outcome](../../docs/component-roadmaps/effects.md#release-outcome): remains open independently of migration status.
-
-Types, Core and Resolve supply real identities and call edges. Auth and Legality consume summaries; MIR preserves ordering. Provider schemas and fixtures may progress independently of full Runtime completion.
+Edit the marked implementation region in `specs/effects-workflow/tasks.md`.
+Each record has a stable semantic ID, title, checkbox, exact evidence/status
+and concrete exit evidence. The known five-ID set prevents row loss/substitution;
+the ID must agree with the retained phase/title slug. An intentional task-set
+change needs explicit review, not positional renumbering.
 
 ## Validation and evidence
 
-Validate all four artifacts, relative paths and heading fragments, ASCII text,
-semantic directory names, no copied implementation checklist, and no private
-execution paths or raw logs. Negative checks must detect a missing link target
-and an unsupported acceptance label. Run existing structural documentation and
-full-language roadmap validators; these prove structure, not language semantics.
-No compiler execution, external Specify CLI invocation or automatic command
-discovery is claimed. Record commands/results and limits in evidence.md.
+Run from repository root:
+
+```bash
+clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
+clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
+```
+
+Check the five task IDs, statuses, preserved criteria and historical migration
+ledger. Check the affected Markdown files for ASCII and local file/heading links;
+check `git diff --check`. Run integration
+preflight against the exact final base/commit/tree. Record actual results in
+[evidence](evidence.md). Structural checks do not establish compiler semantics
+or authoritative module admission. No compiler source or compiler test changes
+belong to this task-authority migration.
 
 ## Delivery and remaining work
 
-Keep partial work in a draft PR. Independent review must inspect the exact
-candidate, link ownership and separation of migration from implementation
-status. Integration records a verified merge receipt without rewriting earlier
-validation provenance. Component implementation then continues from its canonical
-list, not from an inferred all-feature completion state.
+Publish a draft after independent current-head review of the complete product
+payload and PR body. Keep implementation, validation, review and integration
+distinct. Merge only after the maintainer confirms independent review and
+integration disposition. Future implementation updates change the ledger; the
+roadmap remains a direct navigation link. No task closes here.
 
 ## Names, callers and compatibility
 
-Only `effects-workflow` and the four standard artifact filenames are new.
-No caller, import, load order, manifest hash, diagnostic or wire contract changes.
+Preserve existing anchors, links, semantic IDs and task text; consumers continue
+following the direct task-ledger link. New semantic tool filenames/namespaces
+follow Reader conventions. No caller, import, load order, runtime API, schema,
+diagnostic, manifest hash or wire ID changes.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L7](../../docs/phase-01-core-language/017-l7-pattern-matching-specification.md#requirements): Include guard effects and preserve their evaluation order, including non-returning control transfer.

@@ -42,18 +42,14 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| mir/1: Construct semantic MIR | Open; partial source evidence above is not closure | Lower checked-core control flow, calls/closures, data, memory/regions/resources, errors, FFI/concurrency and declared domain/workflow/AI operations without target-specific instructions. |
-| mir/2: Attach fact tables | Open; partial source evidence above is not closure | Bind every operation to current types, effects, capabilities, ownership, safety, runtime checks, proof and origin records. |
-| mir/3: Verify graph and legality | Open; partial source evidence above is not closure | Check block termination, dominance, operand schemas, effect ordering, guard dominance, resource facts and valid domain anchors; reject missing or stale evidence. |
-| mir/4: Serialize stable modules | Open; partial source evidence above is not closure | Round-trip operations and shared tables with deterministic identity and preserve analysis invalidation hooks. |
-| mir/5: Gate downstream consumption | Open; partial source evidence above is not closure | Run actual verifier on constructed and mutated MIR; retain positive and negative artifacts for malformed flow, missing facts, target leaks and invalid origins before Opt/Lower consumption. |
+Implementation task authority: [Spec Kit ledger](../../specs/mir-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/mir-workflow/tasks.md#implementation-tasks).
+
+The task ledger is the canonical remaining list for this outcome. Close a row
 only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

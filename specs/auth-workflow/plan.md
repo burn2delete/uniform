@@ -1,16 +1,15 @@
-# Implementation plan: Auth workflow migration
+# Implementation plan: Auth task authority
 
 Spec: [spec.md](spec.md) | Evidence: [evidence.md](evidence.md)
-Migration owner: checked-IR documentation workstream.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Owner role: capability and artifact-trust maintainer.
+Input revision: `846644db7402c26a421eb7afd52615d52f145590`.
 
 ## Contract alignment
 
 The [canonical inventory](../../docs/document-inventory.json) and owning
 contracts remain normative. The [constitution](../../.specify/memory/constitution.md)
 and [development workflow](../../docs/development-verification.md) retain their
-semantic, provenance and execution boundaries. This new documentation migration
-does not reopen historical accepted increments.
+semantic, provenance and execution boundaries. Only task editing authority changes; historical acceptance is not reopened.
 
 The following retained references are routed here for navigation. Cross-cutting
 contracts may also be used by other component packages; inclusion is not
@@ -37,36 +36,52 @@ exclusive ownership or semantic conformance acceptance.
 
 ## Approach and exact files
 
-Use the existing project-local spec/plan/tasks overrides. Add only this package's
-four Markdown artifacts. Preserve existing feature packages and historical
-receipts. A central migration index is integrated separately; no shared index
-or component page is edited here.
+Move the five canonical rows to the marked
+[implementation region](tasks.md#implementation-tasks), preserving component/
+heading/title IDs, titles, Open statuses, evidence baselines and closing
+criteria. The roadmap links directly to the sole task ledger. Preserve the entire historical tasks file as a frozen suffix;
+migration checkboxes do not indicate implementation completion. Preserve all
+five task records and their status/criteria/history; later status updates remain
+explicit in the ledger and require checkbox/Accepted; consistency.
 
-- [Implementation task source](../../docs/component-roadmaps/auth.md#remaining-tasks-and-evidence): select and update implementation work there, never by copying its checklist into this package.
-- [Component acceptance](../../docs/component-roadmaps/auth.md#acceptance-and-integration): retains the semantic finish line.
-- [Component release outcome](../../docs/component-roadmaps/auth.md#release-outcome): remains open independently of migration status.
+Scope is the Auth roadmap and four workflow artifacts.
 
-Early artifact authentication consumes source/artifact identity and trust policy independently. Capability analysis follows Types, Effects and profile legality, then supplies ownership/safety and MIR. Build/Release retain signing and custody ownership.
+Three bootstrap links keep their spelling. Runtime-enforcement and provider
+contract links use ../../docs/ in the ledger and project back to ../phase-...
+in the roadmap, preserving actual targets. Existing file and symlink checks
+reject escapes before writing. Fragments, queries, encoded paths, images,
+reference links and unsupported schemes remain rejected. HTTPS receipts follow
+the existing common grammar. No second link catalog is introduced.
+
+Early artifact authentication remains independently callable from source/
+artifact identity and trust policy. Capability analysis follows Types, Effects
+and profile legality, then supplies ownership/safety and MIR. Build/Release
+retain signing and custody. Effects, signatures and manifests do not grant
+authority; hosted compatibility views do not close these outcomes.
 
 ## Validation and evidence
 
-Validate all four artifacts, relative paths and heading fragments, ASCII text,
-semantic directory names, no copied implementation checklist, and no private
-execution paths or raw logs. Negative checks must detect a missing link target
-and an unsupported acceptance label. Run existing structural documentation and
-full-language roadmap validators; these prove structure, not language semantics.
-No compiler execution, external Specify CLI invocation or automatic command
-discovery is claimed. Record commands/results and limits in evidence.md.
+Run from repository root:
+
+```bash
+clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
+clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
+```
+
+Check the five Markdown documents for ASCII and file/heading links, including
+missing-file/heading cases. Run whitespace and clean exact-base/head/tree
+integration preflight. Compiler semantic suites are outside scope.
 
 ## Delivery and remaining work
 
-Keep partial work in a draft PR. Independent review must inspect the exact
-candidate, link ownership and separation of migration from implementation
-status. Integration records a verified merge receipt without rewriting earlier
-validation provenance. Component implementation then continues from its canonical
-list, not from an inferred all-feature completion state.
+Independent review inspects the complete public payload and proposed PR body.
+Publish a draft for maintainer current-head review, with exact identities and
+validation receipts. Normal integration follows maintainer disposition and real
+repository gates. All five implementation outcomes remain open.
 
 ## Names, callers and compatibility
 
-Only `auth-workflow` and the four standard artifact filenames are new.
-No caller, import, load order, manifest hash, diagnostic or wire contract changes.
+compiler APIs, runtime/authentication policies, schemas, diagnostics and wire
+identities remain unchanged. No legacy rename or compiler source/test edit is
+part of this task-authority migration.

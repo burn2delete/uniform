@@ -485,6 +485,39 @@
       (is (= :well-formed-unicode-c11-carrier (failure #(c11-carrier value)))))
     (is (zero? @calls))))
 
+(deftest native-c11-scope-matches-executed-current-producer-contract
+  ;; Execute the real Gravity producer, without changing its historical
+  ;; default admission pins or claiming full upstream construction.
+  (let [source-path (.getCanonicalPath
+                     (java.io.File.
+                      "bootstrap/gravity/src/gravity/compiler/c11_mir_specification.gravity"))
+        emitter (:emitter (b/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        plan (b/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path))
+        producer (b/p15-s23-stage2-runtime-execute-function
+                  {:engine :gravity-native-c11-compatibility-test
+                   :compiler-artifact-plan? true}
+                  plan 'c11-build-mir-pass-contract [])
+        native (b/p15-s23-c11-mir-pass-contract-record)
+        scope (b/p15-s23-c11-mir-scope-record)
+        quotas [:maximum-module-carrier-nodes
+                :maximum-final-artifact-carrier-nodes :maximum-carrier-depth]]
+    (is (= :pinned-gravity-c11-source-byte-size
+           (failure #(b/p15-s23-c11-mir-source-binding! path :jvm))))
+    (is (= producer native))
+    (is (nil? (b/p15-s23-c11-mir-require-strict-structure!
+                path producer native :producer-contract-parity)))
+    ;; The fixed entry/then/else/join constructor is a supported topology,
+    ;; not a work allowance. The producer has separate closed nested variants.
+    (is (= 1 (get-in producer [:scope :maximum-conditionals])
+           (:maximum-conditionals scope)))
+    (doseq [record [(:scope producer) (:scope native) scope]]
+      (is (not-any? #(contains? record %) quotas)))
+    (doseq [key quotas]
+      (is (= :producer-contract-parity
+             (failure #(b/p15-s23-c11-mir-require-strict-structure!
+                         path producer (assoc-in native [:scope key] 1)
+                         :producer-contract-parity)))))))
+
 (deftest native-carrier-traversal-is-stack-safe-for-large-finite-shapes
   ;; Finite host-limit evidence, not a guarantee for arbitrary heap sizes.
   (doseq [value [(nth (iterate vector nil) 4096)
@@ -494,15 +527,14 @@
                 (fn [& _] (throw (StackOverflowError. "contained-native-test")))]
     (is (= :contained-c11-carrier-host-stack (failure #(c11-carrier nil))))))
 
-(deftest native-carrier-validation-retains-main-mir-scope-and-ingress-semantics
+(deftest native-carrier-validation-retains-current-mir-scope-and-ingress-semantics
   (let [scope (b/p15-s23-c11-mir-scope-record)
         contract-scope (:scope (b/p15-s23-c11-mir-pass-contract-record))
-        quotas {:maximum-module-carrier-nodes b/p15-s23-c11-mir-max-carrier-nodes
-                :maximum-final-artifact-carrier-nodes b/p15-s23-c11-mir-max-final-artifact-carrier-nodes
-                :maximum-carrier-depth b/p15-s23-c11-mir-max-carrier-depth}]
-    ;; Scope migration belongs to the separate producer-qualified successor.
-    (is (= quotas (select-keys scope (keys quotas))))
-    (is (= quotas (select-keys contract-scope (keys quotas))))
+        quotas [:maximum-module-carrier-nodes
+                :maximum-final-artifact-carrier-nodes :maximum-carrier-depth]]
+    ;; Scope migration does not grant authority to an otherwise valid carrier.
+    (is (not-any? #(contains? scope %) quotas))
+    (is (not-any? #(contains? contract-scope %) quotas))
     (is (= 1 (:maximum-conditionals scope)))
     (doseq [value [(vec (repeat 32769 nil)) (nth (iterate vector nil) 4096)]]
       ;; Even a valid native carrier cannot supply absent Core authority.

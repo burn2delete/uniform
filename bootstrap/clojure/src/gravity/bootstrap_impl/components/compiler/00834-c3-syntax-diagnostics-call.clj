@@ -58,5 +58,4 @@
    :c3-c2-reader-integrity-report c3-c2-reader-integrity-report
    :c3-validate-c2-reader-artifact! c3-validate-c2-reader-artifact!
    :c3-syntax-fail! c3-syntax-fail!
-   :source-span source-span
-   :max-reader-form-graph-depth max-reader-form-graph-depth})
+   :source-span source-span})

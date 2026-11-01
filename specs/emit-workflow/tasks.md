@@ -1,3 +1,50 @@
+# Tasks: Emit implementation authority
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+
+## Implementation tasks
+
+This marked region is the sole editable implementation task ledger. All five
+outcomes remain open. The linked component roadmap is navigation to this ledger.
+Historical migration checkboxes below are separate from implementation
+completion. Existing admission rules remain in force.
+
+<!-- emit-implementation-tasks:start -->
+
+- [ ] `emit/current-evidence-and-remaining-work/emit1-reconcile-selected-target-contracts` emit/1: Reconcile selected target contracts
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Record exact target/ABI/runtime tuples, emitted kinds and supported operations for the existing staged Linux LLVM release candidate; distinguish hosted development artifacts, validate Lower input and reject undeclared targets.
+
+- [ ] `emit/current-evidence-and-remaining-work/emit2-emit-real-outputs` emit/2: Emit real outputs
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Produce declared executable/object/library or hosted artifacts through the selected backend adapters, with explicit runtime linkage and surfaced tool failures.
+
+- [ ] `emit/current-evidence-and-remaining-work/emit3-bind-provenance-to-bytes` emit/3: Bind provenance to bytes
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Hash actual outputs and attach source/compiler/dependency identity, source/debug maps, profile/effect/capability/safety/proof and ABI/runtime records.
+
+- [ ] `emit/current-evidence-and-remaining-work/emit4-establish-conformance` emit/4: Establish conformance
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Execute accepted target fixtures and reject illegal or unsupported inputs; compare observable behavior and verify metadata preservation, tamper detection and reproducibility.
+
+- [ ] `emit/current-evidence-and-remaining-work/emit5-integrate-artifact-consumers` emit/5: Integrate artifact consumers
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Deliver actual artifact/manifests to Runtime and Build, retaining source-pinned receipts and distinguishing development binaries from seedless signed release artifacts.
+
+<!-- emit-implementation-tasks:end -->
+
+## Historical migration record (frozen)
+
 # Tasks: Emit workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)

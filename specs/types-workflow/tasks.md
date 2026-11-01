@@ -1,3 +1,62 @@
+# Tasks: Types implementation workflow
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Owner role: compiler types maintainer; existing implementation reservations are unchanged.
+Authority transfer baseline: `88f621ee7633be6965f34d33a43a361cbdd26157`.
+
+## Implementation tasks
+
+This is the sole editable Types implementation task ledger. The roadmap's
+[current evidence and remaining work](../../docs/component-roadmaps/types.md#current-evidence-and-remaining-work)
+is a navigation view of these records. IDs preserve the established phase/title slug
+convention; the original `types/1` through `types/5` labels remain display
+text. Order is display order, not dependency evidence. An unchecked box means
+not accepted complete. Check a box only with explicit `Accepted;` status and an
+immutable accepted-outcome receipt independently reviewed by the responsible
+owner. Structural validation cannot grant acceptance. No task closes here.
+
+<!-- types-implementation-tasks:start -->
+
+- [ ] `types/current-evidence-and-remaining-work/types1-solve-core-constraints` types/1: Solve core constraints
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Implement literal, binding, function/application, branch, collection and error-result constraints with actionable mismatch diagnostics.
+
+- [ ] `types/current-evidence-and-remaining-work/types2-check-declared-abstractions` types/2: Check declared abstractions
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Validate generics, protocols/dispatch, records and schema-derived types against their declarations and resolved identities.
+
+- [ ] `types/current-evidence-and-remaining-work/types3-make-dynamic-boundaries-explicit` types/3: Make dynamic boundaries explicit
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Require checked casts and representability/numeric conversions where specified; reject implicit unsafe narrowing and unsupported profile-dependent dynamic behavior.
+
+- [ ] `types/current-evidence-and-remaining-work/types4-preserve-and-invalidate-facts` types/4: Preserve and invalidate facts
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Serialize type solutions and layout requirements with source/profile/ownership/effect references; invalidate on changed nodes, bindings or contracts.
+
+- [ ] `types/current-evidence-and-remaining-work/types5-integrate-typed-core` types/5: Integrate typed core
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Feed Effects and MIR prerequisites from actual solutions, with accepted inferred/declared cases and rejected unsatisfied, stale and illegal-conversion cases.
+
+<!-- types-implementation-tasks:end -->
+
+## Historical migration record
+
+The original scaffold below is frozen history at the transfer baseline, not
+implementation work or a completion denominator. Its pending review/integration
+text records what that scaffold stated, not a fresh claim about its merged PR.
+The implementation authority above supersedes its navigation-only rule; no
+historical checkbox is reclassified.
+
 # Tasks: Types workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)

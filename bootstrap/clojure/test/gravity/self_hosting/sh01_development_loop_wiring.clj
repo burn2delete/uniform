@@ -23,7 +23,8 @@
            [java.nio.file.attribute BasicFileAttributes FileAttribute
             PosixFilePermission PosixFilePermissions]
            [java.security MessageDigest]
-           [java.util Arrays]))
+           [java.util Arrays]
+           [java.util.jar Attributes$Name JarFile]))
 
 (def ^:private default-timeout-ms (* 60 60 1000))
 (def ^:private child-runtime-token (Object.))
@@ -68,6 +69,14 @@
               (map #(format "%02x" (bit-and % 0xff))
                    (.digest message-digest)))))
 
+(def ^:private ^:dynamic *producer-git-lifecycle* nil)
+
+(defn- start-git-process [command directory]
+  (-> (ProcessBuilder. ^java.util.List command)
+      (.directory directory)
+      (.redirectErrorStream true)
+      .start))
+
 (defn- run-git-bytes!
   ([working-directory arguments]
    (run-git-bytes! working-directory arguments nil))
@@ -76,41 +85,47 @@
                      (.toFile ^Path working-directory)
                      (io/file working-directory))
          command (into ["git"] arguments)
-         process (-> (ProcessBuilder. ^java.util.List command)
-                     (.directory directory)
-                     (.redirectErrorStream true)
-                     .start)
-         writer-error (atom nil)
-         writer
-         (doto
-          (Thread.
-           ^Runnable
-           (fn []
-             (try
-               (with-open [input (.getOutputStream process)]
-                 (when input-bytes
-                   (.write input ^bytes input-bytes)))
-               (catch Throwable exception
-                 (reset! writer-error exception)))))
-          (.setDaemon true)
-          (.start))
-         output (ByteArrayOutputStream.)]
-     (with-open [input (.getInputStream process)]
-       (.transferTo input output))
-     (.join ^Thread writer)
-     (let [exit-code (.waitFor process)
-           bytes (.toByteArray output)]
-       (when-not (zero? exit-code)
-         (fail! "SH01-DEVELOPMENT-LOOP-GIT"
-                "Development-loop repository identity command failed"
-                {:command command
-                 :exit-code exit-code
-                 :output (String. bytes StandardCharsets/UTF_8)}))
-       (when @writer-error
-         (fail! "SH01-DEVELOPMENT-LOOP-GIT"
-                "Development-loop repository identity input failed"
-                {:command command :exit-code exit-code}))
-       bytes))))
+         lifecycle *producer-git-lifecycle*
+         _ (when lifecycle ((:before! lifecycle) command directory))
+         process (start-git-process command directory)
+         owned (when lifecycle ((:retain! lifecycle) process command directory))
+         primary (atom nil)]
+     (try
+       (let [writer-error (atom nil)
+             writer
+             (doto
+              (Thread.
+               ^Runnable
+               (fn []
+                 (try
+                   (with-open [input (.getOutputStream process)]
+                     (when input-bytes
+                       (.write input ^bytes input-bytes)))
+                   (catch Throwable exception
+                     (reset! writer-error exception)))))
+              (.setDaemon true)
+              (.start))
+             output (ByteArrayOutputStream.)]
+         (with-open [input (.getInputStream process)]
+           (.transferTo input output))
+         (.join ^Thread writer)
+         (let [exit-code (.waitFor process)
+               _ (when lifecycle ((:waited! lifecycle) owned exit-code @writer-error))
+               bytes (.toByteArray output)]
+           (when-not (zero? exit-code)
+             (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                    "Development-loop repository identity command failed"
+                    {:command command
+                     :exit-code exit-code
+                     :output (String. bytes StandardCharsets/UTF_8)}))
+           (when @writer-error
+             (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                    "Development-loop repository identity input failed"
+                    {:command command :exit-code exit-code}))
+           bytes))
+       (catch Throwable error (reset! primary error) (throw error))
+       (finally
+         (when lifecycle ((:finalize! lifecycle) owned @primary)))))))
 
 (defn- git-common-directory
   [working-directory]
@@ -844,6 +859,46 @@
       (sequential? command) (mapv str command)
       :else [(str command) "-M:test"])))
 
+(defn- supported-resource-loaders?
+  "Observe only the reviewed resource-delegation domain, not in-memory class identity."
+  []
+  (try
+    (let [system (ClassLoader/getSystemClassLoader)
+          delegates?
+          (fn [loader]
+            (loop [current loader seen #{}]
+              (cond
+                (identical? current system) true
+                (not= clojure.lang.DynamicClassLoader (class current)) false
+                (contains? seen current) false
+                (seq (.getURLs ^clojure.lang.DynamicClassLoader current)) false
+                :else (recur (.getParent ^ClassLoader current) (conj seen current)))))]
+      (and (= "jdk.internal.loader.ClassLoaders$AppClassLoader" (.getName (class system)))
+           (nil? (.getClassLoader (class system)))
+           (identical? system (.getClassLoader clojure.lang.Compiler))
+           (delegates? (.getContextClassLoader (Thread/currentThread)))
+           (delegates? (clojure.lang.RT/baseLoader))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
+(defn- archive-loader-inputs-contained?
+  "Listed archive bytes cover manifest loading only when no Class-Path is declared.
+  Unknown archives are outside the reviewed reuse domain. No referenced URL is opened."
+  [^Path path]
+  (try
+    (and (Files/isRegularFile path no-links)
+         (with-open [archive (JarFile. (.toFile path))]
+           (let [manifest (.getManifest archive)]
+             (or (nil? manifest)
+                 (not (.containsKey (.getMainAttributes manifest)
+                                    Attributes$Name/CLASS_PATH))))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
 (defn- explicit-classpath-identities
   [^Path repository-root closure-root]
   (let [separator (java.util.regex.Pattern/quote
@@ -865,11 +920,11 @@
              (mapv #(str (.relativize repository-root ^Path %))))
         external-paths
         (remove #(.startsWith ^Path % repository-root) paths)]
-    (when (and (= 2 (count internal-roots))
+    (when (and (supported-resource-loaders?)
+               (= 2 (count internal-roots))
                (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
                   (set internal-roots))
-               (every? #(Files/isRegularFile ^Path % no-links)
-                       external-paths))
+               (every? archive-loader-inputs-contained? external-paths))
       (mapv
        (fn [index ^Path path]
          {:path (format "classpath/entry-%04d" index)
@@ -1444,10 +1499,39 @@
         (recur (next remaining) (conj result argument)))
       result)))
 
+(defn project-startup-resources-absent?
+  "True only when known project-classpath startup override locations are absent.
+  This is a current filesystem observation, not proof of prior nonexecution."
+  [working-directory]
+  (try
+    (let [root (.normalize
+                (.toAbsolutePath
+                 (if (instance? Path working-directory) working-directory
+                     (.toPath (io/file working-directory)))))]
+      (every? #(Files/notExists (.resolve root ^String %) no-links)
+              ["bootstrap/clojure/src/user.clj"
+               "bootstrap/clojure/test/user.clj"
+               "bootstrap/clojure/src/clojure"
+               "bootstrap/clojure/test/clojure"]))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
+(defn- child-startup-resources-absent? [working-directory]
+  (try
+    (and (project-startup-resources-absent? working-directory)
+         (nil? (io/resource "user.clj")))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
+    (catch Exception _ false)))
+
 (defn- effective-child-runtime
   [working-directory arguments]
   (try
-    (let [current (basis/current-basis)
+    (when (supported-resource-loaders?)
+      (let [current (basis/current-basis)
           config (:basis-config current)
           root (.normalize (.toAbsolutePath (.toPath (io/file working-directory))))
           jvm-arguments (jvm-input-arguments)
@@ -1465,6 +1549,7 @@
           internal (filterv #(.startsWith ^Path % root) classpath-paths)
           internal-relative (mapv #(str (.relativize root ^Path %)) internal)]
       (when (and (map? current)
+                 (child-startup-resources-absent? working-directory)
                  (= current (basis/initial-basis))
                  (map? config)
                  (every? #{:root :user :project :extra :args :aliases} (keys config))
@@ -1481,7 +1566,7 @@
                  (= #{"bootstrap/clojure/src" "bootstrap/clojure/test"}
                     (set internal-relative))
                  (every? #(or (.startsWith ^Path % root)
-                              (Files/isRegularFile ^Path % no-links))
+                              (archive-loader-inputs-contained? %))
                          classpath-paths))
         (let [material
               {:basis current
@@ -1500,10 +1585,103 @@
                                  material)]
           {:id :actual-child-runtime-v1
            :sha256 (sha256-id (pr-str fingerprints))
-           :fingerprints fingerprints})))
+           :fingerprints fingerprints}))))
+    (catch InterruptedException interrupted
+      (.interrupt (Thread/currentThread))
+      (throw interrupted))
     (catch Exception _
       ;; Unknown launch inputs disable the optional optimization, not the test.
       nil)))
+
+(def ^:private unreviewed-bootstrap-effect-selections
+  ;; Full repository identity binds source bytes, not initialization effects.
+  ;; These two inventoried suites still lack that execution-effect closure.
+  '#{gravity.bootstrap-compatibility.c11-test
+     gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test})
+
+(defn- observe-fresh-producer-binding!
+  [working-directory arguments options]
+  (let [namespace 'gravity.c2-artifact-identity-test
+        index (component-dependencies/dependency-index)
+        entry (some #(when (= namespace (:namespace %)) %)
+                    (vals (:by-test-path index)))
+        closure (component-dependencies/reviewed-cache-closure index namespace)
+        runtime (effective-child-runtime working-directory arguments)]
+    (when-not (and closure (true? (get-in entry [:test-policy :freshness-required?]))
+                   runtime)
+      (fail! "SH01-PRODUCER-OBSERVATION"
+             "Fresh producer observation requires the declared fresh selection and actual child runtime"
+             {}))
+    (let [context (prepare-context working-directory options)
+          _ (when-not (= (:repository-identity options)
+                         (get-in context [:snapshot :repository-identity]))
+              (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                     "Fresh observer inputs differ from the prelaunch repository snapshot"
+                     {:input-kind :child-startup}))
+          root (.toPath (io/file working-directory))
+          paths (mapv :path (:inputs closure))
+          states (mapv #(required-input-state root %) paths)
+          _ (when-not (every? #(and % (.isRegularFile ^BasicFileAttributes (:attributes %))) states)
+              (fail! "SH01-PRODUCER-OBSERVATION"
+                     "Fresh producer requires every declared input to be a regular file" {}))
+          inputs (mapv #(repository-input-identity root %) (:inputs closure))
+          inventories (mapv #(closure-inventory root %) (:inventories closure))
+          shadows (mapv #(repository-input-identity root {:path % :role :shadow})
+                        (declared-shadow-paths inputs inventories))
+          verified-inventories (mapv #(closure-inventory root %) (:inventories closure))
+          verified-states (mapv #(required-input-state root %) paths)
+          _ (when-not (and (= inventories verified-inventories)
+                           (every? true? (map same-required-input-state? states verified-states)))
+              (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+                     "Fresh producer inputs changed while observed" {:input-kind :producer-observation}))
+          consumed (sha256-id
+                    (pr-str (array-map
+                             :schema (:schema closure)
+                             :dependency-contract-schema component-dependencies/contract-schema
+                             :inputs inputs :shadow-inputs shadows :inventories inventories)))
+          classpath (explicit-classpath-identities root consumed)
+          clean? (str/blank? (strict-utf8 (run-git-bytes! root ["status" "--porcelain"])))
+          binding {:source (assoc (:revision context)
+                                  :repository-identity (get-in context [:snapshot :repository-identity])
+                                  :clean? clean?)
+                   :consumed-input-identity consumed :inputs inputs :inventories inventories
+                   :shadow-inputs shadows :classpath-identities classpath
+                   :child-runtime-identity runtime
+                   :runtime-tool-inputs
+                   (cond-> (:runtime-tool-inputs context)
+                     (:producer-git-binding options)
+                     (conj {:id :selected-observer-git-binding
+                            :sha256 (sha256-id (pr-str (:producer-git-binding options)))}))}]
+      (when-not (and clean? classpath)
+        (fail! "SH01-PRODUCER-OBSERVATION"
+               "Fresh producer source or classpath cannot be observed completely" {}))
+      {:binding binding :repository-snapshot (:snapshot context)})))
+
+(defn- observe-fresh-producer!
+  [namespaces {:keys [arguments] :as options} operation]
+  (when-not (= ['gravity.c2-artifact-identity-test] namespaces)
+    (fail! "SH01-PRODUCER-OBSERVATION"
+           "Producer observation requires exactly the declared Reader identity selection" {}))
+  (let [directory (System/getProperty "user.dir")
+        observe #(binding [*producer-git-lifecycle* (:producer-git-lifecycle options)]
+                   (observe-fresh-producer-binding! directory arguments options))
+        before (observe)
+        result (operation)
+        after (observe)]
+    (when-not (= before after)
+      (fail! "SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE"
+             "Fresh producer observations changed during execution" {:input-kind :producer-observation}))
+    (let [binding (:binding before)]
+      (assoc result :test-producer-observation
+             {:schema :gravity/sh01-fresh-producer-observation-v1
+              :binding-before binding :binding-after (:binding after)
+              :producer-provenance
+              {:revision (select-keys (:source binding) [:commit :tree])
+               :repository-snapshot (:repository-snapshot before)
+               :consumed-input-identity (:consumed-input-identity binding)
+               :classpath-identities (:classpath-identities binding)
+               :child-runtime-identity (:child-runtime-identity binding)}
+              :applying-source (:source binding)}))))
 
 (defn run-child-unit!
   "Optionally reuse a complete selection inside the actual existing test JVM.
@@ -1512,7 +1690,13 @@
   not inspect processes or acquire a nested lease. Unknown launches and test
   policies execute fresh; no parent assertion can supply a child identity."
   [namespaces {:keys [arguments fail-fast?] :as options} operation]
-  (let [index (component-dependencies/dependency-index)
+  (if (:observe-producer? options)
+    (observe-fresh-producer!
+     namespaces options
+     #(run-child-unit! namespaces (dissoc options :observe-producer?) operation))
+    (let [effects-reviewed? (not-any? unreviewed-bootstrap-effect-selections namespaces)
+        resource-loaders-supported? (supported-resource-loaders?)
+        index (component-dependencies/dependency-index)
         by-namespace (into {} (map (juxt :namespace identity)
                                   (vals (:by-test-path index))))
         jobs (mapv (fn [namespace]
@@ -1521,12 +1705,13 @@
                                     index namespace)]
                        (assoc entry :namespace namespace
                                     :cache-closure closure
-                                    ;; Compatibility declarations predate the
-                                    ;; bootstrap component loader. They retain
-                                    ;; the conservative complete-tree identity.
+                                    ;; Only the re-audited bootstrap-free leaves
+                                    ;; have explicit closures. Bootstrap-dependent
+                                    ;; selections retain complete-tree identity.
                                     :cache-closure-authorized?
                                     (and (some? closure)
-                                         (contains? '#{gravity.c11-mir-test
+                                         (contains? '#{gravity.c2-artifact-identity-test
+                                                       gravity.c11-mir-test
                                                        gravity.compiler-pass-manifest-test}
                                                     namespace)))))
                    namespaces)
@@ -1537,7 +1722,9 @@
                                                      :freshness-required?]))))
                           jobs)
         working-directory (System/getProperty "user.dir")
-        runtime (when reviewed?
+        startup-absent? (and effects-reviewed? resource-loaders-supported? reviewed?
+                             (child-startup-resources-absent? working-directory))
+        runtime (when (and effects-reviewed? resource-loaders-supported? reviewed? startup-absent?)
                   (effective-child-runtime working-directory arguments))]
     (if-not runtime
       (assoc (operation)
@@ -1547,8 +1734,12 @@
              :child-cache-receipt
              {:decision :fresh :cacheable? false :stored? false
               :producer-executed? true
-              :reason (if reviewed? :unknown-child-configuration
-                          :unreviewed-or-fresh-test-policy)})
+              :reason (cond
+                        (not effects-reviewed?) :unreviewed-bootstrap-initialization-effects
+                        (not resource-loaders-supported?) :unreviewed-resource-loaders
+                        (not reviewed?) :unreviewed-or-fresh-test-policy
+                        (not startup-absent?) :unreviewed-startup-resources
+                        :else :unknown-child-configuration)})
       (let [context (assoc (prepare-context working-directory options)
                            :child-runtime-token child-runtime-token)
             _ (when-not (= (:repository-identity options)
@@ -1594,7 +1785,7 @@
                :child-jvm-launched? true
                :tests-executed? (:producer-executed? receipt)
                :child-cache-hit? (= :hit (:decision receipt))
-               :child-cache-receipt receipt)))))
+               :child-cache-receipt receipt))))))
 
 (defn report-facts
   "Return deterministic cache receipts plus the exact launch count."

@@ -1,60 +1,44 @@
-# Implementation plan: Syntax workflow migration
+# Plan: Syntax task authority and roadmap navigation
 
-Spec: [spec.md](spec.md) | Owner: Frontend Spec Kit migration maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
 
-## Contract alignment
+## Authority and compatibility
 
-Follow the [constitution](../../.specify/memory/constitution.md),
-[development verification](../../docs/development-verification.md),
-[compiler architecture phase](../../docs/phase-06-compiler-architecture/README.md),
-and [owning contract](../../docs/phase-06-compiler-architecture/082-c3-syntax-object-model.md). This is documentation/workflow migration,
-not a semantic contract amendment or authoritative compiler migration.
+Move the five existing [remaining-work rows](../../docs/component-roadmaps/syntax.md#current-evidence-and-remaining-work)
+verbatim to [implementation tasks](tasks.md#implementation-tasks). Preserve
+all original heading anchors and task criteria. The roadmap links directly to
+those records; historical scaffold tasks remain frozen separately.
 
-## Canonical work and handoffs
+The established IDs use `syntax/current-evidence-and-remaining-work/` followed
+by `syntax1-construct-canonical-syntax`, `syntax2-preserve-transformations`,
+`syntax3-invalidate-facts`, `syntax4-serialize-and-verify`, and
+`syntax5-integrate-consumers`. The original Markdown provided display labels,
+not literal full IDs. Preserve this derived identity convention rather than
+renumbering or changing IDs when presentation order changes.
 
-- Implementation work: [syntax/1 through syntax/5 in the owning table](../../docs/component-roadmaps/syntax.md#current-evidence-and-remaining-work).
-- Completion criteria: [owning acceptance checklist](../../docs/component-roadmaps/syntax.md#acceptance-criteria-yesno).
-- Overall composition: [integration outcomes](../../docs/component-roadmaps/README.md#integration-outcomes).
-- Input: Reader syntax seeds and source records; generated forms with producer/input identities.
-- Output: Syntax objects, hygiene contexts, origin graphs, metadata and verification/serialization reports.
+## Implementation
 
-Reader and Expand supply versioned interfaces. Generated-origin and hygiene contracts do not require completing Expand before Syntax development.
+Edit the sole Syntax task ledger without changing Reader. Checked boxes require
+explicit `Accepted;` status. Semantic receipt acceptance remains independent
+review, not a formatting check.
 
-Reader decoding and expansion execution stay with their owners; syntax graph validity, identity and fact invalidation stay here.
+## Validation
 
-The canonical table provides the exact task titles, status and exit evidence.
-Do not reproduce its rows or maintain a second component completion count here.
-The component owner chooses an implementation slice from that table and updates
-its evidence there; this package remains the workflow/navigation entry point.
+From repository root:
 
-## Approach and exact files
+```bash
+clojure -M tools/validate_gravity_docs.clj
+clojure -M tools/validate_full_language_roadmap.clj
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+```
 
-Prepare only the four files in `specs/syntax-workflow/`. `spec.md` states this
-migration's outcome; `plan.md` links canonical work; `tasks.md` tracks migration
-checks; `evidence.md` records observed validation and accepted scope. Shared
-indexes and other packages are owned by their separate migration slices.
+Check the five task IDs, Markdown file/heading links, ASCII and whitespace. No
+compiler behavior or whole migration completion follows from these checks.
+Obtain independent exact-candidate review before integration.
 
-## Validation and evidence
+## Residual work
 
-Check that all four artifacts exist, are ASCII, and have resolving relative
-file/heading links. Inspect the diff for duplicate implementation checklists,
-false completion and unauthorized semantic edits. A missing canonical target or
-an absent required artifact must fail validation. Run `git diff --check` and
-the existing structural documentation and roadmap validators.
-Compiler tests are unrun and unnecessary for this documentation-only increment;
-passing documentation checks is not compiler conformance. Record actual commands,
-results and independent review separately in [evidence](evidence.md).
-
-## Delivery and remaining work
-
-Publish a draft for the prepared slice. Request independent review of exact
-files and validation evidence; record the reviewed candidate and integration
-receipt without claiming unrun post-merge checks. Deus owns integration.
-Only migration preparation/validation/review/integration is counted here.
-
-## Names, callers and compatibility
-
-`syntax-workflow` identifies the subsystem in human-readable terms.
-No callers, runtime APIs, load order, manifests, hashes or protocol IDs change.
-Existing identifier-bearing contract paths are traceability, not new naming.
+The five implementation tasks remain open. Their owning source, interface,
+acceptance and release decisions remain unchanged. Future evidence-backed task
+updates change the ledger; the roadmap continues to link to it.
+Other components require their own migration; no aggregate denominator is added.

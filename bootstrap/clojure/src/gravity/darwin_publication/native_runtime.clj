@@ -1,18 +1,13 @@
 (ns gravity.darwin-publication.native-runtime
   "Internal Darwin publication native runtime operations."
-  (:require [clojure.string :as str]
-            [gravity.darwin-publication.contract :refer :all]
-            [gravity.darwin-publication.failure :refer :all])
+  (:require [clojure.string]
+            [gravity.darwin-publication.contract :refer [stat-byte-count relative-unique-stat-flags exclusive-rename-flags]]
+            [gravity.darwin-publication.failure :refer [failure! rethrow-interrupt!]]
+            [gravity.darwin-publication.native-call :as call])
   (:import [java.lang.foreign Arena FunctionDescriptor Linker
-            Linker$Option MemoryLayout MemoryLayout$PathElement MemorySegment
+            Linker$Option MemoryLayout MemoryLayout$PathElement
             ValueLayout]
-           [java.lang.invoke VarHandle$AccessMode]
-           [java.nio ByteBuffer]
-           [java.nio.charset CharacterCodingException CodingErrorAction
-            StandardCharsets]
-           [java.nio.file InvalidPathException Paths]
-           [java.security MessageDigest SecureRandom]
-           [java.util Collections WeakHashMap]))
+           [java.lang.invoke VarHandle$AccessMode]))
 
 (defn function-descriptor
   [return-layout argument-layouts]
@@ -44,6 +39,27 @@
    (function-descriptor return-layout argument-layouts)
    (into-array Linker$Option linker-options)))
 
+(defn require-confinement-support!
+  "Reject unsupported flag admission before opening any publication path.
+
+  Invalid descriptors cannot publish or inspect files. EBADF is an admission
+  observation, not proof of path enforcement; all publication guards remain."
+  [runtime]
+  (with-open [arena (Arena/ofConfined)]
+    (let [name (.allocateFrom arena "uniform-native-feature-probe")
+          buffer (.allocate arena (long stat-byte-count) (long 8))
+          invalid-fd (int -1)]
+      (doseq [[operation arguments]
+              [[:fstatat [invalid-fd name buffer (int 0)]]
+               [:fstatat [invalid-fd name buffer (int relative-unique-stat-flags)]]
+               [:renameatx-np [invalid-fd name invalid-fd name (int 0)]]
+               [:renameatx-np [invalid-fd name invalid-fd name (int exclusive-rename-flags)]]]]
+        (let [result (call/int-call-result runtime arena operation arguments)]
+          (when-not (= {:value -1 :errno 9} result)
+            (failure! :native-preflight :unsupported-confinement-features
+                      {:return-code (:value result) :errno (:errno result)}))))))
+  runtime)
+
 (defn native-runtime!
   []
   (let [native-access-enabled?
@@ -73,7 +89,8 @@
              VarHandle$AccessMode/GET)
             variadic2 (Linker$Option/firstVariadicArg 2)
             variadic3 (Linker$Option/firstVariadicArg 3)]
-        {:state-layout state-layout
+        (require-confinement-support!
+         {:state-layout state-layout
          :errno-handle errno-handle
          :open
          (bind-captured!
@@ -159,7 +176,7 @@
           [ValueLayout/ADDRESS])
          :error-pointer
          (bind-direct!
-          linker lookup "__error" ValueLayout/ADDRESS [])})
+          linker lookup "__error" ValueLayout/ADDRESS [])}))
       (catch clojure.lang.ExceptionInfo error
         (throw error))
       (catch Exception error

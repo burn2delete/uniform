@@ -14,7 +14,10 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [gravity.self-hosting.sh01-development-loop-wiring :as wiring]
-            [gravity.self-hosting.sh01-impact-test-planner :as planner]))
+            [gravity.self-hosting.sh01-host-resource-broker :as broker]
+            [gravity.self-hosting.sh01-impact-test-planner :as planner]
+            [gravity.process-supervision :as process-supervision]
+            [gravity.self-hosting-test-runner :as child-runner]))
 
 (import '(java.io ByteArrayOutputStream InputStream)
         '(java.nio ByteBuffer CharBuffer)
@@ -220,6 +223,14 @@
   (let [value (:resource-class job)]
     (if (nil? value) :normal value)))
 
+(defn- require-supported-namespace!
+  [namespace]
+  ;; Policy comes from the owner, never from caller-supplied shard markers.
+  (when-let [blocked (planner/unsupported-execution namespace)]
+    (throw
+     (ex-info "Selected source tests require their established guarded owner wrapper"
+              blocked))))
+
 (defn- canonical-jobs
   "Canonicalizes either the planner's `:namespaces` plus `:shards` or a plan
   containing shards alone.  Namespace identity is unique and reporting order
@@ -288,6 +299,9 @@
         (->> namespaced
              vals
              (map (fn [job]
+                    ;; Recompute the owning policy rather than trusting optional
+                    ;; shard fields that a direct caller could omit or relabel.
+                    (require-supported-namespace! (:namespace job))
                     (when-not
                      (contains? #{:normal :memory-heavy :exclusive}
                                 (resource-class job))
@@ -372,6 +386,24 @@
              :fail-fast (boolean (or (:fail-fast? options)
                                      (:fail-fast options)))))))
 
+(defn- compatibility-bootstrap-affinity
+  [job]
+  ;; Both suites require the real Bootstrap facade, restore their interposed
+  ;; Vars, and keep separate namespace results. This shares initialization,
+  ;; never an upstream artifact or verifier report. A narrowed closure cannot
+  ;; be carried across component ownership by this affinity.
+  (when (and (contains? #{"gravity.bootstrap-compatibility.c11-test"
+                         "gravity.self-hosting.sh01-compiler-pass-manifest-compatibility-test"}
+                       (namespace-name (:namespace job)))
+             (not (contains? job :cache-closure))
+             (not (:cache-closure-authorized? job))
+             (or (nil? (:test-policy job))
+                 (and (map? (:test-policy job))
+                      (= #{:deterministic? :performance? :proof? :freshness-required?}
+                         (set (keys (:test-policy job))))
+                      (every? boolean? (vals (:test-policy job))))))
+    [::compatibility-bootstrap (:test-policy job)]))
+
 (defn- normal-batches
   "Packs normal jobs into bounded, deterministic cache-affine batches.
 
@@ -380,7 +412,8 @@
   or exclusive job can enter this path."
   [jobs batch-size]
   (->> jobs
-       (group-by #(or (:batch-key %) (:slice %)))
+       (group-by #(or (compatibility-bootstrap-affinity %)
+                      [::existing-affinity (or (:batch-key %) (:slice %))]))
        (sort-by (comp str key))
        (mapcat (fn [[_ affinity-jobs]]
                  (partition-all
@@ -389,6 +422,14 @@
        (mapv
         (fn [batch]
           (let [batch (vec batch)
+                shared-bootstrap? (and (> (count batch) 1)
+                                       (compatibility-bootstrap-affinity (first batch)))
+                component-id (when (or (not shared-bootstrap?)
+                                       (apply = (map :component-id batch)))
+                               (:component-id (first batch)))
+                batch-key (if shared-bootstrap?
+                            "bootstrap-facade/compatibility"
+                            (:batch-key (first batch)))
                 test-policies (mapv :test-policy batch)
                 common-test-policy
                 (when (and (every? map? test-policies)
@@ -400,10 +441,10 @@
               :resource-class :normal
               :batch-jobs batch
               :batch-namespaces (mapv :namespace batch)}
-              (:component-id (first batch))
-              (assoc :component-id (:component-id (first batch)))
-              (:batch-key (first batch))
-              (assoc :batch-key (:batch-key (first batch)))
+              component-id
+              (assoc :component-id component-id)
+              batch-key
+              (assoc :batch-key batch-key)
               common-test-policy
               (assoc :test-policy common-test-policy)))))))
 
@@ -1071,14 +1112,40 @@
       (sequential? command) (mapv str command)
       :else [(str command) "-M:test"])))
 
+(defn- forward-child-cache-option? [options]
+  (when-let [cache-options (:child-development-cache options)]
+    ;; Keep malformed options on the child's original refusal path. Only a
+    ;; valid optional optimization may be omitted to run the tests fresh.
+    (or (not (child-runner/valid-development-cache-options? cache-options))
+        (wiring/project-startup-resources-absent?
+         (or (:working-directory options) @root)))))
+
 (defn namespace-command
-  "Returns the exact ProcessBuilder argument vector for one namespace."
+  "Returns the exact ProcessBuilder argument vector for one namespace.
+  Opt-in :exact-test-vars and :child-fail-fast? forward development-test-runner
+  selection flags after the namespace, without changing the command prefix."
   ([namespace]
    (namespace-command namespace {}))
   ([namespace options]
+   (when (and (contains? options :exact-test-vars)
+              (not (and (vector? (:exact-test-vars options))
+                         (seq (:exact-test-vars options))
+                         (every? #(and (string? %) (not (str/blank? %)))
+                                 (:exact-test-vars options)))))
+     (throw (ex-info "Exact child selection requires a nonempty vector of names"
+                     {:id "SH01-PARALLEL-CHILD-SELECTION"})))
+   (when (and (contains? options :child-fail-fast?)
+              (not (instance? Boolean (:child-fail-fast? options))))
+     (throw (ex-info "Child fail-fast must be an explicit boolean"
+                     {:id "SH01-PARALLEL-CHILD-SELECTION"})))
    (cond-> (into (vec (command-prefix options))
                  ["--namespace" (namespace-name namespace)])
-     (:child-development-cache options)
+     (:exact-test-vars options)
+     (into (mapcat (fn [name] ["--exact" name]) (:exact-test-vars options)))
+     (:child-fail-fast? options) (conj "--fail-fast")
+     (:development-result-delivery options)
+     (into ["--machine-result" (pr-str (:development-result-delivery options))])
+     (forward-child-cache-option? options)
      (into ["--development-cache" (pr-str (:child-development-cache options))]))))
 
 (defn normal-batch-command
@@ -1092,7 +1159,7 @@
                     ["--namespace" (namespace-name (:namespace job))])
                   jobs))
      (:fail-fast? options) (conj "--fail-fast")
-     (:child-development-cache options)
+     (forward-child-cache-option? options)
      (into ["--development-cache" (pr-str (:child-development-cache options))])
      true (into ["--report-file" (str report-file)]))))
 
@@ -1102,16 +1169,31 @@
   ;; It must reach ProcessBuilder but must not enter a reusable result.
   (vec (drop-last 2 command)))
 
+(declare retain-owned-process!)
+
 (defn start-process
   "Starts a process from an argument vector and working directory.
 
   This function is public specifically so tests and embedders can inject a
   launcher without replacing ProcessBuilder or invoking a shell."
   [command working-directory]
-  (-> (ProcessBuilder. ^java.util.List (vec (map str command)))
-      (.directory (io/file working-directory))
-      (.redirectErrorStream false)
-      (.start)))
+  (let [custody (broker/retain-process-start-custody!)]
+    (try
+      (let [process (process-supervision/start-process
+                     (vec (map str command))
+                     {:working-directory working-directory})]
+        (when custody
+          (broker/record-started-process! custody process)
+          (broker/record-started-ownership! custody (retain-owned-process! process)))
+        process)
+      (catch Throwable original
+        (try
+          (broker/record-process-start-error! custody original)
+          (catch Throwable custody-error
+            (when-not (identical? original custody-error)
+              (.addSuppressed original custody-error))))
+        (when custody (restore-interrupt! original))
+        (throw original)))))
 
 (defn- report-counter?
   [value]
@@ -1207,6 +1289,7 @@
    (run-normal-batch-process jobs {}))
   ([jobs options]
    (let [jobs (vec jobs)
+         _ (doseq [job jobs] (require-supported-namespace! (:namespace job)))
          _ (when (or (empty? jobs)
                      (some #(not= :normal (:resource-class %)) jobs))
              (throw (ex-info "Warm-JVM batching accepts normal jobs only"
@@ -1618,180 +1701,84 @@
         (throw fatal)
         captured))))
 
-(defn- process-descendants
-  [^Process process]
-  (let [root (.toHandle process)]
-    (try
-      (with-open [descendants (.descendants root)]
-        {:handles (vec (iterator-seq (.iterator descendants)))
-         :error nil})
-      (catch Throwable throwable
-        (rethrow-fatal! throwable)
-        (restore-interrupt! throwable)
-        ;; Enumeration failure is itself non-authoritative.  The caller still
-        ;; terminates the root, but must not claim the descendant tree was
-        ;; cleaned when it could not observe that tree.
-        {:handles []
-         :error (str throwable)}))))
+(defrecord RetainedProcess
+    [process handles discovery-error cleanup-error wait-throwable terminal owner-thread-id])
 
-(defn- handle-pid
-  [^java.lang.ProcessHandle handle]
-  (long (.pid handle)))
+(defn- require-retained-process! [owned]
+  (when-not (and (instance? RetainedProcess owned)
+                 (= (:owner-thread-id owned) (.getId (Thread/currentThread))))
+    (throw (ex-info "Owned process handle belongs to its retaining thread"
+                    {:id "SH01-PROCESS-OWNERSHIP"})))
+  owned)
 
-(defn- alive-handle?
-  [^java.lang.ProcessHandle handle]
-  (try
-    (.isAlive handle)
-    (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
-      ;; If a handle can no longer be queried, retain it as a cleanup failure
-      ;; rather than promoting an unverified timeout to a clean result.
-      true)))
+(defn retain-owned-process!
+  "Retain the actual Process and observed handles, never look up a PID.
 
-(defn- request-handle-termination!
-  [^java.lang.ProcessHandle handle forcibly?]
-  (try
-    (if forcibly?
-      (.destroyForcibly handle)
-      (.destroy handle))
-    (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
-      false)))
+  Call immediately after launch on the thread that will wait/finalize. Java
+  cannot prove that observation covers every descendant, even at this point."
+  [process]
+  (when-not (instance? Process process)
+    (throw (ex-info "Retaining ownership requires an actual Process"
+                    {:id "SH01-PROCESS-OWNERSHIP"})))
+  (or (broker/retained-start-token process)
+      (process-supervision/retain-owned-process!
+       process {:owned-factory
+                (fn [process]
+                  (->RetainedProcess process (atom []) (atom nil) (atom nil)
+                                     (atom nil) (atom nil)
+                                     (.getId (Thread/currentThread))))})))
+
+(defn retained-process-handles
+  "Return retained raw handles, not evidence or PID-reconstructed ownership."
+  [owned]
+  (require-retained-process! owned)
+  (process-supervision/retained-process-handles owned))
 
 (defn- reap-process-handle!
-  [^java.lang.ProcessHandle handle]
-  (try
-    ;; ProcessHandle::onExit is the JVM-level wait/reap boundary for a
-    ;; descendant that is not represented by a java.lang.Process object.
-    (.get (.onExit handle) 100 TimeUnit/MILLISECONDS)
-    true
-    (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
-      (not (alive-handle? handle)))))
+  [^java.lang.ProcessHandle handle deadline owned]
+  (process-supervision/reap-process-handle! handle deadline owned))
 
-(defn- terminate-process-tree!
-  "Terminates and reaps the observed ProcessHandle descendant tree.
-
-  This is intentionally a bounded JVM ProcessHandle operation, not a host
-  `ps` census or a container/supervisor implementation.  The observed handle
-  set is retained across root termination so reparenting cannot turn a known
-  live descendant into an unreported success.  Unknown cross-session escapes
-  remain outside this Stage-0 claim."
-  [^Process process]
-  (let [root (.toHandle process)
-        descendant-observation (process-descendants process)
-        descendants (:handles descendant-observation)
-        discovery-error (:error descendant-observation)
-        observed (vec (distinct (cons root descendants)))
-        observed-descendants (vec (remove #(= root %) observed))
-        started (System/nanoTime)
-        grace-deadline (+ started (* process-cleanup-grace-ms 1000000))
-        deadline (+ started (* process-cleanup-timeout-ms 1000000))]
-    ;; Kill deepest observed descendants first, then the root.  The root is
-    ;; still handled explicitly because descendants can outlive its shell.
-    (doseq [handle (reverse observed-descendants)]
-      (when (alive-handle? handle)
-        (request-handle-termination! handle false)))
-    (when (alive-handle? root)
-      (request-handle-termination! root false))
-    (loop [forced? false]
-      (let [alive (vec (filter alive-handle? observed))
-            now (System/nanoTime)]
-        (cond
-          (empty? alive)
-          (do
-            (doseq [handle observed]
-              (reap-process-handle! handle))
-            {:status (if discovery-error :failed :clean)
-             :complete? (not discovery-error)
-             :forced? forced?
-             :root-alive? false
-             :descendants-alive 0
-             :observed-pids (mapv handle-pid observed)
-             :survivor-pids []
-             :discovery-error discovery-error})
-
-          (and (not forced?) (>= now grace-deadline))
-          (do
-            (doseq [handle (reverse alive)]
-              (request-handle-termination! handle true))
-            (recur true))
-
-          (>= now deadline)
-          (let [survivors (vec (filter alive-handle? observed))]
-            {:status :failed
-             :complete? false
-             :forced? forced?
-             :root-alive? (alive-handle? root)
-             :descendants-alive
-             (count (remove #(= root %) survivors))
-             :observed-pids (mapv handle-pid observed)
-             :survivor-pids (mapv handle-pid survivors)
-             :discovery-error discovery-error})
-
-          :else
-          (do
-            ;; A bounded park avoids an uninterruptible sleep while retaining
-            ;; a deterministic cleanup deadline.  Interrupted cleanup is
-            ;; reported as incomplete by the next alive-handle observation.
-            (java.util.concurrent.locks.LockSupport/parkNanos
-             (long (* (min 25
-                           (max 1
-                                (quot (- deadline now)
-                                      1000000)))
-                       1000000)))
-            (recur forced?)))))))
+(defn finalize-owned-process!
+  "Finalize retained handles once on the retaining thread; repeat calls reuse
+  the same observation. :tracked-complete? never proves descendant coverage.
+  :complete? is nil (unknown) or false, never a global success claim. A caller
+  whose required lifecycle scope is these retained handles can consume the
+  tracked fact; source-bound creation knowledge belongs to its exact method,
+  not to an all-OS registry or an inferred meaning for the unknown field."
+  [owned]
+  (require-retained-process! owned)
+  (process-supervision/finalize-owned-process!
+   owned {:grace-ms process-cleanup-grace-ms
+          :timeout-ms process-cleanup-timeout-ms
+          :reap-fn reap-process-handle!}))
 
 (defn- wait-for-process
   "Waits for a process with an optional bound and never hides interruption.
 
   The unbounded form is used only for an ordinary process whose caller did
   not request a timeout.  Cleanup paths always use the bounded form below."
-  [^Process process timeout-ms]
-  (try
-    (if (some? timeout-ms)
-      {:completed? (.waitFor process (long timeout-ms) TimeUnit/MILLISECONDS)
-       :interrupted? false}
-      (do
-        (.waitFor process)
-        {:completed? true :interrupted? false}))
-    (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
-      {:completed? false
-       :interrupted? (interrupted-throwable? throwable)
-       :error (throwable-message throwable)})))
+  [^Process process timeout-ms owned]
+  (process-supervision/wait-for-process!
+   process timeout-ms owned))
 
 (defn- bounded-process-wait
   [^Process process timeout-ms]
-  (try
-    (.waitFor process (long timeout-ms) TimeUnit/MILLISECONDS)
-    (catch Throwable throwable
-      (rethrow-fatal! throwable)
-      (restore-interrupt! throwable)
-      false)))
+  (process-supervision/bounded-process-wait! process timeout-ms))
 
-(defn- process-result
-  [process options]
+(defn- retained-process-result
+  [process options owned]
   (let [stdout-stream (.getInputStream ^Process process)
         stderr-stream (.getErrorStream ^Process process)
         stdout-capture (stream-capture stdout-stream
                                        (capture-limits options :stdout))
         stderr-capture (stream-capture stderr-stream
                                        (capture-limits options :stderr))
-        {:keys [completed? interrupted? error] :as wait-result}
-        (wait-for-process process (:timeout-ms options))
-        timed-out? (and (some? (:timeout-ms options)) (not completed?))
-        containment-needed? (or timed-out? interrupted?)
-        cleanup (when containment-needed?
-                  ;; Capture and retain the ProcessHandle tree before the root
-                  ;; exits.  Cleanup remains best effort; every timeout is
-                  ;; still marked unproven because a descendant may fork after
-                  ;; this snapshot.
-                  (terminate-process-tree! process))]
+        {:keys [completed? interrupted? error]}
+        (wait-for-process process (:timeout-ms options) owned)
+        timed-out? (and (some? (:timeout-ms options)) (not completed?)
+                         (not interrupted?) (nil? error))
+        containment-needed? (or timed-out? interrupted? (some? error))
+        cleanup (finalize-owned-process! owned)]
     (when containment-needed?
       ;; Close after descendant termination: this releases pipe readers without
       ;; allowing an inherited child descriptor to hide a live process.
@@ -1820,15 +1807,13 @@
                                                   (:forced-close? stderr)})
                               (= :capture-timeout (:status stdout))
                               (= :capture-timeout (:status stderr)))
-          root-alive? (when containment-needed?
-                        (try (.isAlive ^Process process)
-                             (catch Throwable throwable
-                               (rethrow-fatal! throwable)
-                               (restore-interrupt! throwable)
-                               true)))
+          root-alive? (:root-alive? cleanup)
+          tracked-failure? (or (not (:tracked-complete? cleanup))
+                               (and completed? (pos? (:live-descendants-at-finalization cleanup))))
           exit-code (cond
                       timed-out? 124
                       interrupted? 1
+                      error 1
                       :else (try
                               (long (.exitValue ^Process process))
                               (catch Throwable throwable
@@ -1838,6 +1823,8 @@
           status (cond
                    timed-out? :timeout
                    interrupted? :error
+                   error :error
+                   tracked-failure? :error
                    capture-failed? :error
                    (zero? exit-code) :passed
                    :else :failed)
@@ -1851,20 +1838,22 @@
        :wait-interrupted? (boolean interrupted?)
        :cleanup cleanup
        :cleanup-root-alive? (boolean root-alive?)
+       :root-exited? (not root-alive?)
+       :tracked-owned-processes-terminal? (boolean (:tracked-complete? cleanup))
+       :descendant-coverage :unknown
        ;; Timeout containment is inherently unproven: ProcessHandle only
        ;; observes the tree present at the snapshot point.  Preserve nested
        ;; best-effort telemetry without claiming lane cleanliness.
        :timeout-containment-unproven? (boolean timed-out?)
        :cleanup-status (if timed-out?
                          :unproven-timeout
-                         (:status cleanup))
+                         (if tracked-failure? :failed :unproven-descendant-coverage))
        :cleanup-complete? (if containment-needed?
                             false
-                            true)
+                            nil)
        :cleanup-failed? (boolean (or timed-out?
                                      interrupted?
-                                     (and cleanup
-                                          (not (:complete? cleanup)))))
+                                     tracked-failure?))
        :capture-failed? (boolean capture-failed?)
        :stdout-capture-status (:status stdout)
        :stderr-capture-status (:status stderr)
@@ -1894,6 +1883,44 @@
        :stderr-limit-bytes (:byte-limit stderr)
        :stdout-limit-chars (:char-limit stdout)
        :stderr-limit-chars (:char-limit stderr)})))
+
+(defn process-result
+  "Wait/capture/finalize through the normal runner. An optional retained token
+  lets the parent retain raw owned handles and the original wait throwable.
+  Natural command success does not prove complete descendant containment."
+  ([process options]
+   (process-result process options (retain-owned-process! process)))
+  ([process options owned]
+   (require-retained-process! owned)
+   (when-not (and (identical? process (:process owned)) (nil? @(:terminal owned)))
+     (throw (ex-info "Process wait requires its unused retained ownership token"
+                     {:id "SH01-PROCESS-OWNERSHIP"})))
+   (let [custody (broker/retain-process-custody! owned)]
+     (try
+       (broker/record-process-result!
+        custody (retained-process-result process options owned))
+       (catch Throwable original
+         (let [wait-error @(:wait-throwable owned)
+               primary (if (and (not (fatal-cause original))
+                                (interrupted-throwable? original)
+                                (instance? InterruptedException wait-error))
+                         wait-error original)]
+           (when-not (identical? primary original) (.addSuppressed primary original))
+           (try
+             (finalize-owned-process! owned)
+             (catch Throwable cleanup-error
+               (when-not (identical? primary cleanup-error)
+                 (.addSuppressed primary cleanup-error))))
+           (doseq [stream-fn [#(.getInputStream ^Process process)
+                            #(.getErrorStream ^Process process)]]
+             (try
+               (close-stream! (stream-fn))
+               (catch Throwable close-error
+                 (when-not (identical? primary close-error)
+                   (.addSuppressed primary close-error)))))
+           (restore-interrupt! primary)
+           (broker/record-process-result! custody {:error primary})
+           (throw primary)))))))
 
 (defn- clip-result-text
   [value {:keys [byte-limit char-limit]}]
@@ -1974,35 +2001,480 @@
             :stdout-limit-chars (:char-limit stdout)
             :stderr-limit-chars (:char-limit stderr)})))
 
-(defn run-namespace-process
+(defn- validate-development-result!
+  [source vars qualified namespace]
+  (let [{:keys [source-commit source-tree configuration-sha256 limit-bytes]} source]
+    (when-not (and (= #{:source-commit :source-tree :configuration-sha256 :limit-bytes}
+                      (set (keys source)))
+                   (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) [source-commit source-tree])
+                   (string? configuration-sha256) (re-matches #"[0-9a-f]{64}" configuration-sha256)
+                   (integer? limit-bytes) (pos? limit-bytes) (< limit-bytes Integer/MAX_VALUE)
+                   (vector? vars) (seq vars)
+                   (every? #(and (string? %) (not (str/blank? %))) vars)
+                   (= (count qualified) (count (set qualified)))
+                   (every? #(and (str/starts-with? % (str namespace "/"))
+                                  (not (str/blank? (subs % (inc (count namespace)))))) qualified))
+      (throw (ex-info "Development result requires exact selection and source/configuration binding"
+                      {:id "SH01-DEVELOPMENT-RESULT-REQUEST"})))))
+
+(defn- prepare-development-result
+  [job options]
+  (when-let [{:keys [limit-bytes] :as source}
+             (:development-result options)]
+    (let [namespace (str (:namespace job))
+          vars (:exact-test-vars options)
+          qualified (when (and (vector? vars) (every? string? vars))
+                      (mapv #(if (str/includes? % "/") % (str namespace "/" %)) vars))]
+      (validate-development-result! source vars qualified namespace)
+      (let [directory (java.nio.file.Files/createTempDirectory
+                       "gravity-development-result-"
+                       (make-array java.nio.file.attribute.FileAttribute 0))]
+        {:file (str (.resolve directory "result.edn")) :limit-bytes limit-bytes
+         :request {:id (str (java.util.UUID/randomUUID))
+                   :source (dissoc source :limit-bytes)
+                   :selection {:namespaces [namespace] :test-vars (vec (sort qualified))
+                               :fail-fast? (boolean (:child-fail-fast? options))}}}))))
+
+(defn- open-development-result-input! [file]
+  (java.nio.file.Files/newInputStream
+   (.toPath (io/file file))
+   (into-array java.nio.file.OpenOption
+               [java.nio.file.StandardOpenOption/READ java.nio.file.LinkOption/NOFOLLOW_LINKS])))
+
+(defn- read-development-result-bytes! [file limit exceeded!]
+  (let [input (open-development-result-input! file) primary (volatile! nil)]
+    (try
+      (let [bytes (.readNBytes ^java.io.InputStream input (int limit))]
+        (when-not (= -1 (.read ^java.io.InputStream input)) (exceeded!))
+        bytes)
+      (catch Throwable error (vreset! primary error) (throw error))
+      (finally
+        (try (.close ^java.io.InputStream input)
+             (catch Throwable close-error
+               ;; Close diagnostics cannot mask the original read or lose a
+               ;; suppressed interruption, including cyclic Throwable causes.
+               (try
+                 (let [seen (java.util.IdentityHashMap.)]
+                   (loop [cause close-error]
+                     (when (and cause (not (.containsKey seen cause)))
+                       (.put seen cause true)
+                       (if (instance? InterruptedException cause)
+                         (.interrupt (Thread/currentThread))
+                         (recur (.getCause ^Throwable cause))))))
+                 (catch Throwable _ nil))
+               (if-let [original @primary]
+                 (when-not (identical? original close-error)
+                   (try (.addSuppressed ^Throwable original close-error) (catch Throwable _ nil)))
+                 (throw close-error))))))))
+
+(defn- read-development-result
+  [delivery process-result]
+  (let [fail! (fn [field & [record cause]]
+                (throw (ex-info "Development completion delivery failed validation"
+                                {:id "SH01-DEVELOPMENT-RESULT" :field field
+                                 :delivery delivery :record record :process-result process-result}
+                                cause)))]
+    (try
+      (let [limit (:limit-bytes delivery)
+            bytes (read-development-result-bytes! (:file delivery) limit #(fail! :limit))
+            decoder (doto (.newDecoder StandardCharsets/UTF_8)
+                      (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                      (.onUnmappableCharacter java.nio.charset.CodingErrorAction/REPORT))
+            text (str (.decode decoder (java.nio.ByteBuffer/wrap bytes)))
+            record (with-open [reader (java.io.PushbackReader. (java.io.StringReader. text))]
+                     (let [eof (Object.)
+                           record (edn/read {:eof eof} reader)]
+                       (when (or (identical? eof record)
+                                 (not (identical? eof (edn/read {:eof eof} reader))))
+                         (fail! :one-record record))
+                       record))
+            result (:result record)
+            summary (:summary result)
+            full? (= (get-in delivery [:request :selection :test-vars] [])
+                     (get-in result [:selection :test-vars]))
+            passed? (and (integer? (:fail summary)) (integer? (:error summary))
+                         (zero? (:fail summary)) (zero? (:error summary)))
+            expected-exit (if passed? 0 1)]
+        (when-not (and (= #{:schema :request :result} (set (keys record)))
+                       (= :gravity/development-test-result-delivery-v1 (:schema record))
+                       (= (:request delivery) (:request record)))
+          (fail! :request record))
+        (when-not (and (= #{:schema :authority :authoritative? :selection :summary :outcome :exit-code}
+                         (set (keys result)))
+                       (= :gravity/development-test-result-v1 (:schema result))
+                       (= :non-authoritative (:authority result)) (false? (:authoritative? result))
+                       (= (:selection (:request delivery)) (:selection result)) full?
+                       (= #{:test :pass :fail :error} (set (keys summary)))
+                       (every? #(and (integer? %) (<= 0 %)) (vals summary))
+                       (= (:test summary) (count (get-in delivery [:request :selection :test-vars])))
+                       (= (if passed? :passed :failed) (:outcome result))
+                       (= expected-exit (:exit-code result)))
+          (fail! :completion record))
+        (when-not (and (= expected-exit (:exit-code process-result))
+                       (= (:outcome result) (:status process-result))
+                       (true? (:root-exited? process-result))
+                       (false? (:cleanup-root-alive? process-result))
+                       (true? (:tracked-owned-processes-terminal? process-result))
+                       (false? (:capture-failed? process-result))
+                       (false? (:output-truncated? process-result))
+                       (every? (fn [stream]
+                                 (and (= :complete (get process-result (keyword (str stream "-capture-status"))))
+                                      (nil? (get process-result (keyword (str stream "-capture-error"))))
+                                      (false? (get process-result (keyword (str stream "-capture-forced-close?"))))))
+                               ["stdout" "stderr"]))
+          (fail! :process-capture record))
+        result)
+      (catch clojure.lang.ExceptionInfo error
+        (if (= "SH01-DEVELOPMENT-RESULT" (:id (ex-data error))) (throw error)
+            (fail! :read nil error)))
+      (catch Throwable error
+        (rethrow-fatal! error)
+        (restore-interrupt! error)
+        (fail! :read nil error)))))
+
+(defn- publish-parent-report!
+  [job options request-id observation]
+  (let [{:keys [operation disposition resource-class]} observation
+        {:keys [state release-attempted? receipt error parent-exit-custody]} disposition
+        result (:value operation)
+        error-view #(when % (Throwable->map %))
+        _ (when-not (and (= (:resource-class job) resource-class)
+                         (boolean? (:returned? operation))
+                         (if (:returned? operation)
+                           (and (nil? (:error operation)) (map? result)
+                                (= :supplied-data-matched (:development-result-binding-status result))
+                                (contains? #{:passed :failed} (:status result))
+                                (= (if (= :passed (:status result)) 0 1) (:exit-code result))
+                                (= :gravity/development-test-result-v1
+                                   (get-in result [:development-result :schema]))
+                                (= (select-keys (:development-result options)
+                                                [:source-commit :source-tree :configuration-sha256])
+                                   (get-in result [:development-result-request :source]))
+                                (= (get-in result [:development-result-request :selection])
+                                   (get-in result [:development-result :selection]))
+                                (= (:status result) (get-in result [:development-result :outcome]))
+                                (= (:exit-code result) (get-in result [:development-result :exit-code])))
+                           (instance? Throwable (:error operation)))
+                         (case state
+                           :released (and (true? release-attempted?) (nil? error)
+                                          (= :released (:outcome receipt))
+                                          (= resource-class (:resource-class receipt))
+                                          (= :gravity/sh01-host-resource-non-authoritative-receipt-v1 (:schema receipt))
+                                          (= :not-required-for-this-released-lease parent-exit-custody))
+                           :quarantined (and (false? release-attempted?) (nil? receipt)
+                                             (or (nil? error) (instance? Throwable error))
+                                             (= :unsupported-in-JVM-only parent-exit-custody))
+                           :release-failed (and (true? release-attempted?) (nil? receipt)
+                                                (instance? Throwable error)
+                                                (= :unsupported-in-JVM-only parent-exit-custody))
+                           :acquire-failed (and (false? release-attempted?) (nil? receipt)
+                                                (instance? Throwable error)
+                                                (= :not-established parent-exit-custody))
+                           false))
+            (throw (ex-info "Final parent report contradicts its actual observation"
+                            {:id "SH01-PARENT-REPORT" :observation observation})))
+        report {:schema :gravity/development-parent-report-v1
+                :authority :non-authoritative :authoritative? false
+                :request {:id request-id :namespace (str (:namespace job))
+                          :source (select-keys (:development-result options)
+                                               [:source-commit :source-tree :configuration-sha256])}
+                :operation {:returned? (:returned? operation) :result result
+                            :error (error-view (:error operation))}
+                :resource {:state state :release-attempted? release-attempted?
+                           :receipt receipt :error (error-view error)
+                           :parent-exit-custody parent-exit-custody}
+                :outcome (cond (or (:error operation) error) :error
+                               (= :quarantined state) :unresolved
+                               (and (= :passed (:status result)) (zero? (:exit-code result))) :passed
+                               :else :failed)}
+        report (if-let [owned (:owned-resources observation)]
+                 (-> report
+                     (assoc :schema :gravity/development-parent-report-v2)
+                     (assoc-in [:resource :owned-resource]
+                               {:state (:state owned) :release-attempted? (:release-attempted? owned)
+                                :receipt (:receipt owned) :error (error-view (:error owned))}))
+                 report)
+        text (str (pr-str report) "\n")
+        _ (when-not (= report (edn/read-string text))
+            (throw (ex-info "Final parent report is not round-trip EDN"
+                            {:id "SH01-PARENT-REPORT-ENCODING"})))
+        bytes (.getBytes text StandardCharsets/UTF_8)
+        {:keys [file limit-bytes]} (:parent-report options)]
+    (when (> (alength bytes) limit-bytes)
+      (throw (ex-info "Final parent report exceeds declared capture limit"
+                      {:id "SH01-PARENT-REPORT-LIMIT" :bytes (alength bytes) :limit limit-bytes})))
+    (java.nio.file.Files/write
+     (.toPath (io/file file)) bytes
+     (into-array java.nio.file.OpenOption
+                 [java.nio.file.StandardOpenOption/CREATE_NEW java.nio.file.StandardOpenOption/WRITE
+                  java.nio.file.LinkOption/NOFOLLOW_LINKS]))
+    {:file file :bytes (alength bytes) :report report}))
+
+(defn- report-inside-lease!
+  [callback observation]
+  (let [callback-error (try (callback observation) nil (catch Throwable error error))
+        errors (vec (distinct (remove nil? [(:error observation) callback-error])))
+        cause-with (fn [predicate error]
+                     (loop [error error seen #{}]
+                       (when (and error (not (contains? seen error)))
+                         (if (predicate error) error
+                             (recur (.getCause ^Throwable error) (conj seen error))))))
+        primary (or (some #(cause-with fatal-throwable? %) errors) (first errors))]
+    (when (some #(cause-with (fn [error] (instance? InterruptedException error)) %) errors)
+      (.interrupt (Thread/currentThread)))
+    (when primary
+      (doseq [error errors :when (and (not (identical? primary error))
+                                      (not (cause-with #(identical? primary %) error)))]
+        (.addSuppressed ^Throwable primary error))
+      (.addSuppressed ^Throwable primary
+                      (ex-info "Inside-lease report observation"
+                               {:id "SH01-INSIDE-LEASE-REPORT" :observation observation
+                                :callback-error callback-error}))
+      (throw primary))
+    (:result observation)))
+
+(defn- run-namespace-process-owned
   "Runs one namespace in a fresh process.
 
   `:process-launcher` receives `[command working-directory]`.  For fast unit
   tests it may return a result map directly; the production launcher returns a
-  java.lang.Process and stdout/stderr are drained concurrently."
+  java.lang.Process and stdout/stderr are drained concurrently.
+
+  Opt-in :resource-broker supplies existing with-lease options. This direct call
+  acquires and waits on the same thread, requires an explicit job resource class
+  and an actual Process, and consumes the normal process-result custody API.
+  It does not admit an operation, alter inherited environment, or cover startup.
+  Optional :inside-lease-report! observes return/error synchronously after child
+  completion processing, before broker disposition. Its return is ignored; its
+  failure propagates through normal disposition. It supplies no guards/custody."
   ([job]
-   (run-namespace-process job {}))
+   (run-namespace-process-owned job {} nil))
   ([job options]
-   (let [started (System/nanoTime)
-         command (namespace-command (:namespace job) options)
-         working-directory (or (:working-directory options) @root)
-         launcher (or (:process-launcher options) start-process)
-         launched (launcher command working-directory)
-         _ (when-let [observer (:process-launch-observer options)]
-             (observer))
-         result
-         (if (instance? Process launched)
-           (process-result launched options)
-           (if (map? launched)
-             (bound-launch-result launched options)
-             {:status :failed
-              :exit-code 1
-              :stderr (str "Process launcher returned unsupported value: "
-                           (pr-str (type launched)))}))]
-     (normalize-result
-      job
-      (assoc result :command command :child-jvm-launched? true)
-      (long (/ (- (System/nanoTime) started) 1000000.0))))))
+   (run-namespace-process-owned job options nil))
+  ([job options guards]
+   (when (and (contains? options :inside-lease-report!)
+              (not (and (ifn? (:inside-lease-report! options))
+                         (map? (:resource-broker options))
+                         (map? (:development-result options)))))
+     (throw (ex-info "Inside-lease report requires a callback and owned completion path"
+                     {:id "SH01-INSIDE-LEASE-REPORT-REQUEST"})))
+   (when (or (and (contains? options :development-result) (not (map? (:development-result options))))
+             (contains? options :development-result-delivery))
+     (throw (ex-info "Development result delivery is parent-owned"
+                     {:id "SH01-DEVELOPMENT-RESULT-REQUEST"})))
+   (when (and (contains? options :parent-report)
+              (not (and (= #{:file :limit-bytes} (set (keys (:parent-report options))))
+                        (string? (get-in options [:parent-report :file]))
+                        (.isAbsolute (io/file (get-in options [:parent-report :file])))
+                        (integer? (get-in options [:parent-report :limit-bytes]))
+                        (pos? (get-in options [:parent-report :limit-bytes]))
+                        (map? (:development-result options))
+                        (map? (:resource-broker options)))))
+     (throw (ex-info "Final parent report requires owned output and normal resource/completion paths"
+                     {:id "SH01-PARENT-REPORT-REQUEST"})))
+   (let [resource-owned? (contains? options :resource-broker)
+         _ (when (and resource-owned?
+                      (not (and (map? (:resource-broker options))
+                                 (contains? #{:normal :memory-heavy :exclusive}
+                                            (:resource-class job)))))
+             (throw (ex-info "Resource-owned child requires broker options and an explicit class"
+                             {:id "SH01-PARALLEL-RESOURCE-CALLER"})))
+         report-facts (when (:inside-lease-report! options) (volatile! {}))
+         operation
+         (fn []
+           (let [started (System/nanoTime)
+                 delivery (prepare-development-result job options)
+                 _ (when report-facts (vswap! report-facts assoc :delivery-request (:request delivery)))
+                 command (namespace-command (:namespace job)
+                                            (cond-> options delivery (assoc :development-result-delivery delivery)))
+                 working-directory (or (:working-directory options) @root)
+                 launcher (or (:process-launcher options) start-process)
+                 launched (launcher command working-directory)
+                 _ (when-let [observer (:process-launch-observer options)]
+                     (observer))
+                 result
+                 (if (instance? Process launched)
+                   (process-result launched options)
+                   (if (or resource-owned? delivery)
+                     (throw (ex-info "Resource-owned child requires an actual Process"
+                                     {:id "SH01-PARALLEL-RESOURCE-CALLER"}))
+                     (if (map? launched)
+                       (bound-launch-result launched options)
+                       {:status :failed
+                        :exit-code 1
+                        :stderr (str "Process launcher returned unsupported value: "
+                                     (pr-str (type launched)))})))
+                 _ (when report-facts (vswap! report-facts assoc :process-result result))
+                 result (if delivery
+                            (assoc result :development-result (read-development-result delivery result)
+                                          :development-result-request (:request delivery)
+                                          :development-result-file (:file delivery)
+                                          :development-result-binding-status :supplied-data-matched)
+                            result)]
+             (normalize-result
+              job
+              (assoc result :command command :child-jvm-launched? true)
+              (long (/ (- (System/nanoTime) started) 1000000.0)))))
+         operation (if-let [callback (:inside-lease-report! options)]
+                     (fn []
+                       (let [outcome (try {:tag :returned :result (operation) :error nil}
+                                          (catch Throwable error {:tag :threw :result nil :error error}))]
+                         (try
+                           (report-inside-lease! callback (merge @report-facts {:job job} outcome))
+                           (finally
+                             (when (.isInterrupted (Thread/currentThread))
+                               (vswap! report-facts assoc :interrupted? true))))))
+                     operation)
+         operation (if guards
+                     (fn [] ((:acquire! guards)) (operation))
+                     operation)]
+     (try
+      (if guards
+        (let [publication (atom nil) request-id (str (java.util.UUID/randomUUID))
+              result (broker/with-lease
+                      (:resource-broker options) (:resource-class job) operation (:finalize! guards)
+                      #(reset! publication (publish-parent-report! job options request-id %)))]
+          (assoc result :parent-report @publication))
+       (if resource-owned?
+       (if (or (:parent-report options) (:inside-lease-report! options))
+         (let [publication (atom nil)
+               request-id (str (java.util.UUID/randomUUID))
+               result (broker/with-lease
+                        (:resource-broker options) (:resource-class job) operation
+                        #(when (:parent-report options)
+                           (reset! publication (publish-parent-report! job options request-id %))))]
+           (if (:parent-report options) (assoc result :parent-report @publication) result))
+         (broker/with-lease (:resource-broker options) (:resource-class job) operation (fn [_] nil)))
+       (operation)))
+      (finally
+        (when (and report-facts (:interrupted? @report-facts))
+          (.interrupt (Thread/currentThread))))))))
+
+(def ^:private resolution-parent-namespace 'gravity.self-hosting.resolution-parent-mutation-test)
+
+(def ^:private resolution-parent-selector "actual-macro-trace-input-syntax-id-mutation-at-second-id")
+
+(def ^:private resolution-canonical-lock "/private/tmp/gravity-sh07-heavy.lock")
+
+(defn- resolution-common-broker-root
+  [working-directory]
+  ;; Read Git worktree metadata, never start an unowned Git helper.
+  (let [cwd (.normalize (.toAbsolutePath (.toPath (io/file working-directory))))
+        entry (.resolve cwd ".git")
+        nofollow (into-array java.nio.file.LinkOption [java.nio.file.LinkOption/NOFOLLOW_LINKS])
+        read-path (fn [path]
+                    (when-not (java.nio.file.Files/isRegularFile path nofollow)
+                      (throw (ex-info "Expected regular Git metadata" {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+                    (str/trim (java.nio.file.Files/readString path StandardCharsets/UTF_8)))
+        gitdir (if (java.nio.file.Files/isDirectory entry nofollow) entry
+                   (let [text (read-path entry) match (re-matches #"gitdir: ([^\r\n]+)" text)]
+                     (when-not match
+                       (throw (ex-info "Invalid worktree Git metadata" {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+                     (.normalize (.resolve cwd (second match)))))
+        common-entry (.resolve gitdir "commondir")
+        common (if (java.nio.file.Files/exists common-entry nofollow)
+                 (.normalize (.resolve gitdir (read-path common-entry))) gitdir)]
+    (str (.resolve common "gravity-development-loop-v1/broker"))))
+
+(defn- acquire-resolution-lock!
+  [custody]
+  (let [path (.toPath (io/file resolution-canonical-lock))
+        channel (java.nio.channels.FileChannel/open
+                 path
+                 #{java.nio.file.StandardOpenOption/CREATE java.nio.file.StandardOpenOption/WRITE
+                   java.nio.file.LinkOption/NOFOLLOW_LINKS}
+                 (into-array java.nio.file.attribute.FileAttribute
+                             [(java.nio.file.attribute.PosixFilePermissions/asFileAttribute
+                               (java.nio.file.attribute.PosixFilePermissions/fromString "rw-------"))]))]
+    (swap! custody assoc :channel channel :lock-acquired? :unknown)
+    (let [lock (.tryLock ^java.nio.channels.FileChannel channel)]
+      (swap! custody assoc :lock lock :lock-acquired? (boolean lock))
+      (when-not lock
+        (throw (ex-info "Canonical heavy lock is busy" {:id "SH01-RESOLUTION-CANONICAL-BUSY"}))))))
+
+(defn- finalize-resolution-lock!
+  [custody {:keys [terminal]}]
+  (let [{:keys [channel lock lock-acquired?]} @custody
+        result (cond
+                 (nil? channel)
+                 {:state :not-acquired :release-attempted? false :error nil}
+
+                 (or (= :unknown lock-acquired?) (not (true? (:complete? terminal))))
+                 {:state :quarantined :release-attempted? false :error nil}
+
+                 :else
+                 (try
+                   (when lock
+                     (swap! custody assoc :release-attempted? true)
+                     (.release ^java.nio.channels.FileLock lock)
+                     (swap! custody assoc :lock-released? (not (.isValid ^java.nio.channels.FileLock lock)))
+                     (when-not (:lock-released? @custody)
+                       (throw (ex-info "Canonical lock remains held" {:id "SH01-RESOLUTION-CANONICAL-RELEASE"}))))
+                   (swap! custody assoc :close-attempted? true)
+                   (.close ^java.nio.channels.FileChannel channel)
+                   (swap! custody assoc :channel-closed? (not (.isOpen ^java.nio.channels.FileChannel channel)))
+                   (when-not (:channel-closed? @custody)
+                     (throw (ex-info "Canonical channel remains open" {:id "SH01-RESOLUTION-CANONICAL-RELEASE"})))
+                   {:state (if lock :released :not-acquired)
+                    :release-attempted? (boolean (:release-attempted? @custody)) :error nil}
+                   (catch Throwable error
+                     {:state :release-failed :release-attempted? (boolean (:release-attempted? @custody))
+                      :error error})))]
+    (swap! custody assoc :disposition result)
+    (assoc result :custody custody
+                 :receipt (assoc (select-keys @custody [:lock-acquired? :release-attempted? :lock-released?
+                                                       :close-attempted? :channel-closed?])
+                                 :canonical-path resolution-canonical-lock))))
+
+(defn run-resolution-parent-mutation-process
+  "Dedicated cooperative owner route for the one trace input-syntax control.
+  Always C-exclusive then library-owned canonical L; ordinary routing is unchanged.
+  This source path supplies no genuine/runtime or held-operation admission."
+  [selected-operation options]
+  (let [expected {:id :RV1-trace-input-syntax-second-id
+                  :selector (symbol (str resolution-parent-namespace "/" resolution-parent-selector))
+                  :reuse-held-operation false :genuine-execution false}
+        allowed #{:resource-broker :command :exact-test-vars :child-fail-fast? :working-directory
+                  :development-result :inside-lease-report! :parent-report :timeout-ms
+                  :max-capture-bytes :max-capture-chars :capture-wait-ms}
+        source (:development-result options)
+        cwd (:working-directory options)]
+    (when-not (and (= expected selected-operation) (map? options)
+                   (every? allowed (keys options))
+                   (= [resolution-parent-selector] (:exact-test-vars options))
+                   (false? (:child-fail-fast? options))
+                   (vector? (:command options)) (seq (:command options))
+                   (every? #(and (string? %) (not (str/blank? %))) (:command options))
+                   (.isAbsolute (io/file (first (:command options))))
+                   (string? cwd) (.isAbsolute (io/file cwd))
+                   (map? (:resource-broker options)) (map? source)
+                   (ifn? (:inside-lease-report! options))
+                   (map? (:parent-report options))
+                   (every? #(and (integer? (get options %)) (pos? (get options %))
+                                  (<= (get options %) Long/MAX_VALUE))
+                           [:timeout-ms :max-capture-bytes :max-capture-chars :capture-wait-ms]))
+      (throw (ex-info "Invalid exact resolution owner request" {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+    (validate-development-result! source (:exact-test-vars options)
+                                 [(str resolution-parent-namespace "/" resolution-parent-selector)]
+                                 (str resolution-parent-namespace))
+    (when-not (= (resolution-common-broker-root cwd)
+                 (some-> (get-in options [:resource-broker :coordination-root]) io/file .toPath .toAbsolutePath .normalize str))
+      (throw (ex-info "Resolution owner requires the shared Git-common broker root"
+                      {:id "SH01-RESOLUTION-OWNER-REQUEST"})))
+    (let [custody (atom {:channel nil :lock nil :lock-acquired? false
+                        :release-attempted? false :close-attempted? false})]
+      (run-namespace-process-owned
+       {:namespace resolution-parent-namespace :resource-class :exclusive} options
+       {:acquire! #(acquire-resolution-lock! custody)
+        :finalize! #(finalize-resolution-lock! custody %)}))))
+
+
+(defn run-namespace-process
+  "Run the ordinary namespace path, preserving the owner's unsupported guard."
+  ([job] (run-namespace-process job {}))
+  ([job options]
+   (require-supported-namespace! (:namespace job))
+   (run-namespace-process-owned job options)))
 
 (defn- parse-positive-option
   [arguments index option]

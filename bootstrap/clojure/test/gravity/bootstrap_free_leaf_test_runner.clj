@@ -26,7 +26,7 @@
 (def ^:const summary-schema
   :gravity/bootstrap-free-leaf-test-summary-v1)
 
-(def ^:const expected-catalog-count 48)
+(def ^:const expected-catalog-count 53)
 
 (def excluded-top-level-test-files
   "The top-level tests that intentionally remain outside the leaf runner."
@@ -68,10 +68,14 @@
    "c2_lexical_validation"
    "c2_reader_diagnostics"
    "c2_reader_product_projection"
+   "c2_reader_scalar_spans"
    "c2_source_identity"
    "c3_artifact_identity"
+   "c3_literal_indexes"
    "c3_literal_projection"
+   "c3_reader_expansions"
    "c3_reader_integrity"
+   "c3_reader_lossless_span"
    "c3_syntax_construction"
    "c3_syntax_diagnostics"
    "c3_syntax_evidence"
@@ -98,9 +102,25 @@
    "reader_diagnostic_policy"
    "reader_host_oracle"
    "reader_namespace"
+   "source_interface_header"
    "source_unit"
    "syntax_object_stream"
    "syntax_origin"])
+
+(def ^:private auxiliary-source-mappings
+  ;; Reviewed helper-test associations, not extra primary compiler components.
+  {"c2_reader_scalar_spans"
+   ["bootstrap/clojure/src/gravity/c2_reader_product_projection/scalar_spans.clj"
+    'gravity.c2-reader-product-projection.scalar-spans]
+   "c3_literal_indexes"
+   ["bootstrap/clojure/src/gravity/c3_literal_projection/indexes.clj"
+    'gravity.c3-literal-projection.indexes]
+   "c3_reader_expansions"
+   ["bootstrap/clojure/src/gravity/c3_reader_expansions.clj"
+    'gravity.c3-reader-expansions]
+   "c3_reader_lossless_span"
+   ["bootstrap/clojure/src/gravity/c3_literal_projection/spans.clj"
+    'gravity.c3-literal-projection.spans]})
 
 (defn- hyphenate
   [value]
@@ -127,7 +147,8 @@
   (let [name (hyphenate stem)]
     {:id name
      :namespace (symbol (str "gravity." name "-test"))
-     :source-path (str "bootstrap/clojure/src/gravity/" stem ".clj")
+     :source-path (or (first (get auxiliary-source-mappings stem))
+                      (str "bootstrap/clojure/src/gravity/" stem ".clj"))
      :test-path (str "bootstrap/clojure/test/gravity/" stem "_test.clj")
      :group (group-for-stem stem)
      :jvm-options (if (= stem "darwin_publication")
@@ -500,11 +521,49 @@
         (update :namespace symbol)
         (update :group keyword))))
 
+(defn- auxiliary-contract-tuples [contract associations]
+  (let [entries (get contract "auxiliary_bootstrap_free_tests" [])]
+    (when-not (and (vector? entries)
+                   (= (count entries) (count associations))
+                   (= (set (map #(get-in % ["test" "path"]) entries))
+                      (set (keys associations))))
+      (throw (ex-info "Auxiliary helper tests do not match the ownership mirror"
+                      {:id "S0LEAF-AUXILIARY-OWNERSHIP"})))
+    (mapv
+     (fn [entry]
+       (let [source (get entry "source") test-record (get entry "test")
+             association (get associations (get test-record "path"))]
+         (when-not
+          (and (= #{"id" "owner" "kind" "source" "test" "leaf_execution_group"}
+                  (set (keys entry)))
+               (= #{"path" "namespace"} (set (keys source)))
+               (= #{"path" "namespace" "lane" "execution_requires_bootstrap"}
+                  (set (keys test-record)))
+               (= "hosted-helper-test-association" (get entry "kind"))
+               (keyword? (:owner association))
+               (= (name (:owner association)) (get entry "owner"))
+               (= (:source-path association) (get source "path"))
+               (symbol? (:source-namespace association))
+               (= (str (:source-namespace association)) (get source "namespace"))
+               (= (str "gravity." (get entry "id") "-test") (get test-record "namespace"))
+               (= "bootstrap-free" (get test-record "lane"))
+               (false? (get test-record "execution_requires_bootstrap"))
+               (= "c2-c3" (get entry "leaf_execution_group")))
+           (throw (ex-info "Auxiliary helper metadata is malformed or disagrees with ownership"
+                           {:id "S0LEAF-AUXILIARY-METADATA" :entry entry})))
+         (contract-leaf-tuple entry)))
+     entries)))
+
 (defn component-contract-leaf-tuples
   "Returns the exact reviewed bootstrap-free catalog tuples from the contract."
   ([]
    (component-contract-leaf-tuples (read-strict-component-contract)))
   ([contract]
+   (component-contract-leaf-tuples
+    contract
+    (:auxiliary-test-associations
+     (edn/read-string (slurp (repository-path "docs/self-hosting-slice-ownership.edn"))))))
+  ([contract associations]
    (when-not (= component-contract-schema (get contract "schema"))
      (throw (ex-info "Unexpected Stage0 component contract schema"
                      {:id "S0LEAF-COMPONENT-CONTRACT"
@@ -513,9 +572,9 @@
      (when-not (vector? components)
        (throw (ex-info "Stage0 component contract components must be a vector"
                        {:id "S0LEAF-COMPONENT-CONTRACT"})))
-     (->> components
-          (filter #(= "bootstrap-free" (get-in % ["test" "lane"])))
-          (map contract-leaf-tuple)
+     (->> (concat (map contract-leaf-tuple
+                      (filter #(= "bootstrap-free" (get-in % ["test" "lane"])) components))
+                  (auxiliary-contract-tuples contract associations))
           (sort-by (comp str :namespace))
           vec))))
 
@@ -529,8 +588,8 @@
   (let [record (edn/read-string
                 (slurp (repository-path
                         "docs/self-hosting-slice-ownership.edn")))
-        module-paths (->> (:module-owners record)
-                          keys
+        module-paths (->> (concat (keys (:module-owners record))
+                                  (keys (:auxiliary-test-associations record)))
                           (filter #(and (string? %)
                                         (str/starts-with?
                                          % "bootstrap/clojure/test/gravity/")
@@ -638,7 +697,8 @@
                                       [test-path namespace
                                        (first-ns-symbol test-file)])])
                  (when (and (.isFile source-file)
-                            (not= (symbol (str "gravity." (hyphenate name)))
+                            (not= (or (second (get auxiliary-source-mappings name))
+                                      (symbol (str "gravity." (hyphenate name))))
                                   (first-ns-symbol source-file)))
                    [(validation-error :source-namespace
                                       [source-path
@@ -706,7 +766,7 @@
    "Usage: clojure -M:leaf-test [options]\n"
    "\n"
    "Runs each reviewed bootstrap-free top-level Stage 0 test in a fresh JVM.\n"
-   "With no selector, all 47 catalog entries run in canonical order.\n"
+   "With no selector, all 52 catalog entries run in canonical order.\n"
    "\n"
    "Options (repeatable):\n"
    "  --namespace NAME  select one namespace exactly\n"
@@ -881,7 +941,7 @@
 (defn- test-var-records
   [namespace-symbol]
   (->> (ns-interns namespace-symbol)
-       (keep (fn [[name test-var]]
+       (keep (fn [[_name test-var]]
                (when (:test (meta test-var))
                  test-var)))
        vec))

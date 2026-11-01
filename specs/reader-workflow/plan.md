@@ -1,60 +1,64 @@
-# Implementation plan: Reader workflow migration
+# Implementation plan: Reader task authority
 
-Spec: [spec.md](spec.md) | Owner: Frontend Spec Kit migration maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Spec: [spec.md](spec.md) | Owner role: Reader maintainer.
+Input revision: `c40d74aded3a019ff2bdeb1f4050cf95dbb11c1e`.
 
 ## Contract alignment
 
 Follow the [constitution](../../.specify/memory/constitution.md),
 [development verification](../../docs/development-verification.md),
 [compiler architecture phase](../../docs/phase-06-compiler-architecture/README.md),
-and [owning contract](../../docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md). This is documentation/workflow migration,
-not a semantic contract amendment or authoritative compiler migration.
+and [owning contract](../../docs/phase-06-compiler-architecture/081-c2-reader-implementation-design.md).
+Only the editable implementation task location changes, not language semantics
+or authoritative compiler migration.
 
 ## Canonical work and handoffs
 
-- Implementation work: [the seven named rows from Contract coverage reconciliation through Component release evidence](../../docs/component-roadmaps/reader.md#finite-remaining-work).
-- Completion criteria: [owning acceptance checklist](../../docs/component-roadmaps/reader.md#acceptance-checklist).
+- Implementation work: [the seven authoritative records](tasks.md#implementation-tasks).
+- Roadmap navigation: [sole task ledger](tasks.md#implementation-tasks).
+- Release criteria: [owning acceptance checklist](../../docs/component-roadmaps/reader.md#acceptance-checklist).
 - Overall composition: [integration outcomes](../../docs/component-roadmaps/README.md#integration-outcomes).
-- Input: Declared source bytes, explicit root/path/options and registered extension policy.
-- Output: Source, token, form, literal, origin and syntax-seed products.
 
-Reader can begin with explicit source and policy records. Syntax consumes the seed interface; Build completion and final self-hosting are not start prerequisites.
-
-Reader owns bytes and lexical/seed origins; Syntax owns complete syntax context and hygiene. The Reader/Syntax maintainers confirm an interface change together.
-
-The canonical table provides the exact task titles, status and exit evidence.
-Do not reproduce its rows or maintain a second component completion count here.
-The component owner chooses an implementation slice from that table and updates
-its evidence there; this package remains the workflow/navigation entry point.
+Reader owns source bytes and lexical/seed origins; Syntax owns syntax context
+and hygiene. Reader can begin with explicit source and policy records; Build
+completion and final self-hosting are not start prerequisites. Existing
+interface decisions remain with the Reader/Syntax maintainers. Record order is
+not dependency evidence. No additional dependency graph is manufactured here.
 
 ## Approach and exact files
 
-Prepare only the four files in `specs/reader-workflow/`. `spec.md` states this
-migration's outcome; `plan.md` links canonical work; `tasks.md` tracks migration
-checks; `evidence.md` records observed validation and accepted scope. Shared
-indexes and other packages are owned by their separate migration slices.
+Edit only the marked implementation region in tasks.md for task progress.
+Each record has one stable semantic ID, title, checkbox, exact evidence/status
+and exact yes/no acceptance text. The known seven-ID set guards accidental row
+loss or substitution; an intentional task-set change requires explicit review
+of that set, not positional renumbering. Titles cannot collide.
+
+The Reader roadmap links directly to these records. Historical receipts, release
+criteria and anchors remain on the roadmap; the historical scaffold record stays
+frozen outside the task region and is not counted as implementation work. No
+independent machine-readable status ledger is added.
 
 ## Validation and evidence
 
-Check that all four artifacts exist, are ASCII, and have resolving relative
-file/heading links. Inspect the diff for duplicate implementation checklists,
-false completion and unauthorized semantic edits. A missing canonical target or
-an absent required artifact must fail validation. Run `git diff --check` and
-the existing structural documentation and roadmap validators.
-Compiler tests are unrun and unnecessary for this documentation-only increment;
-passing documentation checks is not compiler conformance. Record actual commands,
-results and independent review separately in [evidence](evidence.md).
+Run from repository root:
+
+```bash
+clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+clojure -M tools/validate_gravity_docs.clj
+clojure -M tools/validate_full_language_roadmap.clj
+```
+
+Check `git diff --check`. No compiler behavior tests or full migration acceptance
+are inferred from these structural checks.
 
 ## Delivery and remaining work
 
-Publish a draft for the prepared slice. Request independent review of exact
-files and validation evidence; record the reviewed candidate and integration
-receipt without claiming unrun post-merge checks. Deus owns integration.
-Only migration preparation/validation/review/integration is counted here.
+Prepare an immutable candidate for independent review. Record observed checks
+separately from review and integration. Future real implementation changes
+update the authoritative record; the roadmap continues to link to that ledger.
 
 ## Names, callers and compatibility
 
-`reader-workflow` identifies the subsystem in human-readable terms.
-No callers, runtime APIs, load order, manifests, hashes or protocol IDs change.
-Existing identifier-bearing contract paths are traceability, not new naming.
+Preserve existing semantic IDs and roadmap anchors. The dashboard follows the
+editable tasks.md source without changing task status or counts. No runtime API,
+load order, manifest, hash, schema or protocol identifier changes.

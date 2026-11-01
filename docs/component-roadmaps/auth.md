@@ -32,17 +32,13 @@ prerequisite for checking explicitly supplied development grants.
 
 ## Remaining tasks and evidence
 
-| Task (all open) | Evidence baseline | Closing evidence |
-| --- | --- | --- |
-| Complete provider declaration and deterministic selection | [Hosted contract](../../bootstrap/clojure/src/gravity/capability_validation/contract.clj) | Typed provider fixtures with deterministic selection and incompatible-provider rejection |
-| Enforce grant intersection, attenuation, revocation, phase and lifetime | [Authority implementation](../../bootstrap/clojure/src/gravity/capability_validation/authority.clj) | Real allowed operation and denied widening/revoked/wrong-phase operations |
-| Bind compiler decisions to runtime/build enforcement hooks | [Runtime enforcement contract](../phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md) | No externally visible operation after denial; explicit grant provenance end to end |
-| Bind artifact trust to exact source, compiler and policy identity | [Artifact pipeline](../../bootstrap/clojure/src/gravity/authenticated_artifact_pipeline.clj) | Tamper, stale-policy and wrong-source rejection at actual consuming boundary |
-| Publish conformance and remaining trust assumptions | [Provider contract](../phase-01-core-language/025-l15-capability-provider-specification.md) | Accepted/rejected matrix and named residual trust roots for each provider |
+Implementation task authority: [Spec Kit ledger](../../specs/auth-workflow/tasks.md#implementation-tasks).
+
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/auth-workflow/tasks.md#implementation-tasks).
 
 The hosted capability contract explicitly marks itself compatibility-only and
 not grant, provider-trust, proof, canonical or release authority. Those facts
-prevent treating projection tests as completion. Architectural decision owner:
+prevent treating navigation links as completion. Architectural decision owner:
 capability maintainer. Recommendation: retain separate capability and artifact
 trust interfaces inside this project; do not conflate signatures with grants.
 

@@ -75,16 +75,19 @@
    diags?
    (=
     (set (:c11-mir-diagnostic-ids configuration))
-    (set (map :diagnostic (:diagnostics diagnostics))))]
+    (set (map :diagnostic (:diagnostics diagnostics))))
+   blocks-terminate?
+   (every? #(present (:terminator %))
+           (mapcat (comp vals :blocks) (vals (:functions module))))
+   dominance-valid?
+   (every? #(= :passed (:dominance-status %)) data-flow)]
   {:module-shape-valid? (= :gravity/mir-module (:artifact module)),
    :operation-family-coverage-complete?
    (=
     (set (:c11-mir-required-operation-families configuration))
     families),
    :blocks-terminate?
-   (every?
-    (fn* [p1__138#] (present (:terminator p1__138#)))
-    (mapcat (comp vals :blocks) (vals (:functions module)))),
+   blocks-terminate?,
    :domain-anchors-valid?
    (every?
     (fn*
@@ -101,6 +104,8 @@
    (if
     (and
      (= :gravity/mir-module (:artifact module))
+     blocks-terminate?
+     dominance-valid?
      (every? (fn* [p1__146#] (present (:type p1__146#))) operations*)
      (every?
       (fn*
@@ -149,9 +154,7 @@
     (fn* [p1__145#] (= :target-specific (:family p1__145#)))
     operations*),
    :dominance-valid?
-   (every?
-    (fn* [p1__139#] (= :passed (:dominance-status p1__139#)))
-    data-flow)}))
+   dominance-valid?}))
 (defn
  proof
  [artifact]
@@ -163,6 +166,7 @@
    :origins-linked? (:origins-linked? v),
    :safety-outcomes-linked? (:safety-linked? v),
    :blocks-terminated? (:blocks-terminate? v),
+   :dominance-valid? (:dominance-valid? v),
    :status :complete,
    :effect-ordering-present? (:effect-ordering-present? v),
    :operations-typed? (:types-present? v),
@@ -179,6 +183,7 @@
    [[field id]
     [[:module-serialized? "C11-MODULE"]
      [:blocks-terminated? "C11-BLOCK"]
+     [:dominance-valid? "C11-DOMINANCE"]
      [:operations-typed? "C11-TYPE"]
      [:effect-ordering-present? "C11-EFFECT"]
      [:safety-outcomes-linked? "C11-SAFETY"]

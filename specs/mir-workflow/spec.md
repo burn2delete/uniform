@@ -1,61 +1,67 @@
-# Feature specification: MIR workflow migration
+# Feature specification: MIR implementation workflow
 
-Status: prepared; review and integration pending.
-Migration owner: backend workflow migration owner. Component owner role: compiler MIR maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Status: task-authority candidate; independent review and integration pending.
+Owner role: compiler MIR maintainer.
+Input revision: `d5d8e15c773929337e1d9646da4f32af2d461e17`.
 
 ## Purpose and canonical contracts
 
-Adopt the repository's Spec Kit artifact workflow for the MIR component
-without copying its normative semantics or creating a second implementation ledger.
-[Component release outcome](../../docs/component-roadmaps/mir.md#release-outcome) and [MIR canonical remaining work](../../docs/component-roadmaps/mir.md#current-evidence-and-remaining-work) retain authority over implementation completion.
-The following contracts remain canonical and are linked, not replaced:
-
-- [C11 - Gravity MIR Specification](../../docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md)
+Make [tasks.md](tasks.md#implementation-tasks) the sole editable ledger for the
+five existing MIR implementation outcomes. The
+[component roadmap](../../docs/component-roadmaps/mir.md) retains its release
+outcome, admission requirements, acceptance checklist and direct task-ledger link.
+Retain direct navigation to its [release outcome](../../docs/component-roadmaps/mir.md#release-outcome)
+and [remaining work](../../docs/component-roadmaps/mir.md#current-evidence-and-remaining-work).
+The [C11 contract](../../docs/phase-06-compiler-architecture/090-c11-gravity-mir-specification.md)
+remains normative. This transfer changes no compiler or producer/consumer
+admission decision.
 
 ## User scenarios and acceptance
 
-### US1 - Find one authoritative path from work to evidence
+### US1 - Find one editable implementation task
 
-A maintainer starts here, follows plan.md to the existing remaining tasks and
-acceptance criteria, and records the exact implementation evidence there.
-Acceptance: all four package artifacts exist, every local link and anchor
-resolves, ownership/dependencies are explicit, and no implementation task is
-duplicated or marked complete merely by this migration. A missing contract,
-broken task link or unsupported completion claim rejects package acceptance.
+Retain all five component/heading/title semantic IDs, display labels, exact
+status and concrete exit criteria in the sole task ledger. The roadmap links
+directly to those records. There is no second editable implementation ledger or
+positional renumbering.
 
-### US2 - Preserve the component boundary
+### US2 - Separate migration evidence from implementation acceptance
 
-Real checked-Core facts are required for integrated MIR construction. Opt and Lower may use pinned verified fixtures while upstream analyses mature. Domain anchors apply only to programs using them; no restricted domain work is enabled.
-Acceptance: review confirms these boundaries agree with the linked roadmap.
-Changing a target, grant, semantic contract or release claim requires its own
-implementation decision and evidence, not a checkbox in this package.
+Preserve the complete historical migration task file outside the parsed region.
+Its checkboxes are historical delivery records, not implementation completion.
+All five implementation outcomes remain open. A checked implementation task
+requires an explicit Accepted; status and independently reviewed immutable owner
+evidence. The ledger records status separately from semantic receipt validity.
+Structural validation, artifact presence and assertion counts do not grant
+compiler, producer, consumer or release acceptance.
 
 ## Scope and compatibility
 
-Owned files are only `specs/mir-workflow/{spec,plan,tasks,evidence}.md`.
-Existing contracts, component/phase tasks, six earlier feature packages,
-source code, tests, CLI assets and runtime behavior remain unchanged.
-This is artifact workflow migration, not component implementation, wholesale
-contract replacement, external Specify CLI execution or automatic skill discovery.
+Own the MIR roadmap and four workflow artifacts. Preserve all links, historical
+evidence and admission wording outside additive
+task-authority navigation. Other packages, compiler implementation/tests,
+normative contracts and dashboard are unchanged.
 
 ## Evidence and outcome ownership
 
-The migration owner prepares and checks artifacts. The component role retains
-semantic ownership; this package does not assign an individual implementation
-owner. An independent reviewer accepts exact package evidence; Deus owns
-integration. See [evidence](evidence.md) for prepared, checked, reviewed and
-integrated states, kept separate from component acceptance.
+The compiler MIR maintainer retains semantic ownership. Real checked-Core facts
+remain prerequisites for integrated construction. Opt and Lower may use pinned
+verified fixtures while producers mature; optional domain anchors confer no
+restricted-domain authority. No existing admission hold is relaxed or removed.
+Independent review and integration remain separate from local validation. See
+[evidence](evidence.md) for observations and limits.
 
 ## Unresolved items
 
-Independent package review and main integration remain pending. Existing
-component decisions and open implementation evidence remain in the canonical
-roadmap; no new generic approval gate is introduced.
+All five implementation tasks and component release acceptance remain open.
+This migration does not establish complete producer facts, verified final
+artifacts, downstream acceptance, domain conformance, self-hosting or seed
+retirement. Source-pinned execution and owner review remain required by the
+unchanged roadmap and contracts.
 
 ## Implementation naming review
 
-`mir-workflow` identifies the subsystem and purpose. No new implementation
-names or protocol identifiers are introduced. Follow the
-[semantic naming rule](../../.specify/semantic-names.md); legacy planning IDs
-remain traceability metadata only.
+`mir-workflow` and its component roadmap name the subsystem and behavior. Existing compatibility
+identities and historical planning references are preserved. Follow the
+[semantic naming guidance](../../.specify/semantic-names.md); no legacy source
+rename, wire/schema or diagnostic change is part of this migration.

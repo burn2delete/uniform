@@ -1,57 +1,66 @@
-# Feature specification: Core workflow migration
+# Feature specification: Core implementation workflow
 
-Status: prepared; independent review and integration pending.
-Owner: Frontend Spec Kit migration maintainer. Component owner role: compiler core maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Status: authority-transfer candidate; independent review and integration pending.
+Owner role: compiler core maintainer. Existing implementation reservations are unchanged.
+Input revision: `31193e634ec99b2cd5ebfd90304e323840fcf7b9`.
 
 ## Purpose and canonical contracts
 
-Make the existing Core component navigable through the repository's Spec Kit
-spec -> plan -> tasks -> evidence workflow without replacing its normative
-contracts or copying its implementation task ledger.
+Use Spec Kit tasks for the five real Core implementation outcomes. Only the
+editable task location changes; this does not close an implementation outcome.
 
 - [Owning compiler contract](../../docs/phase-06-compiler-architecture/085-c6-ast-and-core-lowering-design.md) remains normative.
 - [Upstream language contract](../../docs/phase-01-core-language/012-l2-core-language-semantics.md) remains normative.
-- [Component roadmap](../../docs/component-roadmaps/core.md) owns implementation status and release acceptance.
+- [Implementation tasks](tasks.md#implementation-tasks) is the sole editable task ledger.
+- [Component roadmap](../../docs/component-roadmaps/core.md) retains release acceptance, interfaces and evidence, with a direct link to the task ledger.
 - [Canonical inventory](../../docs/document-inventory.json) owns contract identity.
 
 ## User scenarios and acceptance
 
 ### US1 - Find the next real component task
 
-A maintainer follows [the plan](plan.md#canonical-work-and-handoffs) to core/1 through core/5 in the owning table.
-The link resolves to the existing canonical table, not a copied checklist.
-An unresolved link, copied implementation status or claim of completed language
-behavior from these documents rejects this migration increment.
+Select an existing Core semantic task ID. Its title, evidence/status and
+concrete exit evidence remain in the sole ledger linked from the roadmap.
+The sole task ledger retains stable IDs, acceptance text, statuses and history; no second editable implementation ledger is introduced.
+The `core/1` through `core/5` labels remain unchanged display text.
 
 ### US2 - Distinguish migration from implementation completion
 
-[Tasks](tasks.md) tracks only this package's documentation migration.
-[Evidence](evidence.md) distinguishes prepared artifacts, validation, independent
-review and integration. Component acceptance remains at its owning roadmap.
-The accepted Reader-to-Core invocation pilot does not establish full core-form, typed-core, runtime, self-hosting or release acceptance.
+The original migration checkboxes remain frozen outside the implementation
+region. All five implementation tasks remain open at transfer. Check a task only
+with explicit `Accepted;` status and an immutable accepted-outcome receipt,
+independently reviewed by its owner. The ledger keeps checkbox/status explicit;
+receipt validity and semantic acceptance require actual review.
+Workflow scaffolding and passing structural checks do not prove compiler completion.
+The accepted Reader-to-Core invocation pilot remains finite evidence; it does
+not establish complete core-form, typed-core, runtime, self-hosting or release
+acceptance.
 
 ## Scope and compatibility
 
-Own only `specs/core-workflow/{spec,plan,tasks,evidence}.md`.
-Do not modify compiler code, normative documents, component task rows, existing
-feature packages, schemas, diagnostics or wire IDs. No automatic command
-discovery, external Specify CLI execution or whole-project migration is claimed.
+Own the four Core workflow artifacts and Core roadmap. Preserve all five
+phase/title semantic IDs, display labels, headings, links, release criteria and
+historical migration records. Other feature packages, compiler implementation, normative contracts and
+dashboard behavior are unchanged. No external Specify CLI, automatic discovery,
+dependency readiness or overall progress percentage is claimed.
 
 ## Evidence and outcome ownership
 
-The migration maintainer owns these artifacts and link validation. The compiler core maintainer
-owns implementation evidence under existing reservations; this package transfers
-no implementation ownership. An independent reviewer owns the review disposition;
-Deus coordinates integration. Exact result identities belong in [evidence](evidence.md).
+The compiler core maintainer retains implementation ownership. Independent
+review and integration remain separate from local validation. Exact observations
+and limits belong in [evidence](evidence.md).
 
 ## Unresolved items
 
-Independent review and integration of this new package are pending. Existing
-component questions remain in [the roadmap](../../docs/component-roadmaps/core.md), not new approval gates here.
+All five implementation outcomes and component release acceptance remain open.
+Core must preserve evaluation order, lexical/binding structure, source/generated
+origins, effects/capabilities, metadata and unsafe declarations. Required bindings
+must be resolved before typed-core acceptance. This authority transfer neither
+changes those requirements nor claims implementation of them.
 
 ## Implementation naming review
 
-The semantic package name is `core-workflow`. Planning identifiers appear
-only in retained contract references. Follow [semantic naming guidance](../../.specify/semantic-names.md);
-this migration adds no implementation namespace or legacy rename.
+`core-workflow` and its component roadmap name the subsystem and behavior.
+Existing identities remain compatible. Follow
+[semantic naming guidance](../../.specify/semantic-names.md); legacy implementation
+renames remain outside this change.

@@ -1,61 +1,70 @@
-# Feature specification: Opt workflow migration
+# Feature specification: Opt implementation workflow
 
-Status: prepared; review and integration pending.
-Migration owner: backend workflow migration owner. Component owner role: compiler optimization maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Status: task-authority candidate; independent review and integration pending.
+Owner role: compiler optimization maintainer.
+Input revision: `963f70c41b1da261da3a3acfdfe055f23cee6971`.
 
 ## Purpose and canonical contracts
 
-Adopt the repository's Spec Kit artifact workflow for the Opt component
-without copying its normative semantics or creating a second implementation ledger.
-[Component release outcome](../../docs/component-roadmaps/opt.md#release-outcome) and [Opt canonical remaining work](../../docs/component-roadmaps/opt.md#current-evidence-and-remaining-work) retain authority over implementation completion.
-The following contracts remain canonical and are linked, not replaced:
-
-- [C13 - MIR Optimization Passes Design](../../docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md)
+Make [tasks.md](tasks.md#implementation-tasks) the sole editable authority for
+the five existing Opt implementation outcomes. The
+[component roadmap](../../docs/component-roadmaps/opt.md) retains release,
+accounting, admission and acceptance wording with a direct task-ledger link.
+Retain direct navigation to its [release outcome](../../docs/component-roadmaps/opt.md#release-outcome)
+and [remaining work](../../docs/component-roadmaps/opt.md#current-evidence-and-remaining-work).
+The [C13 contract](../../docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md)
+remains normative. The reviewed [additional contract interfaces](plan.md#additional-contract-interfaces),
+including PERF10, retain their exact text and authority boundaries.
 
 ## User scenarios and acceptance
 
-### US1 - Find one authoritative path from work to evidence
+### US1 - Find one editable implementation task
 
-A maintainer starts here, follows plan.md to the existing remaining tasks and
-acceptance criteria, and records the exact implementation evidence there.
-Acceptance: all four package artifacts exist, every local link and anchor
-resolves, ownership/dependencies are explicit, and no implementation task is
-duplicated or marked complete merely by this migration. A missing contract,
-broken task link or unsupported completion claim rejects package acceptance.
+Preserve all five component/heading/title semantic IDs, opt/1 through opt/5
+display labels, Open statuses and concrete exit criteria in the sole task
+ledger. The roadmap links directly to those records. There is no second editable
+implementation ledger or
+renumbering.
 
-### US2 - Preserve the component boundary
+### US2 - Preserve task meaning and acceptance requirements
 
-MIR verification and facts gate integrated optimization. Lower may consume unoptimized verified MIR. A pass-specific proof or benchmark is not blanket correctness evidence, and legal no-change decisions remain valid.
-Acceptance: review confirms these boundaries agree with the linked roadmap.
-Changing a target, grant, semantic contract or release claim requires its own
-implementation decision and evidence, not a checkbox in this package.
+The existing Opt -> Lower text remains literal ledger text. Other angle syntax,
+images, malformed links and insecure receipt targets remain rejected. No shared
+policy is broadened.
+
+Preserve the complete historical tasks file outside the parsed implementation
+region. Its checkboxes describe migration delivery, not compiler completion.
+All five implementation outcomes remain Open and unchecked. A checked task
+requires an explicit Accepted; status and independently reviewed immutable owner
+evidence. The ledger records status separately from semantic receipt validity.
 
 ## Scope and compatibility
 
-Owned files are only `specs/opt-workflow/{spec,plan,tasks,evidence}.md`.
-Existing contracts, component/phase tasks, six earlier feature packages,
-source code, tests, CLI assets and runtime behavior remain unchanged.
-This is artifact workflow migration, not component implementation, wholesale
-contract replacement, external Specify CLI execution or automatic skill discovery.
+Own the Opt roadmap and four workflow artifacts. Preserve every source link,
+historical record and all roadmap wording outside
+additive task navigation. Preserve the reviewed plan's entire Additional
+contract interfaces appendix byte-for-byte, including PERF10. Shared helpers,
+mapping artifacts, normative contracts and compiler implementation/tests remain
+unchanged.
 
 ## Evidence and outcome ownership
 
-The migration owner prepares and checks artifacts. The component role retains
-semantic ownership; this package does not assign an individual implementation
-owner. An independent reviewer accepts exact package evidence; Deus owns
-integration. See [evidence](evidence.md) for prepared, checked, reviewed and
-integrated states, kept separate from component acceptance.
+The compiler optimization maintainer retains semantic ownership. Verified MIR
+and input facts still gate integration; Lower may consume unoptimized verified
+MIR. Legal no-change decisions remain valid. A benchmark or pass-specific proof
+is not blanket correctness evidence. Proof invalidation must regenerate proof,
+retain checks or reject unsupported no-checks compilation. This migration
+changes none of those requirements. See [evidence](evidence.md).
 
 ## Unresolved items
 
-Independent package review and main integration remain pending. Existing
-component decisions and open implementation evidence remain in the canonical
-roadmap; no new generic approval gate is introduced.
+All five implementation outcomes and component release acceptance remain open.
+Metadata claiming a passed verifier is not execution-derived verification.
+This workflow transfer establishes no pass implementation, check-elision proof,
+producer/consumer acceptance, component release, self-hosting or seed retirement.
 
 ## Implementation naming review
 
-`opt-workflow` identifies the subsystem and purpose. No new implementation
-names or protocol identifiers are introduced. Follow the
-[semantic naming rule](../../.specify/semantic-names.md); legacy planning IDs
-remain traceability metadata only.
+`opt-workflow` and its component roadmap use the component key and behavior. Follow
+[semantic naming](../../.specify/semantic-names.md); existing compatibility IDs,
+historical planning references and source names remain unchanged.

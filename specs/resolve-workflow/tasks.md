@@ -1,3 +1,66 @@
+# Tasks: Resolve implementation workflow
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Owner role: compiler resolve maintainer; existing implementation reservations are unchanged.
+Authority transfer baseline: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
+
+## Implementation tasks
+
+This is the sole editable Resolve implementation task ledger. The roadmap's
+[current evidence and remaining work](../../docs/component-roadmaps/resolve.md#current-evidence-and-remaining-work)
+is a navigation view of these records. IDs preserve the established phase/title slug
+convention; the original `resolve/1` through `resolve/5` labels remain display
+text. Order is display order, not dependency evidence. An unchecked box means
+not accepted complete. Check a box only with explicit `Accepted;` status and an
+immutable accepted-outcome receipt independently reviewed by the responsible
+owner. Structural validation cannot grant acceptance. No task closes here.
+
+The frozen [owner source-to-Core verification](../resolve-owner-source-core-verification/spec.md)
+package is a separate finite evidence task. It remains unchanged; its historical
+cohort and accepted scope do not establish completion of these five outcomes.
+
+<!-- resolve-implementation-tasks:start -->
+
+- [ ] `resolve/current-evidence-and-remaining-work/resolve1-resolve-lexical-positions` resolve/1: Resolve lexical positions
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Cover locals, loop/recur, vars, macros, types, protocols, constructors, capabilities and special positions with stable identity and legal shadowing.
+
+- [ ] `resolve/current-evidence-and-remaining-work/resolve2-validate-module-boundaries` resolve/2: Validate module boundaries
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Resolve aliases/imports/exports against actual module artifacts; reject absent, private or ambiguous names rather than synthesizing unsupported external bindings.
+
+- [ ] `resolve/current-evidence-and-remaining-work/resolve3-check-graph-legality` resolve/3: Check graph legality
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Record dependency versions and initialization edges; reject unapproved cycles and illegal cross-profile imports, preserving effect/capability metadata.
+
+- [ ] `resolve/current-evidence-and-remaining-work/resolve4-publish-stable-indexes` resolve/4: Publish stable indexes
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Serialize scope/binding graphs and invalidate dependent references when export, profile, package or semantic identity changes.
+
+- [ ] `resolve/current-evidence-and-remaining-work/resolve5-integrate-binding-consumers` resolve/5: Integrate binding consumers
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Connect Core/Types and diagnostic/LSP consumers; demonstrate accepted shadowing and imports plus rejected ambiguity, visibility, cycle and stale-export cases.
+
+<!-- resolve-implementation-tasks:end -->
+
+## Historical migration record
+
+The original scaffold below is frozen history at the transfer baseline, not
+implementation work or a completion denominator. Its pending review/integration
+text records what that scaffold stated, not a fresh claim about its merged PR.
+The implementation authority above supersedes its navigation-only rule; no
+historical checkbox is reclassified.
+
 # Tasks: Resolve workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)

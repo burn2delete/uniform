@@ -1,3 +1,52 @@
+# Tasks: Diagnostics implementation authority
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+
+## Implementation tasks
+
+This marked region is the sole editable implementation task ledger. All four
+outcomes remain open. Evidence baselines are references, not acceptance. The
+linked component roadmap is navigation to this ledger. Historical migration
+checkboxes below are separate from implementation completion.
+
+<!-- diag-implementation-tasks:start -->
+
+- [ ] `diag/remaining-tasks-and-evidence/reconcile-stage-carriers-with-canonical-record-schema` Reconcile stage carriers with canonical record schema
+
+Status: Open
+
+Evidence baseline: [Base carrier](../../bootstrap/clojure/src/gravity/diagnostics.clj), [records](../../bootstrap/clojure/src/gravity/c15_diagnostics/records.clj)
+
+Closing evidence: Record/schema parity fixtures from each producer, including malformed-record rejection
+
+- [ ] `diag/remaining-tasks-and-evidence/preserve-primaryrelatedgenerated-origins-and-stable-order` Preserve primary/related/generated origins and stable order
+
+Status: Open
+
+Evidence baseline: [Projection](../../bootstrap/clojure/src/gravity/c15_diagnostics/projection.clj)
+
+Closing evidence: Macro and optimized-source diagnostics with original and generated locations
+
+- [ ] `diag/remaining-tasks-and-evidence/close-textjsonredaction-and-explain-contracts` Close text/JSON/redaction and explain contracts
+
+Status: Open
+
+Evidence baseline: [CLI presentation](../../bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj)
+
+Closing evidence: Golden text/JSON equivalence, secret redaction and known-ID explanation
+
+- [ ] `diag/remaining-tasks-and-evidence/integrate-runtimebuildeditor-consumers-without-rule-drift` Integrate runtime/build/editor consumers without rule drift
+
+Status: Open
+
+Evidence baseline: [Tooling contracts](../../docs/phase-13-tooling-and-developer-experience/README.md)
+
+Closing evidence: Same underlying diagnostic identity across public consumers and failure paths
+
+<!-- diag-implementation-tasks:end -->
+
+## Historical migration record (frozen)
+
 # Tasks: Diagnostics workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md).

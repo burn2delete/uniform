@@ -42,18 +42,14 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| opt/1: Execute pass contracts | Open; partial source evidence above is not closure | Validate required/preserved/invalidated facts and deterministic ordering, then run actual constant/branch/dead-code/common-expression transformations. |
-| opt/2: Implement structural families | Open; partial source evidence above is not closure | Implement inlining/specialization, closure/allocation/region/resource transformations, dispatch/loop/vectorization preparation and effect-safe scheduling with explicit decisions. |
-| opt/3: Protect checks and anchors | Open; partial source evidence above is not closure | Require governing proof for check elision and domain/math transformations; retain checks or reject unsupported transformations and preserve anchors/source provenance. |
-| opt/4: Verify and regenerate | Open; partial source evidence above is not closure | Actually verify mutated MIR, regenerate invalidated analyses or keep conservative checks, and translation-validate or prove high-risk changes. |
-| opt/5: Integrate reproducible pipeline | Open; partial source evidence above is not closure | Record source/compiler/pass identities, no-change decisions, residual work and replay inputs; demonstrate changed semantics rejection and unchanged semantics across Opt -> Lower. |
+Implementation task authority: [Spec Kit ledger](../../specs/opt-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/opt-workflow/tasks.md#implementation-tasks).
+
+The task ledger is the canonical remaining list for this outcome. Close a row
 only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

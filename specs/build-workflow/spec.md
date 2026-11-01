@@ -8,7 +8,7 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 Adopt the repository's Spec Kit artifact workflow for the Build component
 without copying its normative semantics or creating a second implementation ledger.
-[Component release outcome](../../docs/component-roadmaps/build.md#release-outcome) and [Build canonical remaining work](../../docs/component-roadmaps/build.md#remaining-tasks-and-evidence) retain authority over implementation completion.
+[Component release outcome](../../docs/component-roadmaps/build.md#release-outcome) and [Build canonical remaining work](../../docs/component-roadmaps/build.md#remaining-tasks-and-evidence) retain outcome and acceptance scope; implementation records are edited only in [tasks.md](tasks.md#implementation-tasks), with direct roadmap links to the task ledger.
 The following contracts remain canonical and are linked, not replaced:
 
 - [PKG1 - Project File Specification](../../docs/phase-12-build-package-and-artifact-system/165-pkg1-project-file-specification.md)
@@ -44,9 +44,10 @@ implementation decision and evidence, not a checkbox in this package.
 
 ## Scope and compatibility
 
-Owned files are only `specs/build-workflow/{spec,plan,tasks,evidence}.md`.
-Existing contracts, component/phase tasks, six earlier feature packages,
-source code, tests, CLI assets and runtime behavior remain unchanged.
+Owned files are `specs/build-workflow/{spec,plan,tasks,evidence}.md` and
+the task link in `docs/component-roadmaps/build.md`. Existing contracts, phase tasks,
+other packages, compiler/runtime source, shared helpers and product behavior
+remain unchanged.
 This is artifact workflow migration, not component implementation, wholesale
 contract replacement, external Specify CLI execution or automatic skill discovery.
 

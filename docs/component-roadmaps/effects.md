@@ -42,18 +42,11 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| effects/1: Infer direct effects | Open; partial source evidence above is not closure | Classify actual core operations including allocation, IO, FFI, errors, concurrency, model/tool/memory and compile-time behavior with source references. |
-| effects/2: Propagate latent effects | Open; partial source evidence above is not closure | Compute closure, call, dispatch and recursive-function effect summaries to a valid fixed point; distinguish declared from inferred effects. |
-| effects/3: Check legality and ordering | Open; partial source evidence above is not closure | Reject undeclared effects and forbidden profile behavior, expose capability requirements, and preserve sequencing constraints without granting authority. |
-| effects/4: Record replay and invalidation | Open; partial source evidence above is not closure | Track nondeterministic/build effects and replay inputs, rejecting unreplayable hermetic behavior; invalidate summaries on call graph or declaration changes. |
-| effects/5: Integrate checked-core consumers | Open; partial source evidence above is not closure | Feed profile/capability/safety validation and MIR with real propagated facts, including generated-code and higher-order negative cases. |
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/effects-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
-only with the exact source revision, actual invocation/result and relevant
+Close a task only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

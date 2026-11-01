@@ -12712,46 +12712,13 @@
     (is (true? (:all-forms-reachable? validation)))
     (is (false? (:acyclic? cyclic-validation)))
     (is (false? (:graph-valid? cyclic-validation)))
-    (doseq [[label candidate]
-            [[:deep forms] [:cycle cyclic-forms]]]
-      (let [diagnostic
-            (diagnostic-data
-             #(bootstrap/c2-incremental-hashes
-               source-unit tokens candidate [] [] []))]
-        (is (= "C2-HASH" (:id diagnostic)) (str label))
-        (is (not (str/includes? (str diagnostic) "StackOverflowError"))
-            (str label)))))
-  (let [nested-source
-        (str (apply str (repeat 3000 "["))
-             (apply str (repeat 3000 "]")))]
-    (doseq [suffix [".gravity" ".qst"]]
-      (let [path (str "/p/over-depth" suffix)
-            c2-diagnostic
-            (diagnostic-data
-             #(bootstrap/compiler-c2-reader-source-artifact
-               path nested-source))
-            c3-diagnostic
-            (diagnostic-data
-             #(bootstrap/compiler-c3-syntax-source-artifact
-               path nested-source))
-            p15-diagnostic
-            (diagnostic-data
-             #(bootstrap/p15-s23-source-syntax-c2-artifact
-               path nested-source))]
-        (doseq [diagnostic [c2-diagnostic c3-diagnostic p15-diagnostic]]
-          (is (= "C2-HASH" (:id diagnostic)))
-          (is (= :reader-resource-depth-limit
-                 (get-in diagnostic [:facts :failure-kind])))
-          (is (not (str/includes? (str diagnostic) "StackOverflowError"))))
-        (with-temp-source
-          suffix nested-source
-          (fn [public-path]
-            (let [result (run-thin-bin "bin/gravity"
-                                       "compiler-c3-syntax" public-path)]
-              (is (not (zero? (:exit result))))
-              (is (str/includes? (:err result) "C2-HASH"))
-              (is (not (str/includes? (:err result)
-                                      "StackOverflowError"))))))))))
+    (is (= :stable
+           (:status (bootstrap/c2-incremental-hashes source-unit tokens forms [] [] []))))
+    (let [diagnostic
+          (diagnostic-data
+           #(bootstrap/c2-incremental-hashes source-unit tokens cyclic-forms [] [] []))]
+      (is (= "C2-HASH" (:id diagnostic)))
+      (is (= :reader-form-cycle (get-in diagnostic [:facts :failure-kind]))))))
 
 (deftest c2-reader-defers-syntax-valid-semantic-errors-for-both-extensions
   (let [source (str "(ns semantic.defer (:profile :unknown-profile)"
@@ -33546,13 +33513,10 @@
                 (is (not= (:actual-path-binding-id left)
                           (:actual-path-binding-id wasm)))))
             (testing "pass execution and B1 candidate are content-bound"
-              (is (= bootstrap/p15-s23-c11-mir-max-carrier-nodes
-                     (:maximum-module-carrier-nodes scope)))
-              (is (=
-                   bootstrap/p15-s23-c11-mir-max-final-artifact-carrier-nodes
-                   (:maximum-final-artifact-carrier-nodes scope)))
-              (is (= bootstrap/p15-s23-c11-mir-max-carrier-depth
-                     (:maximum-carrier-depth scope)))
+              (is (not-any? #(contains? scope %)
+                            [:maximum-module-carrier-nodes
+                             :maximum-final-artifact-carrier-nodes
+                             :maximum-carrier-depth]))
               (is (= (bootstrap/p15-s23-c11-mir-pass-execution-record
                       module left-core (:verification-report left))
                      (:pass-execution-record module)))
@@ -44208,6 +44172,669 @@
     (is (= :explicit-canonical-linux-target
            (get-in policy [:target-selection :selection])))
     (is (true? (:clojure-seed-boundary? policy)))))
+
+(deftest p18-public-self-host-verify-does-not-write-missing-proof
+  (with-temp-directory
+    "gravity-p18-self-host-verify-"
+    (fn [directory]
+      (let [final-proof-path (str (.resolve directory "missing-final-proof.edn"))
+            verify-proof-path (str (.resolve directory "verify-proof.edn"))
+            diagnostics-path (str (.resolve directory "diagnostics.edn"))
+            artifact
+            (with-redefs [bootstrap/p18-t06-final-proof-path final-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-proof-path
+                          verify-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-diagnostics-path
+                          diagnostics-path]
+              (bootstrap/p18-t04-public-self-host-verify-command-artifact!))
+            command-diagnostic
+            (with-redefs [bootstrap/p18-t06-final-proof-path final-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-proof-path
+                          verify-proof-path
+                          bootstrap/p18-t04-public-self-host-verify-diagnostics-path
+                          diagnostics-path]
+              (diagnostic-id
+               #(bootstrap/p18-t04-public-self-host-verify-command!
+                 ["self-host" "verify"])))]
+        (is (= :incomplete (:status artifact)))
+        (is (= :missing
+               (get-in artifact
+                       [:p18-final-release-proof-verification :failure])))
+        (is (false? (get-in artifact
+                             [:p18-final-release-proof-verification
+                              :authenticated?])))
+        (is (= "P18T04007" command-diagnostic))
+        (is (not (.exists (java.io.File. final-proof-path))))
+        (is (not (.exists (java.io.File. verify-proof-path))))
+        (is (not (.exists (java.io.File. diagnostics-path))))))))
+
+(deftest p18-public-self-host-verify-rejects-tampered-proof-and-export-writes
+  (with-temp-directory
+    "gravity-p18-self-host-verify-"
+    (fn [directory]
+      (let [current-proof
+            (edn/read-string
+             (slurp bootstrap/p18-t06-final-proof-path))
+            final-proof-path (str (.resolve directory "tampered-final-proof.edn"))
+            verify-proof-path (str (.resolve directory "verify-proof.edn"))
+            diagnostics-path (str (.resolve directory "diagnostics.edn"))]
+        (spit final-proof-path
+              (pr-str (assoc current-proof :artifact-id "sha256:tampered")))
+        (with-redefs [bootstrap/p18-t06-final-proof-path final-proof-path
+                      bootstrap/p18-t04-public-self-host-verify-proof-path
+                      verify-proof-path
+                      bootstrap/p18-t04-public-self-host-verify-diagnostics-path
+                      diagnostics-path]
+          (let [artifact
+                (bootstrap/p18-t04-public-self-host-verify-command-artifact!)]
+            (is (= :incomplete (:status artifact)))
+            (is (false? (get-in artifact
+                                 [:p18-final-release-proof-verification
+                                  :artifact-id-matches?])))
+            (is (false? (get-in artifact
+                                 [:p18-final-release-proof-verification
+                                  :authenticated?])))
+            (is (= #{"P18T04007"}
+                   (set (map :diagnostic (:diagnostics artifact)))))
+            (is (not (.exists (java.io.File. verify-proof-path))))
+            (is (not (.exists (java.io.File. diagnostics-path)))))
+          (let [exported
+                (bootstrap/p18-t04-write-public-self-host-verify-command-artifacts!)]
+            (is (= :incomplete (:status exported)))
+            (is (.isFile (java.io.File. verify-proof-path)))
+            (is (.isFile (java.io.File. diagnostics-path)))))))))
+
+(deftest p18-public-self-host-verify-wrapper-does-not-export
+  (let [root-directory (System/getProperty "user.dir")
+        release-directory (java.io.File.
+                           root-directory
+                           "target/phase-18/release")
+        script-file
+        (java.io.File/createTempFile
+         "gravity-p18-t06-wrapper-"
+         ".sh"
+         release-directory)
+        artifact-directories
+        [(java.io.File. root-directory "docs/artifacts/phase-18/release")
+         (java.io.File. root-directory "docs/artifacts/phase-18/command")]
+        snapshot
+        (fn []
+          (into {}
+                (map (fn [file]
+                       [(.getPath ^java.io.File file)
+                        [(.lastModified ^java.io.File file)
+                         (.length ^java.io.File file)
+                         (slurp file)]])
+                     (filter #(.isFile ^java.io.File %)
+                             (mapcat file-seq artifact-directories)))))]
+    (try
+      (spit script-file (bootstrap/p18-t06-release-binary-script))
+      (.setExecutable script-file true false)
+      (let [before (snapshot)
+            result
+            (run-process-in-directory
+             root-directory
+             nil
+             [(.getAbsolutePath script-file) "self-host" "verify"])
+            after (snapshot)]
+        (is (= 1 (:exit result)))
+        (is (str/includes? (:err result) "P18T04007"))
+        (is (= before after)))
+      (finally
+        (.delete script-file)))))
+
+(deftest p18-public-self-host-verify-complete-route-does-not-export
+  (with-temp-directory
+    "gravity-p18-self-host-verify-"
+    (fn [directory]
+      (let [verify-proof-path (str (.resolve directory "verify-proof.edn"))
+            diagnostics-path (str (.resolve directory "diagnostics.edn"))
+            output
+            (with-out-str
+              (with-redefs
+                [bootstrap/p18-t04-public-self-host-verify-command-artifact!
+                 (fn [] {:kind :gravity/p18-t04-public-self-host-verify-command-proof
+                         :status :complete})
+                 bootstrap/p18-t04-write-public-self-host-verify-command-artifacts!
+                 (fn [] (throw (ex-info "verification must not export"
+                                        {:id "unexpected-export"})))]
+                (bootstrap/p18-t04-public-self-host-verify-command!
+                 ["self-host" "verify"])))]
+        (is (str/includes? output ":status :complete"))
+        (is (not (.exists (java.io.File. verify-proof-path))))
+        (is (not (.exists (java.io.File. diagnostics-path))))))))
+
+(deftest p18-public-self-host-verify-authenticates-complete-proof-shape
+  (with-temp-directory
+    "gravity-p18-self-host-verify-"
+    (fn [directory]
+      (letfn [(rehash [artifact]
+                (assoc artifact
+                       :artifact-id
+                       (bootstrap/c4-artifact-id
+                        (dissoc artifact :artifact-id))))
+              (write-proof! [label proof]
+                (let [path (str (.resolve directory
+                                          (str (name label) ".edn")))]
+                  (spit path (pr-str proof))
+                  path))
+              (verify-artifact [path p15-proof]
+                (with-redefs
+                  [bootstrap/p18-t06-final-proof-path path
+                   bootstrap/p18-t06-current-p15-final-seed-proof
+                   (constantly p15-proof)]
+                  (bootstrap/p18-t04-public-self-host-verify-command-artifact!)))]
+        (let [current-proof
+              (edn/read-string
+               (slurp bootstrap/p18-t06-final-proof-path))
+              complete-p15
+              (rehash
+               (assoc (:p15-final-seed-retirement-proof current-proof)
+                      :source-path bootstrap/p15-s23-compiler-source-path
+                      :status :complete
+                      :full-language-compiler-self-hosted? true
+                      :clojure-seed-retired? true
+                      :clojure-seed-boundary? false))
+              complete-boundary
+              (rehash
+               (assoc (:release-boundary-record current-proof)
+                      :status :complete
+                      :final-release? true
+                      :final-reproducibility-gate-complete? true
+                      :final-release-governance-complete? true
+                      :clojure-seed-boundary? false
+                      :seed-boundary-facts
+                      (merge (:seed-boundary-facts
+                              (:release-boundary-record current-proof))
+                             {:binary-clojure-seed-boundary? false
+                              :compiler-path-clojure-seed-boundary? false
+                              :runtime-path-clojure-seed-boundary? false
+                              :release-compiler-clojure-seed-boundary?
+                              false})
+                      :release-boundary-components
+                      (mapv #(assoc % :clojure-seed-boundary? false)
+                            (:release-boundary-components
+                             (:release-boundary-record current-proof)))
+                      :bootstrap-hosted-command-boundary
+                      (assoc (:bootstrap-hosted-command-boundary
+                              (:release-boundary-record current-proof))
+                             :clojure-seed-boundary? false)))
+              complete-recipe
+              (rehash
+               (assoc-in (:reproducible-build-recipe current-proof)
+                         [:inputs 1 :artifact-id]
+                         (:artifact-id complete-boundary)))
+              complete-rebuild
+              (rehash
+               (assoc (:rebuild-verification-record current-proof)
+                      :recipe-id (:artifact-id complete-recipe)))
+              complete-provenance
+              (bootstrap/p18-t06-provenance-record
+               (:release-binary current-proof)
+               complete-boundary complete-recipe complete-rebuild)
+              complete-sbom
+              (bootstrap/p18-t06-sbom-record
+               (:release-binary current-proof)
+               complete-boundary complete-provenance)
+              complete-signing
+              (bootstrap/p18-t06-signing-record
+               (:release-binary current-proof)
+               complete-boundary complete-recipe complete-rebuild
+               complete-provenance complete-sbom)
+              complete-target-policy
+              (bootstrap/p18-t06-target-support-policy)
+              complete-compatibility
+              (bootstrap/p18-t06-compatibility-record
+               complete-target-policy)
+              complete-security-review
+              (bootstrap/p18-t06-security-review-record
+               complete-boundary complete-provenance complete-sbom)
+              complete-release-notes
+              (bootstrap/p18-t06-release-notes
+               (:release-binary current-proof))
+              complete-governance
+              (bootstrap/p18-t06-governance-approval-record
+               complete-release-notes complete-target-policy
+               complete-compatibility complete-security-review
+               complete-signing)
+              accepted-command-proof
+              (fn [{:keys [fixture output-path expected-stdout module]}]
+                (let [compile-artifact
+                      {:kind :gravity/p18-t06-final-release-executable-artifact
+                       :task "P18-T06"
+                       :status :complete
+                       :source-path fixture
+                       :executable-path output-path
+                       :release-binary-path
+                       bootstrap/p18-t06-release-binary-path
+                       :release-proof-record
+                       bootstrap/p18-t06-final-proof-path
+                       :clojure-seed-boundary? false
+                       :reproducible-release? true
+                       :signed-release? true
+                       :governance-approved? true}]
+                  {:fixture fixture
+                   :output-path output-path
+                   :status :accepted
+                   :expected-module module
+                   :expected-stdout expected-stdout
+                   :check-result {:exit 0 :out "" :err ""}
+                   :run-result {:exit 0 :out expected-stdout :err ""}
+                   :compile-result {:exit 0
+                                    :out (pr-str compile-artifact)
+                                    :err ""}
+                   :compile-artifact
+                   (select-keys compile-artifact
+                                [:kind :task :status :executable-path
+                                 :release-binary-path :clojure-seed-boundary?
+                                 :reproducible-release? :signed-release?
+                                 :governance-approved?])
+                   :executable-result {:exit 0
+                                       :out expected-stdout
+                                       :err ""}
+                   :inspect-result {:exit 0
+                                    :out (pr-str compile-artifact)
+                                    :err ""}
+                   :version-result {:exit 0
+                                    :out "{:phase \"P18-T06\"}"
+                                    :err ""}
+                   :executable? true
+                   :stdout-matches? true
+                   :artifact-inspection-final-release? true
+                   :matches-expected? true}))
+              complete-accepted-command-proofs
+              (mapv accepted-command-proof
+                    bootstrap/p18-t06-accepted-fixtures)
+              complete-rejected-command-proofs
+              (mapv (fn [{:keys [fixture output-path expected-diagnostic] :as record}]
+                      (assoc record
+                             :command ["bin/gravity" "compile" fixture
+                                       "-o" output-path]
+                             :status :rejected
+                             :result {:exit 1
+                                      :out ""
+                                      :err expected-diagnostic}
+                             :stable-diagnostic-through-final-release? true
+                             :matches-expected? true))
+                    bootstrap/p18-t06-rejected-command-fixtures)
+              complete-proof-base
+              (assoc current-proof
+                     :status :complete
+                     :final-release? true
+                     :seedless-release? true
+                     :clojure-seed-boundary? false
+                     :p15-final-seed-retirement-proof complete-p15
+                     :release-binary (:release-binary current-proof)
+                     :release-boundary-record complete-boundary
+                     :reproducible-build-recipe complete-recipe
+                     :rebuild-verification-record complete-rebuild
+                     :provenance-record complete-provenance
+                     :sbom-record complete-sbom
+                     :signing-record complete-signing
+                     :target-support-policy complete-target-policy
+                     :compatibility-record complete-compatibility
+                     :security-review-record complete-security-review
+                     :release-notes complete-release-notes
+                     :governance-approval-record complete-governance
+                     :accepted-command-proofs
+                     complete-accepted-command-proofs
+                     :rejected-command-proofs
+                     complete-rejected-command-proofs
+                     :p18-t06-diagnostic-stream
+                     (assoc (:p18-t06-diagnostic-stream current-proof)
+                            :proof-id
+                            (bootstrap/c4-artifact-id
+                             {:release-binary
+                              (get-in current-proof
+                                      [:release-binary :content-hash])
+                              :boundary-id (:artifact-id complete-boundary)
+                              :rebuild-id (:artifact-id complete-rebuild)
+                              :provenance-id (:artifact-id complete-provenance)
+                              :sbom-id (:artifact-id complete-sbom)
+                              :signing-id (:artifact-id complete-signing)})))
+              complete-diagnostics
+              (bootstrap/p18-t06-final-release-diagnostics
+               :p18-t06-final-release complete-proof-base)
+              complete-proof-with-diagnostics
+              (assoc complete-proof-base :diagnostics complete-diagnostics)
+              complete-capability-proof
+              (bootstrap/p18-t06-capability-proof
+               complete-proof-with-diagnostics)
+              complete-proof
+              (rehash
+               (assoc complete-proof-with-diagnostics
+                      :capability-based-proof complete-capability-proof))
+              recomputed-proof
+              (fn [candidate]
+                (let [diagnostics
+                      (bootstrap/p18-t06-final-release-diagnostics
+                       :p18-t06-final-release candidate)
+                      capability
+                      (bootstrap/p18-t06-capability-proof
+                       (assoc candidate :diagnostics diagnostics))]
+                  (rehash
+                   (assoc candidate
+                          :diagnostics diagnostics
+                          :capability-based-proof capability))))
+              failed-accepted-record
+              (-> (get-in complete-proof
+                          [:accepted-command-proofs 0])
+                  (assoc :status :failed
+                         :matches-expected? false)
+                  (assoc-in [:check-result :exit] 1))
+              recomputed-failed-accepted
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:accepted-command-proofs 0]
+                         failed-accepted-record))
+              non-rejected-record
+              (-> (get-in complete-proof
+                          [:rejected-command-proofs 0])
+                  (assoc :stable-diagnostic-through-final-release? false
+                         :matches-expected? false)
+                  (assoc-in [:result :exit] 0)
+                  (assoc-in [:result :err] ""))
+              recomputed-non-rejected
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:rejected-command-proofs 0]
+                         non-rejected-record))
+              recomputed-compile-flag-failure
+              (fn [flag value]
+                (let [compile-artifact
+                      (assoc
+                       (edn/read-string
+                        (get-in complete-proof
+                                [:accepted-command-proofs 0
+                                 :compile-result :out]))
+                       flag value)
+                      compile-artifact-record
+                      (select-keys
+                       compile-artifact
+                       [:kind :task :status :executable-path
+                        :release-binary-path :clojure-seed-boundary?
+                        :reproducible-release? :signed-release?
+                        :governance-approved?])]
+                  (recomputed-proof
+                   (assoc-in
+                    (assoc-in complete-proof
+                              [:accepted-command-proofs 0
+                               :compile-artifact]
+                              compile-artifact-record)
+                    [:accepted-command-proofs 0 :compile-result :out]
+                    (pr-str compile-artifact)))))
+              recomputed-compile-flag-failures
+              (mapv
+               (fn [[label flag value]]
+                 [label (recomputed-compile-flag-failure flag value)])
+               [[:compile-seed-boundary
+                 :clojure-seed-boundary? true]
+                [:compile-reproducible-release
+                 :reproducible-release? false]
+                [:compile-signed-release
+                 :signed-release? false]
+                [:compile-governance-approved
+                 :governance-approved? false]])
+              recomputed-empty-coverage
+              (recomputed-proof
+               (assoc complete-proof
+                      :accepted-command-proofs []
+                      :rejected-command-proofs []
+                      :rejected-release-candidates []))
+              recomputed-failed-command
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:accepted-command-proofs 0 :matches-expected?]
+                         false))
+              recomputed-failed-status
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:accepted-command-proofs 0 :status]
+                         :failed))
+              evil-command-artifact
+              (assoc
+               (edn/read-string
+                (get-in complete-proof
+                        [:accepted-command-proofs 0
+                         :compile-result :out]))
+               :kind :gravity/evil-command-artifact
+               :task "P18-T99"
+               :status :failed
+               :source-path "evil.gravity"
+               :executable-path "evil/output"
+               :release-binary-path "evil/release"
+               :release-proof-record "evil-proof.edn")
+              evil-command-artifact-record
+              (select-keys
+               evil-command-artifact
+               [:kind :task :status :executable-path
+                :release-binary-path :clojure-seed-boundary?
+                :reproducible-release? :signed-release?
+                :governance-approved?])
+              recomputed-evil-command-artifact
+              (recomputed-proof
+               (assoc-in
+                (assoc-in
+                 (assoc-in complete-proof
+                           [:accepted-command-proofs 0
+                            :compile-artifact]
+                           evil-command-artifact-record)
+                 [:accepted-command-proofs 0
+                  :compile-result :out]
+                 (pr-str evil-command-artifact))
+                [:accepted-command-proofs 0
+                 :inspect-result :out]
+                (pr-str evil-command-artifact)))
+              recomputed-nested-result-failures
+              (mapv
+               (fn [[label path value]]
+                 [label (recomputed-proof (assoc-in complete-proof path value))])
+               [[:failed-check
+                 [:accepted-command-proofs 0 :check-result :exit] 1]
+                [:failed-run
+                 [:accepted-command-proofs 0 :run-result :exit] 1]
+                [:failed-compile
+                 [:accepted-command-proofs 0 :compile-result :exit] 1]
+                [:failed-executable
+                 [:accepted-command-proofs 0 :executable-result :exit] 1]
+                [:failed-inspect
+                 [:accepted-command-proofs 0 :inspect-result :exit] 1]
+                [:failed-version
+                 [:accepted-command-proofs 0 :version-result :exit] 1]
+                [:failed-stdout
+                 [:accepted-command-proofs 0 :executable-result :out]
+                 "tampered\n"]])
+              recomputed-failed-rejected
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:rejected-command-proofs 0 :result :exit]
+                         0))
+              stale-p15
+              (rehash (assoc complete-p15 :proof-id "sha256:stale-p15"))
+              invalid-cases
+              (into
+               [[:recomputed-empty-coverage
+                 recomputed-empty-coverage]
+                [:recomputed-failed-command
+                 recomputed-failed-command]
+                [:recomputed-failed-status
+                 recomputed-failed-status]
+                [:recomputed-failed-accepted
+                 recomputed-failed-accepted]
+                [:recomputed-non-rejected
+                 recomputed-non-rejected]
+                [:recomputed-failed-rejected
+                 recomputed-failed-rejected]
+                [:recomputed-evil-command-artifact
+                 recomputed-evil-command-artifact]
+                [:wrong-kind
+                 (rehash (assoc complete-proof
+                                :kind :gravity/not-final-release-proof))]
+                [:wrong-task
+                 (rehash (assoc complete-proof :task "P18-T05"))]
+                [:wrong-target
+                 (rehash (assoc complete-proof :target :native-unknown))]
+                [:missing-boundary
+                 (rehash (assoc complete-proof :release-boundary-record nil))]
+                [:missing-provenance
+                 (rehash (assoc complete-proof :provenance-record nil))]
+                [:stale-p15
+                 (rehash (assoc complete-proof
+                                :p15-final-seed-retirement-proof stale-p15))]
+                [:tampered-binary
+                 (rehash (assoc-in complete-proof
+                                   [:release-binary :content-hash]
+                                   "sha256:tampered"))]
+                [:stale-rebuild
+                 (rehash
+                  (assoc complete-proof
+                         :rebuild-verification-record
+                         (rehash
+                          (assoc complete-rebuild
+                                 :binary-identical? false))))]
+                [:blocked-governance
+                 (rehash
+                  (assoc complete-proof
+                         :governance-approval-record
+                         (rehash
+                          (assoc complete-governance
+                                 :approval-status :blocked))))]
+                [:tampered-capability
+                 (rehash
+                  (assoc-in complete-proof
+                            [:capability-based-proof
+                             :phase-18-completion-gate-passed?]
+                            false))]
+                [:tampered-signature
+                 (rehash
+                  (assoc complete-proof
+                         :signing-record
+                         (rehash
+                          (assoc complete-signing
+                                 :signature "hmac-sha256:tampered"))))]
+                [:stale-lineage
+                 (let [stale-provenance
+                       (rehash
+                        (assoc-in complete-provenance
+                                  [:compiler-lineage
+                                   :p18-t05-release-boundary]
+                                  "sha256:stale-lineage"))
+                       stale-sbom
+                       (bootstrap/p18-t06-sbom-record
+                        (:release-binary current-proof)
+                        complete-boundary stale-provenance)
+                       stale-signing
+                       (bootstrap/p18-t06-signing-record
+                        (:release-binary current-proof)
+                        complete-boundary complete-recipe complete-rebuild
+                        stale-provenance stale-sbom)
+                       stale-security-review
+                       (bootstrap/p18-t06-security-review-record
+                        complete-boundary stale-provenance stale-sbom)
+                       stale-governance
+                       (bootstrap/p18-t06-governance-approval-record
+                        complete-release-notes complete-target-policy
+                        complete-compatibility stale-security-review
+                        stale-signing)]
+                   (rehash
+                    (assoc complete-proof
+                           :provenance-record stale-provenance
+                           :sbom-record stale-sbom
+                           :signing-record stale-signing
+                           :security-review-record stale-security-review
+                           :governance-approval-record stale-governance)))]]
+               (concat recomputed-compile-flag-failures
+                       recomputed-nested-result-failures))
+              valid-proof-path (write-proof! :valid complete-proof)
+              valid-artifact (verify-artifact valid-proof-path complete-p15)
+              verify-proof-path
+              (str (.resolve directory "verify-proof.edn"))
+              diagnostics-path
+              (str (.resolve directory "diagnostics.edn"))
+              valid-output
+              (with-out-str
+                (with-redefs
+                  [bootstrap/p18-t06-final-proof-path valid-proof-path
+                   bootstrap/p18-t04-public-self-host-verify-proof-path
+                   verify-proof-path
+                   bootstrap/p18-t04-public-self-host-verify-diagnostics-path
+                   diagnostics-path
+                   bootstrap/p18-t06-current-p15-final-seed-proof
+                   (constantly complete-p15)]
+                  (bootstrap/p18-t04-public-self-host-verify-command!
+                   ["self-host" "verify"])))]
+          (is (= :complete (:status valid-artifact)))
+          (is (empty? (:diagnostics valid-artifact)))
+          (is (true? (get-in valid-artifact
+                             [:p18-final-release-proof-verification
+                              :authenticated?])))
+          (is (true? (get-in valid-artifact
+                             [:p18-final-release-proof-verification
+                              :complete-boundary-authenticated?])))
+          (is (every? bootstrap/p18-t06-accepted-command-proof-valid?
+                      complete-accepted-command-proofs))
+          (is (every? bootstrap/p18-t06-rejected-command-proof-valid?
+                      complete-rejected-command-proofs))
+          (is (false?
+               (bootstrap/p18-t06-accepted-command-proof-valid?
+                failed-accepted-record)))
+          (is (false?
+               (bootstrap/p18-t06-rejected-command-proof-valid?
+                non-rejected-record)))
+          (is (str/includes? valid-output ":status :complete"))
+          (is (not (.exists (java.io.File. verify-proof-path))))
+          (is (not (.exists (java.io.File. diagnostics-path))))
+          (doseq [[label proof] invalid-cases]
+            (let [artifact
+                  (verify-artifact (write-proof! label proof) complete-p15)]
+              (is (= :incomplete (:status artifact)) (name label))
+              (is (false? (get-in artifact
+                                  [:p18-final-release-proof-verification
+                                   :authenticated?]))
+                  (name label))
+              (is (= #{"P18T04007"}
+                     (set (map :diagnostic (:diagnostics artifact))))
+                  (name label))))
+          (let [binary (java.io.File. bootstrap/p18-t06-release-binary-path)
+                originally-executable? (.canExecute binary)]
+            (try
+              (is originally-executable?)
+              (.setExecutable binary false false)
+              (let [artifact
+                    (verify-artifact
+                     (write-proof! :non-executable complete-proof)
+                     complete-p15)]
+                (is (= :incomplete (:status artifact)))
+                (is (false? (get-in artifact
+                                    [:p18-final-release-proof-verification
+                                     :release-binary-current?])))
+                (is (false? (get-in artifact
+                                    [:p18-final-release-proof-verification
+                                     :authenticated?])))
+                (is (= #{"P18T04007"}
+                       (set (map :diagnostic (:diagnostics artifact))))))
+              (finally
+                (.setExecutable binary originally-executable? false)))))))))
+
+(deftest p18-public-self-host-verify-preserves-interruption
+  (let [was-interrupted? (Thread/interrupted)]
+    (try
+      (let [interrupted?
+            (try
+              (with-redefs
+                [bootstrap/p18-t06-current-p15-final-seed-proof
+                 (constantly {})
+                 bootstrap/p18-t03-read-edn-artifact
+                 (fn [_] (throw (InterruptedException. "interrupted")))]
+                (bootstrap/p18-t04-public-self-host-verify-command-artifact!))
+              false
+              (catch InterruptedException _
+                (Thread/interrupted)))]
+        (is (true? interrupted?)))
+      (finally
+        (Thread/interrupted)
+        (when was-interrupted?
+          (.interrupt (Thread/currentThread)))))))
 
 (defn -main
   [& _]

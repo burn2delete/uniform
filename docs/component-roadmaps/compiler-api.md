@@ -8,6 +8,8 @@ verification specialists. Current owners are unassigned by this proposal;
 Deus confirms existing reservations or assigns unowned work. No code ownership
 is transferred by this page.
 
+Implementation task authority: [Spec Kit ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
+
 ## Purpose and scope
 
 Provide the public compiler artifact/context interface and the executable host
@@ -109,55 +111,23 @@ requires the complete extension host or final backend before demonstrating
 that endpoint. Final selected-target composition consumes its complete
 source-to-artifact path and the applicable Pass Evidence below.
 
-Owner role: compiler API/pipeline maintainer. All tasks open; source evidence
-above is partial implementation evidence, not closure.
-
-| Task | Concrete closing evidence |
-| --- | --- |
-| Stabilize public request/context/result API | Versioned schema and compatibility fixtures for source and stage-artifact calls; missing versions, incompatible schemas and hidden mutable-context access reject. A direct caller and CLI adapter receive the same semantic results. |
-| Register and schedule actual passes | Built-in registration binds implementation/version to complete requires/preserves/invalidates/regenerates/effects/profile contracts; execute declared order and reject missing facts, duplicate/conflicting registration and illegal ordering before consumption. |
-| Execute and retain stage products | Actual selected compiler invocation records input/output identities, diagnostics, source origins and provenance for every required stage, including fused-pass observable boundaries; verifier failure stops downstream execution. |
-| Derive cache keys and invalidate facts | Use actual source/compiler/pass/plugin/grant/replay/policy/target inputs; unchanged-input reuse agrees with a clean run, and every contract invalidation class triggers revalidation or recomputation. Stale proofs, diagnostics and speculative release reuse reject. |
-| Integrate compiler consumers | Build, CLI and inspection callers consume the same API artifacts; positive and negative selected-target programs demonstrate no raw/unchecked backend input and no runnable output from diagnostic-only mode. |
-
-Yes/no acceptance: are passes actually invoked? Are all required stage facts
-verified and retained? Are clean and reused results semantically equivalent?
-Are stale inputs and invalid stage orders rejected? Does public API behavior
-remain independent of ambient mutable compiler state? All must be yes.
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
 
 ## Plugin Host: finite remaining tasks
 
-Owner role: compiler extension-host maintainer. All tasks open.
-
-| Task | Concrete closing evidence |
-| --- | --- |
-| Check manifest compatibility before code loading | Actual loader validates package identity, API/compiler version, declared passes/artifacts, trust and grants; incompatible/malformed/rejected packages produce diagnostics without executing initialization code. |
-| Execute scoped plugin context | Run a deterministic read-only analysis and authorized transformation through actual scoped IR APIs; read-only writes, unauthorized namespaces/phases and hidden compiler mutation reject at the operation boundary. |
-| Enforce real sandbox/build-effect boundaries | Exercise sandboxed and policy-trusted plugin execution; filesystem/network/process/environment/model/tool/artifact operations without grants are denied before effects, including host escape paths. Trust labels alone do not disable scoped checks. |
-| Register passes, facets and domain interfaces | Require declared schema, verifier, profile support, effects, lowering path and conformance records as applicable; execute registered schema/verifier callbacks and reject opaque, conflicting or unauthorized registration. Component owners retain domain semantics. |
-| Verify output, trace execution and revalidate reuse | Run the declared output verifier, reject invalid transformed artifacts, record actual plugin/package/grant/input/output/replay identities, and invalidate cache entries on changed versions, policy or dependencies. |
-
-Yes/no acceptance: can incompatible plugin initialization run? Can a plugin
-perform ungranted effects or mutate hidden state? Can an invalid output enter
-the pipeline? All must be no. Are allowed sandboxed/trusted invocations real,
-traceable and reproducible under their declared replay policy? Must be yes.
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
 
 ## Pass Evidence: finite remaining tasks
 
-Owner role: compiler verification maintainer. All tasks open.
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
 
-| Task | Concrete closing evidence |
-| --- | --- |
-| Classify real pass population | Enumerate every pass in the declared compiler closure with version, risk, affected profiles/targets and governing minimum evidence; reject omitted passes or incompatible evidence classes. |
-| Execute required verification gates | Invoke actual schema/semantic verifiers at required compiler boundaries; bind reports to input/output identity and stop affected artifact production on failure rather than accepting supplied success flags. |
-| Bind transformation evidence | Changed MIR functions receive the governing translation validation or checked proof evidence; check-elision proofs/certificates are checked, and target lowering has actual differential/backend conformance receipts for claimed targets. |
-| Capture failures and preserve trust boundaries | Record counterexample input/output/property/diagnostic and source identities, retain the prior valid artifact after rejected transformation, and turn reproducible failures into regression fixtures. |
-| Emit truthful trust and release-gate records | Reports enumerate supported profiles/targets, residual evidence gaps and experimental gates; missing/high-risk/stale evidence blocks affected release artifacts. Release consumes this decision but independently owns final acceptance. |
+## Compiler development ownership and verification boundaries
 
-Yes/no acceptance: do reports derive from actual checks on exact artifacts?
-Are plugin and backend passes included when used? Are absent evidence and
-counterexamples visible? Do failures block the affected claimed release path?
-All must be yes. No claim of a fully mechanized compiler is implied.
+The following new authority record closes the SH-01 task-traceability gap while
+preserving its historically completed implementation. Current acceptance stays
+unassessed. Edit only the Compiler API Spec Kit implementation ledger.
+
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).
 
 ## Integration milestones and decision gate
 
@@ -182,3 +152,8 @@ record does not block built-in pipeline or independent semantic development.
 No compiler/plugin execution, restricted domain action, migration attempt or
 test was run for this documentation change. No quota, source-function census,
 fixed task allowance or new release target defines its finish line.
+
+
+## Domain IR registration and transition boundaries
+
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/compiler-api-workflow/tasks.md#implementation-tasks).

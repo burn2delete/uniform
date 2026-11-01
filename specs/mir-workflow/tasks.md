@@ -1,3 +1,50 @@
+# Tasks: MIR implementation authority
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+
+## Implementation tasks
+
+This marked region is the sole editable implementation task ledger. All five
+outcomes remain open. The linked component roadmap is navigation to this ledger.
+Historical migration checkboxes below are separate from implementation
+completion. Existing admission rules remain in force.
+
+<!-- mir-implementation-tasks:start -->
+
+- [ ] `mir/current-evidence-and-remaining-work/mir1-construct-semantic-mir` mir/1: Construct semantic MIR
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Lower checked-core control flow, calls/closures, data, memory/regions/resources, errors, FFI/concurrency and declared domain/workflow/AI operations without target-specific instructions.
+
+- [ ] `mir/current-evidence-and-remaining-work/mir2-attach-fact-tables` mir/2: Attach fact tables
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Bind every operation to current types, effects, capabilities, ownership, safety, runtime checks, proof and origin records.
+
+- [ ] `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality` mir/3: Verify graph and legality
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Check block termination, dominance, operand schemas, effect ordering, guard dominance, resource facts and valid domain anchors; reject missing or stale evidence.
+
+- [ ] `mir/current-evidence-and-remaining-work/mir4-serialize-stable-modules` mir/4: Serialize stable modules
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Round-trip operations and shared tables with deterministic identity and preserve analysis invalidation hooks.
+
+- [ ] `mir/current-evidence-and-remaining-work/mir5-gate-downstream-consumption` mir/5: Gate downstream consumption
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Run actual verifier on constructed and mutated MIR; retain positive and negative artifacts for malformed flow, missing facts, target leaks and invalid origins before Opt/Lower consumption.
+
+<!-- mir-implementation-tasks:end -->
+
+## Historical migration record (frozen)
+
 # Tasks: MIR workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)

@@ -12,9 +12,7 @@ The workflow records work and evidence; it does not replace normative authority.
 
 ## Approach and exact files
 
-Create only `specs/release-workflow/spec.md`, `plan.md`, `tasks.md` and `evidence.md`,
-using the existing project-local overrides. Shared migration indexes are owned
-by the migration coordinator and are not edited by this package.
+Keep the four workflow artifacts and direct roadmap task link.
 
 | Canonical truth | Reference | Package use |
 | --- | --- | --- |
@@ -28,13 +26,13 @@ Release admission consumes accepted component outcomes and exact candidate evide
 
 ## Validation and evidence
 
-Check ASCII, the exact four-file set, local Markdown target/anchor resolution,
+Check ASCII, the exact seven-file set, local Markdown target/anchor resolution,
 semantic package names and absence of duplicated component checklists.
 Negative acceptance cases are broken/missing links, treating artifact presence
 as implementation completion, or narrowing retained contracts without disposition.
 Run the existing structural documentation and full-language roadmap validators.
-No compiler tests are necessary for these Markdown-only additions, and none
-are claimed. Record commands/results and exact review identity in evidence.md.
+Run focused task-ledger navigation and language-boundary checks; no
+compiler/service execution suite is claimed. Record commands/results and exact review identity in evidence.md.
 
 ## Delivery and remaining work
 
@@ -48,3 +46,43 @@ Do not add a recurring acceptance loop solely because evidence text changes.
 No source names, callers, wire/schema identities, load order or historical pins
 change. Retain original task identities and phase anchors. Future source work
 uses subsystem/behavior names under the semantic naming rule, separately reviewed.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [TEST13](../../docs/phase-14-testing-verification-and-conformance/202-test13-self-hosting-validation-plan.md#requirements): Stage admission requires declared trusted inputs, conformance, rebuild comparisons, provenance and TCB delta. Gravity source presence or a wrapper does not establish seed retirement.
+- [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md#requirements): Consume baseline/profile/target/artifact compatibility reports and migration records for release claims; Release does not approve semantic breaks.
+
+## Governance evidence consumers
+
+This bounded requirement-reconciliation correction binds four previously
+unlinked contracts to the existing task
+`release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance`
+in [tasks.md](tasks.md#implementation-tasks). Its ID, title, Open status and
+closing evidence remain byte-identical. This table explains the applicable
+governance inputs to its existing positive/negative evidence obligation; it
+does not amend task acceptance. The existing exact-candidate independent
+acceptance task remains separate. No implementation record is added.
+
+| Contract | Evidence consumed by Release | Required negative evidence |
+| --- | --- | --- |
+| [GOV1](../../docs/phase-17-governance-and-evolution/231-gov1-language-evolution-process.md#conformance-criteria) | Owned change ID, affected contracts, decision history and trace through implementation, conformance and release notes | Ownerless changes, untraceable accepted changes and omitted user-visible release notes reject admission |
+| [GOV6](../../docs/phase-17-governance-and-evolution/236-gov6-rfc-process.md#conformance-criteria) | RFC decision, affected contracts, design/impact/test/migration sections, applicable specialized reviews and implementation/validation links | Missing required sections, review history or implementation/conformance links cannot support release |
+| [GOV7](../../docs/phase-17-governance-and-evolution/237-gov7-experimental-feature-policy.md#conformance-criteria) | Explicit opt-in, stable default-off or governed preview-channel decision, profile availability, expiry, rollback, stabilization/removal criteria, package/build dependencies, on/off fixtures and lifecycle notes | Accidental experimental use, missing dependency metadata or expiry without a reviewed decision rejects admission |
+| [GOV8](../../docs/phase-17-governance-and-evolution/238-gov8-deprecation-and-stabilization-policy.md#conformance-criteria) | Exact stabilization surfaces and compatibility/conformance/negative-fixture history; or replacement/rationale, diagnostic, schedule and migration records; tests through removal and release lifecycle notes | Evidence-free stabilization, missing migration metadata or removal before the approved window without the security-emergency records rejects admission |
+
+These are consumer interfaces, not assignment of language-policy authority to
+Release. The broader evolution workflow proposed in
+[contract mapping](../../.specify/contract-mapping.md#evolution-workflow-proposal)
+still needs an accountable policy owner and full lifecycle implementation.
+[FL-P17-T01](../../docs/full-language-implementation-gap-map.md#phase-17---governance-and-evolution)
+remains Open for real command-produced records and release-blocking behavior.
+The Phase 17 stage0 history is preserved; it does not accept this wider gate.
+
+PR445's proposed requirement population and missing-interface census are not
+recomputed by adding these links. Source/facet-to-task entailment still needs
+exact-manifest review; no candidate requirement gains implementation credit.

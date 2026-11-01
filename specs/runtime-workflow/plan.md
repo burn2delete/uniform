@@ -12,9 +12,8 @@ The workflow records work and evidence; it does not replace normative authority.
 
 ## Approach and exact files
 
-Create only `specs/runtime-workflow/spec.md`, `plan.md`, `tasks.md` and `evidence.md`,
-using the existing project-local overrides. Shared migration indexes are owned
-by the migration coordinator and are not edited by this package.
+Keep the four workflow artifacts and direct roadmap task link. The roadmap links
+directly to the ledger; retain the entire original migration file as history.
 
 | Canonical truth | Reference | Package use |
 | --- | --- | --- |
@@ -28,13 +27,14 @@ Integrated execution consumes Lower, Legality and Auth facts; service-table and 
 
 ## Validation and evidence
 
-Check ASCII, the exact four-file set, local Markdown target/anchor resolution,
+Check ASCII, the exact seven-file set, local Markdown target/anchor resolution,
 semantic package names and absence of duplicated component checklists.
 Negative acceptance cases are broken/missing links, treating artifact presence
 as implementation completion, or narrowing retained contracts without disposition.
 Run the existing structural documentation and full-language roadmap validators.
-No compiler tests are necessary for these Markdown-only additions, and none
-are claimed. Record commands/results and exact review identity in evidence.md.
+Run focused document/link and language-boundary checks.
+No compiler/runtime execution suite is claimed. Record commands/results and
+exact review identity in evidence.md.
 
 ## Delivery and remaining work
 
@@ -48,3 +48,16 @@ Do not add a recurring acceptance loop solely because evidence text changes.
 No source names, callers, wire/schema identities, load order or historical pins
 change. Retain original task identities and phase anchors. Future source work
 uses subsystem/behavior names under the semantic naming rule, separately reviewed.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L9](../../docs/phase-01-core-language/019-l9-error-handling-specification.md#requirements): Normalize host/FFI failures, cleanup and target error representations without leaking foreign exceptions into safe Gravity.
+- [L11](../../docs/phase-01-core-language/021-l11-concurrency-model-specification.md#requirements): Implement the declared scheduler/task/channel/cancellation behavior with profile-specific service manifests and observable concurrency traces.
+- [L19](../../docs/phase-01-core-language/029-l19-language-interoperability-and-migration-specification.md#requirements): Implement declared host/FFI ABI, ownership, callback, cleanup and error-translation boundaries; host behavior cannot define portable semantics.
+- [TEST3](../../docs/phase-14-testing-verification-and-conformance/192-test3-runtime-test-strategy.md#requirements): Exercise each claimed runtime family with explicit artifact/profile/target/grants and accepted/rejected cleanup, replay, ABI and redaction evidence. Selected compiler services do not close all families.
+- [L18](../../docs/phase-01-core-language/028-l18-alternative-memory-model-contract.md#requirements): Execute the declared memory-provider families and test allocation/failure, lifetimes, cleanup/leak behavior, ownership transfer and FFI/device boundaries. Provider registration and compile-time safety facts do not establish actual runtime conformance.

@@ -1,3 +1,62 @@
+# Tasks: Effects implementation workflow
+
+Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)
+Owner role: compiler effects maintainer; existing implementation reservations are unchanged.
+Authority transfer baseline: `fcb23737be00f646a74200fc26faaa8908f77164`.
+
+## Implementation tasks
+
+This is the sole editable Effects implementation task ledger. The roadmap's
+[current evidence and remaining work](../../docs/component-roadmaps/effects.md#current-evidence-and-remaining-work)
+is a navigation view of these records. IDs preserve the established phase/title slug
+convention; the original `effects/1` through `effects/5` labels remain display
+text. Order is display order, not dependency evidence. An unchecked box means
+not accepted complete. Check a box only with explicit `Accepted;` status and an
+immutable accepted-outcome receipt independently reviewed by the responsible
+owner. Structural validation cannot grant acceptance. No task closes here.
+
+<!-- effects-implementation-tasks:start -->
+
+- [ ] `effects/current-evidence-and-remaining-work/effects1-infer-direct-effects` effects/1: Infer direct effects
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Classify actual core operations including allocation, IO, FFI, errors, concurrency, model/tool/memory and compile-time behavior with source references.
+
+- [ ] `effects/current-evidence-and-remaining-work/effects2-propagate-latent-effects` effects/2: Propagate latent effects
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Compute closure, call, dispatch and recursive-function effect summaries to a valid fixed point; distinguish declared from inferred effects.
+
+- [ ] `effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering` effects/3: Check legality and ordering
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Reject undeclared effects and forbidden profile behavior, expose capability requirements, and preserve sequencing constraints without granting authority.
+
+- [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Track nondeterministic/build effects and replay inputs, rejecting unreplayable hermetic behavior; invalidate summaries on call graph or declaration changes.
+
+- [ ] `effects/current-evidence-and-remaining-work/effects5-integrate-checked-core-consumers` effects/5: Integrate checked-core consumers
+
+Current evidence/status: Open; partial source evidence above is not closure
+
+Done when (yes/no): Feed profile/capability/safety validation and MIR with real propagated facts, including generated-code and higher-order negative cases.
+
+<!-- effects-implementation-tasks:end -->
+
+## Historical migration record
+
+The original scaffold below is frozen history at the transfer baseline, not
+implementation work or a completion denominator. Its pending review/integration
+text records what that scaffold stated, not a fresh claim about its merged PR.
+The implementation authority above supersedes its navigation-only rule; no
+historical checkbox is reclassified.
+
 # Tasks: Effects workflow migration
 
 Spec: [spec.md](spec.md) | Plan: [plan.md](plan.md) | Evidence: [evidence.md](evidence.md)

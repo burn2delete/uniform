@@ -1,57 +1,70 @@
-# Feature specification: Effects workflow migration
+# Feature specification: Effects implementation workflow
 
-Status: prepared; independent review and integration pending.
-Migration owner: checked-IR documentation workstream. Component owner role: compiler effects maintainer; person unassigned. Integration: Deus.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Status: authority-transfer candidate; independent review and integration pending.
+Owner role: compiler effects maintainer. Existing implementation reservations are unchanged.
+Input revision: `fcb23737be00f646a74200fc26faaa8908f77164`.
 
 ## Purpose and canonical contracts
 
-Trace direct, latent and transitive effects, ordering and replay obligations while keeping capability grants separate from inferred behavior.
-This package adopts the repository-local Spec Kit artifact workflow for the
-[Effects component](../../docs/component-roadmaps/effects.md); it does not replace or revise its normative contracts.
-The [plan](plan.md#contract-alignment) names the retained contract references.
-The [canonical implementation tasks](../../docs/component-roadmaps/effects.md#current-evidence-and-remaining-work) remain the sole implementation task list.
+Use Spec Kit tasks for the five real Effects implementation outcomes: direct
+and latent inference, legality/ordering, replay/invalidation and checked-core
+handoffs. Only the editable task location changes; no implementation outcome
+closes. Effect inference never grants capability authority.
+
+- [Owning compiler contract](../../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md) remains normative.
+- [Upstream language contract](../../docs/phase-01-core-language/016-l6-effect-system-specification.md) remains normative.
+- [Retained contract references](plan.md#contract-alignment) preserve additional navigation and nonexclusive ownership.
+- [Implementation tasks](tasks.md#implementation-tasks) is the sole editable task ledger.
+- [Component roadmap](../../docs/component-roadmaps/effects.md) retains release acceptance, interfaces and evidence, with a direct link to the task ledger.
+- [Canonical inventory](../../docs/document-inventory.json) owns contract identity.
 
 ## User scenarios and acceptance
 
-### US1 - Find the next component task without competing status
+### US1 - Find the next real component task
 
-A maintainer opens this package, follows the canonical task and acceptance links,
-and selects an actual component task there. The workflow must not create a second
-implementation checklist or close any canonical task from artifact presence.
+Select an existing Effects semantic task ID from the sole task ledger. Its
+title, evidence/status and concrete exit evidence remain in that editable
+record, and the roadmap provides navigation to it. No second editable
+implementation ledger is introduced.
+The `effects/1` through `effects/5` labels remain unchanged display text.
 
-### US2 - Distinguish migration evidence from compiler acceptance
+### US2 - Distinguish migration from implementation completion
 
-A reviewer can identify the source revision, linked contracts, changed files,
-validation and pending review/integration in [evidence](evidence.md). An absent
-compiler receipt remains unassessed, not passed. A broken link, unsupported
-completion claim or altered normative meaning rejects this migration slice.
+The original migration checkboxes remain frozen outside the implementation
+region. All five implementation tasks remain open at transfer. Check a task only
+with explicit `Accepted;` status and an immutable accepted-outcome receipt,
+independently reviewed by its owner. The ledger keeps checkbox/status explicit;
+receipt validity and semantic acceptance require actual review.
+Workflow scaffolding and passing structural checks do not prove compiler completion.
+The existing local direct/declared projections do not establish complete
+interprocedural fixed-point inference or close the component outcome.
 
 ## Scope and compatibility
 
-Own only `specs/effects-workflow/{spec.md,plan.md,tasks.md,evidence.md}`.
-No compiler, runtime, normative contract, shared index or canonical roadmap is
-changed. Existing diagnostic, schema and wire IDs stay intact. No restricted
-execution is performed or authorized by this package. No project accounting
-limits, credentials, schedules or new approval gates are introduced.
+Own the four Effects workflow artifacts and Effects roadmap. Preserve all five
+phase/title semantic IDs, display labels, headings, links, release criteria and
+historical migration records. Other feature packages, compiler implementation
+and its tests, normative contracts and dashboard behavior are unchanged. No external Specify CLI, automatic
+discovery, dependency readiness or overall progress percentage is claimed.
 
 ## Evidence and outcome ownership
 
-The documentation owner prepares and validates artifacts; an independent reviewer
-accepts the exact candidate; Deus coordinates integration. The component role
-retains semantic acceptance. The canonical roadmap records local direct/declared projections; these are not interprocedural fixed-point inference acceptance.
-Full component implementation, release, self-hosting and seed retirement are
-not established by this documentation migration.
+The compiler effects maintainer retains implementation and semantic-acceptance
+ownership. Independent review and integration remain separate from local
+validation. Exact observations and limits belong in [evidence](evidence.md).
+Contract routing is navigation, not exclusive ownership.
 
 ## Unresolved items
 
-Independent document review and merge receipt are pending. A named component
-implementation owner remains unassigned in the canonical roadmap. That unknown
-does not block preparing linked documentation. Contract routing in the plan is
-a navigation proposal; it does not assign exclusive semantic ownership.
+All five implementation outcomes and component release acceptance remain open.
+Effects must establish actual direct, latent and transitive facts, preserve
+ordering/replay obligations and reject undeclared or profile-forbidden behavior.
+Capability grants remain separate authority. This transfer neither changes those
+requirements nor claims implementation of them.
 
 ## Implementation naming review
 
-The semantic directory `effects-workflow` follows
-[naming guidance](../../.specify/semantic-names.md). Contract IDs occur only in
-traceability. No implementation namespace, legacy name or compatibility ID is renamed.
+`effects-workflow` and its component roadmap name the subsystem and behavior.
+Existing identities remain compatible. Follow
+[semantic naming guidance](../../.specify/semantic-names.md); legacy implementation
+renames remain outside this change.

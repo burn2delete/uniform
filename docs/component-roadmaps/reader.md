@@ -97,20 +97,7 @@ coverage, full SH-07/C01, a full compiler-owner census or self-hosting acceptanc
 
 ## Finite remaining work
 
-These are the canonical Reader tasks; aggregate roadmaps link this outcome,
-not copies of this list. `Open` means completion evidence has not been admitted,
-not that no implementation exists. The scoped receipt updates partial evidence;
-no full Reader release task is closed by this navigation change.
-
-| Task | Current evidence/status | Done when (yes/no) |
-| --- | --- | --- |
-| Contract coverage reconciliation | Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures. | Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete. |
-| Decode and source identity closure | Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population. | Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity. |
-| Lexical products and origins closure | Partial Reader and projection sources. | All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified. |
-| Extension policy closure | Extension records/projected views exist; accepted authorization behavior not established here. | Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler. |
-| Authentication and quota-removal closure | Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open. | Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance. |
-| Fresh Syntax handoff | Partial; real current Reader/Syntax products participate in the linked accepted pilot. Full component handoff coverage remains open. | Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run. |
-| Component release evidence | Open; the accepted finite invocation receipt is not the complete Reader release outcome. | Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome. |
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/reader-workflow/tasks.md#implementation-tasks).
 
 ## Acceptance checklist
 

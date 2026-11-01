@@ -42,18 +42,14 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| emit/1: Reconcile selected target contracts | Open; partial source evidence above is not closure | Record exact target/ABI/runtime tuples, emitted kinds and supported operations for the existing staged Linux LLVM release candidate; distinguish hosted development artifacts, validate Lower input and reject undeclared targets. |
-| emit/2: Emit real outputs | Open; partial source evidence above is not closure | Produce declared executable/object/library or hosted artifacts through the selected backend adapters, with explicit runtime linkage and surfaced tool failures. |
-| emit/3: Bind provenance to bytes | Open; partial source evidence above is not closure | Hash actual outputs and attach source/compiler/dependency identity, source/debug maps, profile/effect/capability/safety/proof and ABI/runtime records. |
-| emit/4: Establish conformance | Open; partial source evidence above is not closure | Execute accepted target fixtures and reject illegal or unsupported inputs; compare observable behavior and verify metadata preservation, tamper detection and reproducibility. |
-| emit/5: Integrate artifact consumers | Open; partial source evidence above is not closure | Deliver actual artifact/manifests to Runtime and Build, retaining source-pinned receipts and distinguishing development binaries from seedless signed release artifacts. |
+Implementation task authority: [Spec Kit ledger](../../specs/emit-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/emit-workflow/tasks.md#implementation-tasks).
+
+The task ledger is the canonical remaining list for this outcome. Close a row
 only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

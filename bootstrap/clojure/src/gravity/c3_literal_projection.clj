@@ -3,6 +3,8 @@
   Consumes integrity results; owns no authentication, numeric or release authority."
   (:require [gravity.c3-literal-projection.policy :as policy]
             [gravity.c3-literal-projection.characters :as characters]
+            [gravity.c3-literal-projection.indexes :as indexes]
+            [gravity.c3-literal-projection.spans :as spans]
             [gravity.reader-primitives :as reader-primitives]))
 
 (def ^:private ^:dynamic *operations* {})
@@ -92,15 +94,16 @@
            :semantic-validation :accepted}))
       (catch NumberFormatException _ nil))))
 
+(definterposable c3-form-index [artifact] (indexes/form-index artifact))
+(definterposable c3-token-index [artifact] (indexes/token-index artifact))
+(defn c3-index-operations-current? [expected] (indexes/operations-current? *operations* expected))
 (definterposable c3-lossless-literal-descriptor
   [seed form-record c2-artifact integrity-report]
   (let [integrity-report
         (or integrity-report
             (invoke :c3-c2-reader-integrity-report c2-artifact))
-        forms-by-id (into {} (map (juxt :form-id identity)
-                                  (:form-tree c2-artifact)))
-        tokens-by-id (into {} (map (juxt :token-id identity)
-                                   (:token-stream c2-artifact)))
+        forms-by-id (c3-form-index c2-artifact)
+        tokens-by-id (c3-token-index c2-artifact)
         root-form-id (:form-id form-record)
         ratio-form
         (case (:kind form-record)
@@ -123,10 +126,7 @@
                          [:semantic-error-deferment-record
                           :deferred-literal-records]))
         wrapper? (= :metadata-wrapper (:kind form-record))
-        expected-seed-span (when form-record
-                             (assoc (:span form-record)
-                                    :form-index
-                                    (get-in seed [:span :form-index])))]
+        expected-seed-span (spans/expected-seed-span seed form-record c2-artifact)]
     (when
      (and (:authentic? integrity-report)
           descriptor ratio-form ratio-token
@@ -160,7 +160,7 @@
             (and (empty? deferred-records)
                  (= (:form seed) (:decoded (first literal-records))
                     (:value ratio-form) (:decoded ratio-token))))
-          (= expected-seed-span (:span seed))
+          (and expected-seed-span (= expected-seed-span (:span seed)))
           (= (:raw form-record) (get-in seed [:reader-origin :raw-excerpt]))
           (= (:kind form-record)
              (get-in seed [:reader-origin :raw-form-kind]))
@@ -193,8 +193,7 @@
     (let [integrity-report
           (or integrity-report
               (invoke :c3-c2-reader-integrity-report c2-artifact))
-          forms-by-id
-          (into {} (map (juxt :form-id identity) (:form-tree c2-artifact)))
+          forms-by-id (c3-form-index c2-artifact)
           payload-record (get forms-by-id (first (:children form-record)))
           literal-record
           (first (filter #(= (:form-id form-record) (:form-id %))

@@ -2,12 +2,7 @@
 
 (defn p15-s23-closed-core-persistent-aliasing-valid?
   [node]
-  (let [ownership (:ownership node)
-        operands (:operands node)]
-    (and (= :persistent-immutable-value (:model ownership))
-         (= :shared (:shareability ownership))
-         (= :immutable-sharing (:alias-policy ownership))
-         (= :forbidden (:mutation ownership)))))
+  (ownership/persistent-aliasing-valid? node))
 
 (def p15-s23-closed-core-persistent-ownership-common-keys
   #{:model :role :storage :shareability :alias-policy :mutation
@@ -16,43 +11,19 @@
 
 (defn p15-s23-closed-core-persistent-ownership-expected-keys
   [node managed?]
-  (let [ownership (:ownership node)
-        extras
-        (case (:source-operation node)
-          :local #{:binding-node-id}
-          :let-binding #{:value-node-id}
-          :if #{:incoming-node-ids}
-          :do #{:result-node-id}
-          :let #{:result-node-id}
-          :function #{:result-node-id :result-disposition}
-          :str #{:provider-id :lifetime}
-          #{})
-        extras
-        (if managed?
-          (set/union extras #{:provider-id :lifetime})
-          extras)]
-    (set/union p15-s23-closed-core-persistent-ownership-common-keys
-               extras)))
+  (ownership/persistent-ownership-expected-keys p15-s23-closed-core-persistent-ownership-common-keys node managed?))
 
 (defn p15-s23-closed-core-persistent-ownership-schema-valid?
   ([node]
    (p15-s23-closed-core-persistent-ownership-schema-valid?
     node (= :str (:source-operation node))))
   ([node managed?]
-   (= (p15-s23-closed-core-persistent-ownership-expected-keys
-       node managed?)
-      (set (keys (:ownership node))))))
+   (ownership/persistent-ownership-schema-valid?
+    #'p15-s23-closed-core-persistent-ownership-expected-keys node managed?)))
 
 (defn p15-s23-closed-core-expected-managed-node-ids
   [nodes]
-  (reduce
-   (fn [managed node]
-     (let [managed?
-           (or (= :str (:source-operation node))
-               (some managed
-                     (p15-s23-closed-core-forwarded-value-node-ids node)))]
-       (cond-> managed managed? (conj (:node-id node)))))
-   #{} nodes))
+  (ownership/expected-managed-node-ids #'p15-s23-closed-core-forwarded-value-node-ids nodes))
 
 (defn p15-s23-closed-core-operation-shape-valid?
   [node node-by-id]

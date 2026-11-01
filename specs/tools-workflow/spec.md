@@ -9,7 +9,7 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 The canonical twelve service outcomes: formatter, linter, language server, debugger, REPL, IR explorer, profiler, documentation generator, development server, registry view, safety explorer and AI development tooling.
 
-Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/tools.md). Language rules stay in their retained contracts; implementation tasks stay in that roadmap. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
+Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap](../../docs/component-roadmaps/tools.md). Language rules stay in their retained contracts; implementation service records are edited only in [tasks.md](tasks.md#implementation-tasks), with direct roadmap links to the task ledger. This is workflow migration, not a rewrite of normative specifications or a new implementation result.
 
 [Inventory](../../docs/document-inventory.json) entries routed for this component are listed below as reviewable navigation, not proof of semantic conformance or exclusive ownership. The routing proposal must be reconciled centrally; cross-component links are legitimate.
 
@@ -35,7 +35,7 @@ Adopt a four-artifact Spec Kit workflow around the [canonical component roadmap]
 
 ### US1 - Find and execute the next canonical slice
 
-A contributor starts here, follows plan.md to the existing task source, selects a finite owned slice and records actual validation in its implementation evidence. Acceptance: all four artifacts and retained-contract/task links resolve; no implementation checklist is copied. Rejection: a missing target, substituted normative authority, fabricated passing result or copied implementation ledger blocks workflow acceptance.
+A contributor starts here, follows plan.md to the existing task source, selects a finite owned slice and records actual validation in its implementation evidence. Acceptance: all four artifacts and retained-contract/task links resolve; no second editable implementation checklist exists. Rejection: a missing target, substituted normative authority, fabricated passing result or duplicate editable implementation ledger blocks workflow acceptance.
 
 ### US2 - Distinguish workflow adoption from product completion
 
@@ -43,7 +43,7 @@ A reader sees preparation, independent review and integration separately in task
 
 ## Scope and compatibility
 
-Own only `specs/tools-workflow/{spec.md,plan.md,tasks.md,evidence.md}`. No compiler/runtime source, existing contract, shared roadmap, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
+Own `specs/tools-workflow/{spec.md,plan.md,tasks.md,evidence.md}`. No compiler/runtime source, existing contract, shared helper, historical pilot, protocol ID or permission changes. No Specify CLI execution or automatic discovery is claimed.
 
 ## Evidence and outcome ownership
 

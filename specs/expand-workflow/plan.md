@@ -1,60 +1,75 @@
-# Implementation plan: Expand workflow migration
+# Implementation plan: Expand task authority
 
-Spec: [spec.md](spec.md) | Owner: Frontend Spec Kit migration maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Spec: [spec.md](spec.md) | Owner role: compiler expand maintainer.
+Input revision: `023ec47d86004fc829ae7dc5753b715ca4a653dc`.
 
 ## Contract alignment
 
 Follow the [constitution](../../.specify/memory/constitution.md),
 [development verification](../../docs/development-verification.md),
-[compiler architecture phase](../../docs/phase-06-compiler-architecture/README.md),
-and [owning contract](../../docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md). This is documentation/workflow migration,
-not a semantic contract amendment or authoritative compiler migration.
+[compiler architecture phase](../../docs/phase-06-compiler-architecture/README.md)
+and [owning contract](../../docs/phase-06-compiler-architecture/083-c4-macro-expansion-engine-design.md).
+Only task editing authority changes; compiler and language semantics do not.
 
 ## Canonical work and handoffs
 
-- Implementation work: [expand/1 through expand/5 in the owning table](../../docs/component-roadmaps/expand.md#current-evidence-and-remaining-work).
-- Completion criteria: [owning acceptance checklist](../../docs/component-roadmaps/expand.md#acceptance-criteria-yesno).
+- Implementation work: [five authoritative records](tasks.md#implementation-tasks).
+- Roadmap navigation: [sole task ledger](tasks.md#implementation-tasks).
+- Release criteria: [owning acceptance checklist](../../docs/component-roadmaps/expand.md#acceptance-criteria-yesno).
 - Overall composition: [integration outcomes](../../docs/component-roadmaps/README.md#integration-outcomes).
 - Input: Verified syntax, macro versions, namespace context and explicit build grants/replay inputs.
 - Output: Expanded syntax, trace, generated origins, capture/safety declarations and cache identity.
 
-Syntax schema and macro binding records are required inputs; declared module artifacts support lookup before full Resolve or Build release.
-
-Expansion preserves hygiene, declared effects and provenance; generated programs still require the same downstream semantic checks as handwritten programs.
-
-The canonical table provides the exact task titles, status and exit evidence.
-Do not reproduce its rows or maintain a second component completion count here.
-The component owner chooses an implementation slice from that table and updates
-its evidence there; this package remains the workflow/navigation entry point.
+Syntax schema and macro binding records are required inputs. Declared module
+artifacts support lookup before full Resolve or Build release. Expansion
+preserves hygiene, declared effects and provenance; generated programs require
+the same downstream checks as handwritten programs. Record order adds no
+dependency graph or start prerequisite.
 
 ## Approach and exact files
 
-Prepare only the four files in `specs/expand-workflow/`. `spec.md` states this
-migration's outcome; `plan.md` links canonical work; `tasks.md` tracks migration
-checks; `evidence.md` records observed validation and accepted scope. Shared
-indexes and other packages are owned by their separate migration slices.
+Edit the marked implementation region in `specs/expand-workflow/tasks.md`.
+Preserve all five derived semantic IDs, titles, status and exit evidence.
+Each record has a checkbox; the known ID set prevents row loss/substitution,
+and its ID must agree with the retained phase/title slug. An intentional task-set
+change needs review of that set, not positional renumbering.
 
 ## Validation and evidence
 
-Check that all four artifacts exist, are ASCII, and have resolving relative
-file/heading links. Inspect the diff for duplicate implementation checklists,
-false completion and unauthorized semantic edits. A missing canonical target or
-an absent required artifact must fail validation. Run `git diff --check` and
-the existing structural documentation and roadmap validators.
-Compiler tests are unrun and unnecessary for this documentation-only increment;
-passing documentation checks is not compiler conformance. Record actual commands,
-results and independent review separately in [evidence](evidence.md).
+Run from the repository root:
+
+```bash
+clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
+clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
+clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
+```
+
+Check the five task IDs, statuses, preserved criteria, retained historical
+checkboxes and links. Check the affected Markdown files for ASCII and local
+file/heading links, `git diff --check`, then run integration preflight with the
+exact final base/commit/tree. Record commands and results in [evidence](evidence.md).
+Structural checks are not compiler semantic validation or migration admission.
 
 ## Delivery and remaining work
 
-Publish a draft for the prepared slice. Request independent review of exact
-files and validation evidence; record the reviewed candidate and integration
-receipt without claiming unrun post-merge checks. Deus owns integration.
-Only migration preparation/validation/review/integration is counted here.
+Publish a draft for independent current-head review. Record review separately
+from implementation and integration. Merge only after the maintainer confirms
+independent current-head review. Future implementation updates change the ledger;
+the roadmap remains a direct navigation link. No implementation task closes here.
 
 ## Names, callers and compatibility
 
-`expand-workflow` identifies the subsystem in human-readable terms.
-No callers, runtime APIs, load order, manifests, hashes or protocol IDs change.
-Existing identifier-bearing contract paths are traceability, not new naming.
+Preserve existing anchors, links, explicit IDs and task text; consumers continue
+following the same direct task-ledger link. New semantic tool filenames/namespaces
+follow existing Reader conventions. No caller, load order, runtime API, schema,
+diagnostic, manifest or wire ID changes. No global catalog or dashboard is edited.
+
+## Additional contract interfaces
+
+The [central contract mapping](../../.specify/contract-mapping.md) records
+these scoped dependencies. They add navigation and evidence obligations, not
+implementation tasks, accepted outcomes or new semantic authority. Existing
+task IDs, statuses, acceptance text and historical receipts retain their scope.
+
+- [L16](../../docs/phase-01-core-language/026-l16-alternative-macro-system-contract.md#requirements): Reference-equivalence conformance preserves L4 expansion semantics, hygiene, phase separation, declared/granted/replayable build effects and generated-origin chains. Compiler API retains provider registration; generated forms still undergo ordinary downstream validation.
+- [SAFE12](../../docs/phase-02-safety/041-safe12-macro-safety.md#requirements): Produce hygiene/capture, macro safety declarations, build-effect traces and generated-origin/unsafe metadata; reject declaration/expansion disagreement. Legality retains downstream safety classification and generated code must pass normal checks.

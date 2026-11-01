@@ -42,18 +42,11 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| resolve/1: Resolve lexical positions | Open; partial source evidence above is not closure | Cover locals, loop/recur, vars, macros, types, protocols, constructors, capabilities and special positions with stable identity and legal shadowing. |
-| resolve/2: Validate module boundaries | Open; partial source evidence above is not closure | Resolve aliases/imports/exports against actual module artifacts; reject absent, private or ambiguous names rather than synthesizing unsupported external bindings. |
-| resolve/3: Check graph legality | Open; partial source evidence above is not closure | Record dependency versions and initialization edges; reject unapproved cycles and illegal cross-profile imports, preserving effect/capability metadata. |
-| resolve/4: Publish stable indexes | Open; partial source evidence above is not closure | Serialize scope/binding graphs and invalidate dependent references when export, profile, package or semantic identity changes. |
-| resolve/5: Integrate binding consumers | Open; partial source evidence above is not closure | Connect Core/Types and diagnostic/LSP consumers; demonstrate accepted shadowing and imports plus rejected ambiguity, visibility, cycle and stale-export cases. |
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/resolve-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
-only with the exact source revision, actual invocation/result and relevant
+Close a task only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

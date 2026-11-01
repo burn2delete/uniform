@@ -28,12 +28,9 @@ Build or Release system is introduced.
 
 ## Remaining tasks and evidence
 
-| Task (all open) | Evidence baseline | Closing evidence |
-| --- | --- | --- |
-| Reconcile stage carriers with canonical record schema | [Base carrier](../../bootstrap/clojure/src/gravity/diagnostics.clj), [records](../../bootstrap/clojure/src/gravity/c15_diagnostics/records.clj) | Record/schema parity fixtures from each producer, including malformed-record rejection |
-| Preserve primary/related/generated origins and stable order | [Projection](../../bootstrap/clojure/src/gravity/c15_diagnostics/projection.clj) | Macro and optimized-source diagnostics with original and generated locations |
-| Close text/JSON/redaction and explain contracts | [CLI presentation](../../bootstrap/clojure/src/gravity/cli/diagnostic_presentation.clj) | Golden text/JSON equivalence, secret redaction and known-ID explanation |
-| Integrate runtime/build/editor consumers without rule drift | [Tooling contracts](../phase-13-tooling-and-developer-experience/README.md) | Same underlying diagnostic identity across public consumers and failure paths |
+Implementation task authority: [Spec Kit ledger](../../specs/diag-workflow/tasks.md#implementation-tasks).
+
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/diag-workflow/tasks.md#implementation-tasks).
 
 The base carrier owns only construction/throwing of bootstrap ExceptionInfo;
 it explicitly excludes rule catalogs, schema, identity, ordering and rendering.

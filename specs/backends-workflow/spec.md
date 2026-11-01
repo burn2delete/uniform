@@ -1,14 +1,18 @@
-# Feature specification: Backends workflow migration
+# Feature specification: Backends family task authority
 
-Status: prepared; review and integration pending.
-Migration owner: backend workflow migration owner. Component owner role: backend family maintainers named in the canonical portfolio.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Status: task-authority candidate; independent review and integration pending.
+Owner roles: backend family maintainers named in the canonical portfolio.
+Input revision: `a6a324bb48cd07812e97fee2911887f9dbd84092`.
 
 ## Purpose and canonical contracts
 
-Adopt the repository's Spec Kit artifact workflow for the Backends component
-without copying its normative semantics or creating a second implementation ledger.
-[Component release outcome](../../docs/component-roadmaps/backends.md#release-outcome) and [Backends canonical remaining work](../../docs/component-roadmaps/backends.md#release-outcome) retain authority over implementation completion.
+Make [tasks.md](tasks.md#implementation-tasks) the sole editable authority for
+the existing fifteen keyed family Remaining tasks blocks. The
+[portfolio roadmap](../../docs/component-roadmaps/backends.md#release-outcome)
+retains family headings, keys, contracts, outcomes, ownership and all portfolio
+boundaries. The roadmap links directly to the sole task ledger. No
+compiler/backend implementation changes.
+
 The following contracts remain canonical and are linked, not replaced:
 
 - [B1 - Backend Interface Specification](../../docs/phase-07-backend-architecture/098-b1-backend-interface-specification.md)
@@ -32,47 +36,54 @@ it is not an additional numbered backend contract or a provider-execution claim.
 
 ## User scenarios and acceptance
 
-### US1 - Find one authoritative path from work to evidence
+### US1 - Edit a real family task block once
 
-A maintainer starts here, follows plan.md to the existing remaining tasks and
-acceptance criteria, and records the exact implementation evidence there.
-Acceptance: all four package artifacts exist, every local link and anchor
-resolves, ownership/dependencies are explicit, and no implementation task is
-duplicated or marked complete merely by this migration. A missing contract,
-broken task link or unsupported completion claim rejects package acceptance.
+Use the fifteen literal backend-* keys already present in the roadmap as grouped
+record identities. Preserve each complete Remaining tasks paragraph, including
+its acceptance questions, inspected evidence limits, decision and integration
+context. These are existing family-level blocks, not newly numbered individual
+clauses or a new task namespace. All fifteen remain Open and unchecked.
 
-### US2 - Preserve the component boundary
+The sole task ledger retains the original keys, acceptance text and history; the roadmap links directly to it. No second editable task source remains.
 
-The portfolio contains independent family outcomes. Only targets actually consumed by the selected compiler recipe gate that release. No backend may legalize rejected source semantics; unavailable target execution remains open, not passed.
-Acceptance: review confirms these boundaries agree with the linked roadmap.
-Changing a target, grant, semantic contract or release claim requires its own
-implementation decision and evidence, not a checkbox in this package.
+### US2 - Preserve status and release boundaries
+
+Keep the complete historical migration task file frozen outside the parsed
+region. Its checkboxes do not indicate backend completion. Checkbox/Accepted;
+consistency remains explicit; actual immutable owner evidence and independent
+semantic review remain required. A non-Open record retains an explicit local
+status and neutral summary instead of a false all-open banner. Family release
+acceptance remains separately open; no portfolio acceptance or percentage is
+computed from record counts.
 
 ## Scope and compatibility
 
-Owned files are only `specs/backends-workflow/{spec,plan,tasks,evidence}.md`.
-Existing contracts, component/phase tasks, six earlier feature packages,
-source code, tests, CLI assets and runtime behavior remain unchanged.
-This is artifact workflow migration, not component implementation, wholesale
-contract replacement, external Specify CLI execution or automatic skill discovery.
+Own the Backends roadmap and four workflow artifacts. Preserve all fifteen task
+paragraphs and literal keys, entire original roadmap wording,
+B1-B14 and AI references, full historical tasks suffix and reviewed Additional
+contract interfaces appendix from plan blob
+`1b2a18bbc06d4379f7373c3bdaa619de7f89631a`. Shared helpers, other packages,
+mapping artifacts, normative contracts and compiler/backend source/tests remain
+unchanged.
 
 ## Evidence and outcome ownership
 
-The migration owner prepares and checks artifacts. The component role retains
-semantic ownership; this package does not assign an individual implementation
-owner. An independent reviewer accepts exact package evidence; Deus owns
-integration. See [evidence](evidence.md) for prepared, checked, reviewed and
-integrated states, kept separate from component acceptance.
+The named family roles retain semantic ownership. The selected staged Linux
+LLVM candidate stays distinct from broader families and their actual target
+matrices. A development fixture cannot close a whole contract. Missing or
+unavailable execution remains open. Shared emission/conformance outcomes do
+not duplicate selected-candidate Lower/Emit tasks. No provider, device, domain
+or backend execution is authorized by this workflow. See [evidence](evidence.md).
 
 ## Unresolved items
 
-Independent package review and main integration remain pending. Existing
-component decisions and open implementation evidence remain in the canonical
-roadmap; no new generic approval gate is introduced.
+All family implementation and release outcomes remain open. The checked-in keys
+establish family identity; they do not establish identities of external dashboard
+objects or separately accepted semicolon clauses. This migration makes no such
+identity or completion claim. Task text remains in the sole editable ledger.
 
 ## Implementation naming review
 
-`backends-workflow` identifies the subsystem and purpose. No new implementation
-names or protocol identifiers are introduced. Follow the
-[semantic naming rule](../../.specify/semantic-names.md); legacy planning IDs
-remain traceability metadata only.
+`backends-workflow` names subsystem and behavior. Follow the
+[semantic naming rule](../../.specify/semantic-names.md); contract numbers and
+historical source paths remain traceability, while compatibility IDs stay intact.

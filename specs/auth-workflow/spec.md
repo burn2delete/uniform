@@ -1,57 +1,64 @@
-# Feature specification: Auth workflow migration
+# Feature specification: Auth implementation workflow
 
-Status: prepared; independent review and integration pending.
-Migration owner: checked-IR documentation workstream. Component owner role: capability and artifact-trust maintainer; person unassigned. Integration: Deus.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Status: task-authority candidate; independent review and integration pending.
+Owner role: capability and artifact-trust maintainer.
+Input revision: `846644db7402c26a421eb7afd52615d52f145590`.
 
 ## Purpose and canonical contracts
 
-Trace explicit grant/provider validation and artifact-trust interfaces without treating effects, signatures or manifests as grants.
-This package adopts the repository-local Spec Kit artifact workflow for the
-[Auth component](../../docs/component-roadmaps/auth.md); it does not replace or revise its normative contracts.
-The [plan](plan.md#contract-alignment) names the retained contract references.
-The [canonical implementation tasks](../../docs/component-roadmaps/auth.md#remaining-tasks-and-evidence) remain the sole implementation task list.
+Move the five existing Auth implementation records to a single editable
+[Spec Kit ledger](tasks.md#implementation-tasks). Effects, grants and artifact
+trust remain distinct. Signing implementations and custody stay with
+Build/Release; a signature or manifest does not mint a grant. The
+[component roadmap](../../docs/component-roadmaps/auth.md) retains its
+acceptance criteria, dependencies and direct task-ledger link. The
+[plan](plan.md#contract-alignment) preserves all contract navigation. Normative
+contracts and compiler semantics do not change.
 
 ## User scenarios and acceptance
 
-### US1 - Find the next component task without competing status
+### US1 - Find and update a real implementation task
 
-A maintainer opens this package, follows the canonical task and acceptance links,
-and selects an actual component task there. The workflow must not create a second
-implementation checklist or close any canonical task from artifact presence.
+Each existing component/heading/title semantic ID identifies one preserved task
+in the sole ledger. Titles, evidence baselines, statuses and closing evidence
+remain there, and the roadmap links directly to those records. Checkbox and
+Accepted; status must agree. Semantic acceptance still requires an independently
+reviewed immutable receipt; navigation cannot grant it.
 
-### US2 - Distinguish migration evidence from compiler acceptance
+### US2 - Preserve evidence provenance and historical progress
 
-A reviewer can identify the source revision, linked contracts, changed files,
-validation and pending review/integration in [evidence](evidence.md). An absent
-compiler receipt remains unassessed, not passed. A broken link, unsupported
-completion claim or altered normative meaning rejects this migration slice.
+Relative links resolve from their actual document locations to the same existing
+repository files. The runtime-enforcement and provider-contract links remain
+rebased in the ledger with their original targets and spelling. Absolute HTTPS
+receipts remain supported. The original
+migration ledger remains a frozen suffix outside the implementation region; its
+checkboxes do not indicate implementation completion.
 
 ## Scope and compatibility
 
-Own only `specs/auth-workflow/{spec.md,plan.md,tasks.md,evidence.md}`.
-No compiler, runtime, normative contract, shared index or canonical roadmap is
-changed. Existing diagnostic, schema and wire IDs stay intact. No restricted
-execution is performed or authorized by this package. No project accounting
-limits, credentials, schedules or new approval gates are introduced.
+Own the Auth roadmap and four workflow artifacts. Existing component data and
+link policies are unchanged. Compiler source,
+compiler tests, dashboard and normative contracts are unchanged. No external
+Specify CLI, automatic discovery or overall completion percentage is claimed.
 
 ## Evidence and outcome ownership
 
-The documentation owner prepares and validates artifacts; an independent reviewer
-accepts the exact candidate; Deus coordinates integration. The component role
-retains semantic acceptance. Hosted capability projections explicitly lack grant/provider-trust, proof and release authority. Workflow artifacts do not change credentials, tool permissions or trust roots.
-Full component implementation, release, self-hosting and seed retirement are
-not established by this documentation migration.
+The component maintainer retains semantic acceptance authority. Independent
+review and integration are separate from local validation. Hosted capability
+views lack grant/provider-trust, proof and release authority. This documentation
+changes no credentials, permissions or trust roots. See [evidence](evidence.md)
+for observations and limits.
 
 ## Unresolved items
 
-Independent document review and merge receipt are pending. A named component
-implementation owner remains unassigned in the canonical roadmap. That unknown
-does not block preparing linked documentation. Contract routing in the plan is
-a navigation proposal; it does not assign exclusive semantic ownership.
+All five implementation outcomes and component release acceptance remain open.
+Workflow artifacts and structural validation establish no compiler completion,
+self-hosting or seed retirement. Grant intersection, attenuation, revocation
+and phase/lifetime checks must still be enforced at real consuming boundaries.
 
 ## Implementation naming review
 
-The semantic directory `auth-workflow` follows
-[naming guidance](../../.specify/semantic-names.md). Contract IDs occur only in
-traceability. No implementation namespace, legacy name or compatibility ID is renamed.
+`auth-workflow` and its component roadmap name the subsystem and behavior. Existing semantic
+IDs and contract references remain compatible. Follow the repository's
+[semantic naming guidance](../../.specify/semantic-names.md); no legacy rename
+is part of this change.

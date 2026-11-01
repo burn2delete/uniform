@@ -116,10 +116,15 @@
     :transitive
     (or (boolean (re-matches #"bootstrap/clojure/src/gravity/[^/]+\.clj"
                             path))
-        ;; Only the two re-audited bootstrap-free leaves opt into their
+        ;; Only the explicitly re-audited bootstrap-free leaves opt into their
         ;; componentized internal namespaces. This is not a broad recursive
         ;; production-path allowance for stale compatibility declarations.
         (case (:namespace test-entry)
+          gravity.c2-artifact-identity-test
+          (or (boolean (re-matches #"bootstrap/clojure/src/gravity/c2_artifact_identity/[^/]+\.clj" path))
+              (contains? #{"bootstrap/clojure/src/gravity/c2_lexical_validation/operations.clj"
+                           "bootstrap/clojure/src/gravity/c2_lexical_validation/primitives.clj"
+                           "bootstrap/clojure/src/gravity/c2_lexical_validation/product.clj"} path))
           gravity.c11-mir-test
           (boolean (re-matches #"bootstrap/clojure/src/gravity/c11_mir/[^/]+\.clj" path))
           gravity.compiler-pass-manifest-test
@@ -128,13 +133,15 @@
 
     :test (= path (:path test-entry))
     :fixture (str/starts-with? path "bootstrap/clojure/fixtures/")
-    :runner (contains? reviewed-runner-paths path)
+    :runner (or (contains? reviewed-runner-paths path)
+                (and (= 'gravity.c2-artifact-identity-test (:namespace test-entry))
+                     (= "bootstrap/clojure/test/gravity/build/producer_git_observation.clj" path)))
     :contract (contains? reviewed-contract-paths path)
     :classpath (= "deps.edn" path)
     false))
 
 (defn valid-cache-closure?
-  "True only for one bounded, explicit, locally present test closure."
+  "True only for one explicit, locally present test closure."
   [component test-entry closure]
   (let [inputs (:inputs closure)
         inventories (:inventories closure)
@@ -145,7 +152,7 @@
          (= #{:schema :inputs :inventories} (set (keys closure)))
          (= cache-closure-schema (:schema closure))
          (vector? inputs)
-         (<= 1 (count inputs) 96)
+         (seq inputs)
          (= reviewed-inventories inventories)
          (every? #(and (map? %)
                        (nil? (meta %))

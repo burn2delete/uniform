@@ -42,18 +42,11 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| types/1: Solve core constraints | Open; partial source evidence above is not closure | Implement literal, binding, function/application, branch, collection and error-result constraints with actionable mismatch diagnostics. |
-| types/2: Check declared abstractions | Open; partial source evidence above is not closure | Validate generics, protocols/dispatch, records and schema-derived types against their declarations and resolved identities. |
-| types/3: Make dynamic boundaries explicit | Open; partial source evidence above is not closure | Require checked casts and representability/numeric conversions where specified; reject implicit unsafe narrowing and unsupported profile-dependent dynamic behavior. |
-| types/4: Preserve and invalidate facts | Open; partial source evidence above is not closure | Serialize type solutions and layout requirements with source/profile/ownership/effect references; invalidate on changed nodes, bindings or contracts. |
-| types/5: Integrate typed core | Open; partial source evidence above is not closure | Feed Effects and MIR prerequisites from actual solutions, with accepted inferred/declared cases and rejected unsatisfied, stale and illegal-conversion cases. |
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/types-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
-only with the exact source revision, actual invocation/result and relevant
+Close a task only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

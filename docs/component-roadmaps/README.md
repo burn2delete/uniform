@@ -229,3 +229,45 @@ not a metadata-only orchestration record. Only extension code actually loaded
 by that closure adds [Plugin Host](compiler-api.md#plugin-host-finite-remaining-tasks)
 as a selected-release prerequisite; full plugin support remains a separate
 wider-language outcome.
+
+## Cleanup completion boundaries
+
+This existing index is the sole shared navigation for the six cleanup outcomes.
+The detailed contracts below own their own finite IDs and acceptance; this table
+does not duplicate their task status or the component ledgers. A merged planning
+document is not implementation completion. Each outcome remains accountable for
+its entire declared backlog, actual evidence, independent review and integration.
+
+| Outcome / stable IDs | Accountable outcome role | Sole detailed backlog and acceptance contract |
+| --- | --- | --- |
+| Accounting removal / ACC-01 through ACC-13 | Accounting removal maintainer, after existing source-writer handoff | [Accounting tasks](../../specs/accounting-removal/tasks.md) and [acceptance contract](../../specs/accounting-removal/spec.md), integrated with the finite runtime increment in [#433](https://github.com/burn2delete/uniform/pull/433). The full accounting outcome remains open. Existing source-writer reservations and independently required guard classifications remain in force. |
+| Verification reuse / RV1, RV2, RV2a, RV3, RV4 | Verification reuse maintainer | [Detailed backlog and acceptance](../verification-reuse.md); [#432](https://github.com/burn2delete/uniform/pull/432) integrated finite Reader identity reuse and catalog correction. The broader reuse outcome remains open, and real fresh verification remains required. |
+| Coordination mechanics / CO1 through CO4 | Result handoff maintainer | [Detailed backlog and acceptance](../result-handoff.md#finite-audited-backlog); [#428](https://github.com/burn2delete/uniform/pull/428) integrated the finite handoff tooling. Extraction does not grant acceptance or retry authority. |
+| End-to-end ownership / OWN-01 through OWN-06 | Cross-component ownership maintainer | [Interface ownership contract](../end-to-end-contracts.md) owns exact producer/consumer joins and unresolved ownership; [#429](https://github.com/burn2delete/uniform/pull/429) integrated the documentation only. No duplicate compiler implementation checklist. |
+| Assurance separation / AS1 through AS4 | Assurance boundary maintainer | [Assurance boundaries](../assurance-boundaries.md) owns detailed acceptance; [#431](https://github.com/burn2delete/uniform/pull/431) integrated the finite runner correction. Construction, independent validation, resource/capture containment and actual admission remain distinct responsibilities. |
+| Finite dependencies and closure / FIN-01 through FIN-05 | Dependency and completion-boundary maintainer | [Finite acceptance dependencies](../acceptance-dependencies.md#finite-fin-backlog), with [staged full-language gates](../full-language-implementation-gap-map.md#dependency-stages-and-finite-acceptance). |
+
+Unpublished locators above are explicit owner reservations, not claims that the
+files exist on main. Replace them with their accepted public links when the
+same owner publishes; do not recreate or take over that work. A pending or denied
+publication remains a blocker for that owner's deliverable. No actor or route
+substitution is authorized by this navigation.
+
+The overall cleanup closes only when all six detailed outcome contracts are
+satisfied and integrated with their tested boundaries. A role assignment alone
+does not satisfy a missing implementation owner or producer. The dependency
+owner audits finite/circular definitions; the ownership owner resolves actual
+source responsibility. Neither may discard hard remaining work, sum overlapping
+views, reopen unchanged accepted evidence, or infer completion from tests/PR
+counts. The 240 language contracts and the separate full-language and release
+gates remain in force. C12 execution remains restricted; the unresolved original
+C7 publication operation is not retried or transferred by these contracts.
+
+The supporting task-authority migration has a fixed population: the registered
+component pages and all their existing named finite task sections, including
+Compiler API suboutcomes, backend families, tools, domains and selected/wider
+runtime/library outcomes. Its existing owner continues the transfers and
+links. The [finite migration stopping rule](../acceptance-dependencies.md#finite-task-authority-migration-population)
+requires one editable task source with direct roadmap links for every section,
+then stops. It adds no endless successor requirement and
+cannot close the implementation those rows describe.

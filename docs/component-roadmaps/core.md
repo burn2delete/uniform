@@ -42,18 +42,11 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| core/1: Lower core forms | Open; partial source evidence above is not closure | Implement quote, if, do, let, fn, loop/recur, def, var, set!, try/throw and match with specified evaluation order and shape validation. |
-| core/2: Preserve binding structure | Open; partial source evidence above is not closure | Represent lexical identity, closure captures, recursion and mutation explicitly; attach resolved references before downstream typed-core acceptance. |
-| core/3: Desugar without semantic loss | Open; partial source evidence above is not closure | Lower surface conveniences while recording source/generated origins, effects, capabilities, metadata and unsafe declarations. |
-| core/4: Verify and serialize | Open; partial source evidence above is not closure | Reject malformed node graphs, illegal control positions, unresolved required bindings and lost origins; round-trip valid modules. |
-| core/5: Integrate semantic analyses | Open; partial source evidence above is not closure | Use the same core interface for handwritten/generated input and feed Types/Effects with accepted control-flow programs and rejected malformed/illegal core fixtures. |
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/core-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
-only with the exact source revision, actual invocation/result and relevant
+Close a task only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

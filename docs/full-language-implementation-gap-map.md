@@ -32,6 +32,14 @@ stage or slice gates and do not advance the `0/240` full-language count or
 prove a seedless release. The canonical report is
 `docs/artifacts/full-language/reports/full-language-coverage-matrix-report.md`.
 
+The default output of `clojure -M tools/validate_full_language_roadmap.clj`
+states structural claim validation separately from that dated,
+non-authoritative snapshot: it prints the observation date and separates public
+fixture reachability from completion admission. The reported `0/240` is not a
+current execution measure because v1 completion admission is disabled. The
+command does not refresh the dated coverage report or infer completion from
+fixture counts; `--self-test` remains the focused overclaim guard.
+
 ## Completion Rule
 
 Do not mark any full-language task complete unless all of these are true:
@@ -202,6 +210,52 @@ The main gaps are:
   the self-hosted public binary.
 
 ## Global Work Order
+
+### Dependency stages and finite acceptance
+
+The phase `Dependencies:` declarations below identify required interfaces and
+executable composition evidence. They do not require every upstream task's
+final checkbox before construction or integration can begin. Reading them as
+final-checkbox prerequisites creates the actual strongly connected sets
+documented in [the dependency audit](acceptance-dependencies.md#source-grounded-cycles).
+Use the following stages for every existing task ID; the ID, complete task
+scope, proof gates and recorded task status remain unchanged.
+
+| Stage | Required evidence and owner | Prerequisites |
+| --- | --- | --- |
+| Interface | Owning component's normative input/output, semantic facts, diagnostics and fixture contract. A document is sufficient only for this construction interface. | Existing canonical contracts; no downstream task completion. |
+| Implementation | Owning implementation executes real accepted and rejected cases for its declared increment. Pinned fixtures may stand in for unfinished producers only at this stage, with that limitation explicit. | Its interface and the declared dependency interfaces. |
+| Composition | The consuming component executes actual compatible producer implementations for every declared dependency on the exact candidate closure, independently checks required facts and rejects relevant substitutions, stale identities and malformed products. | Its implementation and the dependency implementations; a producer's final release checkbox is not the evidence. |
+| Acceptance | Independent review accepts the task's entire original scope and unchanged proof gates, with exact source/compiler/fixture/target/runtime identities and residual boundaries. Partial implementation or composition leaves the task open. | Its composition and all task-specific final proof requirements. |
+
+These are evidence stages, not four successor implementation tasks or a new
+status ledger. Every original dependency survives at composition. An interface,
+synthetic carrier, saved report, structural validator or historical receipt
+cannot satisfy that stage. Where an upstream task remains open, acceptance
+must independently establish the particular executable upstream contract
+consumed by this task; uncertainty leaves acceptance NOT ESTABLISHED.
+
+Conformance-harness construction (`FL-P14-T01`) consumes declared fixture and
+diagnostic interfaces. Its full-population acceptance still requires actual
+feature execution; features requiring the harness consume its executable
+implementation, not a claim of already completed full conformance.
+`FL-P14-T02` runner implementation is available to the next-stage rebuild;
+its final self-hosted-public-binary proof is evaluated on that actual rebuilt
+candidate, alongside `FL-P15-T02` and the final Phase 18 gates. None of these
+tasks closes on the strength of runner construction alone.
+
+Likewise, Backend/Runtime, Schema/Build, Math/Compiler/Performance and
+Governance/Release each construct against explicit upstream interfaces, then
+verify the real joint candidate. Governance rejection rules must execute before
+final release acceptance. Public-binary and reproducible-rebuild claims still
+require the existing final suite, diagnostics, provenance, signing, SBOM,
+review and genuine seed-retirement evidence. No safety check is postponed.
+
+The read-only `tools/acceptance_dependencies.clj --check` command extracts the
+36-task dependency graph and the separate 30-milestone completion graph,
+reports their strongly connected sets, and checks the staged prerequisite
+graph. It verifies structure only, never execution or completion. See the
+[finite cleanup contract](acceptance-dependencies.md) for its tested boundary.
 
 Workers should execute one task at a time in dependency order. If a later phase
 needs an early slice, it may proceed only against documented interfaces and may

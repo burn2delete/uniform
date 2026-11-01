@@ -1,61 +1,69 @@
-# Feature specification: Lower workflow migration
+# Feature specification: Lower implementation workflow
 
-Status: prepared; review and integration pending.
-Migration owner: backend workflow migration owner. Component owner role: compiler/backend maintainer.
-Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
+Status: task-authority candidate; independent review and integration pending.
+Owner role: compiler/backend maintainer.
+Input revision: `b394258a06950bcc69d57cae99f9ff6b582d0ad8`.
 
 ## Purpose and canonical contracts
 
-Adopt the repository's Spec Kit artifact workflow for the Lower component
-without copying its normative semantics or creating a second implementation ledger.
-[Component release outcome](../../docs/component-roadmaps/lower.md#release-outcome) and [Lower canonical remaining work](../../docs/component-roadmaps/lower.md#current-evidence-and-remaining-work) retain authority over implementation completion.
-The following contracts remain canonical and are linked, not replaced:
-
-- [C14 - Target Lowering Architecture](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md)
+Make [tasks.md](tasks.md#implementation-tasks) the sole editable authority for
+the five existing Lower implementation outcomes. The
+[component roadmap](../../docs/component-roadmaps/lower.md) retains its selected
+release target, producer/admission requirements, accounting, compatibility and
+acceptance wording with a direct task-ledger link. Retain direct navigation to its
+[release outcome](../../docs/component-roadmaps/lower.md#release-outcome) and
+[remaining work](../../docs/component-roadmaps/lower.md#current-evidence-and-remaining-work).
+The [C14 contract](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md)
+remains normative. The reviewed [additional interfaces](plan.md#additional-contract-interfaces)
+retain their exact mapped text and authority boundaries.
 
 ## User scenarios and acceptance
 
-### US1 - Find one authoritative path from work to evidence
+### US1 - Find one editable implementation task
 
-A maintainer starts here, follows plan.md to the existing remaining tasks and
-acceptance criteria, and records the exact implementation evidence there.
-Acceptance: all four package artifacts exist, every local link and anchor
-resolves, ownership/dependencies are explicit, and no implementation task is
-duplicated or marked complete merely by this migration. A missing contract,
-broken task link or unsupported completion claim rejects package acceptance.
+Preserve all five component/heading/title semantic IDs, lower/1 through lower/5
+display labels, exact evidence/status and concrete exit criteria in the sole
+task ledger. The roadmap links directly to those records. There is no second
+editable implementation ledger or
+positional renumbering.
 
-### US2 - Preserve the component boundary
+### US2 - Separate workflow delivery from implementation acceptance
 
-Preserve the selected staged Linux LLVM release candidate and distinguish hosted development. MIR acceptance is required; Opt is optional when optimization is not requested. Runtime/provider schemas are negotiated interfaces, not a circular prerequisite for completed releases.
-Acceptance: review confirms these boundaries agree with the linked roadmap.
-Changing a target, grant, semantic contract or release claim requires its own
-implementation decision and evidence, not a checkbox in this package.
+Keep the complete historical migration tasks file frozen outside the parsed
+implementation region. Its checkboxes do not indicate compiler completion. All
+five implementation outcomes remain Open and unchecked. Checking a task requires
+explicit Accepted; status and independently reviewed immutable owner evidence.
+The ledger records status separately from semantic receipt validity. Workflow
+artifacts, metadata and assertion counts do not establish producer, lowering,
+emission or runtime acceptance.
 
 ## Scope and compatibility
 
-Owned files are only `specs/lower-workflow/{spec,plan,tasks,evidence}.md`.
-Existing contracts, component/phase tasks, six earlier feature packages,
-source code, tests, CLI assets and runtime behavior remain unchanged.
-This is artifact workflow migration, not component implementation, wholesale
-contract replacement, external Specify CLI execution or automatic skill discovery.
+Own the Lower roadmap and four workflow artifacts. Preserve complete task history,
+links and all roadmap wording outside additive
+task navigation. Preserve the entire reviewed Additional contract interfaces
+appendix byte-for-byte. Shared helpers, mapping artifacts, other packages,
+compiler/runtime implementation/tests and normative contracts remain unchanged.
 
 ## Evidence and outcome ownership
 
-The migration owner prepares and checks artifacts. The component role retains
-semantic ownership; this package does not assign an individual implementation
-owner. An independent reviewer accepts exact package evidence; Deus owns
-integration. See [evidence](evidence.md) for prepared, checked, reviewed and
-integrated states, kept separate from component acceptance.
+The compiler/backend maintainer retains semantic ownership. Preserve the selected
+staged Linux LLVM release candidate and distinguish hosted development. MIR
+acceptance remains required; Opt is optional when optimization is not requested.
+Runtime/provider schemas remain negotiated interfaces, not a circular requirement
+for completed releases. No target change, proof discharge or producer acceptance
+is granted by this transfer. See [evidence](evidence.md).
 
 ## Unresolved items
 
-Independent package review and main integration remain pending. Existing
-component decisions and open implementation evidence remain in the canonical
-roadmap; no new generic approval gate is introduced.
+All five implementation outcomes and component release acceptance remain open.
+Hosted eligibility metadata is not executable target coverage or valid proof for
+each attribute. Wider backend families retain their separate ownership. This
+migration establishes no compiler/runtime acceptance, component release,
+self-hosting, seed retirement or whole-platform support.
 
 ## Implementation naming review
 
-`lower-workflow` identifies the subsystem and purpose. No new implementation
-names or protocol identifiers are introduced. Follow the
-[semantic naming rule](../../.specify/semantic-names.md); legacy planning IDs
-remain traceability metadata only.
+`lower-workflow` and its component roadmap name the subsystem and behavior. Follow the
+[semantic naming rule](../../.specify/semantic-names.md); compatibility IDs,
+historical planning references and compiler source names remain unchanged.

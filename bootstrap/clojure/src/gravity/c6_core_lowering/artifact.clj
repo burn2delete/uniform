@@ -100,13 +100,18 @@
           :status :complete}
          :rejected-design-coverage rejected-designs
          :diagnostics []}
-        _ (context/invoke-op :c6-lowering-validate!
-                             verification/c6-lowering-validate!
-                             source-path artifact-base)
         capability-proof
         (context/invoke-op :c6-lowering-capability-proof
                            verification/c6-lowering-capability-proof
                            artifact-base)
+        _ (context/invoke-op
+           :c6-lowering-validate!
+           (fn [path _artifact]
+             ;; This is the trusted assembly path: validate the proof computed
+             ;; for this exact artifact-base, without changing public validator
+             ;; semantics or carrying proof state across nested calls.
+             (#'verification/validate-capability-proof! path capability-proof))
+           source-path artifact-base)
         conformance
         {:documents ["C6"]
          :task "P06-D085"
