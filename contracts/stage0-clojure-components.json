@@ -324,6 +324,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/build/pipeline_test.clj", "namespace": "gravity.build.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "release-jar-inventory",
+      "kind": "production-stage-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/release.clj", "namespace": "gravity.release"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00906-p18-t02-source-material.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
+      "test": {"path": "bootstrap/clojure/test/gravity/release/pipeline_test.clj", "namespace": "gravity.release.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "safety-records",
       "kind": "production-stage-helper",
       "owner": "sh-safety",
