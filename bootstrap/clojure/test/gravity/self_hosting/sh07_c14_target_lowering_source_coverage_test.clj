@@ -351,10 +351,10 @@
         build (get by-name 'sh17-build-target-lowering)
         verify (get by-name 'sh17-verify-target-lowering)
         identity (get by-name 'sh17-identity-input)]
-    (is (= 1134 (count gets)))
-    (is (= 1035 (count (filter #(keyword? (nth % 2 nil)) gets))))
-    (is (= 99 (count dynamic)))
-    (is (= {:reference 45 :call 54}
+    (is (= 1545 (count gets)))
+    (is (= 1345 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 200 (count dynamic)))
+    (is (= {:reference 83 :call 117}
            (frequencies (map #(if (symbol? (nth % 2)) :reference :call)
                              dynamic))))
     (is (contains? (symbols-in build) 'sh17-structural-preflight))
