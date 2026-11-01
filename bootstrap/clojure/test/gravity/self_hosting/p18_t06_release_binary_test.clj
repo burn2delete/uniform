@@ -67,6 +67,9 @@
               artifact-file (io/file (str output-path ".gravity-artifact.edn"))
               check-result (run-release root-directory script-file
                                         "check" source)
+              direct-check-result
+              (bootstrap/p18-shell-run
+               ["clojure" "-M:gravity" "check" source])
               run-result (run-release root-directory script-file
                                       "run" source)
               compile-result (run-release root-directory script-file
@@ -74,9 +77,15 @@
                                           output-path)]
           (swap! output-files conj output-file artifact-file)
           (testing (str extension " check")
-            (is (zero? (:exit check-result)))
-            (is (str/includes? (:out check-result)
-                               "gravity stage0 check passed: core.app")))
+            (testing "wrapper forwards the current compiler result"
+              (is (= (:exit direct-check-result) (:exit check-result)))
+              (is (= (:out direct-check-result) (:out check-result)))
+              (is (= (:err direct-check-result) (:err check-result))))
+            (testing "current source remains honestly blocked at its C2 reader boundary"
+              (is (= 1 (:exit check-result)))
+              (is (str/includes? (:err check-result) "C2-HASH"))
+              (is (str/includes? (:err check-result)
+                                 ":exact-regular-pinned-sh03-reader-source"))))
           (testing (str extension " run")
             (is (zero? (:exit run-result)))
             (is (= expected-output (:out run-result))))
