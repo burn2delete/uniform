@@ -120,3 +120,33 @@ self-hosting or seed retirement is claimed. Java filesystem, heap and process
 restrictions remain physical host boundaries. Historical denied Reader/H6/native
 and full-compatibility routes remain unused; admission and migration pins stay
 unchanged.
+
+## CLI launcher main composition
+
+The normal composition uses actual main
+da68cb09ca88710a4a57a14b9d14dc612a743c32/tree
+1a46d2728d826f07d0f555fe9fa52e0ecbad1391. Its four incoming paths add
+the lazy CLI launcher and its tests, select it for the :gravity alias, and
+register launcher tests in the CI runner. All four remain byte-identical
+to main. Stage algorithms, compatibility components, tests and executed
+compiler/runtime/fixture inputs remain conserved from the Release-main
+composition. No source admission or authority changes are introduced.
+
+Fresh ownership/language checks pass45/1118, and fresh-JVM launcher
+checks pass2/32. The actual new :gravity entrypoint emits complete Core
+for both compiler-exact-keys spellings with the explicit
+--development-current-reader flag. A real malformed UTF-8 file exits1,
+emits L1-SOURCE-ENCODING on stderr and emits no artifact on stdout.
+Current-base whole-component conservation uses launcher-main scripts;
+existing complete native/Core comparisons remain tied to their unchanged
+actual source inputs. Prior-base CI remains historical. Exact independent
+acceptance, own CI and clean current-base preflight still gate integration.
+
+The launcher main changes deps.edn, an actual Reader project-identity input.
+A strict initial comparison against the older complete API artifact fails
+because the project-root/source-unit identities and their dependent records
+change. The nonpass is retained in uniform-launcher-main-artifact-verify.log;
+no fields are removed or rewritten to obtain equality. New complete API
+controls use the current manifest and compare against actual CLI output.
+The source-byte hash and semantic Core id remain unchanged. Older full
+artifact comparisons retain only their historical input authority.
