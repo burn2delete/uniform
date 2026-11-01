@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.sh09-body-effect-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
