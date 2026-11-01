@@ -9,6 +9,89 @@
 (def output "target/ci")
 (def runtime-deps "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
 (def semantic-modes #{"static" "contracts" "bootstrap" "macro" "resolution" "checked-core-runtime"})
+(def always-pr-modes #{"static" "contracts"})
+(def stage-order ["bootstrap" "macro" "resolution" "checked-core-runtime"])
+
+;; These are the existing owner boundaries exposed by the CI matrix.  Keep
+;; this table deliberately small: an unlisted path is cross-cutting and must
+;; retain the full matrix rather than being guessed into one stage.
+(def stage-path-prefixes
+  {"bootstrap" ["bootstrap/gravity/src/gravity/reader.gravity"
+                "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
+                "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"
+                "bootstrap/gravity/src/gravity/compiler/l1_c2_surface_syntax_reader.gravity"
+                "bootstrap/gravity/src/gravity/compiler/c3_syntax_object_model.gravity"
+                "bootstrap/clojure/src/gravity/reader.clj"
+                "bootstrap/clojure/src/gravity/reader_primitives.clj"
+                "bootstrap/clojure/src/gravity/reader_cursor.clj"
+                "bootstrap/clojure/src/gravity/reader_host_oracle.clj"
+                "bootstrap/clojure/src/gravity/reader_diagnostic_policy.clj"
+                "bootstrap/clojure/src/gravity/reader_namespace.clj"
+                "bootstrap/clojure/src/gravity/c2_reader_product_projection"
+                "bootstrap/clojure/src/gravity/c2_reader_diagnostics"
+                "bootstrap/clojure/src/gravity/c3_literal_projection"
+                "bootstrap/clojure/src/gravity/c3_reader_expansions.clj"
+                "bootstrap/clojure/src/gravity/c3_reader_integrity"
+                "bootstrap/clojure/src/gravity/c3_reader_integrity.clj"
+                "bootstrap/clojure/src/gravity/c3_syntax_construction"
+                "bootstrap/clojure/src/gravity/c3_syntax_construction.clj"
+                "bootstrap/clojure/src/gravity/c3_syntax_diagnostics"
+                "bootstrap/clojure/src/gravity/c3_syntax_diagnostics.clj"
+                "bootstrap/clojure/src/gravity/c3_syntax_evidence.clj"
+                "bootstrap/clojure/src/gravity/c3_syntax_verification"
+                "bootstrap/clojure/src/gravity/c3_syntax_verification.clj"
+                "bootstrap/clojure/src/gravity/c3_artifact_identity.clj"
+                "bootstrap/clojure/src/gravity/syntax.clj"
+                "bootstrap/clojure/src/gravity/syntax_object_stream.clj"
+                "bootstrap/clojure/src/gravity/syntax_origin.clj"
+                "bootstrap/clojure/test/gravity/reader"
+                "bootstrap/clojure/test/gravity/reader_"
+                "bootstrap/clojure/test/gravity/c2_reader_"
+                "bootstrap/clojure/test/gravity/c3_"
+                "bootstrap/clojure/test/gravity/syntax"
+                "bootstrap/clojure/test/gravity/syntax_"
+                "bootstrap/clojure/test/gravity/bootstrap_compatibility/c3_test.clj"
+                "bootstrap/clojure/test/gravity/self_hosting/sh03_"
+                "bootstrap/clojure/test/gravity/self_hosting/sh04_"
+                "bootstrap/clojure/fixtures/self-hosting/sh-03"
+                "bootstrap/clojure/fixtures/self-hosting/sh-04"]
+   "macro" ["bootstrap/gravity/src/gravity/macro.gravity"
+            "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity"
+            "bootstrap/clojure/src/gravity/macro.clj"
+            "bootstrap/clojure/src/gravity/macro_run_storage.clj"
+            "bootstrap/clojure/src/gravity/macro_expansion"
+            "bootstrap/clojure/src/gravity/c4_macro_evidence.clj"
+            "bootstrap/clojure/test/gravity/macro"
+            "bootstrap/clojure/test/gravity/macro_"
+            "bootstrap/clojure/test/gravity/c4_"
+            "bootstrap/clojure/test/gravity/bootstrap_compatibility/c4_test.clj"
+            "bootstrap/clojure/test/gravity/self_hosting/sh05_"
+            "bootstrap/clojure/test/gravity/self_hosting/macro_run_storage_test.clj"
+            "bootstrap/clojure/fixtures/self-hosting/sh-05"]
+   "resolution" ["bootstrap/gravity/src/gravity/resolution.gravity"
+                 "bootstrap/gravity/src/gravity/compiler/c5_name_resolution_namespace_analyzer.gravity"
+                 "bootstrap/clojure/src/gravity/resolution.clj"
+                 "bootstrap/clojure/src/gravity/c5_name_resolution"
+                 "bootstrap/clojure/src/gravity/c5_name_resolution.clj"
+                 "bootstrap/clojure/test/gravity/resolution"
+                 "bootstrap/clojure/test/gravity/resolution_"
+                 "bootstrap/clojure/test/gravity/c5_"
+                 "bootstrap/clojure/test/gravity/bootstrap_compatibility/c5_test.clj"
+                 "bootstrap/clojure/test/gravity/self_hosting/sh06_"
+                 "bootstrap/clojure/test/gravity/self_hosting/resolution_"
+                 "bootstrap/clojure/fixtures/self-hosting/sh-06"]
+   "checked-core-runtime" ["bootstrap/gravity/src/gravity/checked_core.gravity"
+                           "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
+                           "bootstrap/gravity/src/gravity/compiler/c6_call_arity_legality.gravity"
+                           "bootstrap/gravity/src/gravity/compiler/c6_core_lowering_engine.gravity"
+                           "bootstrap/clojure/src/gravity/checked_core.clj"
+                           "bootstrap/clojure/src/gravity/checked_core"
+                           "bootstrap/clojure/src/gravity/c6_core_lowering"
+                           "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
+                           "bootstrap/clojure/test/gravity/checked_core"
+                           "bootstrap/clojure/test/gravity/c6_"
+                           "bootstrap/clojure/test/gravity/self_hosting/sh07_"
+                           "bootstrap/clojure/fixtures/self-hosting/sh-07"]})
 
 (defn command [heap & args]
   (into ["clojure" (str "-J-Xmx" heap) "-Srepro" "-Sdeps" runtime-deps] args))
@@ -147,11 +230,88 @@
 
 (defn docs-only-record? [{:keys [old-mode new-mode status path]}]
   (and (docs-only-path? path)
+       (not (or (str/starts-with? path "contracts/")
+                (str/starts-with? path "specs/")))
        (= "100644" new-mode)
        (case status
          "A" (= "000000" old-mode)
          "M" (= "100644" old-mode)
          false)))
+
+(defn prefix-path? [path prefix]
+  (and (string? path)
+       (or (= path prefix)
+           (and (str/ends-with? prefix "/")
+                (str/starts-with? path prefix))
+           (and (str/ends-with? prefix "_")
+                (str/starts-with? path prefix))
+           (and (not (re-find #"\.(?:clj|cljc|cljs|edn|gravity)$" prefix))
+                (or (str/starts-with? path (str prefix "/"))
+                    (str/starts-with? path (str prefix ".")))))))
+
+(defn stage-owner [path]
+  (some (fn [stage]
+          (when (some #(prefix-path? path %) (get stage-path-prefixes stage)) stage))
+        stage-order))
+
+(defn stage-closure [stage]
+  (let [index (.indexOf ^java.util.List stage-order stage)]
+    (if (neg? index)
+      []
+      (subvec (vec stage-order) index))))
+
+(defn regular-added-or-modified? [{:keys [old-mode new-mode status]}]
+  (and (contains? #{"A" "M"} status)
+       (= "100644" new-mode)
+       (or (and (= "M" status) (= "100644" old-mode))
+           (and (= "A" status) (= "000000" old-mode)))))
+
+(defn contract-or-spec-path? [path]
+  (and (string? path)
+       (or (str/starts-with? path "contracts/")
+           (str/starts-with? path "specs/"))))
+
+(defn cross-cutting-path? [path]
+  (and (string? path)
+       (or (str/starts-with? path ".github/")
+           (str/starts-with? path "tools/")
+           (str/starts-with? path "bin/")
+           (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
+                        "bb.edn" "shadow-cljs.edn"} path))))
+
+(defn selected-modes [stages]
+  (into always-pr-modes (mapcat stage-closure stages)))
+
+(defn stage-selection [changes]
+  (let [changes (vec changes)
+        paths (mapv :path changes)
+        stages (keep stage-owner paths)
+        unknown-path? (some (fn [path]
+                              (and (not (docs-only-path? path))
+                                   (nil? (stage-owner path))))
+                            paths)]
+    (cond
+      (empty? changes)
+      {:kind :full :reason :no-changes :paths paths}
+
+      (some #(not (regular-added-or-modified? %)) changes)
+      {:kind :full :reason :non-regular-change :paths paths}
+
+      (some contract-or-spec-path? paths)
+      {:kind :full :reason :contract-or-spec-change :paths paths}
+
+      (some cross-cutting-path? paths)
+      {:kind :full :reason :cross-cutting-change :paths paths}
+
+      unknown-path?
+      {:kind :full :reason :unknown-or-cross-stage-path :paths paths}
+
+      :else
+      {:kind :selected
+       :reason :affected-stage
+       :paths paths
+       :stages (vec (distinct stages))
+       :modes (selected-modes stages)})))
 
 (defn docs-only-change? [event base changes]
   (and (= "pull_request" event)
@@ -162,25 +322,51 @@
 (defn pull-request-selection []
   (if (not= "pull_request" (System/getenv "GITHUB_EVENT_NAME"))
     {:kind :full :reason :non-pull-request}
-    (let [base (checkout-base)
-          changes (changed-file-records base)
-          paths (mapv :path changes)
-          clojure-paths (->> changes
-                             (filter #(and (contains? #{"A" "M"} (:status %))
-                                           (or (str/ends-with? (:path %) ".clj")
-                                               (str/ends-with? (:path %) ".edn"))))
-                             (mapv :path))
-          docs-only? (docs-only-change? "pull_request" base changes)]
-      {:kind (if docs-only? :docs-only :full)
-       :reason (if docs-only? :known-documentation-only :non-documentation-change)
-       :base base
-       :paths paths
-       :clojure-paths clojure-paths})))
+    (let [base (checkout-base)]
+      (try
+        (let [changes (changed-file-records base)
+              paths (mapv :path changes)
+              clojure-paths (->> changes
+                                 (filter #(and (contains? #{"A" "M"} (:status %))
+                                               (or (str/ends-with? (:path %) ".clj")
+                                                   (str/ends-with? (:path %) ".edn"))))
+                                 (mapv :path))
+              docs-only? (docs-only-change? "pull_request" base changes)]
+          (merge (if docs-only?
+                   {:kind :docs-only
+                    :reason :known-documentation-only
+                    :modes always-pr-modes}
+                   (stage-selection changes))
+                 {:base base
+                  :paths paths
+                  :clojure-paths clojure-paths}))
+        (catch Exception error
+          ;; A missing or malformed diff must not silently narrow the matrix.
+          ;; Keep the verified base and run every mode; changed-file lint is
+          ;; intentionally omitted because its input was not trustworthy.
+          {:kind :full
+           :reason :path-discovery-failed
+           :base base
+           :paths []
+           :clojure-paths []
+           :selection-error (str error)})))))
 
 (defn skip-for-docs-only? [mode selection]
   (and (contains? semantic-modes mode)
        (= :docs-only (:kind selection))
        (not (contains? #{"static" "contracts"} mode))))
+
+(defn skip-for-stage-selection? [mode selection]
+  (and (= :selected (:kind selection))
+       (contains? semantic-modes mode)
+       (not (contains? (:modes selection) mode))))
+
+(defn selection-error-result [mode selection]
+  (when (and (= "static" mode) (:selection-error selection))
+    {:id "static-selection-discovery"
+     :status :failed
+     :reason :path-discovery-failed
+     :selection-error (:selection-error selection)}))
 
 (defn contract-commands []
   [(script "docs" "tools/validate_gravity_docs.clj")
@@ -223,6 +409,9 @@
                         ["harness-controls" 60 (command "256m" "-M" "tools/ci/run_test.clj")]
                         ["macro-context-controls" 60 (command "256m" "-M" "tools/ci/lint_macro_test.clj")]
                         ["facade-context-controls" 60 (command "256m" "-M" "tools/ci/lint_facade_test.clj")]]
+                       (when (some #{"tools/ci/snapshot.clj" "tools/ci/snapshot_test.clj"} paths)
+                         [["snapshot-controls" 120
+                           (command "256m" "-M" "tools/ci/snapshot_test.clj")]])
                        (when (seq paths)
                          [["changed-clojure-lint" 120
                            (apply command "256m" "-M" "tools/ci/lint.clj" base paths)]])))
@@ -299,15 +488,20 @@
                     (pull-request-selection)
                     {:kind :full :reason :non-semantic-mode})
         skipped? (skip-for-docs-only? mode selection)
+        stage-skipped? (skip-for-stage-selection? mode selection)
         docs-only? (= :docs-only (:kind selection))
-        results (cond
-                  skipped? [{:id (str mode "-docs-only-skip")
-                             :status :skipped
-                             :reason :docs-only-pr
-                             :selection (:kind selection)}]
-                  (and docs-only? (= "static" mode))
-                  (mapv #(apply execute! %) (docs-only-static-commands selection))
-                  :else (mapv #(apply execute! %) (commands-for-selection mode selection)))
+        selection-error (selection-error-result mode selection)
+        results (cond-> (cond
+                          (or skipped? stage-skipped?) [{:id (str mode (if skipped?
+                                                                         "-docs-only-skip"
+                                                                         "-unaffected-skip"))
+                                                         :status :skipped
+                                                         :reason (if skipped? :docs-only-pr :unaffected-stage)
+                                                         :selection (:kind selection)}]
+                          (and docs-only? (= "static" mode))
+                          (mapv #(apply execute! %) (docs-only-static-commands selection))
+                          :else (mapv #(apply execute! %) (commands-for-selection mode selection)))
+                  selection-error (conj selection-error))
         summary (if (= :full (:kind selection))
                   results
                   {:mode mode :selection selection :results results})]
