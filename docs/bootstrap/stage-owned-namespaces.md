@@ -105,6 +105,19 @@ sorted comparator isolation, nil entries, exception identity, late ports and
 authorization before argument evaluation. This adds no admission or canonical
 runtime conformance. Dependency direction follows the Runtime row above.
 
+The [native Effects report extraction](effects-reports-evidence.md) adds
+`native-verifier-report`, `native-capability-proof` and
+`validate-native-report!` for existing trusted graph/catalog/report records and
+explicit projection/failure callbacks. The stage owns native report predicates,
+legacy boolean projection and ordered missing-field refusal selection; the C8
+facade retains operation interposition and diagnostic transport. Tests in
+`gravity.c8-effect-checker-test` cover native accepted reports, each failed
+predicate, callback/exception identity, first-failure order and truthy-data
+compatibility. Retained paired source products emit actual graphs and reports;
+the pure-source ordering refusal is preserved. This adds no canonical C8 or
+grant/provider authority. Existing native verification consumes the stage;
+dependency direction otherwise follows the Effects row above.
+
 ## Incremental extraction and acceptance
 
 Extract executable behavior, not empty namespaces or a second compiler.

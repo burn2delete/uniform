@@ -53,3 +53,61 @@ backend execution, performance, migration, release, self-hosting or seed
 retirement. Legacy vacuous/truthy projection and diagnostic limitations remain
 explicit native compatibility behavior. Historical restricted routes, pins,
 guards and denied attempts remain unchanged and are not retried.
+
+## Implemented boundary and actual products
+
+All three original bodies (73 lines) now live in the Effects namespace. Only
+their public names change; compatibility wrappers keep the old arities and
+argument order. Exact text checks conserve the moved bodies, all three prior
+graph-builder bodies, wrapper reconstruction and the declared stage file.
+All other Bootstrap/Gravity source, facade, catalog, policy, diagnostic,
+evidence and artifact assembly code remain unchanged.
+
+Clean baseline5da462a1eb1c2e4a63cabf5f8ad48ca563f076fb, tree
+d3a12f20eaec1cf1860d790d71f3a2aeb2082b70, executes before source changes.
+After controls execute the working extraction at that HEAD, in this same
+physical Analysis checkout. Both processes terminate before committing source.
+They retain the historical producer inputs under
+/tmp/uniform-types-products-native-evidence. Their old source/toolchain keys
+remain historical data; current compiler identity, C7 acceptance or C8 source
+admission is not inferred or renewed.
+
+Both spellings emit43-node effect graphs and one function record from those
+retained type products. Original Core id
+sha256:462f37046c92a22b5f519155432752c7bbc068a015e9389f12ed09ada07777cf,
+provenance binding and C5/request/Core joins recompute or compare exactly.
+The original fixture at its recorded Runtime path still has SHA-256
+f32e08927875808db45dde4866b30fd7e713d4f9e584d8743150942b94dbfc06.
+All six imported-file hashes and every graph-node source record survive.
+
+The unchanged pure graph reports failed and its validator raises C8-ORDER:
+the native verifier requires a nonempty ordering-record sequence even when
+all source effects are pure. Adding io/write to the first fact reports failed
+and raises C8-UNDECLARED before the later checks. These original limitations
+are preserved; no ordering evidence, allowance, grant, source field, returned
+record or authority callback is invented to force acceptance. The capture's
+positive label identifies the unmodified input case, not a passing report.
+Separate trusted native units exercise genuine report acceptance under their
+explicit supplied data, without claiming source or grant authentication.
+
+All28 complete data and original serialized-text pairs pass, including source
+inputs, type products, module views, imported hashes, fixture bytes, both
+graphs, full reports, projections and complete refusals. No field or root
+normalization is used. Focused Bootstrap-free tests pass12/262; affected native
+C7/C8/C9 composition passes23/560. Tests cover every native report predicate,
+empty-node/status behavior, ordered missing fields, original path forwarding,
+legacy truthiness, callback/exception identity and wrapper interposition.
+
+Scripts/logs/products use uniform-effects-reports-* under /tmp. Initial
+capture/test reader errors occurred before product-source writes; their error
+records remain. The initial capture incorrectly expected a passing pure report;
+the retained error record and corrected oracle describe the observed C8-ORDER
+gap. The self-hosting runner selector executed no tests because this namespace
+belongs to the Bootstrap-free leaf invocation; its nonpass log remains.
+A structural checker initially compared separately generated anonymous reader
+symbols; its nonpass remains and the corrected checker compares exact original
+function text. These corrections change no production predicate or guard.
+
+Language/ownership, committed contextual lint, final contract checks,
+independent exact review, actual-main reconciliation, own CI/artifact receipts
+and immediate clean integration preflight remain final gates.
