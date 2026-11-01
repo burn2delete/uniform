@@ -29801,20 +29801,7 @@
         (str "(ns runtime.closed.str-three (:profile :hosted) (:target :jvm) "
              "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
              "(defn main [] (println (str \"a\" \"b\" \"c\")))\n")
-        deep-expression
-        (str (apply str (repeat 130 "(if true "))
-             "\"ok\""
-             (apply str (repeat 130 " \"bad\")")))
-        deep-source
-        (str "(ns runtime.closed.deep (:profile :hosted) (:target :jvm) "
-             "(:effects #{:io/write}) (:capabilities #{:io/stdout}))\n"
-             "(defn main [] (println " deep-expression "))\n")
-        wide-source
-        (str "(ns runtime.closed.wide (:profile :hosted) (:target :jvm) "
-             "(:effects #{}) (:capabilities #{}))\n"
-             "(defn main [] (do "
-             (apply str (interpose " " (repeat 512 "nil")))
-             "))\n")]
+        ]
     (with-redefs
       [bootstrap/p15-s23-stage2-runtime-artifact-invoke
        (fn [runtime function args]
@@ -29824,8 +29811,6 @@
          (original runtime function args))]
       (doseq [[source expected-id expected-fact]
               [[unsupported "P15S23X002" :closed-plan-operation]
-               [deep-source "P15S23X002" :closed-plan-bounds]
-               [wide-source "P15S23X002" :closed-plan-bounds]
                [str-zero "L2-BUILTIN-ARITY" nil]
                [str-three "L2-BUILTIN-ARITY" nil]]]
         (let [data (diagnostic-data
@@ -29851,7 +29836,8 @@
                     "(defn main [] nil)\n")
                :c)))]
       (is (= "P15S23X002" (:id stack-data)))
-      (is (= :closed-plan-bounds (:missing-fact stack-data))))
+      (is (= :closed-runtime-host-stack-failure
+             (:missing-fact stack-data))))
     (let [compile-source
           (str "(ns runtime.closed.upstream-stack (:profile :hosted) "
                "(:target :jvm) (:effects #{}) (:capabilities #{}))\n"
@@ -29869,7 +29855,7 @@
               (bootstrap/stage2-runtime-derived-packet
                "upstream-stack.gravity" compile-source :c)))]
       (is (= "P15S23X002" (:id compile-stack-data)))
-      (is (= :closed-plan-bounds
+      (is (= :closed-runtime-host-stack-failure
              (:missing-fact compile-stack-data)))
       (is (= :source-to-stage2-plan
              (:boundary compile-stack-data))))

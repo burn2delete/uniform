@@ -324,6 +324,27 @@
     (is (= ['str] (:missing-runtime-primitives missing-ordinary-primitive))
         missing-ordinary-primitive)))
 
+(deftest closed-runtime-plan-validation-keeps-real-shape-guards-without-node-quota
+  (let [plan {:entrypoint 'main
+              :functions
+              {'main {:arity 0
+                      :params []
+                      :instructions
+                      (vec (repeat 129 {:op :literal :value 1}))}}}
+        validation
+        (bootstrap/p15-s23-closed-runtime-plan-validation!
+         "synthetic-129-node.gravity" :c plan)
+        malformed
+        (assoc-in plan [:functions 'main :instructions 0 :op] :unknown)]
+    (is (= :complete (:status validation)) validation)
+    (is (= 129 (:node-count validation)) validation)
+    (is (not (contains? validation :maximum-nodes)) validation)
+    (is (not (contains? validation :maximum-depth)) validation)
+    (is (= "P15S23X002"
+           (diagnostic-id
+            #(bootstrap/p15-s23-closed-runtime-plan-validation!
+              "malformed-unknown-op.gravity" :c malformed))))))
+
 (deftest former-accounting-allowances-do-not-reject-valid-plan-data
   (let [large-scalar (apply str (repeat 1025 "a"))
         large-generated-source (apply str (repeat 65537 "c"))

@@ -25,13 +25,9 @@
 (def p15-s23-closed-runtime-operations
   #{:literal :quote :local :builtin-call :println :do :if :let})
 
-(def p15-s23-closed-runtime-max-depth 128)
-(def p15-s23-closed-runtime-max-nodes 128)
-
 (defn p15-s23-closed-runtime-inferred-type
   [instruction local-types depth]
-  (if (or (> depth p15-s23-closed-runtime-max-depth)
-          (not (map? instruction)))
+  (if (not (map? instruction))
     :unknown
     (case (:op instruction)
       :literal
