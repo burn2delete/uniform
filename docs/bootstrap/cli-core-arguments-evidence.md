@@ -75,6 +75,19 @@ existing presentation bodies conserve against dependency721b5289. No default
 source route, exit code, output format, compiler operation or authority policy
 changes with this extraction.
 
+## Actual main composition
+
+Core PR730 is integrated as
+c5420931eec8dbdc148bdfe3704ee5f316896303/tree
+f4120297f3e7b3ec799707e7225180880cb43e4f. That tree is exactly the reviewed
+dependency721b5289 used by the complete before/after controls. The CLI PR is
+retargeted to main and normally composes actualc542 after implementation
+28cf7eb1044a567d924245928d41eed5fc7dbce9. The merge has no content changes
+or conflicts; CLI implementation, tests and complete source-control inputs
+remain identical. Documentation records the new actual base. No proposed-stack
+CI result becomes current-main acceptance; this composition requires exact
+review, contextual lint, own CI and clean integration preflight.
+
 ## Unsupported boundaries
 
 This remains a Clojure bootstrap CLI increment. Existing SH07-CLI-ARGS and
