@@ -125,10 +125,10 @@ sh03-reader-read-target-source-bytes! owner, preserving regular-file and
 final-link checks and C2-ENCODING file diagnostics. No source-size quota
 is introduced. The owner declaration and component EOF are preserved.
 
-This candidate retains main's Reader compatibility body and byte-owner
-operation exactly. The separate Reader-intake PR makes four late owner
-ports explicit; that extraction is not part of this candidate. Current source
-controls continue through the existing owner without new authority.
+The individual bf5 slice retained main's Reader compatibility body and
+byte owner exactly. Reader intake was outside that historical slice scope.
+The later combined candidate inherits its four explicit late owner ports
+from verified Reader-main9dfd1887, without new authority.
 
 ## Verified bf5 ordinary source checks
 
@@ -146,3 +146,10 @@ roadmap and governance validators pass. Independent exact-source acceptance,
 own current-head CI and clean current-base preflight remain integration gates.
 Older CI and immutable authority records are historical; no new authentication,
 migration, release, self-hosting or complete namespace claim is made.
+
+## Current combined integration
+
+This source is composed on verified Reader-main9dfd1887 in draft PR707.
+The [current ordinary record](current-ordinary-composition-evidence.md)
+binds the immutable input heads, full combined controls, actual execution
+provenance, preserved nonpass and remaining exact integration gates.

@@ -31,10 +31,10 @@ order. Existing invalid files must reject before decoding. Complete real Core
 products in both source spellings use only the authorized development-current
 route and preserve current-manifest provenance and semantic identity.
 
-The source intake candidate PR743 is an explicit lifecycle prerequisite of
-this isolated successor. Its source parent is363c5f8e; PR743's later evidence
-commit is not an ancestor of this candidate. PR743 must integrate before this
-slice can integrate. Scope
+At the isolated fa389e52 checkpoint, PR743 was a lifecycle prerequisite;
+source parent363c5f8e preceded PR743's later evidence commit. The current
+combined candidate descends from Reader-main9dfd1887, so that prerequisite
+is now fulfilled. Scope
 publication is not implementation or acceptance evidence. Exact source review,
 proportionate regression checks, own CI and a clean current-main preflight are
 required before integration.
@@ -152,9 +152,16 @@ Current Core accepts both spellings with25 nodes, one target read, source8e63
 and recomputed Core16ec. The entire compatibility component is exact Reader
 parent363c5f8e except its two-argument wrapper; the intake/decoder/artifact
 bodies and Bootstrap loader are exact parent. Contextual lint passes3 paths/
-0 warnings/0 blockers. Integration remains dependent on the Reader intake PR.
+0 warnings/0 blockers. At that bf5 checkpoint, integration still depended on Reader intake.
 Terminal lint receipts are archived outside the checkout. Documentation,
 roadmap and governance validators pass. Independent exact-source acceptance,
 own current-head CI and clean current-base preflight remain integration gates.
 Older CI and immutable authority records are historical; no new authentication,
 migration, release, self-hosting or complete namespace claim is made.
+
+## Current combined integration
+
+Verified Reader PR743 is the actual base of this composition in draft PR707.
+The [current ordinary record](current-ordinary-composition-evidence.md)
+binds the accepted source inputs,50 complete product pairs, combined checks,
+actual provenance, preserved nonpass and remaining exact integration gates.
