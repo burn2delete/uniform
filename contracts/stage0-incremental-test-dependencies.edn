@@ -41,6 +41,8 @@
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj"
         :role :runner}
+       {:path "bootstrap/clojure/src/gravity/process_supervision.clj"
+        :role :transitive}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj"
@@ -115,6 +117,8 @@
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj"
         :role :runner}
+       {:path "bootstrap/clojure/src/gravity/process_supervision.clj"
+        :role :transitive}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj"
         :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj"
@@ -172,6 +176,7 @@
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_loop_wiring.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_development_test_cache.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj" :role :runner}
+       {:path "bootstrap/clojure/src/gravity/process_supervision.clj" :role :transitive}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj" :role :runner}
        {:path "bootstrap/clojure/test/gravity/self_hosting/sh01_incremental_check.clj" :role :runner}

@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-parallel-test-runner-test
   (:require [clojure.test :refer [deftest is testing]]
+            [gravity.process-supervision :as process-supervision]
             [gravity.self-hosting.sh01-parallel-test-runner :as runner]))
 
 (defn- plan
@@ -661,6 +662,68 @@
       this)
     (isAlive [] @alive)))
 
+(deftest bounded-descendant-observation-stops-before-realizing-the-stream
+  (let [next-count (atom 0)
+        root-ref (atom nil)
+        root (reify java.lang.ProcessHandle
+               (pid [_] 1)
+               (isAlive [_] false)
+               (descendants [_]
+                 (.limit
+                  (java.util.stream.Stream/generate
+                   (reify java.util.function.Supplier
+                     (get [_]
+                       (swap! next-count inc)
+                       @root-ref)))
+                  5))
+               (destroy [_] false)
+               (destroyForcibly [_] false)
+               (onExit [this]
+                 (java.util.concurrent.CompletableFuture/completedFuture this)))]
+    (reset! root-ref root)
+    (let [result (process-supervision/handle-descendants root 3)]
+      (is (= 3 (count (:handles result))) result)
+      (is (true? (:truncated? result)) result)
+      (is (nil? (:error result)) result)
+      (is (= 4 @next-count)
+          "The bounded iterator may inspect only one handle beyond its limit"))))
+
+(deftest descendant-observation-bound-is-owned-wide-and-retains-known-handles
+  (let [events (atom [])
+        root-alive (atom false)
+        child-alive (atom false)
+        grandchild-alive (atom false)
+        grandchild (injected-owned-handle 3 grandchild-alive (constantly []) events
+                                          (constantly true))
+        child (injected-owned-handle 2 child-alive #(vector grandchild) events
+                                     (constantly true))
+        root (injected-owned-handle 1 root-alive #(vector child) events
+                                    (constantly true))
+        process (injected-owned-process root root-alive (constantly true))
+        owned (process-supervision/retain-owned-process! process)]
+    (process-supervision/observe-owned-process! owned)
+    (is (= [root child]
+           (process-supervision/retained-process-handles owned)))
+    (process-supervision/observe-owned-process!
+     owned {:descendant-limit 1})
+    (is (= [root child]
+           (process-supervision/retained-process-handles owned))
+        "A known native handle remains retained when the owned-wide bound is full")
+    (is (= :process-handle-limit
+           (:id (ex-data @(:discovery-error owned))))
+        "A later child observation cannot expand the owned tree past its bound")))
+
+(deftest one-arity-finalization-keeps-termination-defaults
+  (let [events (atom [])
+        alive (atom false)
+        root (injected-owned-handle 1 alive (constantly []) events (constantly true))
+        process (injected-owned-process root alive (constantly true))
+        owned (process-supervision/retain-owned-process! process)
+        result (process-supervision/finalize-owned-process! owned)]
+    (is (= :tracked-clean (:status result)) result)
+    (is (true? (:tracked-complete? result)) result)
+    (is (identical? result (process-supervision/finalize-owned-process! owned)))))
+
 (deftest retained-handles-survive-natural-exit-and-observe-late-grandchildren
   (let [events (atom []) root-alive (atom true) child-alive (atom true) late-alive (atom true)
         late (injected-owned-handle 3 late-alive (constantly []) events
@@ -702,7 +765,11 @@
           "The interface cannot account for a handle absent from every observation")
       (is (= :unknown (:descendant-coverage result)))
       (is (not (true? (:cleanup-complete? result))))
-      (is (not (true? (get-in result [:cleanup :complete?])))))))
+      (is (not (true? (get-in result [:cleanup :complete?]))))
+      (when missing?
+        (is (not= :passed (:status result)) result)
+        (is (:cleanup-failed? result) result)
+        (is (false? (:tracked-owned-processes-terminal? result)) result)))))
 
 (deftest retained-finalizer-refuses-foreign-token-and-thread
   (let [alive (atom false) events (atom [])

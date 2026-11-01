@@ -536,6 +536,63 @@
     (is (not (alive? (:pid result)))))
   (is (= 124 (:exit-code (read-string (slurp "target/ci/negative-timeout.edn"))))))
 
+(deftest fatal-wait-failure-cleans-the-owned-process-before-rethrowing
+  (let [process (.start (doto (ProcessBuilder. ^java.util.List
+                               ["/bin/sh" "-c" "sleep 30"])))
+        fatal (OutOfMemoryError. "injected fatal wait failure")
+        wait-var (ns-resolve 'gravity.process-supervision 'wait-for-process!)]
+    (try
+      (let [thrown (with-redefs-fn
+                     {wait-var (fn [& _] (throw fatal))}
+                     #(try
+                        (ci/await! process 1)
+                        nil
+                        (catch Throwable error error)))]
+        (is (identical? fatal thrown))
+        (is (false? (.isAlive process))))
+      (finally
+        (when (.isAlive process)
+          (try (ci/stop! process []) (catch Throwable _ nil)))
+        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+
+(deftest wait-error-is-failed-rather-than-timeout
+  (let [process (.start (doto (ProcessBuilder. ^java.util.List
+                               ["/bin/sh" "-c" "sleep 30"])))
+        wait-var (ns-resolve 'gravity.process-supervision 'wait-for-process!)]
+    (try
+      (let [result (with-redefs-fn
+                     {wait-var (fn [& _]
+                                 {:completed? false
+                                  :interrupted? true
+                                  :error "injected wait interruption"})}
+                     #(ci/await! process 1))]
+        (is (= :failed (:status result)) result)
+        (is (= 1 (:exit-code result)) result))
+      (finally
+        (when (.isAlive process) (.destroyForcibly process))
+        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+
+(deftest incomplete-tracked-cleanup-cannot-be-reported-as-a-pass
+  (let [process (.start (ProcessBuilder. ^java.util.List
+                         ["/bin/sh" "-c" "exit 0"]))
+        finalize-var (ns-resolve 'gravity.process-supervision
+                                 'finalize-owned-process!)]
+    (try
+      (let [result (with-redefs-fn
+                     {finalize-var
+                      (fn [_ _]
+                        {:tracked-complete? false
+                         :root-alive? true
+                         :descendants-alive 1
+                         :survivor-pids [7002]
+                         :descendant-pids []})}
+                     #(ci/await! process 1))]
+        (is (= :failed (:status result)) result)
+        (is (= 1 (:exit-code result)) result))
+      (finally
+        (when (.isAlive process) (.destroyForcibly process))
+        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+
 (deftest resource-context-preserves-real-bindings-and-diagnostic-identity
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
                             "uniform-ci-context-" (make-array java.nio.file.attribute.FileAttribute 0)))
@@ -622,6 +679,24 @@
                                                    (str context/source-root "gravity/bootstrap_impl/b.clj") (bytes "(def value (first captured)))\n"))))))
     (is (thrown? Exception (context/source-forms! "reader-eval" (bytes "#=(+ 1 2)"))))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest source-reader-resolves-ns-keywords-without-evaluation
+  (let [source-ns 'gravity.ci-lint-reader-regression
+        bytes #(.getBytes ^String % "UTF-8")
+        source (str "(ns " source-ns " (:require [clojure.test :as test]))\n"
+                    "(def test-fixture-key ::test/once-fixtures)\n"
+                    "(def local-key ::local)\n")
+        forms (context/source-forms! "reader-aliases" (bytes source))]
+    (is (= :clojure.test/once-fixtures
+           (nth (second forms) 2)))
+    (is (= :gravity.ci-lint-reader-regression/local
+           (nth (nth forms 2) 2)))
+    (is (thrown? Exception
+                 (context/source-forms!
+                  "unknown-reader-alias"
+                  (bytes (str "(ns " source-ns ")\n"
+                              "(def missing ::unknown/key)\n")))))
+    (is (nil? (find-ns source-ns)))))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

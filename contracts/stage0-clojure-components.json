@@ -332,6 +332,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/release/pipeline_test.clj", "namespace": "gravity.release.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "process-supervision",
+      "kind": "production-verification-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/process_supervision.clj", "namespace": "gravity.process-supervision"},
+      "consumer": {"path": "tools/ci/run.clj", "namespace": "ci.run", "owner": "master-coordinator"},
+      "test": {"path": "tools/ci/run_test.clj", "namespace": "ci.run-test", "registration": "standalone"}
+    },
+    {
       "id": "safety-records",
       "kind": "production-stage-helper",
       "owner": "sh-safety",

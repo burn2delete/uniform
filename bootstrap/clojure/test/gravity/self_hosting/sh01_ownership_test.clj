@@ -323,6 +323,10 @@
 (def ^:private release-inventory-stage-path "bootstrap/clojure/src/gravity/release.clj")
 (def ^:private release-inventory-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00906-p18-t02-source-material.clj")
 (def ^:private release-inventory-stage-test "bootstrap/clojure/test/gravity/release/pipeline_test.clj")
+(def ^:private process-supervision-helper-path
+  "bootstrap/clojure/src/gravity/process_supervision.clj")
+(def ^:private process-supervision-helper-consumer "tools/ci/run.clj")
+(def ^:private process-supervision-helper-test "tools/ci/run_test.clj")
 
 (def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
 (def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
@@ -403,7 +407,11 @@
               :consumer-path syntax-helper-consumer :test-path syntax-helper-test}
              macro-stage-path
              {:namespace 'gravity.macro :owner :sh-macro :slice "SH-05"
-              :consumer-path macro-stage-consumer :test-path macro-stage-test}}
+              :consumer-path macro-stage-consumer :test-path macro-stage-test}
+             process-supervision-helper-path
+             {:namespace 'gravity.process-supervision :owner :master-coordinator :slice "SH-01"
+              :consumer-path process-supervision-helper-consumer
+              :test-path process-supervision-helper-test}}
             (:production-helper-associations record))
          (= :sh-macro (get-in record [:module-owners macro-helper-path]))
          (= {:namespace 'gravity.self-hosting.macro-run-storage-test
@@ -479,6 +487,9 @@
             (get-in record [:standalone-test-owners mir-stage-test]))
          (= {:namespace 'gravity.checked-core.pipeline-test :slice "SH-07" :owner :sh-core}
             (get-in record [:standalone-test-owners core-stage-test]))
+         (= :master-coordinator (get-in record [:module-owners process-supervision-helper-path]))
+         (= {:namespace 'ci.run-test :slice "SH-01" :owner :master-coordinator}
+            (get-in record [:standalone-test-owners process-supervision-helper-test]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
               "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
@@ -599,12 +610,54 @@
               "consumer" {"path" release-inventory-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
               "test" {"path" release-inventory-stage-test "namespace" "gravity.release.pipeline-test"
                       "registration" "standalone"}}
+             {"id" "process-supervision" "kind" "production-verification-helper" "owner" "master-coordinator"
+              "source" {"path" process-supervision-helper-path "namespace" "gravity.process-supervision"}
+              "consumer" {"path" process-supervision-helper-consumer "namespace" "ci.run" "owner" "master-coordinator"}
+              "test" {"path" process-supervision-helper-test "namespace" "ci.run-test"
+                      "registration" "standalone"}}
              {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
               "source" {"path" safety-stage-path "namespace" "gravity.safety"}
               "consumer" {"path" safety-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-safety"}
               "test" {"path" safety-stage-test "namespace" "gravity.safety.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
+
+(deftest process-supervision-helper-has-an-explicit-consumer-and-test
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        helper-index (.indexOf (mapv #(get % "id") (get contract "production_helpers"))
+                               "process-supervision")]
+    (is (production-helper-registration-valid? record contract))
+    (is (not (neg? helper-index)))
+    (doseq [relative [process-supervision-helper-path
+                      process-supervision-helper-consumer
+                      process-supervision-helper-test]]
+      (is (.isFile (path relative)) relative))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader.
+                          (io/reader (path process-supervision-helper-path)))]
+        (is (= 'gravity.process-supervision (second (read reader))))))
+    (is (str/includes? (slurp (path process-supervision-helper-consumer))
+                       "gravity.process-supervision"))
+    (doseq [bad [(update record :module-owners dissoc process-supervision-helper-path)
+                 (assoc-in record [:module-owners process-supervision-helper-path] :sh-core)
+                 (assoc-in record [:production-helper-associations process-supervision-helper-path
+                                   :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations process-supervision-helper-path
+                                   :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations process-supervision-helper-path
+                                   :test-path] "forged_test.clj")
+                 (update record :standalone-test-owners dissoc process-supervision-helper-test)]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "sh-core")
+                 (assoc-in contract ["production_helpers" helper-index "source" "namespace"]
+                           "gravity.forged")
+                 (assoc-in contract ["production_helpers" helper-index "consumer" "path"]
+                           "forged.clj")
+                 (assoc-in contract ["production_helpers" helper-index "test" "registration"]
+                           "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
 
 (deftest runtime-invocation-helper-has-an-explicit-consumer-and-test
   (let [record (ownership-record)
