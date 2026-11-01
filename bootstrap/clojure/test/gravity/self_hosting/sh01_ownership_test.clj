@@ -316,6 +316,10 @@
 (def ^:private bootstrap-literals-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00580-p15-s23-stage2-module-source.clj")
 (def ^:private bootstrap-literals-stage-test "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj")
 
+(def ^:private build-validation-stage-path "bootstrap/clojure/src/gravity/build.clj")
+(def ^:private build-validation-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00537-validate-stage0-compiled-ai-provider.clj")
+(def ^:private build-validation-stage-test "bootstrap/clojure/test/gravity/build/pipeline_test.clj")
+
 (def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
 (def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
 (def ^:private safety-stage-test "bootstrap/clojure/test/gravity/safety/pipeline_test.clj")
@@ -326,6 +330,9 @@
     (and (= {safety-stage-path
              {:namespace 'gravity.safety :owner :sh-safety :slice "SH-11"
               :consumer-path safety-stage-consumer :test-path safety-stage-test}
+             build-validation-stage-path
+             {:namespace 'gravity.build :owner :sh-package-build :slice "SH-23"
+              :consumer-path build-validation-stage-consumer :test-path build-validation-stage-test}
              bootstrap-literals-stage-path
              {:namespace 'gravity.bootstrap.module-literals :owner :master-coordinator :slice "SH-01"
               :consumer-path bootstrap-literals-stage-consumer :test-path bootstrap-literals-stage-test}
@@ -430,6 +437,9 @@
          (= :master-coordinator (get-in record [:module-owners bootstrap-literals-stage-path]))
          (= {:namespace 'gravity.bootstrap.module-literals-test :slice "SH-01" :owner :master-coordinator}
             (get-in record [:standalone-test-owners bootstrap-literals-stage-test]))
+         (= :sh-package-build (get-in record [:module-owners build-validation-stage-path]))
+         (= {:namespace 'gravity.build.pipeline-test :slice "SH-23" :owner :sh-package-build}
+            (get-in record [:standalone-test-owners build-validation-stage-test]))
          (= :sh-safety (get-in record [:module-owners safety-stage-path]))
          (= {:namespace 'gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
             (get-in record [:standalone-test-owners safety-stage-test]))
@@ -568,6 +578,11 @@
               "source" {"path" bootstrap-literals-stage-path "namespace" "gravity.bootstrap.module-literals"}
               "consumer" {"path" bootstrap-literals-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
               "test" {"path" bootstrap-literals-stage-test "namespace" "gravity.bootstrap.module-literals-test"
+                      "registration" "standalone"}}
+             {"id" "build-metadata-validation" "kind" "production-stage-helper" "owner" "sh-package-build"
+              "source" {"path" build-validation-stage-path "namespace" "gravity.build"}
+              "consumer" {"path" build-validation-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-package-build"}
+              "test" {"path" build-validation-stage-test "namespace" "gravity.build.pipeline-test"
                       "registration" "standalone"}}
              {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
               "source" {"path" safety-stage-path "namespace" "gravity.safety"}
@@ -1430,6 +1445,32 @@
                  (assoc-in record [:production-helper-associations bootstrap-literals-stage-path :namespace] 'gravity.forged)]]
       (is (not (production-helper-registration-valid? bad contract))))
     (doseq [bad [(assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
+                 (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest build-metadata-helper-has-an-explicit-boundary
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "build-metadata-validation")]
+    (is (not (neg? index)))
+    (let [ids (mapv #(get % "id") (get contract "production_helpers"))]
+      (is (= (count ids) (count (distinct ids)))))
+    (is (= "gravity.build" (get-in contract ["production_helpers" index "source" "namespace"])))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [build-validation-stage-path build-validation-stage-consumer build-validation-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path build-validation-stage-consumer)) "gravity.build/check-graph-effects!"))
+    (is (= :stage0-build-metadata-checks
+           (:contract-boundary (:gravity/namespace-contract
+             (meta (requiring-resolve 'gravity.build/check-graph-effects!))))))
+    (doseq [bad [(assoc-in record [:module-owners build-validation-stage-path] :sh-core)
+                 (update record :standalone-test-owners dissoc build-validation-stage-test)
+                 (assoc-in record [:production-helper-associations build-validation-stage-path :namespace] 'gravity.forged)]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" index "id"] "bootstrap-module-literals")
+                 (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
       (is (not (production-helper-registration-valid? record bad))))))
