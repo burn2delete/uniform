@@ -84,6 +84,18 @@ Scripts are `/tmp/uniform-build-validation-{control,verify}.clj`, products are
 and current-main preflight remain integration requirements. No historical
 authenticated Reader or release route is used.
 
+## Actual CI main composition
+
+After the registration correction, the normal composition uses actual main
+0e01fc5937d5b224dd03e14751566f0e541b6529/tree
+7bd8ec6c99a12fd3338edb3fce7a3e941064abef. Its six changed paths fromb363
+are CI tools/docs, cached-shard runner/tests and the verification catalog.
+All six incoming paths are preserved exactly. Compiler and Build sources,
+complete fixture/control inputs and execution paths are unchanged. Updated-base
+conservation and provenance must bind actual0e; previous-base CI or review
+does not accept the new source tuple. Local controls execute the ordinary
+native Stage0 compiler, without a cached-shard or authenticated Reader route.
+
 ## Unsupported boundaries
 
 These are two checks over trusted native metadata, not complete PKG2/PKG7
