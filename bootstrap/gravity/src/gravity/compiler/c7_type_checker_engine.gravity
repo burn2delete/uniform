@@ -230,12 +230,10 @@
         (recur (rest remaining))))))
 
 (defn sh08-all-unique? [values observed]
-  (if (= (count values) 0)
-    true
-    (if (sh08-vector-contains? observed (first values))
-      false
-      (sh08-all-unique?
-       (rest values) (conj observed (first values))))))
+  (loop [remaining values seen observed]
+    (if (= 0 (count remaining)) true
+      (if (sh08-vector-contains? seen (first remaining)) false
+        (recur (rest remaining) (conj seen (first remaining)))))))
 
 (defn sh08-exact-keys? [value expected]
   (if (map? value)
@@ -752,25 +750,15 @@
              :core-form-outside-bounded-slice)))))))
 
 (defn sh08-type-nodes [remaining type-table type-facts module]
-  (if (= (count remaining) 0)
-    {:status :accepted
-     :type-table type-table
-     :type-facts type-facts
-     :diagnostics []}
-    (let [node (first remaining)
-          node-result (sh08-type-node node type-table module)]
-      (if (= (get node-result :status) :accepted)
-        (sh08-type-nodes
-         (rest remaining)
-         (assoc type-table
-                (get node :node-id)
-                (get node-result :type))
-         (conj type-facts (get node-result :fact))
-         module)
-        {:status :rejected
-         :type-table type-table
-         :type-facts type-facts
-         :diagnostics [(get node-result :diagnostic)]}))))
+  (loop [nodes remaining table type-table facts type-facts]
+    (if (= 0 (count nodes))
+      {:status :accepted :type-table table :type-facts facts :diagnostics []}
+      (let [node (first nodes) result (sh08-type-node node table module)]
+        (if (= :accepted (get result :status))
+          (recur (rest nodes) (assoc table (get node :node-id) (get result :type))
+                             (conj facts (get result :fact)))
+          {:status :rejected :type-table table :type-facts facts
+           :diagnostics [(get result :diagnostic)]})))))
 
 (defn sh08-type-core-artifact [core-artifact]
   (if (map? core-artifact)
@@ -910,9 +898,7 @@
 
 (defn sh08-ft-product-vector? [core key-name]
   (if (contains? core key-name)
-    (if (vector? (get core key-name))
-      (<= (count (get core key-name)) 65536)
-      false)
+    (vector? (get core key-name))
     false))
 
 (defn sh08-ft-record-shape? [record expected]

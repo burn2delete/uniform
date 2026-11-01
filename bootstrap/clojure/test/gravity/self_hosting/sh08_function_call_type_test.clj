@@ -23620,3 +23620,100 @@
                                    (throw (AssertionError. "carrier comparator"))))]]
       (is (= {:status :rejected :reason :verification-native-carrier} (check value))))
     (is (empty? @callbacks))))
+
+(deftest sh08-structural-vectors-unmetered-development-kernel
+  ;; Normalized Core shape/type development evidence; B47 is separate.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        module {:namespace 'unmetered.core :profile :meta :target :jvm :safety :safe
+                :effects [] :capabilities [] :exports [] :source-revision-id (sha 9000)}
+        wide-module (assoc module :effects (vec (repeat 129 :memory/allocate))
+                                 :capabilities (vec (repeat 129 :test/capability))
+                                 :exports (mapv #(symbol (str "name" %)) (range 1025)))
+        origin {:origin-id (sha 8000) :kind :source :from-syntax-id (sha 8001) :role :original}
+        source (fn [i] {:syntax-id (sha i) :form-id (sha i) :semantic-span {}
+                        :origin-chain [] :generated-origin []})
+        metadata (into {} (map (fn [i] [(keyword (str "field" i)) i]) (range 257)))
+        literal (fn [i]
+                  {:artifact :gravity/sh07-core-node :node-id (sha i) :core-form :literal
+                   :children [] :attributes {:literal-kind :integer :value i}
+                   :source (source i) :binding-context nil :generated? false :resolved-binding-ids []
+                   :evaluation {} :module (select-keys module [:namespace :profile :target]) :metadata {}
+                   :preserved-declarations (select-keys module [:effects :capabilities :safety])
+                   :pending-fact-families [] :lowering-rule-version :sh07-development})
+        nodes (mapv literal (range 1 1026))
+        roots (mapv :node-id nodes)
+        core {:artifact :gravity/sh07-canonical-core-artifact :artifact-id (sha 9001)
+              :module module :nodes nodes :root-core-node-ids roots}
+        shape (invoke-c7 'sh08-validate-core-shape [core])
+        typed (invoke-c7 'sh08-type-core-artifact [core])
+        large-node (-> (first nodes) (assoc :metadata metadata)
+                       (assoc-in [:source :semantic-span] metadata)
+                       (assoc-in [:source :origin-chain] (vec (repeat 257 origin))))
+        binding {:binding-id (sha 9100) :name 'value :kind :var :binding-class :core
+                 :namespace 'gravity.core :package {:name 'gravity/core :version (apply str (repeat 1025 "v"))}
+                 :upstream-binding-id (sha 9101) :scope-id nil :definition-syntax-id (sha 9102)
+                 :definition-artifact-id (sha 9103) :visibility :public
+                 :profile-set (vec (repeat 129 :meta)) :target-set (vec (repeat 129 :jvm))
+                 :type-ref :gravity.type/integer :effects [] :capabilities [] :safety :safe :semantic-span metadata}]
+    (is (true? (invoke-c7 'sh08-module-shape? [wide-module])))
+    (is (false? (invoke-c7 'sh08-module-shape? [(assoc-in wide-module [:effects 128] 7)])))
+    (is (= :accepted (:status shape)))
+    (is (= :accepted (:status typed)) (pr-str (:diagnostics typed)))
+    (is (= 1025 (count (:type-table typed))))
+    (is (every? #{:gravity.type/integer} (vals (:type-table typed))))
+    (is (true? (invoke-c7 'sh08-node-shape? [large-node module])))
+    (is (false? (invoke-c7 'sh08-node-shape? [(assoc-in large-node [:source :origin-chain 256 :from-syntax-id] :forged) module])))
+    (is (true? (invoke-c7 'sh08-ft-binding-valid? [binding])))
+    (is (false? (invoke-c7 'sh08-ft-binding-valid? [(assoc binding :upstream-binding-id :forged)])))
+    (is (true? (invoke-c7 'sh08-ft-product-vector? [{:nodes (vec (repeat 70000 :row))} :nodes])))
+    (let [bad (assoc-in nodes [1024 :core-form] :unsupported)
+          rejected (invoke-c7 'sh08-type-nodes [bad {} [] module])]
+      (is (= :rejected (:status rejected)))
+      (is (= 1024 (count (:type-table rejected)) (count (:type-facts rejected))))
+      (is (= [(sha 1025)] (mapv :core-node-id (:diagnostics rejected)))))
+    (doseq [changed [(assoc-in core [:nodes 1024 :source :syntax-id] :forged)
+                     (assoc core :root-core-node-ids (conj roots (first roots)))
+                     (assoc core :root-core-node-ids (assoc roots 1024 (sha 9999)))]]
+      (is (= :rejected (:status (invoke-c7 'sh08-validate-core-shape [changed])))))))
+
+(deftest primitive-traversal-state-development-kernel
+  ;; Normalized helper state only; source/Core admission remains separate.
+  (doseq [[values observed expected]
+          [[[] [] true] [[] [1 1] true] [[0 1] [2] true]
+           [[0 1 0] [] false] [[1] [1] false]
+           [(vec (range 1025)) [] true]
+           [(conj (vec (range 1025)) 0) [] false]]]
+    (is (= expected (invoke-c7 'sh08-all-unique? [values observed]))))
+  (let [module {:profile :meta :target :jvm}
+        node (fn [id] {:node-id id :core-form :literal :children []
+                       :attributes {:literal-kind :integer :value 1}
+                       :source {:syntax-id id :semantic-span {} :origin-chain [] :generated-origin []}
+                       :preserved-declarations {:effects [] :capabilities []}})
+        seed-types {:seed :gravity.type/string}
+        seed-facts [{:core-node-id :seed :type :gravity.type/string}]
+        run #(invoke-c7 'sh08-type-nodes [% seed-types seed-facts module])
+        empty-result (run [])
+        prefix (run [(node :first)])
+        failed (run [(node :first) (assoc (node :bad) :core-form :unsupported) (node :unvisited)])]
+    (is (= {:status :accepted :type-table seed-types :type-facts seed-facts :diagnostics []} empty-result))
+    (is (= :accepted (:status prefix)))
+    (is (= {:seed :gravity.type/string :first :gravity.type/integer} (:type-table prefix)))
+    (is (= [:seed :first] (mapv :core-node-id (:type-facts prefix))))
+    (is (= (first seed-facts) (first (:type-facts prefix))))
+    (is (= {:artifact :gravity/c7-type-fact :core-node-id :first :type :gravity.type/integer
+            :producer-rule :literal :dependencies [] :syntax-id :first :profile :meta :target :jvm}
+           (select-keys (second (:type-facts prefix))
+                        [:artifact :core-node-id :type :producer-rule :dependencies :syntax-id :profile :target])))
+    (is (= :rejected (:status failed)))
+    (is (= (:type-table prefix) (:type-table failed)))
+    (is (= (:type-facts prefix) (:type-facts failed)))
+    (is (= [[:bad "C7-ANNOTATION" :core-form-outside-bounded-slice]]
+           (mapv (juxt :core-node-id :rule :reason) (:diagnostics failed))))
+    (is (not (contains? (:type-table failed) :unvisited))))
+  (let [calls (atom 0)
+        foreign (reify clojure.lang.Counted
+                  (count [_] (swap! calls inc) (throw (AssertionError. "product count"))))]
+    (doseq [core [{} {:nodes nil} {:nodes false} {:nodes (list :row)} {:nodes foreign}]]
+      (is (false? (invoke-c7 'sh08-ft-product-vector? [core :nodes]))))
+    (is (true? (invoke-c7 'sh08-ft-product-vector? [{:nodes []} :nodes])))
+    (is (zero? @calls))))
