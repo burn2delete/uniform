@@ -219,12 +219,12 @@
                                (throw (ex-info "Missing or nonregular base context source" {:path path})))
                              (let [entry (.getEntry zip path)]
                                (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
-                               (with-open [input (.getInputStream zip entry)] (.readAllBytes input))))]
-         (let [archived-loader-sha (sha256 (read-archived loader))]
-           (when-not (contains? reviewed-loader-shas archived-loader-sha)
-             (throw (ex-info "Bootstrap loader changed; lint context requires independent review"
-                             {:loader-sha archived-loader-sha})))
-           (selected-plan! read-archived selected archived-loader-sha)))))))
+                               (with-open [input (.getInputStream zip entry)] (.readAllBytes input))))
+             archived-loader-sha (sha256 (read-archived loader))]
+         (when-not (contains? reviewed-loader-shas archived-loader-sha)
+           (throw (ex-info "Bootstrap loader changed; lint context requires independent review"
+                           {:loader-sha archived-loader-sha})))
+         (selected-plan! read-archived selected archived-loader-sha))))))
 
 (defn- core-operation [value]
   (when (and (symbol? value) (contains? #{nil "clojure.core"} (namespace value)))
