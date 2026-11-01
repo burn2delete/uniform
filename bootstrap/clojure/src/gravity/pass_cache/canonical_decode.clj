@@ -1,8 +1,8 @@
 (ns gravity.pass-cache.canonical-decode
   "Strict canonical cache decoding and EDN validation."
   (:require [clojure.edn :as edn]
-            [gravity.pass-cache.canonical-encode :refer :all]
-            [gravity.pass-cache.policy :refer :all])
+            [gravity.pass-cache.canonical-encode :refer [canonical-bytes canonical-text]]
+            [gravity.pass-cache.policy :refer [fail! fatal?]])
   (:import [java.math BigDecimal BigInteger]
            [java.nio ByteBuffer]
            [java.nio.charset CharacterCodingException CodingErrorAction StandardCharsets]

@@ -1,8 +1,9 @@
 (ns gravity.pass-cache.canonical-encode
   "Canonical semantic cache encoding and content identities."
   (:require [gravity.digest :as digest]
-            [gravity.pass-cache.canonical-scalar :refer :all]
-            [gravity.pass-cache.policy :refer :all])
+            [gravity.pass-cache.canonical-scalar
+             :refer [byte-array? finite-double! integral-tag object-metadata!]]
+            [gravity.pass-cache.policy :refer [canonicalizer-version fail!]])
   (:import [java.math BigDecimal]
            [java.nio.charset StandardCharsets]
            [java.util Base64 Date UUID]))

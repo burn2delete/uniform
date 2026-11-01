@@ -16,7 +16,7 @@
       (doseq [path (reverse (vec (.toArray paths)))]
         (Files/deleteIfExists ^Path path)))))
 
-(defmacro with-temporary-directory
+(defmacro ^{:clj-kondo/lint-as 'clojure.core/fn} with-temporary-directory
   [[binding] & body]
   `(let [~binding (Files/createTempDirectory
                    "gravity-c2-pass-cache-test-"

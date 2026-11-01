@@ -1,6 +1,6 @@
 (ns gravity.pass-cache.canonical-scalar
   "Type and representation checks for canonical cache scalars."
-  (:require [gravity.pass-cache.policy :refer :all])
+  (:require [gravity.pass-cache.policy :refer [fail!]])
   (:import [java.math BigInteger]))
 
 (defn integral-tag
