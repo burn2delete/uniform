@@ -163,3 +163,34 @@ The earlier exact reviews, lint and CI observations remain bound to 7dff/base
 7019. The new complete integration tuple needs fresh exact reviews, contextual
 lint, its own CI and clean current-main preflight. No old result is transferred
 as current acceptance, and Package integration does not complete this namespace.
+
+## Ownership-main composition
+
+Ownership PR705 advances actual main to
+a1174ebcaac1a8795f3a9f6f9a139f6fd4e46dda, tree
+856e8b6a5677b0cbfad8b38998e7cbbd08faf192. A normal merge composes that main
+with source 166f5bdc574a71885e7e71bb0e219381a34082a5. Four genuine shared
+require/registration conflicts are reconstructed from complete main files and
+the unchanged Standard Library association/test. All Ownership code, wrappers,
+contracts, tests and evidence remain identical to actual main. Standard Library
+code, native Var read positions and focused tests remain identical to 166f.
+
+Fresh Standard Library/Ownership/Package/Runtime/Lowering tests pass 25 / 464;
+isolated native C8/C15 pass 15 / 352, registration 35 / 1046 and language 6 / 11.
+The complete library and both whole fixtures compile again. All six full/text
+captures, three actual source hashes, ten native kinds, native body/arity,
+whole component/facet and single require delta conserve. Provenance binds all
+five actual seed/native and non-executed Gravity input files to main a117.
+
+The first provenance-helper rebind retained an obsolete assertion that the two
+Gravity files differed from its reference parent. With a117 as reference they
+correctly match main. That external helper failure remains recorded. The
+corrected helper requires exact equality of all five files to actual a117 and
+separately labels the two Gravity modules not executed by this route. No plan,
+source hash, implementation, pin or runtime result changes for this correction.
+
+Earlier exact-head CI 41255883939 completed successfully on source 166f/base
+6dc; its result remains historical and supplies no current-base acceptance.
+The new complete tuple requires fresh exact reviews, contextual lint, own CI
+and clean current-main integration preflight. All earlier nonpasses remain
+retained, and full Standard Library completion remains open.

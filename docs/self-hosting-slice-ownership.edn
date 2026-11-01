@@ -98,6 +98,10 @@
   {:namespace gravity.standard-library :owner :sh-standard-library :slice "SH-22"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00081-record-standard-library-call.clj"
    :test-path "bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/ownership.clj"
+  {:namespace gravity.ownership :owner :sh-ownership :slice "SH-10"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00694-p15-s23-closed-core-persistent-aliasing-valid.clj"
+   :test-path "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj"}
   "bootstrap/clojure/src/gravity/package.clj"
   {:namespace gravity.package :owner :sh-package-build :slice "SH-23"
    :consumer-path "bootstrap/clojure/src/gravity/build/package_selection.clj"
@@ -177,6 +181,7 @@
 
  :module-owners
  {"bootstrap/clojure/src/gravity/standard_library.clj" :sh-standard-library
+  "bootstrap/clojure/src/gravity/ownership.clj" :sh-ownership
   "bootstrap/clojure/src/gravity/package.clj" :sh-package-build
   "bootstrap/clojure/src/gravity/effects.clj" :sh-effects
   "bootstrap/clojure/src/gravity/lowering.clj" :master-coordinator
@@ -405,6 +410,8 @@
  :standalone-test-owners
  {"bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj"
   {:namespace gravity.standard-library.pipeline-test :slice "SH-22" :owner :sh-standard-library}
+  "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj"
+  {:namespace gravity.ownership.pipeline-test :slice "SH-10" :owner :sh-ownership}
   "bootstrap/clojure/test/gravity/package/pipeline_test.clj"
   {:namespace gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
   "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"
