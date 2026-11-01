@@ -153,7 +153,7 @@
            (get-in contract [:dependency-direction :forbids])))
     (is (= (set (:operation-inputs contract)) (set (keys (operations)))))
     (is (= ["L1-SOURCE-ENCODING"] (get-in contract [:diagnostic-ownership :owns])))
-    (is (= ["L1-SOURCE-EXTENSION"] (get-in contract [:diagnostic-ownership :delegates])))
+    (is (= ["L1-SOURCE-EXTENSION" "C2-ENCODING"] (get-in contract [:diagnostic-ownership :delegates])))
     (is (true? (get-in contract [:public-api 'read-source-text :opens-source?])))
     (is (false? (get-in contract [:public-api 'read-source-text :grants-file-authority?])))
     (is (true? (:clojure-seed-boundary? contract)))
@@ -172,7 +172,8 @@
 (defn- read-native-source [path]
   (reader/read-source-text #'bootstrap/qst-or-gravity-source?
                            #'bootstrap/source-path-policy-fail!
-                           #'bootstrap/decode-gravity-source-bytes path))
+                           #'bootstrap/decode-gravity-source-bytes
+                           #'bootstrap/sh03-reader-read-target-source-bytes! path))
 
 (defn- with-native-source-file [extension bytes f]
   (let [path (java.nio.file.Files/createTempFile
@@ -236,7 +237,7 @@
     ".qst" (.getBytes "source" "UTF-8")
     (fn [path]
       (doseq [invoke [read-native-source bootstrap/read-gravity-source-text]
-              port [:predicate :policy :decoder]]
+              port [:predicate :policy :decoder :bytes]]
         (let [sentinel (ex-info "native intake dependency failure" {:port port})
               fail (fn [& _] (throw sentinel))
               substitutions
@@ -244,7 +245,8 @@
                 :predicate {#'bootstrap/qst-or-gravity-source? fail}
                 :policy {#'bootstrap/qst-or-gravity-source? (constantly false)
                          #'bootstrap/source-path-policy-fail! fail}
-                :decoder {#'bootstrap/decode-gravity-source-bytes fail})]
+                :decoder {#'bootstrap/decode-gravity-source-bytes fail}
+                :bytes {#'bootstrap/sh03-reader-read-target-source-bytes! fail})]
           (with-redefs-fn substitutions
             #(is (identical? sentinel (rejection (fn [] (invoke path)))))))))))
 
@@ -257,10 +259,12 @@
         (with-redefs [bootstrap/decode-gravity-source-bytes
                       (fn [& _] (swap! calls inc) (throw (ex-info "unexpected decoder" {})))]
           (doseq [invoke [read-native-source bootstrap/read-gravity-source-text]]
-            (let [error (try (invoke path) nil
-                             (catch java.nio.file.NoSuchFileException error error))]
-              (is (instance? java.nio.file.NoSuchFileException error))
-              (is (= path (.getFile ^java.nio.file.NoSuchFileException error)))))
+            (let [error (ex-data (rejection #(invoke path)))]
+              (is (= "C2-ENCODING" (:id error)))
+              (is (= path (get-in error [:source-span :source])))
+              (is (= :source-file-attributes (get-in error [:facts :failure-kind])))
+              (is (= "java.nio.file.NoSuchFileException"
+                     (get-in error [:facts :contained-host-error])))))
           (is (zero? @calls)))))))
 
 (deftest strict-utf8-preserves-valid-bytes-as-text-without-consulting-error-ports
@@ -340,3 +344,44 @@
                 (rejection #(decode "hash-failure.gravity" (raw-bytes [195 40]))))]
     (is (identical? sentinel error))
     (is (zero? @diagnostics))))
+
+(deftest intake-uses-the-late-byte-owner-and-resolves-decoder-before-capture
+  ;; Isolated trusted dependency interposition, not source authentication.
+  (doseq [invoke [read-native-source bootstrap/read-gravity-source-text]]
+    (let [events (atom []) captured (byte-array [65 66])]
+      (with-redefs [bootstrap/qst-or-gravity-source?
+                    (fn [path]
+                      (swap! events conj [:predicate path])
+                      (alter-var-root #'bootstrap/sh03-reader-read-target-source-bytes!
+                        (constantly
+                          (fn [selected]
+                            (swap! events conj [:bytes selected])
+                            (alter-var-root #'bootstrap/decode-gravity-source-bytes
+                              (constantly (fn [& _] :replaced-during-capture)))
+                            captured)))
+                      true)
+                    bootstrap/sh03-reader-read-target-source-bytes! (fn [& _] (throw (ex-info "stale byte owner" {})))
+                    bootstrap/decode-gravity-source-bytes
+                    (fn [path bytes]
+                      (swap! events conj [:decoder path])
+                      (is (identical? captured bytes))
+                      :resolved-before-capture)]
+        (is (= :resolved-before-capture (invoke "selected.gravity"))))
+      (is (= [[:predicate "selected.gravity"] [:bytes "selected.gravity"] [:decoder "selected.gravity"]]
+             @events)))))
+
+(deftest intake-preserves-the-byte-owners-regular-file-and-final-link-policy
+  (with-native-source-file
+    ".gravity" (.getBytes "source" "UTF-8")
+    (fn [target]
+      (let [link (.resolveSibling (.toPath (java.io.File. target))
+                                 (str (.getName (java.io.File. target)) ".link.gravity"))]
+        (try
+          (java.nio.file.Files/createSymbolicLink link (.toPath (java.io.File. target))
+                                                 (make-array java.nio.file.attribute.FileAttribute 0))
+          (let [path (.toString link)
+                expected (ex-data (rejection #(bootstrap/sh03-reader-read-target-source-bytes! path)))]
+            (is (= "C2-ENCODING" (:id expected)))
+            (doseq [invoke [read-native-source bootstrap/read-gravity-source-text]]
+              (is (= expected (ex-data (rejection #(invoke path)))))))
+          (finally (java.nio.file.Files/deleteIfExists link)))))))

@@ -1,7 +1,7 @@
 (ns gravity.reader
   "Native source intake, strict UTF-8 decoding and stage0 reader artifact assembly.
 
-  This namespace owns native source capture, strict byte decoding and the existing
+  This namespace owns native intake through an explicit byte owner, strict decoding and the existing
   artifact envelope and pass record.
   Path policy, parsing, syntax, source identity and diagnostic construction remain with their
   supplied owners. Operations are trusted seed dependencies, not evidence of
@@ -20,24 +20,25 @@
      :returns :decoded-utf8-text :admission :none :opens-source? false
      :operation-inputs [:sha256-bytes-hex-var :fail-var]}
     'read-source-text
-    {:arglists '([qst-or-gravity-source-var source-path-policy-fail-var decode-source-bytes-var path])
+    {:arglists '([qst-or-gravity-source-var source-path-policy-fail-var decode-source-bytes-var read-target-source-bytes-var path])
      :returns :decoded-utf8-text :admission :none :opens-source? true
-     :grants-file-authority? false
-     :operation-inputs [:qst-or-gravity-source-var :source-path-policy-fail-var :decode-source-bytes-var]}}
+     :grants-file-authority? false :direct-file-access? false
+     :source-byte-capture :explicit-existing-owner-var
+     :operation-inputs [:qst-or-gravity-source-var :source-path-policy-fail-var :decode-source-bytes-var :read-target-source-bytes-var]}}
    :artifact-inputs [:source-path :decoded-source-text :explicit-project-context
                      :seed-reader-operations :standard-reader-options
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
-                     :extension-predicate-var :path-policy-refusal-var :decoder-var]
+                     :extension-predicate-var :path-policy-refusal-var :decoder-var :source-byte-reader-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
-                      :unchanged-host-file-error]
+                      :unchanged-source-byte-owner-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
                :source-unit-identity :namespace-clause-syntax]
    :invalidates []
    :diagnostic-ownership
    {:owns ["L1-SOURCE-ENCODING"]
     :construction :explicit-existing-owner-var
-    :delegates ["L1-SOURCE-EXTENSION"]
+    :delegates ["L1-SOURCE-EXTENSION" "C2-ENCODING"]
     :propagates [:L1 :C2]
     :does-not-own [:token-and-form-policy :namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
@@ -142,13 +143,12 @@
     (.toString output)))
 
 (defn read-source-text
-  [qst-or-gravity-source-var source-path-policy-fail-var decode-source-bytes-var path]
+  [qst-or-gravity-source-var source-path-policy-fail-var decode-source-bytes-var read-target-source-bytes-var path]
   (when-not ((deref qst-or-gravity-source-var) path)
     ((deref source-path-policy-fail-var) path))
   ((deref decode-source-bytes-var)
    path
-   (java.nio.file.Files/readAllBytes
-    (.toPath (java.io.File. path)))))
+   ((deref read-target-source-bytes-var) path)))
 
 (doseq [operation [#'read-source-artifact #'decode-source-bytes #'read-source-text]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
