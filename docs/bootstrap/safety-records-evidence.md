@@ -503,3 +503,23 @@ receipts bind da68 and its unchanged baseline source files: Reader3 paths/0
 warnings/0 blockers; Safety7 paths/3486 unchanged warnings/0 blockers.
 Terminal receipts are archived outside the source checkout. Exact source
 review, own CI and clean current-main integration preflight remain required.
+
+## Loader alias CI main composition
+
+The next actual main is8a980ac27d9392c3e85eaead76646fc7f3f38810/tree
+dc2ba33e28b557b618abe61de8b25e857962faa0. Exactly two CI runner/test
+paths change: use, clojure.core aliases/renames and refer-clojure renames
+now fail conservatively to the full leaf suite. Both paths remain exact main
+through the normal conflict-free merge. No compiler, runtime, manifest or
+control inputs change. Whole-component conservation and provenance are
+rebound to this base; existing actual controls retain their unchanged inputs.
+
+Both complete current-manifest API/Core products have passed, including
+exact equality with the original CLI artifact data and raw text, with only
+the CLI newline and outer API evidence wrapper excluded. An intermediate
+parse/reprint text comparison changed nested map iteration order and failed;
+its log remains uniform-launcher-main-current-artifact-verify.log. The original
+raw comparison passes without removing or rewriting any artifact field.
+Independent reviewers accepted the prior exact source and closed that
+semantic-evidence condition. This composition still requires exact review,
+own CI and clean current-main preflight; prior-base CI remains historical.
