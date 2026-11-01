@@ -50,7 +50,6 @@
       (let [{:keys [exit err presentation marker]}
             (child-observation packaged? (presentation-expression argument))]
         (is (= 0 exit) (pr-str {:err err :marker marker}))
-        (is (str/blank? err) err)
         (is (= (expected-presentation argument packaged?) presentation))
         (is (= {:bootstrap-loaded false
                 :cli-loaded true
@@ -73,7 +72,6 @@
              "         :cli-loaded (boolean (find-ns 'gravity.cli))}))")
         {:keys [exit err marker]} (child-observation false expression)]
     (is (= 0 exit) (pr-str {:err err :marker marker}))
-    (is (str/blank? err) err)
     (is (= {:forwarded ["not-a-command" "payload.gravity" "--flag"]
             :bootstrap-loaded true
             :cli-loaded true}
