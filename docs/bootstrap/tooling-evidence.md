@@ -136,6 +136,30 @@ conservation, provenance and command logs use /tmp/uniform-tooling-evidence-*.
 Contextual lint, exact independent acceptance, own CI and clean current-main
 integration preflight remain required.
 
+## Standard-Library-main composition
+
+Standard Library PR726 advances actual main to
+d84f2837fe4747ece773a47176f499c27e62f0b7, tree
+5a32776ff5d0eb6d07f4350f9442c52874a5bc16. Both reviewers accepted source
+26329d10400e2c81e836bb517d9d2bf17dbb7b16 conditionally before that advance.
+A normal merge composes actual main; four genuine require/registration
+conflicts are reconstructed from complete main files and the unchanged Tooling
+association/test. All incoming Standard Library and other main code, tests,
+contracts and evidence remain byte-identical to main. Tooling stage, wrapper,
+focused tests and all three source-repair files remain identical to 26329d10.
+
+Fresh Tooling/W5/Standard Library/Ownership/Package/Runtime regressions pass
+37 tests / 1123 assertions; registration passes 36 / 1062 and language 6 / 11.
+The full engine and all four whole fixtures compile again. All nine full/text
+captures, five actual hashes/plan IDs, four native cases, body/arity/Var-read
+positions and single require delta conserve. Actual fixed-seed/native and
+non-executed Gravity inputs now bind to main d84. No failed, cancelled or
+earlier successful run is transferred to this new integration tuple.
+
+This complete composition needs its own exact reviews, contextual lint, own CI
+and clean current-main preflight. The scope and source-repair commits alone
+provide no integration credit, and no namespace or SH-24 completion follows.
+
 ## Acceptance boundary
 
 Retain actual source text/hashes, full plans and deterministic identities,
