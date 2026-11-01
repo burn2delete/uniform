@@ -30,6 +30,18 @@
      :presentation (str/join "\n" (butlast lines))
      :marker marker}))
 
+(defn- without-known-java-tool-options-banner
+  [stderr]
+  ;; The JDK emits this one deterministic line when CI supplies
+  ;; JAVA_TOOL_OPTIONS. Remove only the exact inherited value; any other
+  ;; stderr remains part of the assertion.
+  (let [options (System/getenv "JAVA_TOOL_OPTIONS")
+        banner (when (seq options)
+                 (str "Picked up JAVA_TOOL_OPTIONS: " options "\n"))]
+    (if (and banner (str/starts-with? stderr banner))
+      (subs stderr (count banner))
+      stderr)))
+
 (defn- presentation-expression
   [argument]
   (str "(require 'gravity.cli.launcher)"
@@ -81,7 +93,8 @@
       (let [{:keys [exit err marker]} (child-observation
                                       false (usage-expression arguments))]
         (is (= 0 exit) (pr-str {:err err :marker marker}))
-        (is (= (str (cli/cli-usage-text) "\n") err))
+        (is (= (str (cli/cli-usage-text) "\n")
+               (without-known-java-tool-options-banner err)))
         (is (= {:exit-code 2
                 :bootstrap-loaded false
                 :entrypoint-loaded false
@@ -89,7 +102,8 @@
                marker))))))
 
 (deftest build-route-uses-standalone-invocation
-  (let [called (atom nil)
+  (let [bootstrap-before (find-ns 'gravity.bootstrap)
+        called (atom nil)
         output (with-redefs [build-invocation/run-declared-input-build!
                              (fn [arguments]
                                (reset! called arguments)
@@ -101,10 +115,11 @@
                              clojure.core/shutdown-agents
                              (fn [])]
                  (with-out-str
-                   (launcher/-main "build" "--reader-inputs" "{}")))]
+                   (launcher/-main "build" "--reader-inputs" "{}")))
+        bootstrap-after (find-ns 'gravity.bootstrap)]
     (is (= ["build" "--reader-inputs" "{}"] @called))
     (is (= "{\"status\":\"passed\"}\n" output))
-    (is (nil? (find-ns 'gravity.bootstrap))))
+    (is (identical? bootstrap-before bootstrap-after)))
   (let [{:keys [exit err marker]}
         (child-observation
          false
