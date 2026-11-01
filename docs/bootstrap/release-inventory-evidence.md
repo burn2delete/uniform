@@ -3,7 +3,9 @@
 ## Purpose and governing contracts
 
 Move the existing native packaged-source and whole-JAR inventory report
-algorithms from Bootstrap component00906 into `gravity.release`. D1/D2/D3/D8/D9,
+algorithms from Bootstrap component00906 into `gravity.release`, correcting the
+expected source-entry order to match the existing sorted archive reader.
+D1/D2/D3/D8/D9,
 C1/C15, PKG3/PKG7/PKG10/PKG12, T1, BOOT8 and TEST2 govern the boundary. Phase18
 P18-T02 supplies the existing temporary JVM packaging implementation; this
 extraction does not reopen or complete a release milestone.
@@ -11,9 +13,10 @@ extraction does not reopen or complete a release milestone.
 ## Declared boundary
 
 The two report APIs consume observed entry names and explicit late owner Vars
-for expected inventory. They preserve expected/observed ordering, frequencies,
-missing and unexpected entries, exact membership and duplicate refusal. They
-perform no IO and introduce no entry-count allowance. Bootstrap retains its
+for expected inventory. Whole-file report ordering, frequencies, missing and
+unexpected entries, exact membership and duplicate refusal are preserved.
+Expected source entries now use the same canonical order as observed entries.
+They perform no IO and introduce no entry-count allowance. Bootstrap retains its
 compatibility arities, inventory definition, filesystem reads, Java compilation,
 JAR invocation and P18T02006 diagnostic construction. Producers do not import
 the release namespace; Bootstrap alone supplies the existing inventory ports.
@@ -25,8 +28,8 @@ capture complete native reports and actual disposable JAR outputs from the
 existing builder. Retain entry content hashes, source material and the actual
 JDK/compiler invocation. Reject a real JAR containing an unexpected entry and
 cover omissions, duplicates, wrong entry order and non-string entries. Compare
-complete report values and serialization, preserve both entire native
-components except the two compatibility wrappers, and retain late Var lookup
+complete report values and serialization, preserve the entire native component
+except the two compatibility wrappers and Bootstrap's single require, and retain late Var lookup
 and dependency exceptions.
 
 Run focused packaging/inventory and affected stage tests, language boundary,
@@ -35,6 +38,43 @@ Maintain an early draft PR. Own CI and exact clean current-main preflight are
 required before integration. This scope commit supplies no implementation
 credit; evidence results must distinguish actual artifact creation from any
 unrun launcher or broader release claims.
+
+## Actual baseline refusal and corrected behavior
+
+The first genuine disposable build emits a JAR, then rejects it as P18T02006.
+The whole-file report is valid with no missing or unexpected members. The source
+report has the same members on both sides, but expected declaration order puts
+diagnostics before Darwin publication while the existing archive reader sorts
+Darwin publication before diagnostics. This is a false source-order refusal,
+not evidence of an accepted package. The original log, full diagnostic and
+rejected archive remain in `/tmp/uniform-release-inventory-evidence/` and
+`/tmp/uniform-release-inventory-before-control.log`.
+
+The only rule correction sorts expected source names before comparison.
+Observed order, duplicate detection, non-string handling, missing/unexpected
+members and diagnostic construction retain their existing behavior. Both
+complete report bodies move through explicit late Var ports; the whole native
+component otherwise conserves. Bootstrap gains only the release require.
+
+The corrected builder emits a real disposable JAR and both reports accept it.
+A second genuine build has an unexpected class entry added by the actual JDK
+archive command before the builder's existing inventory gate; the gate rejects
+P18T02006 with the exact unexpected member. This is trusted host test
+interposition around real archive creation, not authenticated source admission.
+The launcher is compiled but not executed. New focused tests pass6/65; the
+existing inventory regression passes1/59. Ownership39/1107 and language6/11
+pass. Coupled Release/CLI/Build/Reader/runtime/package/library/literal tests
+pass41/573; docs240/19, roadmap and governance185 pass. The new standalone
+helper uses the coordinator's SH-00 association;
+primary component counts, completion formulas and migration pins are unchanged.
+
+Controls are `/tmp/uniform-release-inventory-control.clj` and the read-only
+`/tmp/uniform-release-inventory-verify.clj`. The original failure and accepted
+and tampered archive snapshots retain raw archive and entry hashes. Changed
+Bootstrap source changes the archive hash; unchanged launcher and other native
+materials remain byte-identical. No cross-revision archive identity equality or
+PKG7 reproducibility claim is made. Remaining coupled checks, lint, exact review,
+own CI and clean current-base preflight still govern integration.
 
 ## Unsupported boundaries
 
