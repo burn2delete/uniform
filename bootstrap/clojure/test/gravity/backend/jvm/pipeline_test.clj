@@ -251,3 +251,134 @@
         (is (= :class-file (get-in product [:refusals :tamper :data :artifact-kind])))
         (is (= "java.nio.file.FileAlreadyExistsException" (get-in product [:refusals :existing-file :class]))))
       (finally (remove-test-directory! directory)))))
+
+(deftest toolchain-api-and-late-wrapper-ports
+  (doseq [[old owner arguments port-count]
+          [['run-process! #'jvm/run-process! '[command source-path diagnostic-id message] 1]
+           ['tool-version! #'jvm/tool-version! '[command source-path] 3]
+           ['write-file! #'jvm/write-file! '[path content] 0]
+           ['stored-jar-entry! #'jvm/stored-jar-entry! '[jar-output entry-name bytes] 0]
+           ['write-deterministic-jar! #'jvm/write-jar! '[jar-path class-directory] 2]
+           ['classfile-major #'jvm/classfile-major '[path] 0]
+           ['jar-record #'jvm/jar-record '[jar-path] 0]
+           ['validate-content-hashes! #'jvm/validate-content-hashes! '[source-path manifest paths] 2]]]
+    (let [compatibility (ns-resolve 'gravity.bootstrap (symbol (str "jvm-backend-" old)))
+          values (vec (repeat (count arguments) (Object.)))
+          calls (atom nil)]
+      (is (= (list arguments) (:arglists (meta compatibility))) old)
+      (with-redefs-fn {owner (fn [& args] (reset! calls args) :observed)}
+        #(is (= :observed (apply compatibility values)) old))
+      (is (every? var? (take port-count @calls)) old)
+      (is (= values (vec (drop port-count @calls))) old)))
+  (let [contract (:gravity/namespace-contract (meta #'jvm/run-process!))]
+    (is (= (set (keys (ns-publics 'gravity.backend.jvm))) (set (keys (:public-api contract)))))
+    (doseq [[name operation] (ns-publics 'gravity.backend.jvm)]
+      (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])) name)
+      (is (= contract (:gravity/namespace-contract (meta operation)))))))
+
+(deftest tool-versions-and-hashes-preserve-late-data-and-failure
+  (let [target (with-local-vars [release 21] release)
+        calls (atom [])
+        run (fn [& args]
+              (swap! calls conj args)
+              (alter-var-root target (constantly 22))
+              {:exit 0 :stdout-bytes (mapv int "javac 21.0.1\n") :stderr ""})
+        failure (ex-info "original refusal" {:id :original})
+        observed (atom nil)]
+    (is (identical? failure
+                   (try (jvm/tool-version! run
+                          (fn [& args] (reset! observed args) (throw failure))
+                          target "compiler" "source.gravity")
+                        nil (catch clojure.lang.ExceptionInfo ex ex))))
+    (is (= [[ ["compiler" "-version"] "source.gravity" "B5-TARGET"
+              "JVM target tool version check failed"]] @calls))
+    (is (= 22 (get-in (vec @observed) [4 :required-major])))
+    (is (= "javac 21.0.1" (get-in (vec @observed) [4 :observed-version]))))
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "gravity-jvm-hash-test-" (make-array java.nio.file.attribute.FileAttribute 0)))
+        file (clojure.java.io/file directory "content")
+        failure (ex-info "late hash refusal" {:id :late})
+        fail-var #'bootstrap/jvm-backend-fail!
+        hash-var #'bootstrap/sha256-bytes-hex
+        observed (atom nil)]
+    (try
+      (spit file "actual")
+      (with-redefs-fn {hash-var (fn [_]
+                                 (alter-var-root fail-var
+                                   (constantly (fn [& args] (reset! observed args) (throw failure))))
+                                 "changed")}
+        #(with-redefs-fn {fail-var (fn [& _] (throw (Exception. "eager failure selected")))}
+           (fn []
+             (is (identical? failure
+                    (try (native "validate-content-hashes!" "source.gravity"
+                                 {:content-hashes {:jar "sha256:expected"}} {:jar (.getPath file)})
+                         nil (catch clojure.lang.ExceptionInfo ex ex)))))))
+      (is (= "B13-HASH" (first @observed)))
+      (is (= "sha256:changed" (get-in (vec @observed) [4 :actual-content-hash])))
+      (is (= :passed (native "validate-content-hashes!" "source.gravity" {} {})))
+      (is (= :passed (native "validate-content-hashes!" "source.gravity" nil nil)))
+      (let [missing (observe-toolchain
+                     #(native "validate-content-hashes!" "source.gravity"
+                              {:content-hashes {:jar "sha256:missing"}} {}))]
+        (is (= "B13-HASH" (get-in missing [:data :id])))
+        (is (nil? (get-in missing [:data :actual-content-hash]))))
+      (doseq [content ["short" "invalid-header"]]
+        (spit file content)
+        (is (nil? (native "classfile-major" (.toPath file)))))
+      (is (= "java.util.zip.ZipException"
+             (:class (observe-toolchain #(native "jar-record" (.toPath file))))))
+      (finally (remove-test-directory! directory)))))
+
+(deftest jar-entry-order-late-interposition-and-create-new
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "gravity-jvm-jar-test-" (make-array java.nio.file.attribute.FileAttribute 0)))
+        classes (clojure.java.io/file directory "classes")
+        file (clojure.java.io/file directory "result.jar")
+        stored-var #'bootstrap/jvm-backend-stored-jar-entry!
+        old-stored @stored-var
+        entries (atom [])]
+    (try
+      (doseq [name ["gravity/stage2/Program.class" "module-info.class"]]
+        (native "write-file!" (.toPath (clojure.java.io/file classes name)) "opaque class bytes"))
+      (with-redefs-fn {stored-var
+                      (fn [output name bytes]
+                        (swap! entries conj [:first name])
+                        (alter-var-root stored-var
+                          (constantly (fn [next-output next-name next-bytes]
+                                        (swap! entries conj [:late next-name])
+                                        (old-stored next-output next-name next-bytes))))
+                        (old-stored output name bytes))}
+        #(native "write-deterministic-jar!" (.toPath file) (.toPath classes)))
+      (is (= [[:first "META-INF/MANIFEST.MF"] [:late "gravity/stage2/Program.class"]
+              [:late "module-info.class"]] @entries))
+      (with-open [jar (java.util.jar.JarFile. file)]
+        (doseq [entry (enumeration-seq (.entries jar))]
+          (is (= java.util.zip.ZipEntry/STORED (.getMethod ^java.util.jar.JarEntry entry)))
+          (is (= 0 (.getTime ^java.util.jar.JarEntry entry)))
+          (is (= (.getSize ^java.util.jar.JarEntry entry)
+                 (.getCompressedSize ^java.util.jar.JarEntry entry)))))
+      (let [before (file-bytes file)]
+        (is (= "java.nio.file.FileAlreadyExistsException"
+               (:class (observe-toolchain #(native "write-deterministic-jar!" (.toPath file) (.toPath classes))))))
+        (is (= before (file-bytes file))))
+      (finally (remove-test-directory! directory)))))
+
+(deftest real-process-unavailable-tool-and-temporary-output-cleanup
+  (let [temporary (clojure.java.io/file (System/getProperty "java.io.tmpdir"))
+        outputs (fn [] (set (map #(.getName ^java.io.File %)
+                                 (filter #(re-matches #"gravity-jvm-(?:out|err)-.*" (.getName ^java.io.File %))
+                                         (.listFiles temporary)))))
+        before (outputs)
+        unavailable (observe-toolchain #(native "run-process!"
+                                         ["/gravity-test-no-such-tool"] "source.gravity"
+                                         "B5-TARGET" "test tool failed"))]
+    (is (= "B5-TARGET" (get-in unavailable [:data :id])))
+    (is (= :java21-target-toolchain (get-in unavailable [:data :missing-fact])))
+    (is (= before (outputs)))
+    (let [failure (ex-info "original process failure" {:id :original-process})]
+      (with-redefs [bootstrap/jvm-backend-fail! (fn [& _] (throw failure))]
+        (is (identical? failure
+               (try (native "run-process!" ["java" "--gravity-unknown-option"]
+                            "source.gravity" "B5-TARGET" "test process refused")
+                    nil (catch clojure.lang.ExceptionInfo ex ex)))))
+      (is (= before (outputs))))))
