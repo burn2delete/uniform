@@ -187,6 +187,30 @@ exact independent review, this composed head's own CI and clean current-main
 integration preflight remain required. Neither old acceptance nor a later
 green run supplies old-head or old-watchdog credit.
 
+## Package-main composition
+
+Package PR724 advances actual main to
+6dcba8de85797f4f19b865db89e44ef4bd0c5dba, tree
+cb42bf633ac8db611758abda10f4e2e55a7d13da. A normal merge composes that main
+with accepted source 92f86314bac1e3bac027e71a32787ea6699e1721.
+Three registration conflicts are reconstructed from complete main files,
+retaining Package and appending the existing Ownership association and test.
+The namespace map and Bootstrap require also retain their complete main inputs.
+All Package code, tests and evidence remain byte-identical to main; Ownership
+algorithms, wrappers, ports, contract and focused tests remain identical to
+92f86314. No CI policy or authority input changes.
+
+Fresh Ownership/Package/Runtime/Lowering tests pass 19 / 353. Registration passes
+34 / 1030 and the language boundary passes 6 / 11. Nine moved bodies and all
+unmoved component forms conserve. Fresh paired producer and compiler provenance
+records use the package-main prefix and the same fixed-seed/native boundary;
+the original clean-7019 control remains explicitly historical evidence.
+
+Both reviewers accepted 92f86314 conditionally, but that tuple is now stale for
+integration. Its own CI 41255462495 remains a separate observation. The new
+composition requires its own exact reviews, lint, CI and clean current-main
+preflight; none of those gates is conferred by earlier acceptance or failures.
+
 ## Unsupported boundaries
 
 This is partial temporary Clojure organization. Canonical C9 check/verify,
