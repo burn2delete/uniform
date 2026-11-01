@@ -9,14 +9,17 @@ provenance, stage boundaries and regression evidence.
 
 ## Declared boundary
 
-The new stage API takes a path and three explicit late owner Vars: the existing
-co-canonical extension predicate, path-policy refusal and captured-byte decoder.
-It retains extension refusal before valid-path byte capture, the existing Java
-file read, exact path transport and UTF-8 decoding. Bootstrap keeps the public
-compatibility function, source-policy diagnostic construction and its invalid
-extension hash capture. Existing stage decoding and artifact assembly remain
-unchanged. No source-callable builtin, capability grant or alternate admission
-path is introduced.
+The stage API takes a path and four explicit late owner Vars: the existing
+co-canonical extension predicate, path-policy refusal, captured-byte decoder
+and source-byte owner. It retains extension refusal before valid-path byte
+capture, the supplied byte-owner operation, exact path transport and UTF-8
+decoding. Bootstrap keeps the public compatibility function and the
+one-argument invalid-extension byte capture. The separately recorded path
+diagnostic slice moves two-argument diagnostic construction and hashing to
+gravity.reader; source intake calls its supplied policy owner in either
+composition. Existing stage decoding and artifact assembly remain exact.
+No source-callable builtin, capability grant or alternate admission path
+is introduced.
 
 ## Evidence obligations
 
@@ -36,13 +39,14 @@ commit carries no implementation credit or new authority.
 
 ## Implemented development evidence
 
-The exact former file-read body now lives in `gravity.reader/read-source-text`.
-Its three owner lookups are explicit late Var ports. Bootstrap's compatibility
-arity remains `[path]`; its extension diagnostic/hash capture and all surrounding
-component behavior remain unchanged. Existing decoder and artifact assembly
-bodies remain exact. Metadata and the stage map distinguish native file capture
-from supplied-byte decoding and assign the extension refusal to its existing
-owner. No Bootstrap or CLI dependency is introduced into Reader.
+The source-intake body now lives in gravity.reader/read-source-text with
+four explicit late Var ports after the main byte-owner composition below.
+Bootstrap's compatibility arity remains [path]. The intake extraction
+preserves the supplied path-policy behavior; two-argument refusal/hash
+ownership is described by the separate path-diagnostic slice. Existing
+decoder and artifact assembly bodies remain exact. Metadata and the stage
+map distinguish delegated native capture from supplied-byte decoding.
+No Bootstrap or CLI dependency is introduced into Reader.
 
 Real native controls accept two files, reject malformed UTF-8 and invalid
 extensions with their original complete diagnostics, and preserve actual missing
