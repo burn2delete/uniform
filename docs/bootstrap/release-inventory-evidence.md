@@ -92,6 +92,27 @@ false refusal as immutable history. New exact-source review, contextual lint,
 own CI and clean current-base preflight remain gates. Older base checks do not
 confer current-base acceptance or release authority.
 
+## Leaf CI dependency main composition
+
+Actual main09e48072fbb69131dbe3a7826b4dbbc4c9bb45f0/tree
+c63848d2d311935d3b0764c64a2bb0e6675f70e6 changes exactly four CI workflow,
+runner/test and documentation paths. All four are preserved byte-for-byte.
+Release algorithms, native components, fixtures and executed archive inputs
+are unchanged from eedff158, with no implementation changes from this composition.
+Unknown or cross-cutting leaf changes retain the new selector's full fallback.
+Source-Core readiness remains omitted, not passed. Current-base archive and
+identity/conservation controls, affected checks, independent acceptance, own CI
+and clean integration preflight remain gates. Older green does not transfer.
+
+## CI harness environment evidence
+
+The current CI runner tests pass20/221 with the installed linter directory on
+PATH. The initial invocation lacked that directory and recorded20/192 with two
+missing-linter errors; its nonpass log remains at
+`/tmp/uniform-leaf-main-ci-runner-missing-linter-nonpass.log`. Correcting the
+command environment changes no repository source, guard, policy or watchdog.
+Terminal harness receipts are archived outside the source checkout.
+
 ## Unsupported boundaries
 
 Expected inventory and status fields are trusted native data, not artifact
