@@ -1,3 +1,4 @@
+(declare sh03-reader-read-target-source-bytes!)
 
 
 (defn compile-source-from-records
@@ -43,7 +44,7 @@
 (defn read-gravity-source-text
   [path]
   (gravity.reader/read-source-text #'qst-or-gravity-source? #'source-path-policy-fail!
-                                   #'decode-gravity-source-bytes path))
+                                   #'decode-gravity-source-bytes #'sh03-reader-read-target-source-bytes! path))
 
 (defn compile-file
   [path]
