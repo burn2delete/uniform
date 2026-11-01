@@ -129,3 +129,125 @@
                                    :test-target "subject.gravity" input)
                nil (catch clojure.lang.ExceptionInfo observed observed))))
     (is (= [["subject.gravity" :test-target input]] @seen))))
+
+(defn- observe-toolchain [f]
+  (try {:status :accepted :value (f)}
+       (catch Exception ex
+         {:status :rejected :class (.getName (class ex))
+          :message (.getMessage ex) :data (ex-data ex)})))
+
+(defn- file-bytes [file]
+  (mapv #(bit-and (int %) 255)
+        (java.nio.file.Files/readAllBytes (.toPath (clojure.java.io/file file)))))
+
+(defn- remove-test-directory! [directory]
+  (doseq [file (reverse (file-seq (clojure.java.io/file directory)))]
+    (java.nio.file.Files/deleteIfExists (.toPath file))))
+
+(defn- toolchain-products [directory extension]
+  ;; Only ordinary fixed-seed source compilation and trusted internal output
+  ;; helpers are used here. No packet, authority token or B1 admission is minted.
+  (let [source-path (.getCanonicalPath
+                     (clojure.java.io/file
+                      (str "bootstrap/clojure/fixtures/jvm-toolchain/accepted" extension)))
+        source-text (slurp source-path :encoding "UTF-8")
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        input (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path source-text)
+        java-source (native "java-source" input)
+        source-map (native "source-map" source-text java-source)
+        work (clojure.java.io/file directory "work")
+        paths (native "output-paths" (.getPath work))
+        _ (native "write-file!" (.toPath (clojure.java.io/file (:java-source paths))) java-source)
+        _ (native "write-file!" (.toPath (clojure.java.io/file (:module-source paths))) bootstrap/jvm-backend-module-source)
+        classes (clojure.java.io/file work "classes")
+        _ (.mkdirs classes)
+        command ["javac" "--release" "21" "-encoding" "UTF-8" "-g:source,lines"
+                 "-proc:none" "-implicit:none" "-Werror" "-d" (.getPath classes)
+                 (:module-source paths) (:java-source paths)]
+        compiler-result (native "run-process!" command source-path "B5-TARGET"
+                                "javac rejected generated Java 21 source")
+        _ (native "write-deterministic-jar!" (.toPath (clojure.java.io/file (:jar paths))) (.toPath classes))
+        jar-record (native "jar-record" (.toPath (clojure.java.io/file (:jar paths))))
+        class-major (native "classfile-major" (.toPath (clojure.java.io/file (:class-file paths))))
+        duplicate (clojure.java.io/file directory "second.jar")
+        _ (native "write-deterministic-jar!" (.toPath duplicate)
+                  (.toPath (clojure.java.io/file work "classes")))
+        artifacts (into (sorted-map)
+                        (for [kind [:java-source :module-source :class-file :module-class :jar]]
+                          [kind {:path (get paths kind) :bytes (file-bytes (get paths kind))}]))
+        hashes (into (sorted-map)
+                     (for [[kind {:keys [bytes]}] artifacts]
+                       [kind (str "sha256:" (bootstrap/sha256-bytes-hex
+                                             (byte-array (map unchecked-byte bytes))))]))
+        manifest {:content-hashes hashes}
+        verified (native "validate-content-hashes!" source-path manifest paths)
+        repeated? (= (file-bytes duplicate) (file-bytes (:jar paths)))
+        validation (native "validate-plan!" source-path input)
+        plan-id (str "sha256:" (bootstrap/sha256-hex
+                               (pr-str (bootstrap/c-backend-canonical-value (dissoc input :plan-id)))))
+        _ (assert (= plan-id (:plan-id input)))
+        _ (assert (= (str "sha256:" (bootstrap/sha256-hex source-text))
+                     (get-in source-map [:source :content-hash])))
+        execution (native "run-process!" ["java" "-jar" (:jar paths)] source-path
+                          "B5-TARGET" "JVM test execution failed")
+        _ (spit (:java-source paths) "this is not Java")
+        invalid-java (observe-toolchain
+                      #(native "run-process!" command source-path "B5-TARGET"
+                               "javac rejected generated Java 21 source"))
+        _ (spit (:java-source paths) java-source)
+        wrong-class (let [path (.toPath (clojure.java.io/file (:class-file paths)))
+                          bytes (java.nio.file.Files/readAllBytes path)]
+                      (aset-byte bytes 7 (byte 64))
+                      (java.nio.file.Files/write path bytes (make-array java.nio.file.OpenOption 0))
+                      (native "classfile-major" path))
+        tamper (observe-toolchain #(native "validate-content-hashes!" source-path manifest paths))
+        existing (observe-toolchain #(native "write-file!" (.toPath (clojure.java.io/file (:java-source paths))) "replacement"))
+        rejected-path (.getCanonicalPath
+                       (clojure.java.io/file
+                        (str "bootstrap/clojure/fixtures/jvm-toolchain/rejected" extension)))
+        rejected-source (slurp rejected-path :encoding "UTF-8")
+        rejected-emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! rejected-path :jvm))
+        rejected-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan rejected-emitter rejected-path rejected-source)
+        source-refusal (observe-toolchain #(native "validate-plan!" rejected-path rejected-plan))]
+    {:boundary :ordinary-fixed-seed-source-and-internal-java-output
+     :source {:path source-path :text source-text :sha256 (bootstrap/sha256-hex source-text)}
+     :emitter emitter :plan input :recomputed-plan-id plan-id :validation validation
+     :java-source java-source :module-source bootstrap/jvm-backend-module-source
+     :source-map source-map :tool-versions (mapv #(native "tool-version!" % source-path) ["javac" "java"])
+     :artifacts artifacts :content-hashes hashes :hash-validation verified
+     :jar-record jar-record :class-major class-major :altered-class-major wrong-class
+     :compiler-command command :compiler-result compiler-result
+     :repeated-jar-bytes-equal? repeated? :execution execution
+     :rejected-source {:path rejected-path :text rejected-source
+                       :sha256 (bootstrap/sha256-hex rejected-source) :plan rejected-plan}
+     :refusals {:source source-refusal :javac invalid-java
+                :tamper tamper :existing-file existing}}))
+
+(deftest real-source-java21-jar-and-refusals
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "gravity-jvm-toolchain-test-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))]
+    (try
+      (doseq [extension [".gravity" ".qst"]
+              :let [root (clojure.java.io/file directory (subs extension 1))
+                    _ (.mkdirs root)
+                    product (toolchain-products (.getPath root) extension)]]
+        (is (= :passed (:validation product) (:hash-validation product)))
+        (is (= 65 (:class-major product)))
+        (is (= 64 (:altered-class-major product)))
+        (is (true? (:repeated-jar-bytes-equal? product)))
+        (is (= {:entries ["META-INF/MANIFEST.MF" "gravity/stage2/Program.class" "module-info.class"]
+                :main-class "gravity.stage2.Program" :module-name "gravity.stage"}
+               (:jar-record product)))
+        (is (= 0 (get-in product [:execution :exit]) (get-in product [:compiler-result :exit])))
+        (is (= "gravity 42  false\nlocal\n"
+               (String. (byte-array (map unchecked-byte (get-in product [:execution :stdout-bytes])))
+                        java.nio.charset.StandardCharsets/UTF_8)))
+        (is (= "C14-UNSUPPORTED" (get-in product [:refusals :source :data :id])))
+        (is (= :vector-literal (get-in product [:refusals :source :data :unsupported-op])))
+        (is (= "B5-TARGET" (get-in product [:refusals :javac :data :id])))
+        (is (= :jvm-target-tool-acceptance (get-in product [:refusals :javac :data :missing-fact])))
+        (is (= "B13-HASH" (get-in product [:refusals :tamper :data :id])))
+        (is (= :class-file (get-in product [:refusals :tamper :data :artifact-kind])))
+        (is (= "java.nio.file.FileAlreadyExistsException" (get-in product [:refusals :existing-file :class]))))
+      (finally (remove-test-directory! directory)))))
