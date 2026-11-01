@@ -22998,3 +22998,439 @@
           (is (= :rejected (:status rejected)))
           (is (= ["C7-VERIFY" :unsupported-or-incoherent-throwing-call-component]
                  ((juxt :rule :reason) (first (:diagnostics rejected))))))))))
+
+
+(defn- gis3-current-source-Core-products
+  ([stage] (gis3-current-source-Core-products "compact-source-proof-interval" stage))
+  ([basename stage]
+  ;; Real source transport, stopping before the independent B47/coordinator
+  ;; request constructor. These rows alone confer no C7 proof authority.
+  (let [source-path (fixture-path "preserved" basename ".gravity")
+        text (slurp source-path)
+        resolved (function-work-policy-current-resolution source-path text
+                   {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
+        artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
+        boundary (:gravity-core-boundary artifact)]
+    {:source-path source-path :source-text text :resolved resolved :core-wrapper artifact
+     :core (:canonical-core-artifact boundary)
+     :forms (get-in boundary [:authenticated-core-request :forms])
+     :bindings (get-in boundary [:authenticated-core-request :binding-table])})))
+
+(deftest sh08-gis3-current-source-Core-development-kernel
+  ;; This checks the actual source/Core contract, not GIS construction, B47
+  ;; verification, a preseeded type map, or a second typed .qst pass.
+  (let [{:keys [source-path source-text resolved core-wrapper core forms bindings]}
+        (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        by-form (into {} (map (juxt :form-id identity) forms))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        records (filter #(= 'bounded (:definition-name %)) (:function-records core))
+        record (first records) function (nodes (:function-core-node-id record))
+        parameter-id (first (:parameter-binding-ids record)) parameter (by-binding parameter-id)
+        parameter-form (by-form (get-in function [:attributes :parameter-form-id]))
+        outer (nodes (:body-core-node-id record)) inner (nodes (first (:children outer)))
+        subtraction (nodes (get (:children outer) 1))
+        selected (filter #(= (:node-id subtraction) (:core-node-id %)) (:calls core))
+        call (first selected)
+        definition (first (filter #(= (:definition-binding-id record) (:binding-id %)) (:definitions core)))
+        references (filter #(= parameter-id (get-in % [:attributes :binding-id])) (:nodes core))]
+    (is (= source-text (slurp (fixture-path "preserved" "compact-source-proof-interval" ".qst"))))
+    (is (= :accepted (:status resolved) (:status core-wrapper)))
+    (is (= 'self-hosting.sh08.compact-source-proof-interval (get-in core [:module :namespace])))
+    (is (= 1 (count records) (count selected)))
+    (is (= :named-top-level (:definition-kind record)))
+    (is (= 1 (:fixed-arity record) (count (:parameter-binding-ids record))))
+    (is (= :fn (:core-form function)))
+    (is (not (contains? record :signature)))
+    (is (not (contains? (:attributes function) :signature)))
+    (is (= [:vector ['x]] ((juxt :kind :value) parameter-form)))
+    (is (= [:lexical :local 'x] ((juxt :binding-class :kind :name) parameter)))
+    ;; C5 does not currently emit a mutability field for ordinary parameters.
+    ;; Default-immutable source and the complete mutation/reentry census must
+    ;; establish this premise; a missing field alone is never proof.
+    (is (contains? #{nil :immutable} (:mutability parameter)))
+    (is (= (:function-core-node-id record) (:value-node-id definition)))
+    (is (= (:definition-core-node-id record) (:core-node-id definition)))
+    (is (= [:if :if :call] (mapv :core-form [outer inner subtraction])))
+    (is (= '- (:name (by-binding (:operator-binding-id call)))))
+    (is (= 3 (count references)))
+    (is (every? #(and (= [] (:children %)) (= [parameter-id] (:resolved-binding-ids %))
+                      (= (:function-syntax-id record) (get-in % [:evaluation :owner-function-syntax-id]))) references))
+    (is (= 4 (count (:calls core)) (count (:call-edges core))))
+    (is (= 1 (count (filter #(= :local-function (:classification %)) (:call-edges core)))))
+    (is (= [] (:mutations core) (:recursion-components core) (:recur-transfers core)))
+    (is (every? #(and (map? (:source %)) (contains? by-form (get-in % [:source :form-id]))) (:nodes core)))
+    (prn {:gis3-real-source-Core :checked :source-path source-path
+          :canonical-core-id (:artifact-id core) :source-forms (count forms)
+          :nodes (count (:nodes core)) :binding-rows (count bindings)
+          :B47-verification-complete false :C7-inference-complete false
+          :numeric-proof-established false :paired-source-bytes-only true})))
+
+(deftest sh08-gis3-module-entry-unification-development-kernel
+  ;; This grounds one actual module entry through the existing C7 operations.
+  ;; It is not the complete paid GIS census or a public acceptance result.
+  (let [{:keys [core forms bindings]} (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        by-form (into {} (map (juxt :form-id identity) forms))
+        records (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
+        record (first (filter #(= 'bounded (:definition-name %)) (:function-records core)))
+        functions (invoke-c7 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
+        entries (filterv #(= (:definition-binding-id record) (:operator-binding-id %)) (:calls core))
+        call (first entries) edge (first (filter #(= (:core-node-id call) (:call-core-node-id %)) (:call-edges core)))
+        literals (into {} (for [node (:nodes core) :when (= :literal (:core-form node))]
+                            [(:node-id node) (invoke-c7 'sh08-ft-infer-node [node {} {} {} []])]))
+        context {:ordering-core core :ordering-bindings by-binding :lookup-bindings bindings :association-forms by-form}
+        unify #(invoke-c7 'sh08-ft-call-constraints-with-context [%1 %2 nodes literals {} functions context])
+        joined (unify entries [edge]) parameter-id (first (:parameter-binding-ids record))
+        argument (nodes (first (:argument-node-ids call)))
+        bad (assoc call :argument-node-ids []) wrong-arity (unify [bad] [edge])
+        subtraction (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        subtraction-edge (first (filter #(= (:core-node-id subtraction) (:call-core-node-id %)) (:call-edges core)))
+        unsupported (unify [subtraction call] [subtraction-edge edge])]
+    (is (= 1 (count entries)))
+    (is (= :gravity.type/unknown (get-in functions [(:function-syntax-id record) :parameters 0 :type])))
+    (is (= :gravity.type/unknown (get-in functions [(:function-syntax-id record) :return])))
+    (is (nil? (:caller-function-syntax-id edge)))
+    (is (true? (invoke-c7 'sh08-ft-call-valid? [call nodes by-binding])))
+    (is (true? (invoke-c7 'sh08-ft-call-edge-valid? [edge call records (:definitions core) nodes])))
+    (is (true? (invoke-c7 'sh08-ft-caller-edge-valid? [edge records (nodes (:core-node-id call))])))
+    (is (true? (invoke-c7 'sh08-ix-literal? [argument :integer 42 by-form])))
+    (is (= :gravity.type/integer (literals (:node-id argument))))
+    (is (= [] (:diagnostics joined)))
+    (is (= :gravity.type/integer (get-in joined [:binding-types parameter-id])))
+    (is (false? (invoke-c7 'sh08-ft-call-valid? [bad nodes by-binding])))
+    (is (= :call-arity-mismatch (get-in wrong-arity [:diagnostics 0 :reason])))
+    ;; Preserve the actual current frontier: unsupported subtraction still
+    ;; stops this scan before the later ordinary caller. No public deferral
+    ;; or supplied parameter fact is introduced by this development control.
+    (is (= :unsupported-nonlocal-call (get-in unsupported [:diagnostics 0 :reason])))
+    (is (not (contains? (:binding-types unsupported) parameter-id)))
+    (prn {:gis3-original-module-entry-unification :checked
+          :ordinary-scalar-compatibility-work (:compatibility-work-count joined)
+          :complete-entry-census-implemented false :new-physical-and-header-fees-closed false
+          :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
+
+
+
+(defn- gis3-semantic-inspection [{:keys [core bindings forms target]}]
+  {:result (invoke-c7 'sh08-gis3-cold-entry [core bindings forms target])})
+
+(deftest sh08-gis3-cold-entry-semantic-development-kernel
+  ;; Actual original rows plus explicitly normalized hostile mutations. These
+  ;; checks do not establish B47 authentication or public numeric acceptance.
+  (let [{:keys [core bindings] :as original}
+        (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        target-call (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        target (:core-node-id target-call)
+        input (assoc original :target target)
+        record (first (:function-records core)) pid (first (:parameter-binding-ids record))
+        bid (:definition-binding-id record) fid (:function-core-node-id record) owner (:function-syntax-id record)
+        entry (first (filter #(= bid (:operator-binding-id %)) (:calls core)))
+        entry-id (:core-node-id entry) argument-id (first (:argument-node-ids entry))
+        node (first (filter #(= entry-id (:node-id %)) (:nodes core)))
+        argument (first (filter #(= argument-id (:node-id %)) (:nodes core)))
+        entry-form-id (get-in node [:source :form-id]) argument-form-id (get-in argument [:source :form-id])
+        run gis3-semantic-inspection
+        accepted (run input)
+        change-row (fn [rows key id operation] (mapv #(if (= id (get % key)) (operation %) %) rows))
+        caller-value (fn [value]
+                       (-> input
+                           (update-in [:core :nodes] change-row :node-id argument-id #(assoc-in % [:attributes :value] value))
+                           (update :forms change-row :form-id argument-form-id #(assoc % :value value))
+                           (update :forms change-row :form-id entry-form-id #(assoc % :value (list 'bounded value)))))
+        outside (run (caller-value 1000))
+        mutated (assoc-in input [:core :mutations] [{:core-node-id :mutation :target-binding-id pid}])
+        recursive (assoc-in input [:core :recursion-components]
+                            [{:ordinal 0 :kind :self-recursive :function-syntax-ids [owner]
+                              :function-core-node-ids [fid] :internal-call-edge-ordinals []}])
+        function-reentry (assoc-in input [:core :recur-transfers]
+                                   [{:recur-core-node-id :reentry :target-id owner}])
+        loop-reentry (-> input
+                         (update-in [:core :recur-targets] conj
+                                    {:target-id :loop-target :owner-core-node-id (:node-id argument) :binding-ids [pid]})
+                         (assoc-in [:core :recur-transfers] [{:recur-core-node-id :reentry :target-id :loop-target}]))
+        wrong-arity (update-in input [:core :calls] change-row :core-node-id entry-id #(assoc % :argument-node-ids []))
+        wrong-ordinal (update-in input [:core :call-edges] change-row :call-core-node-id entry-id #(assoc % :ordinal 0.0))
+        wrong-attribute (update-in input [:core :nodes] change-row :node-id entry-id #(assoc-in % [:attributes :argument-count] 1.0))
+        wrong-coordinate (update-in input [:core :nodes] change-row :node-id entry-id #(assoc-in % [:evaluation :order 0 :index] 0.0))
+        wrong-reference (update-in input [:core :nodes]
+                                  #(mapv (fn [n] (if (and (= pid (get-in n [:attributes :binding-id]))
+                                                                         (not= (:node-id n) (first (:argument-node-ids target-call))))
+                                                   (assoc n :resolved-binding-ids []) n)) %))
+        exported (assoc-in input [:core :module :exports] ['bounded])
+        qualified-export (assoc-in input [:core :module :exports]
+                                   [(symbol (str (get-in core [:module :namespace]) "/bounded"))])
+        annotated (update-in input [:core :function-records]
+                             #(mapv (fn [r] (assoc r :signature {:parameters [nil] :return nil})) %))
+        mutable (update input :bindings change-row :binding-id pid #(assoc % :mutability :mutable))
+        operator-id (:operator-binding-id (first (filter #(= target (:core-node-id %)) (:calls core))))
+        wrong-package (update input :bindings change-row :binding-id operator-id #(assoc-in % [:package :version] "forged"))
+        wrong-profile (update input :bindings change-row :binding-id operator-id #(assoc % :profile-set [:kernel]))]
+    (is (= :original-entry-Integer-derived (get-in accepted [:result :status])))
+    (is (= pid (get-in accepted [:result :parameter-binding-id])))
+    (is (= :gravity.type/integer (get-in accepted [:result :parameter-type])))
+    (is (= [] (get-in accepted [:result :ordinary-argument-unification :diagnostics])))
+    (is (false? (get-in accepted [:result :numeric-proof-established])))
+    ;; Integer caller facts are not restricted to the guard's ASCII interval.
+    (is (= :original-entry-Integer-derived (get-in outside [:result :status])))
+    (doseq [[label changed reason]
+            [[:mutation mutated :compact-gis-entry-mutation-or-reentry]
+             [:recursion recursive :compact-gis-entry-mutation-or-reentry]
+             [:function-reentry function-reentry :compact-gis-entry-mutation-or-reentry]
+             [:parameter-loop-reentry loop-reentry :compact-gis-entry-mutation-or-reentry]
+             [:arity wrong-arity :compact-gis-entry-source-mismatch]
+             [:ordinal wrong-ordinal :compact-gis-entry-active-id-mismatch]
+             [:attribute-coordinate wrong-attribute :compact-gis-entry-source-mismatch]
+             [:evaluation-coordinate wrong-coordinate :compact-gis-entry-source-mismatch]
+             [:parameter-use wrong-reference :compact-gis-parameter-use-mismatch]
+             [:export exported :compact-gis-entry-mutation-or-reentry]
+             [:qualified-export qualified-export :compact-gis-entry-mutation-or-reentry]
+             [:annotation annotated :compact-gis-entry-header-mismatch]
+             [:mutable-parameter mutable :compact-gis-entry-header-mismatch]
+             [:package wrong-package :compact-gis-entry-header-mismatch]
+             [:profile wrong-profile :compact-gis-entry-header-mismatch]
+             [:fractional-caller (caller-value 1/2) :compact-gis-entry-source-mismatch]
+             [:floating-caller (caller-value 42.0) :compact-gis-entry-source-mismatch]]]
+      (let [rejected (run changed)]
+        (is (= :rejected (get-in rejected [:result :status])) (str label))
+        (is (= reason (get-in rejected [:result :reason])) (str label))))
+    (prn {:gis3-cold-entry-semantic-inspection :checked
+          :B47-verification-complete false :public-GIS-routing false :numeric-proof-established false})))
+
+
+
+
+
+
+
+
+
+
+(deftest sh08-gis3-numeric-source-negative-development-kernel
+  ;; Normalized hostile original-row changes, not fresh C3/B47 source receipts.
+  (let [{:keys [core bindings] :as input}
+        (gis3-current-source-Core-products (fn [_ operation] (operation)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        target-call (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        target (:core-node-id target-call) sub-id (second (:argument-node-ids target-call))
+        high-call (first (filter #(= '<= (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+        upper-id (second (:argument-node-ids high-call))
+        outer (first (filter #(= target (second (:children %))) (filter #(= :if (:core-form %)) (:nodes core))))
+        change-row (fn [rows key id operation] (mapv #(if (= id (get % key)) (operation %) %) rows))
+        literal-change (fn [id value]
+                         (let [node (first (filter #(= id (:node-id %)) (:nodes core)))]
+                           (-> input
+                               (update-in [:core :nodes] change-row :node-id id #(assoc-in % [:attributes :value] value))
+                               (update :forms change-row :form-id (get-in node [:source :form-id]) #(assoc % :value value)))))
+        bad-control (update-in input [:core :nodes] change-row :node-id (:node-id outer)
+                               #(assoc-in % [:attributes :then-child-index] 1.0))
+        run (fn [{:keys [core bindings forms]}]
+              (invoke-c7 'sh08-gis3-numeric-source [core bindings forms target]))]
+    (doseq [[label changed reason]
+            [[:floating-control bad-control :compact-gis-original-control-or-call-required]
+             [:different-subtrahend (literal-change sub-id 33) :compact-gis-original-range-required]
+             [:floating-upper (literal-change upper-id 126.0) :compact-gis-original-literals-or-ancestry-required]]]
+      (let [out (run changed)]
+        (is (= :rejected (:status out)) (str label))
+        (is (= reason (:reason out)) (str label))))
+    (prn {:gis3-numeric-source-hostile-original-rows :checked :normalization-only true
+          :v3-product-constructed false :numeric-proof-established false})))
+
+(defn- gis3-expanded-v3-product-reference [{:keys [core bindings]} target]
+  ;; Independent expanded reference, authored from the closed v3 layout.
+  ;; It reads original literal occurrences; no generated descriptor is input.
+  (let [nodes (into {} (map (juxt :node-id identity) (:nodes core)))
+        by-binding (into {} (map (juxt :binding-id identity) bindings))
+        calls (into {} (map (fn [call] [(:name (by-binding (:operator-binding-id call))) call]) (:calls core)))
+        value #(get-in nodes [(second (:argument-node-ids (calls %))) :attributes :value])
+        lower (value '>=) upper (value '<=)
+        source (:source (nodes target)) owner (get-in nodes [target :evaluation :owner-function-syntax-id])
+        profile (get-in core [:module :profile]) target-platform (get-in core [:module :target])
+        witness {:input-range [lower upper] :domain :gravity/sh08-gis-source-witness-v3}
+        invalidation [:calls :call-edges :binding-table :source-forms :type-table :function-records :mutations
+                      :recur-targets :recur-transfers :recursion-components :control-flow :operand-position
+                      :profile :target :safety :evaluation-order]
+        app {:version :sh08-guarded-integer-subtraction-v3 :kind :gravity.type/applied-guarded-integer-subtraction
+             :core-input (:artifact-id core) :call-core-node-id target :operation '-
+             :semantic-owner 'gravity.math :layer0-owner 'gravity.math.core :resolution :gravity.core-compatibility
+             :intrinsic :gravity.math.core/guarded-integer-subtraction
+             :argument-types [:gravity.type/integer :gravity.type/integer]
+             :parameter-types [:gravity.type/integer :gravity.type/integer]
+             :return :gravity.type/integer :result-type :gravity.type/integer :numeric-mode :proof-required
+             :safety :proven-safe :range-proof witness :application :normal :operand-evaluation :left-then-right-once
+             :conversion :none :latent-effects [] :direct-effects [] :capabilities [] :thrown-error-effects []
+             :profile profile :target target-platform :invalidation invalidation}]
+    {:application app
+     :constraint {:kind :numeric-mode :producer-rule :sh08-guarded-integer-subtraction-v3
+                  :constraint-id-request {:domain :gravity/sh08-guarded-integer-subtraction-constraint-v3 :application app}
+                  :lhs {:core-node-id target :projection :guarded-integer-subtraction} :rhs :gravity.type/integer
+                  :dependencies app :origin (:origin-chain source)
+                  :solution {:numeric-mode :proof-required :safety :proven-safe :result-type :gravity.type/integer
+                             :direct-effects [] :range-proof witness}
+                  :profile profile :target target-platform :invalidation invalidation :status :solved :diagnostics []}
+     :call-type-fact {:artifact :gravity/c7-call-type-fact :status :inferred :dispatch :direct-guarded-integer-subtraction
+                      :fact-id-request {:domain :gravity/sh08-guarded-integer-subtraction-call-type-fact-v3 :application app}
+                      :applied-guarded-integer-subtraction app :effect-facts-source :audited-numeric-intrinsic
+                      :call-core-node-id target :caller-function-syntax-id owner :callee-function-syntax-id nil
+                      :argument-types [:gravity.type/integer :gravity.type/integer] :result-type :gravity.type/integer
+                      :evaluation-order :operator-then-arguments :profile profile :target target-platform :effects [] :capabilities []
+                      :source-span (:semantic-span source) :syntax-id (:syntax-id source)
+                      :origin-chain (:origin-chain source) :generated-origin (:generated-origin source)}}))
+
+
+
+
+(deftest sh08-gis3-unmetered-data-and-index-development-kernel
+  ;; DATA/index success conveys no source typing or authentication authority.
+  (let [sha #(str "sha256:" (format "%064x" %))
+        fields [:nodes :calls :call-edges :function-records :definitions :reference-uses
+                :var-references :mutations :recur-targets :recur-transfers :recursion-components
+                :lexical-bindings :control-flow]
+        shared {:value [:shared]}
+        core (assoc (zipmap fields (repeat [])) :module {}
+                    :preserved-resolution {:resolution-table []}
+                    :unread [(vec (repeat 70000 :value)) shared shared])
+        data #(invoke-c7 'sh08-gis3-entry-data [% [] []])
+        indexed #(invoke-c7 'sh08-gis3-index [% :node-id])
+        rows (mapv #(hash-map :node-id (sha %) :unread shared) (range 1025))
+        result (data core)
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "GIS data hashing")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "GIS data rendering"))))
+        backing (object-array [:self nil]) cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 cyclic)
+    (is (= :entry-original-data-complete (:status result)))
+    (is (= 17 (count (:rows result))))
+    (is (false? (:numeric-proof-established result)))
+    (is (= :entry-indexes-complete (:status (invoke-c7 'sh08-gis3-entry-indexes [(:rows result)]))))
+    (let [out (indexed rows)]
+      (is (= :accepted (:status out)))
+      (is (= 1025 (count (:index out)))))
+    (is (= :compact-gis-duplicate-id (:reason (indexed (conj rows (first rows))))))
+    (is (= :compact-gis-source-id-required (:reason (indexed (assoc-in rows [1024 :node-id] "wrong")))))
+    (doseq [value [(assoc core :module (sorted-map "wrong" 7))
+                   (assoc core :unread {:unused opaque}) (assoc core :unread cyclic)
+                   (assoc core :unread (with-meta [] {:unused opaque}))]]
+      (is (= :rejected (:status (data value)))))
+    (is (= :rejected (:status (indexed [{:node-id (sha 1) :unread opaque}]))))
+    (is (empty? @callbacks))))
+
+(deftest sh08-gis3-unmetered-current-source-product-development-kernel
+  ;; Real Source-to-Core transport, then independent private reconstruction.
+  ;; B47/coordinator authentication and public C7 routing remain separate.
+  (doseq [basename ["compact-source-proof-minimum" "compact-source-proof-interval"]]
+    (let [stage (fn [name operation]
+                  (prn {:gis3-source basename :stage name :event :start}) (flush)
+                  (let [result (operation)]
+                    (prn {:gis3-source basename :stage name :event :complete}) (flush) result))
+          {:keys [core bindings forms] :as input} (gis3-current-source-Core-products basename stage)
+          by-binding (into {} (map (juxt :binding-id identity) bindings))
+          call (first (filter #(= '- (:name (by-binding (:operator-binding-id %)))) (:calls core)))
+          target (:core-node-id call)
+          produce #(invoke-c7 'sh08-gis3-produce-product [core bindings forms target])
+          consume #(invoke-c7 'sh08-gis3-consume-product [core bindings forms target %])
+          expected (gis3-expanded-v3-product-reference input target)
+          built (produce) product (:product built)
+          accepted (consume product)
+          coherent-core-transplant
+          (walk/postwalk (fn [value]
+                           (if (and (map? value) (= :sh08-guarded-integer-subtraction-v3 (:version value)))
+                             (assoc value :core-input (str "sha256:" (apply str (repeat 64 "f")))) value)) product)
+          coherent-range-transplant
+          (walk/postwalk (fn [value]
+                           (if (and (map? value) (= :gravity/sh08-gis-source-witness-v3 (:domain value)))
+                             (update value :input-range #(assoc % 1 (inc (second %)))) value)) product)
+          changed-source (update core :mutations conj {:core-node-id :mutation :target-binding-id :unknown})
+          callbacks (atom [])
+          opaque (proxy [Object] []
+                   (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "GIS candidate hashing")))
+                   (toString [] (swap! callbacks conj :render) (throw (AssertionError. "GIS candidate rendering"))))]
+      (is (= :constructed (:status built)) (pr-str (select-keys built [:status :reason :stage])))
+      (is (= :gravity.type/integer (:type built)))
+      (is (= expected product))
+      (is (false? (:numeric-proof-established built)))
+      (is (= :accepted (:status accepted)) (pr-str accepted))
+      (is (true? (:fresh-original-reconstruction accepted)))
+      (is (false? (:numeric-proof-established accepted)))
+      (doseq [candidate [(assoc-in product [:application :numeric-mode] :unchecked)
+                         coherent-core-transplant coherent-range-transplant
+                         (assoc product :supplied-validation {:status :accepted})]]
+        (is (= :rejected (:status (consume candidate)))))
+      (is (= :rejected (:status (invoke-c7 'sh08-gis3-consume-product [changed-source bindings forms target product]))))
+      (is (= :candidate-DATA (:stage (consume (assoc product :unused opaque)))))
+      (is (empty? @callbacks))
+      (prn {:gis3-source basename :private-product :checked :fresh-consumer :checked
+            :B47-verification-complete false :public-C7-routing false :numeric-proof-established false}))))
+
+
+(deftest sh08-verifier-unmetered-native-data
+  (let [data #(invoke-c7 'sh08-vf-data [%])
+        original #(invoke-c7 'sh08-vf-original-data [%])
+        large-integer (.shiftLeft java.math.BigInteger/ONE 128)
+        deep (reduce (fn [value _] [value]) :leaf (range 192))
+        shared [{:key :value}]
+        samples [nil true 1 1N large-integer 1.0M 3/2 0.0 -0.0 Double/NaN
+                 :key 'symbol "text" [] {} #{} (list :first :second)
+                 {:nested [shared shared]} deep (vec (repeat 70000 :element))]]
+    (doseq [value samples]
+      (let [result (data value)]
+        (is (= :accepted (:status result)))
+        (is (= #{:status :arena} (set (keys result)))))
+      (is (= {:status :accepted} (original value))))
+    (let [zero-denominator (clojure.lang.Ratio. java.math.BigInteger/ONE java.math.BigInteger/ZERO)]
+      (is (= [:rejected :verification-ratio-denominator-zero]
+             ((juxt :status :reason) (data zero-denominator)))))))
+
+(deftest sh08-verifier-unmetered-native-comparison
+  (let [compare-data #(invoke-c7 'sh08-vf-compare-data [%1 %2])]
+    (doseq [[left right]
+            [[{:key 1} (sorted-map :key 1)]
+             [(array-map :a 1 :b 2) (array-map :b 2 :a 1)]
+             [{[1] {:nested #{:a :b}}} {[1] {:nested #{:b :a}}}]
+             [(list :a :b) (list :a :b)]
+             [[1 2 3] [1N 2N 3N]]]]
+      (is (= {:status :accepted :equal? true} (compare-data left right))))
+    (doseq [[left right]
+            [[{:key 1} (sorted-map "key" 1)]
+             [{:a 1} {:a 2}]
+             [{[1] :value} {(list 1) :value}]
+             [[1] (list 1)]
+             [#{:one} #{:two}]]]
+      (is (= {:status :accepted :equal? false} (compare-data left right))))
+    (let [duplicate (clojure.lang.PersistentArrayMap. (object-array [:key 1 :key 1]))]
+      (is (= {:status :accepted :equal? false} (compare-data {:key 1} duplicate))))))
+
+(deftest sh08-verifier-unmetered-cycle-and-callback-safety
+  (let [data #(invoke-c7 'sh08-vf-data [%])
+        original #(invoke-c7 'sh08-vf-original-data [%])
+        callbacks (atom [])
+        opaque (proxy [Object] []
+                 (hashCode [] (swap! callbacks conj :hash) (throw (AssertionError. "candidate hash")))
+                 (equals [_] (swap! callbacks conj :equals) (throw (AssertionError. "candidate equality")))
+                 (toString [] (swap! callbacks conj :render) (throw (AssertionError. "candidate rendering"))))
+        foreign (proxy [clojure.lang.APersistentMap] []
+                  (count [] (swap! callbacks conj :count) (throw (AssertionError. "candidate count")))
+                  (seq [] (swap! callbacks conj :seq) (throw (AssertionError. "candidate seq"))))
+        lazy-tail (lazy-seq (swap! callbacks conj :forced) (list :value))
+        invalid-symbol (clojure.lang.Symbol/intern nil nil)
+        odd-map (clojure.lang.PersistentArrayMap. (object-array [:odd]))
+        nil-map (clojure.lang.PersistentArrayMap. nil)
+        backing (object-array [:self nil])
+        cyclic (clojure.lang.PersistentArrayMap. backing)]
+    (aset backing 1 cyclic)
+    (doseq [value [opaque foreign {:unused opaque} [opaque] (list opaque)
+                  (clojure.lang.Cons. :head lazy-tail)
+                  (with-meta [] {:unused opaque})
+                  invalid-symbol (list invalid-symbol)
+                  (clojure.lang.PersistentArrayMap. (object-array [invalid-symbol :value]))
+                  odd-map nil-map]]
+      (is (= :rejected (:status (data value))))
+      (is (= :rejected (:status (original value)))))
+    (is (= {:status :rejected :reason :verification-native-cycle} (data cyclic)))
+    (is (= {:status :rejected :reason :verification-native-cycle} (original cyclic)))
+    (doseq [[namespace name] [[nil ""] ["" ""] ["qualified" ""] [nil "valid"]]]
+      (is (= :accepted (:status (data (clojure.lang.Symbol/intern namespace name))))))
+    (is (empty? @callbacks))))

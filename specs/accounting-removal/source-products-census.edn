@@ -1,0 +1,282 @@
+{:test-definitions
+ [{:name gis3-current-source-Core-products,
+   :kind defn-,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "86456161bef38a2487a2d89b525185682e90f3586ff41af27a0e17d7c731c95b"}
+  {:name gis3-expanded-v3-product-reference,
+   :kind defn-,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "8d51c56d0c7bf6abc8d1c236ec3aec6cf8476da90f719334079fadca893bfd57"}
+  {:name gis3-semantic-inspection,
+   :kind defn-,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "58298cf0e5ed5e71f6590fbaef6497f700c6404ac7df0788aef08d102f0f2308"}
+  {:name sh08-gis3-cold-entry-semantic-development-kernel,
+   :kind deftest,
+   :adaptations
+   [:fixture-directory-accepted-to-preserved
+    :unused-forms-binding-removed-original-input-retained],
+   :candidate-form-sha256
+   "a0819ecc990e1286d62046c044f23fc8df6470e852f514657813d1c77da29037"}
+  {:name sh08-gis3-current-source-Core-development-kernel,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "ad03e0edd1b5c9ef3dee922fc929261b159c50d78d68a033c25502839dce4f14"}
+  {:name sh08-gis3-module-entry-unification-development-kernel,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "e20b0823e96da632115015f3bd0a054bb15d7c8ac6c111400bce38d87ca429fa"}
+  {:name sh08-gis3-numeric-source-negative-development-kernel,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "d4d8f954deefe39d51d5de198898000c6ede51188141d5c1425c15f6eece8626"}
+  {:name sh08-gis3-unmetered-current-source-product-development-kernel,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "c4e5d80cb082d72f3e45037862374b81a81512d39bb6d3b29a485d50c8134246"}
+  {:name sh08-gis3-unmetered-data-and-index-development-kernel,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "90e93faede10faf51fbf746c562ff9ab6e2741f64e437dcb835bd9d3549bc96b"}
+  {:name sh08-verifier-unmetered-cycle-and-callback-safety,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "d067bc977973a6107d980a74f1af8608ad73357efa4fa4fe772435ae11399a31"}
+  {:name sh08-verifier-unmetered-native-comparison,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "dc04ef2960875d61b8de5f5b2563f91db07fa936cb409aec55d7e8106699ffef"}
+  {:name sh08-verifier-unmetered-native-data,
+   :kind deftest,
+   :adaptations [:fixture-directory-accepted-to-preserved],
+   :candidate-form-sha256
+   "9e42252d924119f9005ae46120e9cf9cb9f58b1c8f4bd37067477e642fb9805f"}],
+ :external-dependency-definitions-identical
+ [sh08-ft-all-true?
+  sh08-ft-call-edge-valid?
+  sh08-ft-call-valid?
+  sh08-ft-caller-edge-valid?
+  sh08-ft-known?
+  sh08-ix-literal?
+  sh08-ma-form-source
+  sh08-pc-id?
+  sh08-pe-select
+  sh08-primitive-type-from-literal-kind
+  sh08-sse-ids?
+  sh08-vf-ancestor?
+  sh08-vf-data-failure
+  sh08-vf-header-failure
+  sh08-vf-original-data],
+ :definitions
+ [{:name sh08-ft-ordinary-parameter-choice,
+   :historical-and-candidate-form-sha256
+   "4e462874f75a666e43e13579742fd8f765ecdea6714b9d6d18789cd81bba3ff1"}
+  {:name sh08-gis3-allowed-keyword?,
+   :historical-and-candidate-form-sha256
+   "962ff3882a07381b6f768955cba4cf54967357fd30ab4daec0a638ad0d22d6f0"}
+  {:name sh08-gis3-application-shape?,
+   :historical-and-candidate-form-sha256
+   "e36e3a0446c110fca25f5234726c599a64659cd709c5594e9542dee73549601b"}
+  {:name sh08-gis3-binary-call-source?,
+   :historical-and-candidate-form-sha256
+   "0de3b7ad18eec86184c0af2db35392836aa2d72e7ec17b0472d784afb9012d01"}
+  {:name sh08-gis3-candidate-valid?,
+   :historical-and-candidate-form-sha256
+   "e67169b67dc218ddc1de804eaf37ee282019e6c9a5780df23e4ba06dd1aa67d6"}
+  {:name sh08-gis3-cold-entry,
+   :historical-and-candidate-form-sha256
+   "080a0d4a2c6a58b679b0b1cb6ca8eb67aa6230e83348b3897ddd967da654c231"}
+  {:name sh08-gis3-comparison-data?,
+   :historical-and-candidate-form-sha256
+   "78583cbe08584c5f4ee2b76e54e6cf19f10562788645662593a886f566319c5e"}
+  {:name sh08-gis3-consume-product,
+   :historical-and-candidate-form-sha256
+   "97171bd1e56cc1115eb44727896f0067338f314cec906fa1c6e32bed280fb0bb"}
+  {:name sh08-gis3-entry-call?,
+   :historical-and-candidate-form-sha256
+   "55ef8b7b35ee1c63298ce10b0fe4763192d4a43b780871e1231eb215768b4a6e"}
+  {:name sh08-gis3-entry-census,
+   :historical-and-candidate-form-sha256
+   "be327533fcaa6b83d23e035a1057f98d7654dec50c98d14372f03b4f8f75c193"}
+  {:name sh08-gis3-entry-collections,
+   :historical-and-candidate-form-sha256
+   "c1427c2aae37324ec3b78de2074e31157d1a7b8c608dfd90d87db9a9b21e5868"}
+  {:name sh08-gis3-entry-data,
+   :historical-and-candidate-form-sha256
+   "f2560a2265beea15a33f3f9f8d9b48d344279b2fad34235940a649dc6c724034"}
+  {:name sh08-gis3-entry-exclusions?,
+   :historical-and-candidate-form-sha256
+   "f33210091c45ae77eb41c6b5fc4cee65a49833b303542d757551dc8fdf7df73b"}
+  {:name sh08-gis3-entry-families?,
+   :historical-and-candidate-form-sha256
+   "f836fdf97359d936513eb763e29e03980dfac82ee59aaf962149eb07aebdbe5d"}
+  {:name sh08-gis3-entry-header,
+   :historical-and-candidate-form-sha256
+   "012c164fe424b6f12aeeeb501e2a71b399ad9e9cb10206b3930f4629383e2f0c"}
+  {:name sh08-gis3-entry-indexes,
+   :historical-and-candidate-form-sha256
+   "2856ff409cb26b59a8102575eb8ccb89657124af1496509bf1610e381cdcf9f1"}
+  {:name sh08-gis3-entry-parameter-reference?,
+   :historical-and-candidate-form-sha256
+   "e3dec49f38623401174901978d1785b1c4f22348a93f05ac5e0add04069af88d"}
+  {:name sh08-gis3-entry-unify,
+   :historical-and-candidate-form-sha256
+   "83a88adc43e15fcc83157faeddaea332312ded07f39c85dd05f8fda331f1485d"}
+  {:name sh08-gis3-evaluation-order?,
+   :historical-and-candidate-form-sha256
+   "3ae20f5310d0e584957eda05f7d59f67483e518ad87518992160cad74aabd828"}
+  {:name sh08-gis3-ids?,
+   :historical-and-candidate-form-sha256
+   "3de3591abd294ae8abdf07a90a3de20a47a709b79e9abb58288a0257cb42d30b"}
+  {:name sh08-gis3-if-source?,
+   :historical-and-candidate-form-sha256
+   "de2a7e4ee35b19b6acab0af1109e948fab544df98bfd73febc0c2dc79b213904"}
+  {:name sh08-gis3-index,
+   :historical-and-candidate-form-sha256
+   "6fbd5f7fad39d34adc6a9d60a71b9185a42fb216ef3c3ca1ca589947c10fd4ef"}
+  {:name sh08-gis3-integer-literal,
+   :historical-and-candidate-form-sha256
+   "9bbe4f0b4a029d4d90daa0e5e3fff376802503d5bd0fa4591f3be979b098fae7"}
+  {:name sh08-gis3-keyword-record?,
+   :historical-and-candidate-form-sha256
+   "31007982bbd86a04f3e020a99dd9c37abb238e3434a3143d4e146100a29717b4"}
+  {:name sh08-gis3-numeric-match,
+   :historical-and-candidate-form-sha256
+   "b55570d45cf558103724d9f5771dfd531f67f8cc74f8d95813d60c2571912f5c"}
+  {:name sh08-gis3-numeric-resolution-orders?,
+   :historical-and-candidate-form-sha256
+   "d01606e396c3d1e8205796dfe5ecd48f45579ae5f4ca0325b399f982f70736f3"}
+  {:name sh08-gis3-numeric-source,
+   :historical-and-candidate-form-sha256
+   "87e70d81a4cf25e921bcd43ac197ef744d0cf3c82059a360e05abe3ff243e60f"}
+  {:name sh08-gis3-owned-ancestry,
+   :historical-and-candidate-form-sha256
+   "2d4e5f3a46582b74b11f69164aaeb2b194a52523043c7cf55443d26a664aa3fb"}
+  {:name sh08-gis3-pick,
+   :historical-and-candidate-form-sha256
+   "2999d23bfbc6ea0559ee6a4998e0d0fb80f2d68dccdc9e5193d5baa586f87424"}
+  {:name sh08-gis3-prepare-source,
+   :historical-and-candidate-form-sha256
+   "875809fb9f7fef01c890e20d27c7b46017983bf2f68b15776c718bed36e080d6"}
+  {:name sh08-gis3-produce-product,
+   :historical-and-candidate-form-sha256
+   "06291a1db7bc056213f99cd5352824e8b584eecd348b175b3ee4f816ecde59e2"}
+  {:name sh08-gis3-product-shape?,
+   :historical-and-candidate-form-sha256
+   "8506535b8a7d008b3ab61640541dbc65dc31fa3a6978f35892a2e27dae991d85"}
+  {:name sh08-gis3-products-equal?,
+   :historical-and-candidate-form-sha256
+   "b6bbd7b6a683d96af4e86bdc71854a32f26125187878a7c6cba1cf24d1324136"}
+  {:name sh08-gis3-reconstruct-product,
+   :historical-and-candidate-form-sha256
+   "ae7a9c6103b0ec23869ea2c86caddc3ae4edc682bb921a532417e7eedf5f150b"}
+  {:name sh08-gis3-same-data-kinds?,
+   :historical-and-candidate-form-sha256
+   "e1d48033b0de4a21952c8a0a721e42d36b7505a13dabce358957a198b2dbfe3b"}
+  {:name sh08-gis3-source-match?,
+   :historical-and-candidate-form-sha256
+   "c28038b1f6df8c68dcb0f2c1985cf1b0cedf52da66537b7c3ceed1cd2643ce1e"}
+  {:name sh08-gis3-source-span?,
+   :historical-and-candidate-form-sha256
+   "cb050b1ebcee8b89031885b06ca922328f6c3bdfa62929fe04a963f47b4811bb"}
+  {:name sh08-gis3-v3-product,
+   :historical-and-candidate-form-sha256
+   "33654f760356a1b32dc874402032857d9a9c4b0a75d027cfae8c87c62555b730"}
+  {:name sh08-gis3-view-get,
+   :historical-and-candidate-form-sha256
+   "b5d8ce1e1fdd8d6df0043dbc6289a8dffa16a811233cf8f96fcaaf18a0bbeb7a"}
+  {:name sh08-gis3-witness-shape?,
+   :historical-and-candidate-form-sha256
+   "d60afcf1a240420e20568189e17c0b2ec929c2da1e56f684f1928c822b993be5"}
+  {:name sh08-vf-compare-arenas,
+   :historical-and-candidate-form-sha256
+   "ad68eafdb6a67182ed477f4a698c0a088bca838f2de7b3152049f9941fb9c6cd"}
+  {:name sh08-vf-compare-data,
+   :historical-and-candidate-form-sha256
+   "d982c1c34392a1c7d7568b6cf7cd9d8b9a6eb025f0c8950421e3af5722159940"}
+  {:name sh08-vf-data,
+   :historical-and-candidate-form-sha256
+   "641a199566d9b8973031cb4b450c1683770f3136b7aa5913b8c7c1222ba934e6"}
+  {:name sh08-vf-expand-indexed,
+   :historical-and-candidate-form-sha256
+   "872921d2a223f08c40c51ea35d45da184c8cbcd384e336fee7a006decbb0e7d0"}
+  {:name sh08-vf-scalar-kind,
+   :historical-and-candidate-form-sha256
+   "8455fa744bc49303d95d05772a647a86a67640ef386823094d7f1d3ba31542a0"}],
+ :dependent-base "1c0d699f06372fe3c52fa003f53aa38ffd40d07c",
+ :nonclaims
+ [:public-C7-routing
+  :B47-authentication
+  :numeric-proof-established
+  :fresh-function-type-verifier-acceptance
+  :fixture-runtime-acceptance
+  :PR502-closure],
+ :static-validation
+ {:reader-eval false,
+  :duplicate-definitions-rejected true,
+  :historical-source-form-equality :pass,
+  :fixture-byte-equality :pass,
+  :semantic-execution :UNRUN,
+  :Bootstrap-loaded false},
+ :existing-definitions-unchanged true,
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-sha256
+   "43fec6998510d94ec3686f77b9cf4358234be9e59660b40c5cbe86958e9bcc7e",
+   :candidate-sha256
+   "09a629263ee6c654534b66c7d7031ea722adfa9bbfe329001a2ed42c69632303"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-sha256
+   "e3592dcde07b806f1bc76caf253d60bba11c3f62beb5c9359a3a877787201854",
+   :candidate-sha256
+   "dc18d3f7b7df2be3b9a635db16177bd581bec9f14dc8ea7fa9f081b3a5c41fa5"}],
+ :fixtures
+ [{:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-minimum.gravity",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.gravity",
+   :sha256
+   "cb92409e01b28c9218c631327a104a07dcb14c4c9d867d4b97557b074e832e6b",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-minimum.qst",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-minimum.qst",
+   :sha256
+   "cb92409e01b28c9218c631327a104a07dcb14c4c9d867d4b97557b074e832e6b",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.gravity",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.gravity",
+   :sha256
+   "b73cb794e6ef937a8fa786c6a6d5ae91afced2457d34367e07ce50f72306ccec",
+   :executed false}
+  {:original-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/compact-source-proof-interval.qst",
+   :candidate-path
+   "bootstrap/clojure/fixtures/self-hosting/sh-08/preserved/compact-source-proof-interval.qst",
+   :sha256
+   "b73cb794e6ef937a8fa786c6a6d5ae91afced2457d34367e07ce50f72306ccec",
+   :executed false}],
+ :kind :source-product-implementation-draft,
+ :independent-review :pending-coordinator-routing,
+ :generator
+ {:language :clojure,
+  :sha256
+  "5c0de6b2cd3e2b879a5cf10bbb439f2aae26a39680928f97f4bb71f24d134775",
+  :preserved-locally true},
+ :historical-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}
