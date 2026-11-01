@@ -395,14 +395,55 @@
                         {:namespace namespace-symbol
                          :candidates candidates})))))
 
+(def dynamic-dependency-heads
+  '#{require clojure.core/require load clojure.core/load
+     load-file clojure.core/load-file load-string clojure.core/load-string})
+
+(defn leaf-dynamic-dependency-form? [form]
+  (or (and (seq? form) (contains? dynamic-dependency-heads (first form)))
+      (and (coll? form) (some leaf-dynamic-dependency-form? form))))
+
+(defn leaf-source-forms [path]
+  (binding [*read-eval* false]
+    (with-open [reader (java.io.PushbackReader. (io/reader path))]
+      (loop [forms []]
+        (let [form (read {:eof ::eof} reader)]
+          (if (= ::eof form)
+            forms
+            (recur (conj forms form))))))))
+
 (defn leaf-required-namespaces [form]
-  (for [clause (drop 2 form)
-        :when (and (seq? clause) (= :require (first clause)))
-        spec (rest clause)
-        :let [dependency (if (vector? spec) (first spec) spec)]
-        :when (and (symbol? dependency)
-                   (str/starts-with? (str dependency) "gravity."))]
-    dependency))
+  (when-not (and (seq? form) (= 'ns (first form)))
+    (throw (ex-info "Leaf namespace source must begin with ns" {:form form})))
+  (mapcat (fn [clause]
+            (if-not (seq? clause)
+              []
+              (case (first clause)
+                :require
+                (mapcat (fn [spec]
+                          (let [dependency (cond
+                                             (symbol? spec) spec
+                                             (vector? spec) (first spec)
+                                             :else nil)]
+                            (when-not (symbol? dependency)
+                              (throw (ex-info "Unsupported leaf require specification"
+                                              {:spec spec :clause clause})))
+                            (if (str/starts-with? (str dependency) "gravity.")
+                              [dependency]
+                              [])))
+                        (rest clause))
+
+                :use
+                (throw (ex-info "Leaf namespace uses unsupported :use dependencies"
+                                {:clause clause}))
+
+                :import []
+                :refer-clojure []
+                :gen-class []
+
+                (throw (ex-info "Unsupported leaf namespace clause"
+                                {:clause clause})))))
+          (drop 2 form)))
 
 (defn leaf-require-closure [entry]
   (loop [pending [(:namespace entry)]
@@ -412,11 +453,13 @@
       (let [path (leaf-namespace-path namespace-symbol)]
         (if (contains? visited path)
           (recur (pop pending) paths visited)
-          (let [form (binding [*read-eval* false]
-                       (with-open [reader (java.io.PushbackReader. (io/reader path))]
-                         (read {:eof ::eof} reader)))]
+          (let [forms (leaf-source-forms path)
+                form (first forms)]
             (when-not (and (seq? form) (= 'ns (first form)))
               (throw (ex-info "Leaf namespace source must begin with ns"
+                              {:namespace namespace-symbol :path path})))
+            (when (some leaf-dynamic-dependency-form? (rest forms))
+              (throw (ex-info "Leaf namespace has dynamic dependency loading"
                               {:namespace namespace-symbol :path path})))
             (recur (into (pop pending) (leaf-required-namespaces form))
                    (conj paths path)

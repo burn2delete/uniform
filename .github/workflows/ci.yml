@@ -108,35 +108,18 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           private-temp: ${{ matrix.platform == 'portable' }}
-      - name: Conservative selection
-        id: selection
-        env:
-          EVENT: ${{ github.event_name }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          selected=true
-          mkdir -p target/ci
-          if [[ "$EVENT" == pull_request ]]; then
-            git diff --name-only -z "$BASE_SHA" HEAD > target/ci/changed-paths.nul
-            selected=false
-            while IFS= read -r -d '' path; do
-              if [[ "$path" != *.md || "$path" == contracts/* || "$path" == specs/* || "$path" == .github/* || "$path" == tools/* || "$path" == bin/* ]]; then selected=true; fi
-            done < target/ci/changed-paths.nul
-          fi
-          echo "selected=$selected" >> "$GITHUB_OUTPUT"
-          echo "Fresh leaf job selected for path-aware run: $selected. Safe Markdown-only PRs omit leaf commands; run.clj retains full fallback for structural paths." | tee target/ci/selection.txt
       - name: Diagnose actual Darwin host and descriptor ABI
         if: matrix.platform == 'darwin'
         run: clojure -Srepro -M tools/ci/run.clj darwin-probe
       - name: Fresh path-aware catalog selection
-        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' && matrix.platform != 'unsupported' }}
+        if: ${{ !cancelled() && matrix.platform != 'unsupported' }}
         env:
           LEAF_PLATFORM: ${{ matrix.platform }}
           CI_BASE_SHA: ${{ github.event.before }}
           CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: clojure -Srepro -M tools/ci/run.clj "leaves-$LEAF_PLATFORM"
       - name: Actual unsupported-kernel refusal before publication I/O
-        if: ${{ !cancelled() && steps.selection.outputs.selected == 'true' && matrix.platform == 'unsupported' }}
+        if: ${{ !cancelled() && matrix.platform == 'unsupported' }}
         run: clojure -Srepro -M tools/ci/run.clj darwin-unsupported
       - name: Preserve failure receipts
         if: always()

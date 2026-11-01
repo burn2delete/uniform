@@ -399,6 +399,18 @@
                        "portable" catalog
                        [{:old-mode "100644" :new-mode "000000" :status "D"
                          :path (:test-path scalar)}])
+        markdown-delete-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "000000" :status "D" :path "README.md"}])
+        markdown-rename-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "100644" :status "R" :path "README.md"}])
+        markdown-mode-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "100755" :status "M" :path "README.md"}])
         cross-cutting-result (select "portable" ["tools/ci/run.clj"])
         ids (fn [result] (set (map :id (:entries result))))]
     (is (= :selected (:kind scalar-result)))
@@ -418,9 +430,45 @@
     (is (= 52 (count (:entries unknown-result))))
     (is (= :full (:kind mode-result)))
     (is (= 52 (count (:entries mode-result))))
-    (doseq [result [empty-result delete-result cross-cutting-result]]
+    (doseq [result [empty-result delete-result markdown-delete-result
+                    markdown-rename-result markdown-mode-result cross-cutting-result]]
       (is (= :full (:kind result)))
       (is (= 52 (count (:entries result)))))))
+
+(deftest leaf-closure-fails-closed-for-unsupported-dependencies
+  (is (= ['gravity.foo]
+         (vec (ci/leaf-required-namespaces
+               (read-string "(ns demo (:require [gravity.foo :as foo]))")))))
+  (doseq [source ["(ns demo (:use [gravity.foo]))"
+                  "(ns demo (:require (gravity.foo [bar :as bar])))"]]
+    (is (thrown? Exception
+                 (doall (ci/leaf-required-namespaces (read-string source))))
+        source))
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-leaf-closure-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        path (.getPath (io/file directory "synthetic.clj"))]
+    (try
+      (doseq [dependency-form ["(require 'gravity.hidden)"
+                               "(load \"gravity/hidden\")"]]
+        (spit path (str "(ns demo)\n" dependency-form "\n"))
+        (with-redefs [ci/leaf-namespace-path (constantly path)]
+          (is (thrown? Exception
+                       (ci/leaf-require-closure {:namespace 'demo
+                                                 :source-path path
+                                                 :test-path path})))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (io/delete-file file true)))))
+  (let [catalog (ci/load-leaf-catalog)
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path "bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj"}]
+    (with-redefs [ci/leaf-require-closure
+                  (fn [_] (throw (ex-info "synthetic closure failure" {})))]
+      (let [result (ci/leaf-selection-for-changes "portable" catalog [change])]
+        (is (= :full (:kind result)))
+        (is (= :leaf-closure-failed (:reason result)))
+        (is (= 52 (count (:entries result))))))))
 
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
