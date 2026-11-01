@@ -250,12 +250,12 @@
       (is (false? (complete (assoc-in function [:parameters 0 :type] value)))))))
 
 (defn- observe-import-scalar-builtins [value]
-  ;; Delegate unchanged arguments/results; count only this helper's loaded plan.
+  ;; Delegate unchanged arguments/results; observe only this helper's loaded plan.
   (let [scoped (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-function-scoped)
         builtin (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-builtin)
         unary (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin)
         original-scoped @scoped original-builtin @builtin original-unary @unary plans (atom [])
-        counts (atom {:vector-tail-calls 0 :membership-calls 0})
+        counts (atom {:vector-tail-calls 0})
         result (with-redefs-fn
           {scoped (fn [runtime plan callee args scope]
                     (if (= 'sh08-im-scalar-type? callee)
@@ -271,8 +271,7 @@
                      (let [callee (nth args (- (count args) 2)) values (last args)]
                        (when (and (seq @plans) (identical? (peek @plans) (nth args (- (count args) 3))))
                          (when (and (= 'rest callee) (vector? (first values)))
-                           (swap! counts update :vector-tail-calls inc))
-                         (when (= 'contains? callee) (swap! counts update :membership-calls inc)))
+                           (swap! counts update :vector-tail-calls inc)))
                        (apply original-builtin args)))}
           #(invoke-c7 'sh08-im-scalar-type? [value]))]
     (assoc @counts :result result)))
