@@ -23,7 +23,10 @@
        :present? false
        :readable? false
        :failure :missing})
-    (catch Throwable error
+    (catch InterruptedException error
+      (.interrupt (Thread/currentThread))
+      (throw error))
+    (catch Exception error
       {:proof (p18-t04-incomplete-final-release-proof :unreadable)
        :present? true
        :readable? false
@@ -37,7 +40,10 @@
          (string? (:artifact-id artifact))
          (= (:artifact-id artifact)
             (c4-artifact-id (dissoc artifact :artifact-id))))
-    (catch Throwable _
+    (catch InterruptedException error
+      (.interrupt (Thread/currentThread))
+      (throw error))
+    (catch Exception _
       false)))
 
 (defn- p18-t04-current-binary?
@@ -51,14 +57,23 @@
 
 (defn- p18-t04-current-p15-proof?
   [current-p15-proof recorded-p15-proof]
-  (= (select-keys current-p15-proof
-                 [:kind :artifact :artifact-id :proof-id :status
-                  :full-language-compiler-self-hosted?
-                  :clojure-seed-retired? :clojure-seed-boundary?])
-     (select-keys recorded-p15-proof
-                  [:kind :artifact :artifact-id :proof-id :status
-                   :full-language-compiler-self-hosted?
-                   :clojure-seed-retired? :clojure-seed-boundary?])))
+  (and (= p15-s23-compiler-source-path (:source-path current-p15-proof))
+       (= (select-keys current-p15-proof
+                      [:kind :artifact :artifact-id :proof-id :status
+                       :full-language-compiler-self-hosted?
+                       :clojure-seed-retired? :clojure-seed-boundary?])
+          (select-keys recorded-p15-proof
+                       [:kind :artifact :artifact-id :proof-id :status
+                        :full-language-compiler-self-hosted?
+                        :clojure-seed-retired? :clojure-seed-boundary?]))))
+
+(defn- p18-t04-current-record?
+  [record artifact schema-version]
+  (and (map? record)
+       (= artifact (:artifact record))
+       (= schema-version (:schema-version record))
+       (= "P18-T06" (:task record))
+       (p18-t04-artifact-id-matches? record)))
 
 (defn- p18-t04-current-release-provenance?
   [proof]
@@ -84,14 +99,152 @@
          (= content-hash
             (get-in signing [:payload :release-binary-content-hash])))))
 
+(defn- p18-t04-current-release-evidence?
+  [proof]
+  (try
+    (let [release-binary (:release-binary proof)
+          boundary (:release-boundary-record proof)
+          recipe (:reproducible-build-recipe proof)
+          rebuild (:rebuild-verification-record proof)
+          provenance (:provenance-record proof)
+          sbom (:sbom-record proof)
+          signing (:signing-record proof)
+          target-policy (:target-support-policy proof)
+          compatibility (:compatibility-record proof)
+          security-review (:security-review-record proof)
+          release-notes (:release-notes proof)
+          governance (:governance-approval-record proof)
+          boundary-id (:artifact-id boundary)
+          recipe-id (:artifact-id recipe)
+          rebuild-id (:artifact-id rebuild)
+          provenance-id (:artifact-id provenance)
+          sbom-id (:artifact-id sbom)
+          signing-id (:artifact-id signing)
+          target-policy-id (:artifact-id target-policy)
+          compatibility-id (:artifact-id compatibility)
+          security-review-id (:artifact-id security-review)
+          release-notes-id (:artifact-id release-notes)
+          binary-path (:path release-binary)
+          binary-hash (:content-hash release-binary)
+          rebuilds (:rebuilds rebuild)]
+      (and
+       (p18-t04-current-record?
+        boundary :gravity/p18-t06-final-release-boundary
+        "gravity.final-release-boundary/v1")
+       (contains? #{:complete :incomplete} (:status boundary))
+       (p18-t04-current-record?
+        recipe :gravity/p18-t06-reproducible-build-recipe
+        "gravity.reproducible-build-recipe/v1")
+       (= :complete (:status recipe))
+       (p18-t04-current-record?
+        rebuild :gravity/p18-t06-rebuild-verification
+        "gravity.rebuild-verification/v1")
+       (= :complete (:status rebuild))
+       (p18-t04-current-record?
+        provenance :gravity/p18-t06-provenance
+        "gravity.provenance/v1")
+       (= :complete (:status provenance))
+       (p18-t04-current-record?
+        sbom :gravity/p18-t06-sbom
+        "gravity.sbom/v1")
+       (= :complete (:status sbom))
+       (p18-t04-current-record?
+        signing :gravity/p18-t06-release-signing-record
+        "gravity.signing-record/v1")
+       (= :complete (:status signing))
+       (p18-t04-current-record?
+        target-policy :gravity/p18-t06-target-support-policy
+        "gravity.target-support-policy/v1")
+       (= :complete (:status target-policy))
+       (p18-t04-current-record?
+        compatibility :gravity/p18-t06-compatibility-record
+        "gravity.release-compatibility/v1")
+       (= :complete (:status compatibility))
+       (p18-t04-current-record?
+        security-review :gravity/p18-t06-security-review
+        "gravity.release-security-review/v1")
+       (= :complete (:status security-review))
+       (p18-t04-current-record?
+        release-notes :gravity/p18-t06-release-notes
+        "gravity.release-notes/v1")
+       (= :complete (:status release-notes))
+       (p18-t04-current-record?
+        governance :gravity/p18-t06-governance-approval
+        "gravity.release-governance/v1")
+       (= :complete (:status governance))
+       (p18-t04-current-binary? release-binary)
+       (= p18-t06-release-binary-path (:release-binary-path recipe))
+       (= binary-hash (:release-binary-content-hash recipe))
+       (true? (:builder-identity-verified? recipe))
+       (= boundary-id (get-in recipe [:inputs 1 :artifact-id]))
+       (= recipe-id (:recipe-id rebuild))
+       (seq rebuilds)
+       (= binary-path (:path (first rebuilds)))
+       (every? #(and (= binary-hash (:content-hash %))
+                     (true? (:executable? %)))
+               rebuilds)
+       (every? true?
+               (map #(get rebuild %)
+                    [:binary-identical? :provenance-identical?
+                     :sbom-identical? :signing-record-identical?
+                     :command-contract-evidence-identical?]))
+       (= boundary-id (get-in provenance [:materials 0 :artifact-id]))
+       (= recipe-id (get-in provenance [:materials 1 :artifact-id]))
+       (= rebuild-id (get-in provenance [:materials 2 :artifact-id]))
+       (map? (:compiler-lineage provenance))
+       (= provenance-id (:provenance-record-id sbom))
+       (= boundary-id (:release-boundary-id security-review))
+       (= provenance-id (:provenance-record-id security-review))
+       (= sbom-id (:sbom-id security-review))
+       (= target-policy-id (:target-policy-id compatibility))
+       (= release-notes-id (:release-notes-id governance))
+       (= target-policy-id (:target-policy-id governance))
+       (= compatibility-id (:compatibility-record-id governance))
+       (= security-review-id (:security-review-id governance))
+       (= signing-id (:signing-record-id governance))
+       (= p18-t06-release-binary-path (:release-binary release-notes))
+       (= binary-hash (:release-binary-content-hash release-notes))
+       (= (p18-t06-provenance-record
+           release-binary boundary recipe rebuild)
+          provenance)
+       (= (p18-t06-sbom-record release-binary boundary provenance)
+          sbom)
+       (= (p18-t06-signing-record
+           release-binary boundary recipe rebuild provenance sbom)
+          signing)
+       (= (p18-t06-release-notes release-binary)
+          release-notes)
+       (= (p18-t06-target-support-policy)
+          target-policy)
+       (= (p18-t06-compatibility-record target-policy)
+          compatibility)
+       (= (p18-t06-security-review-record
+           boundary provenance sbom)
+          security-review)
+       (= (p18-t06-governance-approval-record
+           release-notes target-policy compatibility security-review signing)
+          governance)
+       (= (p18-t06-final-release-diagnostics
+           :p18-t06-final-release proof)
+          (:diagnostics proof))
+       (= (p18-t06-capability-proof proof)
+          (:capability-based-proof proof))))
+    (catch InterruptedException error
+      (.interrupt (Thread/currentThread))
+      (throw error))
+    (catch Exception _
+      false)))
+
 (defn- p18-t04-final-proof-verification
   [p15-final-proof]
   (let [{:keys [proof present? readable? failure error]}
         (p18-t04-read-final-release-proof)
-        complete-record?
+        record-shape?
         (and (= :gravity/p18-t06-final-release-proof (:kind proof))
              (= "P18-T06" (:task proof))
-             (contains? p18-t06-supported-targets (:target proof))
+             (contains? p18-t06-supported-targets (:target proof)))
+        complete-record?
+        (and record-shape?
              (= :complete (:status proof))
              (true? (:final-release? proof))
              (true? (:seedless-release? proof))
@@ -111,12 +264,16 @@
          p15-final-proof (:p15-final-seed-retirement-proof proof))
         provenance-current?
         (p18-t04-current-release-provenance? proof)
+        release-evidence-current?
+        (p18-t04-current-release-evidence? proof)
         authenticated?
         (and present?
              readable?
+             record-shape?
              (p18-t04-artifact-id-matches? proof)
              release-binary-current?
              p15-final-proof-current?
+             release-evidence-current?
              (or (not complete-record?)
                  (and complete-boundary? provenance-current?)))]
     {:proof proof
@@ -129,6 +286,7 @@
       :p15-final-proof-current? p15-final-proof-current?
       :complete-boundary-authenticated? complete-boundary?
       :provenance-current? provenance-current?
+      :release-evidence-current? release-evidence-current?
       :authenticated? authenticated?
       :failure failure
       :error error}}))
