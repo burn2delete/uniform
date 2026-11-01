@@ -9,6 +9,7 @@
             [gravity.lowering]
             [gravity.runtime]
             [gravity.safety]
+            [gravity.ownership :as ownership]
             [gravity.backend.js]
             [gravity.backend.jvm]
             [gravity.backend.wasm]

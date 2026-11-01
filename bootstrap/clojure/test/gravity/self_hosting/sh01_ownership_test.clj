@@ -300,6 +300,10 @@
 (def ^:private package-policy-consumer "bootstrap/clojure/src/gravity/build/package_policy.clj")
 (def ^:private package-stage-test "bootstrap/clojure/test/gravity/package/pipeline_test.clj")
 
+(def ^:private ownership-stage-path "bootstrap/clojure/src/gravity/ownership.clj")
+(def ^:private ownership-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00694-p15-s23-closed-core-persistent-aliasing-valid.clj")
+(def ^:private ownership-stage-test "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj")
+
 (def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
 (def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
 (def ^:private safety-stage-test "bootstrap/clojure/test/gravity/safety/pipeline_test.clj")
@@ -310,6 +314,9 @@
     (and (= {safety-stage-path
              {:namespace 'gravity.safety :owner :sh-safety :slice "SH-11"
               :consumer-path safety-stage-consumer :test-path safety-stage-test}
+             ownership-stage-path
+             {:namespace 'gravity.ownership :owner :sh-ownership :slice "SH-10"
+              :consumer-path ownership-stage-consumer :test-path ownership-stage-test}
              package-stage-path
              {:namespace 'gravity.package :owner :sh-package-build :slice "SH-23"
               :consumer-path package-stage-consumer :test-path package-stage-test}
@@ -390,6 +397,9 @@
          (= :sh-package-build (get-in record [:module-owners package-stage-path]))
          (= {:namespace 'gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
             (get-in record [:standalone-test-owners package-stage-test]))
+         (= :sh-ownership (get-in record [:module-owners ownership-stage-path]))
+         (= {:namespace 'gravity.ownership.pipeline-test :slice "SH-10" :owner :sh-ownership}
+            (get-in record [:standalone-test-owners ownership-stage-test]))
          (= :sh-safety (get-in record [:module-owners safety-stage-path]))
          (= {:namespace 'gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
             (get-in record [:standalone-test-owners safety-stage-test]))
@@ -508,6 +518,11 @@
               "source" {"path" package-stage-path "namespace" "gravity.package"}
               "consumer" {"path" package-stage-consumer "namespace" "gravity.build.package-selection" "owner" "sh-package-build"}
               "test" {"path" package-stage-test "namespace" "gravity.package.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "ownership-data" "kind" "production-stage-helper" "owner" "sh-ownership"
+              "source" {"path" ownership-stage-path "namespace" "gravity.ownership"}
+              "consumer" {"path" ownership-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-ownership"}
+              "test" {"path" ownership-stage-test "namespace" "gravity.ownership.pipeline-test"
                       "registration" "standalone"}}
              {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
               "source" {"path" safety-stage-path "namespace" "gravity.safety"}
@@ -1280,6 +1295,30 @@
                  (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest ownership-data-helper-has-a-real-consumer-and-standalone-test
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        helper-index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "ownership-data")]
+    (is (not (neg? helper-index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [ownership-stage-path ownership-stage-consumer ownership-stage-test]]
+      (is (.isFile (path relative))))
+    (binding [*read-eval* false]
+      (with-open [reader (java.io.PushbackReader. (io/reader (path ownership-stage-path)))]
+        (is (= 'gravity.ownership (second (read reader))))))
+    (doseq [bad [(update record :module-owners dissoc ownership-stage-path)
+                 (assoc-in record [:module-owners ownership-stage-path] :master-coordinator)
+                 (assoc-in record [:standalone-test-owners ownership-stage-test :owner] :sh-core)
+                 (assoc-in record [:production-helper-associations ownership-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations ownership-stage-path :consumer-path] "forged.clj")
+                 (assoc-in record [:production-helper-associations ownership-stage-path :test-path] "forged_test.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" helper-index "owner"] "master-coordinator")
+                 (assoc-in contract ["production_helpers" helper-index "test" "registration"] "bootstrap-free")
+                 (assoc-in contract ["production_helpers" helper-index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" helper-index "consumer" "path"] "forged.clj")]]
       (is (not (production-helper-registration-valid? record bad))))))
 
 (deftest safety-records-helper-has-a-real-consumer-and-standalone-test

@@ -184,6 +184,33 @@ CI and clean current-main integration preflight remain required. Earlier
 acceptance remains bound to its earlier tuple. This increment does not complete
 the namespace or any general safety contract.
 
+## Ownership-main composition
+
+Ownership PR705 advances actual main to
+a1174ebcaac1a8795f3a9f6f9a139f6fd4e46dda, tree
+856e8b6a5677b0cbfad8b38998e7cbbd08faf192. A normal merge composes that main
+with source d3386f60e0eea1c2eae7c5c83fb8ee7f0ca449df. Five genuine shared
+require, registration and namespace-map conflicts are reconstructed from
+complete main files and the existing Safety association/test. Both native
+components merge without conflict. The current-base conservation verifier
+rebuilds the Safety extraction from actual a117 and confirms the entire stage,
+both complete components, all unchanged Ownership wrappers/unmoved forms, and
+the single Safety require delta. Stage code and focused tests remain unchanged.
+
+Fresh Safety/Ownership/Package/Runtime/Optimization/Lowering and normalized
+C9/C10 tests pass 43 / 1925. Registration passes 35 / 1047 and the language
+boundary passes 6 / 11. The fresh producer's 42 full/text records match the
+explicitly historical clean-6dc control, including recomputed actual source
+hashes, fixture plan IDs and native data proof/check IDs. The complete C10 plan
+and actual fixed-seed/native provenance are captured again and bound to a117;
+the two Gravity emitter/runtime modules remain non-executed inputs.
+
+Both prior reviewers accepted d338 conditionally. Its CI 41256196592 remains
+separate evidence on base 6dc. This new complete tuple requires its own exact
+reviews, contextual lint, CI and clean current-main preflight. No earlier
+acceptance, cancelled run, failed watchdog or later success is transferred to
+another tuple or used as completion authority.
+
 ## Unsupported boundaries
 
 This is partial temporary Clojure record machinery. Canonical analyze/verify,

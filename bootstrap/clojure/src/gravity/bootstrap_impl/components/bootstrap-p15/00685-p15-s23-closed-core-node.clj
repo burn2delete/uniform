@@ -50,41 +50,11 @@
 
 (defn p15-s23-closed-core-forwarded-value-node-ids
   [node]
-  (case (:source-operation node)
-    :local [(first (:operands node))]
-    :let-binding [(first (:operands node))]
-    :if (vec (rest (:operands node)))
-    :do [(last (:operands node))]
-    :let [(last (:operands node))]
-    :function [(last (:operands node))]
-    []))
+  (ownership/forwarded-value-node-ids node))
 
 (defn p15-s23-closed-core-propagate-managed-ownership
   [nodes]
-  (loop [remaining nodes
-         normalized []
-         node-by-id {}]
-    (if-let [node (first remaining)]
-      (let [source-node-ids
-            (p15-s23-closed-core-forwarded-value-node-ids node)
-            managed-forwarding?
-            (some
-             #(= :gravity.reference/jvm-managed-allocator
-                 (get-in node-by-id [% :ownership :provider-id]))
-             source-node-ids)
-            node
-            (if managed-forwarding?
-              (update node :ownership
-                      assoc
-                      :provider-requirement
-                      :gravity.reference/jvm-managed-allocator
-                      :allocator-requirement :memory/allocator
-                      :provider-id :gravity.reference/jvm-managed-allocator
-                      :lifetime :managed-reachability)
-              node)]
-        (recur (next remaining) (conj normalized node)
-               (assoc node-by-id (:node-id node) node)))
-      normalized)))
+  (ownership/propagate-managed-ownership #'p15-s23-closed-core-forwarded-value-node-ids nodes))
 
 (defn p15-s23-closed-core-child-obligation-refs
   [node node-by-id capability-proof-by-node-capability]
@@ -96,20 +66,11 @@
 
 (defn p15-s23-closed-core-shared-owner-domain-id
   [nodes]
-  (when-let [function-node (first (filter #(= :function (:kind %)) nodes))]
-    (p15-s23-closed-core-digest
-     {:kind :gravity/persistent-shared-owner-domain
-      :function-node-id (:node-id function-node)})))
+  (ownership/shared-owner-domain-id #'p15-s23-closed-core-digest nodes))
 
 (defn p15-s23-closed-core-canonical-owner-id
   [product node]
-  (or (p15-s23-closed-core-shared-owner-domain-id
-       (or (:core-nodes product) (:nodes product)))
-      ;; Stored fact tables are verifier inputs, not an authority.  They are a
-      ;; fallback only for prospective subjects that do not carry the core
-      ;; node set needed for independent owner-domain reconstruction.
-      (get-in product [:ownership-facts (:node-id node) :owner-id])
-      :not-applicable))
+  (ownership/canonical-owner-id #'p15-s23-closed-core-shared-owner-domain-id product node))
 
 (defn p15-s23-closed-core-enriched-node-subject
   "Attach genuine C2/C3 provenance and pass identities to a diagnostic node."
