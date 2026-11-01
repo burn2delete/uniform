@@ -11,7 +11,7 @@
 (def manifest (str source-root "gravity/bootstrap_impl/load_order.edn"))
 (def semantic-late-manifest (str source-root "gravity/bootstrap_impl/semantic_late_order.edn"))
 (def loader (str source-root "gravity/bootstrap_impl/loader.clj"))
-(def loader-sha "ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7")
+(def loader-sha "3b399b57cc68325ea710d28454261f61ffa466ff7bc15bd37f8c1c1e9c0be56c")
 (def facade (str source-root "gravity/authenticated_artifact_pipeline.clj"))
 (def facade-prefix (str source-root "gravity/authenticated_artifact_pipeline/"))
 (def facade-resources
@@ -60,13 +60,16 @@
 (defn sha256 [bytes]
   (format "%064x" (java.math.BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256") bytes))))
 
-(defn resource-path! [resource]
-  (when-not (and (string? resource) (str/starts-with? resource "gravity/bootstrap_impl/")
-                 (str/ends-with? resource ".clj")
+(defn resource-path!
+  ([resource] (resource-path! resource false))
+  ([resource data-resource?]
+   (when-not (and (string? resource) (str/starts-with? resource "gravity/bootstrap_impl/")
+                  (or (str/ends-with? resource ".clj")
+                      (and data-resource? (str/ends-with? resource ".edn")))
                  (every? #(not (#{"" "." ".."} %)) (str/split resource #"/"))
                  (not (str/includes? resource "\\")))
-    (throw (ex-info "Unsupported Bootstrap resource path" {:resource resource})))
-  (str source-root resource))
+     (throw (ex-info "Unsupported Bootstrap resource path" {:resource resource})))
+   (str source-root resource)))
 
 (defn local-bytes! [path]
   (loop [file (io/file path)]
@@ -76,19 +79,22 @@
       (recur (.getParentFile file))))
   (java.nio.file.Files/readAllBytes (.toPath (io/file path))))
 
-(defn plan! [read-bytes]
-  (let [loader-bytes (read-bytes loader)
-        _ (when-not (= loader-sha (sha256 loader-bytes))
+(defn plan!
+  ([read-bytes] (plan! read-bytes loader-sha))
+  ([read-bytes expected-loader-sha]
+   (let [loader-bytes (read-bytes loader)
+        _ (when-not (= expected-loader-sha (sha256 loader-bytes))
             (throw (ex-info "Bootstrap loader changed; lint context requires independent review" {})))
         _ (bootstrap-shape! (read-bytes bootstrap))
         entries (manifest! (read-bytes manifest))
-        paths (into [bootstrap] (map #(resource-path! (:resource %)) entries))]
-    (when-not (= (count paths) (count (distinct paths)))
-      (throw (ex-info "Duplicate Bootstrap resource in lint context" {})))
-    {:paths paths :inputs (into {} (for [path (conj paths loader manifest)
-                                         :let [bytes (read-bytes path)
-                                               _ (when (str/ends-with? path ".clj") (source-forms! path bytes))]]
-                                     [path bytes]))}))
+        paths (into [bootstrap]
+                    (map #(resource-path! (:resource %) (:data-resource %)) entries))]
+      (when-not (= (count paths) (count (distinct paths)))
+        (throw (ex-info "Duplicate Bootstrap resource in lint context" {})))
+      {:paths paths :inputs (into {} (for [path (conj paths loader manifest)
+                                           :let [bytes (read-bytes path)
+                                                 _ (when (str/ends-with? path ".clj") (source-forms! path bytes))]]
+                                       [path bytes]))})))
 
 (defn facade-plan! [read-bytes]
   (let [entry (read-bytes facade)
@@ -113,19 +119,21 @@
                          (throw (ex-info "Unsupported namespace/load change in facade fragment" {:path path})))
                        [path bytes])))}))
 
-(defn selected-plan! [read-bytes selected]
-  (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
-        facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
-        plans (cond-> [] bootstrap? (conj (plan! read-bytes)) facade? (conj (facade-plan! read-bytes)))
-        combined {:paths (vec (mapcat :paths plans))
-                  :inputs (apply merge (map :inputs plans))
-                  :namespace-by-path (apply merge (map :namespace-by-path plans))
-                  :entrypoints (into #{bootstrap} (mapcat :entrypoints plans))}]
-    ;; The companion manifest is EDN data, linted separately from source forms.
-    (doseq [path selected :when (and (context-path? path) (not (#{loader manifest semantic-late-manifest} path)))]
-      (when-not (some #{path} (:paths combined))
-        (throw (ex-info "Changed fragment is absent from lint context" {:path path}))))
-    combined))
+(defn selected-plan!
+  ([read-bytes selected] (selected-plan! read-bytes selected loader-sha))
+  ([read-bytes selected expected-loader-sha]
+   (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
+         facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
+         plans (cond-> [] bootstrap? (conj (plan! read-bytes expected-loader-sha)) facade? (conj (facade-plan! read-bytes)))
+         combined {:paths (vec (mapcat :paths plans))
+                   :inputs (apply merge (map :inputs plans))
+                   :namespace-by-path (apply merge (map :namespace-by-path plans))
+                   :entrypoints (into #{bootstrap} (mapcat :entrypoints plans))}]
+     ;; The companion manifest is EDN data, linted separately from source forms.
+     (doseq [path selected :when (and (context-path? path) (not (#{loader manifest semantic-late-manifest} path)))]
+       (when-not (some #{path} (:paths combined))
+         (throw (ex-info "Changed fragment is absent from lint context" {:path path}))))
+     combined)))
 
 (defn assemble! [directory {:keys [paths inputs namespace-by-path entrypoints]}]
   (let [target (io/file directory "gravity/bootstrap.clj")
@@ -133,7 +141,7 @@
         row (atom 1)]
     (io/make-parents target)
     (with-open [writer (io/writer target)]
-      (doseq [path paths]
+      (doseq [path paths :when (str/ends-with? path ".clj")]
         (when-not (contains? (or entrypoints #{bootstrap}) path)
           ;; load-component! binds *ns* afresh for EVERY resource.
           (.write writer (str "(in-ns '" (get namespace-by-path path 'gravity.bootstrap) ")\n"))
@@ -171,12 +179,13 @@
                               :let [[header path] (str/split entry #"\t" 2)]]
                           [path (first (str/split header #" "))]))]
      (with-open [zip (ZipFile. (io/file archive))]
-       (selected-plan! (fn [path]
-                         (when-not (#{"100644" "100755"} (get modes path))
-                           (throw (ex-info "Missing or nonregular base context source" {:path path})))
-                         (let [entry (.getEntry zip path)]
-                           (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
-                           (with-open [input (.getInputStream zip entry)] (.readAllBytes input)))) selected)))))
+       (let [read-archived (fn [path]
+                             (when-not (#{"100644" "100755"} (get modes path))
+                               (throw (ex-info "Missing or nonregular base context source" {:path path})))
+                             (let [entry (.getEntry zip path)]
+                               (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
+                               (with-open [input (.getInputStream zip entry)] (.readAllBytes input))))]
+         (selected-plan! read-archived selected (sha256 (read-archived loader))))))))
 
 (defn- core-operation [value]
   (when (and (symbol? value) (contains? #{nil "clojure.core"} (namespace value)))
