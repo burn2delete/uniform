@@ -490,7 +490,7 @@
                         "(ns gravity.hidden)\n(clojure.core/use 'gravity.digest)\n"
                         "(ns gravity.hidden (:require [clojure.core :as core]))\n(core/require 'gravity.digest)\n"
                         "(ns gravity.hidden (:require [clojure.core :rename {require core/require}]))\n(core/require 'gravity.digest)\n"
-                        "(ns gravity.hidden (:refer-clojure :rename {require core/require}))\n(require 'gravity.digest)\n"]]
+                        "(ns gravity.hidden (:refer-clojure :rename {require hidden-require}))\n(hidden-require 'gravity.digest)\n"]]
     (try
       (spit provider "(ns gravity.provider)\n")
       (with-redefs [ci/leaf-namespace-path
