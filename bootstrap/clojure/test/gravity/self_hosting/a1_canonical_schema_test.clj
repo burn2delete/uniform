@@ -46,6 +46,12 @@
 (deftest public-surface-and-total-arity-are-closed
   (is (= '#{canonical-copy admit-schema-registry validate-and-copy}
          (set (keys (ns-publics 'gravity.self-hosting.a1-canonical-schema)))))
+  (is (= '([value path])
+         (:arglists (meta (ns-resolve 'gravity.self-hosting.a1-canonical-schema
+                                      'schema-id!)))))
+  (is (= '([value])
+         (:arglists (meta (ns-resolve 'gravity.self-hosting.a1-canonical-schema
+                                      'canonical-uint)))))
   (doseq [[operation calls]
           [[a1/canonical-copy [[] [nil nil]]]
            [a1/admit-schema-registry [[] [{} {}]]]
@@ -223,6 +229,18 @@
     (is (= "accepted"
            (get (a1/admit-schema-registry large-registry) "status")))))
 
+(deftest schema-identifiers-retain-alphabet-without-length-quota
+  (let [long-id (str "schema-" (apply str (repeat 128 "x")))
+        invalid-id (str long-id "!")]
+    (is (= "accepted"
+           (get (a1/admit-schema-registry
+                 {long-id {"kind" "null"}})
+                "status")))
+    (is (= "E-ID-SYNTAX"
+           (get (a1/admit-schema-registry
+                 {invalid-id {"kind" "null"}})
+                "diagnostic")))))
+
 (deftest declared-schema-bounds-remain-semantic
   (let [registry {"text" {"kind" "string" "ascii-only" true "max-bytes" 3}
                   "array" {"kind" "array" "item" "text"
@@ -305,12 +323,18 @@
   (let [constructor (ns-resolve 'gravity.self-hosting.a1-canonical-schema
                                 'construct-map)]
     (with-redefs-fn {constructor (fn [_] (throw (Exception. "injected")))}
-      #(is (= (result "E-HOST" ["internal"])
-              (a1/canonical-copy {"x" 1}))))
+      #(let [actual (a1/canonical-copy {"x" 1})]
+         (is (= (result "E-HOST" ["internal"]) actual))
+         (is (vector? (get actual "path")))))
+    (with-redefs-fn {constructor (fn [_] (throw (ex-info "foreign" {})))}
+      #(let [actual (a1/canonical-copy {"x" 1})]
+         (is (= (result "E-HOST" ["internal"]) actual))
+         (is (vector? (get actual "path")))))
     (with-redefs-fn {constructor (fn [_] (throw (InterruptedException. "stop")))}
       #(do
          (let [actual (a1/canonical-copy {"x" 1})
                interrupted? (.isInterrupted (Thread/currentThread))]
            (Thread/interrupted)
            (is (= (result "E-HOST" ["internal"]) actual))
+           (is (vector? (get actual "path")))
            (is interrupted?))))))

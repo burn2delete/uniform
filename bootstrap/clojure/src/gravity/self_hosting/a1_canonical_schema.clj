@@ -44,8 +44,10 @@
   validate-closed-value! canonical/validate-closed-value!)
 (def ^{:private true :arglists '([value path])}
   copy-value! canonical/copy-value!)
-(def ^{:private true :arglists '([definition value path])}
+(def ^{:private true :arglists '([value path])}
   schema-id! schema/schema-id!)
+(def ^{:private true :arglists '([value])}
+  canonical-uint config/canonical-uint)
 (def ^{:private true :arglists '([definition allowed required path])}
   exact-fields! schema/exact-fields!)
 (def ^{:private true :arglists '([definition name path])}

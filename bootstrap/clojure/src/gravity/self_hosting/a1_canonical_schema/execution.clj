@@ -48,9 +48,9 @@
         (if (:a1/failure data)
           (config/rejected (:diagnostic data)
                            (config/path-vector (:path data)))
-          (config/rejected "E-HOST" (config/path-of "internal")))))
+          (config/rejected "E-HOST" ["internal"]))))
     (catch InterruptedException _
       (.interrupt (Thread/currentThread))
-      (config/rejected "E-HOST" (config/path-of "internal")))
+      (config/rejected "E-HOST" ["internal"]))
     (catch Exception _
-      (config/rejected "E-HOST" (config/path-of "internal")))))
+      (config/rejected "E-HOST" ["internal"]))))

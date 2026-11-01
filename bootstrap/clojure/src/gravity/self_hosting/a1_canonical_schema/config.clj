@@ -4,7 +4,7 @@
                          PersistentVector)))
 
 (def uint64-max 18446744073709551615N)
-(def schema-id-pattern #"[a-z][a-z0-9-]{0,63}")
+(def schema-id-pattern #"[a-z][a-z0-9-]*")
 (def allowed-kinds
   #{"null" "boolean" "uint64" "string" "enum" "array" "object"
     "tagged-union"})
