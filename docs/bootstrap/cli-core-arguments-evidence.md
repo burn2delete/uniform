@@ -126,6 +126,20 @@ test flag and an invalid namespace-as-exact selector stopped before tests;
 correct supported selections pass. These retained launch errors are not test
 or compiler failures, and no denied constructor route was executed.
 
+## Affected-stage and cached-shard CI main composition
+
+Actual main0e01fc5937d5b224dd03e14751566f0e541b6529/tree
+7bd8ec6c99a12fd3338edb3fce7a3e941064abef adds conservative affected-stage
+CI selection and shared development shard caching. Its six changed paths from
+b363 are CI tools/docs, cached-shard runner/tests and the verification catalog.
+The normal composition preserves all six exactly. Compiler sources, public
+Core control subjects, CLI implementation/tests and their execution inputs
+remain unchanged. Core products are the freshly executed loader625 controls.
+No cached shard route is executed for
+this slice's local evidence. Exact current0e conservation, docs validation,
+contextual lint, independent acceptance, own CI and clean preflight remain
+integration gates; previous-base CI does not satisfy them.
+
 ## Unsupported boundaries
 
 This remains a Clojure bootstrap CLI increment. Existing SH07-CLI-ARGS and
