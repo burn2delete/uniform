@@ -4,7 +4,7 @@
             [clojure.string :as str]
             [clojure.walk :as walk]
             [gravity.bootstrap :as bootstrap]
-            [gravity.self-hosting.sh09-body-effect-test :as body-effects]))
+            [gravity.self-hosting.sh08-function-call-kernel-support :as body-support]))
 
 (def ^:private runtime {:engine :stage2-runtime-iteration-test})
 (def ^:private plan {:source {:path "stage2-runtime-iteration-test.gravity"}})
@@ -449,7 +449,7 @@
 (deftest current-gravity-recursive-quote-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter-text (slurp emitter-path)
@@ -686,8 +686,7 @@
         (is (= :accepted (:status (construct [:explode]))))))))
 
 (deftest current-gravity-literal-keyword-set-c8-development-kernel
-  (require 'gravity.self-hosting.sh09-body-effect-test)
-  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         id #(str "sha256:" (bootstrap/sha256-hex (str %)))
         node (fn [n kind children]
                {:node-id (id n) :core-form kind :children (mapv id children) :source {:syntax-id (id n)}
@@ -1178,7 +1177,7 @@
       )))
 
 (deftest current-gravity-keyword-map-lookup-c8-development-kernel
-  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         id #(str "sha256:" (bootstrap/sha256-hex (str %)))
         node (fn [n kind children] {:node-id (id n) :core-form kind :children (mapv id children)
                                    :source {:syntax-id (id n)}
@@ -1236,7 +1235,7 @@
 
 (deftest current-gravity-evaluated-vector-c8-development-kernel
   ;; Independent existing C8 body algorithms over normalized DATA, not a legality grant.
-  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         id #(str "sha256:" (bootstrap/sha256-hex (str %)))
         node (fn [n kind children] {:node-id (id n) :core-form kind :children (mapv id children)
                                    :source {:syntax-id (id n)}
@@ -1260,7 +1259,7 @@
     (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))
 
 (defn- evaluated-vector-c8-checks [input]
-  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         request (:request input) facts (get-in input [:typed :identity-input])
         core (:canonical-core-artifact request)
         vectors (filterv #(= :collection-literal (:core-form %)) (:nodes core))
@@ -1279,7 +1278,7 @@
         (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))))
 
 (deftest evaluated-vector-c8-consumer-development-kernel
-  (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [leaf (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         request {:canonical-core-artifact {:nodes []}} facts {:module {:effects [:error/throw]}}
         input {:request request :typed {:outer-artifact :not-c8-facts :identity-input facts}}
         calls (atom []) reports (atom [])]
@@ -1297,7 +1296,7 @@
 (deftest current-gravity-evaluated-vector-c8-authenticated-composition
   ;; Affected successor to the failed C8 consumer in v1. Do not replay the
   ;; separate lowering/runtime/public-tamper work completed by that run.
-  (let [fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+  (let [fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-evaluated-vector.gravity")
         input (select-keys products [:request :typed :verification])]
     (is (= :accepted (get-in input [:typed :status])))
@@ -1307,7 +1306,7 @@
 (deftest current-gravity-evaluated-vector-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -1378,7 +1377,7 @@
 
 (defn- evaluated-map-c8-checks [input]
   ;; Existing C8 algorithms consume identity-input facts, independently of lowering.
-  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         request (:request input) facts (get-in input [:typed :identity-input])
         core (:canonical-core-artifact request)
         collections (filterv #(= :collection-literal (:core-form %)) (:nodes core))
@@ -1397,7 +1396,7 @@
         (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))))
 
 (deftest evaluated-map-c8-consumer-development-kernel
-  (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [leaf (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         request {:canonical-core-artifact {:nodes []}} facts {:module {:effects [:error/throw]}}
         input {:request request :typed {:outer-artifact :not-c8-facts :identity-input facts}}
         calls (atom []) reports (atom [])]
@@ -1414,7 +1413,7 @@
 (deftest current-gravity-evaluated-map-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -1499,7 +1498,7 @@
       (is (= ["C7-TYPE-MISMATCH" :function-result-type-mismatch] ((juxt :rule :reason) failure))))))
 
 (defn- keyword-lookup-c8-checks [input]
-  (let [c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         request (:request input) facts (get-in input [:typed :identity-input]) core (:canonical-core-artifact request)
         lookups (filterv #(= :keyword-map-lookup (:core-form %)) (:nodes core))
         analyzed (c8 'body-analyze-module request facts {} )]
@@ -1517,7 +1516,7 @@
         (is (= "C8-UNDECLARED" (:rule (c8 'body-allowance-check core (assoc-in facts [:module :effects] []) graph))))))))
 
 (deftest keyword-lookup-c8-consumer-development-kernel
-  (let [leaf (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [leaf (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         request {:canonical-core-artifact {:nodes []}} facts {:module {:effects [:error/throw]}}
         input {:request request :typed {:outer-artifact :not-c8-facts :identity-input facts}}
         calls (atom []) reports (atom [])]
@@ -1534,7 +1533,7 @@
 (deftest current-gravity-keyword-map-lookup-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -1656,7 +1655,7 @@
   (require 'gravity.self-hosting.sh08-loop-recur-type-test)
   (let [helper #(ns-resolve 'gravity.self-hosting.sh08-loop-recur-type-test %)
         c7 (fn [f & args] ((helper 'c7-invoke) f (vec args)))
-        c8 (fn [f & args] (apply (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf) f args))]
+        c8 (fn [f & args] (apply (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf) f args))]
     (doseq [position [:scrutinee :branch]]
       (let [{:keys [core types functions direct bindings id fid]} ((helper 'local-throw-kernel-data))
             scrutinee? (= position :scrutinee)
@@ -2157,8 +2156,8 @@
 (deftest current-gravity-root-map-guard-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -2312,8 +2311,8 @@
 (deftest current-gravity-structural-match-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -2433,8 +2432,8 @@
 (deftest current-gravity-boolean-match-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -2543,8 +2542,8 @@
 (deftest current-gravity-returned-map-shape-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -2839,7 +2838,7 @@
 (deftest current-gravity-typed-lowering-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         runtime-path (.getPath (io/file root "bootstrap/gravity/src/gravity/runtime.gravity"))
         compatibility-path (.getPath (io/file root "bootstrap/gravity/p15_s23/runtime.gravity"))
         compatibility-source {:path compatibility-path :sha256 (str "sha256:" (bootstrap/sha256-hex (slurp compatibility-path)))}
@@ -3379,7 +3378,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function verifications (atom 0)
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         operation (fn [thunk]
@@ -3485,7 +3484,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path) emitter-text (slurp emitter-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function verifications (atom 0)
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         operation (fn [thunk] (let [before @verifications
@@ -3803,8 +3802,8 @@
 (deftest current-gravity-integral-ordering-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -3912,10 +3911,10 @@
 (deftest current-gravity-map-association-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal-graph (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal-graph (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -4278,7 +4277,7 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-family-removal-input)
         derive (ns-resolve upstream 'map-removal-derived) c7 (ns-resolve upstream 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -4306,15 +4305,15 @@
         (is (= functions (count (re-seq #"(?m)^\(defn " text))))))))
 
 (deftest current-gravity-map-parameters-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         sha (fn [n] (str "sha256:" (format "%064x" n)))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -4539,16 +4538,16 @@
             "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/map-parameter-undeclared-allocation.gravity"] @built))))
 
 (deftest current-gravity-map-removal-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         sha (fn [n] (str "sha256:" (format "%064x" n)))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -4699,15 +4698,15 @@
         (is (= functions (count (re-seq #"(?m)^\(defn " text))))))))
 
 (deftest current-gravity-list-count-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -5602,14 +5601,14 @@
     (is (= {'plain {:instructions []}} (project {'plain {:instructions []}})))))
 
 (deftest current-gravity-declared-self-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -5819,14 +5818,14 @@
             "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/declared-self-no-effects.gravity"] @built))))
 
 (deftest current-gravity-private-self-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -6052,14 +6051,14 @@
             "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/private-self-no-effects.gravity"] @built))))
 
 (deftest current-gravity-integral-value-equality-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -6244,13 +6243,13 @@
 
 (deftest current-gravity-literal-keyword-set-authenticated-composition
   ;; Two changed G products; Q parser and C2 duplicate checks are a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -6406,13 +6405,13 @@
 
 (deftest current-gravity-keyword-set-contains-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -6548,13 +6547,13 @@
 
 (deftest current-gravity-keyword-set-equality-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -6678,14 +6677,14 @@
                       :clock :monotonic-nanoseconds :authority :non-authoritative :nested-work :included}))))
 
 (deftest current-gravity-vector-value-equality-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -6823,14 +6822,14 @@
             "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/vector-value-equality-map-domain.gravity"] @built))))
 
 (deftest current-gravity-module-literal-modes-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -6967,14 +6966,14 @@
             "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/module-literal-modes-missing-allocation.gravity"] @built))))
 
 (deftest current-gravity-private-entry-span-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -7116,15 +7115,15 @@
             "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/private-entry-span-missing-key.gravity"] @built))))
 
 (deftest current-gravity-nil-if-join-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         sha (fn [n] (str "sha256:" (format "%064x" n)))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -7283,15 +7282,15 @@
             "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/nil-if-join-declared-non-nil.gravity"] @built))))
 
 (deftest current-gravity-list-if-join-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -7426,13 +7425,13 @@
     (is (= '(gravity.core/count (quote (nil false "entry"))) (last (:form (nth forms 3)))))))
 
 (deftest current-gravity-qualified-core-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         relative "bootstrap/clojure/fixtures/self-hosting/sh-06/modules/qualified-core-count"
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -7525,10 +7524,10 @@
 (deftest current-gravity-collection-count-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal-graph (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal-graph (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -7668,9 +7667,9 @@
 
 (defn- vector-append-remaining-negative-checks []
   (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (let [fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         products (fresh "bootstrap/clojure/fixtures/self-hosting/sh-08/rejected/vector-append-never-family.gravity")]
     (is (= :rejected (get-in products [:typed :status])))
     (is (= ["C7-TYPE-MISMATCH" :vector-append-operand-type-required]
@@ -7714,10 +7713,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -7864,17 +7863,17 @@
         (is (= count-fn (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
 
 (deftest current-gravity-homogeneous-list-return-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         attempts (atom []) products-built (atom [])
         fresh (fn [relative]
                 (swap! attempts conj relative)
                 (let [products (upstream relative)] (swap! products-built conj relative) products))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -8065,13 +8064,13 @@
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
 
 (deftest current-gravity-list-prepend-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -8277,13 +8276,13 @@
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
 
 (deftest current-gravity-homogeneous-list-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -8443,13 +8442,13 @@
       (is (= ["C8-UNDECLARED" :function-effect-outside-source-allowance] ((juxt :rule :reason) (first (:diagnostics effects))))))))
 
 (deftest current-gravity-list-traversal-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -8607,13 +8606,13 @@
              ((juxt :rule :reason) (first (:diagnostics effects))))))))
 
 (deftest current-gravity-list-query-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -8807,13 +8806,13 @@
                (slurp (io/file root (str relative ".qst")))))))))
 
 (deftest current-gravity-list-construction-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -8969,10 +8968,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -9558,9 +9557,8 @@
 
 
 (deftest current-gravity-vector-empty-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test
-           'gravity.self-hosting.sh09-body-effect-test)
-  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-query-input)
         derive (ns-resolve upstream 'list-query-derived) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -9649,9 +9647,8 @@
 
 
 (deftest current-gravity-list-set-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test
-           'gravity.self-hosting.sh09-body-effect-test)
-  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'list-set-input)
         derive (fn [input] ((ns-resolve upstream 'set-conversion-derived) input)) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -9908,9 +9905,8 @@
         (is (empty? @callbacks))))))
 
 (deftest current-gravity-map-keys-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test
-           'gravity.self-hosting.sh09-body-effect-test)
-  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'map-keys-input)
         derive (ns-resolve upstream 'list-query-derived) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -10052,9 +10048,8 @@
     (is (empty? @callbacks))))
 
 (deftest current-gravity-vector-rest-lowering-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test
-           'gravity.self-hosting.sh09-body-effect-test)
-  (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         upstream 'gravity.self-hosting.sh08-function-call-type-test input-fn (ns-resolve upstream 'vector-rest-input)
         derive (ns-resolve upstream 'list-query-derived) c7 (ns-resolve upstream 'invoke-c7)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -10423,16 +10418,16 @@
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) (bootstrap/read-forms relative text)))))))))
 
 (deftest current-gravity-map-present-get-authenticated-composition
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         sha (fn [n] (str "sha256:" (format "%064x" n)))
-        upstream (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        upstream (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         built (atom []) fresh (fn [relative] (let [result (upstream relative)] (swap! built conj relative) result))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -10599,10 +10594,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -10939,10 +10934,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -11351,10 +11346,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -11538,13 +11533,13 @@
 
 (deftest current-gravity-set-predicate-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -11678,10 +11673,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -11892,7 +11887,7 @@
 
 (deftest current-gravity-character-predicate-authenticated-composition
   ;; One real G positive and arity-negative; Q remains parser/byte evidence.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -11932,8 +11927,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-character-predicate.gravity"
         products (fresh relative) input (select-keys products [:request :typed :verification])
         _ (println (pr-str {:character-predicate-product-elapsed relative :timing (:development-timing products)}))
@@ -12072,13 +12067,13 @@
 
 (deftest current-gravity-keyword-vector-set-conversion-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -12250,13 +12245,13 @@
 
 (deftest current-gravity-fixed-integral-inequality-authenticated-composition
   ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -12434,13 +12429,13 @@
 
 (deftest current-gravity-integer-inequality-authenticated-composition
   ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -12595,13 +12590,13 @@
 (deftest current-gravity-atomic-inequality-completion-authenticated-composition
   ;; New reduced source input completes V1-unrun entries and hostile checks.
   ;; Original 16-function V1 remains partial; it is not replayed or claimed complete.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -12743,13 +12738,13 @@
 
 (deftest current-gravity-atomic-inequality-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -12883,13 +12878,13 @@
 
 (deftest current-gravity-nil-predicate-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -13041,13 +13036,13 @@
 
 (deftest current-gravity-boolean-predicate-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -13180,13 +13175,13 @@
 
 (deftest current-gravity-symbol-predicate-authenticated-composition
   ;; One G positive and one G negative; Q byte/parser coverage is a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -13323,10 +13318,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -13513,10 +13508,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -13759,10 +13754,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -13906,10 +13901,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -14051,10 +14046,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -14208,7 +14203,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime plan name (vec args)))
-        body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)]
+        body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)]
     (doseq [target [:jvm :wasm]]
       (let [module (assoc (:module input) :target target)]
         (is (true? (c7 'sh08-ma-binding? [association module])))
@@ -14391,10 +14386,10 @@
 
 (deftest current-gravity-keyword-vector-set-conversion-id-guards-development-kernel
   ;; Malformed normalized DATA tests local guard order, not authenticated C6 admission.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'set-conversion-input) derive (ns-resolve upstream 'set-conversion-derived)
-        c7 (ns-resolve upstream 'invoke-c7) body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (input-fn [{:kind :gravity.type/vector :shape :literal :element-types [:gravity.type/keyword]}])
         {:keys [core node call edge nodes forms bindings types module]} input
         result (derive input) descriptor (:descriptor result)
@@ -14565,7 +14560,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)]
       (doseq [target [:jvm :wasm]
               [input name expected] [[(input-fn [:gravity.type/map]) 'mapp (= target :jvm)]
@@ -14679,7 +14674,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)]
       (doseq [target [:jvm :wasm]
               [input name expected] [[(input-fn [:gravity.type/map]) 'setp (= target :jvm)]
@@ -14794,7 +14789,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)]
       (doseq [target [:jvm :wasm]
               [input name expected] [[(input-fn [:gravity.type/map]) 'symp (= target :jvm)]
@@ -14912,7 +14907,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)]
       (doseq [target [:jvm :wasm]
               [input name expected] [[(input-fn [:gravity.type/map]) 'boolp (= target :jvm)]
@@ -15031,7 +15026,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)]
       (doseq [target [:jvm :wasm]
               [input name expected] [[(input-fn [:gravity.type/map]) 'chp (= target :jvm)]
@@ -15246,7 +15241,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)]
       (doseq [target [:jvm :wasm]
               [input name expected] [[(input-fn [:gravity.type/map]) 'nilp (= target :jvm)]
@@ -15585,13 +15580,13 @@
 
 (deftest current-gravity-keyword-set-inequality-authenticated-composition
   ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -15893,13 +15888,13 @@
 
 (deftest current-gravity-vector-inequality-authenticated-composition
   ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -16193,10 +16188,10 @@
 
 (deftest current-gravity-atomic-inequality-id-guards-development-kernel
   ;; Malformed normalized DATA tests local guard order, not authenticated C6 admission.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'atomic-inequality-input) derive (ns-resolve upstream 'atomic-inequality-derived)
-        c7 (ns-resolve upstream 'invoke-c7) body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (input-fn [:gravity.type/keyword {:kind :gravity.type/nil-or :value-type :gravity.type/string}])
         {:keys [core node call edge nodes forms bindings types module]} input
         result (derive input) descriptor (:descriptor result)
@@ -16590,7 +16585,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)
           vp-input (ns-resolve upstream 'vector-predicate-input)
           mp-input (ns-resolve upstream 'map-predicate-input)]
@@ -16709,7 +16704,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)
           vp-input (ns-resolve upstream 'vector-predicate-input)
           mp-input (ns-resolve upstream 'map-predicate-input)
@@ -17084,10 +17079,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -18273,6 +18268,7 @@
 
 (deftest current-gravity-indexed-private-lowering-runtime-development-kernel
   (require 'gravity.self-hosting.sh08-recursive-function-type-test)
+  (require 'gravity.self-hosting.sh09-body-effect-test)
   (let [factory (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'private-self-value-kernel-data)
         raw (factory :indexed-sha)
         renamed (get-in raw [:data :node-id-map])
@@ -18622,10 +18618,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -18813,10 +18809,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -18942,10 +18938,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -19139,10 +19135,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -19274,10 +19270,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -19420,10 +19416,10 @@
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         c7 (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test 'invoke-c7)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
@@ -19578,10 +19574,10 @@
 (deftest current-gravity-vector-nth-authenticated-composition
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal-graph (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal-graph (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -19854,6 +19850,7 @@
            (evaluate {:op :builtin-call :function '< :args [(literal 1) {:op :throw :value (literal "second")}]})))))
 
 (deftest current-gravity-private-self-lowering-development-kernel
+  (require 'gravity.self-hosting.sh09-body-effect-test)
   (let [data (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'private-self-value-kernel-data)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -20081,7 +20078,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter-text (slurp emitter-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         verifications (atom 0)
@@ -20286,7 +20283,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter-text (slurp emitter-path) emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
         execute (fn [function env]
@@ -20346,7 +20343,7 @@
         {:keys [plan parent-source]} (typed-catch-runtime-projection)
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
         original bootstrap/p15-s23-stage2-runtime-execute-function
         execute (fn [instruction env] (original runtime plan 'p15-s23-runtime-evaluate-closed-instruction [instruction env ""]))
         transport (module-private 'p15-s23-stage2-runtime-source-throw!) transports (atom 0) original-transport (var-get transport)
@@ -21449,7 +21446,7 @@
                         dependency (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter library-path (slurp library-path))
                         inputs {:caller-resolution-artifact caller :dependency-plans [dependency]}
                         bundle (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter caller-path (slurp caller-path) inputs)
-                        root (body-effects/module-root-entry bundle)
+                        root (body-support/module-root-entry bundle)
                         validations (atom 0) value {:nested [1 #{:value}]}]
                     (is (= :accepted (:status library) (:status caller)))
                     (is (= :development-unadmitted (get-in bundle [:boundary :revision-status])))
@@ -21538,8 +21535,8 @@
   (let [path (str/replace (module-fixture "seed-library" ".gravity")
                           "clojure/fixtures/self-hosting/sh-01/modules/seed-library.gravity"
                           "gravity/src/gravity/compiler/c8_effect_checker_engine.gravity")
-        bundle (body-effects/compile-c8-module-bundle path)
-        entry (body-effects/module-root-entry bundle)
+        bundle (body-support/compile-c8-module-bundle path)
+        entry (body-support/module-root-entry bundle)
         artifact (:resolution-artifact entry)
         literals (bootstrap/p15-s23-stage2-module-literals (bootstrap/read-forms path (slurp path)))
         catalogs '#{c8-effect-graph-contract c8-effect-legality-contract c8-capability-proof-contract
@@ -23232,7 +23229,7 @@
           (is (= '(not= [] [[7]]) (last (definition 'numeric-member)))))))))
 (deftest current-gravity-flat-integer-vector-comparison-authenticated-composition
   ;; One G count-Vector positive and one nested-Integer typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -23272,8 +23269,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/flat-integer-vector-comparison.gravity"
         products (fresh relative) input (select-keys products [:request :typed :verification])
         _ (println (pr-str {:flat-integer-vector-comparison-product-elapsed relative :timing (:development-timing products)}))
@@ -23844,7 +23841,7 @@
         (is (= functions (count (filter #(and (seq? %) (= 'defn (first %))) g))))))))
 (deftest current-gravity-string-set-contains-authenticated-composition
   ;; One G extension-query positive and one C7 domain negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -23884,8 +23881,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/string-set-membership.gravity"
         products (fresh relative) input (select-keys products [:request :typed :verification])
         _ (println (pr-str {:string-set-membership-product-elapsed relative :timing (:development-timing products)}))
@@ -24007,13 +24004,13 @@
 
 (deftest current-gravity-character-set-contains-authenticated-composition
   ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -24318,7 +24315,7 @@
 
 (deftest current-gravity-literal-string-set-authenticated-composition
   ;; One G positive and one upstream-accepted lowering negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -24358,8 +24355,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/local-runtime-literal-string-set.gravity"
         products (fresh relative) input (select-keys products [:request :typed :verification])
         _ (println (pr-str {:literal-string-set-product-elapsed relative :timing (:development-timing products)}))
@@ -24577,13 +24574,13 @@
 
 (deftest current-gravity-literal-character-set-authenticated-composition
   ;; Two changed G products; Q parser and C2 duplicate checks are a separate cheap kernel.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -24837,13 +24834,13 @@
 
 (deftest current-gravity-vector-first-authenticated-composition
   ;; One changed G positive and one changed G negative; Q has byte/parser coverage only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        reseal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'reseal-effect-graph)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        reseal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'reseal-effect-graph)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -25083,12 +25080,12 @@
 
 (deftest current-gravity-private-entry-vector-get-authenticated-composition
   ;; One new G positive/negative. Q is covered only by fixture byte/parser checks.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
-        fresh (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'fresh-type-products)
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        fresh (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'fresh-type-products)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         runtime-plan (:plan (typed-catch-runtime-projection))
         emitter-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! emitter-path :jvm))
@@ -25301,7 +25298,7 @@
 
 (deftest current-gravity-private-first-entry-authenticated-composition
   ;; A minimal real private-entry chain. Full C17 and Q typed products are unrun.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -25341,8 +25338,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/private-first-entry.gravity"
         products (fresh relative) input (select-keys products [:request :typed :verification])
         _ (println (pr-str {:bu-product-elapsed relative :timing (:development-timing products)}))
@@ -25913,7 +25910,7 @@
 
 (deftest current-gravity-flat-keyword-set-vector-comparison-authenticated-composition
   ;; One G finite Keyword-Set Vector positive and one String-Set typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -25953,8 +25950,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         relative "bootstrap/clojure/fixtures/self-hosting/sh-08/accepted/flat-keyword-set-vector-comparison.gravity"
         products (fresh relative) input (select-keys products [:request :typed :verification])
         _ (println (pr-str {:flat-keyword-set-vector-comparison-product-elapsed relative :timing (:development-timing products)}))
@@ -26291,7 +26288,7 @@
 
 (deftest current-gravity-module-keyword-set-authenticated-composition
   ;; One G module initializer positive and one upstream-accepted lowering negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -26331,8 +26328,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:module-keyword-set-product-elapsed relative :timing (:development-timing products)}))
@@ -26693,7 +26690,7 @@
 
 (deftest current-gravity-module-string-set-authenticated-composition
   ;; One G module initializer positive and one upstream-accepted lowering negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -26733,8 +26730,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:module-string-set-product-elapsed relative :timing (:development-timing products)}))
@@ -27276,7 +27273,7 @@
 
 (deftest current-gravity-string-set-comparison-authenticated-composition
   ;; One exact B14 definition comparison positive and one String-Set Vector typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -27316,8 +27313,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:string-set-comparison-product-elapsed relative :timing (:development-timing products)}))
@@ -27732,7 +27729,7 @@
 
 (deftest current-gravity-string-set-insertion-authenticated-composition
   ;; One count(conj) source composition and one Character-member typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -27772,8 +27769,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:string-set-insertion-product-elapsed relative :timing (:development-timing products)}))
@@ -27987,7 +27984,7 @@
 
 (deftest current-gravity-string-set-carrier-authenticated-composition
   ;; One private self-call String-Set carrier composition and one empty-entry typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -28027,8 +28024,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:string-set-carrier-product-elapsed relative :timing (:development-timing products)}))
@@ -28374,9 +28371,9 @@
           (is (= :rejected (:status (lower 'p15-s23-typed-compile-node (assoc context :nearest-target nil) slot )))))))))
 
 (deftest current-gravity-string-set-carrier-mixed-comparison-ledger-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        effects (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        effects (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         carrier {:kind :gravity.type/set :shape :homogeneous :element-type :gravity.type/string} finite {:kind :gravity.type/set :shape :literal :element-types [:gravity.type/string]}
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -28438,7 +28435,7 @@
 
 (deftest current-gravity-string-set-carrier-equality-authenticated-composition
   ;; One carrier comparison composition and one genuine bare-Set private-entry negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -28478,8 +28475,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:string-set-carrier-equality-product-elapsed relative :timing (:development-timing products)}))
@@ -28629,7 +28626,7 @@
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0) :closed-plan-execution (- t2 t1))}))))
 
 (deftest current-gravity-list-predicate-lowering-runtime-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input-fn (ns-resolve upstream 'list-predicate-input)
         derive (ns-resolve upstream 'list-predicate-derived)
@@ -28638,7 +28635,7 @@
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         emitter-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
         lower (fn [name & args] (bootstrap/p15-s23-stage2-runtime-execute-function runtime emitter-plan name (vec args)))]
-    (let [body (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+    (let [body (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
           ip-input (ns-resolve upstream 'integer-predicate-input)]
       (doseq [target [:jvm :wasm]
               [input name expected] [[(input-fn [:gravity.type/map]) 'listp (= target :jvm)]
@@ -28843,7 +28840,7 @@
 
 (deftest current-gravity-list-predicate-authenticated-composition
   ;; One typed List-family composition and one arity typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -28883,8 +28880,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:list-predicate-product-elapsed relative :timing (:development-timing products)}))
@@ -29270,7 +29267,7 @@
 
 (deftest current-gravity-list-equality-authenticated-composition
   ;; One finite List-equality composition and one Map-shaped Character typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -29310,8 +29307,8 @@
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:list-equality-product-elapsed relative :timing (:development-timing products)}))
@@ -30016,9 +30013,9 @@
 
 
 (deftest current-gravity-let-vector-slice-first-membership-proof-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (ns-resolve upstream 'let-vector-slice-first-membership-input)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -30158,9 +30155,9 @@
                 (is (= :rejected (:status (compile candidate ))))))))))))
 
 (deftest current-gravity-let-vector-slice-first-proof-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (ns-resolve upstream 'let-vector-slice-first-input)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -30467,9 +30464,9 @@
       (is (= [[66] "initializer\n" :normal] observed)))))
 
 (deftest current-gravity-let-vector-slice-equality-proof-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (ns-resolve upstream 'let-vector-slice-equality-input)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -30503,9 +30500,9 @@
           (is (= 0 @callbacks)))))))
 
 (deftest current-gravity-let-prefix-gate-proof-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (ns-resolve upstream 'let-prefix-gate-input)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -30570,9 +30567,9 @@
           (is (= 0 @callbacks)))))))
 
 (deftest current-gravity-let-vector-slice-proof-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (ns-resolve upstream 'let-vector-slice-input)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
@@ -30757,9 +30754,9 @@ else
           (is (= :rejected (:status (invoke 'p15-s23-typed-lower-function module (definitions 'call-tail) (mutate context))))))))))
 
 (deftest current-gravity-prefix-gated-slice-call-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input (ns-resolve upstream 'prefix-gated-slice-call-input)
-        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -30824,10 +30821,10 @@ else
         (when (= :rejected expected) (is (= "STD3002" (:rule result))))))))
 
 (deftest current-gravity-let-vector-slice-call-argument-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input (ns-resolve upstream 'let-vector-slice-call-input)
-        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -30923,7 +30920,7 @@ else
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input (ns-resolve upstream 'parameter-vector-count-slice-input)
-        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -31051,11 +31048,11 @@ else
               (is (= :rejected (:status (lower candidate )))))))))))
 
 (deftest current-gravity-let-vector-count-slice-membership-prepay-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         inputs [(ns-resolve upstream 'let-vector-count-slice-input)
                 (ns-resolve upstream 'let-vector-count-slice-first-input)]
-        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -31107,10 +31104,10 @@ else
           (is (= 0 @callbacks)))))))
 
 (deftest current-gravity-let-vector-count-slice-three-owner-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
         input (ns-resolve upstream 'let-vector-count-slice-input)
-        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -31218,9 +31215,9 @@ else
               (is (= :rejected (:status (lower candidate )))))))))))
 
 (deftest current-gravity-let-vector-count-slice-first-proof-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test input (ns-resolve upstream 'let-vector-count-slice-first-input)
-        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c7 (ns-resolve upstream 'invoke-c7) c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
         emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! path :jvm))
         plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path (slurp path))
@@ -31597,9 +31594,9 @@ else
         (is (= 0 @callbacks))))))
 
 (deftest current-gravity-literal-vector-slice-proof-preflight-development-kernel
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test c7 (ns-resolve upstream 'invoke-c7)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         input (ns-resolve upstream 'literal-vector-slice-input)
         base (update (input [65 66 67] 1 2) :forms #(into clojure.lang.PersistentHashMap/EMPTY %))
         wide (update (input (vec (range 1025)) 0 1) :forms #(into clojure.lang.PersistentHashMap/EMPTY %))
@@ -32859,7 +32856,7 @@ else
 
 (deftest current-gravity-keyword-set-insertion-authenticated-composition
   ;; One finite Keyword insertion composition and one Character-member typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -32899,8 +32896,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:keyword-set-insertion-product-elapsed relative :timing (:development-timing products)}))
@@ -33025,7 +33022,7 @@ else
 
 (deftest current-gravity-sha-prefix-comparison-authenticated-composition
   ;; Two original ASCII prefix comparisons plus a mixed-family typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -33065,8 +33062,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:sha-prefix-comparison-product-elapsed relative :timing (:development-timing products)}))
@@ -33211,7 +33208,7 @@ else
 
 (deftest current-gravity-vector-slice-authenticated-composition
   ;; One original nested ASCII conversion and slice, plus absent bounds proof; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -33251,8 +33248,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:vector-slice-product-elapsed relative :timing (:development-timing products)}))
@@ -33397,7 +33394,7 @@ else
 
 (deftest current-gravity-ascii-string-vector-authenticated-composition
   ;; One original ASCII literal conversion and valid unsupported text; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -33437,8 +33434,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:ascii-string-vector-product-elapsed relative :timing (:development-timing products)}))
@@ -33567,7 +33564,7 @@ else
 
 (deftest current-gravity-count-quotient-scaling-authenticated-composition
   ;; One sourced count-bounded product and one unsupported coefficient; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -33607,8 +33604,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:count-quotient-scaling-product-elapsed relative :timing (:development-timing products)}))
@@ -33748,7 +33745,7 @@ else
 
 (deftest current-gravity-nonnegative-integer-quotient-authenticated-composition
   ;; One finite sourced quotient composition and one zero-divisor typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -33788,8 +33785,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:nonnegative-integer-quotient-product-elapsed relative :timing (:development-timing products)}))
@@ -33911,7 +33908,7 @@ else
 
 (deftest current-gravity-integer-set-contains-authenticated-composition
   ;; One finite Integer membership composition and one Decimal-member typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -33951,8 +33948,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:integer-set-contains-product-elapsed relative :timing (:development-timing products)}))
@@ -34077,7 +34074,7 @@ else
 
 (deftest current-gravity-symbol-set-contains-authenticated-composition
   ;; One finite Symbol membership composition and one Character-member typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -34117,8 +34114,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:symbol-set-contains-product-elapsed relative :timing (:development-timing products)}))
@@ -34548,7 +34545,7 @@ else
 
 (deftest current-gravity-list-inequality-authenticated-composition
   ;; One finite List-inequality composition and one numeric-List typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -34588,8 +34585,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:list-inequality-product-elapsed relative :timing (:development-timing products)}))
@@ -35004,7 +35001,7 @@ else
 
 (deftest current-gravity-symbol-set-insertion-authenticated-composition
   ;; One finite Symbol insertion composition and one Character-member typing negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -35044,8 +35041,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:symbol-set-insertion-product-elapsed relative :timing (:development-timing products)}))
@@ -35289,7 +35286,7 @@ else
 
 (deftest current-gravity-symbol-set-carrier-authenticated-composition
   ;; One inferred Symbol carrier composition and an unselected membership negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -35329,8 +35326,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:symbol-set-carrier-product-elapsed relative :timing (:development-timing products)}))
@@ -35645,7 +35642,7 @@ else
   ;; Independent review then bounded key walking; those old-guard passes are not current-candidate credit.
   ;; Current session 34031 completed all 29 at a7970437; no historical source selector was replayed.
   ;; One changed inferred Symbol membership composition and a wrong-needle negative; Q is parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -35685,8 +35682,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:symbol-set-carrier-contains-product-elapsed relative :timing (:development-timing products)}))
@@ -35915,7 +35912,7 @@ else
   ;; The positive completed and returned true; the pending negative retained its exact empty slot and rejected the Keyword Set.
   ;; Its corrected oracle below does not claim promotion or an accepted invariant; the full source var was not replayed.
   ;; One genuine G alias-loop composition and one conflicting normal re-entry negative; Q remains parser-only.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -35955,8 +35952,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:symbol-set-loop-invariant-product-elapsed relative :timing (:development-timing products)}))
@@ -36253,7 +36250,7 @@ else
   ;; No host CPU, heap, hashing, equality-cost or hostile-provider bound is claimed.
   ;; One unchanged G positive and one empty-Vector typing negative. Q remains parser-only.
   ;; Runtime and protected predicates are unchanged; fresh DEV-C6 replay is not public fresh C6.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -36293,8 +36290,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:vector-first-symbol-loop-witness-product-elapsed relative :timing (:development-timing products)}))
@@ -36484,7 +36481,7 @@ else
   ;; Preserve RED b0a88558 / session 57951: 14 passes and seven missing-grounding failures in 21 assertions, no errors.
   ;; This changed G source evaluates #{}; its C6 constructor, C7 type and runtime Set IR are already supported.
   ;; One G positive and one nonempty Keyword-Set typing negative; Q stays parser-only. No historical composition is replayed.
-  (require 'gravity.self-hosting.sh08-function-call-type-test 'gravity.self-hosting.sh09-body-effect-test)
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [root (loop [directory (.getParentFile (io/file (module-fixture "seed-library" ".gravity")))]
                (if (.isFile (io/file directory "deps.edn")) directory (recur (.getParentFile directory))))
         fresh (fn [relative]
@@ -36524,8 +36521,8 @@ else
                                         :c6-development-session-replay (- t3 t2) :coordinator-verification (- t4 t3)
                                         :b47-context (- t5 t4) :c7-construction (- t6 t5)
                                         :c7-verification (- t7 t6)}}))
-        seal (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'seal-binding)
-        c8 (ns-resolve 'gravity.self-hosting.sh09-body-effect-test 'leaf)
+        seal (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'seal-binding)
+        c8 (ns-resolve 'gravity.self-hosting.sh08-function-call-kernel-support 'leaf)
         prepare (fn [relative]
                   (let [products (fresh relative) input (select-keys products [:request :typed :verification])
                         _ (println (pr-str {:unquoted-empty-symbol-set-loop-product-elapsed relative :timing (:development-timing products)}))

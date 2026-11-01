@@ -1,71 +1,26 @@
 (ns gravity.self-hosting.sh09-body-effect-test
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is testing]]
-            [gravity.bootstrap :as bootstrap]))
+  (:require [clojure.test :refer [deftest is]]
+            [gravity.bootstrap :as bootstrap]
+            [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
-(defn- repository-root []
-  (loop [file (io/file (.toURI (io/resource "gravity/self_hosting/sh09_body_effect_test.clj")))]
-    (if (.isFile (io/file file "deps.edn")) file (recur (.getParentFile file)))))
-(defn- path [relative] (.getPath (io/file (repository-root) relative)))
-(def ^:private leaf-path "bootstrap/gravity/src/gravity/effects.gravity")
-(defn module-root-entry [bundle]
-  (let [entries (filterv #(= (:root-module-id bundle) (:module-id %)) (:modules bundle))]
-    (when-not (= 1 (count entries)) (throw (ex-info "Expected one actual bundle root" {})))
-    (first entries)))
-(defn module-root-plan [bundle] (:plan (module-root-entry bundle)))
-(defn compile-c8-module-bundle [source-path]
-  (let [effects-path (path leaf-path)
-        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
-        dependency (bootstrap/compiler-c5-resolution-file-artifact effects-path)
-        inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts [dependency]}
-        caller (bootstrap/compiler-c5-resolution-file-artifact source-path inputs)
-        dependency-plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter effects-path (slurp effects-path))]
-    (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path)
-      {:caller-resolution-artifact caller :dependency-plans [dependency-plan]})))
-(def ^:private leaf-plan
-  (delay (let [source (path leaf-path)
-               emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source :jvm))]
-           (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source (slurp source)))))
-(defn- leaf [function & args]
-  (bootstrap/p15-s23-stage2-runtime-execute-function {:engine :body-effect-development-kernel} @leaf-plan function (vec args)))
+(defn- path [relative] (kernel-support/path relative))
+(def module-root-entry kernel-support/module-root-entry)
+(def module-root-plan kernel-support/module-root-plan)
+(def compile-c8-module-bundle kernel-support/compile-c8-module-bundle)
+(defn- leaf [function & args] (apply kernel-support/leaf function args))
 (defn- sha [n] (str "sha256:" (format "%064x" n)))
 (defn- sh08-helper [name]
-  (or (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name)
+  (or (case name
+        coordinator-verification kernel-support/coordinator-verification
+        b47-context kernel-support/b47-context
+        invoke-c7 kernel-support/invoke-c7
+        nil)
+      (ns-resolve 'gravity.self-hosting.sh08-function-call-type-test name)
       (throw (ex-info "Missing existing C7 helper" {:name name}))))
 (defn- seal-binding [request typed verification]
-  (let [preimage {:domain :gravity/sh09-sh08-function-binding-v1
-                  :request request :typed typed :verification verification}]
-    {:artifact :gravity/sh09-authenticated-sh08-function-binding :schema-version 1
-     :boundary :clojure-coordinator-verifier :status :passed
-     :digest-resolution {:algorithm :sha256 :encoding :gravity/canonical-edn-v1 :preimage preimage
-                         :digest (bootstrap/p15-s23-c11-mir-digest preimage) :status :passed}}))
+  (kernel-support/seal-binding request typed verification))
 (defn- fresh-type-products [relative]
-  (require 'gravity.self-hosting.sh08-function-call-type-test)
-  (let [t0 (System/nanoTime)
-        c5 (bootstrap/compiler-c5-resolution-file-artifact (path relative))
-        t1 (System/nanoTime)
-        artifact (bootstrap/sh07-core-from-resolution-artifact c5)
-        t2 (System/nanoTime)
-        report (bootstrap/sh07-core-artifact-verification artifact)
-        t3 (System/nanoTime)
-        coordinator ((sh08-helper 'coordinator-verification) artifact report)
-        t4 (System/nanoTime)
-        context ((sh08-helper 'b47-context) artifact report coordinator)
-        t5 (System/nanoTime)
-        request {:canonical-core-artifact (:canonical-core-artifact context)
-                 :b47-context context :coordinator-verification coordinator}
-        invoke (sh08-helper 'invoke-c7)
-        typed (invoke 'sh08-function-type-core-artifact [request])
-        t6 (System/nanoTime)
-        verification (invoke 'sh08-verify-function-type-result [request typed])
-        t7 (System/nanoTime)]
-    {:c5 c5 :artifact artifact :report report :request request :typed typed :verification verification
-     :development-timing {:clock :monotonic-nanoseconds :authority :non-authoritative
-                          :boundary :existing-public-call-elapsed :nested-work :included
-                          :c5-construction (- t1 t0) :c6-construction (- t2 t1)
-                          :c6-verification (- t3 t2) :coordinator-verification (- t4 t3)
-                          :b47-context (- t5 t4) :c7-construction (- t6 t5)
-                          :c7-verification (- t7 t6)}}))
+  (kernel-support/fresh-type-products relative))
 
 (defn- fresh-products [relative]
   (let [{:keys [request typed verification] :as products} (fresh-type-products relative)]
@@ -137,7 +92,7 @@
     (assoc products :typed typed :verification verification
            :binding (seal-binding (:request products) typed verification))))
 (defn- reseal-effect-graph [candidate graph]
-  (-> candidate (assoc :effect-graph graph) (assoc-in [:identity-input :effect-graph] graph)))
+  (kernel-support/reseal-effect-graph candidate graph))
 (defn- node [n kind children]
   {:node-id (sha n) :core-form kind :children (mapv sha children) :attributes {}
    :source {:syntax-id (sha (+ n 100)) :form-id (sha (+ n 200))
@@ -162,13 +117,15 @@
     (with-redefs [bootstrap/compiler-c5-resolution-file-artifact (fn [source] (swap! events conj [:c5 source]) c5)
                   bootstrap/sh07-core-from-resolution-artifact (fn [input] (swap! events conj [:c6 input]) artifact)
                   bootstrap/sh07-core-artifact-verification (fn [input] (swap! events conj [:c6-verify input]) report)
-                  sh08-helper (fn [name]
-                                (case name
-                                  coordinator-verification (fn [input proof] (swap! events conj [:coordinator input proof]) coordinator)
-                                  b47-context (fn [input proof binding] (swap! events conj [:context input proof binding]) context)
-                                  invoke-c7 (fn [function args]
-                                              (swap! events conj [:c7 function args])
-                                              (case function sh08-function-type-core-artifact typed sh08-verify-function-type-result verification))))
+                  kernel-support/coordinator-verification
+                  (fn [input proof] (swap! events conj [:coordinator input proof]) coordinator)
+                  kernel-support/b47-context
+                  (fn [input proof binding] (swap! events conj [:context input proof binding]) context)
+                  kernel-support/invoke-c7
+                  (fn [function args]
+                    (swap! events conj [:c7 function args])
+                    (case function sh08-function-type-core-artifact typed
+                          sh08-verify-function-type-result verification))
                   seal-binding (fn [& _] (swap! seals inc) (throw (ex-info "Unexpected type-only seal" {})))]
       (is (= expected (fresh-type-products relative)))
       (is (= cycle @events))
