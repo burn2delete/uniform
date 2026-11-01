@@ -610,7 +610,8 @@
                   (command "1g" "-M:dev-test"
                            "--namespace" "gravity.reader.artifact-test"
                            "--namespace" "gravity.reader-primitives-test"
-                           "--namespace" "gravity.c3-reader-expansions-test")]
+                           "--namespace" "gravity.c3-reader-expansions-test"
+                           "--namespace" "gravity.cli.launcher-test")]
                  ["syntax-regression" 600
                   (command "2g" "-M:dev-test"
                            "--namespace" "gravity.syntax.pipeline-test"
