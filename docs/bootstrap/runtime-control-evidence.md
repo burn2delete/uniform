@@ -85,3 +85,26 @@ complete Core records use runtime-control-before/after under
 uniform-cli-core-arguments-evidence. Product comparisons, contextual lint,
 final checks, independent exact acceptance, actual-main reconciliation and own
 CI/artifact integration evidence remain separate final gates.
+
+## Complete comparisons and final local checks
+
+All seven complete data and original serialized pairs pass: four full source/
+plan/value/stdout/refusal records, CLI arguments and both public current Core
+artifacts. Both Core spellings retain25 nodes, one target read, source8e63
+and recomputed Core16ec. No root, pin, mode, authority callback or returned
+field is substituted. Both after processes terminate before committing the
+implementation. The source checkpoint is2adbcd0193b8fab465a808fa02bbfde04d8ddf87,
+tree28aa6f589e5a68d6afe612abd1d634e554d6b204.
+
+Five selected existing recurrence/map/binder/unary kernels pass5/104. Contextual
+lint at that committed checkpoint againstcf1bcfa3 covers four source/test
+paths, retains four unchanged baseline warnings and reports zero blockers.
+Its receipts are archived outside the checkout at
+/tmp/uniform-runtime-control-lint-cf1bcfa3. Canonical docs240/19, roadmap and
+governance185 validations pass. No policy, suppression, pin or guard changes
+are used to obtain these results.
+
+The predecessor union remains a separate integration dependency. Its review,
+CI or metadata is not this successor's acceptance. Current-main reconciliation,
+independent acceptance of the final exact tuple, own CI/artifact receipts and
+an immediate exact clean integration preflight remain required before merge.
