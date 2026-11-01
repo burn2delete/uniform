@@ -73,34 +73,14 @@
 
 (defn- p15-s23-stage2-runtime-str
   [args]
-  (case (count args)
-    0 ""
-    1 (str (nth args 0))
-    2 (str (nth args 0) (nth args 1))
-    3 (str (nth args 0) (nth args 1) (nth args 2))
-    (apply str args)))
+  (gravity.runtime/hosted-str args))
 
 (defn- p15-s23-stage2-runtime-fail-builtin-error!
   [plan callee ex]
-  (fail! "L2-BUILTIN-ERROR"
-         "stage2 runtime builtin call failed"
-         {:source-span {:source (get-in plan [:source :path])}
-          :function callee
-          :cause-message (.getMessage ex)
-          :remediation "Keep builtin inputs inside the checked stage2 hosted-core runtime subset."}))
+  (gravity.runtime/fail-builtin-error! #'fail! plan callee ex))
 
 (defn- p15-s23-stage2-runtime-invoke-get
   ([plan collection key]
-   (try
-     (get collection key)
-     (catch clojure.lang.ExceptionInfo ex
-       (throw ex))
-     (catch Exception ex
-       (p15-s23-stage2-runtime-fail-builtin-error! plan 'get ex))))
+   (gravity.runtime/hosted-get #'p15-s23-stage2-runtime-fail-builtin-error! plan collection key))
   ([plan collection key not-found]
-   (try
-     (get collection key not-found)
-     (catch clojure.lang.ExceptionInfo ex
-       (throw ex))
-     (catch Exception ex
-       (p15-s23-stage2-runtime-fail-builtin-error! plan 'get ex)))))
+   (gravity.runtime/hosted-get #'p15-s23-stage2-runtime-fail-builtin-error! plan collection key not-found)))

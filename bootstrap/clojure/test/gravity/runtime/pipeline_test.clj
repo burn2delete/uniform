@@ -22,7 +22,8 @@
   (is (= #{'execute-function-scoped 'execute-function 'artifact-invoke 'execute-plan
            'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
            'hosted-equal 'hosted-less-than 'hosted-greater-than
-           'hosted-less-than-or-equal 'hosted-greater-than-or-equal}
+           'hosted-less-than-or-equal 'hosted-greater-than-or-equal
+           'hosted-str 'fail-builtin-error! 'hosted-get}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -308,3 +309,111 @@
           #(is (= "L2-BUILTIN-ARITY"
                   (:id (diagnostic (fn [] (b/p15-s23-stage2-runtime-execute-function context plan callee [])))))))
         (is (zero? @calls))))))
+
+(def ^:private value-programs
+  (delay (mapv (fn [[extension disposition]]
+                 (assoc (compile-source (str "bootstrap/clojure/fixtures/runtime-values/" disposition extension))
+                        :extension extension :disposition disposition))
+               (for [extension [".gravity" ".qst"] disposition ["accepted" "rejected"]]
+                 [extension disposition]))))
+
+(deftest paired-real-values-retain-results-failures-and-identities
+  (doseq [{:keys [path plan disposition]} @value-programs]
+    (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+    (is (= (:plan-id plan)
+           (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+    (if (= "accepted" disposition)
+      (doseq [[callee expected]
+              '[[string-empty ""] [string-nil ""] [string-number "7"] [string-binary "v=7"]
+                [string-ternary "a1b"] [string-many "afalse7z"] [string-ratio "1/2"]
+                [lookup-map 7] [lookup-missing nil] [lookup-default 9]
+                [lookup-nil-value nil] [lookup-false-value false]
+                [lookup-vector 9] [lookup-vector-default -1]
+                [lookup-nil nil] [lookup-nil-default :missing] [lookup-vector-value [1 2]]]]
+        (let [value (b/p15-s23-stage2-runtime-execute-function context plan callee [])]
+          (is (= expected value))
+          (is (= (class expected) (class value)))))
+      (doseq [[callee builtin] '[[divide-zero /] [wrong-operand +] [lookup-eager-default /]]]
+        (let [error (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan callee []))]
+          (is (= "L2-BUILTIN-ERROR" (:id error)))
+          (is (= builtin (:function error)))
+          (is (= {:source nil} (:source-span error)))))))
+  (doseq [disposition ["accepted" "rejected"]]
+    (is (apply = (map #(get-in % [:plan :plan-id])
+                     (filter #(= disposition (:disposition %)) @value-programs))))))
+
+(deftest hosted-string-and-lookup-preserve-values-and-reference-identity
+  (doseq [args [[] [nil] [7] ["v=" 7] ["a" 1 "b"] ["a" nil false 7 "z"] [1/2] [[:a 7] {:x nil}]]]
+    (is (= (apply str args) (runtime/hosted-str args))))
+  ;; Trusted host contexts/objects only; these do not admit source or authority.
+  (let [value (with-meta [1 2] {:origin :retained}) fallback (Object.) calls (atom 0)
+        failure (clojure.lang.Var/create (fn [& _] (swap! calls inc) :unexpected))]
+    (is (identical? value (runtime/hosted-get failure {} {:x value} :x)))
+    (is (identical? fallback (runtime/hosted-get failure {} {} :missing fallback)))
+    (is (nil? (runtime/hosted-get failure {} {:x nil} :x fallback)))
+    (is (false? (runtime/hosted-get failure {} {:x false} :x fallback)))
+    (is (identical? fallback (runtime/hosted-get failure {} nil :x fallback)))
+    (is (zero? @calls))))
+
+(deftest lookup-retains-exception-info-and-late-host-error-operation
+  (doseq [default? [false true]]
+    (let [calls (atom []) info (ex-info "lookup info" {:id :existing-lookup-info})
+          failure (clojure.lang.Var/create (fn [& args] (swap! calls conj args) :unexpected))
+          collection (reify clojure.lang.ILookup
+                       (valAt [_ _] (throw info))
+                       (valAt [_ _ _] (throw info)))
+          invoke #(if default? (runtime/hosted-get failure {} collection :key :fallback)
+                               (runtime/hosted-get failure {} collection :key))]
+      (is (identical? info (observed-error invoke)))
+      (is (empty? @calls)))
+    (let [events (atom []) error (ArithmeticException. "host lookup") plan {:source {:path "unit.gravity"}}
+          failure (clojure.lang.Var/create (fn [& _] (swap! events conj :old-error) :old))
+          changed (fn [& args] (swap! events conj [:new-error args]) :translated)
+          lookup (fn [] (swap! events conj :lookup) (alter-var-root failure (constantly changed)) (throw error))
+          collection (reify clojure.lang.ILookup
+                       (valAt [_ _] (lookup))
+                       (valAt [_ _ _] (lookup)))
+          result (if default? (runtime/hosted-get failure plan collection :key :fallback)
+                              (runtime/hosted-get failure plan collection :key))]
+      (is (= :translated result))
+      (is (= :lookup (first @events)))
+      (is (= :new-error (first (second @events))))
+      (is (= [plan 'get error] (vec (second (second @events))))))))
+
+(deftest builtin-error-operation-is-selected-before-message-construction
+  (let [events (atom []) failure (clojure.lang.Var/create nil)
+        original (fn [& args] (swap! events conj [:original args]) :emitted)
+        changed (fn [& _] (swap! events conj :changed) :unexpected)
+        error (proxy [Exception] ["original"]
+                (getMessage [] (swap! events conj :message)
+                  (alter-var-root failure (constantly changed)) "host-message"))]
+    (alter-var-root failure (constantly original))
+    (is (= :emitted (runtime/fail-builtin-error! failure {:source {:path "unit.gravity"}} 'get error)))
+    (is (= :message (first @events)))
+    (is (= :original (first (second @events))))
+    (is (= ["L2-BUILTIN-ERROR" "stage2 runtime builtin call failed"
+            {:source-span {:source "unit.gravity"} :function 'get :cause-message "host-message"
+             :remediation "Keep builtin inputs inside the checked stage2 hosted-core runtime subset."}]
+           (vec (second (second @events)))))))
+
+(deftest private-value-wrappers-preserve-signatures-and-late-stage-ports
+  (let [string-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-str)
+        error-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-fail-builtin-error!)
+        get-var (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-invoke-get)
+        args ["a" 7] plan {} error (Exception. "unit") seen (atom []) marker (Object.)]
+    (doseq [operation [string-var error-var get-var]] (is (true? (:private (meta operation)))))
+    (is (= '([args]) (:arglists (meta string-var))))
+    (is (= '([plan callee ex]) (:arglists (meta error-var))))
+    (is (= '([plan collection key] [plan collection key not-found]) (:arglists (meta get-var))))
+    (with-redefs [runtime/hosted-str (fn [received] (swap! seen conj received) marker)]
+      (is (identical? marker ((deref string-var) args))))
+    (is (identical? args (first @seen)))
+    (reset! seen [])
+    (with-redefs [runtime/fail-builtin-error! (fn [& received] (swap! seen conj (vec received)) marker)]
+      (is (identical? marker ((deref error-var) plan 'get error))))
+    (is (= [#'b/fail! plan 'get error] (first @seen)))
+    (reset! seen [])
+    (with-redefs [runtime/hosted-get (fn [& received] (swap! seen conj (vec received)) marker)]
+      (is (identical? marker ((deref get-var) plan {:x 1} :x)))
+      (is (identical? marker ((deref get-var) plan {} :x :fallback))))
+    (is (= [[error-var plan {:x 1} :x] [error-var plan {} :x :fallback]] @seen))))
