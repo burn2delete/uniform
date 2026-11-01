@@ -197,6 +197,118 @@
     (is (= [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]]
            (ci/docs-only-static-commands {:base base :kind :docs-only})))))
 
+(deftest stage-selection-follows-owned-downstream-closure
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        expected-all #{"static" "contracts" "bootstrap" "macro"
+                       "resolution" "checked-core-runtime"}
+        expected-macro #{"static" "contracts" "macro"
+                         "resolution" "checked-core-runtime"}
+        expected-resolution #{"static" "contracts" "resolution"
+                              "checked-core-runtime"}
+        expected-checked #{"static" "contracts" "checked-core-runtime"}]
+    (is (= expected-all
+           (:modes (ci/stage-selection [(change "bootstrap/clojure/src/gravity/reader.clj")]))))
+    (is (= expected-macro
+           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
+    (is (= expected-resolution
+           (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))
+    (is (= expected-all
+           (:modes (ci/stage-selection
+                    [(change "bootstrap/clojure/src/gravity/macro.clj")
+                     (change "bootstrap/gravity/src/gravity/reader.gravity")]))))
+    (let [resolution-selection
+          (ci/stage-selection [(change "bootstrap/clojure/src/gravity/resolution.clj")])]
+      (is (ci/skip-for-stage-selection? "macro" resolution-selection))
+      (is (not (ci/skip-for-stage-selection? "resolution" resolution-selection)))
+      (is (not (ci/skip-for-stage-selection? "contracts" resolution-selection))))))
+
+(deftest stage-selection-falls-back-for-cross-cutting-and-unknown-inputs
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})]
+    (doseq [path ["contracts/ci-policy.edn"
+                  "specs/compiler/spec.md"
+                  "deps.edn"
+                  ".github/workflows/ci.yml"
+                  "tools/ci/run.clj"
+                  "bootstrap/clojure/src/gravity/bootstrap.clj"
+                  "bootstrap/clojure/src/gravity/reader.clj/unknown.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_l1_c2_surface_reader_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_macro_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_resolution_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj"
+                  "src/new-owner.gravity"
+                  nil]]
+      (is (= :full (:kind (ci/stage-selection [(change path)]))) (pr-str path)))))
+
+(deftest stage-selection-fails-closed-for-deletes-renames-modes-and-types
+  (let [regular (fn [path] {:old-mode "100644" :new-mode "100644"
+                            :status "M" :path path})
+        reader "bootstrap/clojure/src/gravity/reader.clj"]
+    (doseq [change [{:old-mode "100644" :new-mode "000000" :status "D" :path reader}
+                    {:old-mode "100644" :new-mode "100755" :status "M" :path reader}
+                    {:old-mode "100644" :new-mode "120000" :status "M" :path reader}
+                    {:old-mode "100755" :new-mode "100644" :status "M" :path reader}
+                    {:old-mode "120000" :new-mode "100644" :status "M" :path reader}
+                    {:old-mode "100644" :new-mode "100644" :status "R" :path reader}]]
+      (is (= :full (:kind (ci/stage-selection [change]))) (pr-str change)))
+    (is (= :selected (:kind (ci/stage-selection
+                             [{:old-mode "000000" :new-mode "100644"
+                               :status "A" :path reader}]))))
+    (is (= :full (:kind (ci/stage-selection [(regular reader)
+                                             (regular "unknown/owner.gravity")]))))))
+
+(deftest static-selection-runs-snapshot-controls-only-for-snapshot-changes
+  (let [base (apply str (repeat 40 "a"))
+        command-ids (fn [selection]
+                      (mapv first (ci/commands-for-selection "static" selection)))
+        selected {:kind :selected
+                  :base base
+                  :clojure-paths ["bootstrap/clojure/src/gravity/reader.clj"]}
+        snapshot-selected {:kind :full
+                           :base base
+                           :clojure-paths ["tools/ci/snapshot.clj"]}
+        snapshot-test-selected {:kind :full
+                                :base base
+                                :clojure-paths ["tools/ci/snapshot_test.clj"]}]
+    (is (not (some #{"snapshot-controls"} (command-ids selected))))
+    (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-selected)))))
+    (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-test-selected)))))))
+
+(deftest path-discovery-failure-cannot-green-static
+  (let [base (apply str (repeat 40 "a"))
+        selection {:kind :full
+                   :reason :path-discovery-failed
+                   :base base
+                   :paths []
+                   :clojure-paths []
+                   :selection-error "synthetic malformed raw diff"}
+        executed (atom [])
+        summary (io/file "target/ci/static-summary.edn")
+        bootstrap-summary (io/file "target/ci/bootstrap-summary.edn")]
+    (try
+      (with-redefs [ci/pull-request-selection (fn [] selection)
+                    ci/execute! (fn [id _seconds _argv]
+                                  (swap! executed conj id)
+                                  {:id id :status :passed})]
+        (is (= 1 (ci/run! "static")))
+        (is (some #{"clojure-lint"} @executed))
+        (is (not (some #{"changed-clojure-lint"} @executed)))
+        (is (= 0 (ci/run! "bootstrap")))
+        (is (some #{"cold-bootstrap-load"} @executed))
+        (is (= ["static-selection-discovery" :failed]
+               (let [results (edn/read-string (slurp summary))
+                     failure (last results)]
+                 [(:id failure) (:status failure)]))))
+      (finally
+        (doseq [file [summary bootstrap-summary]]
+          (io/delete-file file true))))))
+
 (deftest raw-git-selection-rejects-structural-document-lookalikes
   (is (seq (assert-git-selection! [["README.md" "# base\n"]]
                                   (fn [directory]

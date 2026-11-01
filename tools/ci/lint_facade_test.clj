@@ -63,6 +63,29 @@
     (is (thrown? Exception (context/selected-plan! (read-inputs inputs)
                                                    [(str context/facade-prefix "unregistered.clj")])))))
 
+(deftest archived-context-rejects-unknown-loader-hash
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-archived-loader-" (make-array java.nio.file.attribute.FileAttribute 0)))
+        archive (io/file directory "context.zip")
+        inventory (io/file directory "inventory.txt")
+        loader-bytes (utf8 "(def changed-loader true)\n")]
+    (try
+      (with-open [output (java.util.zip.ZipOutputStream. (io/output-stream archive))]
+        (.putNextEntry output (java.util.zip.ZipEntry. context/loader))
+        (.write output loader-bytes 0 (alength ^bytes loader-bytes))
+        (.closeEntry output))
+      (spit inventory (str "100644\t" context/loader "\u0000"))
+      (let [error (try
+                    (context/archived-plan! archive inventory [context/loader])
+                    nil
+                    (catch clojure.lang.ExceptionInfo exception exception))]
+        (is (instance? clojure.lang.ExceptionInfo error))
+        (is (= "Bootstrap loader changed; lint context requires independent review"
+               (.getMessage error)))
+        (is (= (context/sha256 loader-bytes) (:loader-sha (ex-data error)))))
+      (finally
+        (doseq [file (reverse (file-seq directory))] (.delete file))))))
+
 (defn fixture-git! [directory & arguments]
   (let [result (apply sh/sh (concat ["git"] arguments [:dir (str directory)]))]
     (when-not (zero? (:exit result))

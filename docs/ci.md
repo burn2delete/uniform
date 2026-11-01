@@ -16,8 +16,30 @@ compiler migration or release acceptance.
 | fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise full fresh catalog | Full fresh catalog | 51 portable namespaces on Ubuntu and the Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every namespace gets a fresh JVM; the partition is exhaustive and disjoint. Unknown paths fall back to all 52; no cross-run result cache. This is not the full compiler suite. |
 | darwin-unsupported-host | Same conservative selection as leaves | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
-| experimental-source-snapshot | Preview artifact | Preview artifact | Exact SHA source tarball, independently repeated Git archive hash, capability notes/changelog and provenance. No compiler binary. |
-| experimental-prerelease | Never | Main push only, after all routine checks and packaging pass | Separate contents-write job publishes the source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
+| experimental-source-snapshot | Omitted | Manual dispatch on `main` only | Exact SHA source tarball, one Git archive, SHA-256 manifest, capability notes/changelog and provenance. No compiler binary. |
+| experimental-prerelease | Never | Manual dispatch on `main` only, after routine checks and packaging pass | Separate contents-write job publishes the same-run source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
+
+### Pull-request stage selection
+
+The six semantic matrix jobs remain present on every pull request. For a
+regular added or modified file in a known stage-owned Reader, Macro,
+Resolution, or checked-Core path, `tools/ci/run.clj` runs that stage and every
+downstream stage, while retaining `static` and `contracts`. Changes spanning
+multiple known stages select the union of those downstream closures. This is
+an execution selection only; it does not change job names, ownership, or the
+portable leaf catalog. The stage table is deliberately allowlisted, so an
+unknown non-documentation path, a contract/specification change, a dependency
+or workflow change, a tooling change, or any delete/rename/mode/type change
+falls back to the full semantic matrix. If changed-path discovery is missing
+or malformed, the selector also falls back to the full matrix, while `static`
+records an explicit failed selection result so an untrusted diff cannot pass
+without changed-file lint.
+
+Markdown-only pull requests retain the existing static whitespace and contract
+checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
+snapshot repeatability controls from the static job; it never replaces the
+other static controls. The leaves job keeps its separate conservative rule:
+non-Markdown pull requests run the complete portable and Darwin catalogs.
 
 ## Requirements and dependencies
 
@@ -130,16 +152,19 @@ command failures; artifacts record commit/tree, run URL, toolchain and checksums
 Runner termination may leave only GitHub's own job/step logs and partial
 receipts; missing or timed-out output is never acceptance evidence.
 
-Main source snapshots use tag `experimental-source-<full-commit-SHA>`, never
-the latest production release. The generation job has read-only permission;
-only the publication job receives `contents: write`, consumes the same run's
-artifact, verifies SHA256SUMS and executes no checked-out source. Publication
-does not overwrite existing releases on rerun. No signing credential or OIDC
-authority is provisioned. Checksums and unsigned provenance establish content
-identity, not trusted compiler lineage. Notes explicitly exclude seedless,
-complete-language/runtime, native binary, production, compiler reproducibility,
-signature, SBOM and independent release-acceptance claims. Artifacts expire
-after 14 days; published prerelease assets persist under GitHub release policy.
+Manual source snapshots use tag `experimental-source-<full-commit-SHA>`, never
+the latest production release. Snapshot and publication jobs run only for an
+explicit `workflow_dispatch` on `main`; ordinary pull requests, automatic main
+pushes and weekly runs do not publish source bundles. The generation job has
+read-only permission; only the publication job receives `contents: write`,
+consumes the same run's exact-SHA artifact, verifies SHA256SUMS and executes no
+checked-out source. Publication does not overwrite existing releases on rerun.
+No signing credential or OIDC authority is provisioned. Checksums and unsigned
+provenance establish content identity, not trusted compiler lineage. Notes
+explicitly exclude seedless, complete-language/runtime, native binary,
+production, compiler reproducibility, signature, SBOM and independent
+release-acceptance claims. Artifacts expire after 14 days; published prerelease
+assets persist under GitHub release policy.
 
 ## Outputs and acceptance
 
