@@ -314,12 +314,10 @@ Subtasks:
   and preserves actual source paths/extensions.
 - [x] Reject full-conformance overclaims for the bridge with diagnostic
   `P18T04006`.
-- [x] Add `gravity self-host verify` as a public verifier surface that reads
-  and authenticates the current P18-T06 proof, preserves the current Gravity
-  compiler source path and extension, and fails closed with `P18T04007` while
-  final seed retirement is incomplete. The explicit
-  `p18-t04-write-public-self-host-verify-command-artifacts` command remains the
-  write/export path for regenerating the verifier proof and diagnostics.
+- [x] Add `gravity self-host verify` as a public verifier surface that writes
+  a proof artifact, preserves the current Gravity compiler source path and
+  extension, and fails closed with `P18T04007` while final seed retirement is
+  incomplete.
 - [x] Reject invalid self-host verifier usage with `P18T04008`.
 - [x] Add automated tests that execute the public command boundary rather than
   internal compiler functions.
