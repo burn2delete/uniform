@@ -101,38 +101,11 @@
 
 (defn p18-t02-jar-source-inventory-report
   [jar-entries]
-  (let [expected (mapv :jar-entry (p18-t02-packaged-source-entries))
-        observed (filterv #(and (string? %)
-                                (str/ends-with? % ".clj"))
-                          jar-entries)
-        entry-frequencies (frequencies jar-entries)
-        valid?
-        (and (every? string? jar-entries)
-             (= expected observed)
-             (every? #(= 1 (get entry-frequencies % 0)) expected))]
-    {:valid? (boolean valid?)
-     :expected expected
-     :observed observed
-     :entry-frequencies entry-frequencies}))
+  (gravity.release/jar-source-inventory-report #'p18-t02-packaged-source-entries jar-entries))
 
 (defn p18-t02-jar-inventory-report
   [jar-file-entries]
-  (let [expected (p18-t02-expected-jar-file-entries)
-        string-entries? (every? string? jar-file-entries)
-        observed (if string-entries?
-                   (vec (sort jar-file-entries))
-                   (vec jar-file-entries))
-        entry-frequencies (frequencies jar-file-entries)
-        valid?
-        (and string-entries?
-             (= expected observed)
-             (every? #(= 1 (get entry-frequencies % 0)) expected))]
-    {:valid? (boolean valid?)
-     :expected expected
-     :observed observed
-     :missing (vec (remove (set observed) expected))
-     :unexpected (vec (remove (set expected) observed))
-     :entry-frequencies entry-frequencies}))
+  (gravity.release/jar-inventory-report #'p18-t02-expected-jar-file-entries jar-file-entries))
 
 (defn p18-t02-jar-command
   []
