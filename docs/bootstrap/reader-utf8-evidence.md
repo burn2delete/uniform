@@ -32,6 +32,47 @@ Run focused and affected tests, language boundary, docs/roadmap/governance,
 contextual lint, independent adversarial review, own CI and clean current-main
 integration preflight. This initial scope conveys no implementation credit.
 
+## Implemented development evidence
+
+The initial native controls accept9 valid UTF-8 cases and reject11 malformed
+byte sequences, with exact raw-source hash, failure message/data and offset
+joins. Existing Reader tests pass6/71 before extraction and10/196 afterward.
+The decoder does not consult error/hash ports for valid input; malformed-input
+hashing precedes the late diagnostic Var read. Original hash exceptions propagate
+unchanged. Real malformed files of both source spellings stop before form reads.
+
+Both complete `compiler-exact-keys.gravity` and `.qst` subjects emit real Core
+artifacts through the documented public current-reader route before and after
+extraction:25 nodes, one API target read, source SHA
+`8e63ea9e37ab40a8e66975b3e58dc8eb5b9b74aa339d2625d5bd67070802758d`
+and recomputed Core id
+`sha256:16ec6d50a8514188f3010880f3022e88f7f1054fe4058a5caa6b74367ee98f0e`.
+Actual source paths/extensions remain distinct. The whole390-function current
+Core implementation is compiled for the public route; its generic-seed,
+development-unadmitted, incomplete and non-self-hosted boundaries remain.
+
+Four complete and serialized product pairs compare exactly: native decoding,
+argument context and both complete Core products. The original decoder body
+and parameters conserve except the two explicit late Var ports. Whole
+component00778, existing artifact assembly and Bootstrap conserve, except the
+single decoder compatibility wrapper. File opening, extension policy and
+surrounding source/compiler behavior remain unchanged. Ownership37/1076,
+language6/11 and selected public ingress4/50 pass; no pinned constructor is
+executed by those selections.
+
+The first new-test launch stopped during compilation because an extra closing
+parenthesis placed a local outside its scope; no tests ran. Its log is retained
+as `/tmp/uniform-reader-utf8-test-scope-nonpass.log`. Correcting that test scope
+passes10/196 without changing product code, source policy, guards or pins.
+
+Scripts are `/tmp/uniform-reader-utf8-{control,verify}.clj` and the public Core
+control `/tmp/uniform-cli-core-arguments-control.clj`. Native products use
+`/tmp/uniform-reader-utf8-evidence/{before,after}-native.edn`; Core products use
+`/tmp/uniform-cli-core-arguments-evidence/reader-{before,after}-*`. Logs use
+`/tmp/uniform-reader-utf8-*`. These results bind actual0e source inputs; newer
+main requires genuine composition, affected checks, exact review, own CI and
+clean preflight. Namespace presence is not Reader completion.
+
 ## Unsupported boundaries
 
 This remains temporary native Clojure seed decoding. Trusted operation ports
