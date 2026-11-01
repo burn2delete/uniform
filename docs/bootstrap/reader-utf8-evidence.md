@@ -92,9 +92,9 @@ does not accept the new tuple or renew migration/release authority.
 The next normal composition uses actual main
 612367e981ec37072cc3d3525f09263bdc91b264/tree
 efc971c757313a418a7b40a7b14bcdeb7ef8b45e, the verified CLI PR729 merge.
-Its five incoming paths are preserved exactly, including the selected-command
-argument owner, compatibility wrapper, help golden and evidence. The independent
-namespace-map rows merge without conflict. Reader decoder, wrapper, component,
+Its CLI implementation, compatibility wrapper, tests and evidence are preserved
+exactly. The shared namespace-map file preserves the CLI row and merges the
+Reader row without conflict. Reader decoder, wrapper, component,
 assembly and tests remain exact aeaa8820. No semantic, authority or source-policy
 change is introduced by composition.
 
