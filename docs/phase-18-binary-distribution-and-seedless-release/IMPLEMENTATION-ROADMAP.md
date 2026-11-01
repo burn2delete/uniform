@@ -9,14 +9,12 @@ source extension support: `.qst` represents QST theory source, `.gravity`
 represents Gravity-branded source, both are first-class indefinitely, and the
 proof covers check, run, compile, run-compiled, rejected diagnostic parity, and
 actual source-path provenance preservation. P18-T01 is complete for the
-bootstrap-hosted thin wrapper milestone. P18-T02 is complete for the explicit
-packaged JVM CLI milestone: `clojure -M:packaged-gravity` launches the current
-development package, preserves parity with `clojure -M:gravity` for accepted
-and rejected command fixtures, emits package, dependency, artifact,
-reproducibility, provenance, SBOM, and development signing records, and rejects
-seedless release overclaims with `P18T02001`. The frozen `bin/gravity` wrapper
-is source-default; the historical JAR remains byte-identical at its archived
-path and is not auto-selected.
+bootstrap-hosted thin wrapper milestone. P18-T02 is complete for the packaged
+JVM CLI milestone: `bin/gravity` launches
+`target/phase-18/jvm-cli/gravity-jvm-cli.jar`, preserves parity with
+`clojure -M:gravity` for accepted and rejected command fixtures, emits package,
+dependency, artifact, reproducibility, provenance, SBOM, and development
+signing records, and rejects seedless release overclaims with `P18T02001`.
 P18-T03 now fails closed as an incomplete release-artifact candidate while the
 P15 final seed-retirement proof is incomplete; its current diagnostics include
 `P18T03002`, `P18T03003`, and `P18T03004`. P18-T04 remains evidence for the
@@ -33,8 +31,8 @@ the current artifact records status
 same current-subset `test` bridge and rejects `test --full` with `P18T04006`,
 exposes `self-host verify` and rejects it with `P18T04007` while the seed
 boundary remains active,
-but `bin/gravity` remains source-default (with the explicit packaged alias
-available) instead of selecting `target/phase-18/release/gravity`.
+but `bin/gravity` falls back to the packaged JVM CLI instead of selecting
+`target/phase-18/release/gravity`.
 
 ## Objective
 
@@ -232,12 +230,10 @@ Subtasks:
   identity, and fail-closed package diagnostics.
 - [x] Record validation commands and outputs in this Evidence Ledger.
 
-Capability proof gate: the explicit `clojure -M:packaged-gravity` entrypoint
-must launch the packaged CLI, prove parity with the Clojure CLI for accepted
-and rejected fixtures, emit package evidence, and keep `:bootstrap-hosted?
-true`; the frozen `bin/gravity` wrapper must remain source-default. The
-packaged JVM CLI must reject overclaiming itself as the final seedless release
-with diagnostic `P18T02001`.
+Capability proof gate: `bin/gravity` must launch the packaged CLI, prove parity
+with the Clojure CLI for accepted and rejected fixtures, emit package evidence,
+and keep `:bootstrap-hosted? true`. It must reject overclaiming the packaged
+JVM CLI as the final seedless release with diagnostic `P18T02001`.
 
 ### P18-T03 - Self-Hosted Compiler Artifact Emission
 
