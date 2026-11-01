@@ -72,6 +72,28 @@ conservation remain exact checks. Contextual lint, independent exact review,
 own CI and clean current-main preflight still govern integration. This is a
 bounded native extraction, not Reader or Core completion.
 
+## Leaf CI dependency main composition
+
+Actual main09e48072fbb69131dbe3a7826b4dbbc4c9bb45f0/tree
+c63848d2d311935d3b0764c64a2bb0e6675f70e6 changes exactly four CI workflow,
+runner/test and documentation paths. The normal composition preserves all four
+byte-for-byte. Reader code, its compatibility component, tests and all executed
+compiler/runtime/fixture inputs remain exact36a6d6eb. The leaf selector uses a
+full fallback for unknown, cross-cutting and closure-discovery changes; it adds
+no source-Core, migration or release authority. Fresh current-base controls,
+conservation, focused checks, independent exact review, own CI and clean
+integration preflight remain required. Older source checks remain bound to
+their actual conserved inputs; scope-only or older-base CI is not transferred.
+
+## CI harness environment evidence
+
+The current CI runner tests pass20/221 with the installed linter directory on
+PATH. The initial invocation lacked that directory and recorded20/192 with two
+missing-linter errors; its nonpass log remains at
+`/tmp/uniform-leaf-main-ci-runner-missing-linter-nonpass.log`. Correcting the
+command environment changes no repository source, guard, policy or watchdog.
+Terminal harness receipts are archived outside the source checkout.
+
 ## Unsupported boundaries
 
 This remains temporary native host file intake. Trusted Vars are dependencies,
