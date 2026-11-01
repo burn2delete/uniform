@@ -83,7 +83,14 @@
                                :plan-assembly-invoked? true
                                :plan-assembly-generic-bridge-residual? true
                                :retirement-objective
-                               :retire-clojure-seed})
+                               :retire-clojure-seed}
+                              (when (and (identical? Long (class (:source-contract-version compiler-artifact-binding)))
+                                         (== 2 (.longValue ^Long (:source-contract-version compiler-artifact-binding))))
+                                {:expression-lowering-source-contract-version 2
+                                 :expression-lowering-functions-semantic-hash
+                                 (:functions-semantic-hash compiler-artifact-binding)
+                                 :expression-lowering-function-count
+                                 (:function-count compiler-artifact-binding)}))
                    :module (select-keys module
                                         [:module :source-path :profile :target
                                          :effects :capabilities :providers
