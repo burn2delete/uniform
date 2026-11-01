@@ -276,6 +276,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/c8_effect_checker_test.clj", "namespace": "gravity.c8-effect-checker-test", "registration": "bootstrap-free"}
     },
     {
+      "id": "package-selection",
+      "kind": "production-stage-helper",
+      "owner": "sh-package-build",
+      "source": {"path": "bootstrap/clojure/src/gravity/package.clj", "namespace": "gravity.package"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/build/package_selection.clj", "namespace": "gravity.build.package-selection", "owner": "sh-package-build"},
+      "test": {"path": "bootstrap/clojure/test/gravity/package/pipeline_test.clj", "namespace": "gravity.package.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "standard-library-kernel",
       "kind": "production-stage-helper",
       "owner": "sh-standard-library",

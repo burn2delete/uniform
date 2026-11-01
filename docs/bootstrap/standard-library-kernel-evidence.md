@@ -128,3 +128,38 @@ verified against both actual files and the frozen source parent.
 Exact lint, independent acceptance, own CI and clean actual-main preflight
 remain required for the final committed tuple. No pin or authority record is
 updated, and no historical failed route is retried or replaced.
+
+## Package-main composition
+
+Package PR724 is independently integrated as actual main
+6dcba8de85797f4f19b865db89e44ef4bd0c5dba, tree
+cb42bf633ac8db611758abda10f4e2e55a7d13da. A normal merge composes that main
+with the accepted Standard Library source
+7dffae9eb0d14f657e080440c93b4077277d2c4c. Four genuine shared registration
+and namespace-map conflicts are reconstructed from complete current-main files
+with the Standard Library association and original adversarial inventory test
+appended. Package source, compatibility consumers, tests and evidence remain
+identical to main. The native metadata body, Var read positions, source
+orchestration and all Standard Library tests remain identical to 7dff.
+
+Fresh Standard Library/Package/Lowering checks pass 15 tests / 249 assertions.
+The native C8/C15 leaves pass 15 / 352 in a separate fresh process. Registration
+passes 34 / 1029 and the language boundary passes 6 / 11. The full library and
+both full fixtures compile again; all six complete/text captures, actual source
+hashes, ten native kinds, body/arity, whole component/facet and single Bootstrap
+require conservation pass. The fixed-seed/native execution provenance is
+captured again in package-main-compiler-provenance.edn. Source outputs,
+refusals, inherited stamps and plan identities are unchanged, without expanding
+their authority.
+
+An initial combined check incorrectly loaded the Bootstrap-dependent suites
+alongside native Diagnostics leaves that assert Bootstrap is absent. It reports
+23 tests / 465 assertions with three failures, all at the cold-process
+assertions, and no errors. The failed log remains retained. Correctly isolated
+commands above execute the same source without changing or weakening tests;
+the isolated leaf result supplies no claim about running it in a loaded host.
+
+The earlier exact reviews, lint and CI observations remain bound to 7dff/base
+7019. The new complete integration tuple needs fresh exact reviews, contextual
+lint, its own CI and clean current-main preflight. No old result is transferred
+as current acceptance, and Package integration does not complete this namespace.

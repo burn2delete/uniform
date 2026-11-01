@@ -98,6 +98,10 @@
   {:namespace gravity.standard-library :owner :sh-standard-library :slice "SH-22"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00081-record-standard-library-call.clj"
    :test-path "bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/package.clj"
+  {:namespace gravity.package :owner :sh-package-build :slice "SH-23"
+   :consumer-path "bootstrap/clojure/src/gravity/build/package_selection.clj"
+   :test-path "bootstrap/clojure/test/gravity/package/pipeline_test.clj"}
   "bootstrap/clojure/src/gravity/effects.clj"
   {:namespace gravity.effects :owner :sh-effects :slice "SH-09"
    :consumer-path "bootstrap/clojure/src/gravity/c8_effect_checker/facts.clj"
@@ -173,6 +177,7 @@
 
  :module-owners
  {"bootstrap/clojure/src/gravity/standard_library.clj" :sh-standard-library
+  "bootstrap/clojure/src/gravity/package.clj" :sh-package-build
   "bootstrap/clojure/src/gravity/effects.clj" :sh-effects
   "bootstrap/clojure/src/gravity/lowering.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/backend/js.clj" :sh-target-js
@@ -400,6 +405,8 @@
  :standalone-test-owners
  {"bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj"
   {:namespace gravity.standard-library.pipeline-test :slice "SH-22" :owner :sh-standard-library}
+  "bootstrap/clojure/test/gravity/package/pipeline_test.clj"
+  {:namespace gravity.package.pipeline-test :slice "SH-23" :owner :sh-package-build}
   "bootstrap/clojure/test/gravity/lowering/pipeline_test.clj"
   {:namespace gravity.lowering.pipeline-test :slice "SH-17" :owner :master-coordinator}
   "bootstrap/clojure/test/gravity/backend/js/pipeline_test.clj"
