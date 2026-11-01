@@ -265,6 +265,25 @@
     (catch clojure.lang.ExceptionInfo error
       (:id (ex-data error)))))
 
+(defn- synthetic-stage2-runtime-kernel
+  [runtime-primitives]
+  (let [resolve-var (fn [name]
+                      (var-get (ns-resolve 'gravity.bootstrap name)))
+        required-instructions
+        (resolve-var 'p15-s23-stage2-runtime-kernel-required-instructions)]
+    {:engine :gravity-stage2-runtime-kernel-v1
+     :input :stage2-instruction-plan
+     :output :stage2-runtime-kernel-execution-record
+     :instruction-rules (zipmap required-instructions (repeat {}))
+     :runtime-primitives
+     {:engine :gravity-stage2-runtime-primitives-v1
+      :host-primitive-boundary :gravity-runtime-primitives
+      :functions runtime-primitives
+      :compiler-internal-builtin-arities
+      (resolve-var 'p15-s23-sh07-declared-builtin-exact-arities)
+      :compiler-internal-builtin-contracts
+      (resolve-var 'p15-s23-sh07-declared-builtin-contracts)}}))
+
 (defn- compile-and-run!
   [^Path directory generated-source]
   (let [source-path (.resolve directory "generated.c")
@@ -284,6 +303,26 @@
 
 (deftest fixed-real-packet-cache-is-bounded-and-source-coherent
   (assert-real-packet-cache-contract!))
+
+(deftest stage2-runtime-kernel-keeps-reader-bridge-outside-primitive-inventory
+  (let [stage0-builtins
+        (var-get (ns-resolve 'gravity.bootstrap 'stage0-builtin-functions))
+        reader-bridge 'build-read-declared-input
+        complete
+        (bootstrap/p15-s23-stage2-runtime-kernel-rule-record
+         (synthetic-stage2-runtime-kernel
+          (disj stage0-builtins reader-bridge)))
+        missing-ordinary-primitive
+        (bootstrap/p15-s23-stage2-runtime-kernel-rule-record
+         (synthetic-stage2-runtime-kernel
+          (disj stage0-builtins reader-bridge 'str)))]
+    (is (= :complete (:status complete)) complete)
+    (is (not (some #{reader-bridge}
+                   (:missing-runtime-primitives complete))) complete)
+    (is (= :failed (:status missing-ordinary-primitive))
+        missing-ordinary-primitive)
+    (is (= ['str] (:missing-runtime-primitives missing-ordinary-primitive))
+        missing-ordinary-primitive)))
 
 (deftest former-accounting-allowances-do-not-reject-valid-plan-data
   (let [large-scalar (apply str (repeat 1025 "a"))
