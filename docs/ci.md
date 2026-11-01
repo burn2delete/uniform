@@ -13,8 +13,8 @@ compiler migration or release acceptance.
 | static | Always | Always | actionlint 1.7.12 workflow syntax; clj-kondo 2025.10.23 on changed Clojure/EDN files and CI tooling; cljfmt 0.13.4 on CI tooling; Git whitespace; harness failure controls. Legacy format adoption remains separate. |
 | projections | Always | Always | Canonical 240-document validator, full-language roadmap schema and negative fixtures, acceptance dependency controls, every existing component task projector and its tests. |
 | bootstrap | Always | Always | Fresh process requires Bootstrap without preinstalled aliases; exact decimal/abbreviation Reader regressions; language boundary; strict catalog controls and ownership inventory. No modeled aliases installed by this harness. |
-| fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise full fresh catalog | Full fresh catalog | 51 portable namespaces on Ubuntu and the Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every namespace gets a fresh JVM; the partition is exhaustive and disjoint. Unknown paths fall back to all 52; no cross-run result cache. This is not the full compiler suite. |
-| darwin-unsupported-host | Same conservative selection as leaves | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
+| fresh-leaf-regressions / portable and / darwin | Markdown-only PRs omit leaves; otherwise the reviewed source/test require-closure selects affected catalog entries. Unknown, cross-cutting, structural, or closure-discovery changes use the full platform catalog. | Full fresh catalog | 52 portable namespaces on Ubuntu and one Darwin publication namespace on ARM macOS with its exact JDK 26.0.1 contract. Every selected namespace gets a fresh JVM; the catalog partition is exhaustive and disjoint. No cross-run result cache is used. This is not the full compiler suite. |
+| darwin-unsupported-host | Always runs its tiny refusal probe | Always | Actual macOS 15 kernel must reject required confinement features before any publication open; this negative result grants no positive publication acceptance. |
 | source-Core-readiness | Omitted | Omitted | No source-Core readiness job is enabled: the former constant-failure placeholder did not execute a genuine compiler route. The real public `gravity self-host verify` boundary remains fail-closed with `P18T04007` while the seed boundary is active; no CI check or source-only snapshot substitutes for that release/self-hosting admission. |
 | experimental-source-snapshot | Omitted | Manual dispatch on `main` only | Exact SHA source tarball, one Git archive, SHA-256 manifest, capability notes/changelog and provenance. No compiler binary. |
 | experimental-prerelease | Never | Manual dispatch on `main` only, after routine checks and packaging pass | Separate contents-write job publishes the same-run source bundle as a prerelease; Core readiness is explicitly outside this source-only claim. |
@@ -38,8 +38,19 @@ without changed-file lint.
 Markdown-only pull requests retain the existing static whitespace and contract
 checks. A change to `tools/ci/snapshot.clj` or its `snapshot_test.clj` runs the
 snapshot repeatability controls from the static job; it never replaces the
-other static controls. The leaves job keeps its separate conservative rule:
-non-Markdown pull requests run the complete portable and Darwin catalogs.
+other static controls.
+
+The leaves jobs use the same verified pull-request path records. For regular
+source or test changes, `tools/ci/run.clj` follows the reviewed `:require`
+closure of each existing catalog entry and runs entries whose closure contains
+the changed path. A shared helper can therefore select more than one entry,
+while an unrelated leaf is omitted. Markdown-only pull requests omit leaves.
+Unknown or unowned paths, cross-cutting/dependency changes, deletes, renames,
+mode/type changes, and any closure or discovery failure fall back to the full
+platform catalog. A platform with no affected entries records an explicit
+skip; the portable and Darwin jobs remain in the matrix, so platform-specific
+publication coverage is not silently omitted. Main, manual, and scheduled runs
+use the full catalog.
 
 ## Requirements and dependencies
 

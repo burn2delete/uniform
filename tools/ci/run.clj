@@ -11,6 +11,7 @@
 (def semantic-modes #{"static" "contracts" "bootstrap" "macro" "resolution" "checked-core-runtime"})
 (def always-pr-modes #{"static" "contracts"})
 (def stage-order ["bootstrap" "macro" "resolution" "checked-core-runtime"])
+(def leaf-modes #{"leaves-portable" "leaves-darwin"})
 
 ;; These are the existing owner boundaries exposed by the CI matrix.  Keep
 ;; this table deliberately small: an unlisted path is cross-cutting and must
@@ -229,10 +230,19 @@
 (defn docs-only-path? [path]
   (and (string? path) (str/ends-with? path ".md")))
 
+(defn cross-cutting-path? [path]
+  (and (string? path)
+       (or (str/starts-with? path ".github/")
+           (str/starts-with? path "tools/")
+           (str/starts-with? path "bin/")
+           (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
+                        "bb.edn" "shadow-cljs.edn"} path))))
+
 (defn docs-only-record? [{:keys [old-mode new-mode status path]}]
   (and (docs-only-path? path)
        (not (or (str/starts-with? path "contracts/")
                 (str/starts-with? path "specs/")))
+       (not (cross-cutting-path? path))
        (= "100644" new-mode)
        (case status
          "A" (= "000000" old-mode)
@@ -271,14 +281,6 @@
   (and (string? path)
        (or (str/starts-with? path "contracts/")
            (str/starts-with? path "specs/"))))
-
-(defn cross-cutting-path? [path]
-  (and (string? path)
-       (or (str/starts-with? path ".github/")
-           (str/starts-with? path "tools/")
-           (str/starts-with? path "bin/")
-           (contains? #{"deps.edn" "deps-lock.edn" "project.clj" "build.boot"
-                        "bb.edn" "shadow-cljs.edn"} path))))
 
 (defn selected-modes [stages]
   (into always-pr-modes (mapcat stage-closure stages)))
@@ -339,6 +341,7 @@
                     :modes always-pr-modes}
                    (stage-selection changes))
                  {:base base
+                  :changes changes
                   :paths paths
                   :clojure-paths clojure-paths}))
         (catch Exception error
@@ -348,6 +351,7 @@
           {:kind :full
            :reason :path-discovery-failed
            :base base
+           :changes []
            :paths []
            :clojure-paths []
            :selection-error (str error)})))))
@@ -375,19 +379,201 @@
    (script "roadmap-negative-controls" "tools/validate_full_language_roadmap.clj" "--self-test")
    (script "dependency-controls" "tools/acceptance_dependencies_test.clj")])
 
-(defn leaf-selection [platform catalog]
+(defn platform-leaf-catalog [platform catalog]
   (when-not (#{"portable" "darwin"} platform)
     (throw (ex-info "Unknown leaf platform" {:platform platform})))
   (filterv #(= (= platform "darwin") (= "darwin-publication" (:id %))) catalog))
 
-(defn leaf-command [platform]
+(defn leaf-namespace-path [namespace-symbol]
+  (let [relative (str (-> (str namespace-symbol)
+                          (str/replace "." "/")
+                          (str/replace "-" "_")) ".clj")
+        candidates [(str "bootstrap/clojure/src/" relative)
+                    (str "bootstrap/clojure/test/" relative)]]
+    (or (some #(when (.isFile (io/file %)) %) candidates)
+        (throw (ex-info "Leaf namespace has no project source file"
+                        {:namespace namespace-symbol
+                         :candidates candidates})))))
+
+(def leaf-dynamic-dependency-symbols
+  '#{require clojure.core/require load clojure.core/load
+     load-file clojure.core/load-file load-string clojure.core/load-string
+     requiring-resolve clojure.core/requiring-resolve
+     resolve clojure.core/resolve})
+
+(defn leaf-dynamic-dependency-form? [form]
+  (or (and (symbol? form) (contains? leaf-dynamic-dependency-symbols form))
+      (and (coll? form) (some leaf-dynamic-dependency-form? form))))
+
+(defn leaf-source-forms [path]
+  (binding [*read-eval* false]
+    (let [eof (Object.)]
+      (with-open [reader (java.io.PushbackReader. (io/reader path))]
+        (loop [forms []]
+          (let [form (read {:eof eof} reader)]
+            (if (identical? eof form)
+              forms
+              (recur (conj forms form)))))))))
+
+(defn leaf-valid-reference-target? [value]
+  (or (= :all value)
+      (and (vector? value) (every? symbol? value))))
+
+(defn leaf-valid-rename-map? [value]
+  (and (map? value)
+       (every? (fn [[from to]] (and (symbol? from) (symbol? to))) value)))
+
+(defn leaf-validate-require-options! [spec clause]
+  (loop [options (seq (rest spec))]
+    (when options
+      (let [option (first options)
+            value (second options)]
+        (when-not (and (keyword? option) (next options))
+          (throw (ex-info "Unsupported leaf require option syntax"
+                          {:spec spec :clause clause})))
+        (when-not (case option
+                    :as (symbol? value)
+                    :as-alias (symbol? value)
+                    :refer (leaf-valid-reference-target? value)
+                    :refer-macros (leaf-valid-reference-target? value)
+                    :rename (leaf-valid-rename-map? value)
+                    :include-macros (boolean? value)
+                    false)
+          (throw (ex-info "Unsupported leaf require option"
+                          {:option option :value value :spec spec :clause clause})))
+        (recur (nnext options))))))
+
+(defn leaf-required-namespaces [form]
+  (when-not (and (seq? form) (= 'ns (first form)))
+    (throw (ex-info "Leaf namespace source must begin with ns" {:form form})))
+  (mapcat (fn [clause]
+            (if-not (seq? clause)
+              []
+              (case (first clause)
+                :require
+                (mapcat (fn [spec]
+                          (let [dependency (cond
+                                             (symbol? spec) spec
+                                             (vector? spec)
+                                             (do
+                                               (leaf-validate-require-options! spec clause)
+                                               (first spec))
+                                             :else nil)]
+                            (when-not (symbol? dependency)
+                              (throw (ex-info "Unsupported leaf require specification"
+                                              {:spec spec :clause clause})))
+                            (if (str/starts-with? (str dependency) "gravity.")
+                              [dependency]
+                              [])))
+                        (rest clause))
+
+                :use
+                (throw (ex-info "Leaf namespace uses unsupported :use dependencies"
+                                {:clause clause}))
+
+                :import []
+                :refer-clojure []
+                :gen-class []
+
+                (throw (ex-info "Unsupported leaf namespace clause"
+                                {:clause clause})))))
+          (drop 2 form)))
+
+(defn leaf-require-closure [entry]
+  (loop [pending [(:namespace entry)]
+         paths (set (keep identity [(:source-path entry) (:test-path entry)]))
+         visited #{}]
+    (if-let [namespace-symbol (peek pending)]
+      (let [path (leaf-namespace-path namespace-symbol)]
+        (if (contains? visited path)
+          (recur (pop pending) paths visited)
+          (let [forms (leaf-source-forms path)
+                form (first forms)]
+            (when-not (and (seq? form) (= 'ns (first form)))
+              (throw (ex-info "Leaf namespace source must begin with ns"
+                              {:namespace namespace-symbol :path path})))
+            (when (some leaf-dynamic-dependency-form? (rest forms))
+              (throw (ex-info "Leaf namespace has dynamic dependency loading"
+                              {:namespace namespace-symbol :path path})))
+            (recur (into (pop pending) (leaf-required-namespaces form))
+                   (conj paths path)
+                   (conj visited path)))))
+      paths)))
+
+(defn leaf-selection-for-changes [platform catalog changes]
+  (let [changes (vec changes)
+        paths (mapv :path changes)
+        platform-catalog (platform-leaf-catalog platform catalog)]
+    (cond
+      (empty? changes)
+      {:kind :full :reason :no-changes :paths paths :entries platform-catalog}
+
+      (some #(not (regular-added-or-modified? %)) changes)
+      {:kind :full :reason :non-regular-change :paths paths :entries platform-catalog}
+
+      (some contract-or-spec-path? paths)
+      {:kind :full :reason :contract-or-spec-change :paths paths :entries platform-catalog}
+
+      (some cross-cutting-path? paths)
+      {:kind :full :reason :cross-cutting-change :paths paths :entries platform-catalog}
+
+      (every? docs-only-record? changes)
+      {:kind :docs-only :reason :known-documentation-only :paths paths :entries []}
+
+      :else
+      (try
+        (let [closures (mapv (fn [entry]
+                               {:entry entry :paths (leaf-require-closure entry)}) catalog)
+              closure-paths (into #{} (mapcat :paths closures))
+              unknown-path? (some (fn [{:keys [path]}]
+                                    (and (not (docs-only-path? path))
+                                         (not (contains? closure-paths path))))
+                                  changes)]
+          (if unknown-path?
+            {:kind :full
+             :reason :unknown-or-unowned-leaf-path
+             :paths paths
+             :entries platform-catalog}
+            (let [matching-ids (->> closures
+                                    (filter #(some (set paths) (:paths %)))
+                                    (map (comp :id :entry))
+                                    set)]
+              {:kind :selected
+               :reason :affected-leaf
+               :paths paths
+               :entries (filterv #(contains? matching-ids (:id %)) platform-catalog)})))
+        (catch Exception error
+          {:kind :full
+           :reason :leaf-closure-failed
+           :paths paths
+           :selection-error (str error)
+           :entries platform-catalog})))))
+
+(defn leaf-selection
+  ([platform catalog]
+   (platform-leaf-catalog platform catalog))
+  ([platform catalog changes]
+   (:entries (leaf-selection-for-changes platform catalog changes))))
+
+(defn load-leaf-catalog []
   (binding [*command-line-args* nil]
     (load-file "bootstrap/clojure/test/gravity/bootstrap_free_leaf_test_runner.clj"))
-  (let [catalog (var-get (requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/catalog))
-        selected (leaf-selection platform catalog)]
-    (when (empty? selected) (throw (ex-info "Empty platform leaf selection" {:platform platform})))
-    (apply command "512m" "-M:leaf-test"
-           (mapcat (fn [entry] ["--namespace" (str (:namespace entry))]) selected))))
+  (var-get (requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/catalog)))
+
+(defn leaf-command
+  ([platform] (leaf-command platform nil))
+  ([platform selection]
+   (let [catalog (load-leaf-catalog)
+         result (or (:leaf-selection selection)
+                    (if (contains? selection :changes)
+                      (leaf-selection-for-changes platform catalog (:changes selection))
+                      {:kind :full :reason :non-pull-request
+                       :entries (platform-leaf-catalog platform catalog)}))
+         selected (:entries result)]
+     (when (empty? selected)
+       (throw (ex-info "Empty platform leaf selection" {:platform platform :result result})))
+     (apply command "512m" "-M:leaf-test"
+            (mapcat (fn [entry] ["--namespace" (str (:namespace entry))]) selected)))))
 
 (declare commands-for-selection)
 
@@ -464,7 +650,7 @@
                                       "--exact" "sh07-character-source-occurrence-development-kernel"
                                       "--exact" "sh07-map-source-order-development-kernel"
                                       "--exact" "sh07-map-quoted-duplicate-source-development-kernel")]]
-    "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable")]]
+    "leaves-portable" [["fresh-portable-leaf-catalog" 900 (leaf-command "portable" selection)]]
     "darwin-probe" [["darwin-host" 15 ["sw_vers"]]
                     ["darwin-kernel" 15 ["uname" "-a"]]
                     ["darwin-build" 15 ["sysctl" "kern.version" "kern.osversion"]]
@@ -478,30 +664,61 @@
                           ["darwin-unsupported-refusal" 30
                            (command "256m" "-J--enable-native-access=ALL-UNNAMED"
                                     "-M" "tools/ci/darwin_unsupported_test.clj")]]
-    "leaves-darwin" [["fresh-darwin-leaf-catalog" 180 (leaf-command "darwin")]]
+    "leaves-darwin" [["fresh-darwin-leaf-catalog" 180 (leaf-command "darwin" selection)]]
     (throw (ex-info "Unknown CI mode" {:mode mode}))))
 
 (defn docs-only-static-commands [selection]
   [["whitespace" 30 ["git" "diff" "--check" (:base selection) "HEAD"]]])
 
+(defn leaf-mode? [mode]
+  (contains? leaf-modes mode))
+
+(defn leaf-platform-for-mode [mode]
+  (case mode
+    "leaves-portable" "portable"
+    "leaves-darwin" "darwin"
+    nil))
+
+(defn leaf-selection-for-mode [mode selection]
+  (when-let [platform (leaf-platform-for-mode mode)]
+    (let [catalog (load-leaf-catalog)]
+      (if (contains? selection :changes)
+        (leaf-selection-for-changes platform catalog (:changes selection))
+        {:kind :full
+         :reason :non-pull-request
+         :entries (platform-leaf-catalog platform catalog)}))))
+
 (defn run! [mode]
-  (let [selection (if (contains? semantic-modes mode)
+  (let [selection (if (or (contains? semantic-modes mode) (leaf-mode? mode))
                     (pull-request-selection)
                     {:kind :full :reason :non-semantic-mode})
         skipped? (skip-for-docs-only? mode selection)
         stage-skipped? (skip-for-stage-selection? mode selection)
         docs-only? (= :docs-only (:kind selection))
+        leaf-selection (leaf-selection-for-mode mode selection)
+        leaf-skipped? (and leaf-selection
+                           (or docs-only?
+                               (and (= :selected (:kind leaf-selection))
+                                    (empty? (:entries leaf-selection)))))
         selection-error (selection-error-result mode selection)
+        command-selection (cond-> selection
+                            leaf-selection (assoc :leaf-selection leaf-selection))
         results (cond-> (cond
-                          (or skipped? stage-skipped?) [{:id (str mode (if skipped?
-                                                                         "-docs-only-skip"
-                                                                         "-unaffected-skip"))
-                                                         :status :skipped
-                                                         :reason (if skipped? :docs-only-pr :unaffected-stage)
-                                                         :selection (:kind selection)}]
+                          (or skipped? stage-skipped? leaf-skipped?)
+                          [{:id (str mode (cond
+                                            skipped? "-docs-only-skip"
+                                            stage-skipped? "-unaffected-skip"
+                                            :else "-unaffected-leaf-skip"))
+                            :status :skipped
+                            :reason (cond
+                                      skipped? :docs-only-pr
+                                      stage-skipped? :unaffected-stage
+                                      :else :unaffected-leaf)
+                            :selection (:kind selection)}]
                           (and docs-only? (= "static" mode))
                           (mapv #(apply execute! %) (docs-only-static-commands selection))
-                          :else (mapv #(apply execute! %) (commands-for-selection mode selection)))
+                          :else (mapv #(apply execute! %)
+                                      (commands-for-selection mode command-selection)))
                   selection-error (conj selection-error))
         summary (if (= :full (:kind selection))
                   results

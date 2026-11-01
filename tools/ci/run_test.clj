@@ -177,6 +177,11 @@
                                 (mapv regular-doc ["README.md" "docs/guide.md"])))
       (doseq [paths [["bootstrap/gravity/src/gravity/runtime.gravity"]
                      [".github/workflows/ci.yml"]
+                     [".github/README.md"]
+                     ["tools/ci/README.md"]
+                     ["bin/README.md"]
+                     ["contracts/policy.md"]
+                     ["specs/compiler.md"]
                      ["notes.txt"]
                      ["README.md; echo unexpected"]
                      []]]
@@ -366,6 +371,108 @@
     (is (= (count catalog) (count (concat portable darwin))))
     (is (thrown? Exception (ci/leaf-selection "unknown" catalog)))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest affected-leaves-follow-reviewed-source-closures
+  (let [catalog (ci/load-leaf-catalog)
+        entry (fn [id] (some #(when (= id (:id %)) %) catalog))
+        change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        select (fn [platform paths]
+                 (ci/leaf-selection-for-changes platform catalog (mapv change paths)))
+        scalar (entry "c2-reader-scalar-spans")
+        darwin (entry "darwin-publication")
+        scalar-result (select "portable" [(:test-path scalar)])
+        source-result (select "portable" [(:source-path scalar)])
+        dependent-result
+        (select "portable"
+                ["bootstrap/clojure/src/gravity/c2_reader_product_projection/policy.clj"])
+        docs-result (select "portable" ["README.md"])
+        darwin-result (select "darwin" [(:test-path darwin)])
+        portable-darwin-result (select "portable" [(:test-path darwin)])
+        unknown-result (select "portable" ["bootstrap/clojure/src/gravity/not-in-catalog.clj"])
+        mode-result (ci/leaf-selection-for-changes
+                     "portable" catalog
+                     [{:old-mode "100644" :new-mode "100755" :status "M"
+                       :path (:test-path scalar)}])
+        empty-result (ci/leaf-selection-for-changes "portable" catalog [])
+        delete-result (ci/leaf-selection-for-changes
+                       "portable" catalog
+                       [{:old-mode "100644" :new-mode "000000" :status "D"
+                         :path (:test-path scalar)}])
+        markdown-delete-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "000000" :status "D" :path "README.md"}])
+        markdown-rename-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "100644" :status "R" :path "README.md"}])
+        markdown-mode-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "100755" :status "M" :path "README.md"}])
+        cross-cutting-result (select "portable" ["tools/ci/run.clj"])
+        ids (fn [result] (set (map :id (:entries result))))]
+    (is (= :selected (:kind scalar-result)))
+    (is (= #{"c2-reader-scalar-spans"} (ids scalar-result)))
+    (is (= :selected (:kind source-result)))
+    (is (contains? (ids source-result) "c2-reader-scalar-spans"))
+    (is (= :selected (:kind dependent-result)))
+    (is (contains? (ids dependent-result) "c2-reader-product-projection"))
+    (is (contains? (ids dependent-result) "c2-reader-scalar-spans"))
+    (is (not (contains? (ids scalar-result) "c10-safety-analysis")))
+    (is (= :docs-only (:kind docs-result)))
+    (is (empty? (:entries docs-result)))
+    (is (= ["darwin-publication"] (mapv :id (:entries darwin-result))))
+    (is (= :selected (:kind portable-darwin-result)))
+    (is (empty? (:entries portable-darwin-result)))
+    (is (= :full (:kind unknown-result)))
+    (is (= 52 (count (:entries unknown-result))))
+    (is (= :full (:kind mode-result)))
+    (is (= 52 (count (:entries mode-result))))
+    (doseq [result [empty-result delete-result markdown-delete-result
+                    markdown-rename-result markdown-mode-result cross-cutting-result]]
+      (is (= :full (:kind result)))
+      (is (= 52 (count (:entries result)))))))
+
+(deftest leaf-closure-fails-closed-for-unsupported-dependencies
+  (is (= ['gravity.foo]
+         (vec (ci/leaf-required-namespaces
+               (read-string "(ns demo (:require [gravity.foo :as foo]))")))))
+  (doseq [source ["(ns demo (:use [gravity.foo]))"
+                  "(ns demo (:require (gravity.foo [bar :as bar])))"
+                  "(ns demo (:require [some.dynamic (resolve x)]))"
+                  "(ns demo (:require [gravity.foo (if true :as :refer)]))"
+                  "(ns demo (:require [gravity.foo :as]))"
+                  "(ns demo (:require [gravity.foo :refer :bad]))"]]
+    (is (thrown? Exception
+                 (doall (ci/leaf-required-namespaces (read-string source))))
+        source))
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-leaf-closure-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        path (.getPath (io/file directory "synthetic.clj"))]
+    (try
+      (doseq [dependency-form [":ci.run/eof\n(require 'gravity.hidden)"
+                               ":ci.run/eof\n(load \"gravity/hidden\")"]]
+        (spit path (str "(ns demo)\n" dependency-form "\n"))
+        (with-redefs [ci/leaf-namespace-path (constantly path)]
+          (is (thrown? Exception
+                       (ci/leaf-require-closure {:namespace 'demo
+                                                 :source-path path
+                                                 :test-path path})))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (io/delete-file file true)))))
+  (let [catalog (ci/load-leaf-catalog)
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path "bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj"}]
+    (with-redefs [ci/leaf-require-closure
+                  (fn [_] (throw (ex-info "synthetic closure failure" {})))]
+      (let [result (ci/leaf-selection-for-changes "portable" catalog [change])]
+        (is (= :full (:kind result)))
+        (is (= :leaf-closure-failed (:reason result)))
+        (is (= 52 (count (:entries result))))))))
 
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
