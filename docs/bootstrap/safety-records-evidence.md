@@ -299,3 +299,18 @@ remain the evidence boundary. Source admission, grants, performed safety checks,
 full safety and namespace completion remain unsupported. New-base review,
 contextual lint, own CI and exact integration preflight remain required; no
 prior-base green is transferred.
+
+## Core repair and external CI main composition
+
+The next normal composition follows Safety80da8a842a67f9a4dc2ff249c045dea5f755835a
+and uses actual main167ed15a2c3ce7d76e4eb6b9a761a55186f7a4ad/tree
+58ce57515855fd4df4925aec86dab707e1edb2e0. Main includes Core PR730's corrected
+operation-root guard and tests, followed by external PR731's workflow and CI
+documentation changes. This merge has no conflicts. The Safety stage, both
+native components, tests and Var ports remain exact80da. All five incoming
+Core/CI files are preserved exactly; this slice makes no CI-policy changes.
+The external delta removes a constant-failure job that executed no compiler;
+its absence is no source-Core, release or self-hosting evidence. Core's genuine
+current-reader controls and Safety's normalized C10/native data remain distinct
+evidence boundaries. Fresh exact-base checks, review, own CI and clean
+integration preflight remain required.
