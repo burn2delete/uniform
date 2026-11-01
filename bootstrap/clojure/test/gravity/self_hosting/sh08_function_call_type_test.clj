@@ -21899,7 +21899,7 @@
 (deftest pr359-descriptor-private-map-route-reconstructs-the-complete-descriptor
   (let [{:keys [core node call edge nodes bindings forms types facts descriptor type-result join-result]}
         ((pr359-descriptor-helper 'private-map-keys-typed-input))
-        source-args [core node call edge nodes bindings types (:module core) 65536]
+        source-args [core node call edge nodes bindings types (:module core)]
         sources [(apply pr359-descriptor-c7 'sh08-pmk-source source-args)
                  (apply pr359-descriptor-body 'body-pmk-source source-args) (apply pr359-descriptor-emit 'p15-s23-pmk-source source-args)]
         complete-args [core node call edge nodes bindings types forms 65536]
@@ -21925,10 +21925,14 @@
     (is (every? #(= :accepted (:status %)) sources))
     (is (apply = (map :descriptor sources)))
     (is (not-any? #(contains? (:descriptor %) :operand-type-work) sources))
+    (is (not-any? #(contains? % :work-count) sources))
+    (is (not-any? #(contains? (:descriptor %) :profile-validation-work) sources))
+    (is (not-any? #(contains? (:descriptor %) :construction-work) sources))
     (is (every? #(= :accepted (:status %)) headers))
     (is (every? #(= descriptor (:descriptor %)) headers))
     (is (apply = (map #(get-in % [:descriptor :key-domain-proof]) headers)))
     (is (not-any? #(contains? (:descriptor %) :entry-proof-work) headers))
+    (is (not-any? #(contains? (:descriptor %) :construction-work-basis) headers))
     (is (= (pr359-descriptor-c7 'sh08-pmk-constraint descriptor)
            (pr359-descriptor-c7 'sh08-lq-constraint descriptor)
            (pr359-descriptor-body 'body-mkeys-constraint descriptor)
@@ -21946,6 +21950,9 @@
     (is (= :complete (:status (compile context))))
     (doseq [changed [(assoc descriptor :operand-type-work 0)
                      (assoc descriptor :entry-proof-work 0)
+                     (assoc descriptor :construction-work 0)
+                     (assoc descriptor :construction-work 1)
+                     (assoc descriptor :construction-work-basis :one-static-operation-with-separate-existing-runtime-census)
                      (assoc descriptor :operand-type-work 0 :entry-proof-work 2875)
                      (assoc descriptor :extra true)
                      (assoc descriptor :kind :gravity.type/applied-map-keys)
