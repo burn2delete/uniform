@@ -215,9 +215,12 @@ the exact accepted decode, lexical/origin and fresh-Syntax evidence. Missing
 behavior must be represented by concrete failing cases and an owned correction,
 not a claim based on source presence. This is substantive source/fixture
 reconciliation in an existing task, not a new preparation-only admission gate
-for ordinary development. It is not yet certified as the first
-behavior-changing increment for the whole project: the source-backed gap and
-current writer must be identified before that narrower selection can be made.
+for ordinary development. The [selected Reader plan](../specs/reader-workflow/plan.md#selected-increment-complete-contract-coverage)
+now names its inspected revision, existing implementation and corpus paths,
+source-family case design, evidence route and held execution boundary. It is
+ready to start with the allowed inspection and fixture reconciliation portion;
+new execution and acceptance still require their actual dependencies and
+applicable governance dispositions.
 
 In particular, Reader's existing
 [pure integration correction](../specs/reader-workflow/pure-native-admission-evidence.md#handoff-and-remaining-gate)
@@ -232,7 +235,7 @@ identify and bind those existing outcomes without executing them.
 Select that existing increment in Codex:
 
 ```text
-$speckit-plan Use specs/reader-workflow. Select only reader/finite-remaining-work/contract-coverage-reconciliation; preserve accepted evidence, current ownership and all other task statuses. Bind complete L1/C2 behavior to actual implementations and real positive/negative fixtures, and identify the first concrete remaining implementation gap.
+$speckit-plan Use specs/reader-workflow and its Selected increment: complete contract coverage plan. Select only reader/finite-remaining-work/contract-coverage-reconciliation; preserve accepted evidence, current ownership and all other task statuses. Bind complete L1/C2 behavior to actual implementations and real positive/negative fixtures, and expose concrete missing cases without executing held routes.
 $speckit-tasks Use specs/reader-workflow and the same existing task authority. Reconcile the selected plan without replacing the marked task population or creating a parallel checklist.
 $speckit-implement Use specs/reader-workflow and the selected plan/task. Complete the source-backed declared increment with actual products and rejection evidence; preserve restricted operations and leave broader outcomes open.
 ```
@@ -445,8 +448,15 @@ cannot discharge the full C6 multi-consumer conjunction or historical owners.
 Earlier Math20/Schema25 receipts retain their own subjects and qualifications;
 they do not accept the four current corrections or whole current composition.
 
+The selected Reader successor adds a concrete plan for the existing coverage
+task: inspected implementation and fixture paths, all L1/C2 source families and
+products, required positive/negative observations, exact evidence routing and
+the retained execution hold. It exposes the historical quota-only rejection
+cases for reconciliation rather than counting them as current conformance.
+No Reader source, fixture, task status or execution receipt changed.
+
 The current focused check covers 62 changed files, including 61 Markdown files
-and 2,147 local references, 139 current component task routes, all sixteen
+and 2,169 local references, 139 current component task routes, all sixteen
 separate future Domain records and 48 historical spec/plan suffixes. The
 original 48 task/evidence file contents remain conserved: 45 are untouched;
 removing only the declared governance consumer blocks and the two Domains
