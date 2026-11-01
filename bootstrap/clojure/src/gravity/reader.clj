@@ -1,16 +1,16 @@
 (ns gravity.reader
   "Native source intake, strict UTF-8 decoding and stage0 reader artifact assembly.
 
-  This namespace owns native source capture, strict byte decoding and the existing
-  artifact envelope and pass record.
-  Path policy, parsing, syntax, source identity and diagnostic construction remain with their
-  supplied owners. Operations are trusted seed dependencies, not evidence of
+  This namespace owns native source capture, strict byte decoding, source-path
+  diagnostic data and the existing artifact envelope and pass record.
+  Admission, parsing, syntax, source identity and diagnostic publication remain
+  with their supplied owners. Operations are trusted seed dependencies, not evidence of
   canonical reader authentication or self-hosting.")
 
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
    :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
-   :contract-boundary :native-source-intake-and-stage0-reader-artifact-assembly
+   :contract-boundary :native-source-intake-diagnostics-and-stage0-reader-artifact-assembly
    :public-api
    {'read-source-artifact
     {:arglists '([source-path source-text project-context operations])
@@ -23,11 +23,16 @@
     {:arglists '([qst-or-gravity-source-var source-path-policy-fail-var decode-source-bytes-var path])
      :returns :decoded-utf8-text :admission :none :opens-source? true
      :grants-file-authority? false
-     :operation-inputs [:qst-or-gravity-source-var :source-path-policy-fail-var :decode-source-bytes-var]}}
+     :operation-inputs [:qst-or-gravity-source-var :source-path-policy-fail-var :decode-source-bytes-var]}
+    'reject-source-path!
+    {:arglists '([gravity-source-extension-var co-canonical-source-extensions-var sha256-bytes-hex-var fail-var source-path bytes])
+     :returns :unchanged-source-extension-failure :admission :none :opens-source? false
+     :operation-inputs [:gravity-source-extension-var :co-canonical-source-extensions-var
+                        :sha256-bytes-hex-var :fail-var]}}
    :artifact-inputs [:source-path :decoded-source-text :explicit-project-context
                      :seed-reader-operations :standard-reader-options
                      :captured-source-bytes :raw-byte-hash-var :diagnostic-var
-                     :extension-predicate-var :path-policy-refusal-var :decoder-var]
+                     :extension-predicate-var :path-policy-refusal-var :decoder-var :co-canonical-extension-set-var]
    :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
                       :unchanged-source-encoding-failure :unchanged-source-extension-failure
                       :unchanged-host-file-error]
@@ -35,9 +40,9 @@
                :source-unit-identity :namespace-clause-syntax]
    :invalidates []
    :diagnostic-ownership
-   {:owns ["L1-SOURCE-ENCODING"]
-    :construction :explicit-existing-owner-var
-    :delegates ["L1-SOURCE-EXTENSION"]
+   {:owns ["L1-SOURCE-ENCODING" "L1-SOURCE-EXTENSION"]
+    :construction :stage-owned-rule-data-with-explicit-existing-failure-var
+    :admission-owner :supplied-caller
     :propagates [:L1 :C2]
     :does-not-own [:token-and-form-policy :namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
@@ -150,5 +155,39 @@
    (java.nio.file.Files/readAllBytes
     (.toPath (java.io.File. path)))))
 
-(doseq [operation [#'read-source-artifact #'decode-source-bytes #'read-source-text]]
+(defn reject-source-path!
+  "Construct the existing native extension refusal from supplied bytes.
+
+  This performs no file access or admission and confers no authority."
+  [gravity-source-extension-var co-canonical-source-extensions-var sha256-bytes-hex-var fail-var source-path bytes]
+   (let [bytes-hash (when bytes
+                      (str "sha256:" ((deref sha256-bytes-hex-var) bytes)))
+         span {:source source-path :byte-start 0 :byte-end 0}]
+     ((deref fail-var) "L1-SOURCE-EXTENSION"
+            "Gravity source path does not use a co-canonical source extension"
+            (cond->
+             {:severity :error
+              :stage :read-source
+              :source-span span
+              :primary (cond-> {:span span}
+                         bytes-hash (assoc :artifact bytes-hash))
+              :related []
+              :origin-chain
+              [(cond-> {:kind :source-path :path source-path}
+                 bytes-hash (assoc :source-id bytes-hash))]
+              :profile nil
+              :target nil
+              :facts
+              (cond->
+               {:actual-extension ((deref gravity-source-extension-var) source-path)
+                :allowed-extensions
+                (vec (sort (deref co-canonical-source-extensions-var)))}
+                bytes-hash (assoc :bytes-hash bytes-hash
+                                  :byte-count (alength bytes)))
+              :reader-state {:stage :source-unit-policy}
+              :remediation
+              "Rename the source to .qst or .gravity; both are canonical and first-class."}
+              bytes-hash (assoc :source-id bytes-hash)))))
+
+(doseq [operation [#'read-source-artifact #'decode-source-bytes #'read-source-text #'reject-source-path!]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
