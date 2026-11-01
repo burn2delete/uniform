@@ -125,6 +125,65 @@ record evidence keeps its earlier production context. Final composition still
 requires contextual lint against actual main, independent exact-head acceptance,
 its own successful CI and a clean current-main integration preflight.
 
+## Package-main composition and fresh evidence
+
+The prior composition b14b954f0bad1d8dbe07e02f9e8261ca04b1f41e, tree
+798a9bda2a390225e91b6b767c1ef8153deaa26f, remains nonpassing. Its own CI
+41224910156 recorded a Macro watchdog exit 124 at 600 seconds; the other nine
+enabled jobs passed. Cause, active test and cleanup are not established. That
+head is not rerun, and no later main or CI observation repairs or supplies
+old-head or old-bound credit.
+
+A normal merge composes actual Package main
+6dcba8de85797f4f19b865db89e44ef4bd0c5dba, tree
+cb42bf633ac8db611758abda10f4e2e55a7d13da. Four genuine shared require and
+registration conflicts are reconstructed from complete current-main files with
+the original Safety association and adversarial inventory test appended. The
+namespace map retains main and the existing Safety row. All incoming Package,
+Effects, Diagnostics, Lowering, backend, compiler and CI code remains intact.
+The stage, both native components and focused Safety test remain identical to
+the prior source; all nine bodies, ports and unmoved forms conserve against
+actual main. CI configuration, authority pins and count formulas are unchanged.
+
+At clean main 6dc, the ordinary producer compiles both complete accepted and
+rejected fixtures and executes the normalized Gravity C10 kernel. The same
+producer runs on the working composition. Both spellings yield proven-safe,
+runtime-checked, unsafe-island and rejected outcomes; zero division rejects
+C10-NUMERIC. Forty-two complete and serialized record pairs match exactly.
+All actual source texts and hashes, declared fixture plan IDs, native data
+proof IDs and check IDs recompute. Altered basis and child links still fail the
+limited native predicates. The retained SH-12 view, capability callback and
+historical proof/status labels remain explicitly unauthenticated test data.
+
+Fresh Safety/Package/Runtime/Optimization/Lowering and normalized C10 tests pass
+32 tests / 1227 assertions. Registration passes 34 / 1030 and the language
+boundary passes 6 / 11. The complete C10 source plan is captured separately:
+157 functions, source SHA
+786b98b8c307bb96271126a3ab876bcb8c0d54037a26afe31020e79832826a11,
+plan ID sha256:d0a6a977812cd7aff11a7c5c6af65653342fb860f51e15e634d259ccae15a6c9.
+Compilation uses the existing fixed Stage2 compiler.gravity seed, SHA
+57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527,
+and execution uses native Clojure gravity.runtime and component 00593. This
+does not execute main's changed Gravity emitter/runtime modules or renew
+authenticated source, migration, certificate or source-readiness authority.
+The provenance record binds actual input hashes to main 6dc and retains the
+inherited compiler stamps without fabrication.
+
+The first conservation launch used the old verifier's 6d1 Bootstrap baseline.
+It accepted the complete stage but failed its stale whole-Bootstrap expectation
+because main now includes the other integrated stage requires. That failed log
+is retained. The current-base verifier rebuilds the same extraction from actual
+6dc without writes and passes the entire stage, both whole components, all
+unmoved forms and the exact single Safety require delta; no comparison is
+removed or weakened.
+
+Records use /tmp/uniform-safety-records-evidence/package-main-*; command logs
+use /tmp/uniform-safety-records-package-main-*. Fresh contextual lint,
+docs/roadmap/governance, exact independent acceptance, this complete head's own
+CI and clean current-main integration preflight remain required. Earlier
+acceptance remains bound to its earlier tuple. This increment does not complete
+the namespace or any general safety contract.
+
 ## Unsupported boundaries
 
 This is partial temporary Clojure record machinery. Canonical analyze/verify,

@@ -1,13 +1,15 @@
 (ns gravity.c15-diagnostics.proof
-  (:require [gravity.c15-diagnostics.records :as records]))
+  (:require [gravity.c15-diagnostics.records :as records]
+            [gravity.c15-diagnostics.validation :as validation]))
 (defn capability-proof [configuration artifact]
-  (let [diagnostics (get-in artifact [:diagnostic-stream :diagnostics])]
-    {:c14-lowering-input-verified? (= :complete (get-in artifact [:c14-lowering-artifact :capability-based-proof :status]))
+  (let [diagnostics (get-in artifact [:diagnostic-stream :diagnostics])
+        checks {:c14-lowering-input-verified? (= :complete (get-in artifact [:c14-lowering-artifact :capability-based-proof :status]))
      :diagnostic-schema-complete? (= :complete (get-in artifact [:diagnostic-schema :status]))
      :diagnostic-stream-deterministic? (= diagnostics (vec (sort-by :ordering-key diagnostics)))
      :stable-ids? (every? #(= (:diagnostic-id %) (records/stable-id (dissoc % :diagnostic-id :ordering-key))) diagnostics)
+     :phase-context-valid? (every? validation/context-valid? diagnostics)
      :locations-and-origins-linked?
-     (every? #(and (get-in % [:primary :span]) (get-in % [:primary :syntax-id]) (get-in % [:primary :artifact])
+     (every? #(and (validation/primary-valid? %)
                     (or (not (:generated? %)) (and (seq (:origin-chain %))
                                                     (some (fn [related] (= :generated-by (:role related))) (:related %))))) diagnostics)
      :facts-structured? (every? #(and (map? (:facts %)) (seq (:facts %))) diagnostics)
@@ -18,5 +20,5 @@
                              (set (map :renderer (:rendering-records artifact))))
      :golden-fixtures-matched? (every? #(= :matched (:status %)) (:golden-diagnostic-fixtures artifact))
      :diagnostics-covered? (= (set (:c15-diagnostics-diagnostic-ids configuration))
-                               (set (map :rule (:golden-diagnostic-fixtures artifact))))
-     :status :complete}))
+                               (set (map :rule (:golden-diagnostic-fixtures artifact))))}]
+    (assoc checks :status (if (every? true? (vals checks)) :complete :incomplete))))
