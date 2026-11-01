@@ -11,18 +11,18 @@
       (doseq [path (reverse (vec (.toArray paths)))]
         (Files/deleteIfExists ^Path path)))))
 
-(defmacro with-temporary-directory
-  [[binding] & body]
-  `(let [~binding (Files/createTempDirectory
+(defn- with-temporary-directory
+  [thunk]
+  (let [directory (Files/createTempDirectory
                    "gravity-c2-source-snapshot-test-"
                    (make-array java.nio.file.attribute.FileAttribute 0))]
-     (try
-       ~@body
-       (finally
-         (delete-tree! ~binding)))))
+    (try
+      (thunk directory)
+      (finally
+        (delete-tree! directory)))))
 
 (deftest accepted-different-sources-are-hashed-once-each
-  (with-temporary-directory [directory]
+  (with-temporary-directory (fn [directory]
     (let [source-a (.resolve directory "a.gravity")
           source-b (.resolve directory "b.gravity")
           bytes-a (.getBytes "first source\n" StandardCharsets/UTF_8)
@@ -46,10 +46,10 @@
            (is (= (str "sha256:" (digest bytes-a))
                   (:bytes-hash snapshot-a)))
            (is (= (str "sha256:" (digest bytes-b))
-                  (:bytes-hash snapshot-b))))))))
+                  (:bytes-hash snapshot-b)))))))))
 
 (deftest changed-second-read-bytes-are-rejected
-  (with-temporary-directory [directory]
+  (with-temporary-directory (fn [directory]
     (let [source (.resolve directory "mutating.gravity")
           bytes (.getBytes "stable source\n" StandardCharsets/UTF_8)
           read-var (ns-resolve 'gravity.c2-pass-cache 'read-channel-exact!)
@@ -77,4 +77,4 @@
                   (catch Throwable throwable
                     throwable))))]
         (is (= 2 @reads))
-        (is (= "C16-KEY" (:id (ex-data error))))))))
+        (is (= "C16-KEY" (:id (ex-data error)))))))))
