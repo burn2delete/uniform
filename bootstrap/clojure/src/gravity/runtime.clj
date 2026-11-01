@@ -1,9 +1,9 @@
 (ns gravity.runtime
-  "Temporary hosted Stage2 invocation, arithmetic, comparison and execution records; operations are trusted seed dependencies.")
+  "Temporary hosted Stage2 invocation, numeric/value operations and execution records; operations are trusted seed dependencies.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
-    :contract-boundary :hosted-seed-stage2-invocation-arithmetic-and-comparison
+    :contract-boundary :hosted-seed-stage2-invocation-and-value-operations
     :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
     :public-api
     {hosted-add
@@ -42,6 +42,16 @@
      {:arglists ([args]) :admission :none :hosted-seed-only? true
       :arity-validation-owner :existing-builtin-dispatcher
       :error-translation-owner :existing-builtin-dispatcher}
+     hosted-str
+     {:arglists ([args]) :admission :none :hosted-seed-only? true}
+     fail-builtin-error!
+     {:arglists ([fail-var plan callee ex]) :admission :none :hosted-seed-only? true
+      :operation-vars [fail-var] :transport-owner :supplied-failure-operation}
+     hosted-get
+     {:arglists ([fail-builtin-error-var plan collection key]
+                [fail-builtin-error-var plan collection key not-found])
+      :admission :none :hosted-seed-only? true :operation-vars [fail-builtin-error-var]
+      :error-selection :late-after-lookup-failure :arity-validation-owner :existing-callers}
      execute-function-scoped
      {:arglists ([runtime plan callee args public-invocation-scope operations]) :admission :none
       :operation-keys [:native-scope! :module-entry-scope! :registered-scope? :assert-function-entry!
@@ -59,12 +69,13 @@
       :entry-protocol :legacy-main-arity-and-instruction-runner
       :adds-function-entry-scope-guard? false}}
     :artifact-inputs [:runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
-                      :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :unchanged-host-failure]
-    :diagnostic-ownership {:stage [L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY]
+                      :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments :trusted-host-value-arguments
+                      :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure]
+    :diagnostic-ownership {:stage [L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
                            :existing-operations [L2-FUNCTION-ARITY :recur-arity :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-semantics
-                                                 :builtin-arity :builtin-host-error-translation]}
+                                                 :builtin-arity :builtin-host-error-selection-and-transport]}
     :dependency-direction {:requires [clojure.core] :consumed-by [gravity.bootstrap]
                            :forbids [gravity.bootstrap gravity.cli gravity.release]}
     :scope-and-authority-checks :existing-seed-operations
@@ -72,7 +83,7 @@
     :canonical-runtime-manifest? false :stdout :existing-clojure-writer-capture
     :unsupported [:untrusted-callback-ingress :source-or-core-admission :public-plan-authentication
                   :runtime-family-selection :full-r1-r4-r11-r12-conformance :new-provider-authority
-                  :native-target-or-backend-execution :general-gravity-numeric-modes :canonical-gravity-equality-and-ordering :full-safe9-conformance
+                  :native-target-or-backend-execution :general-gravity-numeric-modes :canonical-gravity-equality-and-ordering :canonical-formatting-and-collection-semantics :full-safe9-conformance
                   :untrusted-numeric-carriers :numeric-proof-or-check-records :redaction-and-publication :performance
                   :migration :release :self-hosting :seed-retirement]})
 
@@ -261,5 +272,39 @@
     3 (>= (nth args 0) (nth args 1) (nth args 2))
     (apply >= args)))
 
-(doseq [operation [#'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(defn hosted-str
+  [args]
+  (case (count args)
+    0 ""
+    1 (str (nth args 0))
+    2 (str (nth args 0) (nth args 1))
+    3 (str (nth args 0) (nth args 1) (nth args 2))
+    (apply str args)))
+
+(defn fail-builtin-error!
+  [fail-var plan callee ex]
+  ((deref fail-var) "L2-BUILTIN-ERROR"
+         "stage2 runtime builtin call failed"
+         {:source-span {:source (get-in plan [:source :path])}
+          :function callee
+          :cause-message (.getMessage ex)
+          :remediation "Keep builtin inputs inside the checked stage2 hosted-core runtime subset."}))
+
+(defn hosted-get
+  ([fail-builtin-error-var plan collection key]
+   (try
+     (get collection key)
+     (catch clojure.lang.ExceptionInfo ex
+       (throw ex))
+     (catch Exception ex
+       ((deref fail-builtin-error-var) plan 'get ex))))
+  ([fail-builtin-error-var plan collection key not-found]
+   (try
+     (get collection key not-found)
+     (catch clojure.lang.ExceptionInfo ex
+       (throw ex))
+     (catch Exception ex
+       ((deref fail-builtin-error-var) plan 'get ex)))))
+
+(doseq [operation [#'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
