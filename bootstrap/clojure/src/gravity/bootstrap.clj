@@ -8,6 +8,7 @@
             [gravity.mir]
             [gravity.lowering]
             [gravity.runtime]
+            [gravity.standard-library]
             [gravity.ownership :as ownership]
             [gravity.backend.js]
             [gravity.backend.jvm]
