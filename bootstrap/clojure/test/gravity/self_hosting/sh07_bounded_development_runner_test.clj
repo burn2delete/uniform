@@ -162,6 +162,53 @@
     (is (true? (:complete? empty)))
     (is (false? (:truncated? empty)))))
 
+(deftest post-launch-capture-setup-failure-cleans-the-owned-process
+  (doseq [failure-stream [:stdout :stderr]]
+    (let [alive (atom true)
+          handle (reify java.lang.ProcessHandle
+                   (pid [_] 7001)
+                   (isAlive [_] @alive)
+                   (descendants [_] (java.util.stream.Stream/empty))
+                   (destroy [_] (reset! alive false) true)
+                   (destroyForcibly [_] (reset! alive false) true)
+                   (onExit [this]
+                     (java.util.concurrent.CompletableFuture/completedFuture this)))
+          empty-stream (java.io.ByteArrayInputStream. (byte-array 0))
+          process (proxy [Process] []
+                    (toHandle [] handle)
+                    (getInputStream []
+                      (if (= :stdout failure-stream)
+                        (throw (java.io.IOException. "stdout capture setup failed"))
+                        empty-stream))
+                    (getErrorStream []
+                      (if (= :stderr failure-stream)
+                        (throw (java.io.IOException. "stderr capture setup failed"))
+                        empty-stream))
+                    (getOutputStream [] (java.io.ByteArrayOutputStream.))
+                    (waitFor
+                      ([] 0)
+                      ([_ _] true))
+                    (exitValue [] (if @alive
+                                    (throw (IllegalThreadStateException.))
+                                    1))
+                    (destroy [] (reset! alive false))
+                    (destroyForcibly [] (reset! alive false))
+                    (isAlive [] @alive))
+          start-var (ns-resolve 'gravity.process-supervision 'start-process)
+          thrown (with-redefs-fn
+                   {start-var (fn [& _] process)}
+                   #(try
+                      (runner/run-process!
+                       "c6-contract"
+                       {:timeout-ms 1000
+                        :child-command-fn (fn [_ _] ["/bin/true"])})
+                      nil
+                      (catch Throwable error error)))]
+      (is (instance? java.io.IOException thrown) thrown)
+      (is (false? @alive)
+          (str "capture setup failure must clean the " (name failure-stream)
+               " process")))))
+
 (deftest failed-process-observation-cannot-claim-complete-cleanup
   (let [cleanup (ns-resolve 'gravity.self-hosting.sh07-bounded-development-runner
                             'cleanup-process-tree!)

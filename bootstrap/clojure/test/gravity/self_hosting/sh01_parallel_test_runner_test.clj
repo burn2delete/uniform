@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh01-parallel-test-runner-test
   (:require [clojure.test :refer [deftest is testing]]
+            [gravity.process-supervision :as process-supervision]
             [gravity.self-hosting.sh01-parallel-test-runner :as runner]))
 
 (defn- plan
@@ -661,6 +662,32 @@
       this)
     (isAlive [] @alive)))
 
+(deftest bounded-descendant-observation-stops-before-realizing-the-stream
+  (let [next-count (atom 0)
+        root-ref (atom nil)
+        root (reify java.lang.ProcessHandle
+               (pid [_] 1)
+               (isAlive [_] false)
+               (descendants [_]
+                 (.limit
+                  (java.util.stream.Stream/generate
+                   (reify java.util.function.Supplier
+                     (get [_]
+                       (swap! next-count inc)
+                       @root-ref)))
+                  5))
+               (destroy [_] false)
+               (destroyForcibly [_] false)
+               (onExit [this]
+                 (java.util.concurrent.CompletableFuture/completedFuture this)))]
+    (reset! root-ref root)
+    (let [result (process-supervision/handle-descendants root 3)]
+      (is (= 3 (count (:handles result))) result)
+      (is (true? (:truncated? result)) result)
+      (is (nil? (:error result)) result)
+      (is (= 4 @next-count)
+          "The bounded iterator may inspect only one handle beyond its limit"))))
+
 (deftest retained-handles-survive-natural-exit-and-observe-late-grandchildren
   (let [events (atom []) root-alive (atom true) child-alive (atom true) late-alive (atom true)
         late (injected-owned-handle 3 late-alive (constantly []) events
@@ -702,7 +729,11 @@
           "The interface cannot account for a handle absent from every observation")
       (is (= :unknown (:descendant-coverage result)))
       (is (not (true? (:cleanup-complete? result))))
-      (is (not (true? (get-in result [:cleanup :complete?])))))))
+      (is (not (true? (get-in result [:cleanup :complete?]))))
+      (when missing?
+        (is (not= :passed (:status result)) result)
+        (is (:cleanup-failed? result) result)
+        (is (false? (:tracked-owned-processes-terminal? result)) result)))))
 
 (deftest retained-finalizer-refuses-foreign-token-and-thread
   (let [alive (atom false) events (atom [])

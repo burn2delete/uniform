@@ -300,6 +300,7 @@
            (and (empty? alive) (not root-alive))
            (let [reaped (mapv #(reap! % deadline owned) observed)
                  reaped? (and (every? true? reaped)
+                              (nil? @(:discovery-error owned))
                               (nil? @(:cleanup-error owned)))]
              {:status (if reaped? :tracked-clean :failed)
               :complete? (when-not reaped? false)
