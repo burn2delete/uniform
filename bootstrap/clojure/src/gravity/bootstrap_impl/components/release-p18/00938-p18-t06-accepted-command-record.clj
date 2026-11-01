@@ -62,6 +62,71 @@
           stdout-matches?
           seedless-artifact?)}))
 
+(defn- p18-t06-canonical-accepted-fixture
+  [record]
+  (some #(when (= (:fixture %) (:fixture record)) %)
+        p18-t06-accepted-fixtures))
+
+(defn- p18-t06-successful-command-result?
+  [result]
+  (and (map? result)
+       (= 0 (:exit result))
+       (string? (:out result))
+       (string? (:err result))))
+
+(defn p18-t06-accepted-command-proof-valid?
+  [record]
+  (try
+    (let [fixture (p18-t06-canonical-accepted-fixture record)
+          expected-stdout (:expected-stdout fixture)
+          check-result (:check-result record)
+          run-result (:run-result record)
+          compile-result (:compile-result record)
+          executable-result (:executable-result record)
+          inspect-result (:inspect-result record)
+          version-result (:version-result record)
+          compile-artifact (p18-t04-read-edn-stdout compile-result)
+          inspected-artifact (p18-t04-read-edn-stdout inspect-result)
+          recorded-compile-artifact (:compile-artifact record)
+          compile-artifact-keys
+          [:kind :task :status :executable-path
+           :release-binary-path :clojure-seed-boundary?
+           :reproducible-release? :signed-release?
+           :governance-approved?]
+          artifact-inspection-final-release?
+          (and (map? inspected-artifact)
+               (false? (:clojure-seed-boundary? inspected-artifact))
+               (true? (:reproducible-release? inspected-artifact))
+               (true? (:signed-release? inspected-artifact))
+               (true? (:governance-approved? inspected-artifact)))
+          matches-expected?
+          (and (map? fixture)
+               (= expected-stdout (:expected-stdout record))
+               (= (:output-path fixture) (:output-path record))
+               (= (:module fixture) (:expected-module record))
+               (every? p18-t06-successful-command-result?
+                       [check-result run-result compile-result
+                        executable-result inspect-result version-result])
+               (= expected-stdout (:out run-result))
+               (= expected-stdout (:out executable-result))
+               (= (select-keys compile-artifact compile-artifact-keys)
+                  recorded-compile-artifact)
+               artifact-inspection-final-release?
+               (true? (:executable? record))
+               (str/includes? (:out version-result)
+                              ":phase \"P18-T06\""))]
+      (and (map? fixture)
+           (= artifact-inspection-final-release?
+              (:artifact-inspection-final-release? record))
+           (= (= expected-stdout (:out executable-result))
+              (:stdout-matches? record))
+           (= matches-expected? (:matches-expected? record))))
+    (catch InterruptedException error
+      (.interrupt (Thread/currentThread))
+      (throw error))
+    (catch Exception _
+      false)))
+
 (defn p18-t06-rejected-command-record
   [{:keys [fixture output-path expected-diagnostic]}]
   (let [result (p18-t06-shell "bin/gravity" "compile" fixture "-o"
@@ -76,6 +141,37 @@
      :stable-diagnostic-through-final-release? diagnostic-present?
      :matches-expected? (and (= 1 (:exit result))
                              diagnostic-present?)}))
+
+(defn p18-t06-rejected-command-proof-valid?
+  [record]
+  (try
+    (let [fixture
+          (some #(when (= (:fixture %) (:fixture record)) %)
+                p18-t06-rejected-command-fixtures)
+          result (:result record)
+          expected-diagnostic (:expected-diagnostic fixture)
+          diagnostic-present?
+          (and (map? result)
+               (= 1 (:exit result))
+               (string? (:err result))
+               (str/includes? (:err result) expected-diagnostic))
+          matches-expected?
+          (and (= :rejected (:status record))
+               (= (:output-path fixture) (:output-path record))
+               (= expected-diagnostic (:expected-diagnostic record))
+               (= ["bin/gravity" "compile" (:fixture fixture)
+                   "-o" (:output-path fixture)]
+                  (:command record))
+               diagnostic-present?)]
+      (and (map? fixture)
+           (= diagnostic-present?
+              (:stable-diagnostic-through-final-release? record))
+           (= matches-expected? (:matches-expected? record))))
+    (catch InterruptedException error
+      (.interrupt (Thread/currentThread))
+      (throw error))
+    (catch Exception _
+      false)))
 
 (defn p18-t06-final-release-diagnostics
   [fixture candidate]
@@ -121,14 +217,20 @@
                  (:release-boundary-components boundary))})])
       (when-not (and (seq accepted)
                      (seq rejected)
-                     (every? :matches-expected? accepted)
-                     (every? :matches-expected? rejected))
+                     (every? p18-t06-accepted-command-proof-valid?
+                             accepted)
+                     (every? p18-t06-rejected-command-proof-valid?
+                             rejected))
         [(p18-t06-diagnostic-record
           "P18T06004" fixture candidate
           {:accepted-failed
-           (mapv :fixture (remove :matches-expected? accepted))
+           (mapv :fixture
+                 (remove p18-t06-accepted-command-proof-valid?
+                         accepted))
            :rejected-failed
-           (mapv :fixture (remove :matches-expected? rejected))})])
+           (mapv :fixture
+                 (remove p18-t06-rejected-command-proof-valid?
+                         rejected))})])
       (when-not (and sbom
                      (true? (:complete? sbom))
                      (seq (:components sbom))
