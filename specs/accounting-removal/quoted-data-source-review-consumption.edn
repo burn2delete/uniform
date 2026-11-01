@@ -1,0 +1,431 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :semantic-assessment
+ {:test-definitions
+  [:4097-wide-children-and-4098-shape
+   :192-deep-193-shape-exact-leaf-path
+   :source-tamper
+   :malformed-carrier
+   :cyclic-and-duplicate-childIDs
+   :executable-payload
+   :unsupported-numerics
+   :opaque-unused-DATA-rejection
+   :zero-rendering-callback-assertion],
+  :Vector-caller
+  :only-quote-work-telemetry-removed-all-other-projection-logic-retained,
+  :diagnostics
+  :per-quote-independent-errors-and-later-valid-type-products-retained,
+  :retired-tests
+  :only-quote-payment-and-deliberately-insufficient-quote-allowance-outcomes-removed,
+  :other-caller-accounting :still-unresolved,
+  :transitive-native-helper-and-public-Core-authentication :unproven,
+  :quote-traversal
+  :iterative-continuations-preserve-child-order-parent-syntax-joins-ancestorIDs-values-types-paths-and-shape-size,
+  :private-cold-caller
+  :only-quote-budget-call-spend-and-budget-specific-reason-removed-malformed-quote-rejection-and-type-retained,
+  :callback-qualification
+  :opaque-test-counts-rendering-only-no-equals-hash-native-or-target-callback-execution-proof,
+  :native-source-restrictions
+  [:actual-native-header-protocol
+   :metadata
+   :unsupported-class
+   :symbol-name
+   :foreign-Map-comparator
+   :List-tail
+   :zero-ratio-denominator
+   :malformed-native-extent
+   :ancestor-identity-cycle]},
+ :source-equality
+ {:all-other-C7-definitions :conserved,
+  :recursive-file :single-exact-test-replacement,
+  :shared-carrier-and-public-verifier :unchanged,
+  :C7-wholefile
+  :exact-quote-family-block-and-two-caller-reconstruction,
+  :native5 :entire-historical-definitions-identical,
+  :all-functional-fixtures-and-other-tests :conserved,
+  :test-three-bodies :raw-identical-with-history-including-comments,
+  :other-parent-files-including-Effects-emitter-runtime
+  :same-blobs-and-modes,
+  :quote12
+  :entire-historical-definitions-with-only-four-sh08-carrier-preflight-to-sh08-vf-original-data-symbol-substitutions},
+ :tree "5daf1c0d0f690a4557c362fc7203ebe589570768",
+ :execution
+ {:source-and-data-only true,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :target-forms-and-test-proxies-evaluated false,
+  :native-helper-provider-compiler-kernel-runtime-and4097targetallocation
+  :UNRUN,
+  :APPROVE :not-performed,
+  :shared-writes :none},
+ :counts
+ {:candidate-tree-entries 10065,
+  :retired-budget-entrypoints 2,
+  :native-DATA 5,
+  :direct-external-C7-dependencies 8,
+  :complete-historical-test-bodies 3,
+  :checks 7698,
+  :nonidentical-guard-adapted-definitions 4,
+  :effective-independent-corruption-refusals 57,
+  :parent-tree-entries 10063,
+  :complete-historical-definitions 17,
+  :guard-substitution-sites 4,
+  :changed-paths 5,
+  :quote-definitions 12,
+  :retired-authentication-allowance-assertions 2,
+  :retired-recursive-payment-assertions 10,
+  :additional-callers 2},
+ :consumer-verification
+ :receipt-checker-six-artifacts-frozen-tree-inputs-seventeen-equations-tests-and-dependencies,
+ :consumer-source-sha256
+ "c4bc6bf025f45ebe8972b9e919ae7e86d03830191e237e6b9cc71066cf04ddce",
+ :parent "b7347f6b1b978dbc318e88dfe50e7917f7b1e318",
+ :candidate "1c0d699f06372fe3c52fa003f53aa38ffd40d07c",
+ :historicalCI
+ {:record-source "3c8bc9d50eef0afba309aa10c11a88af4088d6bb",
+  :path "specs/accounting-removal/quoted-data-frozen-ci.json",
+  :sha256
+  "f56160d3c084f6d2000e038e7c91e20a4ad225b05f9f8b584ea686efa01d719c",
+  :run 40927469385,
+  :successes 7,
+  :configured-skips 2,
+  :qualification
+  :existing-exact-head-record-only-no-rerun-no-semantic-credit},
+ :blocking-findings [],
+ :author-writers
+ {:generator "/tmp/acc01-quoted-data-validation.clj",
+  :sha256
+  "fec6f8069e1771e1306b36d791ede80f72533920a350f1754978e72135df84b5",
+  :intake-generator "/tmp/acc01-quoted-review-intake.clj",
+  :intake-generator-sha256
+  "89147a6ee95caf021d0bca842070ae08f6fcb3dd51f02d5d396270d7d083a7ed",
+  :action :inspected-and-hashed-never-executed},
+ :reproduction
+ {:checker "/tmp/pr591-independent-source-review.clj",
+  :checker-sha256
+  "db06f894fe839ad3742cdcc6b30dde2bbd2b3fba3dafcf78f06d7b8a3482584c",
+  :artifacts
+  [{:path
+    "/tmp/pr591-independent-source-review/definition-assessments.edn",
+    :sha256
+    "dd08de24679b790ad16eb454b37a6c8ef602e15543c8ff0a2fc85ad47e887593"}
+   {:path "/tmp/pr591-independent-source-review/test-assertions.edn",
+    :sha256
+    "08f5255550f83dc227f86e632fc7a0b19f93c50c8be53a43122006a4f888830a"}
+   {:path
+    "/tmp/pr591-independent-source-review/direct-dependencies.edn",
+    :sha256
+    "3f894db7c7f20c02bca28e16a9c4533c26e37802701d3e9a44df50e4dfb173ed"}
+   {:path "/tmp/pr591-independent-source-review/negative-controls.edn",
+    :sha256
+    "a1f98dd0e979c8b176e0d00baceee9736e08193ace43d64af5ae43c198033863"}
+   {:path
+    "/tmp/pr591-independent-source-review/recursive-payment-assertion-disposition.edn",
+    :sha256
+    "d9571e1274e64634f3a9cf4b1d1ff16cafd6591e961074f9e7c16d4331aaf14c"}
+   {:path
+    "/tmp/pr591-independent-source-review/functional-payment-assertion-disposition.edn",
+    :sha256
+    "cbc0d06d24bb9523fcd58a8b745d0dea191baf83f4c8bca7138053e9dc0dec5e"}]},
+ :schema-version 1,
+ :genuine-source-native-compiler-effects-lowering-runtime :UNRUN,
+ :delivery
+ :returned-here-for-existing-authorized-readback-no-denied-message-retry,
+ :counter-reporting
+ {:sealed-checks 7698,
+  :final-handoff-checks 7699,
+  :credited :sealed-7698-only},
+ :harness-history
+ ["Raw definition extraction tightened to require complete symbol boundary, preventing prefix-name collisions."
+  "Mode-corruption control exposed initial allowed-path mode gap in the checker; added actual all-existing-path mode equality before sealing. No candidate defect was found."
+  "Raw lint records differ in temporary-root filenames and source positions. Corrected baseline comparison normalizes those explicit fields; raw-record identity is not claimed."],
+ :governing-policy
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/011-l1-surface-syntax-specification.md",
+   :sha256
+   "e31900e670779fdc908d2059e43df84dd9f5543b73aefa88114cc13d0bcc9c39"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :direct-dependency-pins
+ [{:name sh08-bm-error,
+   :form-sha256
+   "385615c4ea89c1ff2872480f0dae2aed4562f792e35e80df3c28202b9c7c55d2",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-bm-select,
+   :form-sha256
+   "ba309d0d96ee7f91242071340d07dadcd239c529dbd38c7f1381d6d49b7c99b6",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-bm-source-node,
+   :form-sha256
+   "37647ccd0a7269dc01bea61e85b4af3d1e679812a593ca3ad707baaf020c31d7",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-character-carrier?,
+   :form-sha256
+   "989798e035a8828d30d43fae9e599547e28508b17bcd8e4ca70fa83a20633c6c",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-even-count?,
+   :form-sha256
+   "95e3efea21e6346fda5a219a67c3eae014c01b58ddf3003ba14db379e3330ac7",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-ft-all-true?,
+   :form-sha256
+   "e490157e9d5ffb1425fd53e173c1ee8697244e32ebba91d6a39b42dc2e4e966a",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-primitive-type-from-literal-kind,
+   :form-sha256
+   "314ea7a18714ff172c4535724a8d0752f5462682464d6f2bc5ecd934841d729a",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}
+  {:name sh08-sha256-id?,
+   :form-sha256
+   "28b09892cf1074ff4bf671c9961bf7bcec9e186c469fbf65de8736a589289b6a",
+   :parent-identical true,
+   :historical-identical true,
+   :transitive-closure :not-proved}],
+ :intake
+ {:author "01a183dd-7208-7d33-a336-7483fd90e358",
+  :coordinator "01a183cc-8cd1-735d-bf59-055c4b5f0039",
+  :helper "01a18424-d867-7c12-8a04-07484900100c",
+  :other-reviewers
+  ["01a18529-b6ff-77a3-b5de-835ef9d4b5ab"
+   "01a18528-c7af-75c1-a399-5eb23dbbe8e4"],
+  :exact-duplicate-or-author-conflict :none-observed,
+  :prior638-B-637-goals :closed,
+  :scope
+  :new591-production-source-adaptation-not634fixture-acceptance-or-whole569-e7-review,
+  :old-e7-Build68-ACC08-fixedwidth-OWN-Policy14-Metadata-denials
+  :stopped-not-retried},
+ :inputs
+ {:census
+  {:path "specs/accounting-removal/quoted-data-census.edn",
+   :sha256
+   "d1edc82f2c06c80f1777c5528a67febcb5d308b05bec8ec6279e654fe91b1687"},
+  :five-paths
+  [{:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :entry "100644 blob 487c8f1278b4dbfdd8b395b67e63522cc9d9954f",
+    :sha256
+    "e3592dcde07b806f1bc76caf253d60bba11c3f62beb5c9359a3a877787201854"}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_recursive_function_type_test.clj",
+    :entry "100644 blob dc4d88a38a8263205c15d1b2b8558425a3901f8d",
+    :sha256
+    "5c62fdeea442baec4364adfe99c026ce68166cf64ac978e7d38ae1b184f2836a"}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :entry "100644 blob 28a12c5f5f09c075f3efde63c8e3ef7874be47a1",
+    :sha256
+    "43fec6998510d94ec3686f77b9cf4358234be9e59660b40c5cbe86958e9bcc7e"}
+   {:path "specs/accounting-removal/quoted-data-census.edn",
+    :entry "100644 blob c64262c8f1d391693280c3b9437a638237b54578",
+    :sha256
+    "d1edc82f2c06c80f1777c5528a67febcb5d308b05bec8ec6279e654fe91b1687"}
+   {:path "specs/accounting-removal/quoted-data.md",
+    :entry "100644 blob ab6c8c120b0b573b1ab8b6ca3df29c4337cc837f",
+    :sha256
+    "ad330d36d3638de84b5763b30ca2acb4deae99e34e65fe2fa66efa89d28434bb"}],
+  :author-intake
+  {:source "3c8bc9d50eef0afba309aa10c11a88af4088d6bb",
+   :path
+   "specs/accounting-removal/quoted-data-frozen-review-intake.edn",
+   :sha256
+   "9dbc2c8257d5cd8507a7ceedce947a99236c805f467507a75f7dae82b059f897"}},
+ :lint
+ {:unchanged-fields
+  :filename-suffix-level-type-message-and-all-other-attributes,
+  :existing-corrected-warning-finding-multisets
+  :verified-after-filename-root-and-source-location-normalization,
+  :independent-rerun false,
+  :initial-wrong-path-2-error-capture
+  {:sha256
+   "c46271eff1e0143c4be48512b8c75fd2928ae75942072e5a3662a3fee7e02ee2",
+   :retained-as-failed-history true},
+  :raw-location-bearing-finding-multisets :not-identical,
+  :normalized-fields [:filename-root :row :end-row :col :end-col],
+  :base-corrected-sha256
+  "d7039aa1dab8902cfa9241e1c78322266c14646229c6945de051d3c040b054d1",
+  :result :reported-0-errors-73-warnings-same-corrected-baseline,
+  :current-sha256
+  "a5eda045f2060180a676e158ac2176ec0e8261ab0279699eb5f5c88f3986f385"},
+ :kind :quoted-data-independent-source-review-consumption,
+ :receipt-sha256
+ "178e7bd4b2d17bc21e237af9cc9d68676bdc47fe00cd770a9baebf8e63e49f6e",
+ :definition-assessments
+ [{:name sh08-vf-data-failure,
+   :historical-form-sha256
+   "4f54864cf84791a8c4a1102699f88ae41ca406578c0eed6a935993bc41ef356a",
+   :candidate-form-sha256
+   "4f54864cf84791a8c4a1102699f88ae41ca406578c0eed6a935993bc41ef356a",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-vf-ancestor?,
+   :historical-form-sha256
+   "fd4ebeda311495e19d97a39dbd8bd54d2226b32c7307d5f79f5cbe8fb8416c27",
+   :candidate-form-sha256
+   "fd4ebeda311495e19d97a39dbd8bd54d2226b32c7307d5f79f5cbe8fb8416c27",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-vf-header-failure,
+   :historical-form-sha256
+   "c089f76ec82d68e3b88a9300b7344f75c88cff3c9fdc6eb386e5f5be5a0e8e70",
+   :candidate-form-sha256
+   "c089f76ec82d68e3b88a9300b7344f75c88cff3c9fdc6eb386e5f5be5a0e8e70",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-vf-original-expand-indexed,
+   :historical-form-sha256
+   "28e5a52473d995cd449f3bba4c783505f6ac579a7c554b01de7cfedc516cc37a",
+   :candidate-form-sha256
+   "28e5a52473d995cd449f3bba4c783505f6ac579a7c554b01de7cfedc516cc37a",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-vf-original-data,
+   :historical-form-sha256
+   "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+   :candidate-form-sha256
+   "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-failure,
+   :historical-form-sha256
+   "bf3d255f85afbaafabe3dc49dcb43515a72941dd52b2c9752752407248a06433",
+   :candidate-form-sha256
+   "bf3d255f85afbaafabe3dc49dcb43515a72941dd52b2c9752752407248a06433",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-scalar-valid?,
+   :historical-form-sha256
+   "07058e4e841843418ae692ae7e62d18f15aea9c6b267c5e5e29543e52e1d819f",
+   :candidate-form-sha256
+   "07058e4e841843418ae692ae7e62d18f15aea9c6b267c5e5e29543e52e1d819f",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-collection-value-valid?,
+   :historical-form-sha256
+   "5fc71ec1f0e7e93cbe27628095fabf68229ea706bca3a759a8b56423e568a2f9",
+   :candidate-form-sha256
+   "5fc71ec1f0e7e93cbe27628095fabf68229ea706bca3a759a8b56423e568a2f9",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-distinct-source-ids?,
+   :historical-form-sha256
+   "0db1473d3761732984c67f9dbd72798722ec428c3826babe14092f63215b36e5",
+   :candidate-form-sha256
+   "0db1473d3761732984c67f9dbd72798722ec428c3826babe14092f63215b36e5",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-collection,
+   :historical-form-sha256
+   "f0ac97956b97bfde1cb03cf276deb7eb9d0bf0f9975aaa04bfd4193b8b13a48b",
+   :candidate-form-sha256
+   "f0ac97956b97bfde1cb03cf276deb7eb9d0bf0f9975aaa04bfd4193b8b13a48b",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-data,
+   :historical-form-sha256
+   "02c05ff641e859adf111f661bb5dd0a455dd1ede3f98debbfe25a9db059e8d13",
+   :candidate-form-sha256
+   "02c05ff641e859adf111f661bb5dd0a455dd1ede3f98debbfe25a9db059e8d13",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-scalar,
+   :historical-form-sha256
+   "109bc733127ba153393a186fad849bc1a8f15b45bc78ffd0ba4cc1ef2f0deec2",
+   :candidate-form-sha256
+   "109bc733127ba153393a186fad849bc1a8f15b45bc78ffd0ba4cc1ef2f0deec2",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-node-valid-data,
+   :historical-form-sha256
+   "5f459c1bda4ca056758b93926be3ac698a76c57866a7d9101a2a5c1ca4a02ec7",
+   :candidate-form-sha256
+   "e3b98f5eea4416b9c5cec5712e147ae05456e87bf3dfa2c5e2bcb9bc6db2d466",
+   :native-guard-substitutions 1,
+   :historical-identical false,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-node,
+   :historical-form-sha256
+   "1544243a1032d866dda4d43a984da441c453df24f8e9019cf4958c9feb0418f2",
+   :candidate-form-sha256
+   "bae9229be685fd1ca60002ac01ade4c656894bc24b5a6a3195574278ae087fd2",
+   :native-guard-substitutions 1,
+   :historical-identical false,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-executable-data,
+   :historical-form-sha256
+   "fdc8fa5c4969b7558c1a2295d26a519728cc1a3a0dd9cdf178d23406c3d43041",
+   :candidate-form-sha256
+   "fdc8fa5c4969b7558c1a2295d26a519728cc1a3a0dd9cdf178d23406c3d43041",
+   :native-guard-substitutions 0,
+   :historical-identical true,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-products-valid-data,
+   :historical-form-sha256
+   "e67b95408cb59cd22601786943054cf95bc53dd9da38d6c961d6847f04d0ba15",
+   :candidate-form-sha256
+   "9e992cefd7c11b9da23a9c778c28cb62de6f7a00e525aec3bf076763a1bfe08a",
+   :native-guard-substitutions 1,
+   :historical-identical false,
+   :expected-guard-call sh08-vf-original-data}
+  {:name sh08-qd-products,
+   :historical-form-sha256
+   "e704f964b5a3a220abd35920a553ea92ca027cb7989d7600b91bd3f202538912",
+   :candidate-form-sha256
+   "5f8b2c883e8ff7a1453b92f3efd606820e3e0510ccdd4301ba60c3ca7127d69b",
+   :native-guard-substitutions 1,
+   :historical-identical false,
+   :expected-guard-call sh08-vf-original-data}],
+ :whole-PR569-ACC01-PR502-disposition :incomplete,
+ :acceptance-limits
+ [:PR634fixture-PASS-not-production-acceptance
+  :parent593-595-637-638-ancestry-not-accepted
+  :no-actual-Core-or-Runtime-acceptance
+  :no-genuine-quoted-data-or-native-execution
+  :no-currentmain-composition-or-integration
+  :no-transitive-callgraph-closure
+  :no-shared-carrier-removal-or-public-verifier-arena-acceptance
+  :no-whole-C7-accounting-removal
+  :no-whole-ACC01-PR502-release-selfhosting-credit
+  :no-held-retry],
+ :reviewer "01a18528-ebbf-7033-bb47-501bd7e204d5",
+ :current-main-composition :UNRUN,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :decision :PASS-exact-source-adaptation-and-test-scope}

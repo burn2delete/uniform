@@ -1,0 +1,202 @@
+{:findings [],
+ :nonclaims
+ [:unchanged-historical-query-PASS
+  :genuine-owner-kernel-acceptance
+  :authenticated-source-admission
+  :Effects-emitter-runtime-composition
+  :transitive-or-helper-semantic-equivalence
+  :whole-ACC01-or-accounting-removal
+  :PR502-closure
+  :release
+  :self-hosting
+  :current-main-composition
+  :successor-CI-acceptance
+  :integration-or-preflight
+  :GitHub-APPROVE],
+ :candidate "70eba308480d5d09e85d1657bf1f3a7473f03228",
+ :genuine-controls :UNRUN,
+ :original-failures
+ {:reader-query {:test 7, :pass 257, :fail 5, :error 0},
+  :CI
+  {:baseline 0,
+   :run 40960649429,
+   :local-predecessor-lint :same-warning-reproduced,
+   :predecessor "bcf0bb4ba093a2634bf51b4541aa153040e333aa",
+   :verdict :NONPASS,
+   :rerun-or-cancel-action :none,
+   :remote-log-read :verified,
+   :finding
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+    :row 7,
+    :col 46,
+    :type :unused-referred-var,
+    :refer testing},
+   :blocking 1,
+   :job 123752212872}},
+ :independent-reader-results
+ {:scope :reader-source-comparisons-only,
+  :original-query
+  {:test 7, :pass 257, :fail 5, :error 0, :type :summary},
+  :candidate-results
+  [{:path
+    "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj",
+    :result {:test 2, :pass 223, :fail 0, :error 0, :type :summary}}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj",
+    :result {:test 4, :pass 167, :fail 0, :error 0, :type :summary}}
+   {:path
+    "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+    :result {:test 8, :pass 276, :fail 0, :error 0, :type :summary}}],
+  :totals {:test 14, :pass 666, :fail 0, :error 0},
+  :Bootstrap-loaded false,
+  :Gravity-code-executed false,
+  :production-sources :read-as-data-only},
+ :source-inspection
+ {:restored-contracts
+  "Private Map-route and List-construction files are complete historical copies. Their positive and drift/missing/duplicate/consumer-full-equality assertions remain intact. Dedicated private Map dispatch must be first, with exact predicate/delegate/argument shape and source evidence. No routing branch is merely searched for somewhere later.",
+  :List-query-adaptation
+  "All historical bytes survive except the nine recorded, unique raw substitutions. The two native-map helper aliases explicitly correspond to equal complete guard bodies. Repaired public/private Map-key routing and complete wrapper equality are asserted against actual current sources, replacing historical disagreement expectations. One added control checks unnormalized guard bodies, the actual native-header bridge and removal of private routing. This review neither repairs nor accepts production behavior.",
+  :semantic-refusals
+  "Source/proof/header/result keys, operand and argument shape, nonempty and head-proof conditions, retained runtime guards, no check-elision authority, malformed extraction and unknown helpers remain checked. Whole descriptors and consumer reconstructions remain fully equal, not selected-key comparisons. Parameter lists, numbers, keywords and unrecognized names are not normalized away. The removed accounting field :operand-type-work remains an explicit forbidden extra-field mutant; accounting removal does not excuse semantic validation or convert source parity into execution evidence. Existing protocol budget parameters remain source facts rather than newly accepted accounting policy.",
+  :caller-dependencies
+  "Eighteen direct contract/consumer/native-guard definition hashes plus complete files and explicit alias maps are recorded. The three native-map guard bodies match without normalization. This pins source correspondence only, without transitive helper or three-owner semantic equivalence.",
+  :lint-fix
+  "bcf0bb4b to70eba308 changes exactly one test-code import, plus the two evidence artifacts. All unrelated evidence fields, original query NONPASS record, source pins and result counts remain unchanged. The restoration-script provenance hash refresh is separately recorded. Every preexisting base Git blob/mode remains identical, including lint implementation, context/macro model, configuration and executor.",
+  :execution-boundary
+  "The three inspected suites require only Clojure reader/test utilities. Their Gravity inputs are read with evaluation disabled, not loaded. The historical query namespace was removed before the adapted suite loaded; Bootstrap remained absent before and after. Reader results do not establish authenticated source, Effects/emitter/runtime or genuine owner acceptance."},
+ :verified-input-pins
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/private_map_route_contract_test.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "70d6ba31a1eda4085d522c6c0bf97b3959d74bf7a88cecd9209bed85a8106ced"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_construction_contract_test.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "1e80fb01f61bac427efd01d684c558e7263517315b481939966061aa27407ca5"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/list_query_contract_test.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "856886bfada854ca9046cd4c84e236c09db7276e686b29b3fb13c07830ed14f8"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}
+  {:path
+   "specs/accounting-removal/reader-contract-controls-results.edn",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "fe6949f400286ec3b9a31a0c9794e2f4930c940f14c36fba535eecb77915d53d"}
+  {:path "specs/accounting-removal/reader-contract-controls.md",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "c119137108392aa4ecc2cf6906159b6d46d1dee1aed84c820a0ca5b2940071de"}
+  {:path "tools/ci/lint.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "c7476633d1a33b535a20f92a7796b19bfbf03a2676e0c775b8438e60c43b71f5"}
+  {:path "tools/ci/lint_context.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "5b33aab0e23574c18a49406b07d491d6b0a045c22da66a24bf940831638fa450"}
+  {:path "tools/ci/lint_macros.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "fac1feb7cbad2e2268580fcfe3b5250b7e27894b835a36a9f661fc87bb4ed6d4"}
+  {:path "tools/ci/run.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "e5bbfb784b95a83789d46ba9f5e93b690976239768390b24923baf235afb4cd5"}
+  {:path "tools/ci/kondo/config.edn",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "a876e184594beb5f9b485a92ed480ba75c4f582eb941fdcb0eb5f2ae7dd8b317"}
+  {:path "tools/ci/kondo/hooks/c2.clj",
+   :commit "70eba308480d5d09e85d1657bf1f3a7473f03228",
+   :sha256
+   "c732cc46c6686d69789cf8db800a4c4bd101db8c55d85a1867b7752e8b8a5413"}],
+ :main-integration :pending-coordinator,
+ :CI
+ {:candidate "70eba308480d5d09e85d1657bf1f3a7473f03228",
+  :successes 7,
+  :configured-skips 2,
+  :genuine-kernel-evidence false},
+ :consumption
+ {:receipt-tree-and-fourteen-input-pins :verified,
+  :new-execution false,
+  :owner-or-reviewer-message-sent false},
+ :structural-checks
+ {:production-bookends-identical true,
+  :baseline 0,
+  :strict-lint-policy-unchanged true,
+  :tree "5adafde0ec3dd4e0ac8bee94455f054c1dc00b09",
+  :current-lint-findings 0,
+  :negative-controls
+  [{:refused true,
+    :message "Expected one source contract",
+    :case :missing-definition}
+   {:refused true,
+    :message "Expected one source contract",
+    :case :duplicate-definition}
+   {:refused true,
+    :message "Changed collection-family dispatch",
+    :case :malformed-routing}
+   {:refused true,
+    :message ":exact-source-guard-conservation",
+    :case :unrecorded-semantic-edit}
+   {:refused true,
+    :message ":source-file-sha",
+    :case :forged-production-pin}
+   {:case :reader-eval-payload,
+    :refused true,
+    :message :reader-eval-disabled}],
+  :candidate "70eba308480d5d09e85d1657bf1f3a7473f03228",
+  :extra-source-control 1,
+  :only-unused-import-code-correction true,
+  :byte-exact-restored-original-files 2,
+  :genuine-owner :UNRUN,
+  :reader-passing-assertions 666,
+  :original-reader-NONPASS :reproduced-preserved,
+  :Bootstrap-loaded false,
+  :unnormalized-native-map-bodies-identical true,
+  :reader-tests 14,
+  :caller-source-pins 18,
+  :semantic-equivalence :not-conferred,
+  :original-CI-NONPASS :verified-preserved,
+  :all-existing-objects-modes-preserved 10069,
+  :predecessor "bcf0bb4ba093a2634bf51b4541aa153040e333aa",
+  :verdict :source-checks-pass,
+  :base "e047157d711652a5624012f0da7d6911ce086718",
+  :blocking 0,
+  :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+  :recorded-query-edits 9},
+ :kind :verified-reader-contract-review-consumption,
+ :receipt-sha256
+ "096b93e4afec7ea29d51a49fd3ae971a1bf5bec76b59522e8f84db6482f9c963",
+ :lint-qualification
+ "Independent pinned clj-kondo2025.10.23 finds zero errors/warnings/infos on the corrected four changed lint inputs. The unchanged canonical ci.lint/classify gives0baseline/0blocking for current findings, blocks the predecessor new-file warning and blocks an error even if presented as baseline. The full ci.lint/run-comparison! normal-executor result is retained as authored evidence and was not independently rerun; no policy/baseline/filter/config suppression was added.",
+ :verdict :scoped-source-pass,
+ :generator
+ {:language :clojure,
+  :sha256
+  "2b97c0cfbcd4a79e2334cfc9f02f8cb008efef6b0c9ac16518134cc8c0da11e8",
+  :preserved-locally true},
+ :integration-preflight :UNRUN,
+ :reviewer "01a18529-4c4f-79b1-94b3-d1132f06ed53",
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :current-main-composition :pending,
+ :pr 626,
+ :owner :ACC-01,
+ :candidate-tree "5adafde0ec3dd4e0ac8bee94455f054c1dc00b09"}

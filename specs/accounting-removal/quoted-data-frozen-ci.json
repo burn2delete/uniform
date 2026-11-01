@@ -1,0 +1,78 @@
+{
+  "kind": "quoted-data-frozen-ci-readback",
+  "owner": "ACC-01",
+  "pr": 591,
+  "candidate": "1c0d699f06372fe3c52fa003f53aa38ffd40d07c",
+  "tree": "5daf1c0d0f690a4557c362fc7203ebe589570768",
+  "checks": [
+    {
+      "id": 123638788388,
+      "name": "experimental-prerelease",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123638788388"
+    },
+    {
+      "id": 123636704127,
+      "name": "source-Core-readiness",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636704127"
+    },
+    {
+      "id": 123636702122,
+      "name": "experimental-source-snapshot",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636702122"
+    },
+    {
+      "id": 123636702071,
+      "name": "fresh-leaf-regressions / portable",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636702071"
+    },
+    {
+      "id": 123636702039,
+      "name": "static",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636702039"
+    },
+    {
+      "id": 123636702029,
+      "name": "darwin-unsupported-host",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636702029"
+    },
+    {
+      "id": 123636702009,
+      "name": "projections",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636702009"
+    },
+    {
+      "id": 123636701833,
+      "name": "bootstrap",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636701833"
+    },
+    {
+      "id": 123636701523,
+      "name": "fresh-leaf-regressions / darwin",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/40927469385/job/123636701523"
+    }
+  ],
+  "successes": 7,
+  "configured_skips": 2,
+  "independent_source_acceptance": "pending",
+  "genuine_quoted_data_native_compiler_runtime": "UNRUN",
+  "current_main_composition": "UNRUN",
+  "whole_PR502_disposition": "incomplete"
+}

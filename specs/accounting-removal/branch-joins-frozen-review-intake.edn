@@ -1,0 +1,106 @@
+{:changed-production-definitions
+ #{sh08-ij-derive
+   sh08-ij-normal-type
+   sh08-ft-infer-pass-products-prepared
+   sh08-ij-type-join
+   sh08-ij-element
+   sh08-ni-type-join
+   sh08-ij-step},
+ :parent-source-review
+ {:receipt-sha256
+  "443be064b52255cea0868d0eb127e321a35f2a27e1dc470212343578f6b518fa",
+  :sealed-checks 7905,
+  :refusals 97,
+  :scope :exact-PR593-source-adaptation-tests-only,
+  :inheritance :not-extended},
+ :tree "67c0a515f30c26b61fc6f0bc06d37f2ed28bd107",
+ :nonclaims
+ [:no-parent-stack-acceptance
+  :no-general-inference-accounting-removal
+  :no-transitive-behavior-proof
+  :no-PR637-638-review-inheritance
+  :no-whole-ACC01-PR502-closure],
+ :candidate "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+ :source-checker-sha256
+ "96b3b2ed03aba9f06863706612d59790193830e6efe7180641b155322db7018f",
+ :source-checker-history
+ [:initial-reader-delimiter-corrected-before-publication],
+ :final-commit-scope :two-evidence-files-only,
+ :linear-commit-range
+ ["cffe5c4cb226767f0eabbe73bcfdd8af3b98e11e"
+  "99893151b3d0b7c3c435d5c2e6e90c03255b5951"],
+ :removed-APIs #{sh08-ni-type-work sh08-ij-type-work},
+ :dependent-test-call-migrations
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :only-change :remove-C7-derive-allowance-argument,
+   :call-count 2}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :only-change :remove-C7-derive-allowance-argument,
+   :call-count 4}],
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-sha256
+   "09a629263ee6c654534b66c7d7031ea722adfa9bbfe329001a2ed42c69632303",
+   :candidate-sha256
+   "71841553644b80a43d4425081539637eacc1dd931adf1029974b1576f466f433"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-sha256
+   "dc18d3f7b7df2be3b9a635db16177bd581bec9f14dc8ea7fa9f081b3a5c41fa5",
+   :candidate-sha256
+   "4c08d13c0cd0f51f6ff5e60b2ade506d924ebf7da6d2f127b4f06c289c53a40f"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :base-sha256
+   "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+   :candidate-sha256
+   "b45a8bd0cd30be40e9fb5dae0775784fecf8682c5c8367670fcb8ce8be0ffda4"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :base-sha256
+   "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+   :candidate-sha256
+   "a9e56bf7143d12b7ca33eded85572d6b8aa3bd6ff36ac27316e17d47b3657002"}],
+ :preserved-complete-test-bodies
+ [sh08-nil-if-join-type-development-kernel
+  sh08-nil-if-join-inference-development-kernel
+  sh08-list-if-join-source-development-kernel
+  sh08-list-if-join-inference-development-kernel
+  sh08-list-if-join-type-development-kernel],
+ :source-call-arities
+ {sh08-ij-type-join 2,
+  sh08-ij-step 1,
+  sh08-ni-type-join 1,
+  sh08-ij-element 2,
+  sh08-ij-derive 1},
+ :wide-cross-stage-support :not-established,
+ :unchanged-atomic-helper-included true,
+ :genuine-C7-Effects-lowering-runtime :UNRUN,
+ :original-inventory :unchanged,
+ :parameter-choice-observation
+ :historical-separate-classification-consumed-no-new-decision-requested,
+ :independent-source-review
+ :pending-coordinator-intake-no-author-assignment,
+ :kind :branch-joins-frozen-source-review-intake,
+ :complete-six-path-mode-blob-overlay :pass,
+ :historical-forms 7,
+ :changed-paths
+ ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+  "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  "specs/accounting-removal/branch-joins-census.edn"
+  "specs/accounting-removal/branch-joins.md"],
+ :current-main-composition-and-integration :UNRUN,
+ :base "c8f16877f822959b7a024aed6efefad511bfb868",
+ :pr 595,
+ :source-checker-preserved-locally true,
+ :owner :ACC-01,
+ :Effects-emitter-runtime-production :unchanged-from-parent,
+ :census
+ {:path "specs/accounting-removal/branch-joins-census.edn",
+  :sha256
+  "1c8d385eb549792811333607664addd05a983103e56ef6fb1cb0c3af479ed5a6"}}

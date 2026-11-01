@@ -1,0 +1,184 @@
+{:path
+ "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+ :source-pins
+ {:historical-sha256
+  "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+  :main-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64"},
+ :nonclaims
+ [:semantic-equivalence
+  :current-validator-runtime-contract-proof
+  :callgraph-closure
+  :whole-accounting-removal
+  :independent-acceptance
+  :ACC01-closure
+  :PR502-closure
+  :integration
+  :release
+  :self-hosting],
+ :execution
+ {:mode :Git-Clojure-inert-reader-text-only,
+  :read-eval false,
+  :Gravity-executed false,
+  :Bootstrap-loaded false,
+  :genuine-owner-controls :UNRUN},
+ :interpretation
+ {:zero-expressions
+  :historical-zero-additions-and-redundant-let-rebindings-only,
+  :reason-mappings
+  :historical-work-limit-branches-absent-in-current-validator-result-source,
+  :ingress :validator-returns-ingress-on-ingress-rejection,
+  :current-ingress-reasons :pinned-separately,
+  :retained-controls :all-other-complete-form-source-identical,
+  :outer-accounting :retained-and-not-accepted-by-this-correspondence},
+ :main-tree "8e2f688ffcad861682c54571a07eee37517b9363",
+ :negative-source-controls
+ [{:case [:dropped-disposition sh08-pc-first-work], :refused true}
+  {:case [:changed-retained-argument-contract sh08-pc-first-work],
+   :refused true}
+  {:case [:dropped-disposition sh08-pc-key-part], :refused true}
+  {:case [:changed-retained-argument-contract sh08-pc-key-part],
+   :refused true}
+  {:case [:dropped-disposition sh08-lsi-vector-first], :refused true}
+  {:case [:changed-retained-argument-contract sh08-lsi-vector-first],
+   :refused true}
+  {:case [:dropped-disposition sh08-vsl-parameter], :refused true}
+  {:case [:changed-retained-argument-contract sh08-vsl-parameter],
+   :refused true}
+  {:case [:restored-work-limit-reason sh08-lc-validate-types],
+   :refused true}
+  {:case [:restored-work-limit-reason sh08-lc-native-arguments],
+   :refused true}],
+ :original-inventory :unchanged,
+ :historical-tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
+ :kind :retired-validator-branch-source-correspondence,
+ :validator-result-source-pins
+ [{:name sh08-lc-validate-types,
+   :arguments [arguments],
+   :form-sha256
+   "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+   :literal-rejection-reasons
+   #{:malformed-type :nested-never :cyclic-type :unsupported-type},
+   :work-limit-and-work-count-source-occurrences 0}
+  {:name sh08-lc-native-arguments,
+   :arguments [arguments],
+   :form-sha256
+   "1ddac242e4421de063f8d0fd49770660be95b40017ae8617eb2d6608e7624654",
+   :literal-rejection-reasons
+   #{:cyclic-arguments :unsupported-arguments},
+   :work-limit-and-work-count-source-occurrences 0}],
+ :generator
+ {:language :clojure,
+  :sha256
+  "b4c1940da3820e0b47f8415cadebd706975337fc86be8e755ea9ceac5a8d20e8",
+  :preserved-locally true},
+ :units
+ [{:unit [defn sh08-pc-first-work],
+   :arguments [route core nodes bindings types budget],
+   :historical-form-sha256
+   "df85a85076d8173c5bc3d98d352e88120b0c39eacfc6ba59017f8cb497f5513e",
+   :main-form-sha256
+   "ca5c7e725b2a1b749246446617a99ea32b7a18a608982beed5eb4cf9b3ff68f7",
+   :complete-differences
+   [{:at [3 2 3 1 3], :historical (+ base 0), :main base}
+    {:at [3 2 3 2 3 :reason 1],
+     :historical
+     (if
+      (= :work-limit (get checked :reason))
+      true
+      (= :map-get-work-limit (get carrier :reason))),
+     :main (= :map-get-work-limit (get carrier :reason))}],
+   :proposal
+   :retain-current-form-with-explicit-historical-delta-disposition,
+   :acceptance :pending-independent-review}
+  {:unit [defn sh08-pc-key-part],
+   :arguments [shape key expected budget],
+   :historical-form-sha256
+   "e6e7250b1a4f74f7daf39417f303c99b7c78d162002214e25916f055275baae4",
+   :main-form-sha256
+   "aae909be2081c9192628ec2733776ad220a7b93268d401108262f579351c8f2a",
+   :complete-differences
+   [{:at [3 2 3 2 1 3], :historical (+ base 0), :main base}
+    {:at [3 2 3 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get checked :reason))
+      :map-get-work-limit
+      :map-get-private-first-entry-presence-required),
+     :main :map-get-private-first-entry-presence-required}],
+   :proposal
+   :retain-current-form-with-explicit-historical-delta-disposition,
+   :acceptance :pending-independent-review}
+  {:unit [defn sh08-lsi-vector-first],
+   :arguments [node binding env seen budget],
+   :historical-form-sha256
+   "9f8ad951e74169726e3c0970851eb51eb0b7b5c6515f4236669e959bab50982d",
+   :main-form-sha256
+   "f73d369b9fd90bde4a94cd8cc9adb1348607ce459995f1535837b21b799ea296",
+   :complete-differences
+   [{:at [3 2 2 2 2 2 2 1],
+     :historical
+     [cold-type
+      {:kind :gravity.type/vector,
+       :shape :literal,
+       :element-types (get scanned :types)}
+      actual
+      (sh08-lc-validate-types [arg-type])
+      used
+      (+ used 0)
+      cold
+      (sh08-lc-validate-types [cold-type])
+      used
+      (+ used 0)],
+     :main
+     [cold-type
+      {:kind :gravity.type/vector,
+       :shape :literal,
+       :element-types (get scanned :types)}
+      actual
+      (sh08-lc-validate-types [arg-type])
+      cold
+      (sh08-lc-validate-types [cold-type])]}
+    {:at [3 2 2 2 2 2 2 2 3 :reason],
+     :historical
+     (if
+      (if
+       (= :work-limit (get actual :reason))
+       true
+       (= :work-limit (get cold :reason)))
+      :loop-type-work-limit
+      :unsupported-loop-member-grounding),
+     :main :unsupported-loop-member-grounding}],
+   :proposal
+   :retain-current-form-with-explicit-historical-delta-disposition,
+   :acceptance :pending-independent-review}
+  {:unit [defn sh08-vsl-parameter],
+   :arguments
+   [core slice-node reference nodes bindings types forms budget],
+   :historical-form-sha256
+   "8c92ec920f8f9ccd9093c4b80e0f6d266ae6dad87444cfa4b4760c08f1221bd5",
+   :main-form-sha256
+   "9b87b358a2e4786076fff6138beaccace9c6d692d5e078efcecbbf3ede3334d0",
+   :complete-differences
+   [{:at [3 2 3 3 2 2 2 2 2 3 3 1],
+     :historical
+     [validation
+      (sh08-lc-validate-types [type (get slot :type)])
+      work
+      (+ work 0)],
+     :main
+     [validation (sh08-lc-validate-types [type (get slot :type)])]}
+    {:at [3 2 3 3 2 2 2 2 2 3 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-slice-work-limit
+      :vector-slice-receiver-proof-required),
+     :main :vector-slice-receiver-proof-required}],
+   :proposal
+   :retain-current-form-with-explicit-historical-delta-disposition,
+   :acceptance :pending-independent-review}],
+ :main "2654d155322f7863dd087065f19000b43c877cbe",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :independent-disposition :pending}

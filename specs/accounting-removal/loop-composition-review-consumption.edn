@@ -1,0 +1,84 @@
+{:verified-file-pins
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :tree-entry "100644 blob c5daa95712a2c8e30333fc250fe3108c3aea0432",
+   :sha256
+   "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca"}
+  {:path "specs/accounting-removal/loop-accounting-main-census.edn",
+   :tree-entry "100644 blob 8fe0892da7761c7c2a763df290e7f88412d6e824",
+   :sha256
+   "538244e295641892a5a4b768964b2dba3f5cd2de253dea57696a8bc0ec8e0d36"}
+  {:path "specs/accounting-removal/loop-accounting-main.md",
+   :tree-entry "100644 blob 9bbcc756fa6546cbd40111f365f8a8326f2c4ca2",
+   :sha256
+   "7fa1d6ab6efe59bcece83d98b8fd832d42b1f91fa68590b897cbc2b8cb788250"}],
+ :observed-main-in-receipt "0f508ea87b75ce0718000d11d588c191c2123838",
+ :nonclaims
+ [:future-composition-pass
+  :whole-loop-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :candidate "c5fc3c57c05a4f94e8513ec86ed197818f2ac668",
+ :whole-tree-overlay-equal true,
+ :clean-integration-checkout :not-established,
+ :tree-entry-count 10071,
+ :source
+ {:remaining-definitions 1087,
+  :remaining-loop-family 30,
+  :removed-lines 29,
+  :sha256
+  "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca",
+  :namespace-sha256
+  "2afce06faa671151e4af71c0f117def7c8b33938e8045c205ae9d2707230115b",
+  :no-new-scoped-callers true},
+ :newer-main-composition :separate-gate,
+ :prior-review
+ {:receipt-sha256
+  "457ed321acbc06f14651c7bb872a6fe995b0ba7524be8324aae0a3a52e79807f",
+  :condition :three-files-byte-identical,
+  :verified true},
+ :main-integration :pending-coordinator,
+ :CI
+ {:head "c5fc3c57c05a4f94e8513ec86ed197818f2ac668",
+  :successes 7,
+  :configured-skips 2,
+  :genuine-kernel-evidence false},
+ :consumption
+ {:receipt-tree-parents-and-three-file-pins :verified,
+  :new-execution false,
+  :reviewer-or-owner-message-sent false},
+ :kind :verified-loop-composition-review-consumption,
+ :parents
+ ["8330e46870de055f3ad4c864921dc83b999d4a06"
+  "7a74f6e3802a81971cb79c8619d04173bcded207"],
+ :receipt-sha256
+ "eaa55bda09fe73d6c5f2c2e6ce1a42d69bdb80813ef15b1139890cd184e825f3",
+ :verdict :pass-exact-source-composition,
+ :genuine-tests :UNRUN,
+ :generator
+ {:language :clojure,
+  :sha256
+  "4f10c2e5a02129afa3d7a72c43de9a9b295f03d415e6ab2030e3fc93348b702e",
+  :preserved-locally true},
+ :independent-source-controls
+ {:test 6, :pass 111, :fail 0, :error 0, :type :summary},
+ :integration-preflight :UNRUN,
+ :limits
+ [:source-only
+  :no-bootstrap-execution
+  :no-runtime-or-producer-operation
+  :no-github-approval
+  :no-merge
+  :no-author-or-canonical-writes
+  :no-future-head-claim
+  :clean-integration-preflight-owner-gate
+  :ci-owner-gate],
+ :reviewer "01a18529-dad4-7de1-b68d-3e567c8976a3",
+ :pr 619,
+ :owner :ACC-01,
+ :later-main-advance
+ :reported-separately-not-covered-by-this-exact-composition-pass,
+ :candidate-tree "998aee8ef4c7b18e2ed973318133d3c7badd1dce",
+ :main-delta-paths ["docs/verification-reuse.md"]}

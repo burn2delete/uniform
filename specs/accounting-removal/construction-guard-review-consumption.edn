@@ -1,0 +1,243 @@
+{:source-equation
+ :complete-unchanged-args-native-map-validation-then-exact-status-only-accepted-cell-full-historical-body-else-nil-both-routes,
+ :reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :retained-numeric-and-accounting-conditions
+ {:source-tests
+  [{:unit [defn body-lc-source],
+    :source-test (<= (count args) 1023),
+    :endorsement :none,
+    :scope :source-preservation-only}
+   {:unit [defn p15-s23-lc-source],
+    :source-test (<= (count args) 1023),
+    :endorsement :none,
+    :scope :source-preservation-only}],
+  :notable-preserved-test (<= (count args) 1023),
+  :endorsement :none,
+  :accounting-removal-obligation :open},
+ :tree-conservation
+ :all-other-parent-production-test-inventory-blobs-and-modes-unchanged,
+ :tree "7cc7d7f0fb10c046fc2fa02f4be27408fb4914a0",
+ :execution
+ {:reader-eval false,
+  :shared-checkout-writes :none,
+  :Bootstrap-compiler-provider-runtime-sourceauthentication :UNRUN,
+  :inert-source-DATA-only true,
+  :actual-definition-or-native-guard-evaluated false,
+  :APPROVE :not-performed,
+  :new-worker :none,
+  :Gitbookends :not-performed,
+  :outbound-sends :none},
+ :counts
+ {:evidence-only-changed-paths 3,
+  :candidate-tree-entries 10161,
+  :checks 5052,
+  :independent-effective-source-corruption-refusals 44,
+  :parent-tree-entries 10159,
+  :complete-historical-body-equations 2,
+  :prior-B33-decisions-inherited 0,
+  :original-construction-helper-units 2,
+  :production-changes 0,
+  :prior-B33-checks-credited 0,
+  :current-native-guard-source-pins 2,
+  :author-inert-controls 14},
+ :consumer-verification
+ :receipt-checker-five-artifacts-frozen-tree-inputs-two-body-equations-arguments-guards-and-policy,
+ :consumer-source-sha256
+ "ed0fd108653fe1a44a0546bb07657237dd1555f7e4be27045717db683bcdf12e",
+ :parent "624b34f41cdf49ccaf3b3811df12453731f0854c",
+ :candidate "20a4d89f96d71d0169f99191dd1f3ae2775dc15b",
+ :blocking-findings [],
+ :complete-reader-body-path [3 2 2],
+ :reproduction
+ {:checker "/tmp/construction-guard-independent-review.clj",
+  :checker-sha256
+  "86f92b4571c60e6de3c8e87bfb397958f32e91b7281767fbff2a891e324267e6",
+  :artifacts
+  [{:path
+    "/tmp/construction-guard-independent-review/body-lc-source.edn",
+    :sha256
+    "8f2f7cf444b9df9c01746e6a353a9f6e2e42b29a664e3008088d9c9c264bda04"}
+   {:path
+    "/tmp/construction-guard-independent-review/p15-s23-lc-source.edn",
+    :sha256
+    "974eeff654fdb0e87d73f301e11b2a78e1cd6a54352bf59bde01184f373eef67"}
+   {:path
+    "/tmp/construction-guard-independent-review/source-assessments.edn",
+    :sha256
+    "c895327812089904f041a90ac624a0051aff5426dbf2f8e52d600c35db45ee83"}
+   {:path
+    "/tmp/construction-guard-independent-review/negative-controls.edn",
+    :sha256
+    "9994f03f7b670ab2ac0210e840fb9b7001a3887219f0657582b0f757c84ad285"}
+   {:path
+    "/tmp/construction-guard-independent-review/retained-numeric-conditions.edn",
+    :sha256
+    "3ea6b0445a7bee18e31a978ac0ba9ed27a3567a99d52d6953feb6df814cffb89"}]},
+ :retained-source-obligations
+ [:original-call-node-and-edge-correspondence
+  :ordered-argument-child-source
+  :binding-and-module-identity
+  :operator-evaluation-and-result-policy
+  :existing-validation-status-predicate],
+ :schema-version 1,
+ :comments-and-whitespace :whole-file-provenance-only,
+ :author-writer
+ {:path "/tmp/acc01-construction-guard-proposal.clj",
+  :sha256
+  "7ecfa021a72d4501484d4bdc756493e07ed24d7d09cf1bcf85a650594e0544af",
+  :action :inspect-and-hash-only-never-executed},
+ :delivery
+ :own-thread-return-for-authorized-Accounting-and-Reconciliation-readback-no-outbound-send,
+ :governing-policy
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :C7-builder :not-covered,
+ :intake
+ {:reconciliation "01a18b65-91fa-740a-b712-8a22b3cd000c",
+  :author "01a183dd-7208-7d33-a336-7483fd90e358",
+  :accounting "01a18b64-b3e2-723b-ae1f-d0018dbbd00b",
+  :exact-duplicate-or-actual-author-conflict :none-observed,
+  :prior-closed-inline-593-591-B33-goals :remain-closed,
+  :prior-B33-authorship-audit
+  :same-independent-reviewer-no-authoring-of-construction-candidate-production-or-proposal,
+  :existing-Phase03PR595-01OWN-12Core-11Types-02Resolve-reservations
+  :unchanged,
+  :all-denied-and-held-e7-Build68-ACC09v4delivery-PR531merge-Metadata372-Policy14-fixedwidth-OWN-ACC08-unknowns
+  :remain-stopped-no-retry-transfer-contact-alternate},
+ :inputs
+ {:packet
+  {:path
+   "specs/accounting-removal/construction-guarded-incorporation.edn",
+   :sha256
+   "49a1731ebf4983c02262728123b52c53080792c72bba226af1d77eebb1e1adf8"},
+  :three-paths
+  [{:path
+    "specs/accounting-removal/construction-guarded-incorporation.edn",
+    :entry "100644 blob 13a94afe1f59147fa0e5d58a89ca998bc33f4d6a",
+    :sha256
+    "49a1731ebf4983c02262728123b52c53080792c72bba226af1d77eebb1e1adf8"}
+   {:path
+    "specs/accounting-removal/construction-guarded-incorporation.md",
+    :entry "100644 blob d9367284bbf17e7fcdd80521cc0262d8691ca7f7",
+    :sha256
+    "8c3459c13c58ae5d8c02958732dcb10d666c8d472c0e9fdbc8d24b5dd8be8ab8"}
+   {:path "specs/accounting-removal/preserved-paths.md",
+    :entry "100644 blob bff1f2808084925ab80a2b949d9feca2f0cccff9",
+    :sha256
+    "c6601d8833bb4fb48d2d13c91c87a8d567c3167d07fc3d8671950d95c9636924"}],
+  :original-inventory
+  {:path "specs/accounting-removal/preserved-source-inventory.edn",
+   :sha256
+   "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+   :unchanged-from-parent true}},
+ :raw-body-byte-identity :not-claimed,
+ :conditional-classification
+ {:result
+  :two-complete-historical-inner-bodies-incorporated-with-current-guards-retained,
+  :assumptions
+  [:pinned-source
+   :unrebound-source-and-native-guard-bindings
+   :L2-control-semantics],
+  :whole-function-identity false,
+  :historical-input-contract-equivalence false,
+  :extra-field-status-accepted-validation-cells
+  :current-exact-cell-guard-does-not-admit,
+  :native-prelude-effects-callbacks-exceptions-and-termination
+  :not-proved,
+  :canonical-disposition-adoption :not-performed,
+  :implementation-or-completion-credit :none},
+ :assessed-tree "19e6cab1c2cb42d1be1e44c84b988b3ec199c3a8",
+ :retained-1023-and-other-accounting :UNENDORSED,
+ :kind :construction-guard-independent-classification-consumption,
+ :receipt-sha256
+ "fd2d64dbfc35138e6da7048abae4585b39f2e34e1d2b6eb9f32d9763e1ea1547",
+ :prior-evidence
+ {:receipt
+  {:path "/tmp/predicate-B-independent-review/receipt.edn",
+   :sha256
+   "e47a331ec7c613f6323e1d3dcad208b4adce6f690c9611413f4381800c93f9d2"},
+  :packet
+  {:path
+   "specs/accounting-removal/predicate-guarded-incorporation.edn",
+   :sha256
+   "2a1ec7d3b3d5f068a0cca4bd27b8416c2680fdbd3bda7c1a66e41a1b54bd4dc5"},
+  :usage
+  :only-two-actual-full-native-guard-SOURCEforms-and-hashes-rechecked-against-immutable-prior-and-assessed-source,
+  :prior33predicate-decisions :not-extended,
+  :sealed-count 13050,
+  :handoff-count 13052,
+  :discrepancy :retained-no-count-credit,
+  :prior-review-guard-pins-are-not-native-behavior-or-numeric-bound-approval
+  true},
+ :whole-PR569-ACC01-PR502-disposition :incomplete,
+ :genuine-compiler-native-runtime :UNRUN,
+ :units
+ [{:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :current-form-sha256
+   "b1721e930ddb6d2ecd64aa756caf6df80a89fe40b66041d9f89ff3d501768d79",
+   :native-or-runtime-equivalence :not-proved,
+   :unit [defn body-lc-source],
+   :guard-form-sha256
+   "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc",
+   :historical-body-sha256
+   "5ed5c712efef3f4c84daf3f1e299e31cbbe0ef461e37e52f1a51d9fc386113c5",
+   :reader-body-path [3 2 2],
+   :conditional-source-classification
+   :complete-historical-inner-body-incorporated,
+   :input-contract :narrowed-by-current-native-and-exact-cell-guards,
+   :historical-form-sha256
+   "1695248dd1e24369946dda9922eb3fe4b72e97cbe8fa6dec74cf213ffbd2649b"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :current-form-sha256
+   "65a78fbf0c76c4d6b287ce0b049a35c3d93fa425059857cbfd656ca56c30222c",
+   :native-or-runtime-equivalence :not-proved,
+   :unit [defn p15-s23-lc-source],
+   :guard-form-sha256
+   "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3",
+   :historical-body-sha256
+   "31d04a387c7ca2bc8ac518757c00753e4697854cd3c650f367b8c5c94999021b",
+   :reader-body-path [3 2 2],
+   :conditional-source-classification
+   :complete-historical-inner-body-incorporated,
+   :input-contract :narrowed-by-current-native-and-exact-cell-guards,
+   :historical-form-sha256
+   "e81a1d96198497c901b61890001d9edff5a2857ce2a608e9a6f05e23a6be1b56"}],
+ :limits
+ [:C7-differently-changed-construction-builder-not-reviewed
+  :no-unconditional-inputcontract-or-function-equivalence
+  :no-native-prelude-effects-callback-exception-termination-transitive-runtime-proof
+  :no-other-guard-uses-or-numeric-bounds-approval
+  :no-whole-List-support-or-retained-accounting-acceptance
+  :no-currentmain-composition-integration
+  :no-whole-PR569-ACC01-PR502-release-selfhosting-credit
+  :no-held-denial-or-unknown-operation-retry],
+ :reviewer "01a18528-ebbf-7033-bb47-501bd7e204d5",
+ :canonical-disposition-adoption :not-performed,
+ :assessed-source "c486a4d78f67937deb42b8bfa978e456d583bc32",
+ :whole-List-construction-support :not-established,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :normalization :none,
+ :decision
+ :PASS-conditional-complete-historical-body-source-incorporation}

@@ -1,0 +1,79 @@
+{
+  "kind": "vector-rest-metadata-preservation-ci-readback",
+  "owner": "ACC-01",
+  "pr": 639,
+  "candidate": "3fd50a27141560b480406c882778e6efae44b4b4",
+  "tree": "000e7dc4bda6dc0b9ea2a79340501406ffa7faa3",
+  "checks": [
+    {
+      "id": 123919894735,
+      "name": "experimental-prerelease",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123919894735"
+    },
+    {
+      "id": 123918089828,
+      "name": "source-Core-readiness",
+      "status": "completed",
+      "conclusion": "skipped",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918089828"
+    },
+    {
+      "id": 123918088293,
+      "name": "fresh-leaf-regressions / darwin",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918088293"
+    },
+    {
+      "id": 123918088165,
+      "name": "darwin-unsupported-host",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918088165"
+    },
+    {
+      "id": 123918088152,
+      "name": "static",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918088152"
+    },
+    {
+      "id": 123918088069,
+      "name": "projections",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918088069"
+    },
+    {
+      "id": 123918088057,
+      "name": "fresh-leaf-regressions / portable",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918088057"
+    },
+    {
+      "id": 123918088042,
+      "name": "bootstrap",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918088042"
+    },
+    {
+      "id": 123918088027,
+      "name": "experimental-source-snapshot",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/burn2delete/uniform/actions/runs/41011468897/job/123918088027"
+    }
+  ],
+  "successes": 7,
+  "configured_skips": 2,
+  "independent_source_review": "pending",
+  "genuine_compiler_native_effects_lowering_runtime": "UNRUN",
+  "current_main_integration": "UNRUN",
+  "whole_PR502_disposition": "incomplete",
+  "metadata_equivalence": "HELD-unchanged"
+}

@@ -1,0 +1,136 @@
+{:merged-tree "0a63ce095b20d85a77ca6484cb0bd3eac0b42084",
+ :nonclaims
+ [:whole-loop-accounting-removal
+  :whole-callgraph-theorem
+  :genuine-compiler-runtime-acceptance
+  :PR616-parent-stack-acceptance
+  :PR569-acceptance
+  :ACC01-or-PR502-closure
+  :release
+  :self-hosting
+  :seed-retirement],
+ :accepted-scope
+ {:production-deletion :two-unused-unexported-accounting-helpers,
+  :deleted-lines 29,
+  :remaining-C7-definitions 1087,
+  :remaining-loop-forms 30,
+  :all-other-main-tree-entries :conserved,
+  :genuine-compiler-runtime-operation :none,
+  :historical-census-NONPASS-and-older-dirty-preflight :retained},
+ :source-tree "0a63ce095b20d85a77ca6484cb0bd3eac0b42084",
+ :state :integrated,
+ :merged-parent "0fb44a5b0152a56408753da1c1df94c3e4ccd711",
+ :CI
+ {:candidate "a3047f50f771db71d71b5a57a589e0eb5dd7bb67",
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true,
+  :main-CI :separate,
+  :genuine-kernel-evidence false},
+ :source-candidate "a3047f50f771db71d71b5a57a589e0eb5dd7bb67",
+ :independent-source-review
+ {:candidate "a3047f50f771db71d71b5a57a589e0eb5dd7bb67",
+  :whole-tree-overlay-equal true,
+  :receipt-and-prior-review-pins :verified,
+  :generator-sha256
+  "dddf2afb8596e8798bbccda4e5609faac345d7f40bd67c8f63a99486af05f977",
+  :new-execution false,
+  :tree-entry-count 10071,
+  :controls {:test 6, :pass 111, :fail 0, :error 0, :type :summary},
+  :Bootstrap-loaded false,
+  :source
+  {:remaining-definitions 1087,
+   :remaining-loop-family 30,
+   :removed-lines 29,
+   :sha256
+   "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca",
+   :namespace-sha256
+   "2afce06faa671151e4af71c0f117def7c8b33938e8045c205ae9d2707230115b",
+   :no-new-scoped-callers true},
+  :kind :verified-final-loop-source-composition,
+  :parents
+  ["c5fc3c57c05a4f94e8513ec86ed197818f2ac668"
+   "0fb44a5b0152a56408753da1c1df94c3e4ccd711"],
+  :receipt-sha256
+  "e4860c701051b793728c1fc2fae2273371b0119400f5aff2674c7f70f6604aa6",
+  :verdict :pass-exact-source-composition,
+  :files
+  [{:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :tree-entry "100644 blob c5daa95712a2c8e30333fc250fe3108c3aea0432",
+    :sha256
+    "8ab474154d0d87ab2414296d19badf3539e77b58a5f16ca60574803d92d10cca"}
+   {:path "specs/accounting-removal/loop-accounting-main-census.edn",
+    :tree-entry "100644 blob 8fe0892da7761c7c2a763df290e7f88412d6e824",
+    :sha256
+    "538244e295641892a5a4b768964b2dba3f5cd2de253dea57696a8bc0ec8e0d36"}
+   {:path "specs/accounting-removal/loop-accounting-main.md",
+    :tree-entry "100644 blob 9bbcc756fa6546cbd40111f365f8a8326f2c4ca2",
+    :sha256
+    "7fa1d6ab6efe59bcece83d98b8fd832d42b1f91fa68590b897cbc2b8cb788250"}],
+  :limits
+  [:source-only
+   :no-bootstrap-execution
+   :no-runtime-or-producer-operation
+   :no-github-approval
+   :no-merge
+   :no-author-or-canonical-writes
+   :no-future-head-claim
+   :clean-integration-preflight-owner-gate
+   :ci-owner-gate],
+  :base "0fb44a5b0152a56408753da1c1df94c3e4ccd711",
+  :pr 619,
+  :owner :ACC-01,
+  :candidate-tree "0a63ce095b20d85a77ca6484cb0bd3eac0b42084"},
+ :preservation
+ {:original-cache :untouched,
+  :original-evidence-root :preserved,
+  :reviewed-source-ref :retained-for-disposition-history,
+  :denied-actions :not-retried,
+  :PR532-scope :unchanged,
+  :PR502 :open},
+ :kind :verified-finite-loop-helper-main-integration,
+ :merge-method :squash,
+ :generator
+ {:language :clojure,
+  :sha256
+  "82a0d72b0d93c825ff1380783a4d692efa377cf5a01d7b6f577272ac58d42fd4",
+  :preserved-locally true},
+ :integration-preflight
+ {:mode :integration,
+  :result :pass,
+  :read-only true,
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "0fb44a5b0152a56408753da1c1df94c3e4ccd711",
+   "expected-commit" "a3047f50f771db71d71b5a57a589e0eb5dd7bb67",
+   "expected-tree" "0a63ce095b20d85a77ca6484cb0bd3eac0b42084"},
+  :reconciliation
+  {"base-is-ancestor" true,
+   "candidate-is-ancestor" false,
+   "recommendation" "integrate_candidate",
+   "relation" "descendant",
+   "tree-equivalent" false},
+  :raw-report-sha256
+  "88f88ad7f07d7859ce034015d14f18aadab645b09230c4709dba5d75433b501e",
+  :raw-report :preserved-locally},
+ :merged-commit "a6f5b2f99e0076e2a790a9f99494c0312c896af1",
+ :fresh-main-readback
+ {:PR-state :closed,
+  :PR-merged true,
+  :base-branch "main",
+  :reachable-from-origin-main true,
+  :tree-identical-to-reviewed-candidate true,
+  :changed-paths
+  ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "specs/accounting-removal/loop-accounting-main-census.edn"
+   "specs/accounting-removal/loop-accounting-main.md"]},
+ :base "0fb44a5b0152a56408753da1c1df94c3e4ccd711",
+ :pr 619,
+ :owner :ACC-01}

@@ -1,0 +1,88 @@
+{:findings [],
+ :verified-source-properties
+ {:gravity-callers :one-derive-one-step,
+  :later-native-and-exact-validation-guards :preserved,
+  :production-definitions 6,
+  :defined-negative-controls
+  [:late-invalid-type
+   :late-source-parent
+   :call-edge-forgery
+   :malformed-validation],
+  :descriptor-contract :complete-parity,
+  :defined-widths [0 1023 1024 1025 2049],
+  :existing-semantic-and-recursive-type-controls :preserved-in-source,
+  :kernel-definitions 3,
+  :historical-derive-step :exact-only-those-two-forms,
+  :header-width-removals 3,
+  :clojure-direct-callers :two-derive-one-new-step,
+  :production-remaining-bytes :identical,
+  :semantic-source-parent-call-edge-type-validation :preserved},
+ :nonclaims
+ [:no-ACC06-capture-takeover
+  :no-PR502-or-ACC-closure
+  :no-whole-accounting-removal
+  :no-main-composition-or-preflight
+  :no-runtime-result-acceptance
+  :no-integration
+  :no-GitHub-approve
+  :no-canonical-write
+  :no-target-Bootstrap-compiler-kernel-runtime-or-probe],
+ :execution
+ {:genuine-C7-Effects-lowering-kernels :UNRUN,
+  :authenticated-source :UNRUN,
+  :runtime :UNRUN,
+  :independently-observed
+  :inert-reader-and-source-guard-controls-only},
+ :verified-file-inputs
+ {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "2bccc04debd00b13d4cc4fd472f3923440fac378c6f30503b24f289209b05774",
+  "bootstrap/gravity/src/gravity/effects.gravity"
+  "b1fbd10e61b2ed8e66e813be69ccbe7ad4808a4c62aa71d9fd0269ac03f95529",
+  "bootstrap/gravity/p15_s23/emitter.gravity"
+  "f12fd8cbcf91e35a2d9cf531875be228b809249630238c5c79bc5f7da145aeb4",
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "41d3a7b48aad61d75d5c7b64a34cc06ba5dfac30e175263301631fdeed31bfda",
+  "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj"
+  "a9a59981190ebb7e6b38ae325abe7165d4fff38e1debb11265207d0cb9ee0713",
+  "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj"
+  "5d9baca24e019084f5f6bfc84f8e01eb03b82c650949d1365c40f8cfd9fa24fc",
+  "specs/accounting-removal/list-construction-admission-census.edn"
+  "515e72db4a453766af7b8576cab5982c596799576c36b1fc6979eaa37d0b7fac"},
+ :candidate "c5e9fccdad293b34c290859cc3e4716870241dd6",
+ :reader-contract
+ {:test 4, :pass 167, :fail 0, :error 0, :type :summary},
+ :main-integration :pending,
+ :positive-source-checks 138,
+ :consumption
+ {:receipt-tree-seven-file-hashes :verified,
+  :reader-controls :4-tests-167-assertions,
+  :altered-source-controls-refused 9,
+  :reproduction-code-hash :verified,
+  :new-execution false,
+  :no-reviewer-or-owner-message-sent true},
+ :kind :verified-list-construction-source-review-consumption,
+ :receipt-sha256
+ "94f70e5279164d8f10ddcced4d0bc8301bc59c2e9c9a30e04259101890e01a86",
+ :verdict :pass-source-only,
+ :generator
+ {:language :clojure,
+  :sha256
+  "03635ad77117da845cd88d53c05f2c2433937c154d9cd4b3d07a61bd5e003fce",
+  :preserved-locally true},
+ :independent-source-controls
+ [{:case :restore-width, :refused true}
+  {:case :drop-call-guard, :refused true}
+  {:case :drop-edge-guard, :refused true}
+  {:case :drop-parent-check, :refused true}
+  {:case :stale-step-caller, :refused true}
+  {:case :stale-derive-ABI, :refused true}
+  {:case :historical-effects-overwrite, :refused true}
+  {:case :drop-effects-native-guard, :refused true}
+  {:case :drop-lowering-exact-validation, :refused true}],
+ :reviewer "01a18528-c7af-75c1-a399-5eb23dbbe8e4",
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :current-main-composition :pending,
+ :pr 623,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :candidate-tree "7b506c824110d5f88fc228bdf9b4c5999b35b3a7"}

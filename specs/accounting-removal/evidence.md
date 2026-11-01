@@ -594,6 +594,17 @@ PR359 increment; ACC-02/03 remain the only closed original rows.
 
 ## PR359 finite reconciliation and preserved work - 2026-10-27 12:39 MDT
 
+The later source-only continuation at main `6276c94b` expands this historical
+table in [preserved-paths.md](preserved-paths.md), one entry for each of the
+29 authored paths. It separates selected integrations and existing finite
+drafts from retained unique work without verified successor coverage. The
+original candidate and tree remain unchanged. Safe-reader comparison of the
+three historical/current owner sources found selected exact form matches and
+many distinct or absent forms. A match establishes only source-form identity;
+different forms require semantic review, not assumed incorporation/rejection.
+No project source was evaluated or runtime rerun performed. Owner/draft inputs
+retain their source and acceptance limits. This input leaves PR502 open.
+
 Finite source `0c64757dcee79d41272dab8486ce042adad93106`, tree
 `2c2ac4199c7bc57fca8717324f1f282e368f36b4`, passed its current-main candidate
 batch: 21 tests / 1,644 assertions, zero failures/errors, natural exit zero in

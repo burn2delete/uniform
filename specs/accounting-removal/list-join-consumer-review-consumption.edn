@@ -1,0 +1,275 @@
+{:reviewer-checker-rerun :not-needed-no-claim-of-reproduction,
+ :semantic-assessment
+ {:Effects
+  :complete-premises-and-source-authenticity-plus-width1025-both-branches-late-invalid1024-extra-field-nonvector-and-forged1024-refusals,
+  :lowering
+  :same-with-typed-instruction-missing-local-diagnostic-source-evidence-tamper-and-typed-truthiness-runtime-value-identity-assertion-definitions,
+  :truthiness-cases [true false nil :present "truthy"],
+  :payment-test-retirement
+  {:form (is (= (+ prepaid index) (:work-count failed))),
+   :count 1,
+   :justification
+   :only-prepaid-plus-index-counter-equality-no-type-source-value-or-diagnostic-predicate,
+   :missing-local-diagnostic :retained,
+   :explicit-rejected-status :restored,
+   :policy :delete-budget-only-tests-preserve-independent-semantics},
+  :retained-outer-accounting :visible-unchanged-UNENDORSED,
+  :width1025 :test-population-not-admission-quota},
+ :tree "49c42b821a44305b6dcd0bc7c54acb61cb5516d5",
+ :execution
+ {:reader-eval false,
+  :target-forms :data-only,
+  :Bootstrap-loaded false,
+  :targets-called false,
+  :proxies-used false,
+  :genuine-kernel-runtime-native-projection-allocation :UNRUN,
+  :author-generator-and-verifier :not-executed},
+ :consumer-verification
+ :receipt-tree-artifacts-nine-owner-six-helper-pins-verified,
+ :consumer-source-sha256
+ "54af2e05d7415cd56fc627b08c133703bbe3cbcfece472aa9250e2c6b4489cc1",
+ :blocking-findings [],
+ :parent595 :UNACCEPTED,
+ :reproduction
+ {:checker "/tmp/pr637-independent-source-review.clj",
+  :checker-sha256
+  "dbb1079c9dbfbeb833821c7acc2a074ba51c54c159fcc56c797ef3b1f199071e",
+  :artifacts
+  [{:path
+    "/tmp/pr637-independent-source-review/assertion-comparison.edn",
+    :sha256
+    "858b0e3b881f8c6188d7c20711306c749afeb5e26ac99b04235f2d1661f914b5"}
+   {:path "/tmp/pr637-independent-source-review/owner-pins.edn",
+    :sha256
+    "38f57d80d08cbd35db222bf54061b8879a76e8e060f7ca334578ddd8bf38b9e5"}
+   {:path "/tmp/pr637-independent-source-review/direct-calls.edn",
+    :sha256
+    "e58363058ede9e9cbc1768127a8e6711296ea2779bf47bb26a73357f1324d762"}
+   {:path "/tmp/pr637-independent-source-review/negative-controls.edn",
+    :sha256
+    "27282889e7aa37c898bbc8c89f12a17dac6ef0af0b4f9fe319e1c33a0a201c4c"}
+   {:path
+    "/tmp/pr637-independent-source-review/retained-outer-accounting.edn",
+    :sha256
+    "0bfc81b8c5b762f4c1842f302e3686863b3e469138d45a331c2be1776b7d6fa5"}]},
+ :schema-version 1,
+ :helper-history
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name list-if-join-input,
+   :historical-present true,
+   :historical-form-sha256
+   "7a9d300605a215771b022a631064bea56c51b2dbbd9ff9891052e607d577bffa",
+   :current-form-sha256
+   "7a9d300605a215771b022a631064bea56c51b2dbbd9ff9891052e607d577bffa",
+   :historical-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name invoke-c7,
+   :historical-present true,
+   :historical-form-sha256
+   "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+   :current-form-sha256
+   "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17",
+   :historical-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :name sh08-helper,
+   :historical-present true,
+   :historical-form-sha256
+   "7b24775c7ea5bf9b41e11daa8c00570fac513c34b4ea95d8d084f1623647c28d",
+   :current-form-sha256
+   "7b24775c7ea5bf9b41e11daa8c00570fac513c34b4ea95d8d084f1623647c28d",
+   :historical-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :name leaf,
+   :historical-present true,
+   :historical-form-sha256
+   "654627c47c74e4cd7d3e1f2b0c785f8cd6745ed7214afcd5876d8c9765fe349e",
+   :current-form-sha256
+   "654627c47c74e4cd7d3e1f2b0c785f8cd6745ed7214afcd5876d8c9765fe349e",
+   :historical-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :name runtime,
+   :historical-present true,
+   :historical-form-sha256
+   "4dec83b559d3d03d01e2eb2878abd1c2d1a519e4a857220e27d72312ba0ea2b0",
+   :current-form-sha256
+   "4dec83b559d3d03d01e2eb2878abd1c2d1a519e4a857220e27d72312ba0ea2b0",
+   :historical-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :name typed-catch-runtime-projection,
+   :historical-present true,
+   :historical-form-sha256
+   "8889bcee3ed7550526788b0392b8e15a9067e657e2b4031b94d5b25ef33ce3da",
+   :current-form-sha256
+   "0c2292648487068a702b48a8b2e18353bc3e6120c267429c871b4306f1c0c564",
+   :historical-identical false,
+   :semantic-equivalence :not-inferred}],
+ :paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :entry "100644 blob c67c86e786c02c07ab00614acbdce3640e458dfd",
+   :sha256
+   "d18ebccf0382726fa02bdcea0683b93a348ad8cad3c7cd05b427be770971595f"}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :entry "100644 blob 9a456d410b9fbe4b451ea78d5184fcb87ca1fc4a",
+   :sha256
+   "f15afdef6c91f20e6e228655537117db34dd1b5e28dc103a7c4c5769b17912d5"}
+  {:path
+   "specs/accounting-removal/list-join-consumer-controls-census.edn",
+   :entry "100644 blob 9acb3766f99828e175e087c131fe79e8211dfe5f",
+   :sha256
+   "304269009dfc1e986dab2a8242e308f3fd9fa48cf1029d13ab92ae506d2e12a3"}
+  {:path "specs/accounting-removal/list-join-consumer-controls.md",
+   :entry "100644 blob 8b72c4534c57252a564f6efb19616714d50a8e1d",
+   :sha256
+   "1fd3aa075747e46313b6f549b7a46bf708088d6bd5f73dd8ff55459210ae6caa"}],
+ :negative-control-count 27,
+ :checks 10436,
+ :complete-tree-equation
+ {:base-entries 10073,
+  :candidate-entries 10075,
+  :changed-paths 4,
+  :new-evidence-records 2,
+  :only-two-existing-test-body-replacements true,
+  :all-other-parent-entries-and-modes :byte-identical,
+  :all-production :unchanged},
+ :harness-history
+ ["Raw span terminator corrected to exclude the inter-form newline used by the census, while whole-file reconstruction remains byte-exact."
+  "Unchanged regex reader objects compare by normalized printed form hash, rather than Java object identity."
+  "AST quote spelling and actual truthiness/diagnostic names corrected from direct source inspection before final validation."
+  "Two delimiter mistakes in newly added inert controls corrected before sealing; no target source was evaluated."],
+ :scope
+ :two-complete-historical-List-if-join-Effects-and-lowering-test-definitions-only,
+ :owner-pins 9,
+ :fixture-dispatch-projection-pins 6,
+ :governing-policy
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7"}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405"}],
+ :current-main-integration :UNRUN,
+ :CI
+ {:head "c7a4d959d319e0e1bbaef059e41fc5c059497af8",
+  :run 41003858566,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :head "c7a4d959d319e0e1bbaef059e41fc5c059497af8",
+ :intake
+ {:author "01a183dd-7208-7d33-a336-7483fd90e358",
+  :coordinator "01a183cc-8cd1-735d-bf59-055c4b5f0039",
+  :related-reviewers-checked
+  ["01a18529-b6ff-77a3-b5de-835ef9d4b5ab"
+   "01a18529-4c4f-79b1-94b3-d1132f06ed53"
+   "01a18424-d867-7c12-8a04-07484900100c"],
+  :reservation :no-competing-exact-review-observed,
+  :authorship-conflict :none,
+  :denials :old-e7-and-Build68-notification-denials-preserved-no-retry,
+  :distinctness
+  :new-four-path-implementation-test-restoration-not-e7-or-1da-classification-or-held-fixedwidth-Policy14-Metadata372-OWN},
+ :direct-call-arity
+ {:distinct-owners 8,
+  :occurrences 19,
+  :verified-against-authentic-owner-argument-vectors true},
+ :kind :list-join-consumer-independent-source-review-consumption,
+ :receipt-sha256
+ "eb6bb4b595135cc2e4d9934b8cae21bd2cf36639791ce4ca3d814e1ac109f4bb",
+ :genuine-kernels :UNRUN,
+ :generator
+ {:path "/tmp/acc01-list-join-consumer-controls.clj",
+  :sha256
+  "49583b7fb13c3420fa540f831ec27112306544f81aad9e922c7b43efd769c4bd",
+  :execution :NEVER-inspected-only},
+ :integration-preflight :UNRUN,
+ :limits
+ [:no-production-behavior-equivalence
+  :no-transitive-helper-or-runtime-proof
+  :no-outer-budget-endorsement
+  :no-current-main-applicability
+  :no-whole-ACC01-or-PR502-credit
+  :no-authenticated-admission
+  :no-GitHubAPPROVE
+  :no-held-retry],
+ :restorations
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :name body-list-if-join-development-kernel,
+   :parent 11,
+   :restored 16,
+   :restored-assertions
+   {"(is (= :rejected (:status (run (assoc-in facts [:constraint-ledger 2 :dependencies :branch-compatibility 0 :checked-member-count] 1024) 65536))))"
+    1,
+    "(is (= 1025 (get-in result [:context :premises (get ids index) :branch-compatibility branch :checked-member-count])))"
+    1,
+    "(is (= :not-applicable (:status (c7 (quote sh08-ij-derive) [core node nodes changed bindings forms]))))"
+    1,
+    "(is (= :not-applicable (:status (leaf (quote body-ij-derive) core node nodes changed bindings forms 65536))))"
+    1,
+    "(is (= :rejected (:status (run (assoc-in facts [:type-table id] bad) 65536))))"
+    1},
+   :retired-assertions {},
+   :raw-byte-identity true,
+   :comments-preserved true}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :name current-gravity-list-if-join-lowering-development-kernel,
+   :parent 22,
+   :restored 27,
+   :restored-assertions
+   {"(is (= :rejected (:status (compile (assoc context :types changed) 65536))))"
+    1,
+    "(is (= :not-applicable (:status (invoke (quote p15-s23-ij-derive) core node nodes changed bindings forms 65536))))"
+    1,
+    "(is (= :rejected (:status failed)))" 1,
+    "(is (= :rejected (:status (compile (assoc-in context [:ledger 0 :dependencies :branch-compatibility branch :checked-member-count] 1024) 65536))))"
+    1,
+    "(is (= 1025 (get-in checked [:context :premises (:node-id node) :branch-compatibility branch :checked-member-count])))"
+    1,
+    "(is (= :not-applicable (:status (c7 (quote sh08-ij-derive) [core node nodes changed bindings forms]))))"
+    1},
+   :retired-assertions
+   {"(is (= (+ prepaid index) (:work-count failed)))" 1},
+   :raw-byte-identity true,
+   :comments-preserved true}],
+ :reviewer "01a18528-ebbf-7033-bb47-501bd7e204d5",
+ :base "99893151b3d0b7c3c435d5c2e6e90c03255b5951",
+ :current-main-composition :not-assessed,
+ :pr 637,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :decision :PASS-exact-source-restoration,
+ :census
+ {:path
+  "specs/accounting-removal/list-join-consumer-controls-census.edn",
+  :sha256
+  "304269009dfc1e986dab2a8242e308f3fd9fa48cf1029d13ab92ae506d2e12a3"}}

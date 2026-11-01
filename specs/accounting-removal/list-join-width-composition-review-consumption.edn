@@ -1,0 +1,224 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :semantic-assessment
+ {:removed
+  :only-fixed-width1024-conjunct-in-finite-vector-member-predicate,
+  :retained
+  [:exact-list-kind-and-shape-and-field-set
+   :vector-member-carrier
+   :homogeneous-list-validation
+   :atomic-element-legality
+   :empty-list-result
+   :all-member-scan-and-equality
+   :checked-member-count
+   :diagnostic-reasons
+   :native-validation-and-direct-callers
+   :existing-work-parameters-charges-and-refusals],
+  :full-definitions
+  :raw-identical-to-PR611-and-historical-PR502-including-internal-comments,
+  :donor-precondition
+  :complete-parent-definition-raw-identical-to-PR611-base,
+  :PR637 :complete-tests-and-records-byte-identical-to-parent,
+  :prior637-whole-production-file-pins
+  :historical-parent-versions-not-current638-pins-no-automatic-acceptance-inheritance,
+  :whole-context-wide-input-support :not-established,
+  :outer-work-accounting :unresolved-unendorsed},
+ :parent-tree "49c42b821a44305b6dcd0bc7c54acb61cb5516d5",
+ :donor "edef2c00c103df4b5222cf44124c6e1d707820e4",
+ :tree "8f067c7c2c3a65537ff317b79050ce101a5b478b",
+ :execution
+ {:reader-eval false,
+  :source-and-data-only true,
+  :target-or-helper-called false,
+  :Bootstrap-loaded false,
+  :compiler-kernel-runtime-native-projection :UNRUN,
+  :shared-writes :none,
+  :APPROVE :not-performed},
+ :counts
+ {:new-records 2,
+  :candidate-tree-entries 10077,
+  :effective-source-corruption-refusals 31,
+  :functions 2,
+  :checks 9421,
+  :author-source-comparisons 1538,
+  :parent-tree-entries 10075,
+  :Effects-definition-population 813,
+  :raw-production-edits 2,
+  :changed-paths 4,
+  :lowering-definition-population 697,
+  :author-inert-refusals 12},
+ :owners
+ [{:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :historical-donor-and-candidate-form-sha256
+   "28ab018a8b86a0a05ced2809eafc38fce7ba989b7e16b05f586dc40a9a0c5aac",
+   :caller body-ij-type-work,
+   :unchanged-caller-form-sha256
+   "bf0499154074fe3718376891c9494a787fcb21d6578e49015f813bb42d35853a",
+   :parent-file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :function body-ij-element,
+   :complete-raw-donor-identity true,
+   :candidate-file-sha256
+   "54d8ff0cb2425e632d63cc4ac0f200cf6acbee7409e6e15da83cfccc7c9898ca",
+   :complete-raw-historical-identity true,
+   :full-parent-file-equation true,
+   :all-other-definitions-and-caller :conserved,
+   :definition-count 813}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :historical-donor-and-candidate-form-sha256
+   "9af62f61419ee70d917b9a28551263cd13ba8d3c00f2a25ea7c27df724d4028a",
+   :caller p15-s23-ij-type-work,
+   :unchanged-caller-form-sha256
+   "736f9e90dbc6d6a977fdd9f640a886d4d8a2977699c5213561d67071211425d7",
+   :parent-file-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :function p15-s23-ij-element,
+   :complete-raw-donor-identity true,
+   :candidate-file-sha256
+   "a6a1cfe27d592993623cff3783b851b6ac8cda4b065ea2dc9399dd77270e73b2",
+   :complete-raw-historical-identity true,
+   :full-parent-file-equation true,
+   :all-other-definitions-and-caller :conserved,
+   :definition-count 697}],
+ :consumer-verification
+ :receipt-artifacts-complete-tree-file-equations-definitions-callers-and-policy-pins,
+ :consumer-source-sha256
+ "3810db2ca6458025e6c5f971b2226dcdb537e5e18a6d957726103779cb734f5d",
+ :genuine-execution :UNRUN,
+ :parent "c7a4d959d319e0e1bbaef059e41fc5c059497af8",
+ :candidate "5d2984976ed6070471fa9ddec3b03bc2479945b6",
+ :blocking-findings [],
+ :reproduction
+ {:checker "/tmp/pr638-independent-source-review.clj",
+  :checker-sha256
+  "2f2188636fde3dbfbe7b9bfe0c8a655f0f31be5f7008312d9db67209c847a01e",
+  :artifacts
+  [{:path "/tmp/pr638-independent-source-review/owner-assessments.edn",
+    :sha256
+    "e89911f5998e40a3b105e32fd0921abf7c30a89b5e2ca0bfd9739ee82c859f23"}
+   {:path
+    "/tmp/pr638-independent-source-review/parent-conservation.edn",
+    :sha256
+    "0613112d1d8630f9154c53f7af106853199e58162f50a8adc61342606cee6c14"}
+   {:path "/tmp/pr638-independent-source-review/negative-controls.edn",
+    :sha256
+    "be8065e441cf8f2db79d5d050bda7a57a497fcfdf42edfa13e0b5b20e7ac6824"}]},
+ :schema-version 1,
+ :donor-base "e9ec1c599614a99e3779b5e3a329e8d9a4b8fa80",
+ :parent595-and637-ancestry :UNACCEPTED,
+ :delivery
+ :returned-here-for-existing-authorized-readback-no-denied-notification-retry,
+ :counter-reporting
+ {:sealed-checks 9421,
+  :final-handoff-checks 9422,
+  :credited :sealed-9421-only},
+ :harness-history
+ ["Missing reason argument in one need assertion corrected before sealing; initial pass was not final acceptance."],
+ :scope
+ :only-two-element-width-predicate-edits-composed-with-entire-PR637-parent,
+ :governing-policy
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93",
+   :unchanged-from-parent true}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f",
+   :unchanged-from-parent true}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a",
+   :unchanged-from-parent true}
+  {:path
+   "docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md",
+   :sha256
+   "92751143ee1a743db7a683915e9b085e8f7a5fcf669232b939aad5729f2c7ce7",
+   :unchanged-from-parent true}
+  {:path
+   "docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md",
+   :sha256
+   "ec3664547f3425cfa994fd0b3c44c37f85e0206fca237b384bac04ef4b07d405",
+   :unchanged-from-parent true}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b",
+   :unchanged-from-parent true}],
+ :CI :separate-exact-head-record-seven-successes-two-skips,
+ :consumer-history
+ [:two-unmatched-delimiters-corrected
+  :first-written-record-preceded-terminal-reader-error
+  :corrected-complete-consumer-run-passed],
+ :intake
+ {:author "01a183dd-7208-7d33-a336-7483fd90e358",
+  :coordinator "01a183cc-8cd1-735d-bf59-055c4b5f0039",
+  :helper "01a18424-d867-7c12-8a04-07484900100c",
+  :other-reviewer "01a18529-b6ff-77a3-b5de-835ef9d4b5ab",
+  :exact-duplicate-or-authorship-conflict :none-observed,
+  :prior637-and-B-goals :closed-not-reopened,
+  :old-e7-and-Build68-message-denials :stopped-not-retried,
+  :held-ACC08-fixedwidth-OWN-Policy14-Metadata-scopes :untouched},
+ :inputs
+ {:record
+  {:path "specs/accounting-removal/list-join-width-composition.edn",
+   :sha256
+   "126db1e7251cf461c11622e677dc14d4757cb227b8ce14884d0397d3e7b6a514"},
+  :four-changed-paths
+  [{:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :entry "100644 blob b6644e63f1731d3ff6901471bd34fefd2b8cf5df",
+    :sha256
+    "a6a1cfe27d592993623cff3783b851b6ac8cda4b065ea2dc9399dd77270e73b2"}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :entry "100644 blob 4de05ad6016b0b5126275ded3650d9f3425759f4",
+    :sha256
+    "54d8ff0cb2425e632d63cc4ac0f200cf6acbee7409e6e15da83cfccc7c9898ca"}
+   {:path "specs/accounting-removal/list-join-width-composition.edn",
+    :entry "100644 blob 66482dfb3a60c374a60406494980dd31757b3066",
+    :sha256
+    "126db1e7251cf461c11622e677dc14d4757cb227b8ce14884d0397d3e7b6a514"}
+   {:path "specs/accounting-removal/list-join-width-composition.md",
+    :entry "100644 blob a8ab927552a727d0dd0f9759621aff6990ffc773",
+    :sha256
+    "cdbecfe80ec0b8bfd721ad5332d605f56be186510d63cea5347f12e7fec02926"}]},
+ :lint
+ {:comparison-sha256
+  "a6b41f4b9826ffe113ac70d0218766cbd523c09cfd44f19faef8a08c9b3ab521",
+  :Effects {:errors 76, :warnings 44},
+  :comparison-path "/tmp/acc01-list-join-width-lint-comparison.edn",
+  :new-EDN-reported-findings 0,
+  :status :NONCLEAN,
+  :author-reported-finding-multisets :identical-to-parent,
+  :qualification
+  :summary-and-existing-artifacts-inspected-no-independent-lint-rerun-no-baseline-waiver,
+  :lowering {:errors 85, :warnings 34},
+  :author-lint-script
+  {:path "/tmp/acc01-list-join-width-lint.clj",
+   :sha256
+   "67d21eaecf7559b57b029f0a56921ad86aed9de3915ef07d10bb7fb7bc629dd3"}},
+ :kind :list-join-width-composition-independent-review-consumption,
+ :receipt-sha256
+ "aa6c2503c1d7cc23154d0354e8c4630a2cd4baf3fc896b08e8828cce940a48c7",
+ :entire-parent-tree-conservation
+ :all-other-paths-blob-identities-and-modes-unchanged,
+ :generator
+ {:path "/tmp/acc01-list-join-width-compose.clj",
+  :sha256
+  "3c28253deaaa502c5938595d6382386e1546e25fe82ebca28b751b0943a87330",
+  :mutates-census true,
+  :action :inspected-never-executed},
+ :integration-preflight :UNRUN,
+ :limits
+ [:no-whole-context-wide-support
+  :no-unresolved-accounting-acceptance
+  :no-transitive-behavior-proof
+  :no-automatic-prior-review-inheritance
+  :no-genuine-product-claim
+  :no-whole-ACC01-PR502-release-selfhosting-credit
+  :no-held-retry],
+ :reviewer "01a18528-ebbf-7033-bb47-501bd7e204d5",
+ :current-main-composition :unrun,
+ :parent-acceptance :pending,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :decision :PASS-exact-two-edit-source-composition}

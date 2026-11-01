@@ -1,0 +1,188 @@
+{:tree "fb5dd9e8d052534830bad668ddae5d2aa21380fb",
+ :counts
+ {:candidate-tree-entries 10164,
+  :evidence-changed-paths 3,
+  :original-units 4,
+  :checks 9572,
+  :independent-effective-source-corruption-refusals 86,
+  :existing-draft-constructor 1,
+  :author-source-controls 30,
+  :parent-tree-entries 10162,
+  :new-implementation-ports 0,
+  :complete-historical-body-equations 4,
+  :current-query-builders 3,
+  :prior-B33-counts-credited 0,
+  :prior-B33-decisions-inherited 0,
+  :production-changes 0},
+ :consumer-verification
+ :exact-tree-four-body-equations-guards-arguments-policy-and-single-predicate-equation,
+ :consumer-source-sha256
+ "960dd0c199c88e4f40d41d4ea4cf8aa4b5984fb1c5e1d8580cbbddba5a36a222",
+ :genuine-execution :UNRUN,
+ :retained-accounting :UNENDORSED,
+ :parent "3556c1231de2df9b23f19bd733e8cb5ce904ead0",
+ :candidate "091bc8d5d008a6a585b650e9dc849ddea84248ad",
+ :source-obligations
+ {:historical-call-and-edge-correspondence :preserved,
+  :operand-evaluation-order :preserved,
+  :native-prelude-effects-callbacks-exceptions-termination-mutable-bindings-and-transitive-behavior
+  :not-proved,
+  :historical-inner-accounting-and-numeric-conditions
+  :visible-open-unendorsed,
+  :head-proof-validity :not-established,
+  :whole-collection-or-runtime-support :not-established},
+ :reviewer-artifacts
+ :checker-and-seven-artifacts-rehashed-not-executed,
+ :conditional-classification
+ {:whole-function-and-input-contract-equivalence :not-claimed,
+  :both-failure-branches :nil,
+  :constructor-cell (= {:status :accepted} validation),
+  :historical-body-reader-path [3 2 2],
+  :comments-and-whitespace :whole-file-byte-provenance-only,
+  :assumptions
+  [:pinned-source
+   :unrebound-source-and-native-guard-bindings
+   :L2-control-semantics],
+  :head-proof-payload :NOT-certified-by-wrapper,
+  :raw-body-byte-identity :not-claimed,
+  :result
+  :four-complete-original-inner-source-bodies-incorporated-under-their-recorded-version-specific-guards,
+  :query-cell
+  (if
+   (= {:status :accepted} validation)
+   true
+   (if
+    (= #{:status :head-proof} (set (keys validation)))
+    (= :accepted (get validation :status))
+    false)),
+  :argument-lists :unchanged,
+  :completion-or-implementation-credit :none,
+  :canonical-disposition-adoption :not-performed,
+  :normalization :none},
+ :assessed-main "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+ :kind :four-collection-builder-independent-source-consumption,
+ :receipt-sha256
+ "9722abc59ea5deed88c044dc2ed9eeb20e461e9c7bdf81b1c63e820566373b96",
+ :C7-current-to-existing-draft
+ {:draft-ref "c5e9fccdad293b34c290859cc3e4716870241dd6",
+  :draft-form-sha256
+  "730d6db2542cbc947207b6306c0a388f5fbe1ca0a7413f3a6d2d714619d1e665",
+  :occurrences 1,
+  :wide-cross-stage-support :not-established,
+  :removal-location :one-vector-element,
+  :main-form-sha256
+  "e598f41bd024b13c254ea42fb7f9e9641012a912fdb18f717e31c8f377ddbd8e",
+  :main-ref "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+  :PR623-and-PR636-acceptance :none,
+  :removed (<= (count args) 1023),
+  :new-production-patch :none,
+  :equation
+  :removing-only-this-exact-vector-predicate-reconstructs-COMPLETEexistingPR623function},
+ :units
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :source-ref "c5e9fccdad293b34c290859cc3e4716870241dd6",
+   :source-form-sha256
+   "730d6db2542cbc947207b6306c0a388f5fbe1ca0a7413f3a6d2d714619d1e665",
+   :unit [defn sh08-lc-source],
+   :historical-body-sha256
+   "c802b23b244987168e2f1ea1e263c8091b876f1466382d7010e03ef7a602ef2a",
+   :source-tree "7b506c824110d5f88fc228bdf9b4c5999b35b3a7",
+   :cell-guard (= {:status :accepted} validation),
+   :route :PR623-draft,
+   :classification :conditional-complete-source-body-incorporation,
+   :body-path [3 2 2],
+   :guard-sha256
+   "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+   :head-proof-validity :not-certified,
+   :historical-form-sha256
+   "07d5d63f136c1d9f72f6f03eb3299441690324cd85972f398bb672aa42cb7f68"}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :source-ref "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+   :source-form-sha256
+   "f69e0a50fcf44cdbe34d8afade49ee646239f9502b1109f5fa7552f3a2226e12",
+   :unit [defn sh08-lq-source],
+   :historical-body-sha256
+   "468a0c5d46c90c9da9b6bbac7aab654eff00a65189889a0bd6e8945bd850c18a",
+   :source-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
+   :cell-guard
+   (if
+    (= {:status :accepted} validation)
+    true
+    (if
+     (= #{:status :head-proof} (set (keys validation)))
+     (= :accepted (get validation :status))
+     false)),
+   :route :current-main,
+   :classification :conditional-complete-source-body-incorporation,
+   :body-path [3 2 2],
+   :guard-sha256
+   "6b2654576b9e5327a5e67a1b4255ee9035d6d3223dfa066391f5a6e97e3c68ab",
+   :head-proof-validity :not-certified,
+   :historical-form-sha256
+   "9ce10c9518b5a13725b22a1d8c675bad87fcabdf2dcd879ac3ce1d6a16bce726"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :source-ref "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+   :source-form-sha256
+   "ecfdcc003f320100c0ee48d255f054138d2dbba1e9dc2902af0c743cdfe09ec7",
+   :unit [defn body-lq-source],
+   :historical-body-sha256
+   "5d617a0841495d7bb99f8f57bd41aa50f9811cc9a8e3429603c9795da1911ce9",
+   :source-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
+   :cell-guard
+   (if
+    (= {:status :accepted} validation)
+    true
+    (if
+     (= #{:status :head-proof} (set (keys validation)))
+     (= :accepted (get validation :status))
+     false)),
+   :route :current-main,
+   :classification :conditional-complete-source-body-incorporation,
+   :body-path [3 2 2],
+   :guard-sha256
+   "cedb228784ec7be2648c0413d4477d11777d6b9900e90b79d799f8c7b8df49dc",
+   :head-proof-validity :not-certified,
+   :historical-form-sha256
+   "a66b028468430879300ea7f44d861b55aa8ccdd6cf5e7cf8adc42d2ac8de4384"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :source-ref "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+   :source-form-sha256
+   "d77e0ac059e4138069b7f7b4fb327fbec72fbf69276ecf348e835adff89ebbea",
+   :unit [defn p15-s23-lq-source],
+   :historical-body-sha256
+   "31fe0608869fa5331d8d4b4141d0d06ca336c141f81e152b1d069a2554480e3b",
+   :source-tree "0d8e95c8451cf2bcf74ad70c353b10cac5f665c1",
+   :cell-guard
+   (if
+    (= {:status :accepted} validation)
+    true
+    (if
+     (= #{:status :head-proof} (set (keys validation)))
+     (= :accepted (get validation :status))
+     false)),
+   :route :current-main,
+   :classification :conditional-complete-source-body-incorporation,
+   :body-path [3 2 2],
+   :guard-sha256
+   "d26a4f4dcd377cba235c8d2f8aa48ccf4979aa9efa029d61a2c8fe3bb6748bb3",
+   :head-proof-validity :not-certified,
+   :historical-form-sha256
+   "307abaf2c70338b5f1a7569d90ad7ed8fa47918b5230b36e984326477649eeb5"}],
+ :limits
+ [:no-unconditional-function-or-input-contract-equivalence
+  :no-head-proof-validity-certification
+  :no-native-prelude-effects-callback-exception-termination-mutable-binding-transitive-runtime-proof
+  :no-other-guard-uses-accounting-or-numeric-bound-approval
+  :no-wide-crossstage-support
+  :no-PR623-636-or-other-stack-adoption-integration
+  :no-currentmain-acceptance
+  :no-whole-PR569-ACC01-PR502-release-selfhosting-closure
+  :no-held-or-unknown-operation-retry],
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :decision
+ :PASS-conditional-complete-historical-body-source-incorporation,
+ :whole-ACC01-PR502 :incomplete,
+ :canonical-adoption :not-performed}

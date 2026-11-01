@@ -1,0 +1,198 @@
+{:source-corruption-controls
+ [{:case :restore-budget-argument,
+   :refused-complete-source-equation true}
+  {:case :restore-used-binding, :refused-complete-source-equation true}
+  {:case :restore-work-refusal, :refused-complete-source-equation true}
+  {:case :restore-output-telemetry,
+   :refused-complete-source-equation true}
+  {:case :wrong-descriptor-kind,
+   :refused-complete-source-equation true}
+  {:case :wrong-operator-key, :refused-complete-source-equation true}
+  {:case :wrong-semantic-reason,
+   :refused-complete-source-equation true}
+  {:case :wrong-validator, :refused-complete-source-equation true}],
+ :path
+ "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+ :caller
+ {:owner sh08-tc-products-with-source-forms,
+  :historical-call
+  (sh08-vf-inferred-call
+   core
+   node
+   call
+   edge
+   nodes
+   binding-index
+   types
+   (- budget initial (get owners :work-count) work)),
+  :current-call
+  (sh08-vf-inferred-call
+   core
+   node
+   call
+   edge
+   nodes
+   binding-index
+   types),
+  :removed-argument (- budget initial (get owners :work-count) work),
+  :all-retained-arguments :identical,
+  :direct-source-call-count 1,
+  :current-arity :correct,
+  :whole-caller-equivalence :not-claimed},
+ :current-form-sha256
+ "23fb5ca6b87926e83d2d6bdd118f56fc3aaaf52cb2da84b4ffae1c9ec43c6390",
+ :nonclaims
+ [:no-number-object-identity-proof
+  :no-accounting-expression-evaluation-equivalence
+  :no-native-exception-termination-transitive-or-runtime-proof
+  :no-outer-caller-accounting-approval
+  :no-whole-caller-equivalence
+  :no-complete-Vector-first-support
+  :no-whole-PR569-ACC01-PR502-closure],
+ :execution
+ {:reader-eval false,
+  :Gravity-Bootstrap-helper-native-compiler-runtime :UNRUN},
+ :historical-file-sha256
+ "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+ :unit [defn sh08-vf-inferred-call],
+ :exact-reconstruction
+ {:removed-argument budget,
+  :argument-unused-in-original-body true,
+  :removed-binding [used 0],
+  :removed-LC-result-work-limit-branch
+  {:status :rejected,
+   :reason :vector-first-work-limit,
+   :work-count used},
+  :retained-semantic-predicate
+  (if
+   (= :gravity.type/applied-vector-first (get descriptor :kind))
+   (if
+    (= descriptor (get types (get call :operator-node-id)))
+    (= (get descriptor :result-type) (get types (get node :node-id)))
+    false)
+   false),
+  :accepted-and-rejected-return-delta :work-count-field-only,
+  :all-other-source-and-local-initializers :identical},
+ :governing-source-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md",
+   :sha256
+   "6a8421c78a90a8bcc1185f3fe15517eb23f3007371eaa10c027b85de7f31a84a"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :assessed-file-sha256
+ "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+ :original-inventory :unchanged,
+ :helper-envelope
+ {:receipt-sha256
+  "5b7b28a3881386b00333f989711d173fdeca9a4a766046e3f4ab6ae9d65c467c",
+  :reused-scope
+  :unchanged-two-helper-normal-return-overapproximation-only,
+  :old-caller-decisions :not-extended,
+  :helper-pins
+  [{:name sh08-lc-native-arguments,
+    :arguments [arguments],
+    :form-sha256
+    "1ddac242e4421de063f8d0fd49770660be95b40017ae8617eb2d6608e7624654",
+    :source-return-envelope
+    #{{:keys #{:arguments :status},
+       :status :accepted,
+       :reason-present false,
+       :reason nil}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :unsupported-arguments}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :cyclic-arguments}},
+    :reason-envelope #{:cyclic-arguments :unsupported-arguments}}
+   {:name sh08-lc-validate-types,
+    :arguments [arguments],
+    :form-sha256
+    "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+    :source-return-envelope
+    #{{:keys #{:status},
+       :status :accepted,
+       :reason-present false,
+       :reason nil}
+      {:keys #{:arguments :status},
+       :status :accepted,
+       :reason-present false,
+       :reason nil}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :malformed-type}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :unsupported-type}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :unsupported-arguments}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :cyclic-type}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :nested-never}
+      {:keys #{:reason :status},
+       :status :rejected,
+       :reason-present true,
+       :reason :cyclic-arguments}},
+    :reason-envelope
+    #{:malformed-type
+      :cyclic-arguments
+      :nested-never
+      :cyclic-type
+      :unsupported-arguments
+      :unsupported-type}}],
+  :normal-work-limit-reason :absent,
+  :root-work-count :absent},
+ :independent-classification :pending,
+ :proposed-disposition
+ :reject-restoring-enumerated-accounting-and-retired-API-only,
+ :kind :vector-first-inferred-call-source-disposition-proposal,
+ :direct-dependencies
+ [{:name sh08-lc-validate-types,
+   :form-sha256
+   "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+   :historical-form-identical false}
+  {:name sh08-ft-ordered-child-types,
+   :form-sha256
+   "08c021d0bccc02bdf623f6e4efad9a9318ef47a2e2a543a54e40dbaa979beed2",
+   :historical-form-identical true}
+  {:name sh08-lq-source,
+   :form-sha256
+   "f69e0a50fcf44cdbe34d8afade49ee646239f9502b1109f5fa7552f3a2226e12",
+   :historical-form-identical false}
+  {:name sh08-lq-finish,
+   :form-sha256
+   "e4d9f927fa6ae3e47d22d4bf34c4be74eaa0e32bc014d9800940e759b2563935",
+   :historical-form-identical true}],
+ :generator
+ {:path "/tmp/acc01-vector-first-disposition.clj",
+  :sha256
+  "d841fa16de5f5692ef536ee1eb1f491264b875349d7214c3825de001a5131781"},
+ :original-inventory-sha256
+ "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+ :production-change :none,
+ :main "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :historical-form-sha256
+ "292818bec2a6319f26c28a5ec7051fc8de98b80ec6d6ea392ed1260a84cad94f"}

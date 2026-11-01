@@ -1,0 +1,20 @@
+{:independent-exact-source-review :pending,
+ :tree "000e7dc4bda6dc0b9ea2a79340501406ffa7faa3",
+ :candidate "3fd50a27141560b480406c882778e6efae44b4b4",
+ :complete-tree-mode-blob-equation :pass,
+ :historical-metadata-source :preserved,
+ :production-expressions 1,
+ :current-main-integration :UNRUN,
+ :genuine-compiler-effects-lowering-runtime :UNRUN,
+ :all-other-source-and-test-bytes :conserved,
+ :CI :pending,
+ :kind :vector-rest-metadata-draft-publication,
+ :changed-paths
+ ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "specs/accounting-removal/vector-rest-metadata-preservation.edn"
+  "specs/accounting-removal/vector-rest-metadata-preservation.md"],
+ :metadata-equivalence :HELD-unchanged,
+ :base "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+ :pr 639,
+ :owner :ACC-01,
+ :whole-ACC01-PR502-disposition :incomplete}

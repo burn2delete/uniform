@@ -1,0 +1,89 @@
+{:prior-exact-composition-review
+ {:candidate "c5fc3c57c05a4f94e8513ec86ed197818f2ac668",
+  :receipt-sha256
+  "eaa55bda09fe73d6c5f2c2e6ce1a42d69bdb80813ef15b1139890cd184e825f3",
+  :source-bytes :identical,
+  :future-acceptance-inherited false},
+ :old-workspace
+ {:head "929d0701aa9fad022be8f3a3ee1912db1e9e89aa",
+  :three-retained-cache-paths
+  ["?? tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh01-stage2-runtime-iteration-test.transit.json"
+   "?? tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh09-body-effect-test.transit.json"
+   "?? tools/ci/kondo/.cache/v1/lock"],
+  :delete-move-exclusion-or-cleanup-retry false,
+  :source-branches-and-files :preserved},
+ :nonclaims
+ [:old-root-clean
+  :genuine-compiler-runtime-result
+  :whole-loop-accounting-removal
+  :parent-stack-or-PR569-acceptance
+  :ACC01-or-PR502-closure
+  :release
+  :self-hosting],
+ :candidate "a3047f50f771db71d71b5a57a589e0eb5dd7bb67",
+ :inspect
+ {:mode :inspect,
+  :read-only true,
+  :preconditions
+  {:base-resolved true,
+   :candidate-identities-match true,
+   :clean-worktree true,
+   :named-branch true,
+   :reconciliation-allowed true,
+   :all-pass true},
+  :observed-identities
+  {:expected-base "0fb44a5b0152a56408753da1c1df94c3e4ccd711",
+   :expected-commit "a3047f50f771db71d71b5a57a589e0eb5dd7bb67",
+   :expected-tree "0a63ce095b20d85a77ca6484cb0bd3eac0b42084"},
+  :reconciliation
+  {:relation "descendant",
+   :base-is-ancestor true,
+   :candidate-is-ancestor false,
+   :tree-equivalent false,
+   :recommendation "integrate_candidate"}},
+ :main-integration :pending-coordinator,
+ :managed-creation
+ {:operation "433804a9-4853-468e-a69a-ca45de766e4e",
+  :stage :completed,
+  :attachment "01a189d9-a6d5-7e42-aa9f-87acadf6845b",
+  :source :existing-attached-ACC01-root,
+  :initial-head "c5fc3c57c05a4f94e8513ec86ed197818f2ac668",
+  :one-creation-only true,
+  :shell-fallback false,
+  :registration-error nil},
+ :independent-affected-composition-acceptance :pending,
+ :kind :verified-clean-managed-loop-reconciliation,
+ :parents
+ ["c5fc3c57c05a4f94e8513ec86ed197818f2ac668"
+  "0fb44a5b0152a56408753da1c1df94c3e4ccd711"],
+ :local-generators
+ {:reconcile-sha256
+  "acfbbf3d805249a7f98bbb0b2664dc20b0c0efbf2352456b7e5627912bc9983d",
+  :inspect-sha256
+  "9d1ab6a252f85feeda079f111bbbb53d92cd7bdff9ce2c9a2d174835a8f633a9",
+  :publication-sha256
+  "ec391fec024541d5ec961d5a5bf44cf93823a673284656af6225e7b2689eb507"},
+ :composition
+ {:whole-tree-entry-count 10071,
+  :only-delta-paths
+  ["bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   "specs/accounting-removal/loop-accounting-main-census.edn"
+   "specs/accounting-removal/loop-accounting-main.md"],
+  :tree-equals-precomputed-merge true,
+  :whole-tree-overlay-equal true,
+  :reviewed-three-file-entries :identical,
+  :all-other-current-main-entries :identical},
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :workstream-governance {:records 185, :result :pass},
+  :whitespace :pass,
+  :genuine-tests :UNRUN},
+ :base "0fb44a5b0152a56408753da1c1df94c3e4ccd711",
+ :branch "codex/acc01-loop-integration-20261029",
+ :pr 619,
+ :current-head-CI :pending,
+ :integration-mode :UNRUN,
+ :owner :ACC-01,
+ :candidate-tree "0a63ce095b20d85a77ca6484cb0bd3eac0b42084"}

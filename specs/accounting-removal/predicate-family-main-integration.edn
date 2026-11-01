@@ -1,0 +1,227 @@
+{:integration-mode-preflight
+ {:sha256
+  "e9921e4a35debc0a9e7c8d4be07c99d45b7b5f1f222511661dafeff8be30889c",
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+   "expected-commit" "7b4dea35cc0ac17803de06ec56b7484ca7e62319",
+   "expected-tree" "84ad6dcb8d889e9ad8973e873545f0f7102a6623"},
+  :exact-full-tuple true,
+  :no-cleanup-or-exclusion true},
+ :remote-merge
+ {:source-ref :retained,
+  :merged true,
+  :tree "84ad6dcb8d889e9ad8973e873545f0f7102a6623",
+  :GitHub-APPROVE false,
+  :parent "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+  :method :squash,
+  :base-branch "main",
+  :state :closed,
+  :unresolved-review-threads [],
+  :administrator-bypass false,
+  :formal-reviews [],
+  :expected-head "7b4dea35cc0ac17803de06ec56b7484ca7e62319",
+  :commit "7d590aa40932b2592f43dd8aa0785ac79328fcfc"},
+ :nonclaims
+ [:genuine-owner-acceptance
+  :semantic-equivalence
+  :transitive-dependency-proof
+  :whole-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :implementation-acceptance
+  :release
+  :self-hosting],
+ :execution
+ {:genuine-owner-tests :UNRUN,
+  :runtime-helper-kernel-projection :UNRUN,
+  :Bootstrap-loaded false},
+ :integration-base "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+ :candidate "7b4dea35cc0ac17803de06ec56b7484ca7e62319",
+ :accepted-scope
+ {:upstream-pins 22,
+  :all-production :unchanged,
+  :candidate-entries 10087,
+  :base-plus-three-original-byte-identical-additions true,
+  :named-host-adapters 8,
+  :paths
+  ["bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj"
+   "specs/accounting-removal/predicate-family-controls-census.edn"
+   "specs/accounting-removal/predicate-family-controls.md"],
+  :original-families 11,
+  :assertion-definitions-only true,
+  :base-entries 10084,
+  :owner-pins 114,
+  :raw-adaptations 3,
+  :syntactic-is-forms 13,
+  :bounded-direct-dependency-targets 331},
+ :generator-sha256
+ "7612407e568d727b5776462f7f66ae6dba6c1428cba6b619e7ab5e77d6cd8e87",
+ :fresh-readback
+ {:GitHub-merged-and-closed true,
+  :merge-parent-matches-base true,
+  :candidate-and-merged-tree-identical true,
+  :main-reachable true,
+  :observed-main "7d590aa40932b2592f43dd8aa0785ac79328fcfc"},
+ :CI
+ {:head "7b4dea35cc0ac17803de06ec56b7484ca7e62319",
+  :run 40986953678,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :preservation
+ {:original-cache :untouched,
+  :source-refs :retained,
+  :original-29-path-inventory :unchanged,
+  :PR532-scope :unchanged,
+  :PR502 :open},
+ :kind :predicate-family-finite-main-integration,
+ :independent-review
+ {:receipt-sha256
+  "b30e46b07a6e0e5a0d2295f1c03fd0ddc7cea2d8cd08f3a6e7fc721398df249d",
+  :scope :exact-source-DATA-composition,
+  :result :pass-in-exact-source-data-scope,
+  :blocking-findings [],
+  :checks 24049,
+  :corruption-refusals 658,
+  :original-controls-reexecuted 37,
+  :consumer-reproduction :byte-identical-receipt},
+ :pr 625,
+ :whole-file-hash-boundaries
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :historical-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :current-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :base-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :whole-file-scope :historical-and-current-distinct}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :historical-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :current-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :base-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :whole-file-scope :historical-and-current-distinct}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :historical-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :current-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :base-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :whole-file-scope :historical-and-current-distinct}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :historical-sha256
+   "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+   :current-sha256
+   "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+   :base-sha256
+   "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+   :whole-file-scope :historical-and-current-distinct}],
+ :owner :ACC-01,
+ :candidate-tree "84ad6dcb8d889e9ad8973e873545f0f7102a6623",
+ :historical-helper-boundaries
+ {:selected-owner-differences-by-file
+  {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   22,
+   "bootstrap/gravity/src/gravity/effects.gravity" 24,
+   "bootstrap/gravity/p15_s23/emitter.gravity" 12},
+  :all22-upstream-helper-forms :historically-identical,
+  :new-selected-validator-names
+  [body-lc-validate-types p15-s23-lc-validate-types],
+  :selected-owner-form-differences 58,
+  :four-complete-explicit-source-correspondences
+  [{:name body-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name body-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {body-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {p15-s23-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}],
+  :semantic-equivalence :unproven,
+  :prior-private-or-source-reviews
+  :not-promoted-to-execution-or-parent-acceptance,
+  :two-real-remaining-structural-differences
+  [{:name body-all?,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     body-all?
+     [values]
+     (loop
+      [remaining values]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}
+   {:name p15-s23-typed-all,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     p15-s23-typed-all
+     [checks]
+     (loop
+      [remaining checks]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}],
+  :ID-width-and-host-guard-quota-disposition :not-assessed-or-changed,
+  :transitive-whole-callgraph-proof false}}

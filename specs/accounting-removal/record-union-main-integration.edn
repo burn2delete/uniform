@@ -1,0 +1,378 @@
+{:integration-mode-preflight
+ {:sha256
+  "9e613a9e54bb1d8950c7569008d094b8694950d7c82756a7a1c675003dde7a94",
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "7d590aa40932b2592f43dd8aa0785ac79328fcfc",
+   "expected-commit" "7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55",
+   "expected-tree" "d9a23f1c7944288f2756baa073fbc44ca7226496"},
+  :exact-full-tuple true,
+  :no-cleanup-or-exclusion true},
+ :remote-merge
+ {:source-ref :retained,
+  :merged true,
+  :tree "d9a23f1c7944288f2756baa073fbc44ca7226496",
+  :GitHub-APPROVE false,
+  :parent "7d590aa40932b2592f43dd8aa0785ac79328fcfc",
+  :method :squash,
+  :base-branch "main",
+  :state :closed,
+  :unresolved-review-threads [],
+  :administrator-bypass false,
+  :formal-reviews [],
+  :expected-head "7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55",
+  :commit "8300c415628d2110cd703824a059e06476f4e1e0"},
+ :nonclaims
+ [:genuine-owner-acceptance
+  :historical-helper-equivalence
+  :transitive-semantic-proof
+  :authenticated-admission
+  :executable-RecordUnion
+  :whole-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:genuine-owner-kernels :UNRUN,
+  :native-runtime-helper-projection :UNRUN,
+  :Bootstrap-loaded false},
+ :integration-base "7d590aa40932b2592f43dd8aa0785ac79328fcfc",
+ :candidate "7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55",
+ :source-files
+ {:current-test-sha256
+  "d6464313d475da679ff9cf1b723c13a78972c83b42320974e8c698199ee8fb65",
+  :base-test-sha256
+  "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+  :original-test-sha256
+  "df377565ef47460364b3997d5d0ef8df710d31d228c42283150da9c3fb0ff74b",
+  :suffix-sha256
+  "67ca63e3258d932f6e76e19a269120bcf9a3a1cbf09aae1ea9151aa48c460fdf",
+  :current-C7-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :historical-C7-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :generator-sha256
+ "ee54c1fd44de9aa5e39f43c8a7a26232634861ddffe3d015dd93c7aadb777eee",
+ :production
+ {:all31-current-forms-and-arguments-match-original true,
+  :exact-syntactic-closure 31,
+  :roots
+  [sh08-ru-check-family
+   sh08-ru-all-field-schemas-valid?
+   sh08-ru-all-field-values-valid?
+   sh08-ru-all-variant-schemas-valid?
+   sh08-ru-all-match-branches-valid?
+   sh08-ram-symbol-vector?
+   sh08-ram-match-shape?
+   sh08-ram-resolve-program],
+  :owner-pins-sha256
+  "d9d41e111fe4a29219741bfd20f98a7454f968d452226640020a65c462bbdfcf",
+  :whole-file-hashes :historical-current-distinct,
+  :all-production-conserved-from-base true,
+  :six-historical-helper-differences
+  [{:name sh08-ru-all-field-schemas-valid?,
+    :current
+    (defn
+     sh08-ru-all-field-schemas-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :type})
+      (loop
+       [remaining fields]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (let
+         [field (first remaining)]
+         (if
+          (keyword? (get field :name))
+          (if
+           (sh08-ru-supported-type? (get field :type))
+           (recur (rest remaining))
+           false)
+          false))))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-field-schemas-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :type})
+      (if
+       (sh08-ft-unique-records? fields :name)
+       (loop
+        [remaining fields]
+        (if
+         (= (count remaining) 0)
+         true
+         (let
+          [field (first remaining)]
+          (if
+           (keyword? (get field :name))
+           (if
+            (sh08-ru-supported-type? (get field :type))
+            (recur (rest remaining))
+            false)
+           false))))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-all-field-values-valid?,
+    :current
+    (defn
+     sh08-ru-all-field-values-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :value})
+      (loop
+       [remaining fields]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? fields :name)
+        (if
+         (keyword? (get (first remaining) :name))
+         (recur (rest remaining))
+         false)))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-field-values-valid?
+     [fields]
+     (if
+      (sh08-ru-all-record-shapes? fields #{:name :value})
+      (if
+       (sh08-ft-unique-records? fields :name)
+       (loop
+        [remaining fields]
+        (if
+         (= (count remaining) 0)
+         true
+         (if
+          (keyword? (get (first remaining) :name))
+          (recur (rest remaining))
+          false)))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-all-match-branches-valid?,
+    :current
+    (defn
+     sh08-ru-all-match-branches-valid?
+     [branches]
+     (if
+      (sh08-ru-all-record-shapes? branches #{:variant :result})
+      (loop
+       [remaining branches]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? branches :variant)
+        (if
+         (keyword? (get (first remaining) :variant))
+         (recur (rest remaining))
+         false)))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-match-branches-valid?
+     [branches]
+     (if
+      (sh08-ru-all-record-shapes? branches #{:variant :result})
+      (if
+       (sh08-ft-unique-records? branches :variant)
+       (loop
+        [remaining branches]
+        (if
+         (= (count remaining) 0)
+         true
+         (if
+          (keyword? (get (first remaining) :variant))
+          (recur (rest remaining))
+          false)))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-all-variant-schemas-valid?,
+    :current
+    (defn
+     sh08-ru-all-variant-schemas-valid?
+     [variants]
+     (if
+      (sh08-ru-all-record-shapes? variants #{:payload-type :tag})
+      (loop
+       [remaining variants]
+       (if
+        (= (count remaining) 0)
+        (sh08-ft-unique-records? variants :tag)
+        (let
+         [variant (first remaining)]
+         (if
+          (keyword? (get variant :tag))
+          (if
+           (sh08-ru-supported-type? (get variant :payload-type))
+           (recur (rest remaining))
+           false)
+          false))))
+      false)),
+    :historical
+    (defn
+     sh08-ru-all-variant-schemas-valid?
+     [variants]
+     (if
+      (sh08-ru-all-record-shapes? variants #{:payload-type :tag})
+      (if
+       (sh08-ft-unique-records? variants :tag)
+       (loop
+        [remaining variants]
+        (if
+         (= (count remaining) 0)
+         true
+         (let
+          [variant (first remaining)]
+          (if
+           (keyword? (get variant :tag))
+           (if
+            (sh08-ru-supported-type? (get variant :payload-type))
+            (recur (rest remaining))
+            false)
+           false))))
+       false)
+      false)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-supported-type?,
+    :current
+    (defn
+     sh08-ru-supported-type?
+     [value]
+     (if
+      (keyword? value)
+      (contains?
+       #{:gravity.type/bool
+         :gravity.type/integer
+         :gravity.type/nil
+         :gravity.type/string
+         :gravity.type/keyword}
+       value)
+      false)),
+    :historical
+    (defn
+     sh08-ru-supported-type?
+     [value]
+     (contains?
+      #{:gravity.type/bool
+        :gravity.type/integer
+        :gravity.type/nil
+        :gravity.type/string
+        :gravity.type/keyword}
+      value)),
+    :behavioral-equivalence :unassessed}
+   {:name sh08-ru-value-type,
+    :current
+    (defn
+     sh08-ru-value-type
+     [value]
+     (if
+      (= nil value)
+      :gravity.type/nil
+      (if
+       (boolean? value)
+       :gravity.type/bool
+       (if
+        (integer? value)
+        :gravity.type/integer
+        (if
+         (string? value)
+         :gravity.type/string
+         (if
+          (keyword? value)
+          :gravity.type/keyword
+          :gravity.type/unknown)))))),
+    :historical
+    (defn
+     sh08-ru-value-type
+     [value]
+     (if
+      (= value nil)
+      :gravity.type/nil
+      (if
+       (contains? #{true false} value)
+       :gravity.type/bool
+       (if
+        (integer? value)
+        :gravity.type/integer
+        (if
+         (string? value)
+         :gravity.type/string
+         (if
+          (keyword? value)
+          :gravity.type/keyword
+          :gravity.type/unknown)))))),
+    :behavioral-equivalence :unassessed}],
+  :semantic-equivalence :unproven},
+ :fresh-readback
+ {:GitHub-merged-and-closed true,
+  :merge-parent-matches-base true,
+  :candidate-and-merged-tree-identical true,
+  :main-reachable true,
+  :observed-main "8300c415628d2110cd703824a059e06476f4e1e0"},
+ :CI
+ {:head "7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55",
+  :run 40988755307,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true},
+ :assertion-form-count 21,
+ :accepted-composition
+ {:base-entries 10087,
+  :candidate-entries 10089,
+  :all-base-paths-modes-blobs-conserved-except-exact-test-append true,
+  :exact-original-two-record-additions true,
+  :entire-current-main-test-prefix-retained true,
+  :exact-reviewed-two-test-suffix true,
+  :all-original-comments-and-negative-controls-preserved true,
+  :current-main-quote-collection-reader-predicate-additions-conserved
+  true},
+ :preservation
+ {:original-cache :untouched,
+  :source-refs :retained,
+  :original-29-path-inventory :unchanged,
+  :PR532-scope :unchanged,
+  :PR502 :open},
+ :kind :record-union-finite-main-integration,
+ :historical-qualifications
+ {:census-old-C7-and-test-file-hashes :historical-only,
+  :two-anonymous-reader-serialized-test-hashes
+  :unendorsed-auxiliary-not-independent-evidence,
+  :normalization :none-for-raw-spans-or-Gravity-pins,
+  :host-reader-local-gensyms-only-for-dispatch-comparison true},
+ :original-spans
+ [{:name record-union-descriptor-rows-have-no-count-quota,
+   :raw-span-sha256
+   "5e1dd27e8ce47128ec56106dcafb51a080a9c92473735c643d417e7907156efc"}
+  {:name union-branch-definitions-have-no-count-quota,
+   :raw-span-sha256
+   "241fdc205a7da69cfc54dc744313511cc1a1c295d3384c82b76246b0411f2aa7"}],
+ :independent-review
+ {:receipt-sha256
+  "57f46b92d793d97f5be8fd2dbc668061e2acb4f7c2068bff4cf5e5989d39db82",
+  :scope :exact-source-DATA-composition,
+  :verdict :scoped-source-pass,
+  :findings [],
+  :checks 10851,
+  :corruption-refusals 150,
+  :original-controls-reexecuted 6,
+  :consumer-reproduction :byte-identical-receipt},
+ :pr 620,
+ :owner :ACC-01,
+ :dispatch-adapters
+ {:host-source-symbol-closure 7,
+  :direct-bootstrap-adapters 3,
+  :all-unchanged true,
+  :executed false},
+ :candidate-tree "d9a23f1c7944288f2756baa073fbc44ca7226496"}

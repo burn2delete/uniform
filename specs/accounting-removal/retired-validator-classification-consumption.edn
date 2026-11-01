@@ -1,0 +1,279 @@
+{:denial-boundary
+ {:comparison-sha256
+  "6d7312f367cd64de124751e51b873633217cedcabebe33a86357b36f3cf1f5f4",
+  :old-e7-DSE-review :stopped-not-retried-or-rerouted,
+  :new-evidence-subject :distinct},
+ :C7-source-distinction
+ {:assessed-main "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+  :assessed-file-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :evidence-commit-file-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  :evidence-commit-vs-parent :byte-identical,
+  :six-selected-definitions :identical-across-both-sources,
+  :whole-files :different-outside-selected-definitions},
+ :tree "53642c707fecf553b687d89fe47c72f36876ee1a",
+ :consumer-source-sha256
+ "54af2e05d7415cd56fc627b08c133703bbe3cbcfece472aa9250e2c6b4489cc1",
+ :negative-controls
+ [{:helper sh08-lc-native-arguments,
+   :case :work-limit,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :computed-reason,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :unknown-return,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :loop-variable,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :shadowed-helper,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :work-telemetry,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :work-limit,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :computed-reason,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :unknown-return,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :loop-variable,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :shadowed-helper,
+   :one-actual-map true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :work-telemetry,
+   :one-actual-map true,
+   :refused true}],
+ :parent "293836e7a1ef84dfb78b5adc1225e0335ce7d5d9",
+ :candidate "1da3e25b40f2494b1fd28a8505d9b6bb867d957b",
+ :reviewer-thread "01a18528-c7af-75c1-a399-5eb23dbbe8e4",
+ :reproduction
+ {:path "/tmp/validator-envelope-independent-review.clj",
+  :sha256
+  "9eaf035b2dbb2797d33d57fdd04172bea7c475e207378d6a458565e9180cde2a"},
+ :delivery :private-receipt-for-supported-helper-readback,
+ :scope
+ :four-pinned-C7-callers-eight-listed-subtrees-two-helper-normal-return-envelope,
+ :disposition
+ :accept-rejecting-restoration-of-exact-eight-accounting-remnants,
+ :classification
+ "The exact zero-charge bookkeeping expressions and validator work-limit diagnostic alternatives have no independently identified semantic purpose. Current policy removes project accounting requirements. Under the pinned immutable helper definitions and L2 normal-tail semantics the conservative envelope has six semantic reasons, no :work-limit normal reason, and no root :work-count result field. Reject restoration of only the eight enumerated remnants. All other caller forms and arguments remain conserved; outer quota/width/carrier conditions remain separately unresolved.",
+ :independent-envelopes
+ {sh08-lc-native-arguments
+  #{{:keys #{:arguments :status},
+     :status :accepted,
+     :reason-present false,
+     :reason nil}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :unsupported-arguments}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :cyclic-arguments}},
+  sh08-lc-validate-types
+  #{{:keys #{:status},
+     :status :accepted,
+     :reason-present false,
+     :reason nil}
+    {:keys #{:arguments :status},
+     :status :accepted,
+     :reason-present false,
+     :reason nil}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :malformed-type}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :unsupported-type}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :unsupported-arguments}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :cyclic-type}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :nested-never}
+    {:keys #{:reason :status},
+     :status :rejected,
+     :reason-present true,
+     :reason :cyclic-arguments}}},
+ :source-disposition
+ :reject-only-restoration-of-eight-listed-remnants-retain-other-historical-source,
+ :whole-PR569-review :not-conferred,
+ :kind :retired-validator-independent-classification-consumption,
+ :receipt-sha256
+ "5b7b28a3881386b00333f989711d173fdeca9a4a766046e3f4ab6ae9d65c467c",
+ :source-checks 155,
+ :policy-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :receipt-reproduced :byte-identical,
+ :limits
+ [:normal-return-overapproximation-not-exact-reachability
+  :pinned-unrebound-bindings
+  :loop-values-unknown
+  :conditions-unrefined
+  :no-arithmetic-or-number-object-identity-equivalence
+  :no-termination-exception-native-or-transitive-proof
+  :no-production-change
+  :no-outer-quota-width-carrier-retention-approval
+  :no-genuine-owner-execution
+  :no-compiler-Bootstrap-native-helper-kernel-target-runtime-or-probe
+  :no-whole-ACC01-or-PR502-closure
+  :no-approve],
+ :caller-units
+ [{:unit [defn sh08-pc-first-work],
+   :arguments [route core nodes bindings types budget],
+   :historical-form-sha256
+   "df85a85076d8173c5bc3d98d352e88120b0c39eacfc6ba59017f8cb497f5513e",
+   :main-form-sha256
+   "ca5c7e725b2a1b749246446617a99ea32b7a18a608982beed5eb4cf9b3ff68f7",
+   :complete-differences
+   [{:at [3 2 3 1 3], :historical (+ base 0), :main base}
+    {:at [3 2 3 2 3 :reason 1],
+     :historical
+     (if
+      (= :work-limit (get checked :reason))
+      true
+      (= :map-get-work-limit (get carrier :reason))),
+     :main (= :map-get-work-limit (get carrier :reason))}]}
+  {:unit [defn sh08-pc-key-part],
+   :arguments [shape key expected budget],
+   :historical-form-sha256
+   "e6e7250b1a4f74f7daf39417f303c99b7c78d162002214e25916f055275baae4",
+   :main-form-sha256
+   "aae909be2081c9192628ec2733776ad220a7b93268d401108262f579351c8f2a",
+   :complete-differences
+   [{:at [3 2 3 2 1 3], :historical (+ base 0), :main base}
+    {:at [3 2 3 2 2 3 :reason],
+     :historical
+     (if
+      (= :work-limit (get checked :reason))
+      :map-get-work-limit
+      :map-get-private-first-entry-presence-required),
+     :main :map-get-private-first-entry-presence-required}]}
+  {:unit [defn sh08-lsi-vector-first],
+   :arguments [node binding env seen budget],
+   :historical-form-sha256
+   "9f8ad951e74169726e3c0970851eb51eb0b7b5c6515f4236669e959bab50982d",
+   :main-form-sha256
+   "f73d369b9fd90bde4a94cd8cc9adb1348607ce459995f1535837b21b799ea296",
+   :complete-differences
+   [{:at [3 2 2 2 2 2 2 1],
+     :historical
+     [cold-type
+      {:kind :gravity.type/vector,
+       :shape :literal,
+       :element-types (get scanned :types)}
+      actual
+      (sh08-lc-validate-types [arg-type])
+      used
+      (+ used 0)
+      cold
+      (sh08-lc-validate-types [cold-type])
+      used
+      (+ used 0)],
+     :main
+     [cold-type
+      {:kind :gravity.type/vector,
+       :shape :literal,
+       :element-types (get scanned :types)}
+      actual
+      (sh08-lc-validate-types [arg-type])
+      cold
+      (sh08-lc-validate-types [cold-type])]}
+    {:at [3 2 2 2 2 2 2 2 3 :reason],
+     :historical
+     (if
+      (if
+       (= :work-limit (get actual :reason))
+       true
+       (= :work-limit (get cold :reason)))
+      :loop-type-work-limit
+      :unsupported-loop-member-grounding),
+     :main :unsupported-loop-member-grounding}]}
+  {:unit [defn sh08-vsl-parameter],
+   :arguments
+   [core slice-node reference nodes bindings types forms budget],
+   :historical-form-sha256
+   "8c92ec920f8f9ccd9093c4b80e0f6d266ae6dad87444cfa4b4760c08f1221bd5",
+   :main-form-sha256
+   "9b87b358a2e4786076fff6138beaccace9c6d692d5e078efcecbbf3ede3334d0",
+   :complete-differences
+   [{:at [3 2 3 3 2 2 2 2 2 3 3 1],
+     :historical
+     [validation
+      (sh08-lc-validate-types [type (get slot :type)])
+      work
+      (+ work 0)],
+     :main
+     [validation (sh08-lc-validate-types [type (get slot :type)])]}
+    {:at [3 2 3 3 2 2 2 2 2 3 3 2 2 :reason],
+     :historical
+     (if
+      (= :work-limit (get validation :reason))
+      :vector-slice-work-limit
+      :vector-slice-receiver-proof-required),
+     :main :vector-slice-receiver-proof-required}]}],
+ :author-checker
+ {:path "/tmp/acc01-validator-return-envelope.clj",
+  :sha256
+  "59bf9306cbc8ed48c7ac73c725ec4322ecd49ad4fa6d4a090deea9370962d60a",
+  :result :exact-record-reproduced,
+  :repository-output :intercepted-in-memory,
+  :target-functions-executed false},
+ :current-main-source-applicability
+ {:commit "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :tree "7c4c2733de6675701e2bd19b59b5dc10f7e9d82c",
+  :whole-C7-equals-assessed-main true,
+  :six-selected-definitions-and-policy-pins :freshly-verified,
+  :evidence-commit-C7-difference :preserved,
+  :no-production-change true},
+ :input-hashes
+ {"specs/accounting-removal/retired-validator-branch-correspondence.edn"
+  "100627a70b6e40bc3dd53360ee7d47760b21b4b5b3f903d5ca21b3776ed7b37b",
+  "specs/accounting-removal/retired-validator-return-envelope.edn"
+  "084a90ba845d88bf4ffa909a5483fde14f919de6a53d3d25d79f6c660680de5a",
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  "specs/accounting-removal/preserved-source-inventory.edn"
+  "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0"},
+ :owner :ACC-01,
+ :original-29-path-inventory :unchanged}

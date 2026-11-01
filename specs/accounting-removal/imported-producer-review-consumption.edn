@@ -1,0 +1,158 @@
+{:source-pins
+ {:census
+  {:path
+   "specs/accounting-removal/imported-producer-controls-census.edn",
+   :sha256
+   "f7c79169cd94664badabce72e10f6ea0b57db1de3489d6cbfe935dfdb93e485a"},
+  :test
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name sh08-imported-producer-validation-development-kernel,
+   :base-file-sha256
+   "4b86b518d90227dd24c20abd013d8b78a2b8bc6f4a5678327976a67b10cdc444",
+   :candidate-file-sha256
+   "285718db34abcb07449ffb7b144ff29afa7dfa123097b54735b8104e4ce267e6",
+   :raw-original-span-sha256
+   "e37b2ccc6157b1d46b5e729af379f6e31dd5b42268532eee476dc4d99941ca31",
+   :complete-form-sha256
+   "f275f8938e31794d8e8299d3b2bc9f41497f7078481fb9ff97311a14fb584f74",
+   :raw-byte-identical true,
+   :all-prior-bytes-unchanged true},
+  :production
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :base-file-sha256
+   "f957e3b088efeae70eb4285a34e7e41fd0299608b152e0b4769ce25be72eacb4",
+   :all-production-bytes-unchanged true,
+   :actual-entrypoints
+   [sh08-im-derive
+    sh08-im-producers
+    sh08-im-inputs-check
+    sh08-carrier-preflight],
+   :entrypoint-and-immediate-source-targets
+   [{:name sh08-carrier-preflight,
+     :base-form-sha256
+     "853b93fa7e4a565cc697efed88879f5b545e37972d68ef4b576ea8781af6c502",
+     :historical-form-sha256
+     "853b93fa7e4a565cc697efed88879f5b545e37972d68ef4b576ea8781af6c502",
+     :historical-form-identical true}
+    {:name sh08-exact-keys?,
+     :base-form-sha256
+     "8d624e29472c453c72fba5212d954d5335918142bb7b50385ced3405adf6f9ff",
+     :historical-form-sha256
+     "8d624e29472c453c72fba5212d954d5335918142bb7b50385ced3405adf6f9ff",
+     :historical-form-identical true}
+    {:name sh08-im-derive,
+     :base-form-sha256
+     "a84544a70f8b451ea92de4146195af85fa912c0635ddd219b0dbc4e91581aa31",
+     :historical-form-sha256
+     "a84544a70f8b451ea92de4146195af85fa912c0635ddd219b0dbc4e91581aa31",
+     :historical-form-identical true}
+    {:name sh08-im-derive-with-allowance,
+     :base-form-sha256
+     "7e8b169ed1fa918ab1fd848c93c8df8d018f52054976a39cb7a58f97713c48c4",
+     :historical-form-sha256
+     "351e0c037d3a704e7f8cf50e1ac223b115019ff445236210f870a5d4f5af0b97",
+     :historical-form-identical false}
+    {:name sh08-im-failure,
+     :base-form-sha256
+     "134a2799bd61fa57b594456476cd900c9b5f46ca2b27bb9acf2747c8f651aeee",
+     :historical-form-sha256
+     "134a2799bd61fa57b594456476cd900c9b5f46ca2b27bb9acf2747c8f651aeee",
+     :historical-form-identical true}
+    {:name sh08-im-inputs-check,
+     :base-form-sha256
+     "e7e357023d15f5ab9b30e94cab68e8ec8bc16346fb225492f54774d9ee2d1afd",
+     :historical-form-sha256
+     "e7e357023d15f5ab9b30e94cab68e8ec8bc16346fb225492f54774d9ee2d1afd",
+     :historical-form-identical true}
+    {:name sh08-im-producers,
+     :base-form-sha256
+     "8c78940be575f9aae787b59d2602c34a0d2c6d720a4600c14a3a2c3d5be4dae5",
+     :historical-form-sha256
+     "8c78940be575f9aae787b59d2602c34a0d2c6d720a4600c14a3a2c3d5be4dae5",
+     :historical-form-identical true}
+    {:name sh08-im-producers-with-allowance,
+     :base-form-sha256
+     "dfed1af3b1443f06cdfdab03eaa4a577b87a382130fe02d485b6e6cdff0690d2",
+     :historical-form-sha256
+     "dfed1af3b1443f06cdfdab03eaa4a577b87a382130fe02d485b6e6cdff0690d2",
+     :historical-form-identical true}
+    {:name sh08-vf-original-data,
+     :base-form-sha256
+     "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+     :historical-form-sha256
+     "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241",
+     :historical-form-identical true}],
+   :whole-callgraph-proof false},
+  :documentation
+  {:path "specs/accounting-removal/imported-producer-controls.md",
+   :sha256
+   "43963fe404a340681c02760ee24532dfc72535ef6d2cf4aeec74c35333f37848"}},
+ :parent-tree "c8600e2c52f4ba47f1366fae4035248d23365623",
+ :nonclaims
+ [:whole-imported-accounting
+  :transitive-callgraph-equivalence
+  :authenticated-producer
+  :whole-ACC01
+  :PR502-closure
+  :parent-stack-acceptance
+  :main-extraction
+  :CI-acceptance
+  :integration-or-preflight
+  :release
+  :self-hosting],
+ :parent "3a1a553dbb1b3eb0ae472f5bf806171c02a71109",
+ :candidate "6c8d70290a52789ba57d5f7c95e5c700cc7ce89c",
+ :DATA-sizes :definition-inspected-not-allocated-or-executed,
+ :checks {:test 3, :pass 69, :fail 0, :error 0, :type :summary},
+ :scope
+ "Source-only PASS for the exact original control restoration and nine immediate form pins at this PR618-stack identity. Genuine controls, PR613 carrier repair acceptance, applicable producer/context composition, fresh main identity, CI and integration gates remain separate. Earlier 569/303 denial scopes were not retried.",
+ :current-main-integration :pending,
+ :author "01a183dd-7208-7d33-a336-7483fd90e358",
+ :consumption
+ :receipt-tree-and-nine-dependencies-verified-no-kernel-or-large-allocation-executed,
+ :kind :verified-imported-producer-source-review-consumption,
+ :receipt-sha256
+ "45103e9648abf38fc0850f9e7fec0abbc22edee263358b43268318eeab5e9b02",
+ :verdict :pass,
+ :generator
+ {:language :clojure,
+  :sha256
+  "aff5dde74bd2a25c53a90fff48d549af4d03df484550d979b3aa6049a6afc728",
+  :preserved-locally true},
+ :observed
+ {:all-parent-test-bytes :exact-prefix,
+  :complete-source-pins-checked 9,
+  :whitespace :pass,
+  :raw-historical-body-and-comments :byte-identical,
+  :reader-eval false,
+  :actual-entrypoint-forms 4,
+  :appended-test-forms 1,
+  :historical-target-differences [sh08-im-derive-with-allowance],
+  :bootstrap-loaded false,
+  :production-bytes :unchanged,
+  :control-definition-coverage
+  [:memoized-request-equality
+   :substituted-request-rejection
+   :active-cycle-rejection
+   :retained-producer-membership
+   :duplicate-producer-rejection
+   :requests-4097
+   :schema-version-vector-and-extra-key-rejection
+   :native-DATA-scalar-16777217
+   :carrier-and-input-acceptance-do-not-establish-producer-authentication],
+  :single-target-difference
+  "After alpha-renaming carrier to checked, the only change is replacing the raw carrier failure with sh08-im-failure C7-VERIFY/module-type-producer-core-invalid. Current and historical complete hashes are explicitly retained; no helper equivalence or runtime result is inferred.",
+  :immediate-source-targets 5,
+  :invocation-local-and-finite-DATA-nonauthority-comments :preserved},
+ :prior-review-reuse
+ {:receipt-sha256
+  "9892645f1804e7d9d9012dc5f69d90b693ca0aa0e5e8fea6759187b2acd16ec7",
+  :scope :exact-unchanged-parent-source-only},
+ :reviewer "01a18529-b6ff-77a3-b5de-835ef9d4b5ab",
+ :genuine-original-imported-producer-kernel :UNRUN,
+ :pr 621,
+ :carrier-repair-PR613 :dependency-not-accepted-by-this-review,
+ :owner :ACC-01,
+ :candidate-tree "f2b5fbcc0a7fa8b2d4ac70cccad72fe874f62f2d"}

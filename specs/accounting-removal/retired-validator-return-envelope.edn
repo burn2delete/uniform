@@ -1,0 +1,180 @@
+{:path
+ "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+ :nonclaims
+ [:arithmetic-or-number-object-identity-equivalence
+  :exact-runtime-return-schema
+  :termination
+  :exception-or-native-broker-equivalence
+  :mutable-binding-behavior
+  :transitive-callgraph-closure
+  :actual-compiler-or-runtime-acceptance
+  :outer-accounting-retention-approval
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :Gravity-executed false,
+  :genuine-owner-or-native-provider-runtime :UNRUN,
+  :host-arithmetic-model :not-executed},
+ :file-sha256
+ "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+ :negative-controls
+ [{:helper sh08-lc-native-arguments,
+   :case :retired-work-limit,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :nonliteral-reason,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :unknown-provider-return,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :loop-variable-escape,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :shadowed-helper-return,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-native-arguments,
+   :case :returned-work-count,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :retired-work-limit,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :nonliteral-reason,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :unknown-provider-return,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :loop-variable-escape,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :shadowed-helper-return,
+   :one-actual-return-map-mutated true,
+   :refused true}
+  {:helper sh08-lc-validate-types,
+   :case :returned-work-count,
+   :one-actual-return-map-mutated true,
+   :refused true}],
+ :method
+ {:unknown-tail-call-or-variable :refuses-proof,
+  :pinned-call-summary [sh08-lc-native-arguments],
+  :reachability :not-claimed,
+  :scope :only-two-pinned-helper-definitions,
+  :literal-return-map-status-and-reason true,
+  :source-tail-forms [if let loop recur],
+  :branch-conditions :not-refined,
+  :loop-bindings :unknown-not-initial-value,
+  :ingress-return :conservatively-includes-all-native-argument-results,
+  :model
+  :source-return-envelope-under-L2-control-semantics-and-pinned-bindings},
+ :governing-source-pins
+ [{:path "AGENTS.md",
+   :sha256
+   "05758d7322985d88f8fc31cc25d02c7e5514442df11d67c0517bc96bc5004c93"}
+  {:path
+   "docs/phase-01-core-language/012-l2-core-language-semantics.md",
+   :sha256
+   "22dac156e0bd388d79c6047e14f22aebca214144354579a2b948f274db32552f"}
+  {:path
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+   :sha256
+   "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}],
+ :correspondence-sha256
+ "100627a70b6e40bc3dd53360ee7d47760b21b4b5b3f903d5ca21b3776ed7b37b",
+ :main-tree "4c6e069bfd7f8bbd375231fc410f85008ccad850",
+ :original-inventory :unchanged,
+ :decision-request
+ :reject-restoration-of-eight-accounting-remnants-retain-other-source-with-existing-qualifications,
+ :four-current-unit-pins :identical-to-prior-correspondence,
+ :result
+ {:normal-reason-envelope-excludes-work-limit true,
+  :no-return-work-count-key true,
+  :semantic-error-reasons-retained true,
+  :exact-return-schema :not-claimed},
+ :kind :retired-validator-normal-return-source-envelope,
+ :generator
+ {:language :clojure,
+  :sha256
+  "59bf9306cbc8ed48c7ac73c725ec4322ecd49ad4fa6d4a090deea9370962d60a",
+  :preserved-locally true},
+ :helpers
+ [{:name sh08-lc-native-arguments,
+   :arguments [arguments],
+   :form-sha256
+   "1ddac242e4421de063f8d0fd49770660be95b40017ae8617eb2d6608e7624654",
+   :source-return-envelope
+   #{{:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}},
+   :reason-envelope #{:cyclic-arguments :unsupported-arguments}}
+  {:name sh08-lc-validate-types,
+   :arguments [arguments],
+   :form-sha256
+   "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+   :source-return-envelope
+   #{{:keys #{:status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:arguments :status},
+      :status :accepted,
+      :reason-present false,
+      :reason nil}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :malformed-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :unsupported-arguments}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-type}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :nested-never}
+     {:keys #{:reason :status},
+      :status :rejected,
+      :reason-present true,
+      :reason :cyclic-arguments}},
+   :reason-envelope
+   #{:malformed-type
+     :cyclic-arguments
+     :nested-never
+     :cyclic-type
+     :unsupported-arguments
+     :unsupported-type}}],
+ :main "e4d98947201a9473d8bca5777c1f59f5e3426bfd",
+ :owner :ACC-01,
+ :independent-disposition :pending}

@@ -1,0 +1,75 @@
+{:nonclaims
+ [:semantic-equivalence-from-names
+  :historical-suite-passed
+  :fresh-Gravity-execution
+  :independent-acceptance
+  :PR502-closure],
+ :failure-disposition-proposal
+ {:source-parity-assertion
+  :requires-explicit-correspondence-for-new-identical-native-guard-bodies,
+  :four-old-routing-difference-assertions
+  :superseded-by-PR359-private-Map-alias-repair},
+ :new-guard-correspondence
+ {body-lc-native-map? sh08-lc-native-map?,
+  p15-s23-lc-native-map? sh08-lc-native-map?},
+ :original-result :NONPASS-five-source-assertion-failures-preserved,
+ :preserved-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}],
+ :scope
+ {:gravity-source-evaluated false,
+  :compiler-runtime-or-Bootstrap-executed false,
+  :reader-contracts-compared true,
+  :production-and-original-tests-modified false},
+ :native-map-guards
+ {:complete-bodies-identical-without-symbol-normalization true,
+  :body-sha256
+  "8b947d913c07ca6f24ea2e800d732f7d0f45a3bd691f57aa2569db71fa1c22e3"},
+ :assessed-main "0f7acce5fc93e019062d84a3fd9dcf05643ba7fd",
+ :kind :list-query-source-adaptation-proposal,
+ :scoped-contracts-with-explicit-guard-correspondence
+ :all-three-identical,
+ :generator
+ {:language :clojure,
+  :sha256
+  "718d9950678af7f3318ec2c2cafa0ca97e89f3254bcca8c92513f9ec91983cc9",
+  :preserved-locally true},
+ :original-results-sha256
+ "6f31663bf2890f422063742491bb532814061fdc1eeb264991c345b075f0651c",
+ :wrappers
+ [{:part :constraint,
+   :all-three-complete-bodies-identical true,
+   :exact-current-routing
+   [[(if
+      (keyword? (get descriptor :kind))
+      (contains?
+       #{:gravity.type/applied-map-keys
+         :gravity.type/applied-private-map-keys}
+       (get descriptor :kind))
+      false)
+     (sh08-mkeys-constraint descriptor)]],
+   :private-family-removal-detected true,
+   :semantic-get-mutation-detected true}
+  {:part :call-fact,
+   :all-three-complete-bodies-identical true,
+   :exact-current-routing
+   [[(if
+      (keyword? (get descriptor :kind))
+      (contains?
+       #{:gravity.type/applied-map-keys
+         :gravity.type/applied-private-map-keys}
+       (get descriptor :kind))
+      false)
+     (sh08-mkeys-call-fact descriptor module)]],
+   :private-family-removal-detected true,
+   :semantic-get-mutation-detected true}],
+ :decision :awaiting-independent-source-disposition}

@@ -1,0 +1,92 @@
+{:nonclaims
+ [:no-runtime-or-bootstrap-execution
+  :no-full-helper-equivalence
+  :no-PR533-extension
+  :no-DSE-or-authenticated-source-acceptance
+  :no-ACC-or-PR502-closure
+  :no-release-or-self-hosting-credit
+  :no-GitHub-approval
+  :no-canonical-writes],
+ :candidate "9f9dce89fc592050c4c44461522485cc49df0037",
+ :genuine-controls :UNRUN,
+ :checks {:test 3, :pass 60, :fail 0, :error 0},
+ :scope
+ {:raw-helper-identity true,
+  :explicitly-different 5,
+  :retired-payment-assertions 4,
+  :differences
+  [{:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lset-header,
+    :base-form-sha256
+    "1c5dd4de19df9b2f254ada967f81b4c3f1e81ddaac95c72b0ea861573efd77ba",
+    :historical-form-sha256
+    "89d88711caaf56d16251cdf6e469a7cdaafc429c9ec20548f6b1a51cfad55c1f"}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-lq-context,
+    :base-form-sha256
+    "9208914fbaec9bd178ff5c4969d6a6e68f6a09f637408f99ccf8b3391aa411ad",
+    :historical-form-sha256
+    "5546a707b494aee820ae4da85adcb35e795f6e2dc56aa59b4419a35ef8fad9fe"}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :name body-mkeys-header,
+    :base-form-sha256
+    "83ecdecc3751c903ad1817efe520bfa2d01c8d17f4f996063049d67eeafa8e97",
+    :historical-form-sha256
+    "e7a34e9b2e110fef582db990435324287055fd99743c8619ac9e3b89b99852cc"}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-lq-derive,
+    :base-form-sha256
+    "de1734096d2276bd9a185418202ebe4a38454fe0cf4f422c413aff2bcf106428",
+    :historical-form-sha256
+    "0791b278e035e53b3fc440bb7834c020b213cb8a1a965cb1fff6deea59a49305"}
+   {:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :name sh08-ft-call-constraints-with-context,
+    :base-form-sha256
+    "0e3b7281b4b642070c0f693e80a4370d811e6a9fac2fc259d612e6f9146cd795",
+    :historical-form-sha256
+    "df89d9f6c7e2f04bf53e4395d4affac16c54dffe13710fe89ea115a6b7071efb"}],
+  :all-prior-test-bytes :unchanged,
+  :production :unchanged,
+  :historical-identical 17,
+  :restored-units
+  [mixed-ordinary-local-call-effect-input
+   body-list-set-local-call-composition-development-kernel
+   body-map-keys-local-call-composition-development-kernel],
+  :dependency-pins 22,
+  :other-adaptations
+  [:diagnostic-work-counter-selection :two-unused-ids-bindings]},
+ :actual-Effects-composition :UNRUN,
+ :source-inspection
+ {:ordinary-local-c7-producer :actual-calls-preserved,
+  :family-row-and-fact-order :preserved,
+  :missing-malformed-duplicate-foreign-family-evidence :preserved,
+  :coherent-stale-source-caller-binding-evaluation :preserved,
+  :map-inputs :empty-and-populated,
+  :opaque-keys-and-tags :zero-callback-assertions-preserved},
+ :current-main-integration :pending,
+ :author "01a183dd-7208-7d33-a336-7483fd90e358",
+ :negative-source-controls
+ [:changed-bytes
+  :removed-zero-callback-assertion
+  :forged-dependency-pin
+  :missing-dependency
+  :false-helper-identity
+  :reader-evaluation],
+ :consumption
+ :receipt-tree-two-test-file-pins-and-22-dependency-pins-verified-no-genuine-control-executed,
+ :kind :verified-effects-local-source-review-consumption,
+ :receipt-sha256
+ "17c28f920d5268fc9ddb0e68d05b7e99f05b759d3944e5033accf2f9caf8bea4",
+ :verdict :scoped-source-pass,
+ :generator
+ {:language :clojure,
+  :sha256
+  "aff5dde74bd2a25c53a90fff48d549af4d03df484550d979b3aa6049a6afc728",
+  :preserved-locally true},
+ :reviewer "01a18529-3435-7443-abc8-67b0648a2151",
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :pr 624,
+ :owner :ACC-01,
+ :candidate-tree "350ddd4c3e76b3c428f881b1ec223dac3729082a"}

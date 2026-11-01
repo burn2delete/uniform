@@ -1,0 +1,153 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :caller
+ {:owner sh08-tc-products-with-source-forms,
+  :historical-call
+  (sh08-vf-inferred-call
+   core
+   node
+   call
+   edge
+   nodes
+   binding-index
+   types
+   (- budget initial (get owners :work-count) work)),
+  :current-call
+  (sh08-vf-inferred-call
+   core
+   node
+   call
+   edge
+   nodes
+   binding-index
+   types),
+  :removed-argument (- budget initial (get owners :work-count) work),
+  :all-retained-arguments :identical,
+  :direct-source-call-count 1,
+  :current-arity :correct,
+  :whole-caller-equivalence :not-claimed},
+ :tree "10b80ba12cf7240dc23f977a6ca24e2982769b6e",
+ :nonclaims
+ [:no-wholecaller-or-accounting-expression-evaluation-equivalence
+  :no-numberobject-native-exception-termination-transitive-runtime-proof
+  :no-outer-accounting-retention-approval
+  :no-complete-Vector-first-support
+  :no-whole569-ACC01-PR502-closure
+  :no-production-or-sharedwrite-APPROVE-probe
+  :no-PR591-or-heldmetadata-Policy14-fixedwidth-Metadata372-OWN-ACC08-e7-Build68-retry],
+ :execution
+ {:read-eval false,
+  :target-helper-Gravity-Bootstrap-native-compiler-provider-kernel-runtime
+  :UNRUN},
+ :consumer-verification
+ :receipt-checker-tree-inputs-function-equation-direct-caller-dependencies-and-policy,
+ :consumer-source-sha256
+ "176660c105e8d10d50e479a92be46153c1ba14508e34699ce5d1bd060a9c3b71",
+ :genuine-execution :UNRUN,
+ :metadata-finite-List-vec-correspondence :held-unchanged-not-reviewed,
+ :parent "3c8bc9d50eef0afba309aa10c11a88af4088d6bb",
+ :candidate "6e6f73e2b2a75a20ef6b1d09a22192d6510409ab",
+ :reviewer-thread "01a18528-c7af-75c1-a399-5eb23dbbe8e4",
+ :unit [defn sh08-vf-inferred-call],
+ :independent-controls
+ [{:case :budget-argument, :coherently-rehashed true, :refused true}
+  {:case :used-zero-binding, :coherently-rehashed true, :refused true}
+  {:case :work-refusal, :coherently-rehashed true, :refused true}
+  {:case :output-telemetry, :coherently-rehashed true, :refused true}
+  {:case :descriptor-kind, :coherently-rehashed true, :refused true}
+  {:case :operator-key, :coherently-rehashed true, :refused true}
+  {:case :semantic-reason, :coherently-rehashed true, :refused true}
+  {:case :validator, :coherently-rehashed true, :refused true}
+  {:case :result-equality, :coherently-rehashed true, :refused true}
+  {:case :full-descriptor-equality,
+   :coherently-rehashed true,
+   :refused true}
+  {:case :caller-old-arity, :coherently-rehashed true, :refused true}
+  {:case :caller-swapped-arguments,
+   :coherently-rehashed true,
+   :refused true}
+  {:case :coherent-restored-ABI,
+   :coherently-rehashed true,
+   :refused true}
+  {:case :coherent-operator-identity-change,
+   :coherently-rehashed true,
+   :refused true}],
+ :source-distinction
+ {:assessed-main "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :evidence-vs-parent :byte-identical,
+  :whole-evidence-vs-assessed-files :not-equated,
+  :selected-function-and-direct-call :identical-across-both-sources},
+ :reproduction
+ {:path "/tmp/vector-first-independent-review.clj",
+  :sha256
+  "ba425c75f9e93723cd27a71d911d2d45cbdad3445a343a17b605d830e0fe7120"},
+ :delivery :private-receipt-for-supported-helper-readback,
+ :original-units 1,
+ :disposition
+ :accept-rejecting-restoration-of-enumerated-accounting-and-retired-API-only,
+ :classification
+ "Current policy rejects restoring only this function's unused allowance ABI, zero accounting local, retired LC work-limit alternative, output work counters, and the sole caller's final payment expression. All other function forms and retained call arguments are exact. The payment expression's omitted evaluation is not certified equivalent for numeric/exception behavior, nor is the enclosing caller equated.",
+ :reused-envelope
+ {:receipt "/tmp/validator-envelope-independent-classification.edn",
+  :sha256
+  "5b7b28a3881386b00333f989711d173fdeca9a4a766046e3f4ab6ae9d65c467c",
+  :scope :unchanged-two-helper-normal-return-envelope-only,
+  :earlier-caller-decisions :not-inherited,
+  :whole-assessed-source-and-policy :rehashed-unchanged},
+ :metadata-correspondence :HELD-unchanged,
+ :whole-PR569-ACC01-PR502 :incomplete,
+ :kind :vector-first-independent-classification-consumption,
+ :receipt-sha256
+ "cb49b6a6622840d3e3b9f94722d2f4af3042f44b6edd0d788b52348bbd6e14b5",
+ :positive-checks 105,
+ :source-checks 165,
+ :author-checker
+ {:path "/tmp/acc01-vector-first-disposition.clj",
+  :sha256
+  "d841fa16de5f5692ef536ee1eb1f491264b875349d7214c3825de001a5131781",
+  :mode :inspected-hashed-only,
+  :original-writer-executed false,
+  :reported-eight-controls :not-used-as-independent-proof},
+ :canonical-disposition-adoption :not-performed,
+ :current-main-source-applicability
+ {:commit "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+  :whole-C7-equals-assessed-source true},
+ :input-hashes
+ {"specs/accounting-removal/vector-first-inferred-call-disposition.edn"
+  "db8db020a0b95cc36d61805cbe1177b636a2cdc0cfc3835ecda0b3407b11ce59",
+  "specs/accounting-removal/preserved-source-inventory.edn"
+  "ab1bba9f55312be5cd7c84d2628f54dbd2fe3e23f625764df0a9b757fb4828a0",
+  :historical-C7
+  "e5970116147c0acc0ee13e6b90d36b27fd9ca5342c658214b5c808d0f024b75e",
+  :assessed-C7
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :evidence-C7
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"},
+ :direct-Gravity-callers 1,
+ :dependencies
+ [{:name sh08-lc-validate-types,
+   :form-sha256
+   "c7016b2411e4b2559154c26b8473326ae8faeb256cf81081395cf1231c495a59",
+   :historical-form-identical false}
+  {:name sh08-ft-ordered-child-types,
+   :form-sha256
+   "08c021d0bccc02bdf623f6e4efad9a9318ef47a2e2a543a54e40dbaa979beed2",
+   :historical-form-identical true}
+  {:name sh08-lq-source,
+   :form-sha256
+   "f69e0a50fcf44cdbe34d8afade49ee646239f9502b1109f5fa7552f3a2226e12",
+   :historical-form-identical false}
+  {:name sh08-lq-finish,
+   :form-sha256
+   "e4d9f927fa6ae3e47d22d4bf34c4be74eaa0e32bc014d9800940e759b2563935",
+   :historical-form-identical true}],
+ :owner :ACC-01,
+ :verified
+ {:complete-source-equation :exact,
+  :caller-order-and-seven-argument-arity :exact,
+  :semantic-return-delta :work-count-field-only,
+  :retired-work-limit-refusal :only-listed-LC-normal-result-branch,
+  :semantic-reasons :both-preserved,
+  :removed-local [used 0],
+  :validation-order-header-finish-descriptor-result-guards :preserved,
+  :callee-local-shadowing :absent,
+  :removed-unused-argument budget}}

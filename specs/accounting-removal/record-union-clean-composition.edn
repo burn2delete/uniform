@@ -1,0 +1,70 @@
+{:integration-mode-preflight :UNRUN,
+ :execution
+ {:reader-eval false,
+  :Bootstrap-loaded false,
+  :genuine-kernels :UNRUN},
+ :candidate "7cc4b0bc8e9cf5533d5aae3ae29d07144bea4b55",
+ :generator-sha256
+ "20e069091a3dc097376a2534038707399e4d6f09bbf4cb3d2ebff174e0acaeda",
+ :auxiliary-test-form-serialization-hashes :not-independent-evidence,
+ :paths
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :entry "100644 blob 972998bef1fb1b6b34ab0b81ae14d021513c17d4",
+   :sha256
+   "d6464313d475da679ff9cf1b723c13a78972c83b42320974e8c698199ee8fb65"}
+  {:path "specs/accounting-removal/record-union-controls-census.edn",
+   :entry "100644 blob 95072e1c32a212a541c296ed4623550ab0ab3dcf",
+   :sha256
+   "0c7d5b1b95d34e597d92a06a69b5c66c2dd3c07045411038b3036fbe18833066"}
+  {:path "specs/accounting-removal/record-union-controls.md",
+   :entry "100644 blob 75deac6f199b0e1fc93e92e0ae8929fdb7653d44",
+   :sha256
+   "43d3518576cb023bee16d49e26d54eeb68b00b42ef9bbbec48abe36749f72f06"}],
+ :prior-review
+ {:candidate "585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53",
+  :receipt-sha256
+  "4abe17689fec09ca290dba77a1bea2d111c6428275d7808d8e536bf215913c40",
+  :verdict :scoped-source-pass,
+  :current-head-acceptance :not-inherited,
+  :six-source-corruption-refusals :historical},
+ :production
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :original-whole-sha256
+  "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+  :current-whole-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :whole-file-pin-scope :historical-only,
+  :all-31-syntactic-definition-pins :freshly-verified,
+  :historical-helper-differences 6,
+  :semantic-equivalence :unproven,
+  :all-current-main-production :unchanged},
+ :resolution
+ {:record-and-union-rows 65,
+  :original-comments-and-semantic-controls :preserved,
+  :original-base "e047157d711652a5624012f0da7d6911ce086718",
+  :complete-reviewed-two-test-suffix :byte-identical,
+  :complete-current-main-test-prefix :byte-identical,
+  :census-and-markdown :byte-identical-to-original-reviewed-candidate,
+  :suffix-sha256
+  "67ca63e3258d932f6e76e19a269120bcf9a3a1cbf09aae1ea9151aa48c460fdf",
+  :test-forms-added 2,
+  :kind :explicit-append-conflict-resolution},
+ :whole-tree
+ {:base-entries 10087,
+  :candidate-entries 10089,
+  :every-other-base-blob-and-mode :unchanged,
+  :one-current-test-file-plus-exact-original-suffix-and-two-original-record-additions
+  true},
+ :main-merge :UNRUN,
+ :kind :record-union-clean-current-main-composition,
+ :parents
+ ["585c2dab0fcc0a2d8d30ec988a3f3f7d5e151f53"
+  "7d590aa40932b2592f43dd8aa0785ac79328fcfc"],
+ :base "7d590aa40932b2592f43dd8aa0785ac79328fcfc",
+ :current-composition-independent-review :pending,
+ :pr 620,
+ :current-head-CI :pending,
+ :owner :ACC-01,
+ :candidate-tree "d9a23f1c7944288f2756baa073fbc44ca7226496"}

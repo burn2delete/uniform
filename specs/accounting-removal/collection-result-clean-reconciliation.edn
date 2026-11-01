@@ -1,0 +1,97 @@
+{:all-other-current-main-test-bytes :conserved,
+ :workspace
+ {:managed-attachment "01a189d9-a6d5-7e42-aa9f-87acadf6845b",
+  :branch "codex/acc01-collection-integration-20261029",
+  :clean true,
+  :original-root-and-cache :preserved,
+  :extra-checkout-created false},
+ :nonclaims
+ [:future-composition-acceptance
+  :genuine-owner-test-result
+  :transitive-helper-equivalence
+  :whole-accounting-removal
+  :authenticated-source
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :independent-current-composition :pending,
+ :full-tree-entry-count 10075,
+ :candidate "9888a076ab9bddf7a0aaa9ed50c0c1ba33d5775e",
+ :generator-sha256
+ "25ee79325e4d853bac72bb4974fc8534ed30c0faf1cdce98933daeddad7cbf5e",
+ :inspect
+ {:mode :inspect,
+  :read-only true,
+  :preconditions
+  {:base-resolved true,
+   :candidate-identities-match true,
+   :clean-worktree true,
+   :named-branch true,
+   :reconciliation-allowed true,
+   :all-pass true},
+  :observed-identities
+  {:expected-base "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea",
+   :expected-commit "9888a076ab9bddf7a0aaa9ed50c0c1ba33d5775e",
+   :expected-tree "8e2f688ffcad861682c54571a07eee37517b9363"},
+  :reconciliation
+  {:relation "descendant",
+   :base-is-ancestor true,
+   :candidate-is-ancestor false,
+   :tree-equivalent false,
+   :recommendation "integrate_candidate"}},
+ :reader-eval false,
+ :local-generator-pins
+ {:reconciliation
+  "25ee79325e4d853bac72bb4974fc8534ed30c0faf1cdce98933daeddad7cbf5e",
+  :inspect-and-lint
+  "91f6f924adfa324b4deacd4e425e74a250f823d1a3118015db24f9062af0466f",
+  :publication
+  "50f4487944b93e336fc00f29dd9dc502eb85abe888cf899dbf2498eec41052e7"},
+ :Bootstrap-loaded false,
+ :whole-tree-current-main-overlay-equal true,
+ :prior-review
+ {:candidate "70e953057b840c0b6ace94d099d644ef9c7c139d",
+  :receipt-sha256
+  "c760842dcc553bd461e5de401c3e10e3f807811c69e356c8a1d8c5b214b23cb7",
+  :future-composition-pass :not-inherited},
+ :main-integration :pending-coordinator,
+ :CI :pending,
+ :all-current-main-production-files :unchanged,
+ :lint
+ {:base {:error 0, :warning 71, :info 0, :type :summary, :files 1},
+  :candidate
+  {:error 0, :warning 71, :info 0, :type :summary, :files 1},
+  :complete-finding-multisets :identical-except-positions,
+  :new-findings 0,
+  :config-change false,
+  :cache false,
+  :repro true,
+  :version "2025.10.23"},
+ :kind :verified-clean-collection-result-reconciliation,
+ :extraction-records
+ :historical-original-base-source-pins-not-current-whole-file-hashes,
+ :two-test-intervals :byte-identical-to-reviewed,
+ :parents
+ ["70e953057b840c0b6ace94d099d644ef9c7c139d"
+  "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea"],
+ :source-checks :pass,
+ :genuine-tests :UNRUN,
+ :changed-paths
+ ["bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+  "specs/accounting-removal/collection-result-controls-census.edn"
+  "specs/accounting-removal/collection-result-controls.md"],
+ :validation
+ {:language-boundary {:tests 6, :assertions 11, :fail 0, :error 0},
+  :docs :pass,
+  :roadmap :pass,
+  :governance {:records 185, :result :pass},
+  :whitespace :pass,
+  :genuine-tests :UNRUN},
+ :base "ce4f0f42774486ee7e0f8791f51e8f0e9b8898ea",
+ :PR628-appended-forms :conserved,
+ :pr 632,
+ :integration-mode :UNRUN,
+ :owner :ACC-01,
+ :candidate-tree "8e2f688ffcad861682c54571a07eee37517b9363",
+ :five-C7-dependency-pins :verified}

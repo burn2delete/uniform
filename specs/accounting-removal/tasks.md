@@ -341,6 +341,16 @@ implementation ownership and dependency holds.
 
 ## Finite pull-request completion checklists - 2026-10-27 12:39 MDT
 
+PR502 continuation at assessed main `6276c94b` is recorded in the
+[explicit preserved-path input](preserved-paths.md). It expands the canonical
+29-path table without replacing any ACC ID or historical receipt. Existing
+PMK, inferred-insertion, DSE and runtime owners cover only their named finite
+units. GIS3 entry/source products, iterative quoted data, native verifier arenas,
+nil/List joins, ordinary parameter choice, and remaining descriptor/schema and
+mixed-ledger controls still lack complete verified successor dispositions.
+Those are retained ACC-01/04/06/07/08/09/12/13 obligations. PR502 remains open;
+listing all paths is not terminal disposition of every unique delta.
+
 Accounting completion owns PR359, PR450, PR454 and PR462. Native owns the seven
 API files in PR446; verification reuse owns registration metadata. These are
 finite PR boundaries within the original ACC criteria, not new criteria or a

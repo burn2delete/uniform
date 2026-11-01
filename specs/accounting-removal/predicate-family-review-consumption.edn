@@ -1,0 +1,1758 @@
+{:source-DATA-assertions 17224,
+ :tree "b9cc661dcfea7fe7859adbd4346e35541bf76c53",
+ :nonclaims
+ [:whole-predicate-accounting-removal
+  :semantic-helper-equivalence
+  :authenticated-source-admission
+  :genuine-C7-Effects-emitter-runtime-acceptance
+  :implementation-completion
+  :whole-ACC01
+  :PR502-closure
+  :current-main-extraction
+  :current-head-CI-acceptance
+  :fresh-integration-preflight
+  :integration
+  :release
+  :self-hosting],
+ :verified-source-pins
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-mapp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "ba5f6da9f4c889e6a2cc8393a8044814eb4c24a2bfd6885a1d6b9b4e8daf95df",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "b56d01ceda7fbe0870db4cce1de815d69dbf7bcf783b4718e8a3b39b43fe8301",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-mapp-finish,
+   :arguments [header],
+   :form-sha256
+   "316722ae25aeea6b2e757a63e7b6009b2179b23f39587a34f4d0997b99e710f0",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "316722ae25aeea6b2e757a63e7b6009b2179b23f39587a34f4d0997b99e710f0",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-mapp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "ace919a3aaa76377316d74a8e68b9879783aba14081f4dae7df7d18f9f3221f9",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "ace919a3aaa76377316d74a8e68b9879783aba14081f4dae7df7d18f9f3221f9",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-mapp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "fa339389788ee8c49b1cb61681ee5ca0a608c96e1b75877632d313f3aed8fafe",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "fa339389788ee8c49b1cb61681ee5ca0a608c96e1b75877632d313f3aed8fafe",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-mapp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "c2a16dd916eefea9a0747978927d902a7f3749b59702f85ab2aa0505fc7d7024",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "f8c33297669c456c87be5fbed43c2fdfff9752327e88f08cb94b4e6c57dc4351",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-setp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "4d60aed9fd3e3a220703ce4ff9c3d8b9d164234ab3130e5be6cf509b76a3a903",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "08ee2e349652c6f99e8fc0bbad69af23a36e1b3a4b613cf304532e0f75948d48",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-setp-finish,
+   :arguments [header],
+   :form-sha256
+   "61740b35e07e5a8aa53ee3314c2bde80be549180737f8de89e4656d5f8625fb0",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "61740b35e07e5a8aa53ee3314c2bde80be549180737f8de89e4656d5f8625fb0",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-setp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "6ff9c18ba6fcbc99801f4041a8d68bffac2a46c5b44985ee3789c5f5222fcf0b",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "6ff9c18ba6fcbc99801f4041a8d68bffac2a46c5b44985ee3789c5f5222fcf0b",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-setp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "6bfa6ca5658f6b1feb3aa6c5b9051b1bd8354f97ddbf1d94e979e9cfb4489f74",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "6bfa6ca5658f6b1feb3aa6c5b9051b1bd8354f97ddbf1d94e979e9cfb4489f74",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-setp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "6554aefc2dd6eaa4b66a1b248f3afdcf8c87baa6a6e331f33d76f4bc133800e5",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "d22275f478351b0bafdc5499e35c36a6ed2ac4d2b09dcf8ffa62ec9e73966d7a",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-listp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "8a210b5e6a45b8f005591260ea1a56c175962e7b7811b65c871ab52ca6a8a26a",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "ba2e7fb4deac4ec32ae4f8a13f6e0edff7deeac92212c69e5ca413e63c64d0b5",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-listp-finish,
+   :arguments [header],
+   :form-sha256
+   "dc89a2a80291c243670a611f3e4fdbc4c88e096caf54f16ed175de168ff27559",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "dc89a2a80291c243670a611f3e4fdbc4c88e096caf54f16ed175de168ff27559",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-listp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "27a143c9db8764abc5fb988ba4f82843996ad50f7626245e52e460a5adbe6bbd",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "27a143c9db8764abc5fb988ba4f82843996ad50f7626245e52e460a5adbe6bbd",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-listp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "dcfb2096cecfd6ae92271fb7a5fffaf52f630d01ea2cea980b0850223ba03190",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "dcfb2096cecfd6ae92271fb7a5fffaf52f630d01ea2cea980b0850223ba03190",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-listp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "dd532ec506b347c9b7f417b5a72010c4980975ab645c6ff7d613e73193383118",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "4092f702fe8a24c1db4fffb7630606d9c579de6e38cfeacc5f3bf17cd87f02f3",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-symp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "9d67716d20b658344c5dc3b7afe760c96b04642013356207cf983f5dbcfee858",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "75422f1433a93ae31f3714b6efbd96317f79219caef1c329dd668a5a983312de",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-symp-finish,
+   :arguments [header],
+   :form-sha256
+   "7102fe0da0e1b2ddb8b7ceaa720e2ecd5d1a9792dda406adc7284dc1f750be0d",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "7102fe0da0e1b2ddb8b7ceaa720e2ecd5d1a9792dda406adc7284dc1f750be0d",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-symp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "603fd99602626188a18522946463ffa35f22d36de86121427b7198014c5a8afd",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "603fd99602626188a18522946463ffa35f22d36de86121427b7198014c5a8afd",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-symp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "b1651e04a3098dfcf3bd444043ffcfa89ef878f3599f0360418c42775d96a2a7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "b1651e04a3098dfcf3bd444043ffcfa89ef878f3599f0360418c42775d96a2a7",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-symp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "83bdf98a1705feef8de8d287511c0e76043e7708745199635eed2968da5e5680",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "865c290bbe6cec2d2eb80c225ca9701d7ffbccd2c45132a4eeec4067a1298a88",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-boolp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "ceaa6d822281bd1ab89841c674d73ca5b6bf247c1ec1385f5308163d43c79c35",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "4684b7cccc4791edfc8b9346ac44a33d610bee992c625ac0527a00787a5a8684",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-boolp-finish,
+   :arguments [header],
+   :form-sha256
+   "7e99c62cfd7a3a41d0b0e03a8cc02b89bd3e873797fc276a23e8d51f46a004f7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "7e99c62cfd7a3a41d0b0e03a8cc02b89bd3e873797fc276a23e8d51f46a004f7",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-boolp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "31fb4849e4f615545f14dc7cae8ea10c47e3e8e7522abca6458913e0851933b7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "31fb4849e4f615545f14dc7cae8ea10c47e3e8e7522abca6458913e0851933b7",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-boolp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "6c2b278e6651c532d2b6c0b88be0287e6804ec9d7165261e35b0aab9b25d68d4",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "6c2b278e6651c532d2b6c0b88be0287e6804ec9d7165261e35b0aab9b25d68d4",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-boolp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "08c4f64c3a17bf6a23891eabe39d7f787bc739845baec5e1f1e157b3729c6fc3",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "162f8b5cdeb81bd1dc8759407a1839e0aba9e7771f150c484bfe83ae1598efe7",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-chp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "03b22fe43512f17f9841838e6711c49f113c1912de60cda3a26081ac32bb067a",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "66acd08bc222e0bfab95e3254641db0e4593a6b38acdb3072bfd99aa1dff1871",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-chp-finish,
+   :arguments [header],
+   :form-sha256
+   "e4df1c257871902c305c3fd5988fd897f9123c1b5aa808d87ae64b7c8814a974",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "e4df1c257871902c305c3fd5988fd897f9123c1b5aa808d87ae64b7c8814a974",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-chp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "a55e871a1d74d486a6de94fe35e62f07219cb53253e4b6afe273c07856b5cbb5",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "a55e871a1d74d486a6de94fe35e62f07219cb53253e4b6afe273c07856b5cbb5",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-chp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "27e6a8ba0d0a339b691e37d73c1b7d9d7d202790e86c3b071a6a0776706cdb13",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "27e6a8ba0d0a339b691e37d73c1b7d9d7d202790e86c3b071a6a0776706cdb13",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-chp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "da21ab6e6a22899284019b3d27b002f54be9314dbd36ac8a33d115c2f0229f84",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "acf2d051deef0ad3a4107b9ea5efc787252703d6b677aa754e5ab007ade3bf50",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-nilp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "5aa6653350eb5088cf6ba75157f7eaf7e02b4d795235129c2e504e180d7feeaf",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "77f4c74c17f22fd7e18e753937bdb56f5b4602b3d75777f202d1002708596c8e",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-nilp-finish,
+   :arguments [header],
+   :form-sha256
+   "0a237e67b17755df4faf7eec2b80ab65d7258315b9950ece17897d47fb59dec5",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "0a237e67b17755df4faf7eec2b80ab65d7258315b9950ece17897d47fb59dec5",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-nilp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "aa41cbcae235bce5703f692fac494eec4f0ed2389acffe83d8d8a69695814462",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "aa41cbcae235bce5703f692fac494eec4f0ed2389acffe83d8d8a69695814462",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-nilp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "df0f48ff91350d59dc60ce8d6259d8348ce889c018c39d5c9ff0aace7dd4773e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "df0f48ff91350d59dc60ce8d6259d8348ce889c018c39d5c9ff0aace7dd4773e",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-nilp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "7a6e72891bdfac1d3fb2ab41b3c79b47c7976dfc0450a64d0f0591463b7d038d",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "f78650618443a4ce2ea1208f69393b52254196e4d1729bf23efac83c41f28ddf",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-kp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "83c60273257ac1c974af17ee60434bb23b4b707b55ec621577237e10e57ef604",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "acffbee1ced8a4078d9a88096d84228db5616a7e49fcd4076e7f4770d7646a49",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-kp-finish,
+   :arguments [header],
+   :form-sha256
+   "f30d1a73f992e4f0b1e38911813b72bedad92a79df827afdab74013d1c3eab7d",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "f30d1a73f992e4f0b1e38911813b72bedad92a79df827afdab74013d1c3eab7d",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-kp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "1be59cff2a2d326325380f079a478eb2e522efe6d3ca9d00da338bc9f4859d0c",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "1be59cff2a2d326325380f079a478eb2e522efe6d3ca9d00da338bc9f4859d0c",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-kp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "1cbca34fda26f157cfa82ba563b59e3d692ca6641461d2a836984e4ef3f03e5e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "1cbca34fda26f157cfa82ba563b59e3d692ca6641461d2a836984e4ef3f03e5e",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-kp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "6fda37b594b4401cca1ac9dc2a4387864b370fbc7e17169c71026f4eb45bf74e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "55573f333d43fca7e94a2c2213079361c9840f2bcc1d9a70267eb751baecde87",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-strp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "5494791b678fc125858a68e17d498b2406b5bf62d0f31fbcb2bf195b8df8070b",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "dfbe46aa59ffdacd97bb92ae6ac8b937d441746284d3697c9e66719fc7cb5dde",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-strp-finish,
+   :arguments [header],
+   :form-sha256
+   "769bd02cf43cf49fa9377faa1b995f252044b4c4451fc2a421fb890e98b457d7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "769bd02cf43cf49fa9377faa1b995f252044b4c4451fc2a421fb890e98b457d7",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-strp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "51a477cbbb08ad069cf3b28ef08c396ff3559242ea699f0d2836fd7c88e6e9d5",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "51a477cbbb08ad069cf3b28ef08c396ff3559242ea699f0d2836fd7c88e6e9d5",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-strp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "eab5513a49c22b715dc90664ab5b6e7585459ca3d0e3300982b422497064eabe",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "eab5513a49c22b715dc90664ab5b6e7585459ca3d0e3300982b422497064eabe",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-strp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "a40e50be829e3f0d646a72a66565556599bac17ae977237205290343521479cc",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "a4c390a5b1975c60df9fd5cf535cddc7631bf3f032281424d093433b0eebfbfb",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-ip-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "81f84b7fd30dff48a12efe6bb0dc4027b9c93ae40a5de692ba4e2e8fb5243db8",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "ca1e4583affa10c813faef8f6c0167c1fd1e991954cf413747ec6ba6647201d4",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-ip-finish,
+   :arguments [header],
+   :form-sha256
+   "7be11b74de210c68dc941f65b5d710dce5b74411a192f5b6755ba5f45847291c",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "7be11b74de210c68dc941f65b5d710dce5b74411a192f5b6755ba5f45847291c",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-ip-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "388d02985de404780f42131f9219a552238f9c4e5e13687e032d942f500ffda7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "388d02985de404780f42131f9219a552238f9c4e5e13687e032d942f500ffda7",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-ip-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "a09a75ee1a30e023eeca4c3835c12eea69189dfc0a4aec04a926efca480a2c17",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "a09a75ee1a30e023eeca4c3835c12eea69189dfc0a4aec04a926efca480a2c17",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-ip-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "4825914307246cbf775727d4763c0745043a9e0b279096d64ddaa45ee9a4b230",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "fe45e9aeae5beffcb5ce30431c6b1fd415fbe4f8e902ae86ba8c8543f6782c14",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-vp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "10cd874137094677e48e2824700b4f7bb4e64ba1ffd072c60e574aeb93f03f38",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "5bc93eb79caccf13f3f8007776adb96fdb95acd5afe44a767062d8729bc61ec9",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-vp-finish,
+   :arguments [header],
+   :form-sha256
+   "ce6beddc087cdfdc32bbd052780a0dd9f1bbc0434d355a6e0e7e9b66bff0a91d",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "ce6beddc087cdfdc32bbd052780a0dd9f1bbc0434d355a6e0e7e9b66bff0a91d",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-vp-constraint,
+   :arguments [descriptor],
+   :form-sha256
+   "9303170406132320e575966aae56a911bffd1c30862b8d69b89ff453c1b9c686",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "9303170406132320e575966aae56a911bffd1c30862b8d69b89ff453c1b9c686",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-vp-call-fact,
+   :arguments [descriptor module],
+   :form-sha256
+   "bdcb9c6448366ff1119d98e86a1248603c4a32e6023a8d10e6bd12fe1bb42bc1",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "bdcb9c6448366ff1119d98e86a1248603c4a32e6023a8d10e6bd12fe1bb42bc1",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :name sh08-vp-derive,
+   :arguments [core node call edge nodes bindings types forms budget],
+   :form-sha256
+   "c9610f66c81efb445498c55e00beecf99a22798ce2fd4c1120b0d32bf88cab47",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "60e4b115500a1f158dc0cbbb24ac1133b76a5b92341b8499079158589586c3e1",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-mapp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "7eaa6f336604d2c1d5ee77db3d8e6d8c2016e9733db6688d0ba03c7fd32e985e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "e4340625f73df67537a729e72902af032dcc15fc139faebf7ac4353eec0ad611",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-mapp-finish,
+   :arguments [header],
+   :form-sha256
+   "3ce6fe0070279cb57dbf143fbfa871a92537595a58e8aba3251a8c859c05e0f2",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "3ce6fe0070279cb57dbf143fbfa871a92537595a58e8aba3251a8c859c05e0f2",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-mapp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "f2457ebe268432ea1552b2d053f3944d96fbdd370f0bf1d56e4362238e648f2d",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "e483c4da0c9ef96bb4d2308f0f9c52f5e7d39e7cd27d21a451615912e925f12d",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-setp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "74156103ea64b851e5b239cd6c31f967a7445b00472c478bf2fd12bf28691e5c",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "c130d40c5881f63ebbc263ba65e83f848bc6dec08d9bcfba690a16b753f39b4d",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-setp-finish,
+   :arguments [header],
+   :form-sha256
+   "7b51ad55169febfa19eb09e451e1fc5ef58051940117e1842122a1609b6a02e0",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "7b51ad55169febfa19eb09e451e1fc5ef58051940117e1842122a1609b6a02e0",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-setp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "d9037c4833db7d5c731ce482f43c921e958325b5d175e51a4b48e579519ce86f",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "d552902dfb003028d7d29c65b952585ecf426398d7a95b4a5562bd5e8bd6321e",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-listp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "a61b7bf01d78890141078630198d958fed6f178f5229c55bea90ae26c5885dd8",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "7d046a8c4c41e16c571f3df052c911a2fd235de076a9fda0c4a7a48f5073530f",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-listp-finish,
+   :arguments [header],
+   :form-sha256
+   "2a46f8392a9e8d886d45a0e31d7a417985569cb79675d9ec85746089a4108b1c",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "2a46f8392a9e8d886d45a0e31d7a417985569cb79675d9ec85746089a4108b1c",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-listp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "f77b593ab20f2f429361b35eba3b12f9766a772a20d88baafc98caf8212abbb8",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "7973fc3ace057449dfe326c36438daadbc97f91d0e9447759d873395d12c00ad",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-symp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "0a6ea3c3798ae80bc7e51115f745003508e9ee724f6e02fb2867ccef65def387",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "381b811a90475f450d202367fd9d698ead90977e8d7e5ad31c6f2ac252c1ab96",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-symp-finish,
+   :arguments [header],
+   :form-sha256
+   "872ce06f5b2e5f922d742f739781aaf247462174c9e46a99d39d24c834294d2e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "872ce06f5b2e5f922d742f739781aaf247462174c9e46a99d39d24c834294d2e",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-symp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "0053590ac51a2c2a1962d188f6fd9d6a08f764da3dfaf7c8437e9aaccbfc777f",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "9d68a94da50be09798c87c8f3c9841f9eb2c9ae79907e50fa8d32811781b8cb4",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-boolp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "807698a0a5a1a7faebc3aeec0f9fc4951195876b68b3a5acbd0dd477a0f10491",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "30942f8ab47e2c5dc37f7e0e96de958d5be52d0e370c6466f8587b45bd00df26",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-boolp-finish,
+   :arguments [header],
+   :form-sha256
+   "9a46fbff01f475c3c173dc1e209b0b1d825bee7572c243666fa87a6412a5e7ff",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "9a46fbff01f475c3c173dc1e209b0b1d825bee7572c243666fa87a6412a5e7ff",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-boolp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "38c6330bf1edaa59a7f645ec956cac9dac73dddd7f9b69312bccfa064dacacc7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "27f675ec3d92c42933f180565414cbdc8b67134feefe3e515adb9ee37f537071",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-chp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "2fba5d729ffdcbb943920872bbb064a3b1c8563fcb8473919ca4702e3cd5fdf9",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "a2cd0a47932b81e701fb236f19b4434dc77d340ea4c11cef207663e3eb90af0f",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-chp-finish,
+   :arguments [header],
+   :form-sha256
+   "c0acb987fe78d2ea318aa904bc856747c4bee0d09db8d9f132eba7db0489e2e7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "c0acb987fe78d2ea318aa904bc856747c4bee0d09db8d9f132eba7db0489e2e7",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-chp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "595d9eecbfb506df4881390b239e3db2f250dbc90c7ec396f8ef9fa591d4f9e6",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "45976e031fc2b1f8ba15ebacce34bbb2bffa21985815a13c17ef13189d46312d",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-nilp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "d9e6fbf82daee9ca9e69c6220b15870af6fa0136a9efcc94369c74d33302232e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "efcc3f688e190397472838b503607b0aa69ef9e93842d9e06e1fbbfe84a16827",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-nilp-finish,
+   :arguments [header],
+   :form-sha256
+   "3e58f1413e9c334428822980cc08db787d884dec8ebf21aada898a650222904b",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "3e58f1413e9c334428822980cc08db787d884dec8ebf21aada898a650222904b",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-nilp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "910757604c9b4e052c683e19ba8402939bc7c717ce66b4afd166fdb46b17a7cc",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "5223a3f90e3517bbdbd533a94513fe1fb1e499ac2fc98949b12aa12db051b3e3",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-kp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "7481f2f3df3c69492aa7cac0731e12815713cba40a83657e3a4994524c8a5770",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "828a4bb6278af5ca74007d2fffd6a760d95fd7aed1acea291ec6cdb43b3b9123",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-kp-finish,
+   :arguments [header],
+   :form-sha256
+   "6df26326ac6b15f73503b17f71717a18b9abae5d4f9a0f06e9a8876971832b9b",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "6df26326ac6b15f73503b17f71717a18b9abae5d4f9a0f06e9a8876971832b9b",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-kp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "6e341516d2b73785a37ac64246cf379328fb43752dd8ac539790ce1b0deac635",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "98dd5f4e89e0b8f890cbb1d68e1f06b802241321d7efaf1f2ec7f69959d9c2f9",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-strp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "751f8724058e797cdcd8c8cd15f84fa1b213fd067887ddd730fbc60bd589a8c4",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "24ec03b7aefe28dc4b9ea669f91cf5817a51d6fec37d2e4d65ec64573c4e3741",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-strp-finish,
+   :arguments [header],
+   :form-sha256
+   "2c97b4437482e260ca778bf1ba154dec204aab815496fcdd86e6bd3a9e1dcea6",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "2c97b4437482e260ca778bf1ba154dec204aab815496fcdd86e6bd3a9e1dcea6",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-strp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "f4c2daadf50a6674593a5656d162df2cd345683a5ffbee374c288702048aa8a7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "5480267d867269ead6b7e268dcc4b29e0c2d2a92938be5d52efd17b955fe16e5",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-ip-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "abb904994e291ad42f6309834d14af68fce06fdd4960260fbbdc4e1bce9e0936",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "3d38569d81ce06729cd1b0f949ad5f0855a38fb3ea51d19af3da3b68b70f21bf",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-ip-finish,
+   :arguments [header],
+   :form-sha256
+   "2e1cf63ee43282eb530e1e187ae9ddc59b935ea88ce1043baedfded319157f02",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "2e1cf63ee43282eb530e1e187ae9ddc59b935ea88ce1043baedfded319157f02",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-ip-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "1782ff4eccbd1a5841e7193b5c54ec28567711feb2193905d24d9ec966dad90e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "3184ffc371a6ee4ba0c1aea1bfe72d537ca942c551c4bb735176a3fa21693332",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-vp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "d03dd5a90a01f07be56b25938d69892155c64b1265dc797486c73f4bcddbd7e8",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "068c349203909b324a8bd161df133b3d3f5be57a61378afff5d79a165019be85",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-vp-finish,
+   :arguments [header],
+   :form-sha256
+   "0ee3c1ee9f0b951d2db235239654e3e917bca95148483e35ec42aa74e3b966a7",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "0ee3c1ee9f0b951d2db235239654e3e917bca95148483e35ec42aa74e3b966a7",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-vp-context,
+   :arguments [request facts bindings budget],
+   :form-sha256
+   "c510d3e6e54494fc702c5d14e027b3f985d16721fba85cc5afa88960a111a392",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "2bc488ce07c794cbcdf17ea96032a88bd32035cef9cda79b295ccb7fa2ada89d",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-mapp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "87d4ff26ce6ae6b75423e7a4ce81a85f6bd73fcdf6c18d6c0a0eef9a151c1d16",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "f27079cf50c7dc84a15495bcac7860f36f3207a54e412eaeb7d4ae3955fc57f5",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-mapp-finish,
+   :arguments [header],
+   :form-sha256
+   "fb5fdc9878f1e027f6364ece7db385c847e9fb43417828220b09f22c16a541a9",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "fb5fdc9878f1e027f6364ece7db385c847e9fb43417828220b09f22c16a541a9",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-setp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "65f2157a460e25fbf85d6998288dbc5998118c27a8128d29ce8b62d4d7062253",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "8e9c925b84336f6b6848b1fb5367382a30214694f2d762537a5495e270042eb9",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-setp-finish,
+   :arguments [header],
+   :form-sha256
+   "e59bc583eb8e7e8900a8070c837c719c70e6a06163b65fded6583f777603e732",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "e59bc583eb8e7e8900a8070c837c719c70e6a06163b65fded6583f777603e732",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-listp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "6294af3b25673a69790231e3186493afeb6ffa3feb8ea8e1a1a1dd1b1cb52422",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "f94f8d2248d719886f5053e8d084fc47eb0ad589196cf5618f2e0ee10b58b14f",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-listp-finish,
+   :arguments [header],
+   :form-sha256
+   "f2c31994b1a90a4ced053ea286269aa769a3aaa9cf8070cc24c6749704102aee",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "f2c31994b1a90a4ced053ea286269aa769a3aaa9cf8070cc24c6749704102aee",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-symp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "7e93fa3176645e80f28b4acdcf2c7818af3c317383b5ea9687f68323f3d9fc6d",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "3bbfcc4cbb4c0a01e0c6c24f85e282fd1de1db1c251dfb30b565c83024550556",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-symp-finish,
+   :arguments [header],
+   :form-sha256
+   "363d177f8fddf3424945d83af8759e62a0f9313b861f5bbefeee097e5ae85281",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "363d177f8fddf3424945d83af8759e62a0f9313b861f5bbefeee097e5ae85281",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-boolp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "7eb9c7afce59bcc597400dbafaf7f7cebcd46d177bf5ab129ab39ec553404205",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "cc8a2bbf5861d83819e4b0b6ff357ace0db2f76ad5b735409e3c382be97b754b",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-boolp-finish,
+   :arguments [header],
+   :form-sha256
+   "ce1273971230e1003c0777456e4eaf92ada0fe6d414f2d705c90ea6ae89f141e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "ce1273971230e1003c0777456e4eaf92ada0fe6d414f2d705c90ea6ae89f141e",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-chp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "32f189a2de43e11d156746250bc9d890de40dda5d9e01ea6b50d4298cd73fd13",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "a9c3c863a55816d84aa78276990163bfb8b305280f12da94acdcc8f72b6c3881",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-chp-finish,
+   :arguments [header],
+   :form-sha256
+   "3772994d96023c96481479d3fea5dee6fc4ad32b399bb73212802b014584a917",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "3772994d96023c96481479d3fea5dee6fc4ad32b399bb73212802b014584a917",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-nilp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "6f39f8fb219077f2ca5df245d6b52772d0aa2254c13df4bd336dff7588efb169",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "3cc8d6e63e7042dea5d93f7d6984b441306add6e3874e88d889feae44b4d8aef",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-nilp-finish,
+   :arguments [header],
+   :form-sha256
+   "bb9dc4d22caee14c1071a02b8a70111bf48eea5f61b9cd52984bc46bc63c6770",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "bb9dc4d22caee14c1071a02b8a70111bf48eea5f61b9cd52984bc46bc63c6770",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-kp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "6e21dd0313a77c6fa286478222810300383ff7bdf66067e57a84b0886506da68",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "d130443701de60e6e7a60d051cd08dc06f0045d63493803b970826cc92844cff",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-kp-finish,
+   :arguments [header],
+   :form-sha256
+   "001b1817c3361a1c87a8673f39d367c2b3ac43adc46722fcd8fb4ca9cb7a8334",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "001b1817c3361a1c87a8673f39d367c2b3ac43adc46722fcd8fb4ca9cb7a8334",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-strp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "dcc51f0d8fa87dce1e82256153138f661b503937003cb515d967aaace8945c07",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "83daf6170a498c90ece5b3e2cd1a1cec14b573f2090a805cb903083a118792a1",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-strp-finish,
+   :arguments [header],
+   :form-sha256
+   "1d3e38bcc6909f7b7ce96a384c6e658cd2236c9e61ad2c29fc1a70b65d06af20",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "1d3e38bcc6909f7b7ce96a384c6e658cd2236c9e61ad2c29fc1a70b65d06af20",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-ip-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "db3a91bce7b4d43eecc1c07b9287bd0b1c809d7958231278b9c5ff73f262985b",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "4b6b03092a165e807b270f88b1f389d148132cc1855bd8770843458e295c6750",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-ip-finish,
+   :arguments [header],
+   :form-sha256
+   "9f99e79afed81a8eee01e1bbed9c1378c8d4ae0063d2959437e7a971dadc9c48",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "9f99e79afed81a8eee01e1bbed9c1378c8d4ae0063d2959437e7a971dadc9c48",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-vp-source,
+   :arguments
+   [core node call edge nodes bindings types module validation],
+   :form-sha256
+   "3c7cb982c291a8867ddc03712624f7a384cc24cf8fc600e9d21a67c00da2842e",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "7b677ac40e52e3124922f13cafd7b776882ab5425adb57f71929147552f899a1",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-vp-finish,
+   :arguments [header],
+   :form-sha256
+   "f3c5b4fa3806859636308a1a21e98db87ed7f33b986db3559d86b45ef2fc28c8",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "f3c5b4fa3806859636308a1a21e98db87ed7f33b986db3559d86b45ef2fc28c8",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-lc-validate-types,
+   :arguments [arguments],
+   :form-sha256
+   "1de453c6a8b8eae47502e5e1970735027c1580817524f392ebe3ea9906815247",
+   :historical-same-name-present false,
+   :historical-form-sha256 nil,
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-lc-validate-types,
+   :arguments [arguments],
+   :form-sha256
+   "6313c82c7b00955f0fd80296353c8a2a7bdd777a8454e72f97e543edbd81546d",
+   :historical-same-name-present false,
+   :historical-form-sha256 nil,
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :name body-call-joins-with-foreign-valid?,
+   :arguments [core facts bindings foreign],
+   :form-sha256
+   "06c6781f3930d18607cbc9892884a96c73c8999b696e8659a78713dd4b1f4d75",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "d2f5b0ab66211324b8f3ff1536dd2d5a5eb488e88893644cb7ddd5e08ba79901",
+   :complete-historical-form-identical false,
+   :semantic-equivalence :not-inferred}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :name p15-s23-typed-compile-node,
+   :arguments [context id budget],
+   :form-sha256
+   "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+   :historical-same-name-present true,
+   :historical-form-sha256
+   "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40",
+   :complete-historical-form-identical true,
+   :semantic-equivalence :not-inferred}
+  {:family "map",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name map-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "b5820252e64287ff277ba482a69cfe99d6309572ad4f6e392db3df301ecab46c",
+   :historical-form-sha256
+   "b5820252e64287ff277ba482a69cfe99d6309572ad4f6e392db3df301ecab46c",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "map",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name map-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "d8cf8b463b910b85806f39529b480432d6a9d149899c75d7b4385bc7bdcd79fc",
+   :historical-form-sha256
+   "d8cf8b463b910b85806f39529b480432d6a9d149899c75d7b4385bc7bdcd79fc",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "set",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name set-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "42f37ccd200fdf2e4ddf4e90648591dec79b124d056106116d4fcd7144a2e66c",
+   :historical-form-sha256
+   "42f37ccd200fdf2e4ddf4e90648591dec79b124d056106116d4fcd7144a2e66c",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "set",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name set-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "d766c1cf5f82ab4e9c45a6399e5e233231b408081bb7e4fc2f5c54e769bf3700",
+   :historical-form-sha256
+   "d766c1cf5f82ab4e9c45a6399e5e233231b408081bb7e4fc2f5c54e769bf3700",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "list",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name list-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "616d95ae19ce6f042f50fde797ab9297b7fb8c9e34d4996c043818792c7d45da",
+   :historical-form-sha256
+   "616d95ae19ce6f042f50fde797ab9297b7fb8c9e34d4996c043818792c7d45da",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "list",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name list-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "bf256f567eb47f2100fc27e590026a61aacc0bdcbcbcdb230777ee8950e9de53",
+   :historical-form-sha256
+   "bf256f567eb47f2100fc27e590026a61aacc0bdcbcbcdb230777ee8950e9de53",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "symbol",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name symbol-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "16bfe8b1f7a1c47f7d5c2714ed6d449b1b9c05d35e7e50ad0a4d3fb9d5a44f26",
+   :historical-form-sha256
+   "16bfe8b1f7a1c47f7d5c2714ed6d449b1b9c05d35e7e50ad0a4d3fb9d5a44f26",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "symbol",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name symbol-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "2620d3fc9b8563e505db23e2fcbcc1959d71a42460f50694203a05fcf5c84e8a",
+   :historical-form-sha256
+   "2620d3fc9b8563e505db23e2fcbcc1959d71a42460f50694203a05fcf5c84e8a",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "boolean",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name boolean-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "b2e011e053f1e8e0d82ea6bdb98fb9018e5a7e281e48f858f42a5ac8d07382ea",
+   :historical-form-sha256
+   "b2e011e053f1e8e0d82ea6bdb98fb9018e5a7e281e48f858f42a5ac8d07382ea",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "boolean",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name boolean-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "a62a945942ad7e65d60faf54ef0d4b8a4dc7071f9f7c31b0d3f6b945bf4418b6",
+   :historical-form-sha256
+   "a62a945942ad7e65d60faf54ef0d4b8a4dc7071f9f7c31b0d3f6b945bf4418b6",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "character",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name character-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "39fe1fbd96d042b04145c4821396422787d89e8e8d56d337017cc9c0552e1236",
+   :historical-form-sha256
+   "39fe1fbd96d042b04145c4821396422787d89e8e8d56d337017cc9c0552e1236",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "character",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name character-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "baaa173f3e2b06fbb77a72498fcdb779202201834f259e46b11f28f74f20ff35",
+   :historical-form-sha256
+   "baaa173f3e2b06fbb77a72498fcdb779202201834f259e46b11f28f74f20ff35",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "nil",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name nil-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "1d5aa8cf4b9df133139a6d7678562676bd01697eef0a40dd40dcb8274845a90f",
+   :historical-form-sha256
+   "1d5aa8cf4b9df133139a6d7678562676bd01697eef0a40dd40dcb8274845a90f",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "nil",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name nil-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "d301bcb2d68df05dde5d97c87c64bab95881c6fa4841f1e3a28844572634dc58",
+   :historical-form-sha256
+   "d301bcb2d68df05dde5d97c87c64bab95881c6fa4841f1e3a28844572634dc58",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "keyword",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name keyword-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "f340ebbd99d2ba248dbf3a2b81a6260c8b03256b2300266bf31d37bbcb815d4d",
+   :historical-form-sha256
+   "f340ebbd99d2ba248dbf3a2b81a6260c8b03256b2300266bf31d37bbcb815d4d",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "keyword",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name keyword-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "d85a61f223f11c29261f8392a8d0eca02d4163187ac6df61845c1c92ef22c3bc",
+   :historical-form-sha256
+   "d85a61f223f11c29261f8392a8d0eca02d4163187ac6df61845c1c92ef22c3bc",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "string",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name string-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "7a54094964c43509653c1ce508d8dbbe1395e07fd25c9e8b51679a5eea9e4394",
+   :historical-form-sha256
+   "7a54094964c43509653c1ce508d8dbbe1395e07fd25c9e8b51679a5eea9e4394",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "string",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name string-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "fb934602a941049119051598bae5027b30f4845c00c266e13062f94f018a6309",
+   :historical-form-sha256
+   "fb934602a941049119051598bae5027b30f4845c00c266e13062f94f018a6309",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "integer",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name integer-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "1a1768baf13bf0521028fbeb4bd44fda12471390f0c15774940bb9200cc45931",
+   :historical-form-sha256
+   "1a1768baf13bf0521028fbeb4bd44fda12471390f0c15774940bb9200cc45931",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "integer",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name integer-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "97e9af303a7103f53672a35f77b27657e51f78f9049ca5f5fbfa1e91a5cc6a0c",
+   :historical-form-sha256
+   "97e9af303a7103f53672a35f77b27657e51f78f9049ca5f5fbfa1e91a5cc6a0c",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "vector",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name vector-predicate-input,
+   :arguments [argument-types],
+   :form-sha256
+   "d73dd19a66d6c10c90f0b388fa2542c58c1cde6121532e888f74cf64531df828",
+   :historical-form-sha256
+   "d73dd19a66d6c10c90f0b388fa2542c58c1cde6121532e888f74cf64531df828",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}
+  {:family "vector",
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :name vector-predicate-derived,
+   :arguments
+   [{:keys [core node call edge nodes bindings types forms]} budget],
+   :form-sha256
+   "248fa8a0f63ba8655ed4fe9c73cd116047a2118e4b47e55c745bb8437e62052a",
+   :historical-form-sha256
+   "248fa8a0f63ba8655ed4fe9c73cd116047a2118e4b47e55c745bb8437e62052a",
+   :historical-same-name-present true,
+   :complete-historical-form-identical true}],
+ :negative-controls
+ {:count 37, :all-refused true, :scope :inert-source-DATA},
+ :candidate "50c7e58c5fb41a3001bf423b39f6e5157e030566",
+ :blocking-findings [],
+ :remaining
+ "Exact current-main extraction, affected dependency/source composition, applicable CI, fresh clean preflight and coordinator integration remain separate. Genuine owner controls remain UNRUN; stopped selectors/relay operations remain stopped.",
+ :generator-sha256
+ "710dcc18875f32085faf1262f37993254b2de4e258d9145d6164803394ec11c7",
+ :genuine-controls :UNRUN,
+ :conservation
+ {:all-parent-tracked-paths 10069,
+  :every-blob-and-mode-preserved true,
+  :production-and-preexisting-tests :byte-identical-to-parent,
+  :only-three-added-paths
+  ["bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj"
+   "specs/accounting-removal/predicate-family-controls-census.edn"
+   "specs/accounting-removal/predicate-family-controls.md"]},
+ :verification
+ {:mode :reader-Git-text-hash-only,
+  :Bootstrap-loaded false,
+  :production-files 3,
+  :artifacts 3,
+  :owner-forms 114,
+  :upstream-forms 22,
+  :new-review-request false,
+  :new-genuine-execution false},
+ :reviewer-execution
+ {:target-allocations :none,
+  :denied-selector-and-old569303619-relays :not-retried,
+  :mode :Clojure-reader-EDN-text-hash-Git-objects-only,
+  :read-eval false,
+  :Bootstrap-loaded false,
+  :new-workers false,
+  :whitespace-exit 0,
+  :author-or-shared-writes false,
+  :restored-genuine-test :UNRUN,
+  :proxy :not-instantiated,
+  :source-data-assertions 17224,
+  :APPROVE false,
+  :draft-checker-history
+  "Reader-only base/tree guards and namespace-sensitive unknown-field handling were checked against exact raw source; final checks succeeded. No source/test namespace or target function was evaluated.",
+  :checker-sha256
+  "73997169dfcb807b819bbea25eb6f81b1ef9c0b68d48f98180b20d7d47b67369",
+  :actual-C7-Effects-lowering-runtime :not-executed,
+  :helper-kernels :not-run},
+ :preserved-obligations
+ {:opaque-callbacks
+  :equals-hashCode-toString-methods-and-zero-callback-assertion-retained-inert,
+  :runtime-result
+  :original-closed-instruction-result-assertion-retained-unexecuted,
+  :coherent-facts
+  :type-table-plus-regenerated-call-facts-and-constraint-ledger,
+  :Effects-context-and-call-joins :retained,
+  :three-owner-descriptor-equality :complete-structural-equality,
+  :coherent-forgeries
+  [[:operand-type-work 0]
+   [:operand-type-work 1]
+   [:operand-type-work nil]
+   [:user/unknown-field true]],
+  :typed-lowering :complete-status-assertion-retained,
+  :late-invalid
+  {:width 1025,
+   :invalid-position 1024,
+   :invalid-type :gravity.type/unknown},
+  :actual-C7-derive :source-definitions-retained-unexecuted,
+  :coherent-lowering
+  :operator-descriptor-plus-regenerated-call-fact-and-ledger},
+ :adaptation-assessment
+ {:Effects-validator
+  {:from body-lc-type-work,
+   :to body-lc-validate-types,
+   :current-arguments [arguments],
+   :retired-allowance-argument :removed,
+   :new-validation-or-stub :none},
+  :lowering-validator
+  {:from p15-s23-lc-type-work,
+   :to p15-s23-lc-validate-types,
+   :current-arguments [arguments],
+   :retired-allowance-argument :removed,
+   :new-validation-or-stub :none},
+  :obsolete-field-forgery
+  {:old-value (:work-count validation),
+   :new-values [0 1 nil],
+   :original-unknown-field :retained,
+   :rationale
+   :closed-descriptor-refusal-independent-of-retired-telemetry},
+  :remaining-owner-allowances
+  :not-retired-or-reclassified-by-this-test-patch},
+ :result :pass-in-exact-source-data-scope,
+ :historical-tree "f8440ffcf2d2fa7e2f898178ee299ac64ef59d32",
+ :kind :predicate-family-independent-review-consumption,
+ :receipt-sha256
+ "38f50b1539b4d64ce89a613bded7aa5783c69611f89cf63dba0f15b66aaa054f",
+ :receipt-pins
+ {:upstream-details-file "upstream-pins.edn",
+  :upstream-file
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :upstream-input-derive-definitions 22,
+  :generator-sha256
+  "714f582d71b993d1803f5bb93d2e20b5343fdafc4e9207fe23a683aee3070de4",
+  :owner-details-sha256
+  "bda38033c50d4fb74145cda7148f2772107a51cb2bd09c8029d37e33756183c3",
+  :selected-owner-definitions 114,
+  :upstream-details-sha256
+  "ddea680b2f19d1fdfb227d461c3b73a4cf2eb7d878a4da85d543cd1f9de35f31",
+  :generator-path "/tmp/acc01-predicate-controls-restore.clj",
+  :owner-details-file "owner-pins.edn",
+  :production-files
+  [{:path
+    "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+    :sha256
+    "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+   {:path "bootstrap/gravity/src/gravity/effects.gravity",
+    :sha256
+    "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+   {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+    :sha256
+    "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}],
+  :all-defined-and-current-file-form-hashes-verified true,
+  :form-hash-boundary
+  "Selected Gravity forms use exact read/pr-str hashes; host anonymous-function local gensyms alone are normalized. Full test restoration independently checked as raw UTF8 bytes.",
+  :upstream-file-sha256
+  "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443"},
+ :base-tree "2b2168fe83fc08a7b4a882d75650c5b6e6eac31d",
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :pr 625,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :artifacts
+ {"bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj"
+  "d5ce6ff87e096469dbcf7b3f48a8b217765cded6dcd50ea76ac4c873fe19d5e5",
+  "specs/accounting-removal/predicate-family-controls-census.edn"
+  "545e7208137721650916c1dcec0fe5a54ca43a01581a60a87283ff74caf004af",
+  "specs/accounting-removal/predicate-family-controls.md"
+  "ac12730e08fcfda901c04988a79d4c7383397e68080952fe588b702eb61c4238"},
+ :raw-restoration
+ {:all-other-original-bytes :identical,
+  :historical-file-sha256
+  "90c2ccf628933dcedb370f1a8213b5492bd03a9a1455a0a7603e9fb724a0df30",
+  :deftest complete-predicate-descriptors-cross-actual-owners,
+  :read-forms 3,
+  :replacements
+  [["(lower 'p15-s23-lc-type-work [:gravity.type/string] 65536)"
+    "(lower 'p15-s23-lc-validate-types [:gravity.type/string])"]
+   ["(body 'body-lc-type-work [:gravity.type/string] 65536)"
+    "(body 'body-lc-validate-types [:gravity.type/string])"]
+   ["[[:operand-type-work (:work-count validation)] [::unknown-field true]]"
+    "[[:operand-type-work 0] [:operand-type-work 1] [:operand-type-work nil] [::unknown-field true]]"]],
+  :family-table :byte-and-form-identical,
+  :complete-equation
+  :historical-original-plus-exact-three-single-occurrence-replacements,
+  :candidate-file-sha256
+  "d5ce6ff87e096469dbcf7b3f48a8b217765cded6dcd50ea76ac4c873fe19d5e5",
+  :all-original-assertion-forms :identical,
+  :syntactic-is-forms 13,
+  :families
+  [["map" "mapp"]
+   ["set" "setp"]
+   ["list" "listp"]
+   ["symbol" "symp"]
+   ["boolean" "boolp"]
+   ["character" "chp"]
+   ["nil" "nilp"]
+   ["keyword" "kp"]
+   ["string" "strp"]
+   ["integer" "ip"]
+   ["vector" "vp"]]},
+ :historical-helper-boundaries
+ {:selected-owner-differences-by-file
+  {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+   22,
+   "bootstrap/gravity/src/gravity/effects.gravity" 24,
+   "bootstrap/gravity/p15_s23/emitter.gravity" 12},
+  :all22-upstream-helper-forms :historically-identical,
+  :new-selected-validator-names
+  [body-lc-validate-types p15-s23-lc-validate-types],
+  :selected-owner-form-differences 58,
+  :four-complete-explicit-source-correspondences
+  [{:name body-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-io-child-types,
+    :reference sh08-ft-ordered-child-types,
+    :aliases {ids children, types type-table},
+    :entire-parameters-and-body-after-listed-renames :identical,
+    :semantic-equivalence :not-conferred}
+   {:name body-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {body-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}
+   {:name p15-s23-listp-call-ids?,
+    :reference sh08-listp-call-ids?,
+    :aliases {p15-s23-sse-ids? sh08-sse-ids?},
+    :complete-body-correspondence true,
+    :dependency-id-validator-body :identical,
+    :semantic-equivalence :not-conferred}],
+  :semantic-equivalence :unproven,
+  :prior-private-or-source-reviews
+  :not-promoted-to-execution-or-parent-acceptance,
+  :two-real-remaining-structural-differences
+  [{:name body-all?,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     body-all?
+     [values]
+     (loop
+      [remaining values]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}
+   {:name p15-s23-typed-all,
+    :reference sh08-ft-all-true?,
+    :C7-form
+    (defn
+     sh08-ft-all-true?
+     [values]
+     (if
+      (= (count values) 0)
+      true
+      (if
+       (= (first values) true)
+       (sh08-ft-all-true? (rest values))
+       false))),
+    :other-owner-form
+    (defn
+     p15-s23-typed-all
+     [checks]
+     (loop
+      [remaining checks]
+      (if
+       (= 0 (count remaining))
+       true
+       (if
+        (= true (first remaining))
+        (recur (rest remaining))
+        false)))),
+    :difference :recursive-call-versus-loop-and-equality-operand-order,
+    :semantic-equivalence :unproven}],
+  :ID-width-and-host-guard-quota-disposition :not-assessed-or-changed,
+  :transitive-whole-callgraph-proof false}}

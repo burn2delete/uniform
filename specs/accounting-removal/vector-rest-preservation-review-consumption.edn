@@ -1,0 +1,173 @@
+{:reviewer-checker-rerun :not-performed-no-reproduction-claim,
+ :tree "000e7dc4bda6dc0b9ea2a79340501406ffa7faa3",
+ :execution
+ {:inert-source-checks :passed,
+  :genuine-compiler-Effects-lowering-runtime-native-kernel :UNRUN},
+ :consumer-verification
+ :receipt-checker-prior-split-frozen-tree-file-equation-historical-exclusions-and-fixture-pins,
+ :consumer-source-sha256
+ "81069652f6ee756e8fc0d43271d0f79e2f288d2d32b121490689985a8afcf7f9",
+ :candidate "3fd50a27141560b480406c882778e6efae44b4b4",
+ :reviewer-thread "01a18528-c7af-75c1-a399-5eb23dbbe8e4",
+ :independent-controls
+ [{:case :revert-expression, :coherently-rehashed true, :refused true}
+  {:case :lose-zero-branch, :coherently-rehashed true, :refused true}
+  {:case :lose-first-removal, :coherently-rehashed true, :refused true}
+  {:case :wrong-zero-value, :coherently-rehashed true, :refused true}
+  {:case :wrong-receiver, :coherently-rehashed true, :refused true}
+  {:case :restore-accounting-0,
+   :coherently-rehashed true,
+   :refused true}
+  {:case :restore-accounting-1,
+   :coherently-rehashed true,
+   :refused true}
+  {:case :drop-call-guard, :coherently-rehashed true, :refused true}
+  {:case :drop-edge-guard, :coherently-rehashed true, :refused true}
+  {:case :wrong-result-kind, :coherently-rehashed true, :refused true}
+  {:case :changed-arguments,
+   :coherently-rehashed true,
+   :refused true}],
+ :reproduction
+ {:path "/tmp/pr639-source-preservation-review.clj",
+  :sha256
+  "fa3015580caff7060f2cec9241b9d74af3bd51314312713e7e30e9a0f8f6de4a"},
+ :exclusions
+ [:no-finiteList-vec-subvec-equivalence
+  :no-runtime-allocation-storage-native-transitive-effect-proof
+  :no-new-contract
+  :no-whole-ACC01-PR502-closure
+  :no-main-integration-or-latest-head-CI-credit
+  :no-fixture-review-inheritance
+  :no-Bootstrap-compiler-target-runtime-native-kernel-proxy-registration-lease-probe
+  :no-APPROVE-or-sharedwrite-or-outbound-delivery],
+ :delivery :receipt-in-this-thread-only,
+ :remaining-integration-gates
+ [:semantic-change-unvalidated
+  :metadata-equivalence-HELD
+  :fresh-accepted-composition-and-preflight-UNRUN],
+ :classification
+ "The exact original historical expression is preserved in one C7 metadata location. Complete source and tree equations conserve every other production/test byte, and the complete header matches history after only the two previously classified accounting exclusions. This passes source preservation only; it confers no semantic equivalence, new vec contract or prior fixture-result acceptance on changed production.",
+ :main-integration :UNRUN,
+ :genuine-compiler-effects-lowering-runtime :UNRUN,
+ :CI :separate-exact-head-seven-successes-two-skips,
+ :intake
+ {:fresh-author-and-orchestrator-readbacks :checked,
+  :authorship-conflict false,
+  :duplicate-exact-review :none-observed,
+  :review :new-source-preservation-subject,
+  :denied-actions :not-retried-or-rerouted},
+ :inputs
+ {"bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity"
+  {:base-sha256
+   "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+   :candidate-sha256
+   "ef6c0de907cb08e88206822f697cb80c7c44b375af7dab9f48ed700338c9e385"},
+  "specs/accounting-removal/vector-rest-metadata-preservation.edn"
+  "0584dcaca15d0afb58250ac08f154840c9565f1517505cfe7a43ac091417267a",
+  "specs/accounting-removal/vector-rest-metadata-preservation.md"
+  "c53cf87593a6933b33980ad0e5b9fa5df031912bd949467561e2b43ecb54f0bc",
+  :historical-header-sha256
+  "845deaf0b8b2d038ebb3b84301623c1c66ac0436f11e795ace39028e01621915",
+  :candidate-header-sha256
+  "f870664ba61b440656ea0266e80226925df1e059f153f116897c4410b4978e4f"},
+ :preservation
+ {:file-equation :one-exact-expression-only,
+  :tree-overlay :all-mode-type-blobs-outside-three-paths-identical,
+  :other-production-definitions 1086,
+  :historical-header
+  :exact-with-only-two-classified-accounting-exclusions,
+  :accounting-exclusions
+  [{:at [3 2 2 3 2 2 3 1 3],
+    :historical (+ reserved 0),
+    :main reserved,
+    :classification :zero-charge}
+   {:at [3 2 2 3 2 2 3 2 2 :reason],
+    :historical
+    (if
+     (= :work-limit (get validation :reason))
+     :vector-rest-work-limit
+     :vector-rest-finite-positional-vector-type-required),
+    :main :vector-rest-finite-positional-vector-type-required,
+    :classification :retired-validator-reason}],
+  :unchanged-fixture-definitions
+  [{:name sh08-vector-rest-development-kernel,
+    :form-sha256
+    "be322f0f1ef1b398314b8e8c9d05e651e739d2b86cd1988e453f7c4e6bef5fea",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}
+   {:name sh08-vector-rest-cold-and-budget-development-kernel,
+    :form-sha256
+    "94a3dccc11ee646df6f944938dfbc2ad91193cf001c6108ec945f239ba6bff7f",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}
+   {:name sh08-vector-rest-current-source-composition,
+    :form-sha256
+    "44e4fe09d9274b40ba33b348405f4005bda47c23504a68b130398647c36553a7",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}
+   {:name sh08-vector-rest-physical-preflight-development-kernel,
+    :form-sha256
+    "2693fc4ae507973bc2c91d9b2622a6c65fa96db4c460f1baeb6ba32f11446459",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}
+   {:name body-vector-rest-development-kernel,
+    :form-sha256
+    "59ba06f5a3a988289d4a4a7da048592b4d3c1732f1b319555fe9be9c26aecba9",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}
+   {:name
+    current-gravity-vector-rest-fixtures-file-parity-development-kernel,
+    :form-sha256
+    "e173ffc668dfe81e326a0a2284e59db458c3ebe1d1862c419074318af3a576c1",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}
+   {:name current-gravity-vector-rest-lowering-development-kernel,
+    :form-sha256
+    "1d2b86ec74facdd303734fae53e4040b6bd9d0dba95e0f2f6b32cef604cbfbb1",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}
+   {:name current-gravity-vector-rest-runtime-development-kernel,
+    :form-sha256
+    "ff8b8681d9a9061cba4a4bef6fee0775b5d6ed6bf79f0a24f057cb6858db7f1a",
+    :path
+    "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+    :scope :unchanged-source-only,
+    :execution :UNRUN}]},
+ :kind :vector-rest-preservation-independent-source-review-consumption,
+ :receipt-sha256
+ "b450173c5e0f9c915715646869d3c20becf7f647d14759170826973ecdd2acdd",
+ :positive-checks 1145,
+ :verdict :pass-source-preservation-only,
+ :source-checks 1192,
+ :prior-split
+ {:path "/tmp/vector-header-independent-classification.edn",
+  :sha256
+  "73205201ca01ef77a5dca10811b015fff2857fc590a6d9f5b80771dd862dbbd4",
+  :accounting-classification :two-exact-exclusions-only,
+  :finite-List-vec-subvec-equivalence :HELD-unchanged,
+  :not-retried true},
+ :author-checker
+ {:path "/tmp/acc01-vector-rest-preservation.clj",
+  :sha256
+  "737d8b714f541b42ae6fb968612968c6125d1a9b03efb548c1dc747d30119b8d",
+  :mode :inspected-hashed-only,
+  :original-writer-executed false},
+ :base "b1d590cc7edda61c81a53eeccbf879d7e4d2bcbf",
+ :pr "https://github.com/burn2delete/uniform/pull/639",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :whole-ACC01-PR502 :incomplete}

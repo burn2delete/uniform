@@ -1,0 +1,772 @@
+{:nonclaims
+ [:semantic-execution
+  :helper-equivalence-for-nonmatching-bodies
+  :original-test-passed
+  :ACC-status-change
+  :PR502-closure],
+ :helper-correspondence
+ [{:from body-all?,
+   :to sh08-ft-all-true?,
+   :complete-bodies-identical-after-listed-correspondence false,
+   :current-body-sha256
+   "11e8f6d4e2f08f5bc1b9187fc0ce73b47f99b260e9d910b5a9b8eb7e33dc68b4"}
+  {:from body-boolp-binding?,
+   :to sh08-boolp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "11e74257e5a6553260f1909676ecac1e3da080934be48b14d82cc12f07895d93"}
+  {:from body-chp-binding?,
+   :to sh08-chp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "06e667f9e45dbd88d18956ec31056d3e0ee82592ef484fa6f012d5c05392c701"}
+  {:from body-chp-classification,
+   :to sh08-chp-classification,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "88b3f5562fa124554b5fa603da93cadd9377cce98cbbb963f7b88762b8aae2b3"}
+  {:from body-io-child-types,
+   :to sh08-ft-ordered-child-types,
+   :complete-bodies-identical-after-listed-correspondence false,
+   :current-body-sha256
+   "54840033fd933a353e96c86e48da33024d5fcea29e2cd2309cc6d62fae3f8eed"}
+  {:from body-ip-binding?,
+   :to sh08-ip-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "00c248155f781c1c4f23938f17ccbd67fa8a552dac4ca37e406f264da5a6c3d6"}
+  {:from body-kp-binding?,
+   :to sh08-kp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "63b7aa4c4eea1a06e400ade4c4d4f3c8e4865f7c43784f9d2c3808b99d67dd00"}
+  {:from body-lc-native-map?,
+   :to sh08-lc-native-map?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "8b947d913c07ca6f24ea2e800d732f7d0f45a3bd691f57aa2569db71fa1c22e3"}
+  {:from body-listp-binding?,
+   :to sh08-listp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "ba19c27c758b7c23bfa33a6c2c131a8e36e7f60c8e9aea19b6a7e3fd30d46b6d"}
+  {:from body-listp-call-ids?,
+   :to sh08-listp-call-ids?,
+   :complete-bodies-identical-after-listed-correspondence false,
+   :current-body-sha256
+   "03abcf75916e0fcce34dd8bb1aa0d05b824b6f3e41dac611a0453d445b0d3550"}
+  {:from body-mapp-binding?,
+   :to sh08-mapp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "268abaca1c938b35b3d7ec379d26814fe7571cb849b3fe2c0761b6421c90cb6e"}
+  {:from body-nilp-binding?,
+   :to sh08-nilp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "77720e729e7de34d63a20484c5b75f91ef7dfc4716dfabaddf3f590c36250c58"}
+  {:from body-nilp-classification,
+   :to sh08-nilp-classification,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "1a268379ef985708475274105c75825352101d0233339e1cbf1ae077aefc07e8"}
+  {:from body-setp-binding?,
+   :to sh08-setp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "57996bf4a45ee4a92fd100fd3cb346e97cec398ec77215d4912dddc46c106008"}
+  {:from body-st-binding?,
+   :to sh08-st-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "851386eaaafc84d7dc66c62e241c6bd086565f1693f36bdc678a2ad1d734629e"}
+  {:from body-strp-binding?,
+   :to sh08-strp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "2ba68316ea1962ccee7edc2c68d84e34270cf740aa40d258c5ada577851dd3cc"}
+  {:from body-symp-binding?,
+   :to sh08-symp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "91345435782722c66ae9d6afdbaa0e8fff93c5666e86d9a411715b0939e9103a"}
+  {:from body-vp-binding?,
+   :to sh08-vp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "41c4855a4fe4063855cb74d53d3afd3a4556864427ba0b84d892fbd5258d0260"}
+  {:from p15-s23-boolp-binding?,
+   :to sh08-boolp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "b63705e0e4325a95edadcf68940f039f0b684ca517236ea8dfae620ffb9532e7"}
+  {:from p15-s23-chp-binding?,
+   :to sh08-chp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "f74edc0242645b28a28e536b0eb4bd5faa4680dcf60e2fb7e432e92ac294e9a0"}
+  {:from p15-s23-chp-classification,
+   :to sh08-chp-classification,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "88b3f5562fa124554b5fa603da93cadd9377cce98cbbb963f7b88762b8aae2b3"}
+  {:from p15-s23-io-child-types,
+   :to sh08-ft-ordered-child-types,
+   :complete-bodies-identical-after-listed-correspondence false,
+   :current-body-sha256
+   "54840033fd933a353e96c86e48da33024d5fcea29e2cd2309cc6d62fae3f8eed"}
+  {:from p15-s23-ip-binding?,
+   :to sh08-ip-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "39514b01033f8b78fdcf891634dc8f0dc07aae2c8292cad7cfb1122318680114"}
+  {:from p15-s23-kp-binding?,
+   :to sh08-kp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "3ee2f8a01d35f07247c73018cd4d77b497ab2e59bb2254c6d558a461e4ec269a"}
+  {:from p15-s23-lc-native-map?,
+   :to sh08-lc-native-map?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "8b947d913c07ca6f24ea2e800d732f7d0f45a3bd691f57aa2569db71fa1c22e3"}
+  {:from p15-s23-listp-binding?,
+   :to sh08-listp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "29873e379e15c4ecd2450684208e715266931c77cd8f75a9d080c0c0886a8957"}
+  {:from p15-s23-listp-call-ids?,
+   :to sh08-listp-call-ids?,
+   :complete-bodies-identical-after-listed-correspondence false,
+   :current-body-sha256
+   "31cba1809129b55dea2cc0f090997e0246510b3ba13c91c9fcbda66114dc7b2c"}
+  {:from p15-s23-mapp-binding?,
+   :to sh08-mapp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "6d25c3027bd29753bb7596e44638bde0c0ec07c5b608d38018a8413b52552e1e"}
+  {:from p15-s23-nilp-binding?,
+   :to sh08-nilp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "d326ab7aa4d5e49f6b3838197c652791de9889d27d3c0434231d1dd05f0aa452"}
+  {:from p15-s23-nilp-classification,
+   :to sh08-nilp-classification,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "1a268379ef985708475274105c75825352101d0233339e1cbf1ae077aefc07e8"}
+  {:from p15-s23-setp-binding?,
+   :to sh08-setp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "16775a8e3a318b7dc0ac83b06e8052c4b2a03460bb93366d7a9c1ec2972fe040"}
+  {:from p15-s23-st-binding?,
+   :to sh08-st-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "ebbc7fff4dcf628a7bcf82c2f125c3941ad48664f901d4054ec27b524fd3abc1"}
+  {:from p15-s23-strp-binding?,
+   :to sh08-strp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "cc661c49638fe324f4ed9563bd408c5ae3d95c7b2dfde8559c751a555f3ca932"}
+  {:from p15-s23-symp-binding?,
+   :to sh08-symp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "e82d505cf7435f8f2c43e054446b4785ec795efa38d188f3ce763d24ad74eef2"}
+  {:from p15-s23-typed-all,
+   :to sh08-ft-all-true?,
+   :complete-bodies-identical-after-listed-correspondence false,
+   :current-body-sha256
+   "780b7c5f7002bee3aa3c40af7e7bdd909227c1c100225b57037d7df6c6464dd1"}
+  {:from p15-s23-vp-binding?,
+   :to sh08-vp-binding?,
+   :complete-bodies-identical-after-listed-correspondence true,
+   :current-body-sha256
+   "c9451f0ad9c42543f540139d57b3304c89049519f8683f7ffec790343a1d4d11"}],
+ :method
+ {:reader-eval false,
+  :gravity-code-evaluated false,
+  :normalization :explicit-listed-symbol-correspondence,
+  :not-normalized
+  [:numbers :keywords :argument-lists :descriptor-values],
+  :dependency-equivalence-from-names false},
+ :preserved-head "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :source-inputs
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142"}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57"}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637"}],
+ :original-test
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/predicate_descriptor_family_test.clj",
+  :sha256
+  "90c2ccf628933dcedb370f1a8213b5492bd03a9a1455a0a7603e9fb724a0df30",
+  :executed false},
+ :assessed-main "0f7acce5fc93e019062d84a3fd9dcf05643ba7fd",
+ :kind :predicate-source-disposition-proposal,
+ :generator
+ {:language :clojure,
+  :sha256
+  "9f801003f33596ca5e513266e909d6a119e058ada947534829315043cd29558d",
+  :support-sha256
+  "9e15307ba20a844ebe8313f38644514b5d5930ec4a34a6535eb1c0d341338f40",
+  :preserved-locally true},
+ :remaining-original-obligations
+ [:actual-C7-derive
+  :Effects-context-and-joins
+  :typed-emitter-lowering
+  :runtime-result
+  :coherent-obsolete-and-unknown-field-forgeries
+  :late-invalid-types
+  :opaque-types-and-zero-callbacks],
+ :decision :awaiting-independent-source-disposition,
+ :families
+ [{:family "mapp",
+   :descriptor-kind :gravity.type/applied-map-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "9d6fb34e5b9c98dce641f2c03a33874dba37624da3df9d9ca3e2df2ef944502e",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "19c31a88a4ccfff8039d89da83496b74a21a5f885ffc9355692ea39ec2660613",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "ec9efe510e9be324a9302b339b675a581193b39b72554dc36e330429349e8279",
+     :get-mutation-detected true}]}
+  {:family "setp",
+   :descriptor-kind :gravity.type/applied-set-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "33237f0ec301f6335fe2a621a82dcb985bc6b9ab4ae4437b206152ab03252b1e",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "dc12d949d3f549a6c3bfc0fa247330d19a860f3075859699f2d53ffc5de8476a",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "d59fda9721ec4d518371b1cafd92fc44911f0c8185a6fece5846516d506309e8",
+     :get-mutation-detected true}]}
+  {:family "listp",
+   :descriptor-kind :gravity.type/applied-list-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "0f196c3a36b5029a0af0020eb4b9ae1a0652bd2a12110192f7830f710bfc9add",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "06f70fc8f81e2346193281f3198192633c30921e4d4d16108fc360f1cfbf4819",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "2577da672a20735e07e4cc74f9b0774252537bd368aeefcfb6b1bb89fe04bea0",
+     :get-mutation-detected true}]}
+  {:family "symp",
+   :descriptor-kind :gravity.type/applied-symbol-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "0d1e7f3914772bd528bd6baf6b995f433cc4ab4ef672b8f53b04a2374e4aff9d",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "a9f82540f45d11cc768d6f890798e30a759b82c0a98970bf98ecb0ee874a6c55",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "f85a24ef6e51343e14f788fd4623b296131d224e79e692d724f3c3d090cd7033",
+     :get-mutation-detected true}]}
+  {:family "boolp",
+   :descriptor-kind :gravity.type/applied-boolean-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "e11241f0fcf1f5fafd6736df5abec2425cb2b43bbfa3ae8edb2763b7e41cd6c8",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "b9a57e668e5fcb1fac58d4bbd71c60d7f63ca8b3d09770c016a09a5cfd64a225",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "78e51e8440ffd0a0bcf2e8f66a9a0652687b22425a379802977957550be149c2",
+     :get-mutation-detected true}]}
+  {:family "chp",
+   :descriptor-kind :gravity.type/applied-character-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :character-query-classification
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "7ff50cd6c0e1f42830e3984d815b57c969f17084b220866cca21d5013ea4c6f6",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "d893fe057b1002774911fb8cf990e20eb4b4b924fbf9364329fe0989d30e5910",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "e26f85168afb251512d800221c9e89a7bac540c29d6bd15ec92a4e394a76c24c",
+     :get-mutation-detected true}]}
+  {:family "nilp",
+   :descriptor-kind :gravity.type/applied-nil-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :nil-query-classification
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "66a1e7a5bdd4670b55652eb3f91a727c77bd0ee4b4b705514ceaabab6ff27f7b",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "22f66ef60c5c67680d9127e4e46067af1306d34fae282ca6cfc425441da0afb9",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "4a49cc561779127e386c0a77f2ae127c1b0d08d8a20c8e49f149fb06a0cd077a",
+     :get-mutation-detected true}]}
+  {:family "kp",
+   :descriptor-kind :gravity.type/applied-keyword-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "45ee28b931a54546d199baa0ff27ce7e0aa68457c7248277717c5c2099d2c66e",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "75692f46f4107283c93ad8c68b7a29e2033de60bd241007426831eb8b6f9d145",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "efa68cd0c708774fbe3326436a75a8c6a6fad4ab00b1fc75c07fa80ab4be0794",
+     :get-mutation-detected true}]}
+  {:family "strp",
+   :descriptor-kind :gravity.type/applied-string-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "a4ad8d42095f56f53f34076c11a9afd0b6d2c06c8084dbdeb5301bef5b721f2d",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "58c4633736ca313ba5fa341fc49d795c545d0082a419dc379aae5e082988d52d",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "a0d717440649e33419e5d7a22571cee16cb6e6dcf2529d222dbd634191e88474",
+     :get-mutation-detected true}]}
+  {:family "ip",
+   :descriptor-kind :gravity.type/applied-integer-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "746bdcecd99ca99b35f078107f351abb58ce7326730225d40413f22e8909f681",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "597995dfa679a70422200aa54b3cec8d85a45d3808720c246a2d38af44a46761",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "f5c4a129085df11a7ff09f7ab670a4378b50d947b405a6f8346e3962f169595d",
+     :get-mutation-detected true}]}
+  {:family "vp",
+   :descriptor-kind :gravity.type/applied-vector-predicate,
+   :descriptor-keys
+   #{:capabilities
+     :latent-effects
+     :source-binding
+     :application
+     :operator-node-id
+     :source-call
+     :direct-effects
+     :operation
+     :intrinsic
+     :operator-source
+     :query-semantics
+     :source
+     :call-core-node-id
+     :resolution
+     :operator-binding-id
+     :source-edge
+     :semantic-owner
+     :kind
+     :thrown-error-effects
+     :target
+     :version
+     :argument-types
+     :invalidation
+     :profile},
+   :obsolete-field-absent true,
+   :components
+   [{:part :source,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "acf3c7b1747899e9a4d4e9520a410a330e5beb427322bdf5e9edba9fce19195b",
+     :get-mutation-detected true}
+    {:part :finish,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "fb6bf2271678d3414b55360626522c33b9dc23863ceafc10e66ba5bf012ba81b",
+     :get-mutation-detected true}
+    {:part :constraint,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "d00d929bb419903cfcd64522e0b194a4c572646500baf9aae5322b349ececc76",
+     :get-mutation-detected true}
+    {:part :call-fact,
+     :three-owner-complete-body-parity true,
+     :body-sha256
+     "21f002cfe1dcd76a6581c3fbe40da712cdd652ff2cc0644b9f9fec82285a5104",
+     :get-mutation-detected true}]}]}

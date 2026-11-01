@@ -1,0 +1,24 @@
+{:tree "8f067c7c2c3a65537ff317b79050ce101a5b478b",
+ :parent "c7a4d959d319e0e1bbaef059e41fc5c059497af8",
+ :candidate "5d2984976ed6070471fa9ddec3b03bc2479945b6",
+ :added-paths
+ #{"specs/accounting-removal/list-join-width-composition.edn"
+   "specs/accounting-removal/list-join-width-composition.md"},
+ :operation-id :not-returned,
+ :ci :pending,
+ :complete-tree-mode-type-blob-equation :pass,
+ :main-integration :unrun,
+ :genuine-compiler-effects-lowering-runtime :unrun,
+ :modified-paths
+ #{"bootstrap/gravity/p15_s23/emitter.gravity"
+   "bootstrap/gravity/src/gravity/effects.gravity"},
+ :independent-source-review :requested-coordinator-intake,
+ :kind :list-join-width-composition-publication,
+ :delivery-thread "01a183cc-8cd1-735d-bf59-055c4b5f0039",
+ :pull-request 638,
+ :candidate-entry-count 10077,
+ :parent-acceptance :pending,
+ :owner :ACC-01,
+ :parent-entry-count 10075,
+ :whole-ACC01-PR502-disposition :incomplete,
+ :delivery-ack :thread-id-only}

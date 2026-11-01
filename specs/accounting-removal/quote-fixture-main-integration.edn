@@ -1,0 +1,104 @@
+{:integration-mode-preflight
+ {:sha256
+  "b9ee0cb7b8441513c83cfd42c8beee557dad62d91693f13b0757f51ae7a54cfa",
+  :preconditions
+  {"all-pass" true,
+   "base-resolved" true,
+   "candidate-identities-match" true,
+   "clean-worktree" true,
+   "named-branch" true,
+   "reconciliation-allowed" true},
+  :observed-identities
+  {"expected-base" "c0053c47a171fb58d627ee4ef6d406ab86f752ab",
+   "expected-commit" "a37b1b80115dfd7afb762da65523855d3ec6a313",
+   "expected-tree" "74bac5000d6042e5b3330e28aee15f4fcae48b38"},
+  :exact-full-tuple true,
+  :no-exclusions-or-cleanup true},
+ :remote-merge
+ {:source-ref :retained,
+  :merged true,
+  :tree "74bac5000d6042e5b3330e28aee15f4fcae48b38",
+  :GitHub-APPROVE false,
+  :parent "c0053c47a171fb58d627ee4ef6d406ab86f752ab",
+  :method :squash,
+  :base-branch "main",
+  :state :closed,
+  :unresolved-review-threads [],
+  :administrator-bypass false,
+  :formal-reviews [],
+  :expected-head "a37b1b80115dfd7afb762da65523855d3ec6a313",
+  :commit "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636"},
+ :nonclaims
+ [:host-constructor-equivalence
+  :genuine-owner-acceptance
+  :helper-transitive-equivalence
+  :whole-accounting-removal
+  :whole-ACC01
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:genuine-owner-tests :UNRUN,
+  :affected-Gravity-Bootstrap-native-runtime :UNRUN,
+  :new-genuine-execution false},
+ :original-review
+ {:receipt-sha256
+  "4a0052ff98614444748977a35b87a44ba2481f0a2b4a3cb5e510eaaa706b1a6f",
+  :sealed-checks 15176,
+  :handoff-checks 15177,
+  :discrepancy :preserved-credit-sealed-only},
+ :integration-base "c0053c47a171fb58d627ee4ef6d406ab86f752ab",
+ :candidate "a37b1b80115dfd7afb762da65523855d3ec6a313",
+ :accepted-scope
+ {:candidate-entries 10082,
+  :all-original-and-current-assertion-forms :preserved,
+  :all-five-PR626-additions :preserved,
+  :all-production-and-every-other-base-entry :unchanged,
+  :base-entries 10080,
+  :all-three-reviewed-file-bytes :identical-to-original-f540ca1b,
+  :only-two-extraction-records-added true,
+  :changed-paths
+  ["bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj"
+   "specs/accounting-removal/quote-fixture-controls-census.edn"
+   "specs/accounting-removal/quote-fixture-controls.md"],
+  :two-original-test-bodies :byte-exact,
+  :only-one-parent-test-file-modified true,
+  :fixture-expression-lines 6},
+ :fresh-readback
+ {:GitHub-merged-and-closed true,
+  :merged-parent-matches-reviewed-base true,
+  :candidate-and-merged-tree-identical true,
+  :main-reachable true,
+  :observed-main "9c0925085f2a3e1fbb9875e83e4b0f0c6e2c6636"},
+ :CI
+ {:head "a37b1b80115dfd7afb762da65523855d3ec6a313",
+  :run 40979694261,
+  :successes 7,
+  :configured-skips 2,
+  :all-completed true,
+  :live-readback-before-merge :verified,
+  :genuine-owner-acceptance false},
+ :preservation
+ {:historical-constructor-metadata-equivalence :not-assumed,
+  :original-cache :untouched,
+  :source-refs-and-historical-failures :retained,
+  :original-29-path-inventory :unchanged,
+  :PR532-scope :unchanged,
+  :PR502 :open},
+ :kind :quote-fixture-finite-main-integration,
+ :independent-review
+ {:receipt-sha256
+  "71c82e76afca0ee0c519c62028d94b42cca2173d4aaced826db29e129b90467f",
+  :decision :PASS,
+  :scope :exact-affected-current-main-source-composition,
+  :sealed-source-DATA-checks 12019,
+  :corruption-refusals 19,
+  :six-C7-and-two-helper-pins :verified},
+ :generator
+ {:language :clojure,
+  :sha256
+  "6212df12e5313fc022ffcf6ed1fc2fb9bcc83a071acccfb3d88ce33a362556d3",
+  :preserved-locally true},
+ :pr 634,
+ :owner :ACC-01,
+ :candidate-tree "74bac5000d6042e5b3330e28aee15f4fcae48b38"}

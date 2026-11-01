@@ -1,0 +1,69 @@
+{:physical-writer-evidence
+ {:this-chat :active,
+  :new-local-validation-session :none,
+  :last-push-session :completed-exit-0,
+  :other-physical-writers :not-inferred-from-lock-or-worktree-list},
+ :unresolved
+ [:supported-clean-integration-checkout-and-ownership
+  :exact-composed-independent-acceptance
+  :fresh-clean-integration-preflight],
+ :original
+ {:result-record-sha256
+  "9adacb4ed633012663d711ef2e408d4cd43d0bcacfb4f64170bdc47bf48299ae",
+  :call-id "call_3aaa4e708245462ab5cef70d6fba2e41",
+  :result-id "ctco_01a1892e-7cd8-74e1-afa9-7df7fc9a9ca7",
+  :command-record-ordinal 3170,
+  :phase :CreateProcess,
+  :elapsed-seconds 0.0,
+  :command-record-sha256
+  "03aa57fc5d2e66516e741eb2e7349acb77b246526433c602dc55138dc38f2a51",
+  :turn "01a18929-1d51-7273-a9d8-d7fe17b706af",
+  :reason
+  "rm -f style commands are not permitted. Use a safer approach",
+  :result :Rejected,
+  :attempted-prefix
+  "rm -rf tools/ci/kondo/.cache && git diff --check && git add ...",
+  :result-record-ordinal 3172,
+  :timestamp "2026-10-29T19:41:27.640Z"},
+ :source {:raw-records-and-private-paths :preserved-locally-only},
+ :classification
+ {:explicit-denial :destructive-rm-command-before-launch,
+  :whole-combined-command-executed false,
+  :blanket-checkout-prohibition-stated false,
+  :alternate-checkout-authorized-by-receipt false,
+  :cleanup-retry-transfer-or-equivalent-removal :not-permitted},
+ :finite-integration-gates
+ {:PR619
+  {:last-inspect-head "c5fc3c57c05a4f94e8513ec86ed197818f2ac668",
+   :last-inspect-base "7a74f6e3802a81971cb79c8619d04173bcded207",
+   :last-inspect :ancestry-fixed-clean-false-from-three-cache-paths,
+   :newer-main-reconciliation :separate-no-fresh-ancestry-claim},
+  :PR628 :independent-source-and-CI-pass-changed-base-gate-separate,
+  :clean-preflight :not-satisfied,
+  :integration-mode :UNRUN},
+ :current-workspace
+ {:tracked-edits-before-this-evidence false,
+  :retained-cache-paths
+  ["?? tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh01-stage2-runtime-iteration-test.transit.json"
+   "?? tools/ci/kondo/.cache/v1/clj/gravity.self-hosting.sh09-body-effect-test.transit.json"
+   "?? tools/ci/kondo/.cache/v1/lock"],
+  :active-root :existing-ACC01-managed-root,
+  :cache-deleted-moved-excluded false,
+  :physical-root-and-git-worktree-entry :agree,
+  :other-checkout-writer-availability :not-established,
+  :other-checkout-selected-or-modified false,
+  :new-own-evidence-path
+  "specs/accounting-removal/cleanup-denial-scope.edn",
+  :candidate-owner :this-chat,
+  :attached-managed-worktrees 1},
+ :kind :original-cache-cleanup-rejection-scope,
+ :generator
+ {:language :clojure,
+  :sha256
+  "8ff607988a57605866ef6dd6f0a1fc7a21388a9525b7b0a283e0430b9c280acf",
+  :preserved-locally true},
+ :safe-next-actions
+ [:read-only-source-and-review-consumption
+  :read-only-applicability-and-inspect-in-attached-root
+  :ordinary-owned-source-edits-with-cache-preserved],
+ :owner :ACC-01}
