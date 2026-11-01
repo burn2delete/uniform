@@ -2,18 +2,19 @@
 
 (defn p18-t02-run-bin-gravity
   [& args]
-  (p18-shell-run {"GRAVITY_PACKAGED_CLI_ONLY" "1"}
-                 (concat ["bin/gravity"] args)))
+  (p18-shell-run (concat ["bin/gravity"] args)))
+
+(defn p18-t02-run-explicit-packaged
+  [& args]
+  (p18-shell-run (concat ["clojure" "-M:packaged-gravity"] args)))
 
 (defn p18-t02-command-proof
   [command path]
   (let [args (cond-> [command] path (conj path))
-        packaged (apply p18-t02-run-packaged args)
+        packaged (apply p18-t02-run-explicit-packaged args)
         clojure-result (apply p18-t02-run-clojure args)]
     {:command (vec (concat ["bin/gravity"] args))
-     :packaged-command (vec (concat ["java" "-cp"
-                                     "target/phase-18/jvm-cli/gravity-jvm-cli.jar:<runtime-classpath>"
-                                     "gravity.cli.Main"]
+     :packaged-command (vec (concat ["clojure" "-M:packaged-gravity"]
                                     args))
      :clojure-command (vec (concat ["clojure" "-M:gravity"] args))
      :exit-match? (= (:exit packaged) (:exit clojure-result))
@@ -140,7 +141,10 @@
          "run-compiled"
          "bootstrap/clojure/fixtures/rejected/core-app-builtin-arity.gravity")
         bin-version (p18-t02-run-bin-gravity "--version")
+        packaged-version (p18-t02-run-explicit-packaged "--version")
         seedless-claim (p18-t02-run-bin-gravity "--assert-seedless-release")
+        packaged-seedless-claim
+        (p18-t02-run-explicit-packaged "--assert-seedless-release")
         candidate {:package-manifest package-manifest
                    :artifact-manifest artifact-manifest
                    :dependency-record dependency-record
@@ -166,9 +170,16 @@
                (:valid? jar-source-report)
                :jar-file-inventory-exact?
                (:valid? jar-inventory-report)
-               :bin-gravity-launches-packaged-jar?
+               :bin-gravity-source-default?
                (and (zero? (:exit bin-version))
+                    (str/includes? (:out bin-version) ":phase \"P18-T01\"")
                     (str/includes? (:out bin-version)
+                                   ":packaged-jvm-cli? false"))
+               :explicit-packaged-alias-launches-packaged-jar?
+               (and (zero? (:exit packaged-version))
+                    (str/includes? (:out packaged-version)
+                                   ":phase \"P18-T02\"")
+                    (str/includes? (:out packaged-version)
                                    ":packaged-jvm-cli? true"))
                :command-parity? (every? true?
                                         (mapcat (fn [proof]
@@ -177,22 +188,24 @@
                                                    (:stderr-match? proof)])
                                                 command-parity))
                :accepted-hello-through-packaged-cli?
-               (and (zero? (:exit (first command-parity)))
-                    (zero? (:exit (second command-parity))))
+               (zero? (:exit (second command-parity)))
                :accepted-core-app-through-packaged-cli?
-               (and (zero? (:exit (nth command-parity 3)))
-                    (zero? (:exit (nth command-parity 4))))
+               (zero? (:exit (nth command-parity 4)))
                :rejected-diagnostic-preserved?
                (and (= 1 (:exit rejected-command))
                     (str/includes? (:stderr rejected-command)
                                    "L2-BUILTIN-ARITY"))
+               :source-seedless-overclaim-rejected?
+               (and (= 1 (:exit seedless-claim))
+                    (str/includes? (:err seedless-claim) "P18T01001"))
                :package-records-present?
                (every? some?
                        [package-manifest dependency-record artifact-manifest
                         provenance-record sbom-record signing-record])
                :seedless-overclaim-rejected?
-               (and (= 1 (:exit seedless-claim))
-                    (str/includes? (:err seedless-claim) "P18T02001"))
+               (and (= 1 (:exit packaged-seedless-claim))
+                    (str/includes? (:err packaged-seedless-claim)
+                                   "P18T02001"))
                :bootstrap-hosted? true
                :seedless-release? false}
         artifact-base
@@ -208,9 +221,7 @@
          :packaged-source-entries expected-source-entries
          :command-boundary
          {:public-command "bin/gravity"
-          :packaged-command ["java" "-cp"
-                             "target/phase-18/jvm-cli/gravity-jvm-cli.jar:<runtime-classpath>"
-                             "gravity.cli.Main"]
+          :packaged-command ["clojure" "-M:packaged-gravity"]
           :bootstrap-recovery-command "bin/gravity-bootstrap"
           :bootstrap-hosted? true
           :packaged-jvm-cli? true
@@ -227,8 +238,10 @@
          :accepted-command-proofs command-parity
          :rejected-command-proof rejected-command
          :bin-version-output (:out bin-version)
+         :explicit-packaged-version-output (:out packaged-version)
          :unsupported-release-claim
-         {:command ["bin/gravity" "--assert-seedless-release"]
+         {:command ["clojure" "-M:packaged-gravity"
+                    "--assert-seedless-release"]
           :diagnostic "P18T02001"
           :bootstrap-hosted? true
           :packaged-jvm-cli? true

@@ -327,6 +327,12 @@
   "bootstrap/clojure/src/gravity/process_supervision.clj")
 (def ^:private process-supervision-helper-consumer "tools/ci/run.clj")
 (def ^:private process-supervision-helper-test "tools/ci/run_test.clj")
+(def ^:private packaged-launcher-helper-path
+  "bootstrap/clojure/src/gravity/cli/packaged_launcher.clj")
+(def ^:private packaged-launcher-helper-consumer
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00909-p18-t02-run-bin-gravity.clj")
+(def ^:private packaged-launcher-helper-test
+  "bootstrap/clojure/test/gravity/bootstrap_test.clj")
 
 (def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
 (def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
@@ -411,7 +417,11 @@
              process-supervision-helper-path
              {:namespace 'gravity.process-supervision :owner :master-coordinator :slice "SH-01"
               :consumer-path process-supervision-helper-consumer
-              :test-path process-supervision-helper-test}}
+              :test-path process-supervision-helper-test}
+             packaged-launcher-helper-path
+             {:namespace 'gravity.cli.packaged-launcher :owner :master-coordinator :slice "SH-01"
+              :consumer-path packaged-launcher-helper-consumer
+              :test-path packaged-launcher-helper-test}}
             (:production-helper-associations record))
          (= :sh-macro (get-in record [:module-owners macro-helper-path]))
          (= {:namespace 'gravity.self-hosting.macro-run-storage-test
@@ -490,6 +500,8 @@
          (= :master-coordinator (get-in record [:module-owners process-supervision-helper-path]))
          (= {:namespace 'ci.run-test :slice "SH-01" :owner :master-coordinator}
             (get-in record [:standalone-test-owners process-supervision-helper-test]))
+         (= :master-coordinator
+            (get-in record [:module-owners packaged-launcher-helper-path]))
          (= [{"id" "macro-run-storage" "kind" "production-verification-helper" "owner" "sh-macro"
               "source" {"path" macro-helper-path "namespace" "gravity.macro-run-storage"}
               "consumer" {"path" macro-helper-consumer "namespace" "gravity.macro" "owner" "sh-macro"}
@@ -615,6 +627,11 @@
               "consumer" {"path" process-supervision-helper-consumer "namespace" "ci.run" "owner" "master-coordinator"}
               "test" {"path" process-supervision-helper-test "namespace" "ci.run-test"
                       "registration" "standalone"}}
+             {"id" "packaged-jvm-launcher" "kind" "production-verification-helper" "owner" "master-coordinator"
+              "source" {"path" packaged-launcher-helper-path "namespace" "gravity.cli.packaged-launcher"}
+              "consumer" {"path" packaged-launcher-helper-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
+              "test" {"path" packaged-launcher-helper-test "namespace" "gravity.bootstrap-test"
+                      "registration" "coordinator"}}
              {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
               "source" {"path" safety-stage-path "namespace" "gravity.safety"}
               "consumer" {"path" safety-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-safety"}

@@ -197,7 +197,11 @@
   "bootstrap/clojure/src/gravity/process_supervision.clj"
   {:namespace gravity.process-supervision :owner :master-coordinator :slice "SH-01"
    :consumer-path "tools/ci/run.clj"
-   :test-path "tools/ci/run_test.clj"}}
+   :test-path "tools/ci/run_test.clj"}
+  "bootstrap/clojure/src/gravity/cli/packaged_launcher.clj"
+  {:namespace gravity.cli.packaged-launcher :owner :master-coordinator :slice "SH-01"
+   :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00909-p18-t02-run-bin-gravity.clj"
+   :test-path "bootstrap/clojure/test/gravity/bootstrap_test.clj"}}
 
  ;; Supplemental helper checks, outside the unchanged primary component pairs.
  :auxiliary-test-associations
@@ -339,6 +343,7 @@
   "bootstrap/clojure/src/gravity/macro.clj" :sh-macro
   "bootstrap/clojure/src/gravity/macro_run_storage.clj" :sh-macro
   "bootstrap/clojure/src/gravity/process_supervision.clj" :master-coordinator
+  "bootstrap/clojure/src/gravity/cli/packaged_launcher.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental

@@ -48,6 +48,7 @@
             [gravity.profile-validation :as profile-validation]
             [gravity.capability-validation :as capability-validation]
             [gravity.cli :as cli]
+            [gravity.cli.packaged-launcher :as packaged-launcher]
             [gravity.cli.diagnostic-presentation :as cli-diagnostic-presentation]
             [gravity.cli.entrypoint :as cli-entrypoint]
             [gravity.module-analysis :as module-analysis]
