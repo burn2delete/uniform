@@ -23,6 +23,18 @@ Focused tests are development feedback. They do not establish release,
 self-hosting, seed retirement or migration authority. Do not create a receipt,
 cache, lane or routing record solely to run a focused test.
 
+### Read-only self-host verification and explicit export
+
+The current `gravity self-host verify` route is a read-only check: it reads and
+authenticates the current P18-T06 proof, leaves tracked files and verifier
+outputs unchanged, and fails closed with `P18T04007` when the evidence is
+missing, stale or incomplete. It does not regenerate proof or diagnostic
+artifacts. The explicit
+`p18-t04-write-public-self-host-verify-command-artifacts` command is the
+separate export path when regenerating those artifacts is intentional. This
+describes current development behavior; it does not revise historical Phase 18
+evidence or claim seed retirement, release or self-hosting completion.
+
 ## Remove project cost and budget mechanisms
 
 Project cost models, work-unit budgets, producer/caller debits, prospective
