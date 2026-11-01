@@ -2,17 +2,23 @@
   (let [opaque-c11-upstream-diagnostic-owner (nth __gravity_bootstrap_lexical_values_119416 1)
         invoke-checked-core-verifier! __gravity_bootstrap_lexical_119416_invoke-checked-core-verifier]
     (fn invoke-checked-core-verifier!
-      [checked-core context ingress-mode boundary-prefix]
+      ([checked-core context ingress-mode boundary-prefix]
+       (invoke-checked-core-verifier! checked-core context ingress-mode boundary-prefix 1))
+      ([checked-core context ingress-mode boundary-prefix version]
       (let [boundary
             (fn [suffix]
               (keyword (str (name boundary-prefix) "-" suffix)))]
         (binding [*p15-s23-c11-upstream-diagnostic-owner*
                   opaque-c11-upstream-diagnostic-owner]
           (try
+            (when (and (= 2 version) (not= :gravity-source-pure ingress-mode))
+              (p15-s23-c11-mir-require! false "C11-MODULE" (:source-path context) {} :current-core-pure-ingress-only))
             (case ingress-mode
               :gravity-source-pure
-              (p15-s23-stage2-gravity-checked-core-verification-report
-               checked-core context)
+              (if (= 2 version)
+                (p15-s23-stage2-gravity-checked-core-verification-report
+                 checked-core context {:interface :gravity/c6-c10 :version 2})
+                (p15-s23-stage2-gravity-checked-core-verification-report checked-core context))
 
               :effectful-reference
               (p15-s23-stage2-closed-checked-core-verification-report
@@ -35,4 +41,4 @@
             (catch Exception exception
               (p15-s23-c11-mir-contain-checked-core-exception!
                (:source-path context)
-               (boundary "host-failure") exception))))))))
+               (boundary "host-failure") exception)))))))))

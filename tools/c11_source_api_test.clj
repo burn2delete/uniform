@@ -80,6 +80,12 @@
   (is (thrown? clojure.lang.ExceptionInfo
         (header/interface-version! {:interface :gravity/c11-mir :version 3}))))
 
+(deftest public-v2-selection-does-not-admit-the-data-only-v3-successor
+  (is (= 2 (interface/public-interface-version! {:interface :gravity/c11-mir :version 2})))
+  (is (= 3 (interface/interface-version! {:interface :gravity/c11-mir :version 3})))
+  (is (thrown? clojure.lang.ExceptionInfo
+               (interface/public-interface-version! {:interface :gravity/c11-mir :version 3}))))
+
 (let [result (run-tests 'c11-source-api-test)]
   (assert (nil? (find-ns 'gravity.bootstrap)))
   (println {:scope :pure-source-selection-only :authentication false :bootstrap-loaded false})

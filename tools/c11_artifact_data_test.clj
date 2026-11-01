@@ -46,7 +46,7 @@
           (named? '#{p15-s23-c11-mir-pass-contract-record}))
 (evaluate "00735a-p15-s23-c11-mir-entry-parameter.clj" (constantly true))
 (evaluate "00735-p15-s23-c11-mir-downstream-ids.clj" (named? '#{p15-s23-c11-mir-module-keys}))
-(evaluate "00740-p15-s23-c11-mir-validate-effect-edge-placement.clj"
+(evaluate "00735c-p15-s23-c11-mir-v2-source-family.clj"
           (named? '#{p15-s23-c11-mir-v2-source-family!}))
 (evaluate "00741-p15-s23-c11-mir-map-blocks.clj"
           #(and ((ns-resolve controls 'definition?) %)

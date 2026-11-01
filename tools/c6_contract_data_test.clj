@@ -27,7 +27,7 @@
   (doseq [form (forms (str root "00701-p15-s23-c6c10-source-relative-path.clj"))
           :when (and (seq? form) (= 'def (first form)) (legacy-names (second form)))]
     (eval form))
-  (doseq [form (forms (str root "00702-p15-s23-c6c10-host-fail.clj"))
+  (doseq [form (forms (str root "00701a-p15-s23-c6c10-source-program-contract.clj"))
           :when (and (seq? form) (= 'defn (first form))
                      (= 'p15-s23-c6c10-source-program-contract (second form)))]
     (eval form)))

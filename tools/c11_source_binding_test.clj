@@ -34,6 +34,7 @@
         form (forms file) :when (and (seq? form) (= 'def (first form)))]
   (binding [*ns* owner] (eval form)))
 (doseq [file ["00732-p15-s23-c11-mir-owned-upstream-diagnostic.clj"
+              "00732a-p15-s23-c11-mir-versioned-source-binding.clj"
               "00733-p15-s23-c11-mir-source-binding.clj"]
         form (forms file)
         :when (and (seq? form)

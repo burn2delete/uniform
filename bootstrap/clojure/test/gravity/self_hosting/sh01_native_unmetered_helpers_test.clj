@@ -1,6 +1,7 @@
 (ns gravity.self-hosting.sh01-native-unmetered-helpers-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as b]
+            [gravity.c6-c10.source-contract :as c6-contract]
             [gravity.digest :as digest])
   (:import (java.lang.reflect InvocationHandler Proxy)
            (java.math BigDecimal BigInteger)))
@@ -544,3 +545,455 @@
                        (catch clojure.lang.ExceptionInfo error (ex-data error)))]
         (is (= "C11-MODULE" (:id report)))
         (is (= :authenticated-checked-core-ingress-pair (:missing-fact report)))))))
+
+;; Explicit C11 source-interface dispatch: no genuine source replay in these controls.
+(defn
+ c11-interface-diagnostic
+ [f]
+ (try
+  (f)
+  :unexpected-pass
+  (catch
+   clojure.lang.ExceptionInfo
+   e
+   (select-keys (ex-data e) [:id :missing-fact :reason]))))
+(deftype
+ C11InterfaceForeign
+ [calls]
+ clojure.lang.IMeta
+ (meta [_] (swap! calls inc) nil)
+ clojure.lang.ILookup
+ (valAt [_ _] (swap! calls inc) nil)
+ (valAt [_ _ _] (swap! calls inc) nil)
+ Object
+ (toString [_] (swap! calls inc) "foreign"))
+(def c11-interface-header {:interface :gravity/c11-mir, :version 2})
+(def
+ c11-interface-v2
+ {:kind :gravity/p15-s23-c11-authenticated-mir-artifact,
+  :schema-version 2})
+(defn
+ c11-interface-rejection
+ [reason]
+ {:id "C11-VERIFY",
+  :missing-fact :versioned-c11-interface,
+  :reason reason})
+(deftest
+ c11-interface-public-arities
+ (doseq
+  [[name expected]
+   [['p15-s23-stage2-c11-mir-artifact [2 3]]
+    ['p15-s23-stage2-c11-mir-verification-report [3 4]]
+    ['p15-s23-stage2-c11-mir-verify! [3 4]]
+    ['p15-s23-stage2-c11-mir-authentic? [1 3 4]]]]
+  (is
+   (=
+    expected
+    (mapv
+     count
+     (:arglists (meta (ns-resolve 'gravity.bootstrap name))))))))
+(deftest
+ c11-interface-selector-before-core-access
+ (let
+  [calls (atom 0) foreign (C11InterfaceForeign. calls)]
+  (doseq
+   [[selector reason]
+    [[foreign :interface-map-class]
+     [(assoc c11-interface-header :version (int 2))
+      :interface-version-class-or-value]
+     [(assoc c11-interface-header :version 1)
+      :explicit-interface-version]
+     [(assoc c11-interface-header :version 3)
+      :interface-version-class-or-value]
+     [(assoc c11-interface-header :interface foreign) :interface-id]]]
+   (is
+    (=
+     (c11-interface-rejection reason)
+     (c11-interface-diagnostic
+      (fn*
+       []
+       (b/p15-s23-stage2-c11-mir-artifact foreign foreign selector)))))
+   (is
+    (=
+     (c11-interface-rejection reason)
+     (c11-interface-diagnostic
+      (fn*
+       []
+       (b/p15-s23-stage2-c11-mir-verification-report
+        foreign
+        foreign
+        foreign
+        selector))))))
+  (is (= 0 @calls))))
+(deftest
+ c11-interface-mixed-version-before-payload-or-core
+ (let
+  [calls
+   (atom 0)
+   foreign
+   (C11InterfaceForeign. calls)
+   artifact
+   (assoc
+    c11-interface-v2
+    :mir-module
+    foreign
+    :verification-report
+    foreign)]
+  (is
+   (=
+    (c11-interface-rejection :mixed-c11-interface-versions)
+    (c11-interface-diagnostic
+     (fn*
+      []
+      (b/p15-s23-stage2-c11-mir-verification-report
+       artifact
+       foreign
+       foreign)))))
+  (is
+   (=
+    (c11-interface-rejection :mixed-c11-interface-versions)
+    (c11-interface-diagnostic
+     (fn*
+      []
+      (b/p15-s23-stage2-c11-mir-verification-report
+       (assoc artifact :schema-version 1)
+       foreign
+       foreign
+       c11-interface-header)))))
+  (is
+   (false?
+    (b/p15-s23-stage2-c11-mir-authentic? artifact foreign foreign)))
+  (is (= 0 @calls))))
+(deftest
+ c11-interface-malformed-legacy-owning-diagnostic
+ (doseq
+  [artifact [nil {}]]
+  (is
+   (=
+    {:id "C11-MODULE",
+     :missing-fact :authenticated-checked-core-ingress-pair}
+    (c11-interface-diagnostic
+     (fn*
+      []
+      (b/p15-s23-stage2-c11-mir-verification-report
+       artifact
+       nil
+       nil))))))
+ (is (false? (b/p15-s23-stage2-c11-mir-authentic? c11-interface-v2))))
+(deftest
+ c11-interface-record-and-scope-bindings
+ (is
+  (not
+   (contains?
+    (b/p15-s23-c11-mir-scope-record)
+    :supported-source-family)))
+ (is
+  (=
+   :bool-branch-join
+   (:supported-source-family (b/p15-s23-c11-mir-scope-record 2))))
+ (is
+  (=
+   c11-interface-header
+   (:source-interface (b/p15-s23-c11-mir-scope-record 2))))
+ (is
+  (=
+   10
+   (get-in
+    (b/p15-s23-c11-mir-contract 1)
+    [:required-functions 'c11-build-definitions :arity])))
+ (is
+  (=
+   11
+   (get-in
+    (b/p15-s23-c11-mir-contract 2)
+    [:required-functions 'c11-build-definitions :arity])))
+ (is
+  (=
+   {:x :unchanged}
+   (b/p15-s23-c11-mir-versioned-record {:x :unchanged} 1))))
+
+(defn- c6-program-diagnostic [thunk]
+  (try (thunk) nil
+       (catch clojure.lang.ExceptionInfo error
+         ((juxt :id :missing-fact) (ex-data error)))))
+
+(deftest selected-current-c6-program-authenticates-before-cache-reuse
+  (let [metrics (atom {})]
+    (binding [b/*p15-s23-c6c10-compiled-binding-metrics* metrics]
+      (let [original (b/p15-s23-c6c10-source-binding! path 2)
+            again (b/p15-s23-c6c10-source-binding! path 2)]
+        (is (= 2 (:source-contract-version original)))
+        (is (= 170 (get-in original [:function-manifest :function-count])))
+        (is (= [64 64 42] (mapv :count (get-in original [:function-manifest :chunks]))))
+        (is (identical? (:plan original) (:plan again)))
+        ;; The durable test also runs correctly after an earlier selected v2
+        ;; binding in the same JVM. Both routes reauthenticate every lookup.
+        (is (contains? #{{:source-authenticated 2 :emitter-authenticated 2
+                          :cache-miss 1 :compile-start 1 :compile-complete 1 :cache-hit 1}
+                         {:source-authenticated 2 :emitter-authenticated 2 :cache-hit 2}}
+                       @metrics))
+        (prn {:c6-selected-program-metrics @metrics})
+        (doseq [key [:source-content-hash :source-byte-count :plan-semantic-hash
+                     :functions-semantic-hash :builder-semantic-hash :verifier-semantic-hash
+                     :function-shapes :function-manifest :source-contract-version]]
+          (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+                 (c6-program-diagnostic
+                  #(b/p15-s23-c6c10-validate-source-binding! (assoc original key :altered) 2)))))
+        (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+               (c6-program-diagnostic #(b/p15-s23-c6c10-validate-source-binding! original))))
+        (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+               (c6-program-diagnostic
+                #(b/p15-s23-c6c10-validate-source-binding!
+                  (dissoc original :source-contract-version) 2))))
+        (is (= ["C6-VERIFY" :exact-pinned-gravity-c6-c10-source-binding]
+               (c6-program-diagnostic
+                #(b/p15-s23-c6c10-validate-source-binding!
+                  (assoc original :source-contract-version (int 2)) 2))))
+        (is (= ["C6-VERIFY" :explicit-c6-source-contract-version]
+               (c6-program-diagnostic #(b/p15-s23-c6c10-source-binding! path (int 2)))))
+        (is (= ["C6-VERIFY" :pinned-gravity-c6-c10-source-bytes]
+               (c6-program-diagnostic #(b/p15-s23-c6c10-source-binding! path))))))))
+
+(deftest selected-current-reader-plan-does-not-grant-envelope-authority
+  (let [result (b/p15-s23-c6c10-current-reader-program! path)
+        reader-binding (:binding result)
+        reader-path (:source-path reader-binding)
+        inputs-var (ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-authenticated-source-binding-inputs!)
+        inputs (@inputs-var path 2)
+        validate @(ns-resolve 'gravity.bootstrap 'p15-s23-c6c10-validate-current-reader-program!)
+        emitter (:emitter-rule inputs)]
+    (is (= :selected-source-reader-plan (:verification-scope result)))
+    (is (false? (:reader-result-executed? result)))
+    (is (false? (:envelope-state-observed? result)))
+    (is (not (contains? result :admitted?)))
+    (is (= {:reader-source-path reader-path
+            :authenticated-envelope-options {:source :development-current}}
+           (:invocation result)))
+    (doseq [key (keys (:binding c6-contract/current-reader-program))]
+      (is (= ["C6-VERIFY" :selected-current-reader-program-identities]
+             (c6-program-diagnostic #(validate path reader-path (assoc reader-binding key :altered) emitter)))))
+    (is (= ["C6-VERIFY" :selected-current-reader-source-path]
+           (c6-program-diagnostic #(validate path (str reader-path ".substitution") reader-binding emitter))))
+    (is (= ["C6-VERIFY" :selected-current-reader-export-shapes]
+           (c6-program-diagnostic
+            #(validate path reader-path
+                       (assoc-in reader-binding [:plan :functions 'sh03-read-source-unit :arity] 2) emitter))))
+    (doseq [changed [(assoc emitter :source-rule-hash "sha256:altered")
+                     (assoc-in emitter [:rule-record :status] :failed)]]
+      (is (= ["C6-VERIFY" :selected-current-reader-plan-emitter-join]
+             (c6-program-diagnostic #(validate path reader-path reader-binding changed)))))
+    (doseq [key [:emitter-source-rule-hash :emitter-source-content-hash :emitter-semantic-hash]]
+      (is (= ["C6-VERIFY" :selected-current-reader-plan-emitter-join]
+             (c6-program-diagnostic
+              #(validate path reader-path (assoc-in reader-binding [:plan :compiler key] :altered) emitter)))))
+    ;; A negative caller-control fixture only. Genuine owner execution above
+    ;; produced the binding; no supplied binding is accepted by a public route.
+    (let [calls (atom 0)
+          reader-var (ns-resolve 'gravity.bootstrap 'sh03-reader-current-binding!)]
+      (with-redefs-fn
+        {inputs-var (fn [_ version]
+                      (is (= 2 version))
+                      (if (= 1 (swap! calls inc)) inputs
+                          (assoc-in inputs [:source-snapshot :source-content-hash] :stale)))
+         reader-var (fn [_ selected] (is (= reader-path selected)) reader-binding)}
+        #(is (= ["C6-VERIFY" :stable-current-reader-dependency-inputs]
+                (c6-program-diagnostic (fn [] (b/p15-s23-c6c10-current-reader-program! path)))))))))
+
+(defn- expression-program-diagnostic [thunk]
+  (try (thunk) nil
+       (catch clojure.lang.ExceptionInfo error
+         ((juxt :id :missing-fact) (ex-data error)))))
+
+(deftest selected-expression-owner-authenticates-and-executes-ordinary-bool-lowering
+  (let [rule (b/c-backend-stage2-plan-emitter-source-rule! path :jvm)
+        emitter (:emitter rule)
+        selected (b/p15-s23-stage2-compiler-artifact-binding! emitter path :jvm 2)
+        plan (:plan selected)
+        contract c6-contract/current-expression-program
+        validate @(ns-resolve 'gravity.bootstrap 'p15-s23-stage2-validate-current-expression-program!)]
+    (is (= 2 (:source-contract-version selected)))
+    (is (= 692 (:function-count selected)))
+    (is (= (:source-content-hash contract) (:source-content-hash selected)))
+    (is (= (:semantic-hash contract) (:semantic-hash selected)))
+    (is (= (:functions-semantic-hash contract) (:functions-semantic-hash selected)))
+    (is (= (:artifact-hash contract) (:artifact-hash selected)
+           (b/p15-s23-stage2-compiler-artifact-expected-artifact-hash 2)))
+    (is (= (:declared-plan-compiler-labels contract) (:compiler plan)
+           (:declared-plan-compiler-labels selected)))
+    (is (false? (:invoked? selected)))
+    ;; The current program must not gain compiler-only builtin authority from
+    ;; its source name, selected binding, or compiler-artifact-plan flag.
+    (is (false? (b/p15-s23-stage2-compiler-artifact-plan-context? plan)))
+    (is (false? (b/p15-s23-stage2-runtime-augmented-plan-context?
+                 {:engine :gravity-stage2-compiler-artifact-host-runner
+                  :compiler-artifact-plan? true} plan)))
+    (binding [b/*p15-s23-stage2-compiler-artifact-binding* selected]
+      (let [module {:module 'expression.fixture :source-path path :profile :hosted
+                    :target :jvm :effects #{} :capabilities #{} :safety :safe}
+            result (b/p15-s23-stage2-compiler-artifact-invoke
+                     'p15-s23-compile-expr [emitter module {} true])
+            literal (:value result)]
+        (is (= :complete (:status result)))
+        (is (= :literal (:op literal)))
+        (is (true? (:value literal))))
+      ;; Expression-owner fixture only: no C2/C3/Core or public admission.
+      (let [forms '[(ns expression.fixture (:profile :hosted) (:target :jvm)
+                        (:effects #{}) (:capabilities #{}) (:safety :safe) (:exports [main]))
+                    (defn main [] (if true true false))]
+            module (b/parse-module path forms)
+            emitted (b/p15-s23-stage2-construct-emitted-core-plan
+                      emitter path (apply str (interpose "\n" (map pr-str forms))) module (b/stage0-function-table module))
+            compiler (:compiler emitted)
+            record {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
+                    :source-contract-version 2 :source-content-hash (:source-content-hash selected)
+                    :semantic-hash (:semantic-hash selected) :artifact-hash (:artifact-hash selected)
+                    :functions (:functions selected) :functions-semantic-hash (:functions-semantic-hash selected)
+                    :function-count (:function-count selected)
+                    :invoked? (:expression-lowering-invoked? compiler) :generic-bridge-residual? true
+                    :plan-assembly-function (:plan-assembly-function compiler)
+                    :plan-assembly-artifact-hash (:plan-assembly-artifact-hash compiler)
+                    :plan-assembly-source-content-hash (:plan-assembly-source-content-hash compiler)
+                    :plan-assembly-semantic-hash (:plan-assembly-semantic-hash compiler)
+                    :plan-assembly-invoked? (:plan-assembly-invoked? compiler)
+                    :plan-assembly-generic-bridge-residual? (:plan-assembly-generic-bridge-residual? compiler)
+                    :clojure-seed-boundary? true :self-hosted? false}]
+        (is (= 2 (:expression-lowering-source-contract-version compiler)))
+        (is (= (:functions-semantic-hash selected) (:expression-lowering-functions-semantic-hash compiler)))
+        (is (true? (:plan-assembly-invoked? compiler)))
+        (is (b/p15-s23-stage2-compiler-artifact-record-authentic? record 2))
+        (is (not (b/p15-s23-stage2-compiler-artifact-record-authentic? record)))
+        (is (b/p15-s23-stage2-compiler-artifact-record-matches-plan? record emitted 2))
+        (let [calls (atom 0)
+              deny #(do (swap! calls inc) (throw (ex-info "unexpected callback" {})))
+              foreign (foreign-map deny)
+              inert (lazy-seq (deny))
+              opaque (Object.)
+              raw-map (fn [pairs] (clojure.lang.PersistentArrayMap. ^objects (object-array (mapcat identity pairs))))
+              inert-plan (assoc emitted :functions inert :unconsumed opaque)]
+          (is (b/p15-s23-stage2-compiler-artifact-record-matches-plan? record inert-plan 2))
+          (is (not= :passed (:status (b/p15-s23-trusted-carrier-validation inert-plan :default-only))))
+          (doseq [bad [foreign (raw-map [[:compiler compiler] [foreign :inert]])
+                       (raw-map [[:compiler compiler] ["not-a-keyword" :inert]])
+                       (raw-map [[:compiler compiler] [:compiler compiler]])
+                       (with-meta emitted {:unconsumed opaque})
+                       (clojure.lang.PersistentArrayMap. ^objects (object-array [:compiler]))
+                       (field! (clojure.lang.PersistentArrayMap. ^objects (object-array 0)) "array" nil)
+                       (assoc emitted :compiler foreign)
+                       (assoc emitted :compiler (raw-map (concat (seq compiler) [[:plan-assembly-invoked? true]])))
+                       (assoc emitted :compiler (clojure.lang.PersistentArrayMap. ^objects (object-array [:source])))
+                       (dissoc emitted :compiler)]]
+            (is (false? (b/p15-s23-stage2-compiler-artifact-record-matches-plan? record bad 2))))
+          (is (false? (b/p15-s23-stage2-compiler-artifact-record-authentic?
+                        (raw-map (concat (seq record) [[:source-contract-version 2]])) 2)))
+          (is (zero? @calls)))
+        (doseq [changed [(dissoc record :source-contract-version)
+                         (assoc record :source-contract-version (int 2))
+                         (assoc record :functions-semantic-hash "sha256:altered")
+                         (assoc record :source-content-hash (get-in contract [:declared-plan-compiler-labels :source-content-hash]))]]
+          (is (not (b/p15-s23-stage2-compiler-artifact-record-authentic? changed 2))))
+        (is (not (b/p15-s23-stage2-compiler-artifact-record-matches-plan?
+                   record (update emitted :compiler dissoc :expression-lowering-source-contract-version) 2)))))
+    (doseq [changed [(assoc-in plan [:source :sha256] "sha256:substitution")
+                     (assoc-in plan [:compiler :source-content-hash] (:source-content-hash selected))
+                     (assoc-in plan [:functions 'p15-s23-compile-expr :arity] 3)
+                     (assoc-in plan [:instruction-summary :literal] -1)]]
+      (is (= ["P15S23Q002" :stage2-current-expression-complete-program-identities]
+             (expression-program-diagnostic #(validate path changed)))))
+    (is (= ["P15S23Q002" :current-expression-recomputable-plan-id]
+           (expression-program-diagnostic #(validate path (assoc plan :plan-id "sha256:altered")))))
+    (is (= ["P15S23Q002" :current-expression-plan-emitter-join]
+           (expression-program-diagnostic
+             #(b/p15-s23-stage2-compiler-artifact-binding! (assoc emitter :engine :altered) path :jvm 2))))
+    (is (= ["P15S23Q002" :expression-lowering-source-contract-version]
+           (expression-program-diagnostic
+             #(b/p15-s23-stage2-compiler-artifact-binding! emitter path :jvm (int 2)))))
+    (is (= ["P15S23Q002" :current-expression-selected-host-source-context]
+           (expression-program-diagnostic #(b/p15-s23-stage2-compiler-artifact-binding! emitter path :js 2))))
+    (let [calls (atom 0) foreign (foreign-map #(do (swap! calls inc) (throw (ex-info "callback invoked" {}))))]
+      (is (= ["P15S23Q002" :current-expression-native-plan-emitter]
+             (expression-program-diagnostic #(b/p15-s23-stage2-compiler-artifact-binding! foreign path :jvm 2))))
+      (is (false? (b/p15-s23-stage2-compiler-artifact-record-authentic? foreign 2)))
+      (is (false? (b/p15-s23-stage2-compiler-artifact-record-matches-plan? foreign foreign 2)))
+      (is (zero? @calls)))
+    (is (= ["P15S23Q002" :current-expression-native-plan-emitter]
+           (expression-program-diagnostic
+             #(b/p15-s23-stage2-compiler-artifact-binding! (with-meta emitter {:untrusted true}) path :jvm 2))))
+    (is (= "sha256:e25ae2c9b7853627f8f9db45eb916b6b3775e28b51fbe6e29ecd734598ca8ac2"
+           (b/p15-s23-stage2-compiler-artifact-expected-artifact-hash)))))
+
+(defn- current-core-policy-fixture []
+  ;; Synthetic DATA for relative validation. This is not a source artifact or
+  ;; a verification report produced by the current Core owner.
+  (let [core {:artifact-id "policy-control-core"}
+        context {:source-path path}
+        receipt
+        {:source-interface {:interface :gravity/c6-c10 :version 2}
+         :admission-status :development-unadmitted :verification-scope :selected-current-source-host-seed
+         :reader-plan-binding (:binding c6-contract/current-reader-program)
+         :reader-source-revision {:source-content-hash (get-in c6-contract/current-reader-program [:binding :source-content-hash])}
+         :reader-result-identity {:actual-sh03-reader-result-id "result" :actual-sh03-semantic-product-binding {}
+                                 :actual-c2-artifact-id "c2" :actual-reader-product-integrity-hash "integrity"
+                                 :actual-reader-source-id "source"}
+         :authenticated-envelope {:stage :c2-reader :status :accepted :source-rule {:admission-status :development-unadmitted}}
+         :envelope-verification :passed :self-hosted? false
+         :expression-binding (assoc (select-keys c6-contract/current-expression-program
+                                     [:source-content-hash :semantic-hash :functions-semantic-hash :artifact-hash :function-count])
+                                   :source-contract-version 2)}
+        commitment (str "sha256:" (digest/sha256-hex "relative-policy-commitment-fixture"))
+        receipt (-> receipt
+                    (assoc :projection-contract b/p15-s23-c11-core-projection-contract
+                           :owner-metadata-content-id commitment)
+                    (assoc-in [:reader-plan-binding :instruction-summary-content-id] commitment)
+                    (assoc-in [:reader-source-revision :function-shapes-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :source-rule :function-shapes-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :source-rule :owner-source-rule-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :gravity-template-replay :checks-content-id] commitment)
+                    (assoc-in [:authenticated-envelope :gravity-template-replay :diagnostics-content-id] commitment)
+                    (assoc-in [:expression-binding :functions-content-id] commitment)
+                    (assoc-in [:expression-binding :declared-plan-compiler-labels-content-id] commitment)
+                    (assoc-in [:expression-binding :owner-binding-content-id] commitment))
+        bind-data (fn [policy]
+                    (assoc policy :source-policy-binding-id
+                      (b/p15-s23-c6c10-canonical-digest path
+                       {:domain :gravity/c6-c10-source-policy-v2 :artifact-id (:artifact-id core)
+                        :context context :policy (:source-policy-receipt policy)})))
+        policy (bind-data
+                {:source-interface (:source-interface receipt) :admission-status :development-unadmitted
+                 :verification-scope :selected-current-source-host-seed :source-policy-receipt receipt
+                 :compiler-program (assoc (select-keys c6-contract/current-compiler-program
+                                           (rest b/p15-s23-c11-core-program-projection-keys)) :source-contract-version 2)})]
+    {:core core :context context :policy policy :bind-data bind-data}))
+
+(deftest current-core-policy-data-is-relative-and-binds-final-record-identities
+  (let [{:keys [core context policy bind-data]} (current-core-policy-fixture)
+        changed (bind-data (assoc-in policy [:source-policy-receipt :reader-result-identity :actual-c2-artifact-id] "changed"))
+        report #(b/p15-s23-c11-independent-verifier-record {:status :passed} 2 %)
+        pass #(b/p15-s23-c11-mir-pass-execution-record {} core (report %) 2 %)
+        b1 #(b/p15-s23-c11-b1-candidate-record {:pass-execution-record (pass %)} core (report %) {} 2 %)]
+    (is (= policy (b/p15-s23-c11-mir-require-core-policy-data! core context policy)))
+    ;; Coherent hashes validate only relative DATA. Public C11 verification
+    ;; must freshly reconstruct Core/source ground truth and reject this swap.
+    (is (= changed (b/p15-s23-c11-mir-require-core-policy-data! core context changed)))
+    (is (not= (:report-id (report policy)) (:report-id (report changed))))
+    (is (not= (:record-id (pass policy)) (:record-id (pass changed))))
+    (is (not= (:binding (b1 policy)) (:binding (b1 changed))))
+    (doseq [bad [(dissoc policy :source-policy-binding-id)
+                (assoc policy :extra true)
+                (assoc policy :admission-status :admitted)
+                (bind-data (update policy :source-policy-receipt dissoc :owner-metadata-content-id))
+                (bind-data (assoc-in policy [:source-policy-receipt :projection-contract :core-carrier-policy] :default-only))
+                (bind-data (assoc-in policy [:source-policy-receipt :projection-contract :schema-version] (int 1)))
+                (bind-data (assoc-in policy [:source-policy-receipt :expression-binding :owner-binding-content-id] "not-a-digest"))
+                (assoc-in policy [:source-interface :version] (int 2))
+                (assoc-in policy [:source-policy-receipt :source-interface :version] (int 2))
+                (assoc-in policy [:compiler-program :source-content-hash] "wrong")
+                (assoc-in policy [:source-policy-receipt :reader-result-identity :actual-c2-artifact-id] "unsealed")]]
+      (is (= :current-core-source-policy-data
+             (failure #(b/p15-s23-c11-mir-require-core-policy-data! core context bad)))))
+    (is (= :current-core-policy-binding-required (failure #(report nil))))
+    (is (not (contains? (b/p15-s23-c11-independent-verifier-record {:status :passed} 1)
+                       :checked-core-source-policy-binding)))
+    (let [calls (atom 0) foreign (foreign-map #(do (swap! calls inc) (throw (ex-info "callback invoked" {}))))]
+      (is (some? (failure #(b/p15-s23-c11-mir-require-core-policy-data! core context foreign))))
+      (is (some? (failure #(b/p15-s23-c11-mir-core-policy-projection core context foreign))))
+      (is (zero? @calls)))))

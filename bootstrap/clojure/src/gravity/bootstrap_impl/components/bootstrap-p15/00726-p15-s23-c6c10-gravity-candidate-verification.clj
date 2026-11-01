@@ -50,8 +50,8 @@
                      [:status :request-count :semantic-authority
                       :checks])))))
 
-(defn p15-s23-stage2-gravity-checked-core-verification-report
-  [artifact context]
+(defn- p15-s23-c6c10-verification-report*
+  [artifact context version]
   (let [context (p15-s23-c6c10-validate-public-context! context)
         source-path (:source-path context)]
     (p15-s23-c6c10-require-trusted-carrier!
@@ -62,7 +62,7 @@
        "C6-VERIFY" source-path :public-candidate-free-of-raw-digest-refs
        {:artifact-kind (when (map? artifact) (:kind artifact))}))
     (let [{expected :artifact :as fresh}
-          (p15-s23-c6c10-fresh-construction context)
+          (p15-s23-c6c10-fresh-construction context version)
           semantic-view
           (fn [value]
             (if (map? value)
@@ -97,7 +97,7 @@
          "C6-VERIFY" source-path :fresh-sealed-semantic-root-parity
          {:expected-artifact-id (:artifact-id expected)
           :observed-artifact-id (:artifact-id artifact)}))
-      {:artifact :gravity/p15-s23-c6-c10-verification-report
+      (cond-> {:artifact :gravity/p15-s23-c6-c10-verification-report
        :status :passed
        :artifact-id (:artifact-id artifact)
        :source-content-hash (:source-content-hash context)
@@ -115,31 +115,54 @@
         (get-in expected [:physical-provenance :actual-paths
                           :gravity-c6-c10-source])}
        :clojure-seed-boundary? true
-       :self-hosted? false})))
+       :self-hosted? false}
+        (= 2 version)
+        (assoc :source-interface {:interface :gravity/c6-c10 :version 2}
+               :source-policy-receipt (:source-policy-receipt fresh)
+               :source-policy-binding-id
+               (p15-s23-c6c10-canonical-digest
+                source-path {:domain :gravity/c6-c10-source-policy-v2
+                             :artifact-id (:artifact-id artifact)
+                             :context context
+                             :policy (:source-policy-receipt fresh)})
+               :admission-status (get-in fresh [:source-policy-receipt :admission-status])
+               :verification-scope :selected-current-source-host-seed)))))
+
+(defn p15-s23-stage2-gravity-checked-core-verification-report
+  ([artifact context] (p15-s23-c6c10-verification-report* artifact context 1))
+  ([artifact context header]
+   (let [version (c6-source-interface/interface-version! header)]
+     (p15-s23-c6c10-verification-report* artifact context version))))
 
 (defn p15-s23-stage2-gravity-checked-core-verify!
-  [artifact context]
-  (let [report
-        (p15-s23-stage2-gravity-checked-core-verification-report
-         artifact context)]
-    (when-not (= :passed (:status report))
-      (p15-s23-c6c10-host-fail!
-       "C6-VERIFY" (:source-path context)
-       :gravity-checked-core-verification-report-status
-       {:status (:status report)}))
-    :passed))
+  ([artifact context]
+   (let [report (p15-s23-stage2-gravity-checked-core-verification-report artifact context)]
+     (when-not (= :passed (:status report))
+       (p15-s23-c6c10-host-fail! "C6-VERIFY" (:source-path context)
+        :gravity-checked-core-verification-report-status {:status (:status report)}))
+     :passed))
+  ([artifact context header]
+   (let [report (p15-s23-stage2-gravity-checked-core-verification-report artifact context header)]
+     (when-not (= :passed (:status report))
+       (p15-s23-c6c10-host-fail! "C6-VERIFY" (:source-path context)
+        :gravity-checked-core-verification-report-status {:status (:status report)}))
+     :passed)))
 
 (defn p15-s23-stage2-gravity-checked-core-authentic?
   ([artifact] false)
   ([artifact context]
    (try
-     (= :passed
-        (p15-s23-stage2-gravity-checked-core-verify!
-         artifact context))
+     (= :passed (p15-s23-stage2-gravity-checked-core-verify! artifact context))
      (catch StackOverflowError _ false)
-     (catch InterruptedException error
-       (.interrupt (Thread/currentThread))
-       (throw error))
+     (catch InterruptedException error (.interrupt (Thread/currentThread)) (throw error))
+     (catch Exception _ false)))
+  ([artifact context header]
+   ;; Parse before inspecting caller data, including the predicate's contained path.
+   (c6-source-interface/interface-version! header)
+   (try
+     (= :passed (p15-s23-stage2-gravity-checked-core-verify! artifact context header))
+     (catch StackOverflowError _ false)
+     (catch InterruptedException error (.interrupt (Thread/currentThread)) (throw error))
      (catch Exception _ false))))
 
 ;; ---------------------------------------------------------------------------
