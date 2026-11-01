@@ -90,7 +90,8 @@
                            "bootstrap/clojure/src/gravity/c6_core_lowering.clj"
                            "bootstrap/clojure/test/gravity/checked_core"
                            "bootstrap/clojure/test/gravity/c6_"
-                           "bootstrap/clojure/test/gravity/self_hosting/sh07_"
+                           "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj"
+                           "bootstrap/clojure/test/gravity/self_hosting/sh07_mutation_test.clj"
                            "bootstrap/clojure/fixtures/self-hosting/sh-07"]})
 
 (defn command [heap & args]

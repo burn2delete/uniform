@@ -215,6 +215,9 @@
            (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
     (is (= expected-checked
            (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))
     (is (= expected-all
            (:modes (ci/stage-selection
                     [(change "bootstrap/clojure/src/gravity/macro.clj")
@@ -235,6 +238,10 @@
                   "tools/ci/run.clj"
                   "bootstrap/clojure/src/gravity/bootstrap.clj"
                   "bootstrap/clojure/src/gravity/reader.clj/unknown.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_l1_c2_surface_reader_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_macro_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_resolution_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj"
                   "src/new-owner.gravity"
                   nil]]
       (is (= :full (:kind (ci/stage-selection [(change path)]))) (pr-str path)))))
