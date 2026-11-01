@@ -23,7 +23,7 @@
            'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
            'hosted-equal 'hosted-less-than 'hosted-greater-than
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal
-           'hosted-str 'fail-builtin-error! 'hosted-get}
+           'hosted-str 'fail-builtin-error! 'hosted-get 'hosted-builtin}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -35,7 +35,7 @@
       (is (true? (:trusted-operation-map? contract)))
       (is (some #{:public-plan-authentication} (:unsupported contract)))))
   (let [contract (:gravity/namespace-contract (meta #'runtime/execute-plan))
-        declared (set (mapcat :operation-keys (vals (:public-api contract))))
+        declared (set (mapcat :operation-keys (vals (dissoc (:public-api contract) 'hosted-builtin))))
         operations ((var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-stage-operations)))]
     (is (= declared (set (keys operations))))
     (is (every? var? (vals operations)))
@@ -417,3 +417,126 @@
       (is (identical? marker ((deref get-var) plan {:x 1} :x)))
       (is (identical? marker ((deref get-var) plan {} :x :fallback))))
     (is (= [[error-var plan {:x 1} :x] [error-var plan {} :x :fallback]] @seen))))
+
+(def ^:private dispatch-programs
+  (delay (mapv (fn [[extension disposition]]
+                 (assoc (compile-source (str "bootstrap/clojure/fixtures/runtime-dispatch/" disposition extension))
+                        :extension extension :disposition disposition))
+               (for [extension [".gravity" ".qst"] disposition ["accepted" "rejected"]]
+                 [extension disposition]))))
+
+(deftest paired-builtin-dispatch-programs-preserve-values-refusals-and-identities
+  (doseq [{:keys [path plan disposition]} @dispatch-programs]
+    (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+    (is (= (:plan-id plan)
+           (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+    (if (= "accepted" disposition)
+      (doseq [[callee expected] '[[add 6] [subtract 5] [multiply 6] [divide 4] [equal true] [less true] [greater true] [less-equal true] [greater-equal true] [string ":a7"] [readable "[1 2]"] [mapping {:a 1, :b 2}] [vector-value [1 2]] [list-value (1 2)] [conjoin [1 2 3]] [associate {:a 1, :b 2, :c 3}] [lookup 1] [lookup-default 7] [head 1] [next-value 2] [tail (2 3)] [length 2] [symbol-value true] [keyword-value true] [character true] [number-value true] [sequence true] [list-kind true] [vector-kind true] [map-kind true] [set-kind true] [string-kind true] [contains true] [even-value true] [integer-value true] [boolean-value true] [map-keys (:a)] [set-value #{1 2}] [sorted (1 2 3)] [vectorized [1 2]] [quotient 3] [subvector [2 3]]]]
+        (let [value (b/p15-s23-stage2-runtime-execute-function context plan callee [])]
+          (is (= expected value) (str callee))
+          (is (= (case callee mapping clojure.lang.PersistentHashMap length Integer (class expected))
+                 (class value)) (str callee))))
+      (doseq [[callee builtin id] '[[subtract-arity - "L2-BUILTIN-ARITY"] [divide-arity / "L2-BUILTIN-ARITY"] [equal-arity = "L2-BUILTIN-ARITY"] [less-arity < "L2-BUILTIN-ARITY"] [greater-arity > "L2-BUILTIN-ARITY"] [less-equal-arity <= "L2-BUILTIN-ARITY"] [greater-equal-arity >= "L2-BUILTIN-ARITY"] [map-arity hash-map "L2-BUILTIN-ARITY"] [conj-arity conj "L2-BUILTIN-ARITY"] [assoc-short assoc "L2-BUILTIN-ARITY"] [assoc-pairs assoc "L2-BUILTIN-ARITY"] [get-short get "L2-BUILTIN-ARITY"] [first-short first "L2-BUILTIN-ARITY"] [quot-short quot "L2-BUILTIN-ARITY"] [subvec-short subvec "L2-BUILTIN-ARITY"] [divide-zero / "L2-BUILTIN-ERROR"] [bad-assoc assoc "L2-BUILTIN-ERROR"] [bad-conj conj "L2-BUILTIN-ERROR"] [bad-quot quot "L2-BUILTIN-ERROR"] [bad-subvec subvec "L2-BUILTIN-ERROR"]]]
+        (let [error (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan callee []))]
+          (is (= id (:id error)) (str callee))
+          (is (= builtin (:function error)))
+          (is (= {:source nil} (:source-span error)))))))
+  (doseq [disposition ["accepted" "rejected"]]
+    (is (apply = (map #(get-in % [:plan :plan-id])
+                     (filter #(= disposition (:disposition %)) @dispatch-programs))))))
+
+(defn- builtin-operations []
+  (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-builtin-operations)))
+
+(deftest generic-dispatch-covers-every-ordinary-arm-with-trusted-host-values
+  ;; Direct host units cover arms bypassed by the existing unary/get fast paths.
+  ;; These values/operations do not establish source admission or authority.
+  (let [operations (builtin-operations) plan {:source {:path "unit.gravity"}}
+        contract (:gravity/namespace-contract (meta #'runtime/hosted-builtin))]
+    (is (= (set (get-in contract [:public-api 'hosted-builtin :operation-keys])) (set (keys operations))))
+    (is (every? var? (vals operations)))
+    (is (= :bootstrap (get-in contract [:public-api 'hosted-builtin :reserved-operation-owner])))
+    (doseq [[callee args expected]
+            '[[+ [1 2 3] 6] [- [8 3] 5] [* [2 3] 6] [/ [8 2] 4]
+              [= [2 2] true] [< [1 2] true] [> [2 1] true] [<= [2 2] true] [>= [2 2] true]
+              [str [:a 7] ":a7"] [pr-str [[1 2]] "[1 2]"]
+              [hash-map [:a 1 :b 2] {:a 1 :b 2}] [vector [1 2] [1 2]] [list [1 2] (1 2)]
+              [conj [[1] 2 3] [1 2 3]] [assoc [{:a 1} :b 2 :c 3] {:a 1 :b 2 :c 3}]
+              [get [{:a 1} :a] 1] [get [{} :a 7] 7]
+              [first [[1 2]] 1] [second [[1 2]] 2] [rest [[1 2 3]] (2 3)] [count [[1 2]] 2]
+              [symbol? [a] true] [keyword? [:a] true] [char? [\a] true] [number? [1] true]
+              [seq? [(1)] true] [list? [(1)] true] [vector? [[1]] true] [map? [{}] true]
+              [set? [#{1}] true] [string? ["a"] true] [contains? [{:a nil} :a] true]
+              [even? [2] true] [integer? [2] true] [boolean? [false] true]
+              [keys [{:a 1}] (:a)] [set [[1 1 2]] #{1 2}] [sort-by-pr-str [[2 1 3]] (1 2 3)]
+              [vec [(1 2)] [1 2]] [quot [7 2] 3] [subvec [[1 2 3] 1 3] [2 3]]]]
+      (doseq [value [(runtime/hosted-builtin plan callee args operations)
+                     (b/p15-s23-stage2-runtime-invoke-builtin plan callee args)]]
+        (is (= expected value) (str callee))
+        (is (= (case callee hash-map clojure.lang.PersistentHashMap count Integer (class expected))
+               (class value)) (str callee))))))
+
+(deftest ordinary-dispatch-selects-only-needed-ports-and-retains-late-vars
+  (let [events (atom [])
+        addition (clojure.lang.Var/create (fn [args] (swap! events conj [:add args]) :result))
+        only-add (reify clojure.lang.ILookup
+                   (valAt [_ key] (swap! events conj [:lookup key])
+                     (if (= :add key) addition (throw (AssertionError. "unrelated lookup")))))]
+    (is (= :result (runtime/hosted-builtin {} '+ [1 2] only-add)))
+    (is (= [[:lookup :add] [:add [1 2]]] @events)))
+  (let [events (atom []) subtraction (clojure.lang.Var/create (fn [& _] :old))
+        guard (clojure.lang.Var/create
+                (fn [plan callee args minimum]
+                  (swap! events conj [:arity plan callee args minimum])
+                  (alter-var-root subtraction (constantly (fn [args] (swap! events conj [:subtract args]) :new)))))
+        operations {:assert-min-arity! guard :subtract subtraction}]
+    (is (= :new (runtime/hosted-builtin {:unit true} '- [7] operations)))
+    (is (= [[:arity {:unit true} '- [7] 1] [:subtract [7]]] @events)))
+  (let [failure (ex-info "unit refusal" {:id :unit-arity}) reads (atom 0)
+        args (reify clojure.lang.Indexed
+               (nth [_ _] (swap! reads inc) :unexpected)
+               (nth [_ _ _] (swap! reads inc) :unexpected))
+        guard (clojure.lang.Var/create (fn [& _] (throw failure)))]
+    (is (identical? failure
+                   (observed-error #(runtime/hosted-builtin {} 'get args {:assert-between-arity! guard}))))
+    (is (zero? @reads))))
+
+(deftest reserved-callees-have-no-stage-operation-or-authority-port
+  (let [lookups (atom 0)
+        operations (reify clojure.lang.ILookup
+                     (valAt [_ _] (swap! lookups inc) (throw (AssertionError. "reserved port"))))]
+    (doseq [callee '[build-read-declared-input hosted-native-data-preflight bootstrap-native-identical?
+                    bootstrap-native-carrier-header bootstrap-symbol-utf16-unit-count unknown-builtin]]
+      (is (instance? IllegalArgumentException
+                     (observed-error #(runtime/hosted-builtin {} callee [] operations)))))
+    (is (zero? @lookups))))
+
+(deftest unknown-ordinary-callee-retains-bootstrap-host-error-translation
+  (let [error (diagnostic #(b/p15-s23-stage2-runtime-invoke-builtin
+                            {:source {:path "unit.gravity"}} 'unknown-builtin []))]
+    (is (= "L2-BUILTIN-ERROR" (:id error)))
+    (is (= 'unknown-builtin (:function error)))
+    (is (= "No matching clause: unknown-builtin" (:cause-message error)))
+    (is (= {:source "unit.gravity"} (:source-span error)))))
+
+(deftest bootstrap-builtin-wrapper-retains-signatures-late-stage-port-and-catches
+  (is (= '([plan callee args] [runtime plan callee args]
+           [runtime plan callee args instruction public-invocation-scope])
+         (:arglists (meta #'b/p15-s23-stage2-runtime-invoke-builtin))))
+  (let [calls (atom []) plan {} args [1 2] marker (Object.)
+        info (ex-info "unit stage exception" {:id :unit-stage})]
+    (with-redefs [runtime/hosted-builtin (fn [& received] (swap! calls conj (vec received)) marker)]
+      (is (identical? marker (b/p15-s23-stage2-runtime-invoke-builtin plan '+ args)))
+      (is (identical? marker (b/p15-s23-stage2-runtime-invoke-builtin context plan '+ args)))
+      (is (identical? marker (b/p15-s23-stage2-runtime-invoke-builtin context plan '+ args :instruction nil))))
+    (is (= 3 (count @calls)))
+    (doseq [call @calls]
+      (is (= [plan '+ args (builtin-operations)] call))
+      (is (identical? args (nth call 2))))
+    (with-redefs [runtime/hosted-builtin (fn [& _] (throw info))]
+      (is (identical? info (observed-error #(b/p15-s23-stage2-runtime-invoke-builtin plan '+ args)))))
+    (with-redefs [runtime/hosted-builtin (fn [& _] (throw (ArithmeticException. "unit host failure")))]
+      (let [error (diagnostic #(b/p15-s23-stage2-runtime-invoke-builtin plan '+ args))]
+        (is (= "L2-BUILTIN-ERROR" (:id error)))
+        (is (= '+ (:function error)))
+        (is (= "unit host failure" (:cause-message error)))))))
