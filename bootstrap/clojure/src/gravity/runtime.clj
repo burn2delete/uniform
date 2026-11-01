@@ -1,9 +1,9 @@
 (ns gravity.runtime
-  "Temporary hosted Stage2 invocation, arithmetic and execution records; operations are trusted seed dependencies.")
+  "Temporary hosted Stage2 invocation, arithmetic, comparison and execution records; operations are trusted seed dependencies.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
-    :contract-boundary :hosted-seed-stage2-invocation-and-arithmetic
+    :contract-boundary :hosted-seed-stage2-invocation-arithmetic-and-comparison
     :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
     :public-api
     {hosted-add
@@ -19,6 +19,26 @@
       :arity-validation-owner :existing-builtin-dispatcher
       :error-translation-owner :existing-builtin-dispatcher}
      hosted-divide
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-equal
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-less-than
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-greater-than
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-less-than-or-equal
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-greater-than-or-equal
      {:arglists ([args]) :admission :none :hosted-seed-only? true
       :arity-validation-owner :existing-builtin-dispatcher
       :error-translation-owner :existing-builtin-dispatcher}
@@ -39,8 +59,8 @@
       :entry-protocol :legacy-main-arity-and-instruction-runner
       :adds-function-entry-scope-guard? false}}
     :artifact-inputs [:runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
-                      :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :unchanged-host-failure]
+                      :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :unchanged-host-failure]
     :diagnostic-ownership {:stage [L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY]
                            :existing-operations [L2-FUNCTION-ARITY :recur-arity :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-semantics
@@ -52,7 +72,7 @@
     :canonical-runtime-manifest? false :stdout :existing-clojure-writer-capture
     :unsupported [:untrusted-callback-ingress :source-or-core-admission :public-plan-authentication
                   :runtime-family-selection :full-r1-r4-r11-r12-conformance :new-provider-authority
-                  :native-target-or-backend-execution :general-gravity-numeric-modes :full-safe9-conformance
+                  :native-target-or-backend-execution :general-gravity-numeric-modes :canonical-gravity-equality-and-ordering :full-safe9-conformance
                   :untrusted-numeric-carriers :numeric-proof-or-check-records :redaction-and-publication :performance
                   :migration :release :self-hosting :seed-retirement]})
 
@@ -205,5 +225,41 @@
     3 (/ (nth args 0) (nth args 1) (nth args 2))
     (apply / args)))
 
-(doseq [operation [#'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(defn hosted-equal
+  [args]
+  (case (count args)
+    1 true
+    2 (= (nth args 0) (nth args 1))
+    3 (= (nth args 0) (nth args 1) (nth args 2))
+    (apply = args)))
+
+(defn hosted-less-than
+  [args]
+  (case (count args)
+    2 (< (nth args 0) (nth args 1))
+    3 (< (nth args 0) (nth args 1) (nth args 2))
+    (apply < args)))
+
+(defn hosted-greater-than
+  [args]
+  (case (count args)
+    2 (> (nth args 0) (nth args 1))
+    3 (> (nth args 0) (nth args 1) (nth args 2))
+    (apply > args)))
+
+(defn hosted-less-than-or-equal
+  [args]
+  (case (count args)
+    2 (<= (nth args 0) (nth args 1))
+    3 (<= (nth args 0) (nth args 1) (nth args 2))
+    (apply <= args)))
+
+(defn hosted-greater-than-or-equal
+  [args]
+  (case (count args)
+    2 (>= (nth args 0) (nth args 1))
+    3 (>= (nth args 0) (nth args 1) (nth args 2))
+    (apply >= args)))
+
+(doseq [operation [#'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
