@@ -23,7 +23,9 @@
            'hosted-add 'hosted-subtract 'hosted-multiply 'hosted-divide
            'hosted-equal 'hosted-less-than 'hosted-greater-than
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal
-           'hosted-str 'fail-builtin-error! 'hosted-get 'hosted-builtin}
+           'hosted-str 'fail-builtin-error! 'hosted-get 'hosted-builtin
+           'bind-values 'execute-value-scoped 'execute-values-scoped
+           'execute-map-entries-scoped 'execute-instructions-scoped}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -35,7 +37,7 @@
       (is (true? (:trusted-operation-map? contract)))
       (is (some #{:public-plan-authentication} (:unsupported contract)))))
   (let [contract (:gravity/namespace-contract (meta #'runtime/execute-plan))
-        declared (set (mapcat :operation-keys (vals (dissoc (:public-api contract) 'hosted-builtin))))
+        declared (set (mapcat :operation-keys (vals (select-keys (:public-api contract) '[execute-function-scoped execute-function artifact-invoke execute-plan]))))
         operations ((var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-stage-operations)))]
     (is (= declared (set (keys operations))))
     (is (every? var? (vals operations)))
@@ -540,3 +542,146 @@
         (is (= "L2-BUILTIN-ERROR" (:id error)))
         (is (= '+ (:function error)))
         (is (= "unit host failure" (:cause-message error)))))))
+
+(def ^:private evaluation-programs
+  (delay (mapv (fn [[extension disposition]]
+                 (assoc (compile-source (str "bootstrap/clojure/fixtures/runtime-evaluation/" disposition extension))
+                        :extension extension :disposition disposition))
+               (for [extension [".gravity" ".qst"] disposition ["accepted" "rejected"]]
+                 [extension disposition]))))
+
+(deftest paired-evaluation-carrier-programs-preserve-values-refusals-and-identities
+  (doseq [{:keys [path plan disposition]} @evaluation-programs]
+    (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+    (is (= (:plan-id plan)
+           (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+    (if (= "accepted" disposition)
+      (doseq [[callee expected] '[[vector0 []] [vector1 [7]] [vector2 [1 2]] [vector3 [1 2 3]] [vector5 [1 2 3 4 5]] [set-values #{1 3 2}] [map0 {}] [map1 {:a 7}] [map-collision {:a 1}] [nested-map {:a [1 2 3 4], :b {:c 7}}] [call0 0] [call1 7] [call2 3] [call3 6] [call4 10] [call5 15] [do0 nil] [do1 7] [do4 4] [sequential-bindings [1 2 3 4]] [loop-sum 10] [loop-four 10] [function-recur 6]]]
+        (is (= expected (b/p15-s23-stage2-runtime-execute-function context plan callee [])) (str callee)))
+      (doseq [[callee builtin id] '[[vector-first + "L2-BUILTIN-ERROR"] [vector-third / "L2-BUILTIN-ERROR"] [map-key-first / "L2-BUILTIN-ERROR"] [map-value-first / "L2-BUILTIN-ERROR"] [sequence-first + "L2-BUILTIN-ERROR"] [binding-first + "L2-BUILTIN-ERROR"] [argument-first + "L2-BUILTIN-ERROR"] [loop-initializer / "L2-BUILTIN-ERROR"]]]
+        (let [error (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan callee []))]
+          (is (= id (:id error)) (str callee))
+          (is (= builtin (:function error)))
+          (is (= {:source nil} (:source-span error)))))))
+  (doseq [disposition ["accepted" "rejected"]]
+    (is (apply = (map #(get-in % [:plan :plan-id])
+                     (filter #(= disposition (:disposition %)) @evaluation-programs))))))
+
+(defn- evaluation-operations []
+  (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-evaluation-operations)))
+
+(deftest evaluation-contract-ports-and-small-binders-retain-native-values
+  (let [contract (:gravity/namespace-contract (meta #'runtime/bind-values))
+        names '[bind-values execute-value-scoped execute-values-scoped execute-map-entries-scoped execute-instructions-scoped]
+        operations (evaluation-operations)]
+    (is (= (set (mapcat #(get-in contract [:public-api % :operation-keys]) names)) (set (keys operations))))
+    (is (every? var? (vals operations))))
+  (let [base (with-meta {:retained :value} {:origin :unit})]
+    (is (identical? base (runtime/bind-values base [] [])))
+    (doseq [n (range 1 6)]
+      (let [names (mapv #(keyword (str "x" %)) (range n)) values (vec (range n))
+            expected (merge base (zipmap names values)) actual (runtime/bind-values base names values)]
+        (is (= expected actual))
+        (is (= (meta expected) (meta actual)))))
+    (is (= {:x 2} (runtime/bind-values {} [:x :x] [1 2])))))
+
+(deftest value-evaluation-selects-nontail-operation-before-instruction-evaluation
+  ;; Anonymous operations/scopes are host control-flow units, not admission.
+  (let [events (atom []) scope (Object.)
+        nontail (clojure.lang.Var/create (fn [& args] (swap! events conj [:original args]) :retained))
+        instruction (clojure.lang.Var/create
+                      (fn [& args]
+                        (swap! events conj [:instruction args])
+                        (alter-var-root nontail (constantly (fn [& _] :changed))) :value))]
+    (is (= :retained (runtime/execute-value-scoped :runtime :plan :env :instruction :reason scope
+                     {:nontail-value! nontail :execute-instruction-scoped instruction})))
+    (is (= :instruction (ffirst @events)))
+    (is (= [:runtime :plan :env :instruction scope] (vec (second (first @events)))))
+    (is (= [:original '(:plan :value :reason)] (second @events)))))
+
+(deftest argument-traversal-retains-small-and-generic-paths-and-late-operations
+  (let [lookups (atom 0)
+        none (reify clojure.lang.ILookup (valAt [_ _] (swap! lookups inc) nil))]
+    (is (= [] (runtime/execute-values-scoped nil nil nil [] :reason nil none)))
+    (is (zero? @lookups)))
+  (doseq [n (range 1 6) list? [false true]]
+    (let [events (atom []) scope (Object.) callback (clojure.lang.Var/create nil)
+          later (fn [& args] (swap! events conj [:later args]) (nth args 3))
+          first-call (fn [& args] (swap! events conj [:first args])
+                       (alter-var-root callback (constantly later)) (nth args 3))
+          values (vec (range n)) carrier (if list? (apply list values) values)]
+      (alter-var-root callback (constantly first-call))
+      (is (= values (runtime/execute-values-scoped :runtime :plan :env carrier :reason scope
+                    {:execute-value-scoped callback})))
+      (is (= (vec (cons :first (repeat (dec n) :later))) (mapv first @events)))
+      (is (= values (mapv #(nth (second %) 3) @events)))
+      (doseq [[_ args] @events]
+        (is (= [:runtime :plan :env] (vec (take 3 args))))
+        (is (= :reason (nth args 4)))
+        (is (identical? scope (nth args 5)))))))
+
+(deftest map-carriers-retain-plan-entry-order-duplicate-keys-and-scope
+  (doseq [list? [false true]]
+    (let [events (atom []) scope (Object.)
+          values {:k1 :a :v1 nil :k2 :a :v2 false}
+          invoke (clojure.lang.Var/create
+                   (fn [runtime plan env instruction received-scope]
+                     (is (= [:runtime :plan :env] [runtime plan env]))
+                     (is (identical? scope received-scope))
+                     (swap! events conj instruction) (get values instruction)))
+          ops (assoc (evaluation-operations) :execute-instruction-scoped invoke)
+          entries [{:key :k1 :value :v1} {:key :k2 :value :v2}]
+          carrier (if list? (apply list entries) entries)]
+      (is (= {:a false} (runtime/execute-map-entries-scoped :runtime :plan :env carrier scope ops)))
+      (is (= [:k1 :v1 :k2 :v2] @events))))
+  (let [info (ex-info "unit map key" {:id :unit-key}) events (atom [])
+        invoke (clojure.lang.Var/create (fn [& args] (swap! events conj (nth args 3)) (throw info)))
+        ops (assoc (evaluation-operations) :execute-instruction-scoped invoke)]
+    (is (identical? info (observed-error #(runtime/execute-map-entries-scoped nil nil nil
+                                          [{:key :key :value :value}] nil ops))))
+    (is (= [:key] @events))))
+
+(deftest instruction-carriers-retain-recursion-failure-and-legacy-list-termination
+  (doseq [list? [false true]]
+    (let [events (atom []) signal (b/p15-s23-stage2-runtime-recur-signal [7]) scope (Object.)
+          invoke (clojure.lang.Var/create
+                   (fn [_ _ _ instruction received]
+                     (is (identical? scope received)) (swap! events conj instruction)
+                     (if (= :recur instruction) signal instruction)))
+          ops (assoc (evaluation-operations) :execute-instruction-scoped invoke)
+          carrier (fn [v] (if list? (apply list v) v))]
+      (is (identical? signal (runtime/execute-instructions-scoped nil {} nil (carrier [:recur]) scope ops)))
+      (reset! events [])
+      (let [error (diagnostic #(runtime/execute-instructions-scoped nil {} nil (carrier [:recur :unreachable]) scope ops))]
+        (is (= "L2-RECUR-TARGET" (:id error)))
+        (is (= :non-tail-sequential-position (:reason error)))
+        (is (= 1 (:actual-arity error))))
+      (is (= [:recur] @events))))
+  ;; Existing direct list callers stop at false/nil. Vector traversal retains
+  ;; their callback behavior. Canonical admitted instruction streams are separate.
+  (doseq [head [nil false] list? [false true]]
+    (let [events (atom []) invoke (clojure.lang.Var/create
+                                   (fn [_ _ _ instruction _] (swap! events conj instruction) instruction))
+          body [head :later] carrier (if list? (apply list body) body)
+          result (runtime/execute-instructions-scoped nil {} nil carrier nil
+                   (assoc (evaluation-operations) :execute-instruction-scoped invoke))]
+      (is (= (if list? nil :later) result))
+      (is (= (if list? [] body) @events)))))
+
+(deftest private-evaluation-wrappers-retain-signatures-and-late-stage-ports
+  (is (= (:doc (meta (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-execute-map-entries-scoped)))
+         (:doc (meta #'runtime/execute-map-entries-scoped))))
+  (doseq [[legacy stage args]
+          [['p15-s23-stage2-runtime-bind-values #'runtime/bind-values '[base names values]]
+           ['p15-s23-stage2-runtime-execute-value-scoped #'runtime/execute-value-scoped '[runtime plan env instruction reason public-invocation-scope]]
+           ['p15-s23-stage2-runtime-execute-values-scoped #'runtime/execute-values-scoped '[runtime plan env instructions reason public-invocation-scope]]
+           ['p15-s23-stage2-runtime-execute-map-entries-scoped #'runtime/execute-map-entries-scoped '[runtime plan env entries public-invocation-scope]]
+           ['p15-s23-stage2-runtime-execute-instructions-scoped #'runtime/execute-instructions-scoped '[runtime plan env instructions public-invocation-scope]]]]
+    (let [compatibility (ns-resolve 'gravity.bootstrap legacy) received (atom nil) marker (Object.)
+          values (mapv (fn [_] (Object.)) args)]
+      (is (true? (:private (meta compatibility))))
+      (is (= (list args) (:arglists (meta compatibility))))
+      (with-redefs-fn {stage (fn [& actual] (reset! received (vec actual)) marker)}
+        #(is (identical? marker (apply (deref compatibility) values))))
+      (is (= (if (= legacy 'p15-s23-stage2-runtime-bind-values)
+                values (conj values (evaluation-operations))) @received)))))
