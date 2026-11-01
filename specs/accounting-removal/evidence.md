@@ -1171,6 +1171,124 @@ remain unchanged and open.
 Composition receipt SHA-256:
 `be932baae0aa66458e4548b85677948f9d024d90c9cd8ba444c910421346335e`.
 
+## Coherent hosted initializer validation
+
+The census increment merged in PR444 at
+`6b2e63b32f215b0c5f963fadfc018624837685b0`, with full tree equal to reviewed
+`68609de1259c27a1f461abd8cd2d86ce1de0f949`; its branch was retained.
+This next unit began from main
+`f51a43ae267736a81587d81ffe52839c86c02b2d`, tree
+`ddf3e0d60dc0fdb137cb04ca8984df2dd62efd20`.
+
+All real initializer-helper callers were inspected: one production census call,
+the function-arity inventory and 24 direct runtime test calls. The META-only
+native header/identity primitives cannot be used by this hosted runtime. Their
+profile guards were preserved. A separate, explicitly hosted/JVM native DATA
+preflight was implemented and independently reviewed by its owning Native work.
+It supplies representation validation of the same original input, not grammar,
+typing, authentication, a transferable proof or public runtime authority.
+
+### Old-source diagnostic evidence
+
+The first diagnostic is **NONPASS**, natural exit 1 in 15704 ms: the foreign Map
+fixture lacked lookup methods, causing a get/valAt failure before observations
+were written. It is not evidence of a native guard rejection.
+
+A separately corrected fixture passed its cheap 1-test/9-assertion controls.
+The next actual diagnostic is also **NONPASS**, natural exit 1 in 16444 ms.
+Its completed, durably recorded phases established that a 10-element Vector
+initializer was accepted with work count 21; a 33000-element initializer was
+refused at 65537, while the actual direct engine evaluated all 33000 elements
+in order with empty output. A foreign Map was admitted and invoked lookup,
+count and sequence once each. The diagnostic then failed an exception-shape
+assertion: the controlled foreign-cycle fixture returned its raw probe instead
+of a wrapper message. Neither failed run is promoted or summed with later work.
+
+A minimal supplement reran only cycle attribution and previously unreached
+domain questions. It passed naturally in 8073 ms, with exact clean old-source
+bookends, 1200 complete stdout bytes, empty stderr and complete cleanup. The
+foreign-cycle observation was the raw probe after 17 next calls; termination
+belonged to the fixture, not the validator, and does not prove native-cycle
+rejection. Native metadata and a visible SubVector with unused opaque backing
+payloads were accepted and directly quoted with exact object/metadata identity,
+no constructor occurrences and no opaque callbacks. Foreign metadata was also
+admitted by the old implementation; its rejection by the new hosted contract is
+an explicit native-domain strengthening, not preserved old admission. A native
+depth-130 quote was refused by initializer validation despite direct quoting
+completing with the same object. Independent actual-record review accepted these
+engineering observations with their separate original provenance.
+
+### New producer/consumer interface
+
+The accepted Native dependency is PR446 commit
+`0d3061965f34322bf4e9ec03084b8e4614133689`, tree
+`b0fcc7c62949408d65a7480db88650c567bdb11a`, reconciled with main
+`06a256fdb97f49b5fedea36a6803483302631bbc`. Its seven source/test/document
+blobs were imported normally and remain unchanged by this consumer. The Native
+owner retains those paths. API catalog/registration and integration remain a
+dependency of the consumer's main acceptance.
+
+Consumer `22898a2915bf1bb0e3a5ef880230f48769a92501`, tree
+`941042daf7d80a26462b93dcc8f6e332160b39d5`, replaces the old two-argument
+work helper with `runtime-validate-initializer [instruction]`. Its first operation
+checks the original hosted DATA before any field access. It then validates the
+complete initializer grammar and semantic constructor census. All callers and
+the arity inventory migrate together; the old API has no fallback. Work/depth/
+size allowances, reservation arithmetic, attempts and provider-cost fields are
+removed. Semantic constructor counts and duplicate-initializer reasons remain.
+
+Root Set members retain exact literal schemas and a complete homogeneous
+String/Keyword preflight before duplicate equality. Map literal keys remain
+unique Keywords. Quote descendants remain DATA, including opcode-shaped maps;
+native metadata/views retain identity, and quoted containers are not counted
+as constructors. Foreign carriers, native cycles, cyclic metadata and invalid
+views reject through the hosted representation boundary before field access.
+Whole-plan foreign ingress is outside this interface and remains open.
+
+The actual bounded consumer batch passed 18 tests/1019 assertions, zero failures
+or errors, natural exit 0 in 48204 ms on exact clean bookends. It selected all
+five census/initializer tests, seven affected runtime caller kernels and six
+language tests. Coverage includes complete 33000-element closed execution and
+late invalid data, depth-130 quoted execution, preserved metadata/view identity,
+foreign/native-cycle controls with zero callbacks, semantic constructor reports,
+all migrated calls and explicit downstream policy distinctions. The 1025-member
+Set initializer validates but the separate collection type limit still refuses
+it; 80000-unit members validate but actual Set construction still hits its own
+work limit. Those policies are unresolved accounting, not removed safety guards.
+
+The configured 2 GiB child, 120-second watchdog, existing three resource guards
+and capture bounds were unchanged. Stdout was complete at 2440 bytes; stderr
+was complete at 379 bytes and contained the JVM warning from controlled native
+cycle fixtures. No VM flags were changed. Cleanup completed. Independent static
+source and actual retained driver/counts/stdout/stderr/receipt review accepted
+this finite scope; the reviewer did not rerun semantic tests.
+
+Separate cheap checks on that same candidate passed 11 tests/23 assertions and
+the actual repository LOC gate: 2031 source files, no exceptions or violations,
+maximum 250 physical lines. The normal-broker child used 256 MiB/60 seconds,
+exited naturally in 1519 ms, with 489 complete stdout bytes, empty stderr, clean
+bookends and complete cleanup. This is separate evidence, not a summed count.
+
+| Mechanism | Disposition in this unit |
+| --- | --- |
+| Initializer caller budget, cumulative work, depth/size admission, reservation/attempt/provider fields | Removed coherently from helper and callers |
+| Complete member/entry traversal, homogeneous domain, duplicate checks, closed IR schemas | Retained semantic validation |
+| Constructor occurrence counts, definition/source/type/order checks | Retained semantic evidence |
+| Native class/cycle/metadata/view boundary | Explicit hosted preflight; original META guards unchanged |
+| Set type width and collection construction/equality/conversion work policies | Open, explicitly exercised as remaining refusals |
+| Whole-plan native ingress, authenticated/public runtime, C12 and release | Unrun/open; no acceptance credit |
+
+| Evidence | SHA-256 |
+| --- | --- |
+| First failed diagnostic receipt | `b3de98218660fb0215cb78630f40652535ea572f8ff2ed131078303225d44129` |
+| Second failed diagnostic receipt with completed phases | `af9c64b94f552eb1f80b3b260e8c2f70a570130039fe747883fabced71c2054e` |
+| Old-domain supplement receipt | `46f0bc31b06da9efa2d70b41f013c960be76e4cc179a20aefa6a76d9787c4125` |
+| Accepted initializer consumer receipt | `f37e8fe62804813bab26cad5ce58760753e2b211ccb0fedbef24d9053589f103` |
+| Cheap checks receipt | `6137aaabb5afb5dfcdb07ac9d6ba31c388bed0a5c9beeba1a4b248944e044384` |
+| Runtime source | `fb1bcb794a2e379bf06e4f4a8438ee7921178501c80f0139723c33085ce55e7a` |
+| Census/initializer tests | `959fcb92e2449a1f18e9358e474798f6659d963a7bf1aa57d6dad8b0e3b71e75` |
+| Runtime caller tests | `42457123388ccba3e724e613315f33220912eeb150a0e56dfe6870646137d584` |
+
 ## ACC-08 imported-module aggregate removal
 
 This independent finite increment starts at main
