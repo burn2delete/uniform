@@ -63,8 +63,8 @@ All other Bootstrap/Gravity source, especially the private closure and input,
 manifest and provenance owners, remains unchanged by this slice.
 
 The native-source baseline is 63b62e58c2deeb0559140093462f4a6a651dac99,
-tree 67e17a26a17c1c4b3732aad5423f31ecbee55859. Both before processes
-terminate before implementation edits. After captures run the working
+tree 67e17a26a17c1c4b3732aad5423f31ecbee55859. The process capturing both
+before records terminates before implementation edits. After captures run the working
 extraction in the same physical checkout. Full EDN and original serialization
 match for both real source spellings, including source/plan/emitter, partial
 source map, actual tool versions, Java/class/JAR byte arrays, all five byte
@@ -95,9 +95,9 @@ The initial twelve-body scope included four private helpers. Ordinary Bootstrap
 loading captures them in a closure and removes their Vars, so the first test
 harness could not reference the compilation helper. That harness is discarded;
 no private loader, admission route or source projection is used to obtain
-access. The slice is narrowed to eight public compatibility bodies. Two early
-harness read errors and a verifier comparison of distinct regex objects are
-retained as local nonpasses; the corrected verifier compares complete source
+access. The slice is narrowed to eight public compatibility bodies. Early
+harness loading/read failures and a verifier comparison of distinct regex
+objects are retained as local nonpasses; the corrected verifier compares complete source
 reconstruction and printed forms.
 
 Initial contextual lint found the test's missing explicit clojure.java.io
