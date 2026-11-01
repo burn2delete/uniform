@@ -73,7 +73,8 @@
  []
  (into
   (mapv
-   (fn [v] [v (var-get v)])
+   ;; Track operation roots, including under the builder's local plan binding.
+   (fn [v] [v (.getRawRoot ^clojure.lang.Var v)])
    (concat
     [#'gravity.checked-core/build-plan-binding!
  #'gravity.checked-core/current-plan-binding!
@@ -331,7 +332,7 @@
   (let [{:keys [artifact report source-path dependencies bindings roots phase carrier reader catalog thread invocation]} facts]
     (when-not (and (= thread (.getId (Thread/currentThread)))
                    (= phase (sh07-core-construction-phase))
-                   (every? (fn [[v root]] (identical? root (var-get v))) roots)
+                   (every? (fn [[v root]] (identical? root (.getRawRoot ^clojure.lang.Var v))) roots)
                    (= catalog (sh07-core-construction-catalog report))
                    (= carrier (sh07-core-construction-carrier! artifact))
                    (= reader (sh07-core-construction-reader artifact invocation))
