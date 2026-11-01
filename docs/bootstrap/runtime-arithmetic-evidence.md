@@ -93,3 +93,25 @@ corrected read-only whole-component comparison passes without source changes.
 Controls, conservation and complete comparisons use
 /tmp/uniform-runtime-arithmetic-*.clj and corresponding logs. Own CI, exact
 independent acceptance and clean actual-main integration remain required.
+
+## Current accounting, custody and release-proof composition
+
+Actual main 7ad0edc7abcc7ea7b8f536e8363bd66ad2329453/tree
+5271f1984a28f9da39b24beb999ad2038fc4c210 includes PR749 accounting
+removal, PR746 host custody and PR748 read-only release verification. The
+[ordinary-development record](current-ordinary-composition-evidence.md)
+distinguishes current semantics from immutable historical A1 evidence.
+All incoming implementation and tests remain preserved; Safety's shared
+registrations are rebuilt from exact main plus its frozen association,
+including the new process helper and unchanged primary catalog formulas.
+Stage algorithms and fixtures remain conserved. Fresh current-base controls,
+catalog identities, ownership/language, contextual lint and independent review
+remain required. Old-base CI supplies no current integration eligibility.
+
+Fresh current-base coupled checks pass20/443, ownership/language46/1136.
+All7 complete data and original serialized pairs, actual source hashes,
+deterministic identities and whole-component conservation pass. Current Core
+controls still accept both spellings with25 nodes/one target read/source8e63
+and recomputed Core16ec. Contextual lint passes3 paths/0 warnings/0 blockers.
+Terminal lint receipts are archived outside the source checkout. Source
+admission, historical denied routes and migration pins remain unchanged.
