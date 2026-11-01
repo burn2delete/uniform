@@ -1,3 +1,41 @@
+# Reader implementation planning entry
+
+The 2026-11-01 implementation specification in [spec.md](spec.md) expands this
+package beyond its original task-authority transfer. The original plan below
+remains historical. Implementation progress stays only in the existing marked
+[task ledger](tasks.md#implementation-tasks); this entry is not a second plan
+for the whole compiler or a new acceptance authority.
+
+Select the exact unresolved Reader task before refining this plan. First read
+its current evidence and source contracts, the
+[stage ownership table](../../docs/bootstrap/stage-owned-namespaces.md)
+and affected source/fixture files. Resolve current implementation paths from
+that table and the actual call graph; historical numbered adapters are not
+automatic semantic owners. Preserve accepted row receipts at their exact scope.
+
+The selected plan must state:
+
+- The complete source family, product or extension behavior being changed,
+  actual owning implementation paths, and compatibility-bearing identities.
+- Explicit source/root/options/policy inputs, actual outputs and the selected
+  Syntax/CLI or extension-provider interface; no implicit Build-completion edge.
+- Real accepted source fixtures and owning negative diagnostics, including late
+  malformed/tampered cases when traversal or identity changes.
+- Focused owner tests, affected producer/consumer composition and exact evidence
+  capture; a source census or injected helper test does not replace execution.
+- Any still-restricted operation, reserved writer or unresolved source decision,
+  with the affected acceptance boundary kept open.
+
+Use the current [development verification workflow](../../docs/development-verification.md)
+to choose focused selectors after inspecting them. Run the language-boundary
+gate after source/tooling changes and proportionate composition tests when
+interfaces or identities change. Do not launch heavyweight historical replay
+or claim migration/release authority merely to prepare an implementation plan.
+Record results and residual host boundaries in the existing evidence record.
+Required independent acceptance and coordinator integration stay separate.
+
+## Historical task-authority-transfer plan
+
 # Implementation plan: Reader task authority
 
 Spec: [spec.md](spec.md) | Owner role: Reader maintainer.
