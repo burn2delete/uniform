@@ -239,6 +239,15 @@ The new complete tuple requires its own exact reviews, contextual lint, CI and
 clean current-main integration preflight. No authority, release, self-hosting,
 seed-retirement, full safety or namespace-completion claim is added.
 
+## CI harness environment evidence
+
+The current CI runner tests pass20/221 with the installed linter directory on
+PATH. The initial invocation lacked that directory and recorded20/192 with two
+missing-linter errors; its nonpass log remains at
+`/tmp/uniform-leaf-main-ci-runner-missing-linter-nonpass.log`. Correcting the
+command environment changes no repository source, guard, policy or watchdog.
+Terminal harness receipts are archived outside the source checkout.
+
 ## Unsupported boundaries
 
 This is partial temporary Clojure record machinery. Canonical analyze/verify,
@@ -386,6 +395,19 @@ historical baseline explicitly. Prior-base CI and review remain historical;
 new exact-source acceptance, contextual lint, own CI and clean current-base
 integration preflight are required. No release, source authentication, safety
 completion or self-hosting credit transfers.
+
+## Leaf CI dependency main composition
+
+Actual main09e48072fbb69131dbe3a7826b4dbbc4c9bb45f0/tree
+c63848d2d311935d3b0764c64a2bb0e6675f70e6 changes exactly four CI workflow,
+runner/test and documentation paths. The normal composition preserves all four
+byte-for-byte. Safety and all compiler/runtime/fixture inputs are unchanged
+from d67bfaef.
+The new leaf selector retains full fallback for unknown, cross-cutting and
+closure-discovery changes. It does not supply source-Core or release evidence.
+Current-base controls, conservation/provenance, affected checks, exact independent
+review, own CI and clean integration preflight remain gates; previous CI is
+historical and cannot accept this new tuple.
 
 ## Loader and snapshot CI main composition
 
