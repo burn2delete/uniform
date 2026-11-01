@@ -78,7 +78,7 @@
    :experimental-verified-mir-c-route experimental-c-route-version-record
    :delegates-to
    (if packaged-jvm-cli?
-     "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
+     "java -cp target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
      "clojure -M:gravity")
    :replaced-by "Phase 18 self-hosted release artifact"})
 

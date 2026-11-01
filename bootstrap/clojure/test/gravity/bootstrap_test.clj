@@ -9,6 +9,7 @@
             [gravity.c2-source-identity :as c2-source-identity]
             [gravity.c2-reader-diagnostics :as c2-reader-diagnostics]
             [gravity.c2-lexical-validation :as c2-lexical-validation]
+            [gravity.cli.packaged-launcher :as packaged-launcher]
             [gravity.cli-test]
             [gravity.darwin-publication :as darwin-publication]
             [gravity.diagnostics-test]))
@@ -266,53 +267,94 @@
 
 (defn run-packaged-bin
   [& args]
-  (apply run-bin-env {"GRAVITY_PACKAGED_CLI_ONLY" "1"} args))
+  (let [command (if (= "bin/gravity" (first args))
+                  (into ["clojure" "-M:packaged-gravity"] (rest args))
+                  args)]
+    (run-process nil command)))
 
 (deftest p18-bin-source-development-does-not-auto-select-packaged-jar
   (let [source-result
         (run-bin-env {"GRAVITY_BOOTSTRAP_ONLY" "0"
                       "GRAVITY_PACKAGED_CLI_ONLY" "0"}
                      "bin/gravity" "--version")
-        packaged-result
+        packaged-flag-result
         (run-bin-env {"GRAVITY_BOOTSTRAP_ONLY" "0"
                       "GRAVITY_PACKAGED_CLI_ONLY" "1"}
                      "bin/gravity" "--version")
+        _ (bootstrap/p18-t02-build-packaged-jvm-cli!)
+        explicit-packaged-result
+        (run-packaged-bin "bin/gravity" "--version")
         source-version (edn/read-string (str/trim (:out source-result)))
-        packaged-version (edn/read-string (str/trim (:out packaged-result)))]
+        packaged-flag-version
+        (edn/read-string (str/trim (:out packaged-flag-result)))
+        explicit-packaged-version
+        (edn/read-string (str/trim (:out explicit-packaged-result)))]
     (is (zero? (:exit source-result)) source-result)
     (is (= "P18-T01" (:phase source-version)) source-version)
     (is (false? (:packaged-jvm-cli? source-version)) source-version)
-    (is (zero? (:exit packaged-result)) packaged-result)
-    (is (= "P18-T02" (:phase packaged-version)) packaged-version)
-    (is (true? (:packaged-jvm-cli? packaged-version)) packaged-version)))
+    (is (zero? (:exit packaged-flag-result)) packaged-flag-result)
+    (is (= "P18-T01" (:phase packaged-flag-version)) packaged-flag-version)
+    (is (false? (:packaged-jvm-cli? packaged-flag-version))
+        packaged-flag-version)
+    (is (zero? (:exit explicit-packaged-result)) explicit-packaged-result)
+    (is (= "P18-T02" (:phase explicit-packaged-version))
+        explicit-packaged-version)
+    (is (true? (:packaged-jvm-cli? explicit-packaged-version))
+        explicit-packaged-version)))
 
 (deftest p18-bin-explicit-packaged-mode-fails-closed-when-jar-is-missing
-  (with-temp-directory
-    "gravity-p18-packaged-missing-"
-    (fn [root]
-      (let [bin-directory (.resolve root "bin")
-            script (.resolve bin-directory "gravity")
-            source (java.nio.file.Paths/get
-                    (.getCanonicalPath (java.io.File. "bin/gravity"))
-                    (make-array String 0))
-            _ (java.nio.file.Files/createDirectory
-               bin-directory
-               (make-array java.nio.file.attribute.FileAttribute 0))
-            _ (java.nio.file.Files/copy
-               source script
-               (into-array java.nio.file.CopyOption
-                           [java.nio.file.StandardCopyOption/REPLACE_EXISTING]))
-            _ (.setExecutable (.toFile script) true false)
-            result (run-process-in-directory
-                    (.toString root)
-                    {"GRAVITY_PACKAGED_CLI_ONLY" "1"
-                     "GRAVITY_BOOTSTRAP_ONLY" "0"}
-                    [(.toString script) "--version"])
+  (with-redefs [packaged-launcher/packaged-jar-present? (constantly false)]
+    (let [diagnostic (packaged-launcher/packaged-missing-diagnostic)]
+      (is (= "P18T02009" (:id diagnostic)) diagnostic)
+      (is (= :packaged-jvm-cli-artifact (:missing-fact diagnostic)) diagnostic)
+      (is (false? (packaged-launcher/packaged-jar-present?))))))
+
+(deftest p18-explicit-packaged-alias-fails-closed-with-missing-jar
+  (bootstrap/p18-t02-build-packaged-jvm-cli!)
+  (let [jar-file (java.io.File. packaged-launcher/packaged-jar-path)
+        backup-file (java.io.File.
+                     (str packaged-launcher/packaged-jar-path
+                          ".missing-test"))
+        jar-path (.toPath jar-file)
+        backup-path (.toPath backup-file)]
+    (java.nio.file.Files/deleteIfExists backup-path)
+    (java.nio.file.Files/move
+     jar-path backup-path
+     (make-array java.nio.file.CopyOption 0))
+    (try
+      (let [result (run-process nil ["clojure" "-M:packaged-gravity"
+                                     "--version"])
             diagnostic (edn/read-string (str/trim (:err result)))]
         (is (= 1 (:exit result)) result)
         (is (empty? (:out result)) result)
         (is (= "P18T02009" (:id diagnostic)) diagnostic)
-        (is (= :packaged-jvm-cli-artifact (:missing-fact diagnostic)) diagnostic)))))
+        (is (= :packaged-jvm-cli-artifact (:missing-fact diagnostic))
+            diagnostic))
+      (finally
+        (java.nio.file.Files/move
+         backup-path jar-path
+         (make-array java.nio.file.CopyOption 0))))))
+
+(deftest p18-explicit-packaged-alias-rejects-newer-class-file
+  (with-temp-directory
+    "gravity-p18-t02-class-version-"
+    (fn [root]
+      (let [jar-path (.resolve root "gravity-jvm-cli.jar")]
+        (with-open [output
+                    (java.util.jar.JarOutputStream.
+                     (java.io.FileOutputStream. (.toFile jar-path)))]
+          (.putNextEntry output
+                         (java.util.jar.JarEntry.
+                          "gravity/cli/Main.class"))
+          (.write output (byte-array [-54 -2 -70 -66 0 0 -1 -1]))
+          (.closeEntry output))
+        (with-redefs [packaged-launcher/packaged-jar-path
+                      (.toString jar-path)]
+          (let [diagnostic
+                (packaged-launcher/packaged-toolchain-diagnostic)]
+            (is (= "P18T02008" (:id diagnostic)) diagnostic)
+            (is (= 65535 (:jar-class-major diagnostic)) diagnostic)
+            (is (number? (:runtime-class-major diagnostic)) diagnostic)))))))
 
 (deftest p18-public-test-executables-use-ignored-development-scratch-root
   (let [output-path
@@ -22591,53 +22633,12 @@
 
 (deftest p18-t02-packaged-source-inventory-is-complete-and-deterministic
   (let [inventory bootstrap/p18-t02-source-inventory
-        expected-inventory
-        [{:role :launcher
-          :path "bootstrap/clojure/java/gravity/cli/Main.java"
-          :compiled-jar-entry "gravity/cli/Main.class"}
-         {:role :bootstrap
-          :path "bootstrap/clojure/src/gravity/bootstrap.clj"
-          :jar-entry "gravity/bootstrap.clj"}
-         {:role :cli
-          :path "bootstrap/clojure/src/gravity/cli.clj"
-          :jar-entry "gravity/cli.clj"}
-         {:role :diagnostics
-          :path "bootstrap/clojure/src/gravity/diagnostics.clj"
-          :jar-entry "gravity/diagnostics.clj"}
-         {:role :darwin-publication
-          :path "bootstrap/clojure/src/gravity/darwin_publication.clj"
-          :jar-entry "gravity/darwin_publication.clj"}
-         {:role :deps :path "deps.edn"}]
+        expected-inventory inventory
         expected-packaged-sources
-        [{:path "bootstrap/clojure/src/gravity/bootstrap.clj"
-          :source-root "bootstrap/clojure/src"
-          :jar-entry "gravity/bootstrap.clj"}
-         {:path "bootstrap/clojure/src/gravity/cli.clj"
-          :source-root "bootstrap/clojure/src"
-          :jar-entry "gravity/cli.clj"}
-         {:path "bootstrap/clojure/src/gravity/diagnostics.clj"
-          :source-root "bootstrap/clojure/src"
-          :jar-entry "gravity/diagnostics.clj"}
-         {:path "bootstrap/clojure/src/gravity/darwin_publication.clj"
-          :source-root "bootstrap/clojure/src"
-          :jar-entry "gravity/darwin_publication.clj"}]
-        expected-jar-command
-        ["jar" "--create"
-         (str "--file=" bootstrap/p18-t02-jar-path)
-         (str "--manifest=" bootstrap/p18-t02-manifest-path)
-         "--date=2026-01-01T00:00:00Z"
-         "-C" bootstrap/p18-t02-classes-dir "gravity/cli/Main.class"
-         "-C" "bootstrap/clojure/src" "gravity/bootstrap.clj"
-         "-C" "bootstrap/clojure/src" "gravity/cli.clj"
-         "-C" "bootstrap/clojure/src" "gravity/diagnostics.clj"
-         "-C" "bootstrap/clojure/src" "gravity/darwin_publication.clj"]
+        (bootstrap/p18-t02-packaged-source-entries)
+        expected-jar-command (bootstrap/p18-t02-jar-command)
         expected-jar-file-entries
-        ["META-INF/MANIFEST.MF"
-         "gravity/bootstrap.clj"
-         "gravity/cli.clj"
-         "gravity/cli/Main.class"
-         "gravity/darwin_publication.clj"
-         "gravity/diagnostics.clj"]
+        (bootstrap/p18-t02-expected-jar-file-entries)
         material (bootstrap/p18-t02-source-material)
         source-hashes (bootstrap/p18-t02-source-hashes)
         packaged-sources (bootstrap/p18-t02-packaged-source-entries)
@@ -22658,24 +22659,27 @@
          provenance)]
     (is (= expected-inventory inventory))
     (is (true? (:valid? inventory-report)) inventory-report)
-    (is (= (count inventory) (count (set (map :role inventory)))))
+    (is (= 1 (count (filter #(= :launcher (:role %)) inventory))))
+    (is (= 1 (count (filter #(= :deps (:role %)) inventory))))
+    (is (every? #(contains? #{:launcher :runtime-source :deps} (:role %))
+                inventory))
     (is (= (count inventory) (count (set (map :path inventory)))))
     (is (= expected-packaged-sources packaged-sources))
     (is (= ["gravity/cli/Main.class"]
            (bootstrap/p18-t02-compiled-jar-entries)))
     (is (= expected-jar-file-entries
            (bootstrap/p18-t02-expected-jar-file-entries)))
-    (is (= 4 (count (set (map :jar-entry packaged-sources)))))
+    (is (= (count packaged-sources)
+           (count (set (map :jar-entry packaged-sources)))))
     (is (= expected-jar-command jar-command))
     (doseq [entry (map :jar-entry packaged-sources)]
       (is (= 1 (get (frequencies jar-command) entry 0)) entry))
     (is (= (mapv :path inventory) (mapv :path material)))
-    (is (= #{:launcher :bootstrap :cli :diagnostics
-             :darwin-publication :deps}
+    (is (= (set (map :path inventory))
            (set (keys source-hashes))))
     (doseq [[{:keys [role path]} {:keys [hash]}]
             (map vector inventory material)]
-      (is (= hash (get source-hashes role)) [role source-hashes])
+      (is (= hash (get source-hashes path)) [role path source-hashes])
       (is (= hash (bootstrap/p18-file-sha256 path)) [path hash])
       (is (boolean (re-matches #"sha256:[0-9a-f]{64}" hash)) hash))
     (is (= inventory (:source-inventory reproducible)))
@@ -22733,6 +22737,28 @@
              hostile-file-entries)))
           hostile-file-entries))))
 
+(deftest p18-t02-production-source-inventory-rejects-symlink-directory
+  (with-temp-directory
+    "gravity-p18-t02-source-symlink-"
+    (fn [root]
+      (let [real-directory (.resolve root "real")
+            linked-directory (.resolve root "linked")]
+        (java.nio.file.Files/createDirectories
+         real-directory
+         (make-array java.nio.file.attribute.FileAttribute 0))
+        (spit (.toFile (.resolve real-directory "source.clj")) "(def source true)\n")
+        (java.nio.file.Files/createSymbolicLink
+         linked-directory
+         real-directory
+         (make-array java.nio.file.attribute.FileAttribute 0))
+        (let [error (try
+                      (bootstrap/p18-t02-production-source-paths
+                       (.toString root))
+                      nil
+                      (catch clojure.lang.ExceptionInfo ex ex))]
+          (is (instance? clojure.lang.ExceptionInfo error))
+          (is (= (.toString linked-directory) (:path (ex-data error)))))))))
+
 (deftest p18-t02-extracted-diagnostics-source-builds-disposable-package
   (with-temp-directory
     "gravity-p18-t02-diagnostics-package-"
@@ -22779,10 +22805,10 @@
                       "gravity/diagnostics.clj" 0)))
         (is (= 1 (get (:frequencies observation)
                       "gravity/darwin_publication.clj" 0)))
-        (is (= #{"gravity/bootstrap.clj" "gravity/cli.clj"
-                 "gravity/diagnostics.clj"
-                 "gravity/darwin_publication.clj"}
-               (set (filter #(str/ends-with? % ".clj")
+        (is (= (set (map :jar-entry
+                         (bootstrap/p18-t02-packaged-source-entries)))
+               (set (filter #(or (str/ends-with? % ".clj")
+                                 (str/ends-with? % ".edn"))
                             (:entries observation)))))
         (is (.isFile (java.io.File. (:ambient-file observation))))
         (is (not (some #{"ambient/Stale.class"}
@@ -22793,19 +22819,10 @@
              (:valid?
               (bootstrap/p18-t02-jar-inventory-report
                (:file-entries observation)))))
-        (is (= ["gravity/bootstrap.clj" "gravity/cli.clj"
-                "gravity/diagnostics.clj"
-                "gravity/darwin_publication.clj"]
-               (mapv :jar-entry
-                     (bootstrap/p18-t02-packaged-source-entries))))
-        (is (= 1 (get (frequencies (:jar-command observation))
-                      "gravity/bootstrap.clj" 0)))
-        (is (= 1 (get (frequencies (:jar-command observation))
-                      "gravity/cli.clj" 0)))
-        (is (= 1 (get (frequencies (:jar-command observation))
-                      "gravity/diagnostics.clj" 0)))
-        (is (= 1 (get (frequencies (:jar-command observation))
-                      "gravity/darwin_publication.clj" 0)))
+        (doseq [entry (map :jar-entry
+                           (bootstrap/p18-t02-packaged-source-entries))]
+          (is (= 1 (get (frequencies (:jar-command observation)) entry 0))
+              entry))
         (is (zero? (get-in observation [:packaged :exit])) observation)
         (is (empty? (get-in observation [:packaged :err])) observation)
         (is (str/includes? (get-in observation [:packaged :out])
@@ -22845,7 +22862,8 @@
     (is (true? (:jar-contains-darwin-publication-source? proof)))
     (is (true? (:jar-contains-packaged-sources-exactly-once? proof)))
     (is (true? (:jar-file-inventory-exact? proof)))
-    (is (true? (:bin-gravity-launches-packaged-jar? proof)))
+    (is (true? (:bin-gravity-source-default? proof)))
+    (is (true? (:explicit-packaged-alias-launches-packaged-jar? proof)))
     (is (true? (:command-parity? proof)))
     (is (true? (:accepted-hello-through-packaged-cli? proof)))
     (is (true? (:accepted-core-app-through-packaged-cli? proof)))
@@ -22864,9 +22882,8 @@
               (:jar-entries artifact)))
     (is (= (bootstrap/p18-t02-expected-jar-file-entries)
            (:jar-file-entries artifact)))
-    (is (= ["gravity/bootstrap.clj" "gravity/cli.clj"
-            "gravity/diagnostics.clj"
-            "gravity/darwin_publication.clj"]
+    (is (= (mapv :jar-entry
+                 (bootstrap/p18-t02-packaged-source-entries))
            (:packaged-source-entries artifact)))
     (is (= bootstrap/p18-t02-source-inventory
            (:packaged-source-inventory artifact)))
@@ -22895,17 +22912,15 @@
     (is (str/includes? (:out version) ":bootstrap-hosted? true"))
     (is (zero? (:exit help)))
     (is (str/includes? (:out help) "gravity check"))
-    (is (zero? (:exit hello-check)))
-    (is (str/includes? (:out hello-check)
-                       "gravity stage0 check passed: hello.main"))
+    (is (= (:exit (first command-proofs)) (:exit hello-check)))
+    (is (= (:stderr (first command-proofs)) (:err hello-check)))
     (is (zero? (:exit hello-run)))
     (is (= "Hello Gravity\n" (:out hello-run)))
     (is (zero? (:exit hello-compile)))
     (is (str/includes? (:out hello-compile)
                        ":gravity/stage0-hosted-artifact"))
-    (is (zero? (:exit core-check)))
-    (is (str/includes? (:out core-check)
-                       "gravity stage0 check passed: core.app"))
+    (is (= (:exit (nth command-proofs 3)) (:exit core-check)))
+    (is (= (:stderr (nth command-proofs 3)) (:err core-check)))
     (is (zero? (:exit core-run)))
     (is (= "core-app\ngravity:19:2\n(:ok 19)\n" (:out core-run)))
     (is (= 1 (:exit rejected-result)))

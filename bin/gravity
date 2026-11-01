@@ -14,27 +14,8 @@ runtime_classpath() {
     sed 's/:$//'
 }
 
-packaged_cli_requested() {
-  [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && \
-     "${GRAVITY_PACKAGED_CLI_ONLY:-0}" == "1" ]]
-}
-
 packaged_cli_selected() {
-  packaged_cli_requested && [[ -f "${PACKAGED_JAR}" ]]
-}
-
-missing_packaged_diagnostic() {
-  cat >&2 <<EOF
-{:id "P18T02009"
- :message "explicit packaged JVM CLI execution was requested but its jar is missing"
- :bootstrap-stage :phase18-packaged-jvm-cli
- :bootstrap-hosted? true
- :packaged-jvm-cli? true
- :seedless-release? false
- :packaged-jar "target/phase-18/jvm-cli/gravity-jvm-cli.jar"
- :missing-fact :packaged-jvm-cli-artifact
- :remediation "Build or install the packaged JVM CLI, or unset GRAVITY_PACKAGED_CLI_ONLY to use the current source-development command."}
-EOF
+  [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && -f "${PACKAGED_JAR}" ]]
 }
 
 current_source_targeted_command_requested() {
@@ -170,8 +151,6 @@ Metadata:
   :bootstrap-hosted? true
   :packaged-jvm-cli? ${packaged}
   :seedless-release? false
-  :source-development-default? true
-  :packaged-execution "set GRAVITY_PACKAGED_CLI_ONLY=1 explicitly"
   bounded runtime-derived run route: bootstrap-hosted and non-seedless; argv is forwarded unchanged
   :delegates-to "${delegate}"
   :experimental-verified-mir-c-route "implementation present; public exposure disabled pending feature-specific GOV4, GOV9, and GOV7 records; exact requests reject before source-file I/O, output-filesystem I/O, native calls, tool execution, or publication"
@@ -232,11 +211,6 @@ EOF
 
 if [[ "${GRAVITY_BOOTSTRAP_ONLY:-0}" != "1" && "${GRAVITY_PACKAGED_CLI_ONLY:-0}" != "1" && -x "${FINAL_RELEASE}" ]] && final_seed_retired; then
   exec "${FINAL_RELEASE}" "$@"
-fi
-
-if packaged_cli_requested && [[ ! -f "${PACKAGED_JAR}" ]]; then
-  missing_packaged_diagnostic
-  exit 1
 fi
 
 case "${1:-}" in
