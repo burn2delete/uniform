@@ -152,6 +152,30 @@
                                   :after (str/split-lines control-current)}})]
       (is (empty? (:baseline-warnings result)))
       (is (= [control-current-warning] (:blocking result))))
+    (let [crossing-base (str "(ns sample)\n"
+                             "(set! *warn-on-reflection* true)\n"
+                             "(in-ns 'sample)\n"
+                             "(defn- stable [] :ok)\n"
+                             "(defn- moved []\n"
+                             "  (let [unused 1]\n"
+                             "    :ok))\n")
+          crossing-current (str "(ns sample)\n"
+                                "(defn- moved []\n"
+                                "  (let [unused 1]\n"
+                                "    :ok))\n"
+                                "(set! *warn-on-reflection* true)\n"
+                                "(in-ns 'sample)\n"
+                                "(defn- stable [] :ok)\n")
+          crossing-baseline-warning (assoc baseline-warning :row 6 :end-row 6)
+          crossing-current-warning (assoc current-warning :row 3 :end-row 3)
+          result (lint/classify [crossing-baseline-warning] [crossing-current-warning]
+                                {"sample.clj"
+                                 {:changes [{:old-start 2 :old-count 6
+                                             :new-start 2 :new-count 6}]
+                                  :before (str/split-lines crossing-base)
+                                  :after (str/split-lines crossing-current)}})]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [crossing-current-warning] (:blocking result))))
     (let [changed-body (str/replace current-text "    :ok))" "    :changed))")
           result (classify base-text changed-body current-warning)]
       (is (empty? (:baseline-warnings result)))

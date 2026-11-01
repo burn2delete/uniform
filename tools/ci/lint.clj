@@ -86,7 +86,8 @@
                     (recur (if identity
                              (conj definitions
                                    (assoc entry :identity identity
-                                          :start start :end end))
+                                          :start start :end end
+                                          :preceding-context context))
                              definitions)
                            (if identity context (conj context entry))
                            end))))))))
@@ -120,6 +121,8 @@
                                        (= (:form current) (:form baseline))
                                        (= (:source-lines current)
                                           (:source-lines baseline))
+                                       (= (:preceding-context current)
+                                          (:preceding-context baseline))
                                        (= current-context baseline-context))
                               [current baseline])))
                         current-candidates)]
