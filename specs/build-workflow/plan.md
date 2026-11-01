@@ -12,9 +12,9 @@ The workflow records work and evidence; it does not replace normative authority.
 
 ## Approach and exact files
 
-Create only `specs/build-workflow/spec.md`, `plan.md`, `tasks.md` and `evidence.md`,
-using the existing project-local overrides. Shared migration indexes are owned
-by the migration coordinator and are not edited by this package.
+Keep the four workflow artifacts and direct roadmap task link. Edit implementation
+records only in [tasks.md](tasks.md#implementation-tasks); the roadmap links
+directly to that ledger. Retain the entire original migration file as history.
 
 | Canonical truth | Reference | Package use |
 | --- | --- | --- |
@@ -28,13 +28,13 @@ Manifest, dependency and graph work can proceed against recorded interfaces. Exi
 
 ## Validation and evidence
 
-Check ASCII, the exact four-file set, local Markdown target/anchor resolution,
+Check ASCII, the exact seven-file set, local Markdown target/anchor resolution,
 semantic package names and absence of duplicated component checklists.
 Negative acceptance cases are broken/missing links, treating artifact presence
 as implementation completion, or narrowing retained contracts without disposition.
 Run the existing structural documentation and full-language roadmap validators.
-No compiler tests are necessary for these Markdown-only additions, and none
-are claimed. Record commands/results and exact review identity in evidence.md.
+Run focused document/link and language-boundary checks; no
+compiler/service execution suite is claimed. Record commands/results and exact review identity in evidence.md.
 
 ## Delivery and remaining work
 
@@ -62,3 +62,29 @@ task IDs, statuses, acceptance text and historical receipts retain their scope.
 - [GOV2](../../docs/phase-17-governance-and-evolution/232-gov2-compatibility-policy.md#requirements): Consume package/schema/lock compatibility classifications and migration metadata. Compatibility decision authority remains a governance gap in the central mapping.
 - [GOV10](../../docs/phase-17-governance-and-evolution/240-gov10-ecosystem-package-governance-policy.md#requirements): Publication/retrieval verifies package identity, signatures, provenance, SBOM, capability/profile/target metadata and policy-bound yanks/advisories. Namespace adjudication and emergency policy authority remain proposed governance work, not Build authority.
 - [SAFE14](../../docs/phase-02-safety/043-safe14-supply-chain-safety.md#requirements): Resolve pinned lockfile dependencies, record generator/source/build-effect provenance and produce reproducible builds or accepted attestations. Auth retains artifact trust and grants; build evidence cannot silently expand dependency authority.
+
+## Yank and revocation task interface
+
+Bind the existing proposed requirement `behavior/pkg5/yank-revocation-admission`
+to the existing first Build task
+`build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution`
+under `build-implementation-tasks`. PKG5 lines 44, 61, 108 and 119 require
+policy checks, recorded signature/revocation status, the explicit historical
+rebuild exception and diagnostic `PKG5006`. All five IDs and Open statuses stay.
+This refines closing evidence; it does not implement a resolver or accept the
+requirement. Build/package maintainer remains the semantic owner role.
+
+[The exact amendment](yank-interface.edn) changes only the preserved PR445
+requirement's task-reference and task-gap fields. It is a replayable amendment
+receipt, not a task/status ledger. Its isolated applied manifest remains
+separate from the original; main does not acquire the full draft manifest.
+All four facet identities/bytes, historical support, atomicity/nonoverlap and
+implementation assessment are conserved. The old missing-interface reason is
+retained inside the amended gap qualification. No other requirement or alias
+is changed; GOV10 source-binding repair is excluded.
+
+Check the four source spans, acceptance predicates, unchanged task
+population/status and the Build/SH navigation. Preserve predecessor SH review as history and leave the
+changed-source mapping pending independent review. The 577-interface inventory
+is not recomputed; accepted isolated 586 and proposed-unverified 470 remain
+distinct. No live resolver, compiler, runtime or broker action is required.

@@ -17,5 +17,4 @@
    :c2-diagnostic-hash-input c2-diagnostic-hash-input
    :c2-incremental-hashes c2-incremental-hashes
    :c2-reader-product-integrity-record c2-reader-product-integrity-record
-   :c2-reader-artifact-id c2-reader-artifact-id
-   :max-reader-form-graph-depth max-reader-form-graph-depth})
+   :c2-reader-artifact-id c2-reader-artifact-id})

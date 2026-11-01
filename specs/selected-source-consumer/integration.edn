@@ -1,0 +1,34 @@
+{:kind :portable-selected-source-controls-integration-candidate
+ :scope :inert-test-support-and-cheap-injected-controls-only
+ :base "a2011d9e1a8d91116dba933bbd12c4d91d336da0"
+ :preserved-development-PR 544
+ :preserved-head "e73520fd810184689af72469931400fabff40b6f"
+ :preserved-tree "86eb534f45a91525354896c56178a5d1fd9f1e33"
+ :preserved-CI {:run 40783086049 :passed 7 :skipped 2 :terminal true :rerun false}
+ :extraction
+ {:harness-sha256 "467a604871676deda9f37b1811647a22047c927d1fe89e3f542b3dfcb6e6c5d9"
+  :controls-sha256 "55989950d95176ec43edf2f8bffd1b442efda46a70ae5d9bce4b0ec529108745"
+  :unchanged-main-causal-kernel-sha256 "6365e48cc889349419e450eb58563ba8aca9f698e9c7f9fe7be56304378163f0"
+  :earlier-records ["evidence.edn" "reconciliation.edn"]
+  :excluded-inherited-implementation-paths 14
+  :production-and-Gravity-source :identical-to-base
+  :source-pins-load-order-and-authentication-policy :identical-to-base
+  :documentation :clarified-historical-PR544-versus-controls-only-integration}
+ :governing-contracts ["C3" "C5" "D1" "D8" "D9" "docs/end-to-end-contracts.md"]
+ :affected-cheap-checks
+ {:harness {:tests 7 :assertions 177 :fail 0 :error 0 :Bootstrap-loaded false}
+  :language-boundary {:tests 6 :assertions 11 :fail 0 :error 0}
+  :scope :injected-fixture-and-existing-pure-causal-leaf-controls
+  :whitespace :passed}
+ :review :independent-exact-candidate-disposition-recorded-separately
+ :admission-ceiling :ordinary-preparatory-test-support-only
+ :runtime {:live-constructor-calls 0 :broker-acquisitions 0 :process-inspections 0
+           :unknown-operation-replays 0 :held-Reader-continuation :untouched}
+ :integration-requires [:independent-exact-source-and-composition-acceptance
+                        :current-head-CI :clean-named-branch-exact-base-commit-tree-preflight
+                        :expected-head-normal-merge :actual-merged-tree-and-source-conservation]
+ :remaining-execution-gates [:independent-selected-implementation-and-runtime-tuple-review
+                             :supported-admission-safety :genuine-selected-binding-Guest-AE-C5
+                             :real-generated-diagnostic-composition :relocation-and-paired-extensions-if-claimed]
+ :nonclaims [:selected-implementation-acceptance :runtime-admission :genuine-execution
+             :ACC13-closure :self-hosting :seed-retirement :release :C12]}

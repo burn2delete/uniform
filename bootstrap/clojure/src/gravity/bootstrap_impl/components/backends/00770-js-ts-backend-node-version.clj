@@ -19,15 +19,7 @@
 
 (defn js-ts-backend-output-paths
   [output-path]
-  ;; `-o` names an artifact directory for the multi-file JS/TS target.  Fixed
-  ;; logical filenames keep sourceMappingURL and every emitted byte independent
-  ;; of the checkout and caller-selected output path.
-  {:javascript (str output-path "/program.mjs")
-   :typescript-declarations (str output-path "/program.d.ts")
-   :source-map (str output-path "/program.mjs.map")
-   :package-metadata (str output-path "/package.json")
-   :manifest (str output-path "/manifest.edn")
-   :provenance (str output-path "/provenance.edn")})
+  (gravity.backend.js/output-paths output-path))
 
 (defn js-ts-backend-delete-tree!
   [path]

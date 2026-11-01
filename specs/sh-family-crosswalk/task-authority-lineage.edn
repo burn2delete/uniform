@@ -1,0 +1,206 @@
+{"compiler-api"
+ {:path "specs/compiler-api-workflow/tasks.md",
+  :release-closing-evidence nil,
+  :retained-records
+  [{:id "pipeline",
+    :predecessor-block-sha256
+    "78aceee899208c2ac288baf526d0acba962add5da52804a13c86392526548b7e",
+    :new-block-sha256
+    "78aceee899208c2ac288baf526d0acba962add5da52804a13c86392526548b7e",
+    :unchanged true}
+   {:id "plugins",
+    :predecessor-block-sha256
+    "4824afbf2aeb7ec2918afb06d70358bdfecbbdcffad80c1854c51408343a5219",
+    :new-block-sha256
+    "4824afbf2aeb7ec2918afb06d70358bdfecbbdcffad80c1854c51408343a5219",
+    :unchanged true}
+   {:id "pass-evidence",
+    :predecessor-block-sha256
+    "9de4f866e91973223f0aac28e8d0db814884996855ce5d80761a7ef79d7ca1fe",
+    :new-block-sha256
+    "9de4f866e91973223f0aac28e8d0db814884996855ce5d80761a7ef79d7ca1fe",
+    :unchanged true}],
+  :predecessor-source "e8cf923bee3f97c774ce37eef85b3670e6e2574b",
+  :added-ids ["development-boundaries"],
+  :new-file-sha256
+  "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0",
+  :changed-records [],
+  :predecessor-file-sha256
+  "e9dd43fe4f2124040ca24a38c635558a873e0697dc3958196fec75f786749719",
+  :historical-suffix-unchanged true},
+ "release"
+ {:path "specs/release-workflow/tasks.md",
+  :release-closing-evidence
+  {:before
+   "Public check/run/compile and output executable demonstrate absent seed boundaries",
+   :before-sha256
+   "2ac01f0ad29a653aa6710dfcd666899bd739d163cf3c70442a9f693c51bbb8bb",
+   :after
+   "Actually invoke the prior Gravity compiler process on the complete declared next-stage compiler/runtime/library/build closure, retain real outputs and logs/lineage, link/package and execute that next compiler on accepted and rejected compiler inputs without Clojure in candidate compilation/runtime/build; then public check/run/compile and output executable demonstrate absent seed boundaries. SH25 component construction, SH27 equivalence and final release acceptance remain distinct; supplied rebuild records or plans do not prove execution.",
+   :after-sha256
+   "a4e21be1a3f11465702389e7f5790300647bc3ad385005e7a2cec887af96faaa"},
+  :retained-records
+  [{:id
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+    :predecessor-block-sha256
+    "6ed5c4fd6fb06f3b69f7d23d582da2a7f02c1c54e64355632c3e0583951ea7a8",
+    :new-block-sha256
+    "6ed5c4fd6fb06f3b69f7d23d582da2a7f02c1c54e64355632c3e0583951ea7a8",
+    :unchanged true}
+   {:id
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler",
+    :predecessor-block-sha256
+    "12da0fa1f7de6661bf5ce5b132f58fa1e395ed9e9d482829d7a01b3f09d4796c",
+    :new-block-sha256
+    "12da0fa1f7de6661bf5ce5b132f58fa1e395ed9e9d482829d7a01b3f09d4796c",
+    :unchanged true}
+   {:id
+    "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution",
+    :predecessor-block-sha256
+    "ede3e8a671a240813e8d5af12b6b63b08496a805717fb9900e07f8e65dfae53f",
+    :new-block-sha256
+    "ae4d6a913a262ccf365ad6e93b5f810f689a3f6f82703013235318f9a4ccb1b3",
+    :unchanged false}
+   {:id
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom",
+    :predecessor-block-sha256
+    "5132659c7d4bb35fb72aa2e6950d6cfdf549894582fcd4dae3c34c59e2804ca1",
+    :new-block-sha256
+    "5132659c7d4bb35fb72aa2e6950d6cfdf549894582fcd4dae3c34c59e2804ca1",
+    :unchanged true}
+   {:id
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate",
+    :predecessor-block-sha256
+    "fa9466202da42b861fb850dd2ba669b5175ee6db47e3c4cd6a2635ea1495791d",
+    :new-block-sha256
+    "fa9466202da42b861fb850dd2ba669b5175ee6db47e3c4cd6a2635ea1495791d",
+    :unchanged true}],
+  :predecessor-source "e8cf923bee3f97c774ce37eef85b3670e6e2574b",
+  :added-ids [],
+  :new-file-sha256
+  "fc53749a4bdd702bf2fa459dec56839a74b030af24856b580c5e4dac88a14d2a",
+  :changed-records
+  ["release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"],
+  :predecessor-file-sha256
+  "670f49f084bdc963af5fddccd4a7d3948863e0e4bd53eed8c79bb5f261c670e0",
+  :historical-suffix-unchanged true},
+ "build"
+ {:path "specs/build-workflow/tasks.md",
+  :retained-records
+  [{:id
+    "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+    :before
+    {:id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :title
+     "Implement project/lock normalization and constraint resolution",
+     :status "Open",
+     :evidence
+     "[Package report](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00569-stage0-compiled-plan-package-report.clj)",
+     :acceptance
+     "Real dependency resolution with conflict, profile and capability rejection"},
+    :after
+    {:id
+     "build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution",
+     :title
+     "Implement project/lock normalization and constraint resolution",
+     :status "Open",
+     :evidence
+     "[Package report](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00569-stage0-compiled-plan-package-report.clj)",
+     :acceptance
+     "Real dependency resolution with conflict, profile and capability rejection. Apply declared yank/revocation policy to selection and installation; retain signature/revocation status in locked records and explain each policy decision without silently replacing or erasing locked history. Reject revoked packages unless policy explicitly permits historical rebuild, and report revoked/yanked rejection with PKG5006."},
+    :unchanged false}
+   {:id
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+    :before
+    {:id
+     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+     :title "Execute typed graph under declared build effects",
+     :status "Open",
+     :evidence
+     "[Build architecture](../../docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md)",
+     :acceptance
+     "Clean build node receipts and undeclared environment/network/shell rejection"},
+    :after
+    {:id
+     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+     :title "Execute typed graph under declared build effects",
+     :status "Open",
+     :evidence
+     "[Build architecture](../../docs/phase-12-build-package-and-artifact-system/166-pkg2-build-system-architecture.md)",
+     :acceptance
+     "Clean build node receipts and undeclared environment/network/shell rejection"},
+    :unchanged true}
+   {:id
+    "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+    :before
+    {:id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :title "Implement dependency-aware caching and invalidation",
+     :status "Open",
+     :evidence
+     "[Pass cache](../../bootstrap/clojure/src/gravity/pass_cache.clj)",
+     :acceptance
+     "Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes"},
+    :after
+    {:id
+     "build/remaining-tasks-and-evidence/implement-dependency-aware-caching-and-invalidation",
+     :title "Implement dependency-aware caching and invalidation",
+     :status "Open",
+     :evidence
+     "[Pass cache](../../bootstrap/clojure/src/gravity/pass_cache.clj)",
+     :acceptance
+     "Reuse on equal inputs; rebuild on source, compiler, grant, policy or target changes"},
+    :unchanged true}
+   {:id
+    "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+    :before
+    {:id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :title "Produce and verify package/provenance/signing records",
+     :status "Open",
+     :evidence
+     "[Artifact contract](../../docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md)",
+     :acceptance
+     "Actual published package retrieval/verification fixtures; tamper and missing-record rejection"},
+    :after
+    {:id
+     "build/remaining-tasks-and-evidence/produce-and-verify-packageprovenancesigning-records",
+     :title "Produce and verify package/provenance/signing records",
+     :status "Open",
+     :evidence
+     "[Artifact contract](../../docs/phase-12-build-package-and-artifact-system/167-pkg3-artifact-model-specification.md)",
+     :acceptance
+     "Actual published package retrieval/verification fixtures; tamper and missing-record rejection"},
+    :unchanged true}
+   {:id
+    "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+    :before
+    {:id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :title "Close reproducibility and target matrix",
+     :status "Open",
+     :evidence
+     "[Reproducibility contract](../../docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md)",
+     :acceptance
+     "Repeated locked builds with matching identities and explicit failing-target diagnostics"},
+    :after
+    {:id
+     "build/remaining-tasks-and-evidence/close-reproducibility-and-target-matrix",
+     :title "Close reproducibility and target matrix",
+     :status "Open",
+     :evidence
+     "[Reproducibility contract](../../docs/phase-12-build-package-and-artifact-system/171-pkg7-reproducible-build-specification.md)",
+     :acceptance
+     "Repeated locked builds with matching identities and explicit failing-target diagnostics"},
+    :unchanged true}],
+  :predecessor-source "68a127520c2465a90a4a9b06742cb58ebaffca77",
+  :added-ids [],
+  :new-file-sha256
+  "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0",
+  :changed-records
+  ["build/remaining-tasks-and-evidence/implement-projectlock-normalization-and-constraint-resolution"],
+  :predecessor-file-sha256
+  "675a71a78bb4628fc680987cf7074047370f0bbec3e61d82e46e300cd79cb39e",
+  :applying-source "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+  :historical-suffix-unchanged true}}

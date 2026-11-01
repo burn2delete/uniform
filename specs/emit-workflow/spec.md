@@ -10,7 +10,7 @@ Make [tasks.md](tasks.md#implementation-tasks) the sole editable authority for
 the five existing Emit implementation outcomes. The
 [component roadmap](../../docs/component-roadmaps/emit.md) retains selected-target,
 hosted-development, producer/admission, accounting and acceptance wording with
-a generated task table. Preserve direct navigation to its
+a direct task-ledger link. Preserve direct navigation to its
 [release outcome](../../docs/component-roadmaps/emit.md#release-outcome) and
 [remaining work](../../docs/component-roadmaps/emit.md#current-evidence-and-remaining-work).
 These retained contracts remain normative:
@@ -23,10 +23,10 @@ These retained contracts remain normative:
 ### US1 - Find one editable implementation task
 
 Preserve five component/heading/title semantic IDs, emit/1 through emit/5 display
-labels, exact evidence/status and concrete exit criteria. Generate the original
-three-column roadmap table from the marked ledger. Missing, duplicate or unknown
-IDs, title/ID disagreement, malformed records and stale views reject. There is
-no second editable implementation ledger or positional renumbering.
+labels, exact evidence/status and concrete exit criteria in the sole task
+ledger. The roadmap links directly to those records. There is no second editable
+implementation ledger or
+positional renumbering.
 
 ### US2 - Separate workflow delivery from artifact acceptance
 
@@ -40,11 +40,9 @@ real emitted bytes, conformance or seedless release.
 
 ## Scope and compatibility
 
-Seven files: Emit roadmap, four workflow artifacts and focused Clojure
-projector/test. Use shared helpers and strict HTTPS-only policy unchanged; no
-syntax extension is added. Preserve original table cells, complete history,
-B13/B14 and every original package link target. Preserve all roadmap wording
-outside additive task navigation. Baseline plan blob
+Own the Emit roadmap and four workflow artifacts. Preserve complete history,
+B13/B14 and every original package link target.
+Preserve all roadmap wording outside additive task navigation. Baseline plan blob
 `d62412306c4a726aa9c077a1abd0b72158c55677` has no mapped appendix; none is
 introduced. Other packages, compiler/runtime implementation/tests, normative
 contracts and mapping artifacts remain unchanged.
@@ -69,6 +67,6 @@ signed release or seed retirement.
 
 ## Implementation naming review
 
-`emit-task-projection` names the subsystem and behavior. Follow the
+`emit-workflow` and its component roadmap name the subsystem and behavior. Follow the
 [semantic naming rule](../../.specify/semantic-names.md); compatibility IDs,
 historical planning references and compiler source names remain unchanged.

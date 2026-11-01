@@ -1,91 +1,32 @@
 
 
-(defn sh07-core-public-decimal-presentation
-  "Return an explicit host presentation view. Do not use this view as an
-  authenticated canonical core: its decimal values differ from the preimage."
-  [core]
-  (update
-   core :nodes
-   (fn [nodes]
-     (mapv
-      (fn [node]
-        (let [descriptor (get-in node [:attributes :value])]
-          (if (and (= :decimal
-                      (get-in node [:attributes :literal-kind]))
-                   (map? descriptor)
-                   (= :gravity/arbitrary-decimal-literal
-                      (:kind descriptor)))
-            (assoc-in
-             node [:attributes :value]
-             (java.math.BigDecimal.
-              (java.math.BigInteger. (:unscaled-value descriptor))
-              (int (:scale descriptor))))
-            node)))
-      nodes))))
+(defn
+ sh07-core-public-decimal-presentation
+ "Return an explicit host presentation view. Do not use this view as an\n  authenticated canonical core: its decimal values differ from the preimage."
+ [core]
+ (gravity.checked-core/public-decimal-presentation
+  core
+  (checked-core-stage-operations)))
 
-(defn sh07-core-canonical-artifact
-  [resolved-template]
-  (-> resolved-template
-      (assoc :artifact :gravity/sh07-canonical-core-artifact
-             :artifact-id (:artifact-id-request resolved-template)
-             :provenance-binding-id
-             (:provenance-binding-id-request resolved-template)
-             :identity-preimage
-             (sh07-core-semantic-identity-preimage
-              (:identity-preimage resolved-template)))
-      (dissoc :artifact-id-request :provenance-binding-id-request)))
+(defn
+ sh07-core-canonical-artifact
+ [resolved-template]
+ (gravity.checked-core/canonical-artifact
+  resolved-template
+  (checked-core-stage-operations)))
 
-(defn sh07-core-raise-diagnostic!
-  [source-path template]
-  (let [diagnostic (first (:diagnostics template))
-        request (first (:digest-requests template))
-        diagnostic-id
-        (reader-canonical-hash
-         {:domain :gravity/sh07-declared-digest-v1
-          :purpose (:purpose request)
-          :preimage (:preimage request)})
-        resolved
-        (assoc diagnostic :diagnostic-id-request diagnostic-id)]
-    (throw (ex-info "Gravity checked-core lowering rejected the source"
-                    resolved))))
+(defn
+ sh07-core-raise-diagnostic!
+ [source-path template]
+ (gravity.checked-core/raise-diagnostic!
+  source-path
+  template
+  (checked-core-stage-operations)))
 
-(defn sh07-core-request-diagnostic!
-  [request rule-specific]
-  (let [source-path (get-in request [:provenance :actual-source-path])
-        lineage (:lineage request)
-        module (:module request)
-        reason (or (:reason rule-specific)
-                   :authenticated-core-request)
-        remediation
-        "Replay the Gravity template and bind every digest ordinal exactly once."
-        diagnostic
-        {:artifact :gravity/sh07-core-diagnostic
-         :rule "C6-VERIFY"
-         :severity :error
-         :stage :core-lowering
-         :syntax-id nil
-         :form-id nil
-         :core-node-id nil
-         :source-span {:source source-path}
-         :generated-origin-chain []
-         :namespace (:namespace module)
-         :profile (:profile module)
-         :target (:target module)
-         :lowering-rule :sh07-b47-function-call-recursion-products
-         :facts {:reason reason
-                 :rule-specific rule-specific
-                 :source-revision-id (:source-revision-id lineage)
-                 :sh06-artifact-id (:sh06-artifact-id lineage)
-                 :authenticated-sh06-artifact-id
-                 (:authenticated-sh06-artifact-id lineage)
-                 :sh06-semantic-projection-id
-                 (:sh06-semantic-projection-id lineage)
-                 :fail-closed true}
-         :remediation remediation
-         :diagnostic-id-request
-         (reader-canonical-hash
-          {:domain :gravity/sh07-request-diagnostic-v16
-           :source-revision-id (:source-revision-id lineage)
-           :rule-specific rule-specific})}]
-    (throw (ex-info "SH-07 authenticated request failed validation"
-                    diagnostic))))
+(defn
+ sh07-core-request-diagnostic!
+ [request rule-specific]
+ (gravity.checked-core/request-diagnostic!
+  request
+  rule-specific
+  (checked-core-stage-operations)))

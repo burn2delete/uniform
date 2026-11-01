@@ -8,7 +8,7 @@ Input revision: `017b541d678c6acb93eb5e843b1eda5a66babc32`.
 
 Adopt the repository's Spec Kit artifact workflow for the Runtime component
 without copying its normative semantics or creating a second implementation ledger.
-[Component release outcome](../../docs/component-roadmaps/runtime.md#release-outcome) and [Runtime canonical remaining work](../../docs/component-roadmaps/runtime.md#remaining-tasks-and-evidence) retain authority over implementation completion.
+[Component release outcome](../../docs/component-roadmaps/runtime.md#release-outcome) and [Runtime canonical remaining work](../../docs/component-roadmaps/runtime.md#remaining-tasks-and-evidence) retain outcome and acceptance scope; implementation records are edited only in [tasks.md](tasks.md#implementation-tasks), with the roadmap linking directly to that ledger.
 The following contracts remain canonical and are linked, not replaced:
 
 - [R1 - Runtime Architecture Overview](../../docs/phase-08-runtime-architecture/112-r1-runtime-architecture-overview.md)
@@ -44,9 +44,9 @@ implementation decision and evidence, not a checkbox in this package.
 
 ## Scope and compatibility
 
-Owned files are only `specs/runtime-workflow/{spec,plan,tasks,evidence}.md`.
-Existing contracts, component/phase tasks, six earlier feature packages,
-source code, tests, CLI assets and runtime behavior remain unchanged.
+Owned files are `specs/runtime-workflow/{spec,plan,tasks,evidence}.md`.
+Existing contracts, phase tasks, other feature packages, compiler/runtime source,
+shared helpers, CLI assets and runtime behavior remain unchanged.
 This is artifact workflow migration, not component implementation, wholesale
 contract replacement, external Specify CLI execution or automatic skill discovery.
 

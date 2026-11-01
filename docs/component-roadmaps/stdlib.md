@@ -4,6 +4,8 @@ Working name: **Standard Library** (proposed). Semantic key: `stdlib`.
 Owner role: library maintainer; current owner unassigned by this proposal.
 Baseline: `c21068a6d39259b7110845bbbcefaf9bf6901232`.
 
+Implementation task authority: [Spec Kit ledger](../../specs/stdlib-workflow/tasks.md#implementation-tasks).
+
 ## Purpose and scope
 
 Provide real profile-aware APIs, not host-language escape hatches. The finite
@@ -30,13 +32,7 @@ Build consumes manifests later, so no circular build prerequisite exists.
 
 ## Remaining tasks and evidence
 
-| Task (all open) | Evidence baseline | Closing evidence |
-| --- | --- | --- |
-| Reconcile export inventory with actual callable implementations | [Library source artifact](../../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00499-standard-library-source-artifact.clj) | Per-export source/implementation/fixture map, with absent exports explicitly open |
-| Complete pure core, collections, text, numeric and testing APIs | [Library architecture](../phase-16-standard-library/211-std1-standard-library-architecture.md) | Compiled examples and type/arity/value rejection through real APIs |
-| Complete resource/concurrency/IO/network APIs | [Module inventory](../phase-16-standard-library/README.md) | Provider-mediated executions, missing-grant rejection and safe resource teardown |
-| Complete schema/query/workflow/AI/meta/crypto/UI adapters | [Module inventory](../phase-16-standard-library/README.md) | APIs consuming corresponding domain/runtime outcomes, with boundary failures exercised |
-| Integrate platform modules and close release manifests | [Platform outcome](platform.md#release-outcome) | Actual supported platform API fixtures, unsafe audits and compatibility/stability report |
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/stdlib-workflow/tasks.md#implementation-tasks).
 
 Architecture gate owner: library maintainer. Recommendation: use contract
 modules as export ownership boundaries and separate target adapters from pure

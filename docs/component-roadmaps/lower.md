@@ -43,23 +43,13 @@ this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
 Implementation task authority: [Spec Kit ledger](../../specs/lower-workflow/tasks.md#implementation-tasks).
-The following table is generated; edit the ledger and run
-`clojure -M tools/lower_task_projection.clj --write`.
 
-<!-- lower-task-projection:start -->
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| lower/1: Validate lowering inputs | Open; partial source evidence above is not closure | Reject unverified/stale IR and incompatible profiles/features; expose explicit supported-operation and target matrices. |
-| lower/2: Derive ABI and layout | Open; partial source evidence above is not closure | Implement calling conventions, data/closure/error/resource representations and FFI layouts from actual target rules, rejecting unrepresentable requests. |
-| lower/3: Select explicit providers | Open; partial source evidence above is not closure | Match runtime services and providers to effects/capabilities/profile; reject hidden hosted services and authority-widening fallbacks. |
-| lower/4: Preserve proofs and origins | Open; partial source evidence above is not closure | Map semantic proofs to target metadata only when assumptions hold, preserving source, safety and dependency records; reject proofless noalias/no-overflow/fast-math. |
-| lower/5: Integrate target emission | Open; partial source evidence above is not closure | Feed Emit accepted backend-ready inputs and rejected unsupported-feature cases for the selected staged Linux LLVM release candidate; keep hosted development evidence separate, without claiming every platform. |
-<!-- lower-task-projection:end -->
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/lower-workflow/tasks.md#implementation-tasks).
 
-The tasks above are the canonical remaining list for this outcome. Close a row
+The task ledger is the canonical remaining list for this outcome. Close a row
 only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 

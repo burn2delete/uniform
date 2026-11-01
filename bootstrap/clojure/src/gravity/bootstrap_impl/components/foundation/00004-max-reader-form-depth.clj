@@ -1,6 +1,4 @@
 
-(def max-reader-form-depth 512)
-(def max-reader-form-graph-depth (inc max-reader-form-depth))
 (def co-canonical-source-extensions
   source-unit/co-canonical-source-extensions)
 
@@ -157,42 +155,26 @@
          reader-project-context-for-source
          standard-reader-options)
 
+;; Keep the seed dependency at this compatibility seam, outside active reader
+;; adapter work in bootstrap.clj. The stage never loads the orchestrator.
+(clojure.core/require 'gravity.reader)
+
 (defn read-source-artifact
   ([source-path source-text]
    (read-source-artifact source-path source-text
                          (reader-project-context-for-source source-path)))
   ([source-path source-text project-context]
-   (let [records (read-source-form-records source-path source-text)
-         forms (mapv :form records)
-         _ (validate-ns-syntax! source-path forms)
-         context (reader-module-context forms)
-         syntax (syntax-object-stream source-path records context)
-         reader-details (l1-source-unit-artifacts source-path source-text
-                                                  standard-reader-options
-                                                  project-context)]
-     (merge
-      {:kind :gravity/stage0-reader-artifact
-       :pass {:name :reader
-              :input :source-bytes
-              :output :syntax-object-stream
-              :preserves [:source-spans :metadata :reader-origin
-                          :profile-context :source-unit-identity]
-              :rejects ["L1-DELIMITER" "L1-STRING" "L1-NUMERIC"
-                        "L1-IDENTIFIER" "L1-MAP-ARITY"
-                        "L1-METADATA" "L1-NS-SHAPE"
-                        "L1-READER-EXTENSION" "L1-SOURCE-ENCODING"
-                        "L1-SOURCE-EXTENSION"]}
-       :source {:path source-path
-                :extension (gravity-source-extension source-path)
-                :encoding :utf-8
-                :source-kind (gravity-source-kind source-path)
-                :byte-count (utf8-byte-count source-text)
-                :form-count (count records)}
-       :module-context (dissoc context :namespace-clause-syntax)
-       :syntax-object-stream syntax
-       :namespace-clause-syntax (:namespace-clause-syntax context)
-       :diagnostics []}
-      reader-details))))
+   (gravity.reader/read-source-artifact
+    source-path source-text project-context
+    {:read-source-form-records read-source-form-records
+     :validate-ns-syntax! validate-ns-syntax!
+     :reader-module-context reader-module-context
+     :syntax-object-stream syntax-object-stream
+     :l1-source-unit-artifacts l1-source-unit-artifacts
+     :standard-reader-options standard-reader-options
+     :gravity-source-extension gravity-source-extension
+     :gravity-source-kind gravity-source-kind
+     :utf8-byte-count utf8-byte-count})))
 
 (def effect-capability
   {:io/write :io/stdout

@@ -39,32 +39,3 @@
     [:stage3-equivalence-bundle :stage3-equivalence-bundle]
     [:stage3-self-hosted-application-execution
      :stage3-self-hosted-application-execution]]))
-
-(defn- semantic-mid-current-seed-final-proof-input
-  [evidence]
-  (semantic-mid-assoc-present-evidence
-   {}
-   evidence
-   [[:compiler-pipeline-manifest :compiler-pipeline-manifest]
-    [:source-unit-and-syntax-serialization-proof
-     :source-unit-and-syntax-serialization-proof]
-    [:core-lowering-and-diagnostic-preservation-report
-     :core-lowering-and-diagnostic-preservation-report]
-    [:runtime-manifest-and-capability-enforcement-report
-     :runtime-manifest-and-capability-enforcement-report]
-    [:accepted-app-execution-proof :accepted-app-execution-proof]
-    [:rejected-app-diagnostic-proof :rejected-app-diagnostic-proof]
-    [:reproducible-rebuild-log :reproducible-rebuild-log]
-    [:stage-comparison-report :stage-comparison-report]
-    [:conformance-report :self-hosting-conformance-report]
-    [:provenance-attestation :bootstrap-provenance-attestation]
-    [:tcb-delta-record :trusted-computing-base-delta-record]
-    [:unsafe-audit-report :unsafe-audit-report]
-    [:whole-language-compiler-artifact :whole-language-compiler-artifact]
-    [:governance-and-package-release-record
-     :governance-and-package-release-record]
-    [:stage3-seedless-compiler-candidate
-     :stage3-seedless-compiler-candidate]
-    [:stage3-equivalence-bundle :stage3-equivalence-bundle]
-    [:stage3-self-hosted-application-execution
-     :stage3-self-hosted-application-execution]]))

@@ -12,6 +12,8 @@
            [42N :integer]
            [1/3 :ratio]
            [0.0 :decimal]
+           [1.25M :decimal]
+           [(bigdec "1E+8") :decimal]
            [Double/POSITIVE_INFINITY :decimal]
            ["" :string]
            [\newline :character]

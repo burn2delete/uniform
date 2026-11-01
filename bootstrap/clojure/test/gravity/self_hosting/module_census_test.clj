@@ -209,9 +209,15 @@
         type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat 1025 :gravity.type/string))}]
     (is (= {:status :accepted :constructors {:set-literal 1}}
            (invoke 'runtime-validate-initializer instruction)))
-    ;; This separate collection type limit is unresolved accounting, not a
-    ;; native-ingress or initializer-work requirement removed by this change.
-    (is (= :module-initialization-type (:reason (census (initializer-plan instruction type))))))
+    ;; Current collection validation and execution also have no size quota.
+    (let [plan (initializer-plan instruction type)
+          checked (census plan)
+          result (execute plan)
+          expected (set values)]
+      (is (= :accepted (:status checked)))
+      (is (= :complete (:status result)))
+      (is (true? (= [expected expected] (:entrypoint-result result))))
+      (is (= "" (:stdout result)))))
   (doseq [[value element duplicate-reason]
           [[:same :gravity.type/keyword :duplicate-set-literal-keyword]
            ["same" :gravity.type/string :duplicate-set-literal-string]]]
@@ -227,5 +233,6 @@
           evaluated (invoke 'p15-s23-runtime-evaluate-closed-instruction instruction {} "")]
       (is (= {:status :accepted :constructors {:set-literal 1}}
              (invoke 'runtime-validate-initializer instruction)))
-      (is (= :rejected (get evaluated 2)))
-      (is (= :set-literal-work-limit (get-in evaluated [0 :reason]))))))
+      (is (= :normal (get evaluated 2)))
+      (is (true? (= #{value} (get evaluated 0))))
+      (is (= "" (get evaluated 1))))))

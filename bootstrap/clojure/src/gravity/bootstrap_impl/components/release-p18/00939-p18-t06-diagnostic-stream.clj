@@ -34,8 +34,8 @@
                                        :diagnostics])))
         complete?
         (and (p18-t06-boundary-seedless? boundary)
-             (every? :matches-expected? accepted)
-             (every? :matches-expected? rejected)
+             (every? p18-t06-accepted-command-proof-valid? accepted)
+             (every? p18-t06-rejected-command-proof-valid? rejected)
              (every? :matches-expected? release-candidate-rejections))]
     {:task "P18-T06"
      :status (if complete? :complete :incomplete)
@@ -73,9 +73,9 @@
      (= (set (map :fixture p18-t06-accepted-fixtures))
         (set (map :fixture accepted)))
      :accepted-check-run-compile-survived?
-     (every? :matches-expected? accepted)
+     (every? p18-t06-accepted-command-proof-valid? accepted)
      :stable-diagnostics-through-release-binary?
-     (every? :matches-expected? rejected)
+     (every? p18-t06-rejected-command-proof-valid? rejected)
      :release-blocker-diagnostics-covered?
      (= (set p18-t06-diagnostic-ids)
         (set (map :expected-diagnostic release-candidate-rejections)))
