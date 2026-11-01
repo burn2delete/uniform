@@ -96,6 +96,19 @@ conservation and provenance must bind actual0e; previous-base CI or review
 does not accept the new source tuple. Local controls execute the ordinary
 native Stage0 compiler, without a cached-shard or authenticated Reader route.
 
+## Compiler finalizer main composition
+
+Own CI41267943957 passes all nine enabled jobs on source46af35ac/base0e,
+with snapshot/prerelease skips. Its result remains historical after main moves
+to09934c4a1a4d0a49970740307f1436018c74197b/tree
+304ccdbc03da4dddb0f3164add7fe0d2380fa613. The three incoming changes refactor
+Gravity emitter, C7 type-engine and effect result finalizers. They are preserved
+exactly; native Stage0 compiler/runner and Build execution inputs are unchanged.
+These three Gravity files are not executed by this slice's Stage0 controls.
+Coupled tests continue to execute their declared Gravity subjects. Current099
+requires fresh native/source controls, conservation, proportionate regressions,
+review, own CI and clean preflight; no old-base green transfers.
+
 ## Unsupported boundaries
 
 These are two checks over trusted native metadata, not complete PKG2/PKG7
