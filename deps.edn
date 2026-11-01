@@ -1,7 +1,7 @@
 {:paths ["bootstrap/clojure/src"]
  :aliases
  {:gravity
-  {:main-opts ["-m" "gravity.bootstrap"]}
+  {:main-opts ["-m" "gravity.cli.launcher"]}
 
   :test
   {:extra-paths ["bootstrap/clojure/test"]
