@@ -1,15 +1,31 @@
+(require '[gravity.c6-c10.source-contract :as c6-source-contract]
+         '[gravity.source-interface-header :as source-interface-header])
+(declare p15-s23-trusted-carrier-validation)
 
+(defn- p15-s23-stage2-expression-source-contract [version]
+  (when-not (and (identical? Long (class version)) (contains? #{1 2} version))
+    (p15-s23-stage2-plan-emitter-fail!
+     "P15S23Q002" "<expression-source-contract>" nil
+     {:missing-fact :expression-lowering-source-contract-version}))
+  (case version
+    1 {:version 1
+       :source-content-hash p15-s23-stage2-compiler-artifact-expected-source-content-hash
+       :semantic-hash p15-s23-stage2-compiler-artifact-expected-semantic-hash
+       :required-functions p15-s23-stage2-compiler-artifact-required-functions}
+    2 c6-source-contract/current-expression-program))
 
 (defn p15-s23-stage2-compiler-artifact-expected-artifact-hash
-  []
+  ([] (p15-s23-stage2-compiler-artifact-expected-artifact-hash 1))
+  ([version]
+  (let [contract (p15-s23-stage2-expression-source-contract version)]
   (str "sha256:"
        (sha256-hex
         (pr-str
          (c-backend-canonical-value
           {:source-content-hash
-           p15-s23-stage2-compiler-artifact-expected-source-content-hash
+           (:source-content-hash contract)
            :semantic-hash
-           p15-s23-stage2-compiler-artifact-expected-semantic-hash})))))
+           (:semantic-hash contract)})))))))
 
 (def p15-s23-stage2-compiler-artifact-record-keys
   #{:artifact :source-content-hash :semantic-hash :artifact-hash :functions
@@ -19,20 +35,42 @@
     :plan-assembly-generic-bridge-residual? :clojure-seed-boundary?
     :self-hosted?})
 
+(defn- p15-s23-stage2-native-keyword-pairs [value]
+  (try
+    (let [pairs (source-interface-header/pairs! value nil)]
+      (loop [pending (seq pairs) seen #{}]
+        (if-let [[key _] (first pending)]
+          (when (and (source-interface-header/native-keyword? key) (not (contains? seen key)))
+            (recur (next pending) (conj seen key)))
+          pairs)))
+    (catch clojure.lang.ExceptionInfo error
+      (if (= :versioned-c11-interface (:missing-fact (ex-data error))) nil (throw error)))))
+
 (defn p15-s23-stage2-compiler-artifact-record-authentic?
-  [record]
-  (and (map? record)
-       (= p15-s23-stage2-compiler-artifact-record-keys
+  ([record] (p15-s23-stage2-compiler-artifact-record-authentic? record 1))
+  ([record version]
+  (let [contract (p15-s23-stage2-expression-source-contract version)]
+  (and (or (= 1 version)
+           (and (some? (p15-s23-stage2-native-keyword-pairs record))
+                (= :passed (:status (p15-s23-trusted-carrier-validation record :default-only)))))
+       (map? record)
+       (= (cond-> p15-s23-stage2-compiler-artifact-record-keys
+            (= 2 version) (conj :source-contract-version :functions-semantic-hash :function-count))
           (set (keys record)))
+       (or (= 1 version)
+           (and (identical? Long (class (:source-contract-version record)))
+                (== 2 (.longValue ^Long (:source-contract-version record)))
+                (= (:functions-semantic-hash contract) (:functions-semantic-hash record))
+                (= (:function-count contract) (:function-count record))))
        (= :gravity/p15-s23-stage2-expression-lowering-binding
           (:artifact record))
-       (= p15-s23-stage2-compiler-artifact-required-functions
+       (= (:required-functions contract)
           (:functions record))
-       (= p15-s23-stage2-compiler-artifact-expected-source-content-hash
+       (= (:source-content-hash contract)
           (:source-content-hash record))
-       (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
+       (= (:semantic-hash contract)
           (:semantic-hash record))
-       (= (p15-s23-stage2-compiler-artifact-expected-artifact-hash)
+       (= (p15-s23-stage2-compiler-artifact-expected-artifact-hash version)
           (:artifact-hash record))
        (true? (:invoked? record))
        (true? (:generic-bridge-residual? record))
@@ -45,12 +83,32 @@
        (true? (:plan-assembly-invoked? record))
        (true? (:plan-assembly-generic-bridge-residual? record))
        (true? (:clojure-seed-boundary? record))
-       (false? (:self-hosted? record))))
+       (false? (:self-hosted? record))))))
+
+(defn- p15-s23-stage2-plan-compiler-view [plan]
+  ;; This predicate compares compiler metadata, not executable plan admission.
+  ;; The native root is inspected before lookup; unconsumed function bodies
+  ;; and other payloads remain inert and acquire no carrier/safety approval.
+  (when-let [pairs (p15-s23-stage2-native-keyword-pairs plan)]
+    (let [compiler (some (fn [[key value]] (when (identical? :compiler key) value)) pairs)]
+      (when (and (some? (p15-s23-stage2-native-keyword-pairs compiler))
+                 (= :passed (:status (p15-s23-trusted-carrier-validation compiler :default-only))))
+        compiler))))
 
 (defn p15-s23-stage2-compiler-artifact-record-matches-plan?
-  [record plan]
-  (let [compiler (:compiler plan)]
-    (and (= (:artifact-hash record)
+  ([record plan] (p15-s23-stage2-compiler-artifact-record-matches-plan? record plan 1))
+  ([record plan version]
+  (p15-s23-stage2-expression-source-contract version)
+  (and (or (= 1 version)
+           (p15-s23-stage2-compiler-artifact-record-authentic? record version))
+  (let [compiler (if (= 1 version) (:compiler plan) (p15-s23-stage2-plan-compiler-view plan))]
+    (and (or (= 1 version)
+             (and (p15-s23-stage2-compiler-artifact-record-authentic? record version)
+                  (identical? Long (class (:expression-lowering-source-contract-version compiler)))
+                  (== 2 (.longValue ^Long (:expression-lowering-source-contract-version compiler)))
+                  (= (:functions-semantic-hash record) (:expression-lowering-functions-semantic-hash compiler))
+                  (= (:function-count record) (:expression-lowering-function-count compiler))))
+         (= (:artifact-hash record)
             (:expression-lowering-artifact-hash compiler))
          (= (:source-content-hash record)
             (:expression-lowering-source-content-hash compiler))
@@ -67,7 +125,7 @@
              [:plan-assembly-function :plan-assembly-artifact-hash
               :plan-assembly-source-content-hash
               :plan-assembly-semantic-hash :plan-assembly-invoked?
-              :plan-assembly-generic-bridge-residual?])))))
+              :plan-assembly-generic-bridge-residual?])))))))
 
 (defn p15-s23-stage2-compiler-artifact-source-path
   []
