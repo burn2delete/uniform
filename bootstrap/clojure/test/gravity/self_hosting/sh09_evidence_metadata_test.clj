@@ -14,6 +14,7 @@
 
 (def ^:private monolithic-namespaces
   #{'gravity.self-hosting.sh08-function-call-type-test
+    'gravity.self-hosting.sh08-recursive-function-type-test
     'gravity.self-hosting.sh09-body-effect-test})
 
 (deftest focused-evidence-load-isolation-development-check
