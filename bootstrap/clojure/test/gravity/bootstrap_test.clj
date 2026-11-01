@@ -44397,14 +44397,57 @@
                complete-release-notes complete-target-policy
                complete-compatibility complete-security-review
                complete-signing)
+              accepted-command-proof
+              (fn [{:keys [fixture output-path expected-stdout module]}]
+                (let [compile-artifact
+                      {:kind :gravity/p18-t06-final-release-executable-artifact
+                       :task "P18-T06"
+                       :status :complete
+                       :executable-path output-path
+                       :release-binary-path
+                       bootstrap/p18-t06-release-binary-path
+                       :clojure-seed-boundary? false
+                       :reproducible-release? true
+                       :signed-release? true
+                       :governance-approved? true}]
+                  {:fixture fixture
+                   :output-path output-path
+                   :status :accepted
+                   :expected-module module
+                   :expected-stdout expected-stdout
+                   :check-result {:exit 0 :out "" :err ""}
+                   :run-result {:exit 0 :out expected-stdout :err ""}
+                   :compile-result {:exit 0
+                                    :out (pr-str compile-artifact)
+                                    :err ""}
+                   :compile-artifact compile-artifact
+                   :executable-result {:exit 0
+                                       :out expected-stdout
+                                       :err ""}
+                   :inspect-result {:exit 0
+                                    :out (pr-str compile-artifact)
+                                    :err ""}
+                   :version-result {:exit 0
+                                    :out "{:phase \"P18-T06\"}"
+                                    :err ""}
+                   :executable? true
+                   :stdout-matches? true
+                   :artifact-inspection-final-release? true
+                   :matches-expected? true}))
               complete-accepted-command-proofs
-              (mapv (fn [{:keys [fixture]}]
-                      {:fixture fixture
-                       :matches-expected? true
-                       :version-result {:out ":phase \"P18-T06\""}})
+              (mapv accepted-command-proof
                     bootstrap/p18-t06-accepted-fixtures)
               complete-rejected-command-proofs
-              (mapv #(assoc % :matches-expected? true)
+              (mapv (fn [{:keys [fixture output-path expected-diagnostic] :as record}]
+                      (assoc record
+                             :command ["bin/gravity" "compile" fixture
+                                       "-o" output-path]
+                             :status :rejected
+                             :result {:exit 1
+                                      :out ""
+                                      :err expected-diagnostic}
+                             :stable-diagnostic-through-final-release? true
+                             :matches-expected? true))
                     bootstrap/p18-t06-rejected-command-fixtures)
               complete-proof-base
               (assoc current-proof
@@ -44476,89 +44519,117 @@
                (assoc-in complete-proof
                          [:accepted-command-proofs 0 :matches-expected?]
                          false))
+              recomputed-nested-result-failures
+              (mapv
+               (fn [[label path value]]
+                 [label (recomputed-proof (assoc-in complete-proof path value))])
+               [[:failed-check
+                 [:accepted-command-proofs 0 :check-result :exit] 1]
+                [:failed-run
+                 [:accepted-command-proofs 0 :run-result :exit] 1]
+                [:failed-compile
+                 [:accepted-command-proofs 0 :compile-result :exit] 1]
+                [:failed-executable
+                 [:accepted-command-proofs 0 :executable-result :exit] 1]
+                [:failed-inspect
+                 [:accepted-command-proofs 0 :inspect-result :exit] 1]
+                [:failed-version
+                 [:accepted-command-proofs 0 :version-result :exit] 1]
+                [:failed-stdout
+                 [:accepted-command-proofs 0 :executable-result :out]
+                 "tampered\n"]])
+              recomputed-failed-rejected
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:rejected-command-proofs 0 :result :exit]
+                         0))
               stale-p15
               (rehash (assoc complete-p15 :proof-id "sha256:stale-p15"))
               invalid-cases
-              [[:recomputed-empty-coverage
-                recomputed-empty-coverage]
-               [:recomputed-failed-command
-                recomputed-failed-command]
-               [:wrong-kind
-                (rehash (assoc complete-proof
-                               :kind :gravity/not-final-release-proof))]
-               [:wrong-task
-                (rehash (assoc complete-proof :task "P18-T05"))]
-               [:wrong-target
-                (rehash (assoc complete-proof :target :native-unknown))]
-               [:missing-boundary
-                (rehash (assoc complete-proof :release-boundary-record nil))]
-               [:missing-provenance
-                (rehash (assoc complete-proof :provenance-record nil))]
-               [:stale-p15
-                (rehash (assoc complete-proof
-                               :p15-final-seed-retirement-proof stale-p15))]
-               [:tampered-binary
-                (rehash (assoc-in complete-proof
-                                  [:release-binary :content-hash]
-                                  "sha256:tampered"))]
-               [:stale-rebuild
-                (rehash
-                 (assoc complete-proof
-                        :rebuild-verification-record
-                        (rehash
-                         (assoc complete-rebuild
-                                :binary-identical? false))))]
-               [:blocked-governance
-                (rehash
-                 (assoc complete-proof
-                        :governance-approval-record
-                        (rehash
-                         (assoc complete-governance
-                                :approval-status :blocked))))]
-               [:tampered-capability
-                (rehash
-                 (assoc-in complete-proof
-                           [:capability-based-proof
-                            :phase-18-completion-gate-passed?]
-                           false))]
-               [:tampered-signature
-                (rehash
-                 (assoc complete-proof
-                        :signing-record
-                        (rehash
-                         (assoc complete-signing
-                                :signature "hmac-sha256:tampered"))))]
-               [:stale-lineage
-                (let [stale-provenance
-                      (rehash
-                       (assoc-in complete-provenance
-                                 [:compiler-lineage
-                                  :p18-t05-release-boundary]
-                                 "sha256:stale-lineage"))
-                      stale-sbom
-                      (bootstrap/p18-t06-sbom-record
-                       (:release-binary current-proof)
-                       complete-boundary stale-provenance)
-                      stale-signing
-                      (bootstrap/p18-t06-signing-record
-                       (:release-binary current-proof)
-                       complete-boundary complete-recipe complete-rebuild
-                       stale-provenance stale-sbom)
-                      stale-security-review
-                      (bootstrap/p18-t06-security-review-record
-                       complete-boundary stale-provenance stale-sbom)
-                      stale-governance
-                      (bootstrap/p18-t06-governance-approval-record
-                       complete-release-notes complete-target-policy
-                       complete-compatibility stale-security-review
-                       stale-signing)]
-                  (rehash
-                   (assoc complete-proof
-                          :provenance-record stale-provenance
-                          :sbom-record stale-sbom
-                          :signing-record stale-signing
-                          :security-review-record stale-security-review
-                          :governance-approval-record stale-governance)))]]
+              (into
+               [[:recomputed-empty-coverage
+                 recomputed-empty-coverage]
+                [:recomputed-failed-command
+                 recomputed-failed-command]
+                [:recomputed-failed-rejected
+                 recomputed-failed-rejected]
+                [:wrong-kind
+                 (rehash (assoc complete-proof
+                                :kind :gravity/not-final-release-proof))]
+                [:wrong-task
+                 (rehash (assoc complete-proof :task "P18-T05"))]
+                [:wrong-target
+                 (rehash (assoc complete-proof :target :native-unknown))]
+                [:missing-boundary
+                 (rehash (assoc complete-proof :release-boundary-record nil))]
+                [:missing-provenance
+                 (rehash (assoc complete-proof :provenance-record nil))]
+                [:stale-p15
+                 (rehash (assoc complete-proof
+                                :p15-final-seed-retirement-proof stale-p15))]
+                [:tampered-binary
+                 (rehash (assoc-in complete-proof
+                                   [:release-binary :content-hash]
+                                   "sha256:tampered"))]
+                [:stale-rebuild
+                 (rehash
+                  (assoc complete-proof
+                         :rebuild-verification-record
+                         (rehash
+                          (assoc complete-rebuild
+                                 :binary-identical? false))))]
+                [:blocked-governance
+                 (rehash
+                  (assoc complete-proof
+                         :governance-approval-record
+                         (rehash
+                          (assoc complete-governance
+                                 :approval-status :blocked))))]
+                [:tampered-capability
+                 (rehash
+                  (assoc-in complete-proof
+                            [:capability-based-proof
+                             :phase-18-completion-gate-passed?]
+                            false))]
+                [:tampered-signature
+                 (rehash
+                  (assoc complete-proof
+                         :signing-record
+                         (rehash
+                          (assoc complete-signing
+                                 :signature "hmac-sha256:tampered"))))]
+                [:stale-lineage
+                 (let [stale-provenance
+                       (rehash
+                        (assoc-in complete-provenance
+                                  [:compiler-lineage
+                                   :p18-t05-release-boundary]
+                                  "sha256:stale-lineage"))
+                       stale-sbom
+                       (bootstrap/p18-t06-sbom-record
+                        (:release-binary current-proof)
+                        complete-boundary stale-provenance)
+                       stale-signing
+                       (bootstrap/p18-t06-signing-record
+                        (:release-binary current-proof)
+                        complete-boundary complete-recipe complete-rebuild
+                        stale-provenance stale-sbom)
+                       stale-security-review
+                       (bootstrap/p18-t06-security-review-record
+                        complete-boundary stale-provenance stale-sbom)
+                       stale-governance
+                       (bootstrap/p18-t06-governance-approval-record
+                        complete-release-notes complete-target-policy
+                        complete-compatibility stale-security-review
+                        stale-signing)]
+                   (rehash
+                    (assoc complete-proof
+                           :provenance-record stale-provenance
+                           :sbom-record stale-sbom
+                           :signing-record stale-signing
+                           :security-review-record stale-security-review
+                           :governance-approval-record stale-governance)))]]
+               recomputed-nested-result-failures)
               valid-proof-path (write-proof! :valid complete-proof)
               valid-artifact (verify-artifact valid-proof-path complete-p15)
               verify-proof-path

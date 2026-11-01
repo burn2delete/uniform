@@ -105,6 +105,8 @@
 (defn- p18-t04-computed-release-complete?
   [proof]
   (let [capability (p18-t06-capability-proof proof)
+        accepted (:accepted-command-proofs proof)
+        rejected (:rejected-command-proofs proof)
         diagnostics (p18-t06-final-release-diagnostics
                      :p18-t06-final-release proof)
         required-capability-flags
@@ -124,13 +126,18 @@
          :bin-gravity-uses-final-release?
          :phase-18-completion-gate-passed?
          :final-release-eligible?]]
-    (and (= :complete (:status capability))
-         (every? #(boolean (get capability %)) required-capability-flags)
-         (false? (:clojure-seed-boundary? capability))
-         (empty? diagnostics)
-         (empty? (:diagnostics proof))
-         (= diagnostics (:diagnostics proof))
-         (= capability (:capability-based-proof proof)))))
+    (boolean
+     (and (= :complete (:status capability))
+          (seq accepted)
+          (seq rejected)
+          (every? p18-t06-accepted-command-proof-valid? accepted)
+          (every? p18-t06-rejected-command-proof-valid? rejected)
+          (every? #(boolean (get capability %)) required-capability-flags)
+          (false? (:clojure-seed-boundary? capability))
+          (empty? diagnostics)
+          (empty? (:diagnostics proof))
+          (= diagnostics (:diagnostics proof))
+          (= capability (:capability-based-proof proof))))))
 
 (defn- p18-t04-current-release-evidence?
   [proof]
