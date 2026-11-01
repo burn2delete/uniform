@@ -23809,3 +23809,30 @@
     (is (false? (valid? (dissoc checks key))))
     (is (false? (valid? (assoc checks :unknown-catalog-entry true))))
     (is (empty? @callbacks))))
+
+(defn cold-metadata-input []
+  ;; Normalized metadata only. Legacy non-quote fields satisfy the unchanged API.
+  (let [record {:function-syntax-id :function :parameter-binding-ids []}
+        cut {:mode :entries :excluded-node-ids [] :work-count 0}
+        core {:function-records [record] :calls [] :call-edges [] :nodes []
+              :lexical-bindings [] :definitions []}
+        input {:mode :entries :cut cut :source-argument-call-node-ids []
+               :source-preparation-work-count 4 :quoted-products {:work-count 97}
+               :inference {:round-count 1 :round-bound 2} :work-count 11}
+        cold (invoke-c7 'sh08-is-cold-evidence [input])]
+    {:core core :facts {:imported-function-types []} :record record :bindings [] :forms []
+     :input input :cold cold :cut cut}))
+
+(defn cold-metadata-invalid-inputs [cold]
+  [(assoc cold :quote-work-count 0) (assoc cold :quote-work-count 1) (assoc cold :quote-work-count nil)
+   (assoc cold :mode :body) (assoc-in cold [:cut :excluded-node-ids] [:forged])
+   (assoc cold :source-argument-call-node-ids [:forged])
+   (dissoc cold :source-argument-call-node-ids) (assoc cold :unknown-field true)])
+
+(deftest cold-quote-metadata-production-development-kernel
+  (let [{:keys [input cold cut]} (cold-metadata-input)]
+    (is (= {:mode :entries :cut cut :source-argument-call-node-ids []
+            :source-preparation-work-count 4 :round-count 1 :round-bound 2 :work-count 11} cold))
+    (is (not (contains? cold :quote-work-count)))
+    (doseq [value [nil 0 1 97]]
+      (is (= cold (invoke-c7 'sh08-is-cold-evidence [(assoc input :quoted-products {:work-count value})]))))))

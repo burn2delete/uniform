@@ -9852,3 +9852,11 @@
         (is (= :rejected (:status (analyze (assoc-in facts [:type-table (:operator-node-id (first (:calls core))) :bounds-proof :selected-index] 1) 65536))))))
     (println (pr-str {:vector-first-symbol-loop-normalized-c8 (select-keys result [:status :reason :work-count])
                      :formats formats :source-credit false :authentication-credit false}))))
+
+(deftest cold-quote-metadata-effects-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [{:keys [core facts record bindings forms cold cut]} ((sh08-helper 'cold-metadata-input))
+        run #(leaf 'body-is-cold-metadata-valid? core facts record bindings forms % cut)]
+    (is (true? (run cold)))
+    (doseq [changed ((sh08-helper 'cold-metadata-invalid-inputs) cold)]
+      (is (false? (run changed))))))

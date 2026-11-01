@@ -37806,3 +37806,16 @@ else
                       :authority :non-authoritative :clock :monotonic-nanoseconds :nested-work :included
                       :elapsed-ns (assoc (:timing positive) :assembly-including-public-c7-verification (- t1 t0)
                                          :post-assembly-interval-including-runtime-plan-and-entry (- t2 t1))}))))
+
+(deftest cold-quote-metadata-lowering-development-kernel
+  (require 'gravity.self-hosting.sh08-function-call-type-test)
+  (let [helper #(ns-resolve 'gravity.self-hosting.sh08-function-call-type-test %)
+        {:keys [core facts record bindings forms cold cut]} ((helper 'cold-metadata-input))
+        source-path (bootstrap/p15-s23-stage2-compiler-artifact-source-path)
+        emitter (:emitter (bootstrap/c-backend-stage2-plan-emitter-source-rule! source-path :jvm))
+        plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter source-path (slurp source-path))
+        run #(bootstrap/p15-s23-stage2-runtime-execute-function
+               runtime plan 'p15-s23-is-cold-metadata-valid? [core facts record bindings forms % cut])]
+    (is (true? (run cold)))
+    (doseq [changed ((helper 'cold-metadata-invalid-inputs) cold)]
+      (is (false? (run changed))))))
