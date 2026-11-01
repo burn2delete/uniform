@@ -154,3 +154,13 @@ actual contexts, and the old acceptance/CI remains bound to its original
 tuple. The new composition requires fresh exact review, its own enabled CI
 under the current tooling, verified artifacts and an exact clean current-main
 preflight. No merge, repeated credit or waived check follows from old results.
+
+## Complete integration composition
+
+PR761 combines this immutable instruction source with the builtin policy/rule
+data extraction. runtime-builtin-policy-evidence.md records the complete17-path
+scope, exact input commits, actual current-main production baseline and12
+complete before/after product pairs in the same physical worktree. Both draft
+histories remain. The complete candidate requires independent exact review,
+its own fresh enabled CI/artifacts and current-main clean preflight; no stale
+tuple or earlier check is used as integration eligibility.

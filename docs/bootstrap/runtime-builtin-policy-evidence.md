@@ -1,4 +1,4 @@
-# Hosted builtin policy and executor-rule data
+# Runtime instruction and builtin-policy integration
 
 ## Contract boundary
 
@@ -119,3 +119,56 @@ all immutable source commits. Neither old-base CI nor a descriptive rule label
 is transferred as integration authority. The complete union needs its own
 current-main baseline/control comparison, independent exact acceptance, fresh
 enabled CI/artifacts and exact clean integration preflight.
+
+## Complete Runtime composition at current main
+
+The final increment combines the instruction execution documented in
+runtime-instructions-evidence.md with this builtin-policy extraction. It moves
+eight existing bodies into gravity.runtime while preserving all Bootstrap
+compatibility wrappers, compiler/module/native authorization, effect legality,
+source pins, recurrence token/class, Gravity formatting and diagnostic
+transport. The union contains17 owned paths: eight paired source files, four
+production files, two tests, two evidence documents and the namespace map.
+No earlier candidate receives duplicate integration credit.
+
+Checkpoint01e4507214c6f1da29a6538eb2e5b64f0071a6bb, tree
+c545a745739f64732e8b09a7f6b2effdab968890, contains instruction candidate
+d364b0ef6c34e4501ca65171432f497f64eb6acc and builtin candidate
+34e77318223a524eb3aa6f4d5266cccc6d50f203. It normally merges current main
+042f72adca0075ef4163ca832390e0be29b02890, tree
+f710471f73b3ceff8e29ca0aafacf623a54fbf8f. All incoming differences from the
+earlier source bases are CI tooling; compiler, fixture and contract inputs
+remain unchanged. Source models jointly account for both transformations,
+including only the17 named no-op folds, with every other owner/consumer
+constraint retained.
+
+For a direct whole-union comparison, the same physical Runtime worktree runs
+actual main production source on clean named baseline0b44309eaf1d38b3bb86914c542407aade766157,
+tree67f80a5db50ab8e5722b3150fd2c3f861b774478. This baseline differs from
+main042 only by the eight source fixtures. Both baseline JVMs finish before
+restoring the clean union checkpoint and starting independent cold after JVMs.
+No implementation, guard, pin, root, admission mode or returned field is
+substituted to simulate the baseline.
+
+All12 complete data and original serialized pairs pass: eight full source/
+plan/value/class/stdout/refusal records for both spellings and both corpora,
+one actual compiler-source rule record including seven altered-input
+refusals, arguments and two complete public current Core artifacts. Core
+retains25 nodes, one target read, source8e63 and recomputed Core16ec in both
+spellings. Original individual observations retain their own production
+contexts; the new union comparison is a separate actual-main observation.
+
+Fresh union focused tests pass48/2216, ownership/language47/1153 and all15
+selected existing unary/equality/assoc/artifact/binder kernels15/239. The
+post-fold coupled suite passes101/3034 with identical production source.
+Current-main contextual lint passes six paths,52 unchanged warnings and zero
+blockers. Docs240/19, roadmap and governance185 pass. Terminal receipts are
+archived outside the clean checkout. Source and product checks pass again.
+
+The union scripts/logs/products use uniform-runtime-composition-* under /tmp;
+complete Core controls use runtime-composition-before/after under
+uniform-cli-core-arguments-evidence. Both draft PR histories and all failed/
+stale attempts remain intact. Exact independent union acceptance, this
+candidate's own enabled CI/artifacts and exact clean current-main integration
+preflight remain required. Neither earlier acceptance nor old-base CI grants
+integration eligibility to this complete composition.
