@@ -99,3 +99,63 @@ Focused Release projection checks passed 5 tests / 78 assertions, zero
 failures/errors; new controls preserve the executor boundary and original public
 obligation. Independent review/integration remain pending. No compiler/rebuild,
 equivalence, signature, deployment or public seedless execution was performed.
+
+## Governance consumer interface correction
+
+Input commit: `abc4ed1c8bdb944c7aed949a0215f14579864311`, tree
+`dbf376de8d4655008058846b913147f498062402` (2026-10-28).
+The [plan](plan.md#governance-evidence-consumers) now traces GOV1, GOV6, GOV7
+and GOV8 to the existing first Open Release task, with concrete required
+artifacts and rejected release cases. These are Release consumer interfaces;
+the accountable policy owner and full evolution lifecycle remain unresolved.
+FL-P17-T01 remains Open. All five Release records, the generated roadmap,
+their acceptance text and SH crosswalk source pins were byte-identical to
+the input commit in the initial correction. No implementation or independent
+acceptance is inferred.
+
+The direct package-link census changes from 236 to 240 original contracts.
+This is navigation coverage only. It does not resolve PR445's 577 proposed
+missing task interfaces or entail any particular candidate requirement's
+acceptance. The historical contract-mapping candidate and its exact-candidate
+checker retain their original scope; neither is a current full-package census.
+At the input commit, the path filter is 31 complete current `specs/` quartets
+plus two historical `.specify/` quartets (naming-pilot and reader-core-invocation),
+33 total. The dependency audit's mapping registry contains 31 registered
+packages; it is a different filter. No package or task is created here, and
+none of these counts is a requirement or completion denominator.
+
+Preserved reconciliation inputs, without adoption:
+
+- PR445 head: `e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30`.
+- Preserved manifest SHA256: `aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980`.
+- Accepted isolated D0 composition SHA256: `5c4c7eacf7745b10dbe7c29558255b51c0b1a9a7aad01020cae6aad040c3ad4d`, target `6056b2efa7188e7756cda6100b831d9bc489d4d52dbff5e924b0aa859c303418`.
+- Unverified D1/D2 composition SHA256: `1ac5dd7859af44785428710dfe7c9c54631eb5e5098f6274bc3a9511ef9bf82a`, target `d03f730eee4608c359068ee9a7c99ce5845eef74457803cbba8a9e35e0c281a3`.
+
+The accepted source-review backlog remains 586; 470 is proposed and unverified.
+Unknown historical operations remain history and were not replayed.
+
+Observed local checks (all exit 0):
+
+| Command | Result |
+| --- | --- |
+| `clojure -J-Xmx256m -M tools/release_task_projection_test.clj` | 6 tests, 98 assertions; stable task identity/status, current projection and malformed identity/link/write controls |
+| `clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj` | 14 tests, 402 assertions; source-bound crosswalk conservation and acceptance-forgery rejection retained; 240 direct contract links |
+| `clojure -J-Xmx256m -M tools/validate_gravity_docs.clj` | 240 documents, 19 phase indexes, ASCII and placeholder checks passed |
+| `clojure -J-Xmx256m -M tools/validate_full_language_roadmap.clj` | Passed |
+| `clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test` | 6 tests, 11 assertions |
+
+Initial local checks caught an unsupported task-link fragment and invalidated
+crosswalk spans in an attempted acceptance-text refinement. That task edit
+was removed in full; the final increment only adds the plan interfaces and
+their structural checks. No compiler, broker, runtime or release execution
+was performed. Independent review and integration of this correction remain
+pending; the broader requirement reconciliation remains unfinished.
+
+Current-main composition: ordinary merge `f60cf2e90752bb2e5df74697cab95dc5b799c0bd`
+incorporated main `2855b6cc8683be1100dc0be45ef4cbd01c7043c3` without textual
+conflicts. The same dependency suite (14 tests/402 assertions), Release suite
+(6 tests/98 assertions) and projection check passed on that composition.
+Comparison with that main confirms no changes to Release task authority,
+generated roadmap or SH crosswalk; the four-file correction remains isolated.
+The incorporated main's cleanup changes retain their original authority and
+are not claimed as this increment's work.

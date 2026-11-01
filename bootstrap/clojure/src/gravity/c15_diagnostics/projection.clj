@@ -19,7 +19,7 @@
                          :required-fields (:c15-diagnostic-required-fields configuration)
                          :stable-id-input [:rule :primary-artifact :stage :facts]
                          :display-wording-version "stage0-c15"}
-     :diagnostic-stream {:artifact :gravity/diagnostic-stream :stage :c15-compiler-diagnostics
+     :diagnostic-stream {:artifact :gravity/diagnostic-stream :stage :compiler-diagnostics
                          :input-artifact lowering-id :output-artifact :gravity/diagnostic-artifact-bundle
                          :diagnostics diagnostics :summary (frequencies (map :severity diagnostics))
                          :deterministic-ordering-key :ordering-key :redaction-policy :public-safe

@@ -10,13 +10,6 @@
    :registry {"u" {"kind" "uint64"}}
    :schema-id "missing" :value 0
    :diagnostic "E-UNKNOWN-ID" :path ["schema-id"]}]
- :generated-boundaries
- [{:resource :string-utf8-bytes :rejected 65537 :diagnostic "E-BOUND"}
-  {:resource :container-items :rejected 1025 :diagnostic "E-BOUND"}
-  {:resource :schema-count :rejected 513 :diagnostic "E-BOUND"}
-  {:resource :nesting-depth :rejected 65 :diagnostic "E-BOUND"}
-  {:resource :input-meter :rejected 786433 :diagnostic "E-BOUND"}
-  {:resource :accepted-value-meter :rejected 750001 :diagnostic "E-BOUND"}]
  :hostile-cases
  [{:case :twenty-schema-untagged-union :diagnostic "E-SCHEMA"
    :must-not-build-branch-graph true}

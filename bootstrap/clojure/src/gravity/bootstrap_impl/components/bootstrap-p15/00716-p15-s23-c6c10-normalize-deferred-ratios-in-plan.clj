@@ -226,7 +226,7 @@
                 (let [file (java.io.File. entry)]
                   (when (.isDirectory file) file)))
               (str/split (System/getProperty "java.class.path" "")
-                         (re-pattern (java.io.File/pathSeparator))))
+                         (re-pattern java.io.File/pathSeparator)))
         roots (distinct
                (cons (java.io.File. (System/getProperty "user.dir"))
                      classpath-roots))]

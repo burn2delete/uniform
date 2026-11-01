@@ -94,34 +94,3 @@
   (c2-artifact-identity-call
    :c2-reader-artifact-id
    c2-artifact-identity/c2-reader-artifact-id artifact))
-
-(defn c2-prevalidate-token-depth!
-  [source-path source-unit token-stream]
-  (loop [tokens token-stream
-         depth 0]
-    (when-let [token (first tokens)]
-      (let [next-depth
-            (cond
-              (contains? #{:list-open :vector-open :map-open :set-open}
-                         (:kind token))
-              (inc depth)
-
-              (= :close (:kind token))
-              (max 0 (dec depth))
-
-              :else depth)]
-        (when (> next-depth max-reader-form-depth)
-          (c2-reader-fail!
-           "C2-HASH" source-path
-           {:stage :read-source
-            :source-id (:source-id source-unit)
-            :source-span (:span token)
-            :token-id (keyword (str "tok-" (:index token)))
-            :raw (:raw token)
-            :reader-options (:reader-options source-unit)}
-           {:missing-fields [:bounded-reader-token-depth]
-            :facts {:observed-form-depth next-depth
-                    :maximum-form-depth max-reader-form-depth
-                    :failure-kind :reader-resource-depth-limit}}))
-        (recur (next tokens) next-depth))))
-  :complete)

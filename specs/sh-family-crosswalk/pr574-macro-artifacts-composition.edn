@@ -1,0 +1,53 @@
+{:previous-source-review-receipt
+ "c5ab1dd79437b094eae377f4e35346deeb50e4e450b164d445309f2cbfaf1dd5",
+ :previous-source-ownership
+ {:commit "c581bfb8465b1fcb066e51d3e335d14ae465dc72",
+  :sha256
+  "dbd90d806b62a61081716365ac9035d0048f4421045c5affab71016cda7c916a"},
+ :current-main-review
+ {:status :pending-source-version-review,
+  :input-fingerprint
+  "42a769c041b8bfdeda4ad7713877221c0a270c98d8b2b7a9986dfdf538197b86",
+  :source-version-bridge
+  "specs/sh-family-crosswalk/macro-artifacts-source-version.edn",
+  :source-commit "71a63ce23755f6ca84f9af6c2f5a7ead95b233f0",
+  :source-path "specs/sh-family-crosswalk/crosswalk.edn",
+  :source-file-sha256
+  "d556dc807647282bebe639867f94c86a2e9e4cbf6156b410555d72b6567c3c5b"},
+ :authority :source-conservation-only,
+ :added-entries
+ {:module-owners
+  ["bootstrap/clojure/src/gravity/source_interface_header.clj"
+   "bootstrap/clojure/test/gravity/source_interface_header_test.clj"],
+  :reserved-leaf-modules ["source-interface-header"]},
+ :source-merge "3cd79ed80a3c3808f0471dfbbf68dab8ca3a0aa4",
+ :status :pending-independent-affected-final-composition-review,
+ :kind :pr574-current-macro-artifacts-source-composition,
+ :source-file
+ {:path "docs/self-hosting-slice-ownership.edn",
+  :before
+  {:commit "71a63ce23755f6ca84f9af6c2f5a7ead95b233f0",
+   :sha256
+   "c9adcfcf7887c37721e95cd7fb6cfb15e77ab35765f1fd28c880212816306772"},
+  :after
+  {:commit "3cd79ed80a3c3808f0471dfbbf68dab8ca3a0aa4",
+   :sha256
+   "a6348c6b187c94df3f482d04c60460aabdeea048845e8573438a109105a141af"}},
+ :previous-review
+ {:status :pending-source-version-review,
+  :input-fingerprint
+  "359dcbf1b0f0809a1c4b8b6fa1e3c19183e58182ca2b9fc03fb16c2ee9d621b7",
+  :source-version-bridge
+  "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn",
+  :source-commit "4e91940238abb9383df27dfbdbd1b4516a159066",
+  :source-path "specs/sh-family-crosswalk/crosswalk.edn",
+  :source-file-sha256
+  "c3d55334a69690beae4f5935a135c17fe408abbfb2b95dc50b0ac59fb28fc2fb"},
+ :qualification
+ "Preserve current macro artifacts production/loader/CI and helper-consumer ownership. Add only the accepted three Native header registrations. All Native453/Reader640/Syntax/macro/compiler-domain predecessor histories stay immutable. Reporting-only source pin; no compiler migration or source-contract pin renewal, no executable-closure or genuine acceptance.",
+ :main "71a63ce23755f6ca84f9af6c2f5a7ead95b233f0",
+ :previous-final-disposition-receipt
+ "01bceee37a2f11bb04ea21e2bcb0b248fbbc1a37ac698f8b3da60722512d58a9",
+ :previous-candidate "4e91940238abb9383df27dfbdbd1b4516a159066",
+ :previous-final-base-condition
+ :invalidated-by-material-main-macro-loader-and-CI-change}

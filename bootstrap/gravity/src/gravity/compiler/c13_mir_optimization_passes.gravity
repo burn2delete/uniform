@@ -1228,6 +1228,40 @@
             (if (sh16-structural-scalar-valid? current) (recur remaining) false)))))
     false))
 
+(defn c13-relative-flat-bool-report-shape? [mir report]
+  ; Relative DATA comparison only. This helper is intentionally outside the
+  ; reconstruction/admission flow: no source, freshness or semantic authority.
+  (if (c13-reconstruction-bounded? mir)
+    (if (c13-reconstruction-bounded? report)
+      (if (map? mir)
+        (if (sh16-c13-evidence-exact-keys? report
+              #{:artifact :schema-version :scope :phase :status :checked-core-artifact-id
+                :mir-module-id :checks :preserves :diagnostics :nonclaims})
+          (c13-equality-all?
+            [(= :gravity/sh12-branch-join-mir-report (get report :artifact))
+             (= 1 (get report :schema-version))
+             (= :closed-flat-bool-literal-sequence (get report :scope))
+             (= :verification (get report :phase)) (= :passed (get report :status))
+             (c13-sha256-id? (get mir :source-core))
+             (= (get mir :source-core) (get report :checked-core-artifact-id))
+             (symbol? (get mir :module-id))
+             (= (get mir :module-id) (get report :mir-module-id))
+             (= [:single-function-linear :blocks-terminators-and-cfg-edges
+                 :same-block-definitions-uses-and-return-dominance
+                 :type-fact-preservation :effect-order-preservation
+                 :ownership-capability-and-profile-preservation
+                 :safety-outcome-preservation :source-origin-preservation] (get report :checks))
+             (= [:type-facts :effect-facts :ownership-facts :capability-facts :safety-facts
+                 :profile-target-facts :source-spans :source-origin-map :generated-origin-chains
+                 :control-flow-edges :data-flow-edges :dominance-facts] (get report :preserves))
+             (= [] (get report :diagnostics))
+             (= [:generic-c11-verifier :independent-acceptance :optimizer-credit
+                 :backend-credit :self-hosted?] (get report :nonclaims))])
+          false)
+        false)
+      false)
+    false))
+
 (defn c13-reconstruction-report-valid? [mir report]
   (if (sh16-c13-evidence-exact-keys? report
         #{:artifact :schema-version :scope :phase :status :checked-core-artifact-id

@@ -214,3 +214,93 @@
         (is (empty? (:top-level-form-ids result)))
         (is (empty? (:form-tree result)))
         (*progress* {:case label :event :returned})))))
+
+(defn- reconstruction-reference-candidates [raw]
+  (let [forms (:form-tree raw)
+        at (fn [predicate]
+             (let [positions (keep-indexed #(when (predicate %2) %1) forms)]
+               (assert (seq positions) "Reference fixture lacks its required form")
+               (first positions)))
+        metadata (at #(= :metadata-wrapper (:kind %)))
+        tagged (at #(= :tagged-literal (:kind %)))
+        abbreviation (at #(seq (:generated-origin %)))
+        parented (at #(some? (:parent-form-id %)))
+        root (first (:top-level-form-ids raw))
+        other-root (second (:top-level-form-ids raw))
+        missing "form/original-reconstruction-missing"]
+    (assert (and root other-root (not= root other-root)))
+    (assert (not-any? #(= missing (:form-id %)) forms))
+    (assert (seq (:semantic-value-table raw)))
+    (assert (seq (:literal-decoding-records raw)))
+    [[:missing-token (update raw :token-stream #(into [] (rest %)))]
+     [:duplicated-token (update raw :token-stream #(conj % (first %)))]
+     [:missing-form (update raw :form-tree #(into [] (rest %)))]
+     [:duplicated-form (update raw :form-tree #(conj % (first %)))]
+     [:missing-value (update raw :semantic-value-table pop)]
+     [:duplicated-value (update raw :semantic-value-table #(conj % (first %)))]
+     [:missing-root-reference (assoc-in raw [:top-level-form-ids 0] missing)]
+     [:duplicated-root-reference (assoc-in raw [:top-level-form-ids 0] other-root)]
+     [:substituted-value-reference (assoc-in raw [:semantic-value-table 0 :form-id] missing)]
+     [:substituted-parent-reference (assoc-in raw [:form-tree parented :parent-form-id] missing)]
+     [:substituted-metadata-reference (assoc-in raw [:form-tree metadata :children 0] other-root)]
+     [:substituted-metadata-target (assoc-in raw [:form-tree metadata :children 1] other-root)]
+     [:substituted-tag-payload (assoc-in raw [:form-tree tagged :children 0] other-root)]
+     [:substituted-generated-origin
+      (assoc-in raw [:form-tree abbreviation :generated-origin 0 :child-form-id] missing)]
+     [:substituted-source-map-token (assoc-in raw [:reader-source-map :token-spans 0 :token-id] missing)]
+     [:substituted-source-map-form (assoc-in raw [:reader-source-map :form-spans 0 :form-id] missing)]
+     [:substituted-literal-reference (assoc-in raw [:literal-decoding-records 0 :form-id] missing)]
+     [:stale-form-hash (assoc-in raw [:incremental-reader-hashes :form-tree] {:digest-ref 2})]
+     [:stale-source-digest (assoc-in raw [:digest-requests 0 :observed-id]
+                                   (str "sha256:" (apply str (repeat 64 "0"))))]]))
+
+(deftest selected-current-original-reconstruction-rejects-reference-substitutions
+  ;; The normal producer owns original execution, fresh verification and AE.
+  ;; The additional verifier calls receive the original unit, every original
+  ;; byte and policy, followed by the untrusted raw candidate. No authority
+  ;; token, resolved-product substitute or caller-supplied report is used.
+  (binding [b/*p15-s23-stage2-compiler-artifact-binding* (current-emitter)]
+    (let [source (fixture "accepted" "original-reconstruction-references" ".gravity")
+          {:keys [input products]} (construct :original-reconstruction source b/standard-reader-options)
+          raw (:sh03-reader-raw-result products)
+          original raw
+          project (b/reader-project-context-for-source source)
+          unit (b/sh03-reader-input-source-unit source input project)
+          policy (b/sh03-reader-input-policy b/standard-reader-options)
+          bytes (mapv #(bit-and 255 %) input)
+          binding (b/sh03-reader-current-binding! source (reader))
+          identity-fields [:source-path :source-content-hash :source-byte-count
+                           :plan-semantic-hash :functions-semantic-hash]
+          verify (fn [candidate]
+                   (b/sh03-reader-result-preflight! source unit policy candidate)
+                   (b/sh03-reader-execute-plan! source (:plan binding) 'sh03-verify-reader-result
+                                               [unit bytes policy candidate]))
+          fresh (verify raw)]
+      (is (every? #(some? (get binding %)) identity-fields))
+      (is (= (select-keys (:sh03-reader-plan-binding products) identity-fields)
+             (select-keys binding identity-fields)))
+      (is (= :accepted (:status fresh)))
+      (is (true? (:verified? fresh)))
+      (is (= fresh (b/sh03-reader-verifier-preflight! source raw fresh)))
+      (doseq [[label candidate] (reconstruction-reference-candidates raw)]
+        (testing (name label)
+          (is (not= raw candidate) "Mutation must change the actual original raw result")
+          (*progress* {:case label :event :started})
+          (let [report (verify candidate)
+                rejected (try (b/sh03-reader-verifier-preflight! source candidate report) nil
+                              (catch clojure.lang.ExceptionInfo error (ex-data error)))]
+            (is (= :rejected (:status report)))
+            (is (false? (:verified? report)))
+            (is (= ["C2-HASH"] (mapv :id (:diagnostics report))))
+            (is (= [:reader-result-replay-mismatch]
+                   (mapv #(get-in % [:reader-state :reason]) (:diagnostics report))))
+            (is (= "C2-HASH" (:id rejected)))
+            (is (= [:fresh-gravity-sh03-reader-result-replay] (:missing-fields rejected)))
+            (is (= source (get-in rejected [:source-span :source]))))
+          (*progress* {:case label :event :returned})))
+      ;; Negative controls cannot alter the genuine producer's products, and
+      ;; the original still verifies after every candidate was rejected.
+      (is (= original (:sh03-reader-raw-result products)))
+      (is (= fresh (verify raw)))
+      (is (= (select-keys binding identity-fields)
+             (select-keys (b/sh03-reader-current-binding! source (reader)) identity-fields))))))

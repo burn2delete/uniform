@@ -27,23 +27,14 @@ Preserve IDs derived from component/heading/title slugs, exact titles, Open
 statuses, evidence baselines and closing criteria. Preserve the complete original
 tasks file as a frozen suffix, with its historical checkboxes unchanged.
 
-`tools/diag_task_projection.clj` uses the accepted shared parser and relative-
-link helper unchanged. It validates every record and file target before writing
-only the marked roadmap table. CLI input and output paths are fixed; only
---check and --write are accepted. Missing files, repository/symlink escapes and
-unsupported Markdown reject. No caller-selected paths, registry or discovery
-is added. Later status changes expose an explicit Status column.
-
 The original first row contains two evidence links; validate and preserve both.
 Four bootstrap links keep the same spelling in ledger and roadmap. The tooling
 README uses ../../docs/phase-13-tooling-and-developer-experience/README.md in the
 ledger and projects to ../phase-13-tooling-and-developer-experience/README.md,
 keeping the same target. No duplicate link catalog is introduced.
 
-Own seven files: roadmap, four workflow artifacts, focused projector/test.
-Shared helpers, mapping artifacts and other package files are unchanged.
-Removing only added task navigation/markers must reconstruct the entire original
-roadmap byte-for-byte, preserving stage ownership, base-carrier limits,
+Own the roadmap and four workflow artifacts. Shared mapping artifacts and other
+package files are unchanged. Preserve stage ownership, base-carrier limits,
 redaction, compatibility and release acceptance wording.
 
 ## Interfaces and dependencies
@@ -59,24 +50,16 @@ schema, catalog, identity, ordering or rendering acceptance.
 Run from repository root:
 
 ```bash
-clojure -J-Xmx512m -M tools/diag_task_projection.clj --write
-clojure -J-Xmx512m -M tools/diag_task_projection.clj --check
-clojure -J-Xmx512m -M tools/diag_task_projection_test.clj
 clojure -J-Xmx512m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test
 clojure -J-Xmx512m -M tools/validate_gravity_docs.clj
 clojure -J-Xmx512m -M tools/validate_full_language_roadmap.clj
 ```
 
-Compare original/current table bytes, four derived IDs and every cell, five
-actual evidence targets, complete historical suffix, retained contract/package
-navigation and reconstruction of the original roadmap. Check five Markdown
-documents for ASCII and file/heading links, including missing-file/heading
-negative controls. Test duplicate/missing IDs and markers, malformed fields,
-identity/title mismatch, checkbox/status disagreement, stale projections,
-unsupported links and symlink escapes. Isolated subprocess fixtures prove
-read-only checks, fixed-roadmap writes, rejected extra paths and non-dispatching
-helper loads. Run whitespace and clean exact-base/head/tree integration
-preflight. These checks establish structure, not compiler or release acceptance.
+Compare the preserved IDs, task criteria, evidence targets, historical suffix and
+retained contract/package navigation. Check the Markdown documents for ASCII and
+file/heading links, then run whitespace and clean exact-base/head/tree
+integration preflight. These checks establish structure, not compiler or
+release acceptance.
 
 ## Delivery and remaining work
 
@@ -88,7 +71,6 @@ required for this task-authority transfer.
 
 ## Names, callers and compatibility
 
-`diag-workflow` and `diag-task-projection` use the established semantic key.
 No compiler/runtime imports, schemas, diagnostic IDs, wire identities, manifest
 hashes, redaction rules or public APIs change. Planning IDs in canonical links
 remain traceability only.

@@ -115,8 +115,8 @@ Run inspection while work is in progress:
 clojure -M tools/check_worktree_preflight.clj --mode inspect --base-ref origin/main
 ```
 
-Immediately before integration, run the admission check with the exact
-identities recorded in the ledger:
+Immediately before integration, pin the complete integration base, commit and
+tree. When that commit is the ledger's immutable candidate itself, run:
 
 ```bash
 clojure -M tools/check_worktree_preflight.clj \
@@ -126,6 +126,51 @@ clojure -M tools/check_worktree_preflight.clj \
   --candidate-commit CANDIDATE_COMMIT \
   --candidate-tree CANDIDATE_TREE
 ```
+
+### Immutable source and later lifecycle metadata
+
+`candidate_commit` records the immutable source content assessed by the
+workstream. A later commit may serialize its reviews and lawful lifecycle
+events. That later serialization cannot contain its own commit hash. Historical
+records already distinguish these identities: the SOURCE DATA clarification
+record pins content `cec25d5685b03568ae503979020aa9acdd04db86`, while
+`dbb728bb5ed6f767fb520acc517d345dc6748763` serializes its later eligibility.
+That history establishes the distinction, not acceptance of a new composition.
+
+For this case, bind both identities explicitly:
+
+```bash
+clojure -M tools/check_worktree_preflight.clj \
+  --mode integration --base-ref origin/main \
+  --candidate-base INTEGRATION_BASE \
+  --candidate-commit INTEGRATION_COMMIT --candidate-tree INTEGRATION_TREE \
+  --source-commit SOURCE_COMMIT --source-tree SOURCE_TREE \
+  --workstream-id WORKSTREAM_ID
+```
+
+The complete integration tuple is supplied from an independently reviewed,
+immutable commit outside its own contents. The source tuple must resolve
+exactly, descend from the integration base, and be an ancestor of the
+integration commit. The committed active record must pin that source and exact
+base, be integration-eligible, and record the actual clean source capture.
+The actual named integration worktree must independently be clean.
+
+`tools/workstream_composition.clj` permits only the existing workstream's active
+shard and canonical manifest to differ after source freeze. It verifies regular
+committed blobs, shard and aggregate SHA256 commitments, migration evidence,
+index joins, lifecycle semantics and retained history. All other manifest
+entries and immutable ownership, contracts, dependencies, residual boundaries
+and authority fields must remain identical. No source, tooling, documentation,
+unrelated shard or governance-policy change is covered by that metadata lane.
+Such changes require a new source freeze and affected-input review.
+
+The output binds source commit/tree, full integration commit/tree/base, changed
+metadata paths, manifest/shard/aggregate hashes and workstream state. Independent
+review and CI must cover this full tuple, including changed metadata and any
+new checking tools, before it is used. Source evidence alone does not cover the
+metadata. This check grants no acceptance and does not replace canonical
+governance validation, genuine independent review or coordinator disposition.
+The ledger schema, lifecycle transitions and authority ceiling are unchanged.
 
 Preflight is candidate-focused by default. It checks the exact candidate
 worktree already being admitted and does not enumerate or status every
@@ -159,6 +204,15 @@ that change would create churn without adding content.
 Registered worktrees are inventory, not integration authority. Dirty state in
 another worktree is reported so the coordinator can avoid destructive cleanup,
 but only the exact candidate worktree and identities can satisfy admission.
+
+An ordinary source-only pull request that makes no governed authority or
+lifecycle claim uses its normal checks and independent review as the durable
+disposition evidence. It does not require a separate lifecycle metadata
+commit or terminal ledger record. This does not relax exact integration
+preflight, ownership, evidence, nonclaim, or governance validation when a
+candidate changes lifecycle data or admission policy, or claims governed
+authority; those candidates continue through the existing lifecycle and
+composition path.
 
 ## Acceptance Criteria
 

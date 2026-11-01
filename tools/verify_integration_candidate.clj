@@ -1,4 +1,4 @@
-(ns gravity.integration-candidate-verification
+(ns verify-integration-candidate
   "Fresh, repository-cache-independent verification for an exact integration candidate.
 
   This repository tool is not compiler or release authority.  It verifies the

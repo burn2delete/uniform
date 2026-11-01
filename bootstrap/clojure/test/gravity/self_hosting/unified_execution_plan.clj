@@ -62,7 +62,7 @@
 (def ^:private lane-receipt-keys
   #{:schema :required? :authority-ceiling})
 (def ^:private resource-keys
-  #{:id :max-concurrency :timeout-ms :max-output-bytes :max-test-vars})
+  #{:id :max-concurrency :timeout-ms :max-output-bytes})
 (def ^:private module-keys
   #{:id :owner :source-paths :artifact-request :ownership-scope
     :required-evidence})
@@ -82,16 +82,13 @@
   #{:schema :plan-id :catalog-id :route-id :suite-id :row-id :status
     :module-id :module-owner :stage :gravity-path :qst-path
     :fixture-sha256 :fixture-bytes :authenticated? :binding-id})
-;; A policy ceiling, not a duplicate census.  The reviewed table's exact
-;; coverage count remains owned by conformance/validate-table.
-(def ^:private maximum-fixture-source-bindings 256)
 (def ^:private artifact-request-keys
   #{:module-id :module-owner :stage :source-path})
 (def ^:private selection-keys #{:kind :namespace :selectors})
 (def ^:private closure-keys
   #{:module-ids :paths :complete? :identity-inputs})
 (def ^:private closure-optional-keys #{:fixture-suite-ids})
-(def ^:private bounds-keys #{:timeout-ms :max-output-bytes :max-test-vars})
+(def ^:private bounds-keys #{:timeout-ms :max-output-bytes})
 (def ^:private route-cache-keys #{:mode :key-inputs :authoritative?})
 (def ^:private route-receipt-keys #{:schema :required-fields})
 (def ^:private legacy-mechanism-keys
@@ -99,7 +96,6 @@
 (def ^:private legacy-label-policy-keys #{:kind :prefix})
 (def ^:private allowed-legacy-mechanisms
   #{:iteration-cache-runner :parallel-shard-runner})
-(def ^:private maximum-legacy-routes 64)
 (def ^:private allowed-legacy-label-kinds #{:strip-prefix})
 (def ^:private route-keys
   #{:id :module-id :replacement-for :migration-status :replaces? :exhaustive?
@@ -120,8 +116,6 @@
   #{:schema :authority :authoritative? :manifest-id :entries :projection-id})
 (def ^:private namespace-authority-entry-keys
   #{:namespace :path :selectors :route-ids})
-(def ^:private maximum-namespace-authority-entries 256)
-(def ^:private maximum-namespace-authority-selectors 4096)
 (def ^:private evidence-policy-keys
   #{:required :authority-ceilings :fresh-acceptance-requires})
 (def ^:private plan-keys
@@ -173,7 +167,6 @@
   #{:dependency-closure :source-bytes :tool :policy})
 (def ^:private maximum-resource-timeout-ms (* 4 60 60 1000))
 (def ^:private maximum-resource-output-bytes (* 256 1024))
-(def ^:private maximum-resource-test-vars 4096)
 ;; Validate arbitrary-precision input before narrowing to the machine integer
 ;; representation retained by the existing plan shape.  Calling `long` on an
 ;; untrusted BigInt before this comparison can throw a host exception (or
@@ -330,15 +323,13 @@
   (ensure! (= class-id (:id resource)) "UEP-CATALOG-RESOURCE-ID"
            "Resource id does not match its catalog key"
            {:path [:resource-classes class-id]})
-  (doseq [key [:max-concurrency :timeout-ms :max-output-bytes :max-test-vars]]
+  (doseq [key [:max-concurrency :timeout-ms :max-output-bytes]]
     (positive-integer! (get resource key) "UEP-CATALOG-RESOURCE-BOUND"
                        [:resource-classes class-id key]))
   (ensure! (<= (:timeout-ms resource) maximum-resource-timeout-ms)
            "UEP-CATALOG-RESOURCE-BOUND" "Resource timeout exceeds global bound" {})
   (ensure! (<= (:max-output-bytes resource) maximum-resource-output-bytes)
            "UEP-CATALOG-RESOURCE-BOUND" "Resource output exceeds global bound" {})
-  (ensure! (<= (:max-test-vars resource) maximum-resource-test-vars)
-           "UEP-CATALOG-RESOURCE-BOUND" "Resource selector bound exceeds global bound" {})
   resource)
 
 (defn- validate-module!
@@ -547,7 +538,7 @@
   (exact-keys! (:bounds route) bounds-keys "UEP-CATALOG-ROUTE-BOUNDS"
                [:routes route-id :bounds])
   (let [resource (get resources (:resource-class route))]
-    (doseq [key [:timeout-ms :max-output-bytes :max-test-vars]]
+    (doseq [key [:timeout-ms :max-output-bytes]]
       (positive-integer! (get-in route [:bounds key])
                          "UEP-CATALOG-ROUTE-BOUNDS"
                          [:routes route-id :bounds key])
@@ -709,11 +700,6 @@
               :membership-semantics (:membership-semantics declaration)})
     (non-empty-vector! route-ids "UEP-CATALOG-LEGACY-ROUTES"
                        [:legacy-mechanisms mechanism :route-ids])
-    (ensure! (<= (count route-ids) maximum-legacy-routes)
-             "UEP-CATALOG-LEGACY-ROUTES"
-             "Legacy mechanism route count exceeds its bound"
-             {:mechanism mechanism :count (count route-ids)
-              :maximum maximum-legacy-routes})
     (ensure! (and (every? string? route-ids)
                   (= (count route-ids) (count (distinct route-ids)))
                   (= route-ids (vec (sort route-ids))))
@@ -1415,7 +1401,7 @@
              {:field field :value value}))
   (let [entries (:entries projection)]
     (ensure! (and (vector? entries)
-                  (<= 1 (count entries) maximum-namespace-authority-entries)
+                  (seq entries)
                   (= (count entries)
                      (count (distinct (map :namespace entries))))
                   (= entries (vec (sort-by #(str (:namespace %)) entries))))
@@ -1444,8 +1430,7 @@
                  "Namespace authority path is not canonical"
                  {:index index :namespace namespace :path path})
         (ensure! (and (vector? selectors)
-                      (<= 1 (count selectors)
-                          maximum-namespace-authority-selectors)
+                      (seq selectors)
                       (= (count selectors) (count (distinct selectors)))
                       (every? #(and (string? %)
                                     (not (str/blank? %))
@@ -1456,7 +1441,7 @@
                  {:index index :namespace namespace})
         (let [route-ids (:route-ids entry)]
           (ensure! (and (vector? route-ids)
-                        (<= 1 (count route-ids) maximum-namespace-authority-entries)
+                        (seq route-ids)
                         (every? #(and (string? %)
                                       (not (str/blank? %))
                                       (<= (count %) 1024))
@@ -1797,12 +1782,12 @@
                    "UEP-ARTIFACT-BINDING"
                    "Artifact fixture binding identity is stale" {}))))
     (exact-keys! (:resource-policy plan-value)
-                 #{:resource-class :timeout-ms :max-output-bytes :max-test-vars}
+                 #{:resource-class :timeout-ms :max-output-bytes}
                  "UEP-PLAN-RESOURCE" [:plan :resource-policy])
     (ensure! (= (:resource-class route-value)
                 (:resource-class (:resource-policy plan-value)))
              "UEP-PLAN-RESOURCE" "Execution plan resource class was altered" {})
-    (doseq [key [:timeout-ms :max-output-bytes :max-test-vars]]
+    (doseq [key [:timeout-ms :max-output-bytes]]
       (positive-integer! (get-in plan-value [:resource-policy key])
                          "UEP-PLAN-RESOURCE" [:plan :resource-policy key])
       (ensure! (<= (get-in plan-value [:resource-policy key])
@@ -1822,16 +1807,6 @@
                           (get-in plan-value [:cache-policy :mode]))
                "UEP-PLAN-CACHE" "Fast execution plan cache mode is invalid" {})))
   plan-value)
-
-(defn- exact-var-symbol
-  [namespace selector]
-  (let [namespace-symbol (symbol namespace)
-        test-symbol (symbol selector)
-        test-var (ns-resolve namespace-symbol test-symbol)]
-    (ensure! (and (var? test-var) (:test (meta test-var)))
-             "UEP-EXECUTOR-TEST" "Catalog selector does not resolve to a test var"
-             {:namespace namespace :selector selector})
-    test-var))
 
 (def ^:dynamic *resource-lease*
   "Explicit resource context required by the current-JVM fast adapter.
@@ -2220,32 +2195,20 @@
              "UEP-FIXTURE-BINDING-CLOSURE"
              "Fixture source binding closure references an unknown suite"
              {:row-id row-id :unknown (sorted-values unknown-suite-ids)})
-    (let [rows (vec
-                (mapcat (fn [suite]
-                          (concat (:accepted suite) (:rejected suite)))
-                        (filter #(contains? (set fixture-suite-ids) (:id %))
-                                table-suites)))]
-      ;; This bounds the amount of reviewed row data traversed by the request
-      ;; projection even when a future route names every conformance suite.
-      (ensure! (<= (count rows) maximum-fixture-source-bindings)
-               "UEP-FIXTURE-BINDING-BOUND"
-               "Fixture source binding closure exceeds the reviewed row bound"
-               {:row-id row-id :count (count rows)
-                :maximum maximum-fixture-source-bindings})
-      (let [matches (vec (keep (fn [suite]
-                                 (when-let [row (some #(when (= row-id (:id %)) %)
-                                                      (concat (:accepted suite)
-                                                              (:rejected suite)))]
-                                   [suite row]))
-                               (filter #(contains? (set fixture-suite-ids) (:id %))
-                                       table-suites)))]
-        (ensure! (= 1 (count matches))
-                 "UEP-FIXTURE-BINDING-ROW"
-                 "Fixture row is not uniquely contained by the execution closure"
-                 {:row-id row-id
-                  :matches (mapv (comp :id first) matches)
-                  :fixture-suite-ids fixture-suite-ids})
-        (first matches)))))
+    (let [matches (vec (keep (fn [suite]
+                               (when-let [row (some #(when (= row-id (:id %)) %)
+                                                    (concat (:accepted suite)
+                                                            (:rejected suite)))]
+                                 [suite row]))
+                             (filter #(contains? (set fixture-suite-ids) (:id %))
+                                     table-suites)))]
+      (ensure! (= 1 (count matches))
+               "UEP-FIXTURE-BINDING-ROW"
+               "Fixture row is not uniquely contained by the execution closure"
+               {:row-id row-id
+                :matches (mapv (comp :id first) matches)
+                :fixture-suite-ids fixture-suite-ids})
+      (first matches))))
 
 (defn- fixture-source-binding-path
   [suite row key]

@@ -8,7 +8,7 @@ Authority transfer baseline: `c40d74aded3a019ff2bdeb1f4050cf95dbb11c1e`.
 
 This is the sole editable Reader implementation task ledger. The roadmap's
 [finite remaining work](../../docs/component-roadmaps/reader.md#finite-remaining-work)
-is generated from these records, not a second editable truth. Stable semantic
+is navigation to these records, not a second editable truth. Stable semantic
 IDs do not change with ordering. An unchecked box means not accepted complete;
 the evidence/status text distinguishes open, partial and unassessed evidence.
 Check a box only with an explicit accepted outcome and its immutable receipt in
@@ -41,7 +41,7 @@ Done when (yes/no): All collection/literal/abbreviation/metadata families emit f
 
 - [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure
 
-Current evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.
+Current evidence/status: Extension records/projected views exist; accepted authorization behavior not established here. The [bootstrap dispatch development increment](https://github.com/burn2delete/uniform/blob/f27f076231c056909e83a6dd59f662542cd4864f/specs/reader-workflow/dispatch-evidence.md) executes two implementation-owned handlers with focused grant/rejection controls; normal Reader integration and independent acceptance remain open.
 
 Done when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler.
 

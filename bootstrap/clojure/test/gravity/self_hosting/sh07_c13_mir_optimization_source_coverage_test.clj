@@ -30,9 +30,9 @@
 (def ^:private accepted-fixture-relative-path
   "bootstrap/clojure/fixtures/self-hosting/sh-16/accepted/mir-optimizations.gravity")
 (def ^:private expected-source-byte-count
-  173242)
+  175275)
 (def ^:private expected-source-revision-id
-  "sha256:ae62f422dbad67921c90ee85e4c584017891fe57ac516013963dab1163eb38de")
+  "sha256:9a1ba43e83716e22b909ee9f0bb88212dbf0d28615af7d1889ad1220d1cbd75c")
 ;; Full-artifact projection/census pins remain historical until a fresh artifact
 ;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id
@@ -168,6 +168,7 @@
     c13-equality-i64?
     sh16-aggregate?
     c13-reconstruction-report-valid?
+    c13-relative-flat-bool-report-shape?
     c13-equality-without-output-id
     sh16-operation-error
     sh16-proof-claim
@@ -495,7 +496,7 @@
                               :when (and (= 'defn (first form))
                                          (nil? (quoted-body form)))] name))
         if-calls (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 191 (count forms)))
+    (is (= 192 (count forms)))
     (is (= 'gravity.compiler.c13-mir-optimization-passes (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -512,18 +513,18 @@
                          :retirement-objective :ambient-authority-denied])))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 9 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 181 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 182 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= executable-definition-names executable))
-    (is (= 176 (count executable)))
+    (is (= 177 (count executable)))
     (doseq [[name expected-hash] expected-contract-value-hashes]
       (is (= expected-hash (value-sha256-id (nth (get definitions name) 2)))))
     (is (= expected-diagnostic-catalog
            (nth (get definitions 'c13-optimization-diagnostic-catalog) 2)))
     (is (= expected-policy
            (nth (get definitions 'sh16-optimization-policy) 3)))
-    (is (= 688 (count if-calls)))
+    (is (= 692 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c13-relative-path)))))
@@ -544,17 +545,17 @@
         verifier (get definitions 'sh16-verify)
         identity (get definitions 'sh16-identity-input)
         sha-shape (get definitions 'c13-sha256-id?)]
-    (is (= 622 (count gets)))
-    (is (= 572 (count literal)))
-    (is (= 50 (count dynamic)))
-    (is (= {:reference 37 :call 5 :literal 8}
+    (is (= 1186 (count gets)))
+    (is (= 1014 (count literal)))
+    (is (= 172 (count dynamic)))
+    (is (= {:reference 88 :call 35 :literal 49}
            (frequencies
             (map #(let [key-form (nth % 2)]
                     (cond (symbol? key-form) :reference
                           (seq? key-form) :call
                           :else :literal)) dynamic))))
     (is (= 670 (-> dynamic first meta :line)))
-    (is (= 2900 (-> dynamic last meta :line)))
+    (is (= 3724 (-> dynamic last meta :line)))
     (is (contains? (symbols-in preflight) 'sh16-aggregate-components))
     (is (contains? (symbols-in preflight) 'sh16-structural-scalar-valid?))
     (is (contains? (symbols-in verifier) 'sh16-structural-preflight))

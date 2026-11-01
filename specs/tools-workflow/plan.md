@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-Edit the twelve service records only in [tasks.md](tasks.md#implementation-tasks). These original roadmap sections retain the generated view and unchanged acceptance boundaries:
+Edit the twelve service records only in [tasks.md](tasks.md#implementation-tasks). These original roadmap sections link to the ledger and retain unchanged acceptance boundaries:
 
 - [finite service outcomes and remaining work](../../docs/component-roadmaps/tools.md#finite-service-outcomes-and-remaining-work)
 - [acceptance and integration](../../docs/component-roadmaps/tools.md#acceptance-and-integration)
@@ -20,7 +20,6 @@ Edit the twelve service records only in [tasks.md](tasks.md#implementation-tasks
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
 3. `tasks.md`: twelve service records and the entire unchanged historical migration file, clearly separated.
 4. `evidence.md`: observed checks and implementation nonclaims.
-5. `tools/tools_task_projection{,_test}.clj`: checked service-table projection and focused controls; shared helpers remain unchanged.
 
 Central migration inventory/schema is owned separately. This package does not write shared indexes or transfer implementation ownership.
 

@@ -30,6 +30,8 @@
         result (consume mir report after output-report)]
     (is (= :accepted (:status raw)))
     (is (= :passed (:status upstream) (:status report) (:status output-report)))
+    (is (= {:status :passed} (:input-carrier-validation core)))
+    (is (not (contains? core :bounds)))
     (is (= output-report (verify-specialization core mir after)))
     (is (not= mir after))
     (is (= :constructed-unverified (:status result)))
