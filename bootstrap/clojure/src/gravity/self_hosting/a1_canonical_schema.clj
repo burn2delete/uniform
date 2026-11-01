@@ -40,6 +40,8 @@
   bottom-up-mergesort ordering/bottom-up-mergesort)
 (def ^{:private true :arglists '([value path consume])}
   ordered-entries ordering/ordered-entries)
+(def ^{:private true :arglists '([value path])}
+  copy-value! canonical/copy-value!)
 (def ^{:private true :arglists '([value])} canonical-uint config/canonical-uint)
 
 (def ^:private construct-vector (fn [items] (vec items)))
@@ -48,7 +50,6 @@
     (reduce (fn [result [key value]] (assoc result key value))
             clojure.lang.PersistentHashMap/EMPTY entries)))
 
-(def ^{:private true :arglists '([value path])} copy-value! canonical/copy-value!)
 (def ^{:private true :arglists '([value path])} schema-id! schema/schema-id!)
 (def ^{:private true :arglists '([definition allowed required path])}
   exact-fields! schema/exact-fields!)
