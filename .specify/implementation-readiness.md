@@ -133,15 +133,34 @@ The other component packages remain discoverable through the existing
 Their migration specs are not automatically accepted as complete implementation
 specifications. No copied per-component progress table is maintained here.
 
+The preserved aggregate also contains the separate
+[Governance and Evolution package](../specs/evolution-workflow/spec.md), which
+was absent from the inspected main. This branch resumes its ten existing
+`evolution/...` task records byte-for-byte under their same semantic key and
+sole task path, with current behavior/planning entries and direct roadmap
+navigation. It covers change/compatibility, RFC, experiment, library,
+namespace, yank, security response/review, stabilization and target-support
+producer interfaces. This is the existing reconciliation's governance outcome,
+not a new compiler pass or a duplicate Release producer. All ten tasks remain
+Open. [Resumption evidence](../specs/evolution-workflow/evidence.md) pins the
+source and limited historical reviews; current Build/Release receiver-field
+composition, full source entailment, individual policy ownership and affected
+independent review remain pending. The registry now exposes 24 architectural
+component workflows plus this governance outcome; its population is not an
+implementation denominator.
+
 ## Dependency navigation and next increment
 
 Use [D2](../docs/phase-00-foundation-and-thesis/003-d2-implementation-roadmap-and-milestones.md)
 for milestone order and the existing
 [typed dependency representation](../docs/acceptance-dependencies.md) for
-starting work, composition, acceptance and release. Its read-only audit reads
+starting work, composition, acceptance and release. Its initial read-only audit read
 240 contract identities, 24 component authorities, 36 full-language task IDs,
 30 SH milestones and the existing SH/task projection. These populations are
 different views and must not be summed or used as an implementation percentage.
+The governance resumption adds its ten task routes to registry discovery as a
+separate required outcome; it does not add a compiler pass or silently rewrite
+the 24-component SH/task projection.
 The declared staged graph has no cycle; its coarse cycles and the unresolved
 Core/Resolve representation-order question remain explicitly documented there.
 An advisory frontier does not grant execution permission or transfer a writer.
@@ -194,16 +213,18 @@ Linux LLVM compiler release does not adopt an ISA, kernel model, application
 inventory or fabrication boundary for the wider Platform Product. Those
 decisions stay in the existing
 [Platform scope](../specs/platform-workflow/tasks.md#platform-product-scope).
-The broader evolution lifecycle still needs its accountable policy owner and
-real command-produced/release-blocking behavior; Release's four GOV consumer
-links cannot confer that authority. Direct GOV1/GOV6/GOV7/GOV8 review requires
+The resumed evolution lifecycle supplies its existing governance-maintainer
+role and ten task routes, while an accountable individual and actual
+command-produced/release-blocking behavior remain unverified. Release's four
+GOV consumer links cannot confer that authority. Direct GOV1/GOV6/GOV7/GOV8 review requires
 tracked change/RFC decision history, experiment opt-in/on-off/expiry/rollback,
 exact stabilization compatibility surfaces, and deprecation diagnostics,
 schedules and migration. GOV2/GOV4/GOV5/GOV9/GOV10 additionally require real
 baseline comparisons, security/unsafe review and invalidation, target-tier
 conformance and package/registry decisions. Component artifact consumers alone
-do not establish the producer or policy adoption. These missing joins remain
-with the existing source-reconciliation decision allocation; they cannot be
+do not establish producer implementation or policy adoption. The resumed
+package carries the existing decision allocation's future task interfaces;
+their current source/receiver joins and adoption remain pending. They cannot be
 closed by adding document links or treating author checks as governance review.
 
 Current accounting-removal decisions supersede project work/fuel/capacity
@@ -298,3 +319,27 @@ partition acceptance follows from these documentation checks. The nine Domains
 integration amendments, global requirement joins, exact first behavior-changing
 selection, independent acceptance and composition with the preserved proposal
 remain pending.
+
+The governance resumption adds the preserved ten-task authority and current
+spec/plan/evidence/navigation, without changing any of the 24 existing component
+task or evidence files. Its task source SHA-256 is
+`4fd5e1a6f080ab51fea0a4c1943a4089c233981a91f02c896103d6eba69ada31`.
+Author checks confirmed ten unique Open records, ten referenced existing
+component task identities, byte equality of all ten GOV documents with the
+preserved aggregate, and all 382 referenced facet IDs and exact current
+source-span hashes. These identity/conservation checks do not prove the
+attached predicates' full entailment or execution; GOV2/GOV9's later explicit
+criteria and all prior review qualifications retain their separate scopes.
+Focused checks now cover 58 changed Markdown files and 2,066 local references,
+the 139 existing component routes, 48 preserved historical suffixes and 48
+unchanged task/evidence files. The resumed ten routes are checked separately
+against their preserved task source, not credited as implementation progress.
+Canonical document and full-language structural validators passed. Dependency
+controls passed 18 tests / 419 assertions; the read-only audit discovered all
+25 registry authorities, including the ten governance IDs, and reported no
+staged/SH-task cycles or missing SH task routes. It still reports
+`mapping-ready? false`; the SH/task graph does not infer governance source
+entailment or implementation from registry discovery. Whitespace checks passed.
+The historical contract-mapping validator is pinned to its original bounded
+package population and append-only plan patch; it is not a current validator
+for this expanded candidate and was not represented as passing here.
