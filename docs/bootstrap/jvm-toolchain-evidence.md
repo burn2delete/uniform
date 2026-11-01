@@ -116,7 +116,7 @@ checks after the cleanup-test correction, independent acceptance, this PR's
 own CI/artifacts and an immediate exact clean current-main preflight remain
 required before integration. No historical CI or acceptance is transferred.
 
-## Final local composition
+## Earlier local composition
 
 The integration base is 44f095500595320552db1f1b632faac39906c17c,
 tree 5c7165578211835948084c04ff13e7b682a027be. Corrected source checkpoint
@@ -139,7 +139,7 @@ reconstructed text and printed forms. Earlier candidate acceptance and CI are
 not transferred to this source correction; fresh products, focused checks,
 independent exact acceptance and candidate-owned CI are required.
 
-## Current-main reconciliation
+## Packaged-CLI reconciliation
 
 Main advanced through PR 768 while the corrected candidate CI was running.
 The new integration base is 19d9426133c041088e2a11e2cf7c85d359a09630,
@@ -151,3 +151,29 @@ that delta. Fresh complete products, affected backend and packaged-launcher
 checks, language/ownership, lint, independent acceptance and own CI bind this
 new composition. The earlier base/candidate acceptance and CI remain historical
 and confer no integration credit on the reconciled candidate.
+
+## Current integration composition and fresh native baseline
+
+Main PR 772 removes cache and pass-identity work quotas. The current integration
+base is 2c8d01e9ef3ebb27497f50708fee44ab0f8a23fe, tree
+9b9437d6e643faef4393cf191bd4a9ee4a94549d. Source composition
+d3f891436134c444aceb3e2221af1604855de9aa has tree
+88acd47f4eaa2c15a9022c18814a729d9b69752b.
+
+A fresh native baseline, 1186d30831987f8cf480967b51426e0786d0061e
+(tree 22bb18b977d9feda23acf317e74eb5c9e26e9860), adds only the four
+fixtures and original capture-test file to this exact main base. It runs the
+original eight JVM bodies. Its capture process terminates before switching
+this same physical checkout back to the extracted composition. Both full
+before/after records and original serialization agree again; source/plan
+identities and all five emitted byte hashes recompute. No field, root, pin,
+mode or authority callback is substituted. Earlier records are preserved at
+/tmp/uniform-jvm-toolchain-evidence-base19-history; current records retain
+/tmp/uniform-jvm-toolchain-evidence and main2c script/log names.
+
+Fresh affected backend tests pass 31/630, isolated packaged-launcher tests
+2/17 and language/ownership 47/1154. Contextual lint against this base covers
+four paths with zero warnings and zero blockers; its receipts are archived at
+/tmp/uniform-jvm-toolchain-lint-main2c. Independent acceptance, own CI/artifact
+receipts and immediate exact clean current-main preflight must bind this
+composition. Earlier base/candidate acceptance and CI remain historical.
