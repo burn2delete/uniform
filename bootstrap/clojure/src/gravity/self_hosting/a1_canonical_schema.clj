@@ -1,7 +1,6 @@
 (ns gravity.self-hosting.a1-canonical-schema
   "Clojure seed facade for the A1 canonical-schema implementation."
-  (:require [gravity.self-hosting.a1-canonical-schema.canonical :as canonical]
-            [gravity.self-hosting.a1-canonical-schema.config :as config]
+  (:require [gravity.self-hosting.a1-canonical-schema.config :as config]
             [gravity.self-hosting.a1-canonical-schema.digest :as digest]
             [gravity.self-hosting.a1-canonical-schema.execution :as execution]
             [gravity.self-hosting.a1-canonical-schema.ordering :as ordering]
