@@ -34,6 +34,44 @@ contextual lint and independent review. Maintain an early draft PR; own CI and
 exact clean current-base integration preflight govern integration. This scope
 commit carries no implementation credit or new authority.
 
+## Implemented development evidence
+
+The exact former file-read body now lives in `gravity.reader/read-source-text`.
+Its three owner lookups are explicit late Var ports. Bootstrap's compatibility
+arity remains `[path]`; its extension diagnostic/hash capture and all surrounding
+component behavior remain unchanged. Existing decoder and artifact assembly
+bodies remain exact. Metadata and the stage map distinguish native file capture
+from supplied-byte decoding and assign the extension refusal to its existing
+owner. No Bootstrap or CLI dependency is introduced into Reader.
+
+Real native controls accept two files, reject malformed UTF-8 and invalid
+extensions with their original complete diagnostics, and preserve actual missing
+file/directory host errors. Both Reader artifacts preserve exact source hashes,
+paths and extension provenance. Before/after complete public development-reader
+Core controls accept both complete `compiler-exact-keys` subjects with25 nodes,
+one API target read, source SHA
+`8e63ea9e37ab40a8e66975b3e58dc8eb5b9b74aa339d2625d5bd67070802758d`
+and recomputed Core id
+`sha256:16ec6d50a8514188f3010880f3022e88f7f1054fe4058a5caa6b74367ee98f0e`.
+The complete390-function current C6 source is compiled; its generic-seed,
+development-unadmitted and non-self-hosted boundaries remain explicit.
+
+Focused Reader tests pass15/230, coupled CLI/Reader/Build/runtime/package/library
+and literal tests44/667, selected public ingress4/50, ownership38/1093 and
+language6/11. Isolated native tests cover extension refusal before decoding,
+policy-before-byte-capture order, late decoder replacement, original dependency
+exception identity and real missing-file failure before decoder invocation.
+Those trusted host interpositions are separate from the genuine Core controls;
+no fabricated authentication packet or guard/pin substitution is used.
+
+Controls and verification use `/tmp/uniform-reader-source-intake-*.clj`.
+Native products are under `/tmp/uniform-reader-source-intake-evidence/`; complete
+Core products use `reader-source-{before,after}-*` in the existing CLI evidence
+directory. Full data/text equality and whole-component/assembly/decoder
+conservation remain exact checks. Contextual lint, independent exact review,
+own CI and clean current-main preflight still govern integration. This is a
+bounded native extraction, not Reader or Core completion.
+
 ## Unsupported boundaries
 
 This remains temporary native host file intake. Trusted Vars are dependencies,

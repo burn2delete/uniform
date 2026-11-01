@@ -68,12 +68,8 @@
 
 (defn read-gravity-source-text
   [path]
-  (when-not (qst-or-gravity-source? path)
-    (source-path-policy-fail! path))
-  (decode-gravity-source-bytes
-   path
-   (java.nio.file.Files/readAllBytes
-    (.toPath (java.io.File. path)))))
+  (gravity.reader/read-source-text #'qst-or-gravity-source? #'source-path-policy-fail!
+                                   #'decode-gravity-source-bytes path))
 
 (defn compile-file
   [path]
