@@ -110,3 +110,21 @@ uniform-cli-core-arguments-evidence. Contextual lint, final contract checks,
 current-main reconciliation, independent exact acceptance, own CI and clean
 integration preflight still govern integration. Scope/predecessor checks
 confer no implementation acceptance or complete namespace credit.
+
+## Final local checks and integration base
+
+Committed-source contextual lint passes all four changed Clojure paths with
+52 unchanged warnings and zero blockers. The earlier three-path scan also
+passes with zero warnings/blockers. Terminal receipts remain outside the clean
+checkout. Docs240/19 indexes, roadmap and governance185 pass. The final exact
+source comparison and all seven complete product pairs pass again.
+
+PR755 integrates as maina00101d24321d9da0622566d779ced981d37859e,
+tree f7c796a7799e9a8548de2dcc1b805b8f0201b636, identical to initial source
+26ce2fc1. Normal reconciliation5f0e1e920dfa58cfbf97ec6ed96a75cb9c56d5e9
+changes no files and preserves implementation04ad5145b7023b0ed823810e118352c6a9ac7e85,
+tree309fd921835a424ebb818d2e205dd9ed154b5875. The current-main diff is
+exactly the ten owned paths. Working before/after source observations remain
+distinct from final candidate-head CI. Independent exact acceptance, this
+implementation's own CI and exact clean current-main integration preflight
+remain required; predecessor checks grant no credit for this slice.
