@@ -74,8 +74,8 @@
    (when-not (and (string? resource) (str/starts-with? resource "gravity/bootstrap_impl/")
                   (or (str/ends-with? resource ".clj")
                       (and data-resource? (str/ends-with? resource ".edn")))
-                 (every? #(not (#{"" "." ".."} %)) (str/split resource #"/"))
-                 (not (str/includes? resource "\\")))
+                  (every? #(not (#{"" "." ".."} %)) (str/split resource #"/"))
+                  (not (str/includes? resource "\\")))
      (throw (ex-info "Unsupported Bootstrap resource path" {:resource resource})))
    (str source-root resource)))
 
@@ -91,18 +91,18 @@
   ([read-bytes] (plan! read-bytes loader-sha))
   ([read-bytes expected-loader-sha]
    (let [loader-bytes (read-bytes loader)
-        _ (when-not (= expected-loader-sha (sha256 loader-bytes))
-            (throw (ex-info "Bootstrap loader changed; lint context requires independent review" {})))
-        _ (bootstrap-shape! (read-bytes bootstrap))
-        entries (manifest! (read-bytes manifest))
-        paths (into [bootstrap]
-                    (map #(resource-path! (:resource %) (:data-resource %)) entries))]
-      (when-not (= (count paths) (count (distinct paths)))
-        (throw (ex-info "Duplicate Bootstrap resource in lint context" {})))
-      {:paths paths :inputs (into {} (for [path (conj paths loader manifest)
-                                           :let [bytes (read-bytes path)
-                                                 _ (when (str/ends-with? path ".clj") (source-forms! path bytes))]]
-                                       [path bytes]))})))
+         _ (when-not (= expected-loader-sha (sha256 loader-bytes))
+             (throw (ex-info "Bootstrap loader changed; lint context requires independent review" {})))
+         _ (bootstrap-shape! (read-bytes bootstrap))
+         entries (manifest! (read-bytes manifest))
+         paths (into [bootstrap]
+                     (map #(resource-path! (:resource %) (:data-resource %)) entries))]
+     (when-not (= (count paths) (count (distinct paths)))
+       (throw (ex-info "Duplicate Bootstrap resource in lint context" {})))
+     {:paths paths :inputs (into {} (for [path (conj paths loader manifest)
+                                          :let [bytes (read-bytes path)
+                                                _ (when (str/ends-with? path ".clj") (source-forms! path bytes))]]
+                                      [path bytes]))})))
 
 (defn facade-plan! [read-bytes]
   (let [entry (read-bytes facade)
