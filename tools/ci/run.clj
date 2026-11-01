@@ -438,6 +438,17 @@
               forms
               (recur (conj forms form)))))))))
 
+(def ^:dynamic *leaf-source-forms-cache* nil)
+
+(defn- leaf-cached-source-forms [path]
+  (if (nil? *leaf-source-forms-cache*)
+    (leaf-source-forms path)
+    (if (contains? @*leaf-source-forms-cache* path)
+      (get @*leaf-source-forms-cache* path)
+      (let [forms (leaf-source-forms path)]
+        (swap! *leaf-source-forms-cache* assoc path forms)
+        forms))))
+
 (defn leaf-valid-reference-target? [value]
   (or (= :all value)
       (and (vector? value) (every? symbol? value))))
@@ -520,7 +531,7 @@
       (let [path (leaf-namespace-path namespace-symbol)]
         (if (contains? visited path)
           (recur (pop pending) paths visited)
-          (let [forms (leaf-source-forms path)
+          (let [forms (leaf-cached-source-forms path)
                 form (first forms)]
             (when-not (and (seq? form) (= 'ns (first form)))
               (throw (ex-info "Leaf namespace source must begin with ns"
@@ -555,26 +566,30 @@
 
       :else
       (try
-        (let [closures (mapv (fn [entry]
-                               {:entry entry :paths (leaf-require-closure entry)}) catalog)
-              closure-paths (into #{} (mapcat :paths closures))
-              unknown-path? (some (fn [{:keys [path]}]
-                                    (and (not (docs-only-path? path))
-                                         (not (contains? closure-paths path))))
-                                  changes)]
-          (if unknown-path?
-            {:kind :full
-             :reason :unknown-or-unowned-leaf-path
-             :paths paths
-             :entries platform-catalog}
-            (let [matching-ids (->> closures
-                                    (filter #(some (set paths) (:paths %)))
-                                    (map (comp :id :entry))
-                                    set)]
-              {:kind :selected
-               :reason :affected-leaf
+        ;; The cache is deliberately fresh for each selection. It shares parsed
+        ;; source forms across catalog closures without retaining source state
+        ;; between CI invocations.
+        (binding [*leaf-source-forms-cache* (atom {})]
+          (let [closures (mapv (fn [entry]
+                                 {:entry entry :paths (leaf-require-closure entry)}) catalog)
+                closure-paths (into #{} (mapcat :paths closures))
+                unknown-path? (some (fn [{:keys [path]}]
+                                      (and (not (docs-only-path? path))
+                                           (not (contains? closure-paths path))))
+                                    changes)]
+            (if unknown-path?
+              {:kind :full
+               :reason :unknown-or-unowned-leaf-path
                :paths paths
-               :entries (filterv #(contains? matching-ids (:id %)) platform-catalog)})))
+               :entries platform-catalog}
+              (let [matching-ids (->> closures
+                                      (filter #(some (set paths) (:paths %)))
+                                      (map (comp :id :entry))
+                                      set)]
+                {:kind :selected
+                 :reason :affected-leaf
+                 :paths paths
+                 :entries (filterv #(contains? matching-ids (:id %)) platform-catalog)}))))
         (catch Exception error
           {:kind :full
            :reason :leaf-closure-failed
