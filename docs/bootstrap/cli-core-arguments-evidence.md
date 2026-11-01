@@ -94,9 +94,37 @@ Main then advances through external PR731 to
 the CI workflow and CI documentation: an always-failing placeholder that ran
 no compiler is removed. The CLI composition preserves both incoming files
 exactly. No compiler source, source-control input, real release admission or
-CLI implementation changes in that delta. The current integration base is167;
+CLI implementation changes in that delta. That composition uses base167;
 routine CI must be observed under its actual workflow, without treating an
 absent readiness job as a source-Core or release pass.
+
+## Loader and snapshot CI main composition
+
+Actual main advances to625b42aa8da25eb897df4b9807372e21108bd8e4/tree
+54ac1c4bbcb47e492d2457e068e1765b2c675615 through shared test support and
+direct bootstrap data loading. The normal composition preserves all incoming
+123 loader paths exactly. Fresh genuine public current-reader controls emit
+both complete source spellings with25 nodes, one API target read and the same
+source hash and recomputed Core identity recorded above. All three complete
+and serialized products match the corrected before-control. Whole component,
+dispatch, parser body/arity and presentation bodies conserve against actual625.
+CLI7/104, selected ingress4/50, language6/11, docs240/19, roadmap/governance
+and contextual lint3 paths/1 unchanged baseline warning/0 blockers pass.
+Receipts are outside the clean source checkout.
+
+The next actual main is b363c32b5569e4ea76df852abd142be7c067292e/tree
+49b5e7fa4d82a8d41fb3a8ffec876d39b8b8e495. Only CI workflow, CI docs and
+snapshot tooling/tests change from625. The conflict-free composition preserves
+those four files exactly; compiler, CLI, control subjects and execution inputs
+remain unchanged. Actual b363 is the integration base. Updated-base exact
+conservation, independent acceptance, own CI and clean preflight remain gates.
+Earlier green or cancelled runs confer no acceptance for a new source tuple.
+
+Current control logs/evidence use `loader-main-*`; the exact product comparison
+is `/tmp/uniform-cli-core-arguments-verify-loader-products.clj`. One unsupported
+test flag and an invalid namespace-as-exact selector stopped before tests;
+correct supported selections pass. These retained launch errors are not test
+or compiler failures, and no denied constructor route was executed.
 
 ## Unsupported boundaries
 
