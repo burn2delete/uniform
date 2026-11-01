@@ -12,6 +12,9 @@
 (def semantic-late-manifest (str source-root "gravity/bootstrap_impl/semantic_late_order.edn"))
 (def loader (str source-root "gravity/bootstrap_impl/loader.clj"))
 (def loader-sha "3b399b57cc68325ea710d28454261f61ffa466ff7bc15bd37f8c1c1e9c0be56c")
+(def reviewed-loader-shas
+  #{"ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7"
+    loader-sha})
 (def facade (str source-root "gravity/authenticated_artifact_pipeline.clj"))
 (def facade-prefix (str source-root "gravity/authenticated_artifact_pipeline/"))
 (def facade-resources
@@ -217,7 +220,11 @@
                              (let [entry (.getEntry zip path)]
                                (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
                                (with-open [input (.getInputStream zip entry)] (.readAllBytes input))))]
-         (selected-plan! read-archived selected (sha256 (read-archived loader))))))))
+         (let [archived-loader-sha (sha256 (read-archived loader))]
+           (when-not (contains? reviewed-loader-shas archived-loader-sha)
+             (throw (ex-info "Bootstrap loader changed; lint context requires independent review"
+                             {:loader-sha archived-loader-sha})))
+           (selected-plan! read-archived selected archived-loader-sha)))))))
 
 (defn- core-operation [value]
   (when (and (symbol? value) (contains? #{nil "clojure.core"} (namespace value)))
