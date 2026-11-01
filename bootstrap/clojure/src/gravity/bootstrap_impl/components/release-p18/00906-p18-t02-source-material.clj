@@ -59,6 +59,7 @@
   ([inventory]
    (let [roles (mapv :role inventory)
          paths (mapv :path inventory)
+         runtime-inventory (filterv #(= :runtime-source (:role %)) inventory)
          packaged-inventory (filterv :jar-entry inventory)
          compiled-inventory (filterv :compiled-jar-entry inventory)
          packaged-sources (p18-t02-packaged-source-entries inventory)
@@ -71,6 +72,7 @@
               (= 1 (count (filter #{:deps} roles)))
               (pos? (count (filter #{:runtime-source} roles)))
               (= (count paths) (count (set paths)))
+              (= (count runtime-inventory) (count packaged-inventory))
               (every? #{:runtime-source} (map :role packaged-inventory))
               (= [:launcher] (mapv :role compiled-inventory))
               (= (count packaged-inventory) (count packaged-sources))

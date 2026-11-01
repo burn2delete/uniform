@@ -22710,6 +22710,7 @@
              (assoc-in expected-inventory [2 :path] nil)
              (assoc-in expected-inventory [2 :path]
                        "/tmp/gravity/cli.clj")
+             (assoc-in expected-inventory [1 :jar-entry] nil)
              (assoc-in expected-inventory [2 :jar-entry]
                        "gravity/not-cli.clj")]]
       (let [rejected
