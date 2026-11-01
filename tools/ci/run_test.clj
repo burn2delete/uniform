@@ -474,6 +474,42 @@
         (is (= :leaf-closure-failed (:reason result)))
         (is (= 52 (count (:entries result))))))))
 
+(deftest leaf-closure-fails-closed-for-use-and-clojure-core-loader-bindings
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-loader-closure-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        provider (str (io/file directory "provider.clj"))
+        hidden (str (io/file directory "hidden.clj"))
+        catalog [{:id "provider" :namespace 'gravity.provider
+                  :source-path provider :test-path provider}
+                 {:id "hidden" :namespace 'gravity.hidden
+                  :source-path hidden :test-path hidden}]
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path provider}
+        hidden-sources ["(ns gravity.hidden)\n(use 'gravity.digest)\n"
+                        "(ns gravity.hidden)\n(clojure.core/use 'gravity.digest)\n"
+                        "(ns gravity.hidden (:require [clojure.core :as core]))\n(core/require 'gravity.digest)\n"
+                        "(ns gravity.hidden (:require [clojure.core :rename {require core/require}]))\n(core/require 'gravity.digest)\n"
+                        "(ns gravity.hidden (:refer-clojure :rename {require core/require}))\n(require 'gravity.digest)\n"]]
+    (try
+      (spit provider "(ns gravity.provider)\n")
+      (with-redefs [ci/leaf-namespace-path
+                    (fn [namespace-symbol]
+                      (case namespace-symbol
+                        gravity.provider provider
+                        gravity.hidden hidden
+                        (throw (ex-info "Unexpected fixture namespace"
+                                        {:namespace namespace-symbol}))))]
+        (doseq [source hidden-sources]
+          (spit hidden source)
+          (let [result (ci/leaf-selection-for-changes "portable" catalog [change])]
+            (is (= :full (:kind result)) (pr-str source))
+            (is (= :leaf-closure-failed (:reason result)) (pr-str source))
+            (is (= 2 (count (:entries result))) (pr-str source)))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (io/delete-file file true))))))
+
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
         expression (str "(let [p (.start (ProcessBuilder. " (pr-str child) "))] "
