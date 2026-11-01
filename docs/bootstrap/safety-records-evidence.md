@@ -315,6 +315,34 @@ current-reader controls and Safety's normalized C10/native data remain distinct
 evidence boundaries. Fresh exact-base checks, review, own CI and clean
 integration preflight remain required.
 
+## Verified Build main composition
+
+Own CI41267130499 passes nine enabled jobs on485349c1/baseb363, with two
+experimental skips. The new normal composition uses verified Build main
+3b2b7bb267b8a8b1c6a2811b89abba376a0ca2cc/tree
+65efa902052c808cb9083b5188a7312cf64ef583. Three real registration conflicts
+reconstruct five complete metadata files from that main, appending only the
+existing Safety association/test and require. The native stage, both complete
+components, tests and Var ports remain unchanged. All Build source, six fixtures,
+unique helper/test ids, global-id regression, compiler finalizer and CI changes
+are preserved. Primary catalog/count formulas and authority pins are unchanged.
+
+Fresh ownership39/1110 and language6/11 pass. Full-stage, both components and
+single-require conservation bind actual3b. Complete accepted/rejected fixture
+spellings compile; all four C10 outcomes and C10-NUMERIC refusal remain. The
+157-function C10 source/plan and fixed seed/native runtime still match actual
+main. The current Gravity emitter hash is
+`dad556ad561890e4c107144c1160966fd4440a65293ddbc186d47422ab273564`;
+that file is captured but not executed by the native/C10 controls. Earlier
+53e92df5 emitter captures remain historical. Source and fixture/native identity
+comparisons, coupled checks, contextual lint, exact independent acceptance,
+own new CI and clean preflight remain gates. No old-base green transfers.
+
+Logs/evidence use `build-main-*`; scripts are
+`/tmp/uniform-safety-records-{verify,conservation,provenance}-build-main.clj`.
+The 42 full/text comparisons retain their explicitly historical6dc baseline;
+no current-source admission, full safety or release authority is implied.
+
 ## Loader and snapshot CI main composition
 
 Actual main625b42aa8da25eb897df4b9807372e21108bd8e4/tree
