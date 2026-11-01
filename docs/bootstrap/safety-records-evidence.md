@@ -211,6 +211,34 @@ reviews, contextual lint, CI and clean current-main preflight. No earlier
 acceptance, cancelled run, failed watchdog or later success is transferred to
 another tuple or used as completion authority.
 
+## Standard-Library-main composition
+
+Standard Library PR726 advances actual main to
+d84f2837fe4747ece773a47176f499c27e62f0b7, tree
+5a32776ff5d0eb6d07f4350f9442c52874a5bc16. Both reviewers accepted prior
+Safety source 9291f6af60a84a384a1861989c13086970511945 conditionally; its own
+CI 41258076535 completed successfully on base a117. That green remains
+historical and supplies no current-base or former-watchdog pass credit.
+
+A normal merge composes actual main. Four genuine require/registration
+conflicts are reconstructed from complete main files with the unchanged Safety
+association/test. All Standard Library code, native component/facet, tests,
+contracts and evidence remain byte-identical to main. Safety stage/tests and
+nine algorithm bodies are unchanged. The current-base extraction check passes
+the entire stage, both whole components including existing Ownership wrappers
+and unmoved forms, and the single Safety require delta.
+
+Fresh Safety/Standard Library/Ownership/Package/Runtime/Optimization/Lowering
+and normalized C9/C10 regressions pass 49 tests / 2036 assertions. Registration
+passes 36 / 1063 and language 6 / 11. All 42 full/text records still match the
+explicitly historical clean-6dc control, with actual source hashes and fixture/
+native data IDs recomputed. Complete C10 plan and actual fixed-seed/native
+provenance bind to main d84; the two Gravity modules remain non-executed inputs.
+
+The new complete tuple requires its own exact reviews, contextual lint, CI and
+clean current-main integration preflight. No authority, release, self-hosting,
+seed-retirement, full safety or namespace-completion claim is added.
+
 ## Unsupported boundaries
 
 This is partial temporary Clojure record machinery. Canonical analyze/verify,

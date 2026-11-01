@@ -292,6 +292,14 @@
       "test": {"path": "bootstrap/clojure/test/gravity/ownership/pipeline_test.clj", "namespace": "gravity.ownership.pipeline-test", "registration": "standalone"}
     },
     {
+      "id": "standard-library-kernel",
+      "kind": "production-stage-helper",
+      "owner": "sh-standard-library",
+      "source": {"path": "bootstrap/clojure/src/gravity/standard_library.clj", "namespace": "gravity.standard-library"},
+      "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00081-record-standard-library-call.clj", "namespace": "gravity.bootstrap", "owner": "sh-standard-library"},
+      "test": {"path": "bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj", "namespace": "gravity.standard-library.pipeline-test", "registration": "standalone"}
+    },
+    {
       "id": "safety-records",
       "kind": "production-stage-helper",
       "owner": "sh-safety",
