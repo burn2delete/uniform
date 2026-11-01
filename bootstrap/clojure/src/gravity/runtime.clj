@@ -1,9 +1,9 @@
 (ns gravity.runtime
-  "Temporary hosted Stage2 invocation, numeric/value operations and execution records; operations are trusted seed dependencies.")
+  "Temporary hosted Stage2 invocation, builtin/value operations and execution records; operations are trusted seed dependencies.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
-    :contract-boundary :hosted-seed-stage2-invocation-and-value-operations
+    :contract-boundary :hosted-seed-stage2-invocation-builtin-and-value-operations
     :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
     :public-api
     {hosted-add
@@ -52,6 +52,10 @@
                 [fail-builtin-error-var plan collection key not-found])
       :admission :none :hosted-seed-only? true :operation-vars [fail-builtin-error-var]
       :error-selection :late-after-lookup-failure :arity-validation-owner :existing-callers}
+     hosted-builtin
+     {:arglists ([plan callee args operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:add :subtract :multiply :divide :equal :less-than :greater-than :less-than-or-equal :greater-than-or-equal :str :assert-min-arity! :assert-exact-arity! :assert-even-arity! :assert-between-arity! :fail-call-arity! :readable-pr-str :normalized-rest]
+      :reserved-operation-owner :bootstrap :exception-translation-owner :bootstrap}
      execute-function-scoped
      {:arglists ([runtime plan callee args public-invocation-scope operations]) :admission :none
       :operation-keys [:native-scope! :module-entry-scope! :registered-scope? :assert-function-entry!
@@ -70,12 +74,14 @@
       :adds-function-entry-scope-guard? false}}
     :artifact-inputs [:runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
                       :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments :trusted-host-value-arguments
-                      :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure]
-    :diagnostic-ownership {:stage [L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
+                      :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars
+                      :ordinary-builtin-callee-and-evaluated-arguments :trusted-late-builtin-operation-vars]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result]
+    :diagnostic-ownership {:ordinary-builtin-dispatch-and-arity-placement :stage
+                           :stage [L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
                            :existing-operations [L2-FUNCTION-ARITY :recur-arity :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-semantics
-                                                 :builtin-arity :builtin-host-error-selection-and-transport]}
+                                                 :builtin-arity-facts :builtin-host-error-selection-and-transport]}
     :dependency-direction {:requires [clojure.core] :consumed-by [gravity.bootstrap]
                            :forbids [gravity.bootstrap gravity.cli gravity.release]}
     :scope-and-authority-checks :existing-seed-operations
@@ -306,5 +312,152 @@
      (catch Exception ex
        ((deref fail-builtin-error-var) plan 'get ex)))))
 
-(doseq [operation [#'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(defn hosted-builtin
+  [plan callee args operations]
+  (case callee
+      + ((deref (get operations :add)) args)
+      - (do ((deref (get operations :assert-min-arity!))
+             plan callee args 1)
+            ((deref (get operations :subtract)) args))
+      * ((deref (get operations :multiply)) args)
+      / (do ((deref (get operations :assert-min-arity!))
+             plan callee args 1)
+            ((deref (get operations :divide)) args))
+      = (do ((deref (get operations :assert-min-arity!))
+             plan callee args 1)
+            ((deref (get operations :equal)) args))
+      < (do ((deref (get operations :assert-min-arity!))
+             plan callee args 2)
+            ((deref (get operations :less-than)) args))
+      > (do ((deref (get operations :assert-min-arity!))
+             plan callee args 2)
+            ((deref (get operations :greater-than)) args))
+      <= (do ((deref (get operations :assert-min-arity!))
+              plan callee args 2)
+             ((deref (get operations :less-than-or-equal)) args))
+      >= (do ((deref (get operations :assert-min-arity!))
+              plan callee args 2)
+             ((deref (get operations :greater-than-or-equal)) args))
+      str ((deref (get operations :str)) args)
+      pr-str ((deref (get operations :readable-pr-str))
+              (get-in plan [:source :path]) args)
+      hash-map (do ((deref (get operations :assert-even-arity!))
+                    plan callee args)
+                   (apply hash-map args))
+      vector (vec args)
+      list (apply list args)
+      conj (do ((deref (get operations :assert-min-arity!))
+                plan callee args 1)
+               (apply conj args))
+      assoc (do
+              ((deref (get operations :assert-min-arity!))
+               plan callee args 3)
+              (when (even? (count args))
+                ((deref (get operations :fail-call-arity!))
+                 "L2-BUILTIN-ARITY" plan callee args
+                 "a collection followed by key/value pairs"))
+              (apply assoc args))
+      get (do ((deref (get operations :assert-between-arity!))
+               plan callee args 2 3)
+              ;; `get` dominates checked-core execution. Avoid `apply` here:
+              ;; it turns the already-materialized argument vector into a seq
+              ;; and performs generic bounded-arity dispatch on every lookup.
+              (case (count args)
+                2 (get (nth args 0) (nth args 1))
+                3 (get (nth args 0) (nth args 1) (nth args 2))))
+      first (do ((deref (get operations :assert-exact-arity!))
+                 plan callee args 1)
+                (first (nth args 0)))
+      second (do ((deref (get operations :assert-exact-arity!))
+                  plan callee args 1)
+                 (second (nth args 0)))
+      rest (do ((deref (get operations :assert-exact-arity!))
+                plan callee args 1)
+               ((deref (get operations :normalized-rest)) (nth args 0)))
+      count (do ((deref (get operations :assert-exact-arity!))
+                 plan callee args 1)
+                (count (nth args 0)))
+      symbol? (do
+                ((deref (get operations :assert-exact-arity!))
+                 plan callee args 1)
+                (symbol? (nth args 0)))
+      keyword? (do
+                 ((deref (get operations :assert-exact-arity!))
+                  plan callee args 1)
+                 (keyword? (nth args 0)))
+      char? (do
+              ((deref (get operations :assert-exact-arity!))
+               plan callee args 1)
+              (char? (nth args 0)))
+      number? (do
+                ((deref (get operations :assert-exact-arity!))
+                 plan callee args 1)
+                (number? (nth args 0)))
+      seq? (do
+             ((deref (get operations :assert-exact-arity!))
+              plan callee args 1)
+             (seq? (nth args 0)))
+      list? (do
+              ((deref (get operations :assert-exact-arity!))
+               plan callee args 1)
+              (list? (nth args 0)))
+      vector? (do
+                ((deref (get operations :assert-exact-arity!))
+                 plan callee args 1)
+                (vector? (nth args 0)))
+      map? (do
+             ((deref (get operations :assert-exact-arity!))
+              plan callee args 1)
+             (map? (nth args 0)))
+      set? (do
+             ((deref (get operations :assert-exact-arity!))
+              plan callee args 1)
+             (set? (nth args 0)))
+      string? (do
+                ((deref (get operations :assert-exact-arity!))
+                 plan callee args 1)
+                (string? (nth args 0)))
+      contains? (do
+                  ((deref (get operations :assert-exact-arity!))
+                   plan callee args 2)
+                  (contains? (nth args 0) (nth args 1)))
+      even? (do
+              ((deref (get operations :assert-exact-arity!))
+               plan callee args 1)
+              (even? (nth args 0)))
+      integer? (do
+                 ((deref (get operations :assert-exact-arity!))
+                  plan callee args 1)
+                 (integer? (nth args 0)))
+      boolean? (do
+                 ((deref (get operations :assert-exact-arity!))
+                  plan callee args 1)
+                 (boolean? (nth args 0)))
+      keys (do
+             ((deref (get operations :assert-exact-arity!))
+              plan callee args 1)
+             (apply list (keys (nth args 0))))
+      set (do
+            ((deref (get operations :assert-exact-arity!))
+             plan callee args 1)
+            (set (nth args 0)))
+      sort-by-pr-str (do
+                       ((deref (get operations :assert-exact-arity!))
+                        plan callee args 1)
+                       (apply list (sort-by pr-str (nth args 0))))
+      vec (do
+            ((deref (get operations :assert-exact-arity!))
+             plan callee args 1)
+            (into [] (nth args 0)))
+      quot (do
+             ((deref (get operations :assert-exact-arity!))
+              plan callee args 2)
+             (quot (nth args 0) (nth args 1)))
+      subvec (do
+               ((deref (get operations :assert-exact-arity!))
+                plan callee args 3)
+               (into []
+                     (subvec (nth args 0) (nth args 1) (nth args 2))))))
+
+(doseq [operation [#'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

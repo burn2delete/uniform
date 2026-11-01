@@ -40,3 +40,61 @@ runtime family, full L2/R4/R12/C15 conformance, untrusted operation/plan ingress
 new authority, native/backend execution, migration, release, self-hosting or seed
 retirement. Existing diagnostic source gaps remain explicit. No historical
 restricted route, source pin, guard or admission mode is changed or replayed.
+
+## Implemented boundary and focused evidence
+
+The143 ordinary-arm lines now live in hosted-builtin. The only body changes
+are17 explicit late Var ports. A private immutable Bootstrap map stores Vars,
+not captured roots; the stage resolves only the operation selected by the arm,
+at its original call position. Direct clojure.core operations remain temporary
+host behavior. Supplied arity helpers retain their existing internal global
+failure calls; the fail-call-arity! port is used directly only by the moved
+assoc branch. The stage does not catch or translate exceptions.
+
+Complete component reconstruction verifies the five reserved cases/helpers,
+outer catches and all three public argument lists remain exact. All16 existing
+Runtime bodies, Bootstrap loader and four invocation callers remain exact,
+including the unary and specialized get fast paths. No authority decision,
+source pin, compiler context or source primitive changes.
+
+Paired real source plans execute42 accepted cases and reject20 arity/host
+failures per spelling. Accepted source
+cb40898638da54eedea3917ca3b1fea6f16d704182c36675249c88aff9239441
+produces plan sha256:848f84d2cc32655ce81351ba92bea1bd2011758431c1bfcb548880c232f1eeef.
+Rejected source
+930628e38afd7c94792d06af9fb628768921e86caa3acd2d85d320f53ac461e4
+produces plan sha256:0501f2718f242ccd3e3fe988a9278f1f5059cc6d41664ce5bb9fa5d5e6395979.
+Original source/plan/result/refusal records retain actual paths and classes.
+
+Direct host units cover generic arms bypassed by the existing unary/get fast
+paths. They verify the17-key inventory, late helper selection after arity,
+no unrelated port reads, refusal before argument indexing, unknown-callee
+translation, unchanged ExceptionInfo identity, all wrapper signatures and
+late stage interposition. Reserved names have no stage port. Anonymous unit
+Vars and host contexts are separate from genuine source evidence; no fake
+successful privileged guard is used.
+
+Focused tests pass24/1286, coupled literal/CLI/diagnostics/Reader/Release/
+Runtime/Safety checks77/2104, ownership/language47/1153. The initial focused
+run recorded eight incorrect class expectations: existing hosted hash-map
+returns PersistentHashMap and count returns Integer, unlike test literals.
+The captured before/after classes agree; only expectations changed. A runner
+invocation with an unowned namespace executed no tests; the proper ownership
+and language namespaces then passed. Both nonpasses remain recorded.
+
+Current-base contextual lint passes3 paths with zero warnings/blockers.
+Docs240/19 indexes, roadmap and governance185 pass. Terminal lint receipts
+are archived outside the checkout.
+
+All seven complete data and original serialized pairs pass: four source/plan/
+result/refusal records, arguments and two complete public current Core products.
+The genuine before source is e55e5f9d545fc544517602590a86e8e2fed7965f,
+tree a59269f058ca2d6f7f1b4b50d174afe9c3605e24, in this same physical Records
+worktree. Both Core spellings retain25 nodes, one target read, source8e63 and
+recomputed Core16ec. No root, source pin, admission mode, returned field or
+authentication callback is substituted. Scripts/logs/products use
+uniform-runtime-dispatch-* under /tmp; complete Core controls use
+runtime-dispatch-before/after labels under uniform-cli-core-arguments-evidence.
+Exact independent acceptance, own implementation CI and clean current-main
+integration preflight remain required. This is partial hosted seed extraction,
+not complete Runtime or portable semantic conformance.
