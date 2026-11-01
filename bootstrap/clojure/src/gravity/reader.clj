@@ -1,29 +1,37 @@
 (ns gravity.reader
-  "Stage0 reader artifact assembly from explicit seed operations.
+  "Native strict UTF-8 decoding and stage0 reader artifact assembly.
 
-  This namespace owns the existing reader artifact envelope and pass record.
-  Parsing, syntax, source identity and diagnostic policy remain with their
+  This namespace owns strict native byte decoding and the existing artifact
+  envelope and pass record.
+  Parsing, syntax, source identity and diagnostic construction remain with their
   supplied owners. Operations are trusted seed dependencies, not evidence of
   canonical reader authentication or self-hosting.")
 
 (def ^:private namespace-contract
   {:namespace 'gravity.reader
-   :governing-contracts [:D1 :D2 :D3 :D9 :L1 :C1 :C2 :C3 :C15 :TEST2]
-   :contract-boundary :stage0-reader-artifact-assembly
+   :governing-contracts [:D1 :D2 :D3 :D8 :D9 :L1 :C1 :C2 :C3 :C15 :BOOT1 :BOOT8 :TEST2]
+   :contract-boundary :native-utf8-decoding-and-stage0-reader-artifact-assembly
    :public-api
    {'read-source-artifact
     {:arglists '([source-path source-text project-context operations])
-     :returns :gravity/stage0-reader-artifact}}
+     :returns :gravity/stage0-reader-artifact}
+    'decode-source-bytes
+    {:arglists '([sha256-bytes-hex-var fail-var path bytes])
+     :returns :decoded-utf8-text :admission :none :opens-source? false
+     :operation-inputs [:sha256-bytes-hex-var :fail-var]}}
    :artifact-inputs [:source-path :decoded-source-text :explicit-project-context
-                     :seed-reader-operations :standard-reader-options]
-   :artifact-outputs [:gravity/stage0-reader-artifact]
+                     :seed-reader-operations :standard-reader-options
+                     :captured-source-bytes :raw-byte-hash-var :diagnostic-var]
+   :artifact-outputs [:gravity/stage0-reader-artifact :decoded-utf8-text
+                      :unchanged-source-encoding-failure]
    :preserves [:source-spans :metadata :reader-origin :profile-context
                :source-unit-identity :namespace-clause-syntax]
    :invalidates []
    :diagnostic-ownership
-   {:owns []
+   {:owns ["L1-SOURCE-ENCODING"]
+    :construction :explicit-existing-owner-var
     :propagates [:L1 :C2]
-    :does-not-own [:lexical-policy :namespace-shape-policy :c15-schema
+    :does-not-own [:token-and-form-policy :namespace-shape-policy :c15-schema
                    :diagnostic-identity :redaction :rendering]}
    :dependency-direction
    {:requires ['clojure.core]
@@ -32,6 +40,9 @@
    [:read-source-form-records :validate-ns-syntax! :reader-module-context
     :syntax-object-stream :l1-source-unit-artifacts :standard-reader-options
     :gravity-source-extension :gravity-source-kind :utf8-byte-count]
+   :unsupported [:other-encodings :replacement-decoding :file-authority
+                 :operation-authentication :complete-reader-conformance
+                 :migration :release :seed-retirement]
    :test-owner 'gravity.reader.artifact-test
    :bootstrap-hosted? true
    :clojure-seed-boundary? true
@@ -80,4 +91,47 @@
       :diagnostics []}
      reader-details)))
 
-(alter-meta! #'read-source-artifact assoc :gravity/namespace-contract namespace-contract)
+(defn decode-source-bytes
+  "Decode one already-captured source snapshot without reopening its path."
+  [sha256-bytes-hex-var fail-var path bytes]
+  (let [decoder (doto (.newDecoder java.nio.charset.StandardCharsets/UTF_8)
+                  (.onMalformedInput java.nio.charset.CodingErrorAction/REPORT)
+                  (.onUnmappableCharacter
+                   java.nio.charset.CodingErrorAction/REPORT))
+        input (java.nio.ByteBuffer/wrap bytes)
+        output (java.nio.CharBuffer/allocate (max 1 (alength bytes)))
+        result (.decode decoder input output true)]
+    (when (.isError result)
+      (let [start (.position input)
+            end (+ start (max 1 (.length result)))
+            bytes-hash (str "sha256:" ((deref sha256-bytes-hex-var) bytes))]
+        ((deref fail-var) "L1-SOURCE-ENCODING"
+               "source bytes cannot be decoded as UTF-8"
+               {:severity :error
+                :stage :read-source
+                :source-id bytes-hash
+                :source-span {:source path
+                              :byte-start start
+                              :byte-end end}
+                :primary {:span {:source path
+                                 :byte-start start
+                                 :byte-end end}
+                          :artifact bytes-hash}
+                :related []
+                :origin-chain [{:kind :source-bytes :path path}]
+                :profile nil
+                :target nil
+                :facts {:declared-encoding :utf-8
+                        :bytes-hash bytes-hash
+                        :malformed-input-length (.length result)}
+                :reader-state {:stage :source-decoding
+                               :encoding :utf-8}
+                :remediation "Save the source as valid UTF-8 without replacement decoding."})))
+    (let [flush-result (.flush decoder output)]
+      (when (.isError flush-result)
+        (.throwException flush-result)))
+    (.flip output)
+    (.toString output)))
+
+(doseq [operation [#'read-source-artifact #'decode-source-bytes]]
+  (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
