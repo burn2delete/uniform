@@ -249,3 +249,35 @@ safety-check elision, performance certification, migration, release,
 self-hosting and seed retirement remain unsupported. Safe language legality
 continues to be a compile-time obligation; record construction does not defer
 it to a backend or runtime.
+
+## Tooling main composition
+
+The next normal composition uses actual Tooling main
+`fd159988ab06ee0397505718e9bd96bbf8df8228`, after source
+`52b2a18da32b20243d38e9fbafa8a2a62a4f3599`. Four genuine require/registration
+conflicts reconstruct five complete metadata files from that main, appending
+only Safety's existing association/test. Safety's native algorithms, both
+components, tests and explicit Var ports are unchanged. All incoming Tooling
+source, wrapper, tests, three Gravity source-repair files and evidence remain
+byte-identical to main. Primary catalog/count formulas and authority pins stay
+unchanged.
+
+Fresh coupled Safety, Standard Library, Ownership, Package, Runtime,
+Optimization, Lowering, normalized C9/C10, Tooling and complete W5 tests pass
+67/2795. Ownership inventory passes 37/1079 and language boundary 6/11. The
+42 complete and serialized pairs still match the explicitly historical clean
+6dc control; actual source hashes, fixture/native identities and all four C10
+outcomes verify. Full-stage/component conservation and exact single Safety
+require now bind to fd159. The complete 157-function C10 plan and fixed-seed /
+native-Clojure provenance remain exact. Current Gravity emitter/runtime bytes
+are captured but not executed.
+
+Evidence uses `/tmp/uniform-safety-records-evidence/tooling-main-*` and
+`/tmp/uniform-safety-records-tooling-main-*`. Prior own CI 41260886381 passed
+all ten enabled jobs on source52b2/base d84; it supplies no acceptance for this
+new composition. Its Macro16/293 and Resolution54/2307 receipts, with inherited
+900-second limits, verify all checksum entries; observed times 402.070 and
+664.211 seconds do not establish an old 600-second-bound pass or repair.
+Current-source review, contextual lint, own CI and current-main integration
+preflight remain distinct gates. No semantic, authentication, full safety,
+migration, self-hosting, release or completion claim is added.

@@ -308,6 +308,10 @@
 (def ^:private standard-library-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00081-record-standard-library-call.clj")
 (def ^:private standard-library-stage-test "bootstrap/clojure/test/gravity/standard_library/pipeline_test.clj")
 
+(def ^:private tooling-stage-path "bootstrap/clojure/src/gravity/tooling.clj")
+(def ^:private tooling-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/platform-phases/00349-p13-tooling-proof.clj")
+(def ^:private tooling-stage-test "bootstrap/clojure/test/gravity/tooling/pipeline_test.clj")
+
 (def ^:private safety-stage-path "bootstrap/clojure/src/gravity/safety.clj")
 (def ^:private safety-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00684-p15-s23-closed-core-recomputed-node-type.clj")
 (def ^:private safety-stage-test "bootstrap/clojure/test/gravity/safety/pipeline_test.clj")
@@ -318,6 +322,9 @@
     (and (= {safety-stage-path
              {:namespace 'gravity.safety :owner :sh-safety :slice "SH-11"
               :consumer-path safety-stage-consumer :test-path safety-stage-test}
+             tooling-stage-path
+             {:namespace 'gravity.tooling :owner :master-coordinator :slice "SH-24"
+              :consumer-path tooling-stage-consumer :test-path tooling-stage-test}
              standard-library-stage-path
              {:namespace 'gravity.standard-library :owner :sh-standard-library :slice "SH-22"
               :consumer-path standard-library-stage-consumer :test-path standard-library-stage-test}
@@ -410,6 +417,9 @@
          (= :sh-standard-library (get-in record [:module-owners standard-library-stage-path]))
          (= {:namespace 'gravity.standard-library.pipeline-test :slice "SH-22" :owner :sh-standard-library}
             (get-in record [:standalone-test-owners standard-library-stage-test]))
+         (= :master-coordinator (get-in record [:module-owners tooling-stage-path]))
+         (= {:namespace 'gravity.tooling.pipeline-test :slice "SH-24" :owner :master-coordinator}
+            (get-in record [:standalone-test-owners tooling-stage-test]))
          (= :sh-safety (get-in record [:module-owners safety-stage-path]))
          (= {:namespace 'gravity.safety.pipeline-test :slice "SH-11" :owner :sh-safety}
             (get-in record [:standalone-test-owners safety-stage-test]))
@@ -538,6 +548,11 @@
               "source" {"path" standard-library-stage-path "namespace" "gravity.standard-library"}
               "consumer" {"path" standard-library-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-standard-library"}
               "test" {"path" standard-library-stage-test "namespace" "gravity.standard-library.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "tooling-evidence" "kind" "production-stage-helper" "owner" "master-coordinator"
+              "source" {"path" tooling-stage-path "namespace" "gravity.tooling"}
+              "consumer" {"path" tooling-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
+              "test" {"path" tooling-stage-test "namespace" "gravity.tooling.pipeline-test"
                       "registration" "standalone"}}
              {"id" "safety-records" "kind" "production-stage-helper" "owner" "sh-safety"
               "source" {"path" safety-stage-path "namespace" "gravity.safety"}
@@ -1351,6 +1366,30 @@
                  (update record :standalone-test-owners dissoc standard-library-stage-test)
                  (assoc-in record [:production-helper-associations standard-library-stage-path :namespace] 'gravity.forged)
                  (assoc-in record [:production-helper-associations standard-library-stage-path :consumer-path] "forged.clj")]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" index "owner"] "sh-core")
+                 (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
+                 (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest tooling-helper-keeps-static-evidence-and-native-coverage-boundaries
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "tooling-evidence")]
+    (is (not (neg? index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [tooling-stage-path tooling-stage-consumer tooling-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path tooling-stage-consumer)) "gravity.tooling/coverage-record"))
+    (is (= :native-coverage-data-and-static-source-evidence
+           (:contract-boundary (:gravity/namespace-contract
+             (meta (requiring-resolve 'gravity.tooling/coverage-record))))))
+    (doseq [bad [(assoc-in record [:module-owners tooling-stage-path] :sh-core)
+                 (update record :standalone-test-owners dissoc tooling-stage-test)
+                 (assoc-in record [:production-helper-associations tooling-stage-path :namespace] 'gravity.forged)
+                 (assoc-in record [:production-helper-associations tooling-stage-path :consumer-path] "forged.clj")]]
       (is (not (production-helper-registration-valid? bad contract))))
     (doseq [bad [(assoc-in contract ["production_helpers" index "owner"] "sh-core")
                  (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
