@@ -2,9 +2,8 @@
   "CI orchestration only. Receipts are observations, never compiler authority."
   (:refer-clojure :exclude [run! descendants])
   (:require [clojure.java.io :as io]
-            [clojure.string :as str])
-  (:import [java.lang ProcessHandle]
-           [java.util.concurrent TimeUnit]))
+            [clojure.string :as str]
+            [gravity.process-supervision :as process-supervision]))
 
 (def output "target/ci")
 (def runtime-deps "{:deps {org.clojure/clojure {:mvn/version \"1.12.5\"}}}")
@@ -99,40 +98,62 @@
   (into ["clojure" (str "-J-Xmx" heap) "-Srepro" "-Sdeps" runtime-deps] args))
 
 (defn descendants [^Process process]
-  (with-open [stream (.descendants (.toHandle process))]
-    (vec (.toArray stream))))
+  (let [{:keys [handles error]}
+        (process-supervision/handle-descendants (.toHandle process))]
+    (if error (throw error) handles)))
 
-(defn stop! [^Process process children]
-  (let [errors (atom [])]
-    (try
-      (doseq [^ProcessHandle child (reverse children)]
-        (try
-          (when (.isAlive child)
-            (.destroyForcibly child)
-            (.get (.onExit child) 5 TimeUnit/SECONDS))
-          (catch Exception error (swap! errors conj (str error)))))
-      (finally
-        (when (.isAlive process) (.destroyForcibly process))
-        (.waitFor process 5 TimeUnit/SECONDS)))
-    (when (seq @errors)
-      (throw (ex-info "Owned process cleanup failed" {:errors @errors})))))
+(defn- tracked-cleanup?
+  [cleanup]
+  (and (true? (:tracked-complete? cleanup))
+       (false? (:root-alive? cleanup))
+       (zero? (long (or (:descendants-alive cleanup) 0)))
+       (empty? (or (:survivor-pids cleanup) []))))
+
+(defn stop!
+  ([^Process process children]
+   (stop! process children (process-supervision/retain-owned-process! process)))
+  ([^Process _process children owned]
+   (swap! (:handles owned) #(vec (distinct (concat % children))))
+   (let [cleanup (process-supervision/finalize-owned-process!
+                  owned {:grace-ms 0 :timeout-ms 5000})]
+     (when (or (:cleanup-error cleanup) (:discovery-error cleanup))
+       (throw (ex-info "Owned process cleanup failed"
+                       {:cleanup cleanup})))
+     cleanup)))
 
 (defn await! [^Process process seconds]
-  (let [deadline (+ (System/nanoTime) (* seconds 1000000000))
-        children (atom #{})]
+  (let [owned (process-supervision/retain-owned-process! process)
+        cleanup-attempted? (atom false)]
     (try
-      (loop []
-        (swap! children into (descendants process))
-        (cond
-          (.waitFor process 100 TimeUnit/MILLISECONDS)
-          {:status (if (zero? (.exitValue process)) :passed :failed)
-           :exit-code (.exitValue process) :pid (.pid process)
-           :descendant-pids (mapv #(.pid ^ProcessHandle %) @children)}
-          (>= (System/nanoTime) deadline)
-          {:status :timeout :exit-code 124 :pid (.pid process)
-           :descendant-pids (mapv #(.pid ^ProcessHandle %) @children)}
-          :else (recur)))
-      (finally (stop! process @children)))))
+      (let [waited (process-supervision/wait-for-process!
+                    process (long (* seconds 1000)) owned)
+            cleanup (do
+                      (reset! cleanup-attempted? true)
+                      (stop! process [] owned))
+            completed? (:completed? waited)
+            error? (some? (:error waited))
+            exit-code (if (and completed? (not error?))
+                        (try (.exitValue process)
+                             (catch Throwable _ 1))
+                        (if completed? 1 124))
+            cleanup-ok? (tracked-cleanup? cleanup)]
+        {:status (cond (not cleanup-ok?) :failed
+                       (not completed?) :timeout
+                       error? :failed
+                       (zero? exit-code) :passed
+                       :else :failed)
+         :exit-code (if cleanup-ok? exit-code 1)
+         :pid (.pid process)
+         :descendant-pids (:descendant-pids cleanup)})
+      (catch Throwable original
+        (when-not @cleanup-attempted?
+          (try
+            (reset! cleanup-attempted? true)
+            (stop! process [] owned)
+            (catch Throwable cleanup-error
+              (when-not (identical? original cleanup-error)
+                (.addSuppressed ^Throwable original cleanup-error)))))
+        (throw original)))))
 
 (defn execute!
   ([id seconds argv] (execute! id seconds argv nil))
@@ -151,11 +172,11 @@
      (println "CI command" id argv)
      (let [result
            (try
-             (let [builder (doto (ProcessBuilder. ^java.util.List argv)
-                             (.redirectErrorStream true)
-                             (.redirectOutput log))
-                   _ (when stdin-path (.redirectInput builder (io/file stdin-path)))
-                   process (.start builder)]
+             (let [process (process-supervision/start-process
+                            argv {:redirect-error-stream true
+                                  :redirect-output log
+                                  :redirect-input (when stdin-path
+                                                    (io/file stdin-path))})]
                (await! process seconds))
              (catch Exception error
                (spit log (str error) :append true)
