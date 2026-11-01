@@ -29,8 +29,49 @@ uncontrolled-network PKG7003 failures, including late diagnostic-root behavior.
 Run proportionate focused and affected tests, language boundary, ownership
 registration, docs/roadmap/governance validation, contextual lint and independent
 adversarial review. Each final source tuple requires its own CI and clean
-current-main integration preflight. This scope document is not implementation
-or acceptance evidence.
+current-main integration preflight. The initial scope commit conveyed no
+implementation or acceptance credit.
+
+## Implemented development slice
+
+The six complete accepted/rejected source fixtures are recorded in
+1a3bb12b111336905d1933c15a28d7d09dcc2ccd. Before and after controls compile
+both accepted source spellings into actual Stage0 instruction plans and execute
+them through the existing native Clojure instruction runner, producing
+`build-metadata` plus a newline. Undeclared graph effects and enabled recipe
+networking fail PKG2001 and PKG7003 during plan construction, before execution.
+Metadata labels and graph/recipe ids are ordinary supplied test data.
+
+All three complete and serialized controls (native data, Gravity source and QST
+source) compare exactly. The actual source text/hash, complete plan, recomputed
+plan id, output and full rejection message/data are captured. Stage0 identities
+include actual paths: the Gravity plan is
+`sha256:2b242e62806b75f3212417a37cca6b06aea52ce6106854d47c637c4e31ca9762`
+and the QST plan is
+`sha256:d21790b7d5a95490b349d9ff408361d82826c74e820c99304a83b8ac8eacd684`.
+These are deterministic per input, not PKG7 path-neutral artifact identities.
+
+The full original component00537 conserves except its two compatibility
+wrappers, including its original lack of a final newline. Bootstrap adds only
+one require. Both moved function bodies and parameter lists are exact except
+the explicit late diagnostic Var port. All other native checks and diagnostic
+construction remain unchanged. The existing sh-package-build / SH-23 inventory
+owns the new stage and standalone test; primary catalog counts are unchanged.
+
+Focused tests pass4/53, coupled Runtime/Package/Standard Library/literal-helper
+tests18/280, ownership37/1077 and language6/11. Host callback controls verify
+late root reads and unchanged exception identity; callbacks issue no authority.
+The first focused run4/53 had two incorrect expected line/column spans; the
+actual unchanged span is source plus form-index. Its log is retained. The first
+whole-component verifier caught an added final newline; restoring the original
+byte makes the complete comparison pass. Neither correction changes semantics
+or weakens comparisons.
+
+Scripts are `/tmp/uniform-build-validation-{control,verify}.clj`, products are
+`/tmp/uniform-build-validation-evidence/{before,after}-*`, and logs use
+`/tmp/uniform-build-validation-*`. Exact source review, contextual lint, own CI
+and current-main preflight remain integration requirements. No historical
+authenticated Reader or release route is used.
 
 ## Unsupported boundaries
 
