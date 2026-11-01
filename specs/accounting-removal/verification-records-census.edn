@@ -1,0 +1,152 @@
+{:nonclaims
+ [:fresh-receipt
+  :B47-or-coordinator-authority
+  :whole-coordinator-callback-safety
+  :runtime-support
+  :independent-acceptance
+  :integration
+  :release
+  :self-hosting
+  :PR502-closure],
+ :tests
+ {:path
+  "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+  :base-sha256
+  "35291de8c3e1b59a16c2d715bfdc9e1f9069ebbaaa7b326c89f610f0672bb05f",
+  :candidate-sha256
+  "2c1194e0fc9bf1c92e4f96a4ce9db7ad983edc6c575dcd75c0150c386a8de4c6",
+  :all-existing-test-bytes-preserved true,
+  :complete-original-kernels
+  [{:name sh08-carrier-preflight-unmetered-development-kernel,
+    :complete-canonical-form-sha256
+    "2fecb5befc0accee2ca25eee0b4f51f97ee0bbe5c15f8f7cad5695d40f2335b0",
+    :complete-original-byte-span-sha256
+    "a98a0b9105cd1d0b42dd9437a3ce6b558a12c8f824b91c4a59cc2f77fb13b19d",
+    :complete-original-body-and-bytes true}
+   {:name sh08-verification-receipt-physical-checks-development-kernel,
+    :complete-canonical-form-sha256
+    "cc399d9e8768e325e9cd839a0fabbed2c7c3019c235bf2873c7f6e3740ffb80f",
+    :complete-original-byte-span-sha256
+    "eaf62f3e9b6f3c2e592590f71391cee2cd1feb3ed24426369d697f757f19f75f",
+    :complete-original-body-and-bytes true}],
+  :new-entry-kernel
+  {:only-true-values true,
+   :malformed-native-map-and-metadata true,
+   :callback-suppression true,
+   :name verification-record-entry-order-development-kernel,
+   :authority :receipt-DATA-only,
+   :complete-catalog true,
+   :canonical-form-sha256
+   "afa17be440d5b1a4f37b8272c79bc301e48ef8c548d3e6faa3f1fe9ebe41318f",
+   :physical-duplicates-and-hostile-key true,
+   :foreign-comparator true},
+  :genuine-execution :UNRUN},
+ :source
+ {:path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :catalog-unchanged true,
+  :earlier-coordinator-equality-and-authority-checks-unchanged true,
+  :unchanged-native-DATA-dependencies
+  [{:name sh08-vf-data-failure,
+    :historical-base-and-candidate-form-sha256
+    "4f54864cf84791a8c4a1102699f88ae41ca406578c0eed6a935993bc41ef356a"}
+   {:name sh08-vf-ancestor?,
+    :historical-base-and-candidate-form-sha256
+    "fd4ebeda311495e19d97a39dbd8bd54d2226b32c7307d5f79f5cbe8fb8416c27"}
+   {:name sh08-vf-header-failure,
+    :historical-base-and-candidate-form-sha256
+    "c089f76ec82d68e3b88a9300b7344f75c88cff3c9fdc6eb386e5f5be5a0e8e70"}
+   {:name sh08-vf-original-expand-indexed,
+    :historical-base-and-candidate-form-sha256
+    "28e5a52473d995cd449f3bba4c783505f6ac579a7c554b01de7cfedc516cc37a"}
+   {:name sh08-vf-original-data,
+    :historical-base-and-candidate-form-sha256
+    "0d2f04d5ae85e021856e16f1ec1e193e0c265622652ce4cb05603ea21b6f5241"}],
+  :base-sha256
+  "fb4a98f56e6a7f578fb58cf9770b337900ee45549a241c9380e4ccbbfba80a85",
+  :all-other-production-definitions-unchanged true,
+  :complete-historical-definitions
+  [{:name sh08-ft-all-checks-true?,
+    :form-sha256
+    "e52d09e0a9b4cf28a9203abecedd43355ac68c4ae48bcad5f6e0a8fb3cb37df1"}
+   {:name sh08-ft-verification-receipt-valid?,
+    :form-sha256
+    "1e0c071cca0422f6918709d2048eec36322093c98c99ee1d7292e13f7a426544"}
+   {:name sh08-ft-coordinator-verification-valid?,
+    :form-sha256
+    "1e372e50a79da8303bf10f4e0f0fc4a176addbe7de77282a6a668db47bcf9df6"}],
+  :candidate-sha256
+  "5ff0e402785f686b14e11344b85c30cd611cd90888c6eb02e5a4ce43749de59c",
+  :current-catalog-form-sha256
+  "b8e8dcf2528355e7a63c9033020a43434789319f5d15fe4ffccd71dec8adcb30",
+  :interfaces-and-calls
+  [{:function sh08-ft-all-checks-true?,
+    :arity 1,
+    :caller-argument-lists-unchanged true,
+    :direct-C7-source-callers
+    [{:name sh08-ft-coordinator-verification-valid?,
+      :form-sha256
+      "1e372e50a79da8303bf10f4e0f0fc4a176addbe7de77282a6a668db47bcf9df6",
+      :argument-counts [1]}
+     {:name sh08-ft-verification-receipt-valid?,
+      :form-sha256
+      "1e0c071cca0422f6918709d2048eec36322093c98c99ee1d7292e13f7a426544",
+      :argument-counts [1]}]}
+   {:function sh08-ft-verification-receipt-valid?,
+    :arity 1,
+    :caller-argument-lists-unchanged true,
+    :direct-C7-source-callers
+    [{:name sh08-ft-context-valid?,
+      :form-sha256
+      "190f2f5585b1fc3f60d7f9c9b52779ad46f0f2c4f9d793bbf84feb8dc6bd4634",
+      :argument-counts [1]}]}
+   {:function sh08-ft-coordinator-verification-valid?,
+    :arity 2,
+    :caller-argument-lists-unchanged true,
+    :direct-C7-source-callers
+    [{:name sh08-ft-authenticated-core,
+      :form-sha256
+      "80e3456223d82d49aa44b079292db5be2e409374cc579ecd13235e9df2c4f288",
+      :argument-counts [2]}]}],
+  :guard-order-transactions
+  [{:function sh08-ft-verification-receipt-valid?,
+    :catalog-condition
+    (= (set (keys (get receipt :checks))) (sh08-ft-b47-check-catalog)),
+    :physical-data-condition
+    (sh08-ft-all-checks-true? (get receipt :checks)),
+    :only-change :physical-condition-before-catalog-set,
+    :reordered-pairs 1,
+    :all-other-expressions-unchanged true}
+   {:function sh08-ft-coordinator-verification-valid?,
+    :catalog-condition
+    (= (set (keys (get report :checks))) (sh08-ft-b47-check-catalog)),
+    :physical-data-condition
+    (sh08-ft-all-checks-true? (get report :checks)),
+    :only-change :physical-condition-before-catalog-set,
+    :reordered-pairs 1,
+    :all-other-expressions-unchanged true}]},
+ :unchanged-host-provider
+ {:path
+  "bootstrap/clojure/src/gravity/bootstrap_impl/components/bootstrap-p15/00588-p15-s23-stage2-native-carrier-header.clj",
+  :base-and-candidate-sha256
+  "790f5253e5621f5255f9a62374af6f5bba791a7119503484139b65ecddd5fe85",
+  :provider-executed false,
+  :reflection-or-permission-probed false},
+ :kind :verification-record-DATA-source-successor,
+ :generator
+ {:language :clojure,
+  :sha256
+  "43c0a66d070b4433aa3fffb7f6742da68cdd8659998be7018e77dc6ed1561053",
+  :preserved-locally true},
+ :validation
+ {:reader-eval false, :Bootstrap-loaded false, :source-checks :passed},
+ :base "c506514d4b32baf8269a7c3ff49ca86d2dc18c05",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01,
+ :open-obligations
+ [:genuine-native-header-and-physical-entry-controls
+  :actual-affected-caller-composition
+  :independent-source-and-result-acceptance
+  :public-authentication-and-source-authority
+  :fresh-main-composition
+  :integration]}

@@ -1121,16 +1121,19 @@
     false))
 
 (defn sh08-ft-all-checks-true? [checks]
-  (if (map? checks)
-    (if (> (count checks) 0)
-      (loop [remaining (keys checks)]
-        (if (= (count remaining) 0)
-          true
-          (if (= true (get checks (first remaining)))
-            (recur (rest remaining))
-            false)))
-      false)
-    false))
+  ; Observe every physical entry. A key set alone would hide duplicate native
+  ; ArrayMap entries, and supplied keys must not reach lookup/comparison.
+  (if (= :accepted (get (sh08-vf-original-data checks) :status))
+    (if (map? checks)
+      (let [entries (vec checks)]
+        (if (> (count entries) 0)
+          (loop [remaining entries observed #{}]
+            (if (= 0 (count remaining)) true
+              (let [entry (first remaining) key (get entry 0)]
+                (if (keyword? key)
+                  (if (contains? observed key) false
+                    (if (= true (get entry 1))
+                      (recur (rest remaining) (conj observed key)) false)) false)))) false)) false) false))
 
 (defn sh08-ft-b47-check-catalog []
   #{:wrapper-schema-current? :wrapper-kind-current?
@@ -1158,9 +1161,9 @@
        #{:status :checks :failed-checks :receipt-context
          :opaque-provenance-binding-id :verification-digest})
     (if (= :passed (get receipt :status))
-      (if (= (set (keys (get receipt :checks)))
-             (sh08-ft-b47-check-catalog))
-        (if (sh08-ft-all-checks-true? (get receipt :checks))
+      (if (sh08-ft-all-checks-true? (get receipt :checks))
+        (if (= (set (keys (get receipt :checks)))
+               (sh08-ft-b47-check-catalog))
           (if (= [] (get receipt :failed-checks))
             (if (= :gravity/sh07-b47-verification-v16
                    (get receipt :receipt-context))
@@ -1345,10 +1348,9 @@
                                 (if (= (get report :checks)
                                        (get (get context :verification)
                                             :checks))
-                                  (if (= (set (keys (get report :checks)))
-                                         (sh08-ft-b47-check-catalog))
-                                    (if (sh08-ft-all-checks-true?
-                                         (get report :checks))
+                                  (if (sh08-ft-all-checks-true? (get report :checks))
+                                    (if (= (set (keys (get report :checks)))
+                                           (sh08-ft-b47-check-catalog))
                                       (= [] (get report :failed-checks))
                                       false)
                                     false)
