@@ -330,6 +330,14 @@
       "source": {"path": "bootstrap/clojure/src/gravity/release.clj", "namespace": "gravity.release"},
       "consumer": {"path": "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00906-p18-t02-source-material.clj", "namespace": "gravity.bootstrap", "owner": "master-coordinator"},
       "test": {"path": "bootstrap/clojure/test/gravity/release/pipeline_test.clj", "namespace": "gravity.release.pipeline-test", "registration": "standalone"}
+    },
+    {
+      "id": "process-supervision",
+      "kind": "production-verification-helper",
+      "owner": "master-coordinator",
+      "source": {"path": "bootstrap/clojure/src/gravity/process_supervision.clj", "namespace": "gravity.process-supervision"},
+      "consumer": {"path": "tools/ci/run.clj", "namespace": "ci.run", "owner": "master-coordinator"},
+      "test": {"path": "tools/ci/run_test.clj", "namespace": "ci.run-test", "registration": "standalone"}
     }
   ],
   "auxiliary_bootstrap_free_tests": [

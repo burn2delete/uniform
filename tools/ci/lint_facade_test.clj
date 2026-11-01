@@ -309,6 +309,9 @@
       (let [target (io/file directory macros/source)]
         (io/make-parents target)
         (io/copy (io/file macros/source) target))
+      (let [target (io/file directory "src/gravity/process_supervision.clj")]
+        (io/make-parents target)
+        (io/copy (io/file "bootstrap/clojure/src/gravity/process_supervision.clj") target))
       (io/make-parents owner-path)
       (spit owner-path (owner private-before?))
       (spit caller-path (caller "(#'h/hidden x)"))

@@ -48,18 +48,15 @@
  {:normal {:id :normal
            :max-concurrency 2
            :timeout-ms 900000
-           :max-output-bytes 262144
-           :max-test-vars 128}
+           :max-output-bytes 262144}
   :memory-heavy {:id :memory-heavy
                  :max-concurrency 1
                  :timeout-ms 3600000
-                 :max-output-bytes 262144
-                 :max-test-vars 64}
+                 :max-output-bytes 262144}
   :exclusive {:id :exclusive
               :max-concurrency 1
               :timeout-ms 3600000
-              :max-output-bytes 262144
-              :max-test-vars 64}}
+              :max-output-bytes 262144}}
 
  :modules
  {"sh07-checked-core"
@@ -94,7 +91,7 @@
                         :identity-inputs [:source-bytes :test-bytes :contract-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 2}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :test-bytes
                                :runtime :tool :policy]
@@ -154,7 +151,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -199,7 +196,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :normal
-   :bounds {:timeout-ms 900000 :max-output-bytes 262144 :max-test-vars 2}
+   :bounds {:timeout-ms 900000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -243,7 +240,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 3}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -301,7 +298,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 6}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -358,7 +355,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 2}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -415,7 +412,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 2}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -472,7 +469,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 2}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -531,7 +528,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 4}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -585,7 +582,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :contract-bytes :classpath :runtime :policy]}
    :resource-class :normal
-   :bounds {:timeout-ms 900000 :max-output-bytes 262144 :max-test-vars 6}
+   :bounds {:timeout-ms 900000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :test-bytes :contract-bytes :runtime :tool :policy]
@@ -637,7 +634,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :contract-bytes :classpath :runtime :policy]}
    :resource-class :normal
-   :bounds {:timeout-ms 900000 :max-output-bytes 262144 :max-test-vars 5}
+   :bounds {:timeout-ms 900000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :test-bytes :contract-bytes :runtime :tool :policy]
@@ -687,7 +684,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -730,7 +727,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -772,7 +769,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -817,7 +814,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -870,7 +867,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -921,7 +918,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -969,7 +966,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -1019,7 +1016,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -1070,7 +1067,7 @@
                         :identity-inputs [:source-bytes :fixture-bytes :test-bytes
                                           :classpath :runtime :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :eligible
                   :key-inputs [:dependency-closure :source-bytes :fixture-bytes
                                :runtime :tool :policy]
@@ -1121,7 +1118,7 @@
                         :identity-inputs [:source-bytes :contract-bytes :test-bytes
                                           :classpath :runtime :tool :policy]}
    :resource-class :memory-heavy
-   :bounds {:timeout-ms 3600000 :max-output-bytes 262144 :max-test-vars 64}
+   :bounds {:timeout-ms 3600000 :max-output-bytes 262144}
    :cache-policy {:mode :forbidden
                   :key-inputs [:dependency-closure :source-bytes :contract-bytes
                                :test-bytes :runtime :tool :policy]
