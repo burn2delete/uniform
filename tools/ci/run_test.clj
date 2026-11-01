@@ -104,6 +104,81 @@
           (is (= blocking (count (:blocking result))) (pr-str result))))
       (finally (doseq [file (reverse (file-seq directory))] (io/delete-file file))))))
 
+(deftest moved-definitions-inherit-only-unique-unchanged-warnings
+  (let [base-text (str "(ns sample)\n"
+                       "(defn- stable [] :ok)\n"
+                       "(defn- moved []\n"
+                       "  (let [unused 1]\n"
+                       "    :ok))\n")
+        current-text (str "(ns sample)\n"
+                          "(defn- moved []\n"
+                          "  (let [unused 1]\n"
+                          "    :ok))\n"
+                          "(defn- stable [] :ok)\n")
+        baseline-warning {:filename "sample.clj" :row 4 :end-row 4
+                          :col 9 :end-col 15 :level :warning
+                          :type :unused-binding :message "unused binding unused"}
+        current-warning (assoc baseline-warning :row 3 :end-row 3)
+        sources (fn [before after]
+                  {"sample.clj"
+                   {:changes [{:old-start 2 :old-count 4
+                               :new-start 2 :new-count 3}]
+                    :before (str/split-lines before)
+                    :after (str/split-lines after)}})
+        classify (fn [before after current]
+                   (lint/classify [baseline-warning] [current]
+                                  (sources before after)))]
+    (let [result (classify base-text current-text current-warning)]
+      (is (= [current-warning] (:baseline-warnings result)))
+      (is (empty? (:blocking result))))
+    (let [changed-body (str/replace current-text "    :ok))" "    :changed))")
+          result (classify base-text changed-body current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [duplicate-baseline (str base-text
+                                  "(defn- moved []\n"
+                                  "  (let [unused 1]\n"
+                                  "    :ok))\n")
+          result (classify duplicate-baseline current-text current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [duplicate-current (str current-text
+                                 "(defn- moved []\n"
+                                 "  (let [unused 1]\n"
+                                 "    :ok))\n")
+          result (classify base-text duplicate-current current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [error (assoc current-warning :level :error)
+          result (classify base-text current-text error)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [error] (:blocking result))))
+    (let [moved-to-new-file (assoc current-warning :filename "new.clj")
+          result (lint/classify [baseline-warning] [moved-to-new-file]
+                                {"new.clj" {:changes []
+                                            :before nil
+                                            :after (str/split-lines current-text)}})]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [moved-to-new-file] (:blocking result))))
+    (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                              "uniform-ci-moved-definition-"
+                              (make-array java.nio.file.attribute.FileAttribute 0)))]
+      (try
+        (let [result (lint-fixture! directory base-text current-text)]
+          (is (= 3 (count (:baseline-warnings result))) (pr-str result))
+          (is (empty? (:blocking result)) (pr-str result)))
+        (finally
+          (doseq [file (reverse (file-seq directory))]
+            (io/delete-file file true)))))))
+
+(deftest definition-source-reader-is-non-evaluating
+  (binding [*data-readers* {'ci/side-effect (fn [_]
+                                              (throw (Exception. "reader executed")))}]
+    (is (empty? (lint/source-definitions
+                 (str/split-lines "(defn tagged [] #ci/side-effect 1)\n")))))
+  (is (empty? (lint/source-definitions
+               (str/split-lines "#=(do (def executed true) nil)\n")))))
+
 (deftest baseline-matching-and-output-validation-fail-closed
   (let [finding {:filename "sample.clj" :row 1 :col 2 :end-row 1 :end-col 3
                  :level :warning :type :unused-binding :message "unused binding x"}
