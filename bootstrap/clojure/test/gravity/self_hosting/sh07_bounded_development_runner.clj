@@ -10,12 +10,12 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test]
-            [gravity.self-hosting.sh01-impact-test-planner :as impact-planner])
+            [gravity.self-hosting.sh01-impact-test-planner :as impact-planner]
+            [gravity.process-supervision :as process-supervision])
   (:import (java.io ByteArrayOutputStream PushbackReader StringReader)
            (java.nio.charset StandardCharsets)
            (java.nio.file Files LinkOption Path Paths StandardCopyOption
-                            StandardOpenOption)
-           (java.util.concurrent TimeUnit))
+                            StandardOpenOption))
   (:gen-class))
 
 (def schema :gravity/sh07-development-runner-report-v1)
@@ -301,55 +301,36 @@
     (close-capture! capture)
     value))
 
-(defn- process-pids
-  [^Process process]
-  (try
-    (let [handle (.toHandle process)]
-      (with-open [descendants (.descendants handle)]
-        (let [observed (vec (take (inc process-pid-limit)
-                                  (iterator-seq (.iterator descendants))))]
-          {:root (.pid handle)
-           :sampling-failed? false
-           :pids (vec (take process-pid-limit
-                            (map #(.pid ^java.lang.ProcessHandle %)
-                                 observed)))
-           :truncated? (> (count observed) process-pid-limit)})))
-    (catch Throwable _ {:root nil :pids [] :truncated? false
-                        :sampling-failed? true})))
-
 (defn- cleanup-process-tree!
   "Terminate a child and all bounded descendants, returning cleanup evidence."
-  [^Process process]
-  (let [{:keys [pids truncated? sampling-failed?]} (process-pids process)
-        handles
-        (keep #(try
-                 (some-> (java.lang.ProcessHandle/of (long %))
-                         (.orElse nil))
-                 (catch Throwable _ nil))
-              pids)
-        _ (when (.isAlive process)
-            (.destroyForcibly process))
-        _ (doseq [^java.lang.ProcessHandle handle handles]
-            (when (.isAlive handle)
-              (.destroyForcibly handle)))
-        deadline (+ (System/nanoTime)
-                    (* process-cleanup-timeout-ms 1000000))]
-    (loop []
-      (let [alive (filterv #(.isAlive ^java.lang.ProcessHandle %) handles)
-            root-alive? (.isAlive process)]
-        (if (or (and (empty? alive) (not root-alive?))
-                (>= (System/nanoTime) deadline))
-          {:cleanup-complete? (and (empty? alive) (not root-alive?)
-                                   (not truncated?) (not sampling-failed?))
-           :sampling-failed? sampling-failed?
-           :capture-overflow? truncated?
-           :captured-descendant-count (count handles)
-           :root-exited? (not root-alive?)
-           :root-alive-after-kill? root-alive?
-           :descendants-alive-after-kill (count alive)}
-          (do
-            (Thread/sleep 10)
-            (recur)))))))
+  ([^Process process]
+   (cleanup-process-tree! process (process-supervision/retain-owned-process!
+                                   process)))
+  ([^Process process owned]
+   (let [cleanup (process-supervision/finalize-owned-process!
+                  owned {:fatal-fn (constantly nil)
+                         :terminate-fn
+                         #(process-supervision/terminate-owned-process!
+                           % {:grace-ms 0
+                              :timeout-ms process-cleanup-timeout-ms
+                              :observe-options
+                              {:max-handles (inc process-pid-limit)}})})
+         sampling-failed? (boolean (:discovery-error cleanup))
+         capture-overflow? (true? (:observation-truncated? cleanup))
+         descendant-pids (vec (:descendant-pids cleanup))
+         root-alive? (boolean (:root-alive? cleanup))
+         tracked-clean? (true? (:tracked-complete? cleanup))]
+     {:cleanup-complete? (and tracked-clean?
+                              (not sampling-failed?)
+                              (not capture-overflow?))
+      :sampling-failed? sampling-failed?
+      :capture-overflow? capture-overflow?
+      :captured-descendant-count (count descendant-pids)
+      :root-exited? (not root-alive?)
+      :root-alive-after-kill? root-alive?
+      :descendants-alive-after-kill (long (or (:descendants-alive cleanup) 0))
+      :observed-pids (:observed-pids cleanup)
+      :survivor-pids (:survivor-pids cleanup)})))
 
 (defn- report-counters?
   [value]
@@ -522,13 +503,13 @@
                      :last-progress nil
                      :last-heartbeat-ms 0
                      :last-elapsed-ms 0})
-        started (System/nanoTime)
-        builder (doto (ProcessBuilder. ^java.util.List command)
-                  (.directory (.toFile (current-working-directory))))]
+        started (System/nanoTime)]
     (try
-      (.put (.environment builder)
-            progress-file-environment (str (:path progress)))
-      (let [process (.start builder)
+      (let [process (process-supervision/start-process
+                     command {:working-directory (current-working-directory)
+                              :environment {progress-file-environment
+                                            (str (:path progress))}})
+            owned (process-supervision/retain-owned-process! process)
             stdout (capture-stream (.getInputStream process))
             stderr (capture-stream (.getErrorStream process))
             deadline (+ started (* timeout 1000000))]
@@ -540,7 +521,7 @@
               ;; exits successfully after the bound is still a timeout; its
               ;; late result must never be reinterpreted as a pass.
               (>= now deadline)
-              (let [cleanup (cleanup-process-tree! process)
+              (let [cleanup (cleanup-process-tree! process owned)
                     _ (close-capture! stdout)
                     _ (close-capture! stderr)
                     stdout (capture-value stdout
