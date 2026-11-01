@@ -22631,32 +22631,45 @@
     (is (= 1 (:exit seedless-claim)))
     (is (str/includes? (:err seedless-claim) "P18T01001"))))
 
+(deftest p18-t02-source-inventory-discovery-is-deferred
+  (is (fn? bootstrap/p18-t02-source-inventory))
+  (let [sentinel (ex-info "source inventory discovery" {:test :deferred})
+        observed
+        (with-redefs [bootstrap/p18-t02-production-source-paths
+                      (fn [& _] (throw sentinel))]
+          (try
+            (bootstrap/p18-t02-source-inventory)
+            nil
+            (catch clojure.lang.ExceptionInfo error
+              error)))]
+    (is (identical? sentinel observed))))
+
 (deftest p18-t02-packaged-source-inventory-is-complete-and-deterministic
-  (let [inventory bootstrap/p18-t02-source-inventory
+  (let [inventory (bootstrap/p18-t02-source-inventory)
         expected-inventory inventory
         expected-packaged-sources
-        (bootstrap/p18-t02-packaged-source-entries)
-        expected-jar-command (bootstrap/p18-t02-jar-command)
+        (bootstrap/p18-t02-packaged-source-entries inventory)
+        expected-jar-command (bootstrap/p18-t02-jar-command inventory)
         expected-jar-file-entries
-        (bootstrap/p18-t02-expected-jar-file-entries)
-        material (bootstrap/p18-t02-source-material)
-        source-hashes (bootstrap/p18-t02-source-hashes)
-        packaged-sources (bootstrap/p18-t02-packaged-source-entries)
-        jar-command (bootstrap/p18-t02-jar-command)
-        inventory-report (bootstrap/p18-t02-source-inventory-report)
+        (bootstrap/p18-t02-expected-jar-file-entries inventory)
+        material (bootstrap/p18-t02-source-material inventory)
+        source-hashes (bootstrap/p18-t02-source-hashes inventory)
+        packaged-sources (bootstrap/p18-t02-packaged-source-entries inventory)
+        jar-command (bootstrap/p18-t02-jar-command inventory)
+        inventory-report (bootstrap/p18-t02-source-inventory-report inventory)
         fake-hash
         "sha256:0000000000000000000000000000000000000000000000000000000000000000"
         package-manifest (bootstrap/p18-t02-package-manifest fake-hash)
         reproducible
         (bootstrap/p18-t02-reproducible-build-record
-         package-manifest fake-hash)
+         package-manifest fake-hash inventory)
         provenance
         (bootstrap/p18-t02-provenance-record
-         package-manifest {:artifact-id fake-hash} reproducible fake-hash)
+         package-manifest {:artifact-id fake-hash} reproducible fake-hash inventory)
         sbom
         (bootstrap/p18-t02-sbom-record
          package-manifest {:dependencies [] :artifact-id fake-hash}
-         provenance)]
+         provenance inventory)]
     (is (= expected-inventory inventory))
     (is (true? (:valid? inventory-report)) inventory-report)
     (is (= 1 (count (filter #(= :launcher (:role %)) inventory))))
@@ -22687,9 +22700,9 @@
     (is (= jar-command (get-in reproducible [:recipe :jar])))
     (is (= material (:source-material provenance)))
     (is (= material (:source-references sbom)))
-    (is (= (bootstrap/p18-t02-source-material) material))
-    (is (= (bootstrap/p18-t02-source-hashes) source-hashes))
-    (is (= (bootstrap/p18-t02-jar-command) jar-command))
+    (is (= (bootstrap/p18-t02-source-material inventory) material))
+    (is (= (bootstrap/p18-t02-source-hashes inventory) source-hashes))
+    (is (= (bootstrap/p18-t02-jar-command inventory) jar-command))
     (doseq [hostile-inventory
             [(subvec expected-inventory 0 5)
              (assoc-in expected-inventory [4 :path]
@@ -22701,7 +22714,7 @@
                        "gravity/not-cli.clj")]]
       (let [rejected
             (with-redefs [bootstrap/p18-t02-source-inventory
-                          hostile-inventory]
+                          (constantly hostile-inventory)]
               (diagnostic-data
                #(bootstrap/p18-t02-validate-source-inventory!)))]
         (is (= "P18T02006" (:id rejected)) rejected)
@@ -22830,6 +22843,7 @@
 
 (deftest p18-packaged-jvm-cli-proves-package-command-boundary
   (let [artifact (bootstrap/p18-t02-packaged-jvm-cli-artifact!)
+        inventory (:packaged-source-inventory artifact)
         proof (:capability-based-proof artifact)
         version (run-packaged-bin "bin/gravity" "--version")
         help (run-packaged-bin "bin/gravity" "help")
@@ -22880,19 +22894,17 @@
     (is (some #{"gravity/diagnostics.clj"} (:jar-entries artifact)))
     (is (some #{"gravity/darwin_publication.clj"}
               (:jar-entries artifact)))
-    (is (= (bootstrap/p18-t02-expected-jar-file-entries)
+    (is (= (bootstrap/p18-t02-expected-jar-file-entries inventory)
            (:jar-file-entries artifact)))
     (is (= (mapv :jar-entry
-                 (bootstrap/p18-t02-packaged-source-entries))
+                 (bootstrap/p18-t02-packaged-source-entries inventory))
            (:packaged-source-entries artifact)))
-    (is (= bootstrap/p18-t02-source-inventory
-           (:packaged-source-inventory artifact)))
-    (is (= (bootstrap/p18-t02-source-material)
+    (is (= (bootstrap/p18-t02-source-material inventory)
            (get-in artifact [:provenance-record :source-material])
            (get-in artifact [:sbom-record :source-references])))
-    (is (= (bootstrap/p18-t02-source-hashes)
+    (is (= (bootstrap/p18-t02-source-hashes inventory)
            (get-in artifact [:reproducible-build-record :source-hashes])))
-    (is (= (bootstrap/p18-t02-jar-command)
+    (is (= (bootstrap/p18-t02-jar-command inventory)
            (get-in artifact [:reproducible-build-record :recipe :jar])))
     (doseq [record [:package-manifest :dependency-record :artifact-manifest
                     :reproducible-build-record :provenance-record
