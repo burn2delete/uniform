@@ -3130,7 +3130,7 @@
           {:status :accepted :element-type (get type :element-type) :relation :homogeneous-list-identity
            :checked-member-count nil :work-count work}
           {:status :not-applicable :reason :independent-list-element-required :work-count work})
-        (if (if finite? (if (vector? members) (<= width 1024) false) false)
+        (if (if finite? (vector? members) false)
           (if (= width 0)
             {:status :accepted :element-type nil :relation :empty-positional-list :checked-member-count 0 :work-count work}
             (let [element (first members)]
