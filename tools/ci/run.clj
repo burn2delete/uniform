@@ -396,7 +396,8 @@
                          :candidates candidates})))))
 
 (def leaf-dynamic-dependency-symbols
-  '#{require clojure.core/require load clojure.core/load
+  '#{require clojure.core/require use clojure.core/use
+     load clojure.core/load
      load-file clojure.core/load-file load-string clojure.core/load-string
      requiring-resolve clojure.core/requiring-resolve
      resolve clojure.core/resolve})
@@ -462,6 +463,11 @@
                             (when-not (symbol? dependency)
                               (throw (ex-info "Unsupported leaf require specification"
                                               {:spec spec :clause clause})))
+                            (when (and (= 'clojure.core dependency)
+                                       (vector? spec)
+                                       (seq (rest spec)))
+                              (throw (ex-info "Unsupported clojure.core loader alias or rename"
+                                              {:spec spec :clause clause})))
                             (if (str/starts-with? (str dependency) "gravity.")
                               [dependency]
                               [])))
@@ -472,7 +478,12 @@
                                 {:clause clause}))
 
                 :import []
-                :refer-clojure []
+                :refer-clojure
+                (do
+                  (when (some #{:rename} (rest clause))
+                    (throw (ex-info "Unsupported clojure.core loader alias or rename"
+                                    {:clause clause})))
+                  [])
                 :gen-class []
 
                 (throw (ex-info "Unsupported leaf namespace clause"
