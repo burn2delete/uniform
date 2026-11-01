@@ -65,6 +65,55 @@
     (is (<= (get-in result [:stdout :bytes]) (* 256 1024)))
     (is (false? (get-in result [:stdout :truncated?])))))
 
+(deftest natural-exit-drains-capture-before-closing-streams
+  (let [payload (.getBytes (str "SH07_DEV_RESULT "
+                               (pr-str (route-report "c6-contract" :passed 0))
+                               "\n") "UTF-8")
+        closed? (atom false)
+        first-read? (atom true)
+        input (let [delegate (java.io.ByteArrayInputStream. payload)]
+                (proxy [java.io.InputStream] []
+                  (read ([buffer]
+                         (.read ^java.io.InputStream this buffer 0
+                                (alength ^bytes buffer)))
+                        ([buffer offset length]
+                         (when (compare-and-set! first-read? true false)
+                           (Thread/sleep 100))
+                         (if @closed? -1
+                             (.read delegate buffer offset length))))
+                  (close [] (reset! closed? true))))
+        error-input (java.io.ByteArrayInputStream. (byte-array 0))
+        alive (atom false)
+        handle (reify java.lang.ProcessHandle
+                 (pid [_] 7002)
+                 (isAlive [_] @alive)
+                 (descendants [_] (java.util.stream.Stream/empty))
+                 (destroy [_] false)
+                 (destroyForcibly [_] false)
+                 (onExit [this]
+                   (java.util.concurrent.CompletableFuture/completedFuture this)))
+        process (proxy [Process] []
+                  (toHandle [] handle)
+                  (getInputStream [] input)
+                  (getErrorStream [] error-input)
+                  (getOutputStream [] (java.io.ByteArrayOutputStream.))
+                  (waitFor ([] 0) ([_ _] true))
+                  (exitValue [] 0)
+                  (destroy [] nil)
+                  (destroyForcibly [] nil)
+                  (isAlive [] @alive))
+        start-var (ns-resolve 'gravity.process-supervision 'start-process)
+        result (with-redefs-fn
+                 {start-var (fn [& _] process)}
+                 #(runner/run-process!
+                   "c6-contract"
+                   {:timeout-ms 2000
+                    :child-command-fn (fn [_ _] ["/bin/true"])}))]
+    (is (= :passed (:status result)) result)
+    (is (= 0 (:exit-code result)) result)
+    (is (= :passed (get-in result [:child-report :status])) result)
+    (is (true? @closed?))))
+
 (deftest timeout-is-failed-and-reaps-descendants
   (let [result
         (runner/run-process!
@@ -161,6 +210,53 @@
     (is (false? (:truncated? failed)))
     (is (true? (:complete? empty)))
     (is (false? (:truncated? empty)))))
+
+(deftest post-launch-capture-setup-failure-cleans-the-owned-process
+  (doseq [failure-stream [:stdout :stderr]]
+    (let [alive (atom true)
+          handle (reify java.lang.ProcessHandle
+                   (pid [_] 7001)
+                   (isAlive [_] @alive)
+                   (descendants [_] (java.util.stream.Stream/empty))
+                   (destroy [_] (reset! alive false) true)
+                   (destroyForcibly [_] (reset! alive false) true)
+                   (onExit [this]
+                     (java.util.concurrent.CompletableFuture/completedFuture this)))
+          empty-stream (java.io.ByteArrayInputStream. (byte-array 0))
+          process (proxy [Process] []
+                    (toHandle [] handle)
+                    (getInputStream []
+                      (if (= :stdout failure-stream)
+                        (throw (java.io.IOException. "stdout capture setup failed"))
+                        empty-stream))
+                    (getErrorStream []
+                      (if (= :stderr failure-stream)
+                        (throw (java.io.IOException. "stderr capture setup failed"))
+                        empty-stream))
+                    (getOutputStream [] (java.io.ByteArrayOutputStream.))
+                    (waitFor
+                      ([] 0)
+                      ([_ _] true))
+                    (exitValue [] (if @alive
+                                    (throw (IllegalThreadStateException.))
+                                    1))
+                    (destroy [] (reset! alive false))
+                    (destroyForcibly [] (reset! alive false))
+                    (isAlive [] @alive))
+          start-var (ns-resolve 'gravity.process-supervision 'start-process)
+          thrown (with-redefs-fn
+                   {start-var (fn [& _] process)}
+                   #(try
+                      (runner/run-process!
+                       "c6-contract"
+                       {:timeout-ms 1000
+                        :child-command-fn (fn [_ _] ["/bin/true"])})
+                      nil
+                      (catch Throwable error error)))]
+      (is (instance? java.io.IOException thrown) thrown)
+      (is (false? @alive)
+          (str "capture setup failure must clean the " (name failure-stream)
+               " process")))))
 
 (deftest failed-process-observation-cannot-claim-complete-cleanup
   (let [cleanup (ns-resolve 'gravity.self-hosting.sh07-bounded-development-runner

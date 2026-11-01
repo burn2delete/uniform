@@ -148,11 +148,11 @@
            (set (keys (ns-publics 'gravity.syntax)))))
     (is (= 'gravity.syntax (:namespace contract)))
     (is (= :stage0-syntax-construction-verification-and-pinned-plan-runtime (:contract-boundary contract)))
-    (is (= ['clojure.core 'clojure.string 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification]
+    (is (= ['clojure.core 'clojure.string 'gravity.reader.pure-text 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification]
            (get-in contract [:dependency-direction :requires])))
     (is (= ['gravity.bootstrap 'gravity.cli 'gravity.release]
            (get-in contract [:dependency-direction :forbids])))
-    (is (= #{'clojure.string 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification}
+    (is (= #{'clojure.string 'gravity.reader.pure-text 'gravity.c3-reader-expansions 'gravity.c3-syntax-verification}
            (set (map ns-name (vals (ns-aliases 'gravity.syntax))))))
     (is (= (set (keys (build-operations))) (set (get-in contract [:operation-inputs :build]))))
     (is (= (set (keys (reader-operations)))

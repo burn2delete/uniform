@@ -148,7 +148,7 @@
                       (run "lint-context-base-archive"
                            ["git" "archive" "--format=zip" (str "--output=" archive)
                             base "--" context/source-root] #{0})
-                      (context/archived-plan! archive inventory paths)))
+                      (context/archived-plan! archive inventory present)))
         contextual (fn [id plan selected]
                      (if-not plan []
                              (let [view (context/assemble! (io/file output id) plan)
@@ -191,16 +191,28 @@
         config-diff (run "lint-config-diff" ["git" "diff" "--name-only" base "HEAD" "--"
                                              ".clj-kondo" "tools/ci/kondo" "tools/ci/lint_macros.clj"] #{0})
         config-unchanged? (str/blank? (slurp config-diff))
+        usage-groups (fn [plan files]
+                       (cond-> (mapv (fn [[path file]]
+                                       {:paths [path] :inputs {path (Files/readAllBytes (.toPath (io/file file)))}})
+                                     (filter #(str/ends-with? (first %) ".clj") files))
+                         plan (conj plan)))
+        baseline-usage (context/resolve-private-usages
+                        baseline (context/private-var-usages
+                                  (usage-groups base-plan (apply dissoc copied context-paths))))
+        current-usage (context/resolve-private-usages
+                       current (context/private-var-usages
+                                (usage-groups current-plan (mapv #(vector % %) (remove context-paths paths)))))
         report (merge {:base base :commit (System/getenv "GITHUB_SHA")
                        :policy :unchanged-source-warnings-only :config-unchanged? config-unchanged?
                        :macro-contract macro-contract
+                       :resolved-private-usages {:base (:resolved baseline-usage) :current (:resolved current-usage)}
                        :context-selection (when current-plan
                                             {:whole-context? (boolean whole-context?)
                                              :current (vec (sort (if whole-context? context-paths
                                                                      (filter context-paths paths))))
                                              :base (vec (sort (if whole-context? (:paths base-plan)
                                                                   (filter (set (:paths base-plan)) (keys copied)))))})}
-                      (classify (if config-unchanged? baseline []) current sources))]
+                      (classify (if config-unchanged? (:findings baseline-usage) []) (:findings current-usage) sources))]
     (spit (io/file output "changed-lint-report.edn") (str (pr-str report) "\n"))
     (println "Changed-file lint:" (count (:baseline-warnings report)) "unchanged baseline warnings;"
              (count (:blocking report)) "blocking warnings/errors. All errors block.")

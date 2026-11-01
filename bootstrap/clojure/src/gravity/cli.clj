@@ -1,28 +1,40 @@
 (ns gravity.cli
-  "Deterministic bootstrap CLI presentation values.
+  "Deterministic bootstrap CLI presentation and selected Core arguments.
 
-  This namespace does not observe host state, parse arguments, select or run
+  Core argument normalization returns a path/options value after command
+  selection. This namespace does not observe host state, select or run
   commands, authenticate or render diagnostics, choose exit codes, or
   terminate the process. Those responsibilities remain at their existing
   bootstrap boundaries until their owning stages are extracted.")
 
 (def ^:private namespace-contract
   {:namespace 'gravity.cli
-   :contract-boundary :bootstrap-cli-presentation-values
+   :contract-boundary :bootstrap-cli-presentation-and-core-arguments
+   :governing-contracts '[D1 D2 D3 D8 D9 L1 L2 L3 C1 C6 C15 T1 BOOT1 BOOT8 TEST2]
    :public-api
    {'p18-cli-version-record
     {:arglists '([packaged-jvm-cli?])
      :returns :structured-version-record}
     'p18-cli-help-text
     {:arglists '([packaged-jvm-cli?])
-     :returns :human-help-text}}
-   :artifact-inputs [:packaged-jvm-cli-state]
-   :artifact-outputs [:bootstrap-version-record :bootstrap-help-text]
+     :returns :human-help-text}
+    'sh07-core-input
+    {:arglists '([arguments])
+     :command-selection :already-selected
+     :returns :path-and-reader-options
+     :diagnostics ["SH07-CLI-ARGS"]
+     :admission :none}}
+   :artifact-inputs [:packaged-jvm-cli-state :selected-sh07-command-arguments]
+   :artifact-outputs [:bootstrap-version-record :bootstrap-help-text :sh07-core-input]
+   :diagnostic-ownership {:stage ["SH07-CLI-ARGS"]
+                          :source-decoding :reader :core-legality :checked-core
+                          :rendering :existing-diagnostic-presentation}
    :ownership
    {:owns [:deterministic-bootstrap-version-presentation
-           :deterministic-bootstrap-help-presentation]
+           :deterministic-bootstrap-help-presentation
+           :sh07-core-argument-normalization]
     :does-not-own
-    [:host-state-observation :argument-normalization :command-dispatch
+    [:host-state-observation :other-command-argument-normalization :command-dispatch
      :compiler-semantics :diagnostic-authenticity :diagnostic-rendering
      :exit-code-selection :system-exit :java-entrypoint :clojure-entrypoint
      :release-claims]}
@@ -82,6 +94,9 @@
    "  gravity run <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity>\n"
    "  gravity compile <file.qst|file.gravity> -o <executable>\n"
+   "  gravity build --reader-inputs EDN --principal PACKAGE --profile meta --target jvm\n"
+   "    --allow-read KEY --package-policy EDN --workspace-policy EDN --format json\n"
+   "    (local hermetic input entry; effectful Reader bridge unavailable)\n"
    "  gravity test\n"
    "  gravity p18-t05-seedless-release-boundary\n"
    "  gravity p18-t05-write-seedless-release-artifacts\n"
@@ -97,3 +112,15 @@
    "\n"
    "  :seedless-release? false\n"
    experimental-c-route-help))
+
+(defn sh07-core-input
+  "Normalize the already selected Core command's arguments without source IO."
+  [arguments]
+  (let [[_ path & flags] arguments]
+    (when-not (and (string? path) (not (.startsWith ^String path "-"))
+                   (or (empty? flags) (= ["--development-current-reader"] (vec flags))))
+      (throw (ex-info "usage: gravity sh07-core FILE [--development-current-reader]"
+                      {:id "SH07-CLI-ARGS" :stage :command-line :severity :error})))
+    [path (if (empty? flags) {} {:reader :development-current})]))
+
+(alter-meta! #'sh07-core-input assoc :gravity/namespace-contract namespace-contract)

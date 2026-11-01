@@ -10,21 +10,66 @@
 (require '[ci.lint :as lint])
 (require '[ci.lint-context :as context])
 
-(defn fixture-tool! [directory argv input allowed-exits]
-  (let [log (java.io.File/createTempFile "tool-" ".log" directory)
-        process (.start (doto (ProcessBuilder. ^java.util.List argv)
-                          (.directory directory) (.redirectErrorStream true) (.redirectOutput log)))]
+(defn fixture-tool!
+  ([directory argv input allowed-exits]
+   (fixture-tool! directory argv input allowed-exits directory))
+  ([directory argv input allowed-exits log-directory]
+   (let [log (if log-directory
+               (java.io.File/createTempFile "tool-" ".log" log-directory)
+               (java.io.File/createTempFile "tool-" ".log"))
+         process (.start (doto (ProcessBuilder. ^java.util.List argv)
+                           (.directory directory) (.redirectErrorStream true) (.redirectOutput log)))]
+     (try
+       (with-open [stdin (.getOutputStream process)]
+         (.write stdin (.getBytes input java.nio.charset.StandardCharsets/UTF_8)))
+       (when-not (.waitFor process 10 java.util.concurrent.TimeUnit/SECONDS)
+         (throw (ex-info "Fixture tool timed out" {:argv argv})))
+       (when-not (contains? allowed-exits (.exitValue process))
+         (throw (ex-info "Fixture tool failed" {:argv argv :log (slurp log)})))
+       (slurp log)
+       (finally
+         (when (.isAlive process) (.destroyForcibly process))
+         (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS))))))
+
+(defn git-fixture! [directory args]
+  (fixture-tool! directory (into ["git"] args) "" #{0} nil))
+
+(defn initialize-git-fixture! [directory]
+  (git-fixture! directory ["init" "-q"])
+  (git-fixture! directory ["config" "user.email" "ci-fixture@example.invalid"])
+  (git-fixture! directory ["config" "user.name" "CI fixture"]))
+
+(defn write-fixture-file! [directory path content]
+  (let [file (io/file directory path)]
+    (when-let [parent (.getParentFile file)] (.mkdirs parent))
+    (spit file content)))
+
+(defn commit-fixture! [directory message]
+  (git-fixture! directory ["add" "-A"])
+  (git-fixture! directory ["commit" "-q" "-m" message])
+  (str/trim (git-fixture! directory ["rev-parse" "HEAD"])))
+
+(defn delete-fixture-tree! [directory]
+  (doseq [file (reverse (file-seq directory))]
+    (io/delete-file file true)))
+
+(defn assert-git-selection! [initial-files change expected?]
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-selection-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))]
     (try
-      (with-open [stdin (.getOutputStream process)]
-        (.write stdin (.getBytes input java.nio.charset.StandardCharsets/UTF_8)))
-      (when-not (.waitFor process 10 java.util.concurrent.TimeUnit/SECONDS)
-        (throw (ex-info "Fixture tool timed out" {:argv argv})))
-      (when-not (contains? allowed-exits (.exitValue process))
-        (throw (ex-info "Fixture tool failed" {:argv argv :log (slurp log)})))
-      (slurp log)
-      (finally
-        (when (.isAlive process) (.destroyForcibly process))
-        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+      (initialize-git-fixture! directory)
+      (doseq [[path content] initial-files]
+        (write-fixture-file! directory path content))
+      (let [base (commit-fixture! directory "base")]
+        (change directory)
+        (let [head (commit-fixture! directory "change")
+              raw (git-fixture! directory ["diff" "--raw" "--no-renames" "-z" base head])
+              changes (ci/parse-raw-diff raw)]
+          (is (= expected? (ci/docs-only-change? "pull_request" base changes))
+              (pr-str changes))
+          changes))
+      (finally (delete-fixture-tree! directory)))))
 
 (defn lint-fixture! [directory before after]
   (spit (io/file directory "before.clj") before)
@@ -124,6 +169,182 @@
   (let [sha (apply str (repeat 40 "a"))]
     (is (= sha (ci/base-ref sha)))))
 
+(deftest documentation-only-selection-is-conservative
+  (let [base (apply str (repeat 40 "a"))]
+    (let [regular-doc (fn [path]
+                        {:old-mode "100644" :new-mode "100644" :status "M" :path path})]
+      (is (ci/docs-only-change? "pull_request" base
+                                (mapv regular-doc ["README.md" "docs/guide.md"])))
+      (doseq [paths [["bootstrap/gravity/src/gravity/runtime.gravity"]
+                     [".github/workflows/ci.yml"]
+                     [".github/README.md"]
+                     ["tools/ci/README.md"]
+                     ["bin/README.md"]
+                     ["contracts/policy.md"]
+                     ["specs/compiler.md"]
+                     ["notes.txt"]
+                     ["README.md; echo unexpected"]
+                     []]]
+        (is (not (ci/docs-only-change? "pull_request" base (mapv regular-doc paths)))
+            (pr-str paths))))
+    (is (not (ci/docs-only-change? "pull_request" nil
+                                   [{:old-mode "100644" :new-mode "100644"
+                                     :status "M" :path "README.md"}])))
+    (is (not (ci/docs-only-change? "push" base
+                                   [{:old-mode "100644" :new-mode "100644"
+                                     :status "M" :path "README.md"}])))
+    (doseq [mode ["bootstrap" "macro" "resolution" "checked-core-runtime"]]
+      (is (ci/skip-for-docs-only? mode {:kind :docs-only}) mode))
+    (is (not (ci/skip-for-docs-only? "static" {:kind :docs-only})))
+    (is (not (ci/skip-for-docs-only? "contracts" {:kind :docs-only})))
+    (is (not (ci/skip-for-docs-only? "leaves-portable" {:kind :docs-only})))
+    (is (not (ci/skip-for-docs-only? "macro" {:kind :full})))
+    (is (= [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]]
+           (ci/docs-only-static-commands {:base base :kind :docs-only})))))
+
+(deftest stage-selection-follows-owned-downstream-closure
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        expected-all #{"static" "contracts" "bootstrap" "macro"
+                       "resolution" "checked-core-runtime"}
+        expected-macro #{"static" "contracts" "macro"
+                         "resolution" "checked-core-runtime"}
+        expected-resolution #{"static" "contracts" "resolution"
+                              "checked-core-runtime"}
+        expected-checked #{"static" "contracts" "checked-core-runtime"}]
+    (is (= expected-all
+           (:modes (ci/stage-selection [(change "bootstrap/clojure/src/gravity/reader.clj")]))))
+    (is (= expected-macro
+           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/compiler/c4_macro_expansion_engine.gravity")]))))
+    (is (= expected-resolution
+           (:modes (ci/stage-selection [(change "bootstrap/clojure/test/gravity/resolution/pipeline_test.clj")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection [(change "bootstrap/gravity/src/gravity/checked_core.gravity")]))))
+    (is (= expected-checked
+           (:modes (ci/stage-selection
+                    [(change "bootstrap/clojure/test/gravity/self_hosting/sh07_var_reference_test.clj")]))))
+    (is (= expected-all
+           (:modes (ci/stage-selection
+                    [(change "bootstrap/clojure/src/gravity/macro.clj")
+                     (change "bootstrap/gravity/src/gravity/reader.gravity")]))))
+    (let [resolution-selection
+          (ci/stage-selection [(change "bootstrap/clojure/src/gravity/resolution.clj")])]
+      (is (ci/skip-for-stage-selection? "macro" resolution-selection))
+      (is (not (ci/skip-for-stage-selection? "resolution" resolution-selection)))
+      (is (not (ci/skip-for-stage-selection? "contracts" resolution-selection))))))
+
+(deftest stage-selection-falls-back-for-cross-cutting-and-unknown-inputs
+  (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})]
+    (doseq [path ["contracts/ci-policy.edn"
+                  "specs/compiler/spec.md"
+                  "deps.edn"
+                  ".github/workflows/ci.yml"
+                  "tools/ci/run.clj"
+                  "bootstrap/clojure/src/gravity/bootstrap.clj"
+                  "bootstrap/clojure/src/gravity/reader.clj/unknown.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_l1_c2_surface_reader_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_macro_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_resolution_source_coverage_test.clj"
+                  "bootstrap/clojure/test/gravity/self_hosting/sh07_c8_effect_source_coverage_test.clj"
+                  "src/new-owner.gravity"
+                  nil]]
+      (is (= :full (:kind (ci/stage-selection [(change path)]))) (pr-str path)))))
+
+(deftest stage-selection-fails-closed-for-deletes-renames-modes-and-types
+  (let [regular (fn [path] {:old-mode "100644" :new-mode "100644"
+                            :status "M" :path path})
+        reader "bootstrap/clojure/src/gravity/reader.clj"]
+    (doseq [change [{:old-mode "100644" :new-mode "000000" :status "D" :path reader}
+                    {:old-mode "100644" :new-mode "100755" :status "M" :path reader}
+                    {:old-mode "100644" :new-mode "120000" :status "M" :path reader}
+                    {:old-mode "100755" :new-mode "100644" :status "M" :path reader}
+                    {:old-mode "120000" :new-mode "100644" :status "M" :path reader}
+                    {:old-mode "100644" :new-mode "100644" :status "R" :path reader}]]
+      (is (= :full (:kind (ci/stage-selection [change]))) (pr-str change)))
+    (is (= :selected (:kind (ci/stage-selection
+                             [{:old-mode "000000" :new-mode "100644"
+                               :status "A" :path reader}]))))
+    (is (= :full (:kind (ci/stage-selection [(regular reader)
+                                             (regular "unknown/owner.gravity")]))))))
+
+(deftest static-selection-runs-snapshot-controls-only-for-snapshot-changes
+  (let [base (apply str (repeat 40 "a"))
+        command-ids (fn [selection]
+                      (mapv first (ci/commands-for-selection "static" selection)))
+        selected {:kind :selected
+                  :base base
+                  :clojure-paths ["bootstrap/clojure/src/gravity/reader.clj"]}
+        snapshot-selected {:kind :full
+                           :base base
+                           :clojure-paths ["tools/ci/snapshot.clj"]}
+        snapshot-test-selected {:kind :full
+                                :base base
+                                :clojure-paths ["tools/ci/snapshot_test.clj"]}]
+    (is (not (some #{"snapshot-controls"} (command-ids selected))))
+    (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-selected)))))
+    (is (= 1 (count (filter #{"snapshot-controls"} (command-ids snapshot-test-selected)))))))
+
+(deftest path-discovery-failure-cannot-green-static
+  (let [base (apply str (repeat 40 "a"))
+        selection {:kind :full
+                   :reason :path-discovery-failed
+                   :base base
+                   :paths []
+                   :clojure-paths []
+                   :selection-error "synthetic malformed raw diff"}
+        executed (atom [])
+        summary (io/file "target/ci/static-summary.edn")
+        bootstrap-summary (io/file "target/ci/bootstrap-summary.edn")]
+    (try
+      (with-redefs [ci/pull-request-selection (fn [] selection)
+                    ci/execute! (fn [id _seconds _argv]
+                                  (swap! executed conj id)
+                                  {:id id :status :passed})]
+        (is (= 1 (ci/run! "static")))
+        (is (some #{"clojure-lint"} @executed))
+        (is (not (some #{"changed-clojure-lint"} @executed)))
+        (is (= 0 (ci/run! "bootstrap")))
+        (is (some #{"cold-bootstrap-load"} @executed))
+        (is (= ["static-selection-discovery" :failed]
+               (let [results (edn/read-string (slurp summary))
+                     failure (last results)]
+                 [(:id failure) (:status failure)]))))
+      (finally
+        (doseq [file [summary bootstrap-summary]]
+          (io/delete-file file true))))))
+
+(deftest raw-git-selection-rejects-structural-document-lookalikes
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]]
+                                  (fn [directory]
+                                    (write-fixture-file! directory "README.md" "# changed\n"))
+                                  true)))
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]
+                                   ["src/compiler.gravity" "(seed)\n"]]
+                                  (fn [directory]
+                                    (git-fixture! directory ["rm" "-q" "src/compiler.gravity"])
+                                    (write-fixture-file! directory "README.md" "# changed\n"))
+                                  false)))
+  (is (seq (assert-git-selection! [["src/compiler.gravity" "(seed)\n"]]
+                                  (fn [directory]
+                                    (git-fixture! directory ["rm" "-q" "src/compiler.gravity"])
+                                    (write-fixture-file! directory "notes.md" "# renamed\n"))
+                                  false)))
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]]
+                                  (fn [directory]
+                                    (fixture-tool! directory ["chmod" "755" "README.md"] "" #{0}))
+                                  false)))
+  (is (seq (assert-git-selection! [["README.md" "# base\n"]]
+                                  (fn [directory]
+                                    (git-fixture! directory ["rm" "-q" "README.md"])
+                                    (fixture-tool! directory ["ln" "-s" "docs.md" "README.md"] "" #{0}))
+                                  false)))
+  (is (seq (assert-git-selection! [["baseline.txt" "base\n"]]
+                                  (fn [directory]
+                                    (write-fixture-file! directory "script.md" "# executable\n")
+                                    (fixture-tool! directory ["chmod" "755" "script.md"] "" #{0}))
+                                  false))))
+
 (deftest pr-comparison-uses-the-tested-merge-parent
   (let [stale-base (apply str (repeat 40 "a"))
         current-main (apply str (repeat 40 "b"))
@@ -151,6 +372,194 @@
     (is (thrown? Exception (ci/leaf-selection "unknown" catalog)))
     (is (nil? (find-ns 'gravity.bootstrap)))))
 
+(deftest affected-leaves-follow-reviewed-source-closures
+  (let [catalog (ci/load-leaf-catalog)
+        entry (fn [id] (some #(when (= id (:id %)) %) catalog))
+        change (fn [path] {:old-mode "100644" :new-mode "100644"
+                           :status "M" :path path})
+        select (fn [platform paths]
+                 (ci/leaf-selection-for-changes platform catalog (mapv change paths)))
+        scalar (entry "c2-reader-scalar-spans")
+        darwin (entry "darwin-publication")
+        scalar-result (select "portable" [(:test-path scalar)])
+        source-result (select "portable" [(:source-path scalar)])
+        dependent-result
+        (select "portable"
+                ["bootstrap/clojure/src/gravity/c2_reader_product_projection/policy.clj"])
+        docs-result (select "portable" ["README.md"])
+        darwin-result (select "darwin" [(:test-path darwin)])
+        portable-darwin-result (select "portable" [(:test-path darwin)])
+        unknown-result (select "portable" ["bootstrap/clojure/src/gravity/not-in-catalog.clj"])
+        mode-result (ci/leaf-selection-for-changes
+                     "portable" catalog
+                     [{:old-mode "100644" :new-mode "100755" :status "M"
+                       :path (:test-path scalar)}])
+        empty-result (ci/leaf-selection-for-changes "portable" catalog [])
+        delete-result (ci/leaf-selection-for-changes
+                       "portable" catalog
+                       [{:old-mode "100644" :new-mode "000000" :status "D"
+                         :path (:test-path scalar)}])
+        markdown-delete-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "000000" :status "D" :path "README.md"}])
+        markdown-rename-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "100644" :status "R" :path "README.md"}])
+        markdown-mode-result
+        (ci/leaf-selection-for-changes
+         "portable" catalog
+         [{:old-mode "100644" :new-mode "100755" :status "M" :path "README.md"}])
+        cross-cutting-result (select "portable" ["tools/ci/run.clj"])
+        ids (fn [result] (set (map :id (:entries result))))]
+    (is (= :selected (:kind scalar-result)))
+    (is (= #{"c2-reader-scalar-spans"} (ids scalar-result)))
+    (is (= :selected (:kind source-result)))
+    (is (contains? (ids source-result) "c2-reader-scalar-spans"))
+    (is (= :selected (:kind dependent-result)))
+    (is (contains? (ids dependent-result) "c2-reader-product-projection"))
+    (is (contains? (ids dependent-result) "c2-reader-scalar-spans"))
+    (is (not (contains? (ids scalar-result) "c10-safety-analysis")))
+    (is (= :docs-only (:kind docs-result)))
+    (is (empty? (:entries docs-result)))
+    (is (= ["darwin-publication"] (mapv :id (:entries darwin-result))))
+    (is (= :selected (:kind portable-darwin-result)))
+    (is (empty? (:entries portable-darwin-result)))
+    (is (= :full (:kind unknown-result)))
+    (is (= 52 (count (:entries unknown-result))))
+    (is (= :full (:kind mode-result)))
+    (is (= 52 (count (:entries mode-result))))
+    (doseq [result [empty-result delete-result markdown-delete-result
+                    markdown-rename-result markdown-mode-result cross-cutting-result]]
+      (is (= :full (:kind result)))
+      (is (= 52 (count (:entries result)))))))
+
+(deftest leaf-closure-fails-closed-for-unsupported-dependencies
+  (is (= ['gravity.foo]
+         (vec (ci/leaf-required-namespaces
+               (read-string "(ns demo (:require [gravity.foo :as foo]))")))))
+  (doseq [source ["(ns demo (:use [gravity.foo]))"
+                  "(ns demo (:require (gravity.foo [bar :as bar])))"
+                  "(ns demo (:require [some.dynamic (resolve x)]))"
+                  "(ns demo (:require [gravity.foo (if true :as :refer)]))"
+                  "(ns demo (:require [gravity.foo :as]))"
+                  "(ns demo (:require [gravity.foo :refer :bad]))"]]
+    (is (thrown? Exception
+                 (doall (ci/leaf-required-namespaces (read-string source))))
+        source))
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-leaf-closure-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        path (.getPath (io/file directory "synthetic.clj"))]
+    (try
+      (doseq [dependency-form [":ci.run/eof\n(require 'gravity.hidden)"
+                               ":ci.run/eof\n(load \"gravity/hidden\")"]]
+        (spit path (str "(ns demo)\n" dependency-form "\n"))
+        (with-redefs [ci/leaf-namespace-path (constantly path)]
+          (is (thrown? Exception
+                       (ci/leaf-require-closure {:namespace 'demo
+                                                 :source-path path
+                                                 :test-path path})))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (io/delete-file file true)))))
+  (let [catalog (ci/load-leaf-catalog)
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path "bootstrap/clojure/test/gravity/c2_reader_scalar_spans_test.clj"}]
+    (with-redefs [ci/leaf-require-closure
+                  (fn [_] (throw (ex-info "synthetic closure failure" {})))]
+      (let [result (ci/leaf-selection-for-changes "portable" catalog [change])]
+        (is (= :full (:kind result)))
+        (is (= :leaf-closure-failed (:reason result)))
+        (is (= 52 (count (:entries result))))))))
+
+(deftest leaf-closure-fails-closed-for-use-and-clojure-core-loader-bindings
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-loader-closure-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        provider (str (io/file directory "provider.clj"))
+        hidden (str (io/file directory "hidden.clj"))
+        catalog [{:id "provider" :namespace 'gravity.provider
+                  :source-path provider :test-path provider}
+                 {:id "hidden" :namespace 'gravity.hidden
+                  :source-path hidden :test-path hidden}]
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path provider}
+        hidden-sources ["(ns gravity.hidden)\n(use 'gravity.digest)\n"
+                        "(ns gravity.hidden)\n(clojure.core/use 'gravity.digest)\n"
+                        "(ns gravity.hidden (:require [clojure.core :as core]))\n(core/require 'gravity.digest)\n"
+                        "(ns gravity.hidden (:require [clojure.core :rename {require core/require}]))\n(core/require 'gravity.digest)\n"
+                        "(ns gravity.hidden (:refer-clojure :rename {require hidden-require}))\n(hidden-require 'gravity.digest)\n"]]
+    (try
+      (spit provider "(ns gravity.provider)\n")
+      (with-redefs [ci/leaf-namespace-path
+                    (fn [namespace-symbol]
+                      (case namespace-symbol
+                        gravity.provider provider
+                        gravity.hidden hidden
+                        (throw (ex-info "Unexpected fixture namespace"
+                                        {:namespace namespace-symbol}))))]
+        (doseq [source hidden-sources]
+          (spit hidden source)
+          (let [result (ci/leaf-selection-for-changes "portable" catalog [change])]
+            (is (= :full (:kind result)) (pr-str source))
+            (is (= :leaf-closure-failed (:reason result)) (pr-str source))
+            (is (= 2 (count (:entries result))) (pr-str source)))))
+      (finally
+        (doseq [file (reverse (file-seq directory))]
+          (io/delete-file file true))))))
+
+(deftest leaf-selection-reuses-parsed-forms-within-one-invocation
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-leaf-cache-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        path (fn [name] (.getPath (io/file directory name)))
+        a-source (path "a.clj")
+        b-source (path "b.clj")
+        shared-source (path "shared.clj")
+        a-test (path "a_test.clj")
+        b-test (path "b_test.clj")
+        namespace-paths {'gravity.a a-source
+                         'gravity.b b-source
+                         'gravity.shared shared-source}
+        catalog [{:id "leaf-a" :namespace 'gravity.a
+                  :source-path a-source :test-path a-test}
+                 {:id "leaf-b" :namespace 'gravity.b
+                  :source-path b-source :test-path b-test}]
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path a-test}
+        read-count (atom 0)
+        original-source-forms ci/leaf-source-forms]
+    (try
+      (spit a-source "(ns gravity.a (:require [gravity.shared :as shared]))\n")
+      (spit b-source "(ns gravity.b (:require [gravity.shared :as shared]))\n")
+      (spit shared-source "(ns gravity.shared)\n")
+      (with-redefs [ci/leaf-namespace-path
+                    (fn [namespace-symbol]
+                      (or (get namespace-paths namespace-symbol)
+                          (throw (ex-info "Unexpected fixture namespace"
+                                          {:namespace namespace-symbol}))))
+                    ci/leaf-source-forms
+                    (fn [source-path]
+                      (swap! read-count inc)
+                      (original-source-forms source-path))]
+        (let [first-result (ci/leaf-selection-for-changes "portable" catalog [change])]
+          (is (= :selected (:kind first-result)))
+          (is (= #{"leaf-a"} (set (map :id (:entries first-result)))))
+          (is (= 3 @read-count))
+          ;; A second invocation gets a fresh cache and must observe the
+          ;; changed dependency instead of reusing the previous parse.
+          (spit shared-source "(ns gravity.shared (:use [gravity.bad]))\n")
+          (let [second-result (ci/leaf-selection-for-changes
+                               "portable" catalog [change])]
+            (is (= :full (:kind second-result)))
+            (is (= :leaf-closure-failed (:reason second-result)))
+            (is (= 5 @read-count))
+            (is (= 2 (count (:entries second-result)))))))
+      (finally
+        (delete-fixture-tree! directory)))))
+
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
         expression (str "(let [p (.start (ProcessBuilder. " (pr-str child) "))] "
@@ -176,6 +585,63 @@
     (is (= :timeout (:status result)))
     (is (not (alive? (:pid result)))))
   (is (= 124 (:exit-code (read-string (slurp "target/ci/negative-timeout.edn"))))))
+
+(deftest fatal-wait-failure-cleans-the-owned-process-before-rethrowing
+  (let [process (.start (doto (ProcessBuilder. ^java.util.List
+                               ["/bin/sh" "-c" "sleep 30"])))
+        fatal (OutOfMemoryError. "injected fatal wait failure")
+        wait-var (ns-resolve 'gravity.process-supervision 'wait-for-process!)]
+    (try
+      (let [thrown (with-redefs-fn
+                     {wait-var (fn [& _] (throw fatal))}
+                     #(try
+                        (ci/await! process 1)
+                        nil
+                        (catch Throwable error error)))]
+        (is (identical? fatal thrown))
+        (is (false? (.isAlive process))))
+      (finally
+        (when (.isAlive process)
+          (try (ci/stop! process []) (catch Throwable _ nil)))
+        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+
+(deftest wait-error-is-failed-rather-than-timeout
+  (let [process (.start (doto (ProcessBuilder. ^java.util.List
+                               ["/bin/sh" "-c" "sleep 30"])))
+        wait-var (ns-resolve 'gravity.process-supervision 'wait-for-process!)]
+    (try
+      (let [result (with-redefs-fn
+                     {wait-var (fn [& _]
+                                 {:completed? false
+                                  :interrupted? true
+                                  :error "injected wait interruption"})}
+                     #(ci/await! process 1))]
+        (is (= :failed (:status result)) result)
+        (is (= 1 (:exit-code result)) result))
+      (finally
+        (when (.isAlive process) (.destroyForcibly process))
+        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+
+(deftest incomplete-tracked-cleanup-cannot-be-reported-as-a-pass
+  (let [process (.start (ProcessBuilder. ^java.util.List
+                         ["/bin/sh" "-c" "exit 0"]))
+        finalize-var (ns-resolve 'gravity.process-supervision
+                                 'finalize-owned-process!)]
+    (try
+      (let [result (with-redefs-fn
+                     {finalize-var
+                      (fn [_ _]
+                        {:tracked-complete? false
+                         :root-alive? true
+                         :descendants-alive 1
+                         :survivor-pids [7002]
+                         :descendant-pids []})}
+                     #(ci/await! process 1))]
+        (is (= :failed (:status result)) result)
+        (is (= 1 (:exit-code result)) result))
+      (finally
+        (when (.isAlive process) (.destroyForcibly process))
+        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
 
 (deftest resource-context-preserves-real-bindings-and-diagnostic-identity
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory
@@ -241,6 +707,12 @@
                 (str context/source-root "gravity/bootstrap_impl/b.clj") (bytes "(def value (first captured))\n")}
         read-bytes (fn [inputs] (fn [path] (or (get inputs path) (throw (ex-info "Missing fixture" {:path path})))))]
     (is (= 3 (count (:paths (context/plan! (read-bytes inputs))))))
+    (is (true? (context/whole-context-path? context/semantic-late-manifest)))
+    (is (= (:paths (context/plan! (read-bytes inputs)))
+           (:paths (context/selected-plan! (read-bytes inputs) [context/semantic-late-manifest]))))
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (context/selected-plan! (read-bytes inputs)
+                                         [(str context/source-root "gravity/bootstrap_impl/unregistered.edn")])))
     (doseq [changed [(str/replace entry "(gravity.bootstrap-impl.loader/load-components! \"gravity/bootstrap_impl/load_order.edn\")" "")
                      (str/replace entry "load_order.edn" "different.edn")
                      (str "(gravity.bootstrap-impl.loader/load-components! \"gravity/bootstrap_impl/load_order.edn\")\n" entry)]]
@@ -257,6 +729,24 @@
                                                    (str context/source-root "gravity/bootstrap_impl/b.clj") (bytes "(def value (first captured)))\n"))))))
     (is (thrown? Exception (context/source-forms! "reader-eval" (bytes "#=(+ 1 2)"))))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest source-reader-resolves-ns-keywords-without-evaluation
+  (let [source-ns 'gravity.ci-lint-reader-regression
+        bytes #(.getBytes ^String % "UTF-8")
+        source (str "(ns " source-ns " (:require [clojure.test :as test]))\n"
+                    "(def test-fixture-key ::test/once-fixtures)\n"
+                    "(def local-key ::local)\n")
+        forms (context/source-forms! "reader-aliases" (bytes source))]
+    (is (= :clojure.test/once-fixtures
+           (nth (second forms) 2)))
+    (is (= :gravity.ci-lint-reader-regression/local
+           (nth (nth forms 2) 2)))
+    (is (thrown? Exception
+                 (context/source-forms!
+                  "unknown-reader-alias"
+                  (bytes (str "(ns " source-ns ")\n"
+                              "(def missing ::unknown/key)\n")))))
+    (is (nil? (find-ns source-ns)))))
 
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

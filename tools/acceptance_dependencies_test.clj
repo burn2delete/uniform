@@ -186,6 +186,89 @@
     (is (thrown? Exception (dependencies/evidence-source-state
                             (assoc record :current-applicability :current) (constantly "new source"))))))
 
+(deftest unchanged-captured-spans-follow-layout-only-ledger-edits
+  (let [raw "captured task criterion"
+        before (str "old preamble\n" raw "\nold suffix")
+        locator {:path "fixture.md" :start-byte 13 :end-byte (+ 13 (count raw))
+                 :sha256 (dependencies/sha256 raw) :raw raw}
+        moved (str "updated preamble with extra navigation text\n" raw "\nold suffix")
+        changed (str "updated preamble\nmutated task criterion\nold suffix")
+        duplicated (str "prefix\n" raw "\ncopy\n" raw "\nsuffix")]
+    (is (nil? (dependencies/source-bound! locator (constantly before))))
+    (is (thrown? Exception (dependencies/source-bound! locator (constantly moved))))
+    (is (nil? (dependencies/current-task-body! locator (constantly before))))
+    (is (nil? (dependencies/current-task-body! locator (constantly moved))))
+    (is (thrown? Exception (dependencies/source-bound! locator (constantly changed))))
+    (is (thrown? Exception (dependencies/current-task-body! locator (constantly changed))))
+    (is (thrown? Exception (dependencies/current-task-body! locator (constantly duplicated))))))
+
+(deftest normalized-source-snapshot-tampering-rejects
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        reference (get-in source [:requirements 0 :acceptance-source :source-snapshot-ref])
+        forged (assoc source :source-snapshots
+                      (assoc (:source-snapshots source) reference "forged acceptance"))
+        missing (update source :source-snapshots dissoc reference)]
+    (is (string? reference))
+    (is (thrown? Exception (dependencies/task-sh-view forged slurp)))
+    (is (thrown? Exception (dependencies/task-sh-view missing slurp)))))
+
+(deftest navigation-roadmap-drift-does-not-rebind-sh-history
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        roadmap "docs/component-roadmaps/runtime.md"
+        task "specs/runtime-workflow/tasks.md"
+        roadmap-read (fn [path]
+                       (if (= path roadmap)
+                         (str (slurp path) "\nNavigation-only edit.\n")
+                         (slurp path)))
+        task-layout-read (fn [path]
+                           (if (= path task)
+                             (str/replace (slurp path)
+                                          "<!-- runtime-implementation-tasks:start -->"
+                                          "Navigation-only preamble edit.\n<!-- runtime-implementation-tasks:start -->")
+                             (slurp path)))
+        task-read (fn [path]
+                    (if (= path task)
+                      (str/replace (slurp path)
+                                   "runtime/remaining-tasks-and-evidence/implement-explicit-family-selection-and-no-runtime-rejection"
+                                   "runtime/fabricated")
+                      (slurp path)))]
+    (is (= :structural-only
+           (:authority (dependencies/task-sh-view source roadmap-read))))
+    (is (= :structural-only
+           (:authority (dependencies/task-sh-view source task-layout-read))))
+    ;; Frozen task-authority spans still reject mutation; only navigation views
+    ;; are exempt from the historical whole-file digest check.
+    (is (thrown? Exception (dependencies/task-sh-view source task-read)))))
+
+(deftest historical-sh-routing-drift-stays-unassessed
+  (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
+        path "docs/self-hosting-slice-ownership.edn"
+        ;; The live ownership manifest is intentionally newer than the
+        ;; crosswalk's historical pin. Keep that pin untouched and use an
+        ;; immutable in-memory observation fixture for matching/mismatching
+        ;; reads so this test exercises state classification, not receipt
+        ;; refresh or live-file history.
+        snapshot-bytes (slurp path)
+        observation-source (assoc-in source [:source-digests path]
+                                     (dependencies/sha256 snapshot-bytes))
+        read-snapshot (fn [read-path]
+                        (if (= read-path path)
+                          snapshot-bytes
+                          (slurp read-path)))
+        read-drifted (fn [read-path]
+                       (if (= read-path path)
+                         (str snapshot-bytes "\n")
+                         (slurp read-path)))
+        same (dependencies/task-sh-view observation-source read-snapshot)
+        drifted (dependencies/task-sh-view observation-source read-drifted)]
+    (is (= :same-bytes-as-inspection
+           (get-in same [:historical-source-applicability path :state])))
+    (is (= :changed-since-inspection
+           (get-in drifted [:historical-source-applicability path :state])))
+    (is (= :unassessed
+           (get-in drifted [:historical-source-applicability path :current-applicability])))
+    (is (= :structural-only (:authority drifted)))))
+
 (deftest complete-sh-task-view-conserves-sources-and-refuses-credit-forgeries
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))
         view (dependencies/task-sh-view source slurp)

@@ -1,7 +1,7 @@
 (ns sh-crosswalk-test
   (:require [clojure.test :refer [deftest is run-tests]] [clojure.string :as str] [clojure.edn :as edn]))
 (binding [*command-line-args* nil] (load-file "tools/sh_crosswalk.clj"))
-(require '[sh-inventory] '[sh-crosswalk])
+(require '[sh-inventory] '[sh-crosswalk] '[acceptance-dependencies])
 
 (deftest exact-original-inventory-and-negative-population-controls
   (let [source (slurp sh-inventory/plan-path) rows (sh-inventory/inventory source)
@@ -21,6 +21,38 @@
     (is (= 11 (:end-byte span)))
     (is (= 2 (:start-line span) (:end-line span)))
     (is (= "accepted" (:raw span)))))
+
+(deftest current-crosswalk-stores-each-source-payload-once
+  (let [source (sh-crosswalk/source-view)
+        normalized (sh-crosswalk/normalize-source-payloads source)
+        raw-spans (filter #(some (fn [entry] (= :raw (key entry))) %)
+                          (filter map? (tree-seq coll? seq source)))
+        refs (filter #(some (fn [entry] (= :source-snapshot-ref (key entry))) %)
+                     (filter map? (tree-seq coll? seq (dissoc normalized :source-snapshots))))
+        snapshots (:source-snapshots normalized)
+        recovered (map #(get snapshots (:source-snapshot-ref %)) refs)]
+    (is (seq raw-spans))
+    (is (= (count (distinct (map :raw raw-spans))) (count snapshots)))
+    (is (= (sort (map :raw raw-spans)) (sort recovered)))
+    (is (every? #(= (:source-snapshot-ref %)
+                   (sh-inventory/sha256 (get snapshots (:source-snapshot-ref %)))) refs))
+    (is (empty? (filter #(some (fn [entry] (= :raw (key entry))) %)
+                       (filter map? (tree-seq coll? seq (dissoc normalized :source-snapshots))))))))
+
+(deftest source-snapshot-integrity-fails-closed
+  (let [source (sh-crosswalk/normalize-source-payloads (sh-crosswalk/source-view))
+        reference (get-in source [:requirements 0 :acceptance-source :source-snapshot-ref])
+        forged (assoc source :source-snapshots
+                      (assoc (:source-snapshots source) reference "forged acceptance"))
+        missing (update source :source-snapshots dissoc reference)]
+    (is (thrown? Exception (sh-crosswalk/normalize-source-payloads
+                            (assoc-in (sh-crosswalk/source-view)
+                                      [:requirements 0 :acceptance-source :sha256] "forged"))))
+    (is (thrown? Exception (sh-crosswalk/normalize-source-payloads
+                            (assoc-in (sh-crosswalk/source-view)
+                                      [:requirements 0 :acceptance-source :raw] "forged"))))
+    (is (thrown? Exception (acceptance-dependencies/task-sh-view forged slurp)))
+    (is (thrown? Exception (acceptance-dependencies/task-sh-view missing slurp)))))
 
 (deftest literal-task-routing-does-not-depend-on-live-ledger-order
   (let [rows (sh-crosswalk/task-records "core")
@@ -411,7 +443,7 @@
 (deftest pr574-macro-artifacts-composition-keeps-current-main-and-native-union
   (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/pr574-macro-artifacts-composition.edn"))
         {:keys [path before after]} (:source-file bridge)
-        current (edn/read-string (slurp path))
+        current (edn/read-string (sh-crosswalk/git-source (:commit after) path))
         main (edn/read-string (sh-crosswalk/git-source (:main bridge) path))
         previous (edn/read-string (sh-crosswalk/git-source (:previous-candidate bridge) path))
         conserved (reduce-kv (fn [record section paths]
@@ -425,8 +457,7 @@
     (doseq [record [before after]]
       (is (= (:sha256 record)
              (sh-inventory/sha256 (sh-crosswalk/git-source (:commit record) path)))))
-    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
-    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (is (= (:commit after) (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn")) [:native-source-ownership :commit])))
     (doseq [p ["specs/sh-family-crosswalk/source-version-bridge.edn"
                "specs/sh-family-crosswalk/pr574-composition-source-version.edn"
                "specs/sh-family-crosswalk/pr574-conflict-composition-source-version.edn"]]
@@ -451,6 +482,84 @@
                  (sh-crosswalk/validate-pinned-sources!
                    {:applying-source-pins {path (:commit before)}
                     :source-digests {path (:sha256 after)}} sh-crosswalk/git-source)))))
+
+(deftest resolution-runtime-source-version-preserves-predecessor-ownership-and-review
+  (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/resolution-runtime-source-version.edn"))
+        {:keys [path before after]} (:source-file bridge)
+        previous (edn/read-string (sh-crosswalk/git-source (:commit before) path))
+        current (edn/read-string (sh-crosswalk/git-source (:commit after) path))
+        conserved (reduce-kv (fn [record section added-path] (update record section dissoc added-path))
+                             current (:added-entries bridge))
+        view (sh-crosswalk/build)]
+    (is (= previous conserved))
+    (is (= (:sha256 before) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit before) path))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit after) path))))
+    (is (= (:commit after) (get-in (edn/read-string (slurp "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn")) [:resolution-source-ownership :commit])))
+    (is (= (:predecessor-input-fingerprint bridge)
+           (:input-fingerprint sh-crosswalk/resolution-runtime-predecessor-review)))
+    (is (= (select-keys sh-crosswalk/resolution-runtime-predecessor-review
+                        [:status :input-fingerprint :source-version-bridge])
+           (get-in view [:mapping-review :resolution-runtime-predecessor-review])))
+    (is (= (get-in view [:resolution-runtime-source-version :path])
+           (get-in view [:mapping-review :resolution-runtime-current-review :source-version-bridge])))
+    (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
+           (get-in view [:mapping-review :input-fingerprint])))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= :source-conservation-only (:authority bridge)))
+    (is (= 180 (count (:requirements view))))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (doseq [wrong [(:commit before) "0000000000000000000000000000000000000000"]]
+      (is (thrown? Exception
+                   (sh-crosswalk/validate-pinned-sources!
+                    {:applying-source-pins {path wrong}
+                     :source-digests {path (:sha256 after)}} sh-crosswalk/git-source))))))
+
+(deftest resolution-native-composition-conserves-both-source-histories
+  (let [bridge (edn/read-string (slurp "specs/sh-family-crosswalk/resolution-runtime-composition-source-version.edn"))
+        {:keys [path before after]} (:source-file bridge)
+        current (edn/read-string (slurp path))
+        remove-entries (fn [record entries]
+                         (reduce-kv (fn [r section paths]
+                                      (update r section #(apply dissoc % (if (string? paths) [paths] paths)))) record entries))
+        main (edn/read-string (sh-crosswalk/git-source (:commit before) path))
+        resolution (edn/read-string (sh-crosswalk/git-source (get-in bridge [:resolution-source-ownership :commit]) path))
+        view (sh-crosswalk/build)
+        ignored [:input-fingerprint :source-version-bridge :qualification
+                 :resolution-main-predecessor-review :resolution-runtime-current-review
+                 :resolution-runtime-predecessor-review]]
+    (is (= main (remove-entries current (:added-entries bridge))))
+    (is (= resolution (remove-entries current (:native-entries bridge))))
+    (is (= (:sha256 after) (sh-inventory/sha256 (slurp path))))
+    (doseq [record [before after (:resolution-source-ownership bridge) (:native-source-ownership bridge)]]
+      (is (= (:sha256 record) (sh-inventory/sha256 (sh-crosswalk/git-source (:commit record) path)))))
+    (is (= (:commit after) (get-in view [:applying-source-pins path])))
+    (doseq [[kind reference] (:predecessors bridge)
+            :let [text (sh-crosswalk/git-source (:commit reference) (:path reference))
+                  review (:mapping-review (edn/read-string text))]]
+      (is (= (:sha256 reference) (sh-inventory/sha256 text)))
+      (is (= (:review reference) (select-keys review [:status :input-fingerprint :source-version-bridge])))
+      (is (= review (if (= :main kind) sh-crosswalk/resolution-main-predecessor-review
+                       sh-crosswalk/resolution-runtime-current-review))))
+    (is (= (apply dissoc sh-crosswalk/resolution-main-predecessor-review ignored)
+           (apply dissoc (:mapping-review view) ignored)))
+    (is (= (get-in bridge [:predecessors :main :review])
+           (get-in view [:mapping-review :resolution-main-predecessor-review])))
+    (is (= (get-in bridge [:predecessors :resolution :review])
+           (get-in view [:mapping-review :resolution-runtime-current-review])))
+    (is (= (get-in view [:resolution-runtime-composition-source-version :path])
+           (get-in view [:mapping-review :source-version-bridge])))
+    (is (= (sh-crosswalk/review-fingerprint (sh-crosswalk/source-view))
+           (get-in view [:mapping-review :input-fingerprint])))
+    (is (= :source-conservation-only (:authority bridge)))
+    (is (= :pending-source-version-review (get-in view [:mapping-review :status])))
+    (is (= 180 (count (:requirements view))))
+    (is (every? #(= :unassessed (:accepted-current-requirement %)) (:requirements view)))
+    (doseq [wrong [(:commit before) (get-in bridge [:resolution-source-ownership :commit])
+                   "0000000000000000000000000000000000000000"]]
+      (is (thrown? Exception
+                   (sh-crosswalk/validate-pinned-sources!
+                    {:applying-source-pins {path wrong} :source-digests {path (:sha256 after)}}
+                    sh-crosswalk/git-source))))))
 
 (let [result (run-tests 'sh-crosswalk-test)]
   (when (pos? (+ (:fail result) (:error result))) (System/exit 1)))

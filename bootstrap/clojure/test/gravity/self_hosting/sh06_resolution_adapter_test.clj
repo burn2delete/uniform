@@ -2027,7 +2027,8 @@
     (is (= :passed (get-in actual [:core-verifier-report :status])))
     (is (= 2 (count roots)))
     (is (= (concat roots roots) @calls))
-    (is (= 2 @proof-calls) "validation and published capability proofs both remain")
+    (is (= 1 @proof-calls)
+        "the invocation-local capability proof is validated and then published")
     (is (= c5 (:c5-name-resolution-artifact actual)))
     (doseq [failure [:origin :verify]]
       (let [candidate (assoc-in module [:metadata :compiler :c6-lowering :fail] failure)
