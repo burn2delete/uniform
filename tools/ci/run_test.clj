@@ -104,6 +104,126 @@
           (is (= blocking (count (:blocking result))) (pr-str result))))
       (finally (doseq [file (reverse (file-seq directory))] (io/delete-file file))))))
 
+(deftest moved-definitions-inherit-only-unique-unchanged-warnings
+  (let [base-text (str "(ns sample)\n"
+                       "(defn- stable [] :ok)\n"
+                       "(defn- moved []\n"
+                       "  (let [unused 1]\n"
+                       "    :ok))\n")
+        current-text (str "(ns sample)\n"
+                          "(defn- moved []\n"
+                          "  (let [unused 1]\n"
+                          "    :ok))\n"
+                          "(defn- stable [] :ok)\n")
+        baseline-warning {:filename "sample.clj" :row 4 :end-row 4
+                          :col 9 :end-col 15 :level :warning
+                          :type :unused-binding :message "unused binding unused"}
+        current-warning (assoc baseline-warning :row 3 :end-row 3)
+        sources (fn [before after]
+                  {"sample.clj"
+                   {:changes [{:old-start 2 :old-count 4
+                               :new-start 2 :new-count 3}]
+                    :before (str/split-lines before)
+                    :after (str/split-lines after)}})
+        classify (fn [before after current]
+                   (lint/classify [baseline-warning] [current]
+                                  (sources before after)))]
+    (let [result (classify base-text current-text current-warning)]
+      (is (= [current-warning] (:baseline-warnings result)))
+      (is (empty? (:blocking result))))
+    (let [renamed-base (str/replace base-text "(ns sample)" "(ns sample.old)")
+          renamed-current (str/replace current-text "(ns sample)" "(ns sample.new)")
+          result (classify renamed-base renamed-current current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [control-base (str "(ns sample)\n"
+                            "(set! *warn-on-reflection* true)\n"
+                            (subs base-text (count "(ns sample)\n")))
+          control-current (str "(ns sample)\n"
+                               "(set! *warn-on-reflection* false)\n"
+                               (subs current-text (count "(ns sample)\n")))
+          control-baseline-warning (assoc baseline-warning :row 5 :end-row 5)
+          control-current-warning (assoc current-warning :row 4 :end-row 4)
+          result (lint/classify [control-baseline-warning] [control-current-warning]
+                                {"sample.clj"
+                                 {:changes [{:old-start 2 :old-count 5
+                                             :new-start 2 :new-count 4}]
+                                  :before (str/split-lines control-base)
+                                  :after (str/split-lines control-current)}})]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [control-current-warning] (:blocking result))))
+    (let [crossing-base (str "(ns sample)\n"
+                             "(set! *warn-on-reflection* true)\n"
+                             "(in-ns 'sample)\n"
+                             "(defn- stable [] :ok)\n"
+                             "(defn- moved []\n"
+                             "  (let [unused 1]\n"
+                             "    :ok))\n")
+          crossing-current (str "(ns sample)\n"
+                                "(defn- moved []\n"
+                                "  (let [unused 1]\n"
+                                "    :ok))\n"
+                                "(set! *warn-on-reflection* true)\n"
+                                "(in-ns 'sample)\n"
+                                "(defn- stable [] :ok)\n")
+          crossing-baseline-warning (assoc baseline-warning :row 6 :end-row 6)
+          crossing-current-warning (assoc current-warning :row 3 :end-row 3)
+          result (lint/classify [crossing-baseline-warning] [crossing-current-warning]
+                                {"sample.clj"
+                                 {:changes [{:old-start 2 :old-count 6
+                                             :new-start 2 :new-count 6}]
+                                  :before (str/split-lines crossing-base)
+                                  :after (str/split-lines crossing-current)}})]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [crossing-current-warning] (:blocking result))))
+    (let [changed-body (str/replace current-text "    :ok))" "    :changed))")
+          result (classify base-text changed-body current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [duplicate-baseline (str base-text
+                                  "(defn- moved []\n"
+                                  "  (let [unused 1]\n"
+                                  "    :ok))\n")
+          result (classify duplicate-baseline current-text current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [duplicate-current (str current-text
+                                 "(defn- moved []\n"
+                                 "  (let [unused 1]\n"
+                                 "    :ok))\n")
+          result (classify base-text duplicate-current current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [error (assoc current-warning :level :error)
+          result (classify base-text current-text error)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [error] (:blocking result))))
+    (let [moved-to-new-file (assoc current-warning :filename "new.clj")
+          result (lint/classify [baseline-warning] [moved-to-new-file]
+                                {"new.clj" {:changes []
+                                            :before nil
+                                            :after (str/split-lines current-text)}})]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [moved-to-new-file] (:blocking result))))
+    (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                              "uniform-ci-moved-definition-"
+                              (make-array java.nio.file.attribute.FileAttribute 0)))]
+      (try
+        (let [result (lint-fixture! directory base-text current-text)]
+          (is (= 3 (count (:baseline-warnings result))) (pr-str result))
+          (is (empty? (:blocking result)) (pr-str result)))
+        (finally
+          (doseq [file (reverse (file-seq directory))]
+            (io/delete-file file true)))))))
+
+(deftest definition-source-reader-is-non-evaluating
+  (binding [*data-readers* {'ci/side-effect (fn [_]
+                                              (throw (Exception. "reader executed")))}]
+    (is (empty? (lint/source-definitions
+                 (str/split-lines "(defn tagged [] #ci/side-effect 1)\n")))))
+  (is (empty? (lint/source-definitions
+               (str/split-lines "#=(do (def executed true) nil)\n")))))
+
 (deftest baseline-matching-and-output-validation-fail-closed
   (let [finding {:filename "sample.clj" :row 1 :col 2 :end-row 1 :end-col 3
                  :level :warning :type :unused-binding :message "unused binding x"}
@@ -509,6 +629,56 @@
       (finally
         (doseq [file (reverse (file-seq directory))]
           (io/delete-file file true))))))
+
+(deftest leaf-selection-reuses-parsed-forms-within-one-invocation
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-leaf-cache-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        path (fn [name] (.getPath (io/file directory name)))
+        a-source (path "a.clj")
+        b-source (path "b.clj")
+        shared-source (path "shared.clj")
+        a-test (path "a_test.clj")
+        b-test (path "b_test.clj")
+        namespace-paths {'gravity.a a-source
+                         'gravity.b b-source
+                         'gravity.shared shared-source}
+        catalog [{:id "leaf-a" :namespace 'gravity.a
+                  :source-path a-source :test-path a-test}
+                 {:id "leaf-b" :namespace 'gravity.b
+                  :source-path b-source :test-path b-test}]
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path a-test}
+        read-count (atom 0)
+        original-source-forms ci/leaf-source-forms]
+    (try
+      (spit a-source "(ns gravity.a (:require [gravity.shared :as shared]))\n")
+      (spit b-source "(ns gravity.b (:require [gravity.shared :as shared]))\n")
+      (spit shared-source "(ns gravity.shared)\n")
+      (with-redefs [ci/leaf-namespace-path
+                    (fn [namespace-symbol]
+                      (or (get namespace-paths namespace-symbol)
+                          (throw (ex-info "Unexpected fixture namespace"
+                                          {:namespace namespace-symbol}))))
+                    ci/leaf-source-forms
+                    (fn [source-path]
+                      (swap! read-count inc)
+                      (original-source-forms source-path))]
+        (let [first-result (ci/leaf-selection-for-changes "portable" catalog [change])]
+          (is (= :selected (:kind first-result)))
+          (is (= #{"leaf-a"} (set (map :id (:entries first-result)))))
+          (is (= 3 @read-count))
+          ;; A second invocation gets a fresh cache and must observe the
+          ;; changed dependency instead of reusing the previous parse.
+          (spit shared-source "(ns gravity.shared (:use [gravity.bad]))\n")
+          (let [second-result (ci/leaf-selection-for-changes
+                               "portable" catalog [change])]
+            (is (= :full (:kind second-result)))
+            (is (= :leaf-closure-failed (:reason second-result)))
+            (is (= 5 @read-count))
+            (is (= 2 (count (:entries second-result)))))))
+      (finally
+        (delete-fixture-tree! directory)))))
 
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
