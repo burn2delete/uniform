@@ -73,6 +73,19 @@
      hosted-unary-builtin
      {:arglists ([runtime plan function value operations]) :admission :none :hosted-seed-only? true
       :operation-keys [:normalized-rest :invoke-builtin :fail-builtin-error!] :argument-evaluation-owner :existing-caller}
+     map-entry
+     {:arglists ([value requested-key]) :admission :none :hosted-seed-only? true}
+     fail-recur!
+     {:arglists ([fail-var plan target-arity actual-arity reason]) :admission :none :hosted-seed-only? true :operation-vars [fail-var]}
+     nontail-value!
+     {:arglists ([plan value reason operations]) :admission :none :hosted-seed-only? true :operation-keys [:recur-signal? :recur-fail! :recur-values]}
+     execute-generic-builtin-call-scoped
+     {:arglists ([runtime plan env instruction function public-invocation-scope operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:execute-values-scoped :artifact-invoke :artifact-function :artifact-concat-function :fail-call-arity! :invoke-compiler-internal-builtin :invoke-builtin]
+      :data-operation-keys [:artifact-function :artifact-concat-function] :call-authority-owner :existing-seed-operations}
+     execute-call-scoped
+     {:arglists ([runtime plan env instruction public-invocation-scope operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:authorize-external-link :execute-values-scoped :execute-external-machine :execute-function-scoped] :call-authority-owner :existing-seed-operations}
      execute-instruction-scoped
      {:arglists ([runtime plan env instruction public-invocation-scope operations]) :admission :none :hosted-seed-only? true
       :operation-keys [:fail! :execute-values-scoped :execute-map-entries-scoped :validate-module-effects! :artifact-invoke :artifact-println-function :artifact-println-two-function :join :artifact-function :execute-instructions-scoped :nontail-value! :execute-instruction-scoped :recur-signal? :recur-values :recur-fail! :bind-values :recur-signal :source-throw! :execute-value-scoped :invoke-get :fail-builtin-error! :invoke-compiler-internal-builtin :invoke-unary-or-generic-builtin :execute-generic-builtin-call-scoped :execute-call-scoped :module-execute-call]
@@ -119,14 +132,15 @@
                       :trusted-environment-bindings-instruction-and-map-entry-carriers :opaque-invocation-scope
                       :trusted-late-instruction-and-recurrence-operation-vars
                       :trusted-instruction-function-and-data-operation-vars
-                      :trusted-runtime-rule-data :call-signature-and-arity-data :trusted-late-policy-operation-vars]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :nil-or-arity-refusal]
+                      :trusted-map-entry-and-recurrence-data :trusted-call-sequencing-operations :trusted-runtime-rule-data :call-signature-and-arity-data :trusted-late-policy-operation-vars]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :nil-or-arity-refusal :native-map-entry-or-nil :recurrence-refusal-or-original-value :sequenced-call-result]
     :diagnostic-ownership {:ordinary-builtin-dispatch-and-arity-placement :stage
                            :evaluation-carrier-traversal-and-recur-check-placement :stage
                            :instruction-selection-core-control-and-fast-paths :stage
+                           :map-entry-recurrence-facts-and-call-sequencing :stage
                            :arity-guards-call-facts-unary-selection-and-rule-data :stage
-                           :stage [L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
-                           :existing-operations [:recur-arity :executor-lookup-and-arity
+                           :stage [L2-RECUR-TARGET L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
+                           :existing-operations [:recurrence-representation :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-primitives-and-call-authority
                                                  :generic-builtin-host-error-boundary-and-failure-transport]}
     :dependency-direction {:requires [clojure.core] :consumed-by [gravity.bootstrap]
@@ -1009,5 +1023,72 @@
     (catch Exception ex
       ((deref (get operations :fail-builtin-error!)) plan function ex))))
 
-(doseq [operation [#'executor-rule-record #'fail-call-arity! #'assert-min-arity! #'assert-exact-arity! #'assert-between-arity! #'assert-even-arity! #'hosted-unary-builtin #'execute-instruction-scoped #'execute-value-scoped #'bind-values #'execute-values-scoped #'execute-map-entries-scoped #'execute-instructions-scoped #'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(defn map-entry
+  [value requested-key]
+  (when (map? value)
+    (if (sorted? value)
+      ;; A sorted map can use a comparator that rejects a heterogeneous lookup
+      ;; key before equality is considered. Runtime records may legitimately
+      ;; be inspected for keyword control keys even when their own keys use a
+      ;; different comparable type, so retain the equality scan for that case.
+      (some (fn [entry]
+              (when (= requested-key (key entry)) entry))
+            value)
+      ;; Ordinary runtime records are persistent hash/array maps. `find`
+      ;; preserves their key equality and nil-value behavior without scanning
+      ;; every entry for every interpreted instruction.
+      (find value requested-key))))
+
+(defn fail-recur!
+  [fail-var plan target-arity actual-arity reason]
+  ((deref fail-var) "L2-RECUR-TARGET"
+         "recur has no compatible loop or function target"
+         {:source-span {:source (get-in plan [:source :path])}
+          :target-arity target-arity
+          :actual-arity actual-arity
+          :reason reason
+          :remediation
+          "Use recur only in tail position inside a compatible loop or function with matching arity."}))
+
+(defn nontail-value!
+  [plan value reason operations]
+  (when ((deref (get operations :recur-signal?)) value)
+    ((deref (get operations :recur-fail!))
+     plan nil (count ((deref (get operations :recur-values)) value)) reason))
+  value)
+
+(defn execute-generic-builtin-call-scoped
+  [runtime plan env instruction function public-invocation-scope operations]
+  (let [args ((deref (get operations :execute-values-scoped))
+              runtime plan env (:args instruction)
+              :recur-inside-builtin-argument public-invocation-scope)]
+    (if (and (= 'str function)
+             (:runtime-artifact-plan runtime))
+      (case (count args)
+        1 ((deref (get operations :artifact-invoke))
+           runtime (deref (get operations :artifact-function)) args)
+        2 ((deref (get operations :artifact-invoke))
+           runtime (deref (get operations :artifact-concat-function)) args)
+        ((deref (get operations :fail-call-arity!))
+         "L2-BUILTIN-ARITY" plan function args "1 or 2"))
+      (if (contains? instruction :compiler-internal-caller)
+        ((deref (get operations :invoke-compiler-internal-builtin))
+         runtime plan instruction args public-invocation-scope)
+        ((deref (get operations :invoke-builtin))
+         runtime plan function args instruction public-invocation-scope)))))
+
+(defn execute-call-scoped [runtime plan env instruction public-invocation-scope operations]
+  (let [function (:function instruction)
+        external-authority
+        (when (contains? instruction :external-link)
+          ((deref (get operations :authorize-external-link)) runtime plan instruction))
+        args ((deref (get operations :execute-values-scoped))
+              runtime plan env (:args instruction) :recur-inside-function-argument public-invocation-scope)]
+    (if external-authority
+      ((deref (get operations :execute-external-machine))
+       runtime plan instruction external-authority args public-invocation-scope)
+      ((deref (get operations :execute-function-scoped)) runtime plan function args public-invocation-scope))))
+
+
+(doseq [operation [#'map-entry #'fail-recur! #'nontail-value! #'execute-generic-builtin-call-scoped #'execute-call-scoped #'executor-rule-record #'fail-call-arity! #'assert-min-arity! #'assert-exact-arity! #'assert-between-arity! #'assert-even-arity! #'hosted-unary-builtin #'execute-instruction-scoped #'execute-value-scoped #'bind-values #'execute-values-scoped #'execute-map-entries-scoped #'execute-instructions-scoped #'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

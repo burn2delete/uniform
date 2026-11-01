@@ -94,6 +94,17 @@ owners until moved with their implementation.
 | `gravity.bootstrap` | BOOT1-8; seed composition and compatibility | Existing adapters and `-main`; [module literal data](bootstrap-literals-evidence.md) via `gravity.bootstrap.module-literals/materialize!`: explicit diagnostic Var + parsed form -> inert literal data or refusal; source + seed/stage records -> stage artifacts | Caller retains BOOT2006 shape refusals and all source/admission guards; helper grants no authority | `gravity.bootstrap.module-literals-test`, `gravity.bootstrap-test` and focused self-hosting kernels: complete paired development plans and quota-free valid data / real malformed literals, duplicate declarations and substituted source |
 | `gravity.release` | PKG3/PKG7/PKG10/PKG12, T1, BOOT8; [native JAR inventory reports](release-inventory-evidence.md) | `jar-source-inventory-report`, `jar-inventory-report`; observed native entry names + explicit late expected-inventory Vars -> exact source/file reports. Canonical `assemble`/`verify-release` remain proposed. | Stage decides inventory membership, order and duplicates; Bootstrap retains P18T02006 construction, archive IO and all release authority. | `gravity.release.pipeline-test`: actual disposable JAR and canonical source order / actual unexpected archive member, omissions, duplicates, ordering and late Var/dependency failures |
 
+The [Runtime control extraction](runtime-control-evidence.md) adds `map-entry`,
+`fail-recur!`, `nontail-value!`, `execute-generic-builtin-call-scoped` and
+`execute-call-scoped` for trusted native map/recurrence/call carriers and late
+operation Vars. It owns map lookup, recurrence refusal facts and call sequencing;
+Bootstrap retains opaque representation, source throw tokens, authorization,
+external execution and publication. Tests in `gravity.runtime.pipeline-test`
+cover paired real call/recurrence plans and actual arity/operand refusals,
+sorted comparator isolation, nil entries, exception identity, late ports and
+authorization before argument evaluation. This adds no admission or canonical
+runtime conformance. Dependency direction follows the Runtime row above.
+
 ## Incremental extraction and acceptance
 
 Extract executable behavior, not empty namespaces or a second compiler.

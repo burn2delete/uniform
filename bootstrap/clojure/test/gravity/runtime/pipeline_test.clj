@@ -27,7 +27,9 @@
            'bind-values 'execute-value-scoped 'execute-values-scoped
            'execute-map-entries-scoped 'execute-instructions-scoped 'execute-instruction-scoped
            'executor-rule-record 'fail-call-arity! 'assert-min-arity! 'assert-exact-arity!
-           'assert-between-arity! 'assert-even-arity! 'hosted-unary-builtin}
+           'assert-between-arity! 'assert-even-arity! 'hosted-unary-builtin
+           'map-entry 'fail-recur! 'nontail-value!
+           'execute-generic-builtin-call-scoped 'execute-call-scoped}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -989,3 +991,177 @@
       (with-redefs-fn {stage (fn [& actual] (reset! seen (vec actual)) marker)}
         #(is (identical? marker (apply (deref compatibility) values))))
       (is (= (cond-> (if prefix (into [prefix] values) values) suffix (conj suffix)) @seen)))))
+
+(def ^:private control-positive
+ '[[generic-empty ""] [generic-many 10] [generic-vector [1 2 3 4]]
+   [ordinary-call [7 8]] [nil-call [nil false]] [call-order [7 8]]
+   [generic-order [1 2 3]] [function-recur 15] [loop-recur 10]
+   [nested-call [6 3]] [control-data {:a nil :b false :c 7}] [loop-nil nil]])
+(def ^:private control-output
+ '{call-order "left\nright\n" generic-order "a\nb\nc\n"})
+(def ^:private control-negative
+ '[[builtin-argument / "L2-BUILTIN-ERROR" ""]
+   [function-argument / "L2-BUILTIN-ERROR" ""]
+   [function-order / "L2-BUILTIN-ERROR" "before\n"]
+   [generic-order / "L2-BUILTIN-ERROR" "before\n"]
+   [bad-operand + "L2-BUILTIN-ERROR" ""]
+   [bad-arity pair "L2-FUNCTION-ARITY" ""]])
+
+(deftest paired-control-source-retains-values-refusals-and-evaluation-order
+ (doseq [extension [".gravity" ".qst"]]
+  (let [{:keys [plan]} (compile-source (str "bootstrap/clojure/fixtures/runtime-control/accepted" extension))]
+   (is (= (:plan-id plan) (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+   (doseq [[function expected] control-positive]
+    (let [value (atom nil)
+          output (with-out-str (reset! value (b/p15-s23-stage2-runtime-execute-function context plan function [])))]
+     (is (= expected @value) (str function extension))
+     (is (= (get control-output function "") output) (str function extension)))))
+  (let [{:keys [plan]} (compile-source (str "bootstrap/clojure/fixtures/runtime-control/rejected" extension))]
+   (doseq [[function builtin id expected-output] control-negative]
+    (let [failure (atom nil)
+          output (with-out-str (reset! failure (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan function []))))]
+     (is (= id (:id @failure)) (str function extension))
+     (is (= builtin (:function @failure)) (str function extension))
+     (is (= expected-output output) (str function extension)))))))
+
+(deftest map-entry-preserves-native-equality-nil-values-and-sorted-comparator-isolation
+ (let [comparisons (atom [])
+       values (sorted-map-by (fn [left right] (swap! comparisons conj [left right]) (compare left right)) "a" nil "b" false)]
+  (reset! comparisons [])
+  (is (nil? (runtime/map-entry values :control)))
+  (is (= ["a" nil] (runtime/map-entry values "a")))
+  (is (= ["b" false] (runtime/map-entry values "b")))
+  (is (empty? @comparisons)))
+ (doseq [values [{:a nil :b false} (hash-map :a nil :b false)]]
+  (is (= [:a nil] (runtime/map-entry values :a)))
+  (is (= [:b false] (runtime/map-entry values :b)))
+  (is (nil? (runtime/map-entry values :missing))))
+ (doseq [value [nil false 7 [:a nil] '(:a nil)]]
+  (is (nil? (runtime/map-entry value :a))))
+ (let [wrapper (ns-resolve 'gravity.bootstrap 'p15-s23-stage2-runtime-map-entry)]
+  (is (= [:a nil] (wrapper {:a nil} :a)))
+  (is (:private (meta wrapper)))))
+
+(deftest recurrence-facts-and-nontail-check-retain-failure-order-and-original-value
+ (let [plan {:source {:path "original.gravity"}} received (atom nil)
+       fail (clojure.lang.Var/create (fn [& args] (reset! received args) :refused))]
+  (is (= :refused (runtime/fail-recur! fail plan 2 3 :wrong-target)))
+  (is (= ["L2-RECUR-TARGET" "recur has no compatible loop or function target"
+          {:source-span {:source "original.gravity"} :target-arity 2 :actual-arity 3 :reason :wrong-target
+           :remediation "Use recur only in tail position inside a compatible loop or function with matching arity."}]
+         @received))
+  (let [wrapper-result (atom nil)]
+   (with-redefs-fn {#'b/fail! (fn [& args] (reset! wrapper-result args))}
+     #(b/p15-s23-stage2-runtime-recur-fail! plan 2 3 :wrong-target))
+   (is (= @received @wrapper-result))))
+ (let [value (Object.) predicate (clojure.lang.Var/create (constantly false))]
+  (is (identical? value (runtime/nontail-value! {} value :reason {:recur-signal? predicate}))))
+ (let [signal (b/p15-s23-stage2-runtime-recur-signal [nil false])
+       data (diagnostic #(b/p15-s23-stage2-runtime-nontail-value! {:source {:path "actual.qst"}} signal :nontail))]
+  (is (= "L2-RECUR-TARGET" (:id data)))
+  (is (= :nontail (:reason data)))
+  (is (= 2 (:actual-arity data)))
+  (is (nil? (:target-arity data))))
+ (let [events (atom []) signal (Object.) fail (clojure.lang.Var/create (fn [& _] (swap! events conj :old)))
+       values (clojure.lang.Var/create
+               (fn [_] (swap! events conj :values)
+                 (alter-var-root fail (constantly (fn [& _] (swap! events conj :too-late)))) [1]))
+       predicate (clojure.lang.Var/create
+                  (fn [value] (is (identical? signal value)) (swap! events conj :predicate)
+                    (alter-var-root fail (constantly (fn [& _] (swap! events conj :selected)))) true))]
+  (is (identical? signal (runtime/nontail-value! {} signal :reason {:recur-signal? predicate :recur-values values :recur-fail! fail})))
+  (is (= [:predicate :values :selected] @events))))
+
+(defn- generic-call-operations []
+ ((fn [name] (var-get (ns-resolve 'gravity.bootstrap name))) 'p15-s23-runtime-generic-call-operations))
+(defn- ordinary-call-operations []
+ (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-call-operations)))
+
+(deftest call-operation-inventories-and-compatibility-signatures-remain-explicit
+ (doseq [[name operations expected]
+         [['execute-generic-builtin-call-scoped (generic-call-operations)
+           '([runtime plan env instruction function public-invocation-scope])]
+          ['execute-call-scoped (ordinary-call-operations)
+           '([runtime plan env instruction public-invocation-scope])]]]
+  (let [stage-var (ns-resolve 'gravity.runtime name)
+        wrapper (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-stage2-runtime-" name)))
+        contract (:gravity/namespace-contract (meta stage-var))]
+   (is (= (set (get-in contract [:public-api name :operation-keys])) (set (keys operations))))
+   (is (every? var? (vals operations)))
+   (is (= expected (:arglists (meta wrapper))))
+   (is (:private (meta wrapper))))))
+
+(deftest generic-call-evaluates-before-late-dispatch-and-preserves-refusal-identity
+ ;; These anonymous Vars test sequencing only; they never enter admission.
+ (let [events (atom []) scope (Object.) args [1 2 3]
+       invoke (clojure.lang.Var/create (fn [& _] :obsolete))
+       evaluate (clojure.lang.Var/create
+                  (fn [& received] (swap! events conj [:evaluate received])
+                    (alter-var-root invoke (constantly (fn [& received] (swap! events conj [:invoke received]) :value))) args))
+       instruction {:args [:a :b :c]}]
+  (is (= :value (runtime/execute-generic-builtin-call-scoped :runtime :plan :env instruction '+ scope
+                  {:execute-values-scoped evaluate :invoke-builtin invoke})))
+  (is (= [[:evaluate [:runtime :plan :env [:a :b :c] :recur-inside-builtin-argument scope]]
+          [:invoke [:runtime :plan '+ args instruction scope]]] @events)))
+ (doseq [count [1 2]]
+  (let [formatter (clojure.lang.Var/create 'obsolete)
+        evaluate (clojure.lang.Var/create (fn [& _] (alter-var-root formatter (constantly 'current-formatter)) (vec (range count))))
+        seen (atom nil) invoke (clojure.lang.Var/create (fn [& args] (reset! seen args) :formatted))]
+   (is (= :formatted (runtime/execute-generic-builtin-call-scoped {:runtime-artifact-plan :trusted-data} :plan :env {:args []} 'str nil
+                     {:execute-values-scoped evaluate :artifact-invoke invoke :artifact-function formatter :artifact-concat-function formatter})))
+   (is (= [{:runtime-artifact-plan :trusted-data} 'current-formatter (vec (range count))] @seen))))
+ (let [error (ex-info "denied compiler call" {}) events (atom [])
+       evaluate (clojure.lang.Var/create (fn [& _] (swap! events conj :arguments) [7]))
+       deny (clojure.lang.Var/create (fn [& _] (swap! events conj :denied) (throw error)))]
+  (is (identical? error (observed-error #(runtime/execute-generic-builtin-call-scoped nil {} nil
+                                         {:args [] :compiler-internal-caller nil} '+ nil
+                                         {:execute-values-scoped evaluate :invoke-compiler-internal-builtin deny}))))
+  (is (= [:arguments :denied] @events)))
+ (let [error (IllegalArgumentException. "argument failed") evaluate (clojure.lang.Var/create (fn [& _] (throw error)))]
+  (is (identical? error (observed-error #(runtime/execute-generic-builtin-call-scoped nil {} nil {:args []} '+ nil {:execute-values-scoped evaluate}))))))
+
+(deftest ordinary-call-authorizes-before-arguments-and-preserves-scope-and-failure
+ ;; Authority ports deny in host units; real source controls use live owners.
+ (let [scope (Object.) events (atom []) error (ex-info "external denied" {})
+       deny (clojure.lang.Var/create (fn [& args] (swap! events conj [:deny args]) (throw error)))]
+  (is (identical? error (observed-error #(runtime/execute-call-scoped :runtime :plan :env {:function 'f :external-link nil} scope
+                                         {:authorize-external-link deny}))))
+  (is (= [[:deny [:runtime :plan {:function 'f :external-link nil}]]] @events)))
+ (doseq [external? [false true]]
+  (let [scope (Object.) events (atom []) error (ex-info "argument failure" {})
+        authorize (clojure.lang.Var/create (fn [& _] (swap! events conj :authorize) nil))
+        evaluate (clojure.lang.Var/create (fn [& _] (swap! events conj :arguments) (throw error)))
+        instruction (cond-> {:function 'f :args [:a]} external? (assoc :external-link nil))]
+   (is (identical? error (observed-error #(runtime/execute-call-scoped nil {} nil instruction scope
+                                          {:authorize-external-link authorize :execute-values-scoped evaluate}))))
+   (is (= (if external? [:authorize :arguments] [:arguments]) @events))))
+ (let [scope (Object.) seen (atom nil) invoke (clojure.lang.Var/create (fn [& _] :obsolete))
+       evaluate (clojure.lang.Var/create
+                  (fn [& args] (is (= [:runtime :plan :env [:a] :recur-inside-function-argument scope] args))
+                    (alter-var-root invoke (constantly (fn [& args] (reset! seen args) :called))) [7]))]
+  (is (= :called (runtime/execute-call-scoped :runtime :plan :env {:function 'f :args [:a]} scope
+                   {:execute-values-scoped evaluate :execute-function-scoped invoke})))
+  (is (= [:runtime :plan 'f [7] scope] @seen))))
+
+(deftest generic-formatter-refusals-and-call-exceptions-remain-outside-host-translation
+ (doseq [count [0 3]]
+  (let [seen (atom nil) args (vec (range count))
+        evaluate (clojure.lang.Var/create (fn [& _] args))
+        failure (ex-info "formatter arity" {})
+        deny (clojure.lang.Var/create (fn [& data] (reset! seen data) (throw failure)))]
+   (is (identical? failure
+        (observed-error #(runtime/execute-generic-builtin-call-scoped
+                           {:runtime-artifact-plan :trusted-data} :plan :env {:args []} 'str nil
+                           {:execute-values-scoped evaluate :fail-call-arity! deny}))))
+   (is (= ["L2-BUILTIN-ARITY" :plan 'str args "1 or 2"] @seen))))
+ (doseq [failure [(ex-info "original" {}) (IllegalArgumentException. "original")]]
+  (let [evaluate (clojure.lang.Var/create (fn [& _] [7]))
+        deny (clojure.lang.Var/create (fn [& _] (throw failure)))]
+   (is (identical? failure
+        (observed-error #(runtime/execute-generic-builtin-call-scoped
+                           {:runtime-artifact-plan :trusted-data} {} nil {:args []} 'str nil
+                           {:execute-values-scoped evaluate :artifact-function (clojure.lang.Var/create 'formatter)
+                            :artifact-invoke deny}))))
+   (is (identical? failure
+        (observed-error #(runtime/execute-call-scoped nil {} nil {:function 'f :args []} nil
+                           {:execute-values-scoped evaluate :execute-function-scoped deny})))))))
