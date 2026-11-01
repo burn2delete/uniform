@@ -4819,13 +4819,9 @@
 
 
 
-(defn- list-query-input [operation argument-types]
-  (let [input (integral-ordering-input operation argument-types)]
-    (assoc input :binding-types (:types input)
-                 :products {:calls (get-in input [:core :calls]) :call-edges (get-in input [:core :call-edges]) :module (:module input)})))
+(def ^:private list-query-input kernel-support/list-query-input)
 
-(defn- list-query-derived [{:keys [core node call edge nodes bindings types forms]}]
-  (invoke-c7 'sh08-lq-derive [core node call edge nodes bindings types forms]))
+(def ^:private list-query-derived kernel-support/list-query-derived)
 
 
 (deftest sh08-vector-empty-development-kernel
@@ -5529,58 +5525,12 @@
         ))
     (is (= :accepted (:status (list-query-derived (list-query-input 'rest [(positional (vec (repeat 1025 s)))])))))))
 
-(defn- bare-list-parameter-input [actual]
-  (let [sha #(str "sha256:" (format "%064x" %))
-        declaration {:source-child-index 1 :marker-form-id (sha 1) :marker-syntax-id (sha 2)
-                     :type-form-id (sha 3) :type-syntax-id (sha 4) :type-symbol 'List :type-binding-id (sha 5) :type-id :gravity.type/list}
-        signature {:rule-version :sh07-atomic-function-signature-v1 :mapping-rule-version :sh07-atomic-function-declaration-map-v1
-                   :parameters [declaration] :return nil :parameter-source-child-indexes [0] :body-source-child-index 2}
-        record {:function-syntax-id :callee :function-core-node-id :function :body-core-node-id :body
-                :parameter-binding-ids [:parameter] :fixed-arity 1 :definition-kind :named-top-level
-                :definition-binding-id :definition :signature signature}
-        module {:namespace 'example.list-parameter :profile :meta :target :jvm :effects [] :capabilities []}
-        callee (assoc (invoke-c7 'sh08-ft-function-type-skeleton [record module]) :return :gravity.type/string)
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        call {:core-node-id :call :operator-node-id :operator :operator-binding-id :definition :argument-node-ids [:argument]
-              :ordered-evaluation-node-ids [:operator :argument] :evaluation-order :operator-then-arguments :result-policy :call-result}
-        edge {:ordinal 0 :call-core-node-id :call :caller-function-syntax-id nil :caller-function-core-node-id nil
-              :callee-binding-id :definition :callee-definition-syntax-id :definition-source
-              :callee-function-syntax-id :callee :callee-function-core-node-id :function
-              :argument-core-node-ids [:argument] :ordered-evaluation-node-ids [:operator :argument]
-              :evaluation-order :operator-then-arguments :classification :local-function}
-        node {:node-id :call :core-form :call :children [:operator :argument] :source (source :call)
-              :resolved-binding-ids [:definition] :evaluation {:kind :operator-then-arguments}}
-        nodes {:call node :argument {:node-id :argument :source (source :argument)}
-               :operator {:node-id :operator :core-form :reference :source (source :operator)
-                          :attributes {:binding-id :definition} :resolved-binding-ids [:definition]}}
-        bindings {(sha 5) {:binding-id (sha 5) :name 'List :kind :type :binding-class :core :namespace 'gravity.core}
-                  :parameter {:binding-id :parameter :name 'items :kind :local :binding-class :lexical :definition-syntax-id :parameter-source}
-                  :definition {:binding-id :definition :name 'consume :kind :function :binding-class :namespace :namespace 'example.list-parameter}}
-        core {:module module :function-records [record] :nodes (vec (vals nodes)) :calls [call] :call-edges [edge]}
-        types {:argument actual :call :gravity.type/string :operator callee}
-        context {:ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))}]
-    {:core core :node node :call call :edge edge :callee callee :nodes nodes :bindings bindings :types types
-     :functions {:callee callee} :seeds {:parameter :gravity.type/list} :context context :declaration declaration :signature signature}))
+(def ^:private bare-list-parameter-input kernel-support/bare-list-parameter-input)
 
 (defn- bare-list-parameter-constraints [{:keys [call edge nodes types seeds functions context]}]
   (invoke-c7 'sh08-ft-call-constraints-with-context [[call] [edge] nodes types seeds functions context]))
 
-(defn- homogeneous-list-parameter-input [actual]
-  (let [base (bare-list-parameter-input actual) sha #(str "sha256:" (format "%064x" %))
-        type {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
-        declaration (assoc (:declaration base) :rule-version :sh07-list-parameter-declaration-v1
-                           :type-id type :constructor-form-id (sha 6) :constructor-syntax-id (sha 7)
-                           :element-form-id (sha 8) :element-syntax-id (sha 9)
-                           :element-symbol 'String :element-binding-id (sha 10))
-        signature (assoc (:signature base) :parameters [declaration])
-        record (assoc (first (get-in base [:core :function-records])) :signature signature)
-        core (assoc (:core base) :function-records [record])
-        bindings (assoc (:bindings base) (sha 10) {:binding-id (sha 10) :name 'String :kind :type :binding-class :core :namespace 'gravity.core})
-        callee (assoc (:callee base) :signature signature :parameters [{:binding-id :parameter :type type}])
-        types (assoc (:types base) :operator callee)]
-    (assoc base :core core :bindings bindings :declaration declaration :signature signature :callee callee
-                :types types :functions {:callee callee} :seeds {:parameter type} :homogeneous-type type
-                :context (assoc (:context base) :ordering-core core :ordering-bindings bindings :lookup-bindings (vec (vals bindings))))))
+(def ^:private homogeneous-list-parameter-input kernel-support/homogeneous-list-parameter-input)
 
 (defn- bare-map-parameter-input [actual]
   (let [base (walk/postwalk-replace {'List 'Map :gravity.type/list :gravity.type/map}
@@ -5859,51 +5809,7 @@
       (doseq [wrong [:gravity.type/list (positional [s]) (assoc type :element-type :gravity.type/keyword)]]
         (is (= :function-recur-slot-type-mismatch (get-in (check wrong) [:issues 0 :reason])))))))
 
-(defn- homogeneous-list-head-input [branch-index]
-  (let [type {:kind :gravity.type/list :shape :homogeneous :element-type :gravity.type/string}
-        base (list-query-input 'first [type]) parameter (homogeneous-list-parameter-input type)
-        predicate (let [moved (walk/postwalk-replace {:operator :predicate-operator :arg0 :predicate-receiver :call :condition
-                                                     :ordering-binding :empty-binding} (list-query-input 'empty? [type]))]
-                    (assoc moved :call (:condition moved)))
-        owner #(assoc-in % [:evaluation :owner-function-syntax-id] :callee)
-        reference #(assoc (owner %) :resolved-binding-ids [:parameter]
-                          :attributes {:symbol 'items :position :expression :binding-id :parameter :binding-class :lexical
-                                       :definition-syntax-id :parameter-source})
-        nodes (-> (merge (:nodes base) (:nodes predicate))
-                  (update-vals owner) (update :arg0 reference) (update :predicate-receiver reference)
-                  (assoc-in [:condition :core-form] :call)
-                  (assoc-in [:predicate-operator :attributes :position] :operator))
-        children (if (= branch-index 1) [:condition :call :base] [:condition :base :call])
-        source #(hash-map :form-id % :syntax-id % :semantic-span nil :origin-chain [] :generated-origin nil)
-        branch {:node-id :branch :core-form :if :children children :source (source :branch)
-                :attributes {:condition-child-index 0 :then-child-index 1 :else-child-index 2 :condition-evaluation :always-first
-                             :branch-evaluation :exactly-one :truthiness {:false-values [:nil :false] :other-values :true}}
-                :evaluation {:kind :condition-then-exclusive-branch :owner-function-syntax-id :callee
-                             :order [{:index 0 :core-node-id :condition}]}}
-        nodes (assoc nodes :branch branch
-                           :base (owner {:node-id :base :core-form :literal :children [] :source (source :base)
-                                         :attributes {:literal-kind :string :value ""} :evaluation {:order []}})
-                           :function {:node-id :function :core-form :fn :children [:branch] :source (source :function)
-                                      :resolved-binding-ids [:parameter] :attributes {:signature (:signature parameter)} :evaluation {:order []}})
-        control {:core-node-id :branch :kind :if :condition-node-id :condition
-                 :branches [{:role :then :predicate :truthy :core-node-id (get children 1)}
-                            {:role :else :predicate :falsey :core-node-id (get children 2)}]
-                 :branch-exclusivity :exactly-one :truthiness {:false-values [:nil :false] :other-values :true} :result-policy :selected-branch}
-        owned-edge #(assoc % :caller-function-syntax-id :callee :caller-function-core-node-id :function)
-        edge (assoc (owned-edge (:edge base)) :ordinal 1)
-        predicate-edge (assoc (owned-edge (:edge predicate)) :ordinal 0)
-        core (assoc (:core base) :nodes (vec (vals nodes)) :calls [(:call predicate) (:call base)] :call-edges [predicate-edge edge]
-                                :function-records (get-in parameter [:core :function-records]) :control-flow [control] :lexical-bindings [] :mutations [])
-        bindings (merge (:bindings parameter) (:bindings base) (:bindings predicate))
-        forms (-> (merge (:forms base) (:forms predicate))
-                  (assoc-in [:arg0 :value] 'items) (assoc-in [:predicate-receiver :value] 'items))
-        types {:arg0 type :predicate-receiver type :condition :gravity.type/bool :base :gravity.type/string}
-        predicate-input (assoc predicate :core core :nodes nodes :node (:condition nodes) :edge predicate-edge
-                                        :bindings bindings :forms forms :types types)
-        derived (list-query-derived predicate-input)
-        types (assoc types :predicate-operator (:descriptor derived))]
-    (assoc base :core core :nodes nodes :node (:call nodes) :edge edge :bindings bindings :forms forms :types types
-                :predicate-input predicate-input :predicate-derived derived)))
+(def ^:private homogeneous-list-head-input kernel-support/homogeneous-list-head-input)
 
 (deftest sh08-homogeneous-list-head-development-kernel
   (doseq [branch-index [1 2]]
@@ -8693,50 +8599,7 @@
 (defn- integral-ordering-descriptor [{:keys [core node call edge nodes bindings types module]}]
   (invoke-c7 'sh08-io-descriptor [core node call edge nodes bindings types module]))
 
-(defn- map-association-input [key value-type empty?]
-  (let [module {:namespace 'example.association :profile :meta :target :jvm :effects [:memory/allocate] :capabilities []}
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        form (fn [id kind value parent children]
-               {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
-                :kind kind :value value :parent-form-id parent :child-form-ids children})
-        binding (-> (get-in (integral-ordering-input '< []) [:bindings :ordering-binding])
-                    (assoc :name 'assoc :binding-id :association-binding :definition-syntax-id :association-definition))
-        input-children (if empty? [] [:input-key :input-value])
-        children [:operator :input :key :value]
-        node (fn [id kind ids attrs]
-               {:node-id id :core-form kind :children ids :attributes attrs :source (source id)
-                :resolved-binding-ids [] :evaluation {:kind :left-to-right :order (mapv #(hash-map :index %1 :core-node-id %2) (range) ids)}})
-        operator (assoc (node :operator :reference [] {:symbol 'assoc :position :operator :binding-id :association-binding
-                                                       :binding-class :core :definition-syntax-id :association-definition})
-                        :resolved-binding-ids [:association-binding])
-        input (node :input :collection-literal input-children {:literal-kind :map :element-count (count input-children)})
-        input-key (node :input-key :literal [] {:literal-kind :keyword :value :old})
-        input-value (node :input-value :literal [] {:literal-kind :integer :value 7})
-        key-node (node :key :literal [] {:literal-kind :keyword :value key})
-        value-node (node :value :reference [] {:binding-id :value-binding})
-        call-node (-> (node :association :call children {:operator-child-index 0 :argument-count 3 :argument-child-indexes [1 2 3]
-                                                        :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call})
-                      (assoc :resolved-binding-ids [:association-binding])
-                      (assoc-in [:evaluation :kind] :operator-then-arguments))
-        nodes (vec (concat [operator] (when-not empty? [input-key input-value]) [input key-node value-node call-node]))
-        call {:core-node-id :association :operator-node-id :operator :operator-binding-id :association-binding
-              :argument-node-ids [:input :key :value] :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :result-policy :call-result}
-        edge {:ordinal 0 :call-core-node-id :association :caller-function-syntax-id nil :caller-function-core-node-id nil
-              :callee-binding-id :association-binding :callee-definition-syntax-id :association-definition
-              :callee-function-syntax-id nil :callee-function-core-node-id nil :argument-core-node-ids [:input :key :value]
-              :ordered-evaluation-node-ids children :evaluation-order :operator-then-arguments :classification :nonlocal-or-nonfunction}
-        core {:module module :nodes nodes :function-records [] :lexical-bindings [] :definitions [] :calls [call] :call-edges [edge] :recursion-components []}
-        forms [(form :association :list (list 'assoc {} key 'value) nil children)
-               (form :operator :symbol 'assoc :association []) (form :input :map (if empty? {} {:old 7}) :association input-children)
-               (form :input-key :keyword :old :input []) (form :input-value :integer 7 :input [])
-               (form :key :keyword key :association []) (form :value :symbol 'value :association [])]
-        types {:input-key :gravity.type/keyword :input-value :gravity.type/integer :key :gravity.type/keyword :value value-type
-               :input {:kind :gravity.type/map :member-types (if empty? [] [:gravity.type/keyword :gravity.type/integer]) :shape :literal}}
-        bindings {:association-binding binding :value-binding {:binding-id :value-binding :binding-class :lexical :name 'value}}
-        products {:calls [call] :call-edges [edge] :definitions [] :function-index {} :recursion-components [] :module module}]
-    {:module module :core core :node call-node :nodes (into {} (map (juxt :node-id identity) nodes)) :call call :edge edge
-     :forms (into {} (map (juxt :form-id identity) forms)) :bindings bindings :types types :products products
-     :binding-types {:value-binding value-type}}))
+(def ^:private map-association-input kernel-support/map-association-input)
 
 (defn- map-association-derived [{:keys [core node nodes types binding-types bindings forms products]}]
   (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types ]) :source-core core)]
@@ -8772,173 +8635,21 @@
         (assoc-in [:bindings :outer-value-binding] {:binding-id :outer-value-binding :binding-class :lexical :name 'next-value})
         (update :products assoc :calls (:calls core) :call-edges (:call-edges core)))))
 
-(defn- map-removal-input [key empty?]
-  (let [base (walk/postwalk-replace {:association :removal :association-binding :removal-binding
-                                   :association-definition :removal-definition 'assoc 'dissoc}
-                                  (map-association-input key :gravity.type/bool empty?))
-        children [:operator :input :key]
-        node (-> (:node base) (assoc :children children)
-                 (assoc-in [:attributes :argument-count] 2) (assoc-in [:attributes :argument-child-indexes] [1 2])
-                 (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children)))
-        call (assoc (:call base) :argument-node-ids [:input :key] :ordered-evaluation-node-ids children)
-        edge (assoc (:edge base) :argument-core-node-ids [:input :key] :ordered-evaluation-node-ids children)
-        core (-> (:core base) (assoc :calls [call] :call-edges [edge])
-                 (update :nodes #(mapv (fn [n] (if (= :removal (:node-id n)) node n)) (remove (fn [n] (= :value (:node-id n))) %))))
-        forms (-> (:forms base) (dissoc :value)
-                  (assoc-in [:removal :child-form-ids] children)
-                  (assoc-in [:removal :value] (list 'dissoc (get-in base [:forms :input :value]) key)))]
-    (assoc base :node node :call call :edge edge :core core :forms forms :types (dissoc (:types base) :value)
-                :nodes (into {} (map (juxt :node-id identity) (:nodes core)))
-                :bindings (dissoc (:bindings base) :value-binding) :binding-types {}
-                :products (assoc (:products base) :calls [call] :call-edges [edge]))))
+(def ^:private map-removal-input kernel-support/map-removal-input)
 
 (defn- map-removal-derived
   ([{:keys [core node nodes types binding-types bindings forms products]}]
    (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types ]) :source-core core)]
      (invoke-c7 'sh08-mr-derive [node nodes types binding-types {} [] bindings forms #{} 0 {} context]))))
 
-(defn- map-present-get-input
-  ([key] (map-present-get-input key false false))
-  ([key never-input? never-key?]
-   (let [base (walk/postwalk-replace {:removal :present-get :removal-binding :get-binding :removal-definition :get-definition 'dissoc 'get}
-                                   (map-removal-input key false))
-         entries [[:file "source.gravity" :string :gravity.type/string]
-                  [:line 17 :integer :gravity.type/integer]
-                  [:kind :span :keyword :gravity.type/keyword]
-                  [:enabled false :boolean :gravity.type/bool]
-                  [:payload nil :nil :gravity.type/nil]]
-         source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-         literal (fn [id kind value] {:node-id id :core-form :literal :children [] :resolved-binding-ids []
-                                      :attributes {:literal-kind kind :value value} :source (source id) :evaluation {:kind :left-to-right :order []}})
-         form (fn [id kind value parent children] {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
-                                                    :kind kind :value value :parent-form-id parent :child-form-ids children})
-         parts (mapv (fn [index [key value kind type]]
-                       (let [kid (keyword (str "entry-key-" index)) vid (keyword (str "entry-value-" index))]
-                         {:ids [kid vid] :nodes [(literal kid :keyword key) (literal vid kind value)]
-                          :forms [(form kid :keyword key :input []) (form vid kind value :input [])]
-                          :types {kid :gravity.type/keyword vid type}})) (range) entries)
-         children (vec (mapcat :ids parts))
-         map-type {:kind :gravity.type/map :member-types (vec (mapcat #(vector :gravity.type/keyword (nth % 3)) entries)) :shape :literal}
-         input (if never-input?
-                 (-> (get-in base [:nodes :input]) (assoc :core-form :reference :children [] :attributes {:binding-id :never-input})
-                     (assoc-in [:evaluation :order] []))
-                 (-> (get-in base [:nodes :input]) (assoc :children children :attributes {:literal-kind :map :element-count (count children)})
-                     (assoc-in [:evaluation :order] (mapv #(hash-map :index %1 :core-node-id %2) (range) children))))
-         key-node (if never-key?
-                    (-> (get-in base [:nodes :key]) (assoc :core-form :reference :attributes {:binding-id :never-key}))
-                    (get-in base [:nodes :key]))
-         node-list (vec (concat [(get-in base [:nodes :operator])] (when-not never-input? (mapcat :nodes parts)) [input key-node (:node base)]))
-         forms (merge (dissoc (:forms base) :input-key :input-value)
-                      (when-not never-input? (into {} (map (juxt :form-id identity) (mapcat :forms parts))))
-                      {:input (form :input (if never-input? :symbol :map) (if never-input? 'aborts (into {} (map #(subvec % 0 2) entries)))
-                                    :present-get (if never-input? [] children))
-                       :key (form :key (if never-key? :symbol :keyword) (if never-key? 'aborts key) :present-get [])})
-         types (merge (when-not never-input? (apply merge (map :types parts)))
-                      {:input (if never-input? :gravity.type/never map-type) :key (if never-key? :gravity.type/never :gravity.type/keyword)})
-         binding-types (cond-> {} never-input? (assoc :never-input :gravity.type/never) never-key? (assoc :never-key :gravity.type/never))
-         bindings (merge (:bindings base) (into {} (map (fn [[id _]] [id {:binding-id id :binding-class :lexical :kind :local :name 'aborts}]) binding-types)))]
-     (assoc base :core (assoc (:core base) :nodes node-list) :nodes (into {} (map (juxt :node-id identity) node-list))
-                 :forms forms :types types :bindings bindings :binding-types binding-types))))
+(def ^:private map-present-get-input kernel-support/map-present-get-input)
 
 (defn- map-present-get-derived
   ([{:keys [core node nodes types binding-types bindings forms products]}]
    (let [context (assoc (invoke-c7 'sh08-sm-call-context [products types ]) :source-core core)]
      (invoke-c7 'sh08-mg-present-derive [node nodes types binding-types {} [] bindings forms {} context]))))
 
-(defn- private-entry-get-input
-  ([] (private-entry-get-input :file))
-  ([key]
-   (let [base (map-present-get-input key)
-         source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-         form (fn [id kind value parent children]
-                {:form-id id :syntax-id id :source-span nil :origin-chain [] :generated-origin nil
-                 :kind kind :value value :parent-form-id parent :child-form-ids children})
-         node (fn [id kind children attributes owner]
-                {:node-id id :core-form kind :children children :attributes attributes :source (source id)
-                 :resolved-binding-ids [] :evaluation {:kind :left-to-right :owner-function-syntax-id owner
-                                                      :order (mapv #(hash-map :index %1 :core-node-id %2) (range) children)}})
-         parameter {:binding-id :span-binding :name 'span :kind :local :binding-class :lexical}
-         helper {:function-syntax-id :helper-form :function-form-id :helper-form :function-core-node-id :helper-fn
-                 :body-core-node-id :present-get :parameter-binding-ids [:span-binding] :fixed-arity 1
-                 :definition-kind :named-top-level :definition-binding-id :helper-binding :definition-core-node-id :helper-def
-                 :definition-name 'without-path}
-         binding {:binding-id :helper-binding :name 'without-path :kind :function :binding-class :namespace
-                  :namespace (get-in base [:module :namespace]) :visibility :private
-                  :definition-syntax-id :helper-name :upstream-binding-id :helper-upstream}
-         definition {:binding-id :helper-binding :name 'without-path :core-node-id :helper-def
-                     :value-node-id :helper-fn :syntax-id :helper-def}
-         maps (mapv (fn [ordinal]
-                      (let [ids (into {} (for [id (concat [:input] (get-in base [:nodes :input :children]))]
-                                           [id (keyword (str (name id) "-" ordinal))]))
-                            rename #(walk/postwalk-replace ids %)
-                            literal-nodes (mapv #(rename (get-in base [:nodes %])) (get-in base [:nodes :input :children]))
-                            map-node (-> (rename (get-in base [:nodes :input]))
-                                         (assoc-in [:source :form-id] (ids :input))
-                                         (assoc-in [:source :syntax-id] (ids :input)))
-                            map-node (assoc-in map-node [:evaluation :owner-function-syntax-id] (keyword (str "caller-" ordinal)))
-                            forms (into {} (for [[old id] ids]
-                                             [id (rename (get-in base [:forms old]))]))
-                            forms (assoc-in forms [(ids :input) :parent-form-id] (keyword (str "entry-" ordinal)))]
-                        {:node map-node :nodes literal-nodes :forms forms
-                         :types (into {} (for [[old id] ids] [id (get-in base [:types old])])) :id (ids :input)})) [0 1])
-         entries (mapv (fn [ordinal input]
-                         (let [id (keyword (str "entry-" ordinal)) op-id (keyword (str "entry-operator-" ordinal))
-                               owner (keyword (str "caller-" ordinal)) children [op-id (:id input)]
-                               op (-> (node op-id :reference [] {:symbol 'without-path :position :operator :binding-id :helper-binding
-                                                                :binding-class :namespace :definition-syntax-id :helper-name} owner)
-                                      (assoc :resolved-binding-ids [:helper-binding]))
-                               call-node (-> (node id :call children {:operator-child-index 0 :argument-count 1 :argument-child-indexes [1]
-                                                                     :evaluation-order :operator-then-arguments :dispatch :resolved-symbol-call} owner)
-                                             (assoc :resolved-binding-ids [:helper-binding])
-                                             (assoc-in [:evaluation :kind] :operator-then-arguments))
-                               call {:core-node-id id :operator-node-id op-id :operator-binding-id :helper-binding
-                                     :argument-node-ids [(:id input)] :ordered-evaluation-node-ids children
-                                     :evaluation-order :operator-then-arguments :result-policy :call-result}
-                               edge {:ordinal (inc ordinal) :call-core-node-id id :caller-function-syntax-id owner
-                                     :caller-function-core-node-id owner :callee-binding-id :helper-binding :callee-definition-syntax-id :helper-name
-                                     :callee-function-syntax-id :helper-form :callee-function-core-node-id :helper-fn
-                                     :argument-core-node-ids [(:id input)] :ordered-evaluation-node-ids children
-                                     :evaluation-order :operator-then-arguments :classification :local-function}]
-                           {:node call-node :operator op :call call :edge edge
-                            :caller {:function-syntax-id owner :function-core-node-id owner}
-                            :forms {id (form id :list nil nil children) op-id (form op-id :symbol 'without-path id [])}
-                            :use {:core-node-id op-id :form-id op-id :syntax-id op-id :symbol 'without-path :position :operator
-                                  :binding-id :helper-binding :binding-class :namespace :definition-syntax-id :helper-name}
-                            :resolution {:reference-syntax-id op-id :symbol 'without-path :position :operator :binding-id :helper-binding
-                                         :upstream-binding-id :helper-upstream :resolution-order ordinal :source-span nil}})) [0 1] maps)
-         receiver (-> (node :input :reference [] {:symbol 'span :position :expression :binding-id :span-binding
-                                                 :binding-class :lexical :definition-syntax-id :span-name} :helper-form)
-                      (assoc :resolved-binding-ids [:span-binding]))
-         get-node (assoc-in (:node base) [:evaluation :owner-function-syntax-id] :helper-form)
-         get-edge (assoc (:edge base) :caller-function-syntax-id :helper-form :caller-function-core-node-id :helper-fn)
-         fn-node (-> (node :helper-fn :fn [:present-get] {} nil) (assoc :source (source :helper-form) :resolved-binding-ids [:span-binding]))
-         def-node (-> (node :helper-def :def [:helper-fn] {:name 'without-path :name-syntax-id :helper-name :visibility :private} nil)
-                      (assoc :resolved-binding-ids [:helper-binding]))
-         all-nodes (vec (concat [(get-in base [:nodes :operator]) receiver (get-in base [:nodes :key]) get-node fn-node def-node]
-                                (mapcat #(concat (:nodes %) [(:node %)]) maps)
-                                (mapcat #(vector (:operator %) (:node %)) entries)))
-         core (-> (:core base)
-                  (assoc :nodes all-nodes :definitions [definition] :function-records (into [helper] (map :caller entries))
-                         :calls (into [(:call base)] (map :call entries)) :call-edges (into [get-edge] (map :edge entries))
-                         :reference-uses (mapv :use entries)
-                         :preserved-resolution {:resolution-table (mapv :resolution entries) :alias-table []
-                                                :binding-table (vec (vals (assoc (:bindings base) :span-binding parameter :helper-binding binding)))}
-                         :mutations [] :var-references [] :recur-targets [] :recur-transfers [])
-                  (assoc-in [:module :exports] ['main]))
-         forms (merge (select-keys (:forms base) [:present-get :operator :key])
-                      {:input (form :input :symbol 'span :present-get [])
-                       :helper-def (form :helper-def :list nil nil [:def-op :helper-name :helper-form])
-                       :helper-name (form :helper-name :symbol 'without-path :helper-def [])
-                       :helper-form (form :helper-form :list nil :helper-def [])}
-                      (apply merge (map :forms maps)) (apply merge (map :forms entries)))
-         types (merge {:input (get-in base [:types :input]) :key :gravity.type/keyword} (apply merge (map :types maps)))]
-     (assoc base :core core :module (:module core) :nodes (into {} (map (juxt :node-id identity) all-nodes))
-                 :node get-node :edge get-edge :forms forms :types types
-                 :bindings (assoc (:bindings base) :span-binding parameter :helper-binding binding)
-                 :binding-types {:span-binding (:input types)}
-                 :products {:module (:module core) :calls (:calls core) :call-edges (:call-edges core) :definitions [definition]
-                            :function-index (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
-                            :recursion-components []}))))
+(def ^:private private-entry-get-input kernel-support/private-entry-get-input)
 
 (defn- private-map-keys-input []
   (let [base (private-entry-get-input)
