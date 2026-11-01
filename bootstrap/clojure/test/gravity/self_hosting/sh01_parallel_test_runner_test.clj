@@ -688,6 +688,42 @@
       (is (= 4 @next-count)
           "The bounded iterator may inspect only one handle beyond its limit"))))
 
+(deftest descendant-observation-bound-is-owned-wide-and-retains-known-handles
+  (let [events (atom [])
+        root-alive (atom false)
+        child-alive (atom false)
+        grandchild-alive (atom false)
+        grandchild (injected-owned-handle 3 grandchild-alive (constantly []) events
+                                          (constantly true))
+        child (injected-owned-handle 2 child-alive #(vector grandchild) events
+                                     (constantly true))
+        root (injected-owned-handle 1 root-alive #(vector child) events
+                                    (constantly true))
+        process (injected-owned-process root root-alive (constantly true))
+        owned (process-supervision/retain-owned-process! process)]
+    (process-supervision/observe-owned-process! owned)
+    (is (= [root child]
+           (process-supervision/retained-process-handles owned)))
+    (process-supervision/observe-owned-process!
+     owned {:descendant-limit 1})
+    (is (= [root child]
+           (process-supervision/retained-process-handles owned))
+        "A known native handle remains retained when the owned-wide bound is full")
+    (is (= :process-handle-limit
+           (:id (ex-data @(:discovery-error owned))))
+        "A later child observation cannot expand the owned tree past its bound")))
+
+(deftest one-arity-finalization-keeps-termination-defaults
+  (let [events (atom [])
+        alive (atom false)
+        root (injected-owned-handle 1 alive (constantly []) events (constantly true))
+        process (injected-owned-process root alive (constantly true))
+        owned (process-supervision/retain-owned-process! process)
+        result (process-supervision/finalize-owned-process! owned)]
+    (is (= :tracked-clean (:status result)) result)
+    (is (true? (:tracked-complete? result)) result)
+    (is (identical? result (process-supervision/finalize-owned-process! owned)))))
+
 (deftest retained-handles-survive-natural-exit-and-observe-late-grandchildren
   (let [events (atom []) root-alive (atom true) child-alive (atom true) late-alive (atom true)
         late (injected-owned-handle 3 late-alive (constantly []) events

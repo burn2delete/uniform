@@ -519,6 +519,23 @@
           (try (ci/stop! process []) (catch Throwable _ nil)))
         (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
 
+(deftest wait-error-is-failed-rather-than-timeout
+  (let [process (.start (doto (ProcessBuilder. ^java.util.List
+                               ["/bin/sh" "-c" "sleep 30"])))
+        wait-var (ns-resolve 'gravity.process-supervision 'wait-for-process!)]
+    (try
+      (let [result (with-redefs-fn
+                     {wait-var (fn [& _]
+                                 {:completed? false
+                                  :interrupted? true
+                                  :error "injected wait interruption"})}
+                     #(ci/await! process 1))]
+        (is (= :failed (:status result)) result)
+        (is (= 1 (:exit-code result)) result))
+      (finally
+        (when (.isAlive process) (.destroyForcibly process))
+        (.waitFor process 5 java.util.concurrent.TimeUnit/SECONDS)))))
+
 (deftest incomplete-tracked-cleanup-cannot-be-reported-as-a-pass
   (let [process (.start (ProcessBuilder. ^java.util.List
                          ["/bin/sh" "-c" "exit 0"]))

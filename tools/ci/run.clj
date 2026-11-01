@@ -132,14 +132,15 @@
                       (stop! process [] owned))
             completed? (:completed? waited)
             error? (some? (:error waited))
-            exit-code (if (and completed? (not error?))
-                        (try (.exitValue process)
-                             (catch Throwable _ 1))
-                        (if completed? 1 124))
+            exit-code (cond
+                        error? 1
+                        completed? (try (.exitValue process)
+                                       (catch Throwable _ 1))
+                        :else 124)
             cleanup-ok? (tracked-cleanup? cleanup)]
         {:status (cond (not cleanup-ok?) :failed
-                       (not completed?) :timeout
                        error? :failed
+                       (not completed?) :timeout
                        (zero? exit-code) :passed
                        :else :failed)
          :exit-code (if cleanup-ok? exit-code 1)

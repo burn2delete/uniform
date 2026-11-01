@@ -557,8 +557,6 @@
                   (let [cleanup (cleanup-process-tree! process owned)
                         exit-code (try (.exitValue process)
                                        (catch Throwable _ 1))
-                        _ (close-capture! stdout)
-                        _ (close-capture! stderr)
                         stdout (capture-value stdout process-output-drain-timeout-ms)
                         stderr (capture-value stderr process-output-drain-timeout-ms)
                         final-state (sample-state! state (:path progress)

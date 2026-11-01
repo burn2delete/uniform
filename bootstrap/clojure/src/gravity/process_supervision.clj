@@ -179,6 +179,11 @@
   [owned]
   @(:handles (require-owned-process! owned)))
 
+(defn- retained-descendant-count
+  [owned]
+  (let [root (first @(:handles owned))]
+    (count (remove #(= root %) @(:handles owned)))))
+
 (defn- process-handle-limit-error?
   [throwable]
   (and throwable
@@ -198,8 +203,11 @@
    ;; fork after root exit.  Absence from a later enumeration never drops a
    ;; handle already retained by this owner.
    (doseq [handle (vec @(:handles owned))]
-     (let [{:keys [handles error truncated?]}
-           (handle-descendants handle descendant-limit)]
+     (let [remaining (when (some? descendant-limit)
+                       (max 0 (- (long descendant-limit)
+                                 (retained-descendant-count owned))))
+           {:keys [handles error truncated?]}
+           (handle-descendants handle remaining)]
        (when error (retain-process-error! (:discovery-error owned) error))
        (when truncated?
          (retain-process-error!
@@ -367,11 +375,13 @@
    (let [terminal (:terminal owned)]
      (if (compare-and-set! terminal nil :finalizing)
        (try
-         (let [result (terminate-owned-process!
-                       owned {:grace-ms grace-ms
-                              :timeout-ms timeout-ms
-                              :descendant-limit descendant-limit
-                              :reap-fn reap-fn})]
+         (let [termination-options (cond-> {:raise-fatal? raise-fatal?}
+                                     (some? grace-ms) (assoc :grace-ms grace-ms)
+                                     (some? timeout-ms) (assoc :timeout-ms timeout-ms)
+                                     (some? descendant-limit)
+                                     (assoc :descendant-limit descendant-limit)
+                                     reap-fn (assoc :reap-fn reap-fn))
+               result (terminate-owned-process! owned termination-options)]
            (when raise-fatal?
              (when-let [error @(:discovery-error owned)]
                (rethrow-fatal! error))
