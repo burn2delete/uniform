@@ -140,6 +140,20 @@ this slice's local evidence. Exact current0e conservation, docs validation,
 contextual lint, independent acceptance, own CI and clean preflight remain
 integration gates; previous-base CI does not satisfy them.
 
+## Verified Build main composition
+
+Own CLI CI41267943769 passes all nine enabled jobs ondd66a480/base0e,
+with snapshot/prerelease skips. It is historical after main advances through
+the compiler finalizer change and verified Build PR737 to
+3b2b7bb267b8a8b1c6a2811b89abba376a0ca2cc/tree
+65efa902052c808cb9083b5188a7312cf64ef583. The normal CLI composition has
+no conflicts. CLI implementation/tests and surrounding dispatch remain exact;
+incoming compiler and Build code, fixtures, unique helper/test identities and
+ownership records are preserved. The namespace map merges the independent
+CLI and Build rows. Fresh actual-Build-main public Core controls, source and
+identity comparisons, affected checks, review, own CI and clean preflight are
+required; previous-head green confers no new-base acceptance.
+
 ## Unsupported boundaries
 
 This remains a Clojure bootstrap CLI increment. Existing SH07-CLI-ARGS and
