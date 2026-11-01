@@ -510,6 +510,56 @@
         (doseq [file (reverse (file-seq directory))]
           (io/delete-file file true))))))
 
+(deftest leaf-selection-reuses-parsed-forms-within-one-invocation
+  (let [directory (.toFile (java.nio.file.Files/createTempDirectory
+                            "uniform-ci-leaf-cache-"
+                            (make-array java.nio.file.attribute.FileAttribute 0)))
+        path (fn [name] (.getPath (io/file directory name)))
+        a-source (path "a.clj")
+        b-source (path "b.clj")
+        shared-source (path "shared.clj")
+        a-test (path "a_test.clj")
+        b-test (path "b_test.clj")
+        namespace-paths {'gravity.a a-source
+                         'gravity.b b-source
+                         'gravity.shared shared-source}
+        catalog [{:id "leaf-a" :namespace 'gravity.a
+                  :source-path a-source :test-path a-test}
+                 {:id "leaf-b" :namespace 'gravity.b
+                  :source-path b-source :test-path b-test}]
+        change {:old-mode "100644" :new-mode "100644"
+                :status "M" :path a-test}
+        read-count (atom 0)
+        original-source-forms ci/leaf-source-forms]
+    (try
+      (spit a-source "(ns gravity.a (:require [gravity.shared :as shared]))\n")
+      (spit b-source "(ns gravity.b (:require [gravity.shared :as shared]))\n")
+      (spit shared-source "(ns gravity.shared)\n")
+      (with-redefs [ci/leaf-namespace-path
+                    (fn [namespace-symbol]
+                      (or (get namespace-paths namespace-symbol)
+                          (throw (ex-info "Unexpected fixture namespace"
+                                          {:namespace namespace-symbol}))))
+                    ci/leaf-source-forms
+                    (fn [source-path]
+                      (swap! read-count inc)
+                      (original-source-forms source-path))]
+        (let [first-result (ci/leaf-selection-for-changes "portable" catalog [change])]
+          (is (= :selected (:kind first-result)))
+          (is (= #{"leaf-a"} (set (map :id (:entries first-result)))))
+          (is (= 3 @read-count))
+          ;; A second invocation gets a fresh cache and must observe the
+          ;; changed dependency instead of reusing the previous parse.
+          (spit shared-source "(ns gravity.shared (:use [gravity.bad]))\n")
+          (let [second-result (ci/leaf-selection-for-changes
+                               "portable" catalog [change])]
+            (is (= :full (:kind second-result)))
+            (is (= :leaf-closure-failed (:reason second-result)))
+            (is (= 5 @read-count))
+            (is (= 2 (count (:entries second-result)))))))
+      (finally
+        (delete-fixture-tree! directory)))))
+
 (deftest success-cleans-owned-descendants
   (let [child (ci/command "128m" "-M" "-e" "(Thread/sleep 30000)")
         expression (str "(let [p (.start (ProcessBuilder. " (pr-str child) "))] "
