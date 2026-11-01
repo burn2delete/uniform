@@ -71,6 +71,34 @@
 (defn- digest [character]
   (str "sha256:" (apply str (repeat 64 character))))
 
+(deftest sh17-equality-delta-positions-follow-vector-bounds
+  (doseq [index [0 65536 1000000000]]
+    (is (true? (invoke 'c14-equality-index? [index]))))
+  (doseq [index [-1 0.5 nil "0"]]
+    (is (false? (invoke 'c14-equality-index? [index]))))
+  (let [rows (vec (repeat 65536 :existing))
+        restored (invoke 'c14-equality-restore-rows [rows [{:index 65536 :edge :inserted}] :edge])]
+    (is (= 65537 (count restored)))
+    (is (= :inserted (peek restored)))
+    (is (= rows (pop restored))))
+  (doseq [additions [[{:index 2 :edge :outside}]
+                     [{:index -1 :edge :negative}]
+                     [{:index 0 :edge :one} {:index 0 :edge :duplicate}]]]
+    (is (nil? (invoke 'c14-equality-restore-rows [[] additions :edge])))))
+
+(deftest sh17-host-and-gravity-target-policies-agree
+  (doseq [[function policy unsupported]
+          [['c14-policy-scope-valid? (bootstrap/p15-s23-c14-target-policy)
+            bootstrap/p15-s23-c14-llvm-unsupported-surface]
+           ['c14-c-policy-scope-valid? (bootstrap/p15-s23-c14-c-target-policy)
+            bootstrap/p15-s23-c14-c-unsupported-surface]]]
+    (let [input {:target-policy policy :unsupported-surface unsupported
+                 :proof-target-metadata {:entries [] :proofless-metadata-rejected? true}
+                 :request-id (digest "a")}]
+      (is (true? (invoke function [input])))
+      (is (false? (invoke function [(assoc-in input [:target-policy :unexpected] true)])))))
+  (is (not (contains? (bootstrap/p15-s23-c14-wasm-target-policy) :maximum-operation-count))))
+
 (defn- target [backend]
   (case backend
     :llvm {:backend :llvm
@@ -467,34 +495,27 @@
                          :cross-reference-mismatch}
                        (reason result)))))))
 
-(deftest sh17-preflight-contains-hostile-depth-width-and-scalars
+(deftest sh17-validates-complete-carriers-without-quotas
   (let [base (request :llvm "/checkout-a")
-        deep (loop [remaining 10000 value base]
-               (if (zero? remaining) value (recur (dec remaining) [value])))
-        wide (into {} (map (fn [index] [(keyword (str "k" index)) index])
-                           (range 300)))
-        over-operands
-        (assoc-in base [:mir :functions 0 :blocks 0 :operations 0 :operands]
-                  (vec (repeat 17 :value/x)))
-        long-id (keyword (apply str (repeat 129 "x")))
-        over-id
-        (assoc-in base [:mir :functions 0 :blocks 0 :operations 0
-                        :operation-id] long-id)
-        over-i64
-        (assoc-in base [:source-map 0 :span :end-byte]
-                  9223372036854775808N)]
-    (is (= :structure-depth-bound
-           (:reason (invoke 'sh17-structural-preflight [deep]))))
-    (is (= :structure-width-bound
-           (:reason (invoke 'sh17-structural-preflight [wide]))))
-    (is (= :structure-sequence-carrier
-           (:reason
-            (invoke 'sh17-structural-preflight [(iterate inc 0)]))))
-    (doseq [hostile [over-operands over-id over-i64]]
-      (is (= :rejected (:status (build hostile))))
-      (is (contains? #{:invalid-normalized-request
-                       :structure-noncanonical-scalar}
-                       (reason (build hostile)))))))
+        deep (loop [n 120 value nil] (if (zero? n) value (recur (dec n) [value])))
+        many (vec (repeat 17 (vec (range 600))))
+        late-opaque (assoc-in many [16 599] (Object.))
+        old-id (get-in base [:mir :functions 0 :blocks 0 :operations 0 :operation-id])
+        long-id (keyword (apply str (repeat 300 "x")))
+        subject (walk/postwalk #(if (= old-id %) long-id %) base)
+        result (build subject)]
+    (doseq [carrier [deep (vec (range 1025)) many (apply str (repeat 65537 "x"))]]
+      (is (= {:status :accepted} (invoke 'sh17-structural-preflight [carrier]))))
+    (is (= :accepted (:status result)))
+    (is (= :passed (:status (verify subject result))))
+    (is (= {:status :rejected :reason :structure-noncanonical-scalar}
+           (invoke 'sh17-structural-preflight [late-opaque])))
+    (is (= {:status :rejected :reason :structure-sequence-carrier}
+           (invoke 'sh17-structural-preflight [(iterate inc 0)])))
+    (doseq [subject [(assoc-in base [:mir :functions 0 :blocks 0 :operations 0 :operands]
+                              (vec (repeat 17 :value/x)))
+                     (assoc-in base [:source-map 0 :span :end-byte] 9223372036854775808N)]]
+      (is (= :rejected (:status (build subject)))))))
 
 (deftest sh17-linux-llvm-target-contract-rejects-cross-target-substitution
   (let [base (request :llvm "/checkout-a")
@@ -542,7 +563,7 @@
     (is (= :passed (:status (verify input result))))
     (is (= :rejected (:status (verify input altered))))
     (is (= :result-substitution (reason (verify input altered))))
-    (is (= :candidate-structural-bound
+    (is (= :result-substitution
            (reason (verify input deep-candidate))))
     (is (= :candidate-structural-bound
            (reason (verify input sequence-candidate))))))

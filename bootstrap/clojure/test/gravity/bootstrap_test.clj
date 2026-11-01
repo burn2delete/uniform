@@ -35007,105 +35007,40 @@
                        [:facts :expected-source-content-hash])
                (get-in same-size-data
                        [:facts :observed-source-content-hash]))))))))
-(deftest authenticated-c13-c14-b1-source-plans-are-pinned-and-bounded
+(deftest development-c13-c14-b1-source-plan-shapes-and-operation-order
+  ;; These are moving development sources. Historical admission pins remain
+  ;; unchanged; compiling current source does not renew their authentication.
   (let [specs
-        [{:owner :c13
-          :emitter-target :llvm
+        [{:owner :c13 :emitter-target :llvm
           :path bootstrap/p15-s23-c13-source-relative-path
-          :bytes bootstrap/p15-s23-c13-source-byte-count
-          :source-hash bootstrap/p15-s23-c13-expected-source-content-hash
-          :plan-hash bootstrap/p15-s23-c13-expected-plan-semantic-hash
-          :functions-hash
-          bootstrap/p15-s23-c13-expected-functions-semantic-hash
-          :builder bootstrap/p15-s23-c13-builder-function
-          :builder-hash bootstrap/p15-s23-c13-expected-builder-semantic-hash
           :required bootstrap/p15-s23-c13-required-functions}
-         {:owner :c14
-          :emitter-target :llvm
+         {:owner :c14 :emitter-target :llvm
           :path bootstrap/p15-s23-c14-source-relative-path
-          :bytes bootstrap/p15-s23-c14-source-byte-count
-          :source-hash bootstrap/p15-s23-c14-expected-source-content-hash
-          :plan-hash bootstrap/p15-s23-c14-expected-plan-semantic-hash
-          :functions-hash
-          bootstrap/p15-s23-c14-expected-functions-semantic-hash
-          :builder bootstrap/p15-s23-c14-builder-function
-          :builder-hash bootstrap/p15-s23-c14-expected-builder-semantic-hash
           :required bootstrap/p15-s23-c14-required-functions}
-         {:owner :b1
-          :emitter-target :llvm
+         {:owner :b1 :emitter-target :llvm
           :path bootstrap/p15-s23-b1-source-relative-path
-          :bytes bootstrap/p15-s23-b1-source-byte-count
-          :source-hash bootstrap/p15-s23-b1-expected-source-content-hash
-          :plan-hash bootstrap/p15-s23-b1-expected-plan-semantic-hash
-          :functions-hash bootstrap/p15-s23-b1-expected-functions-semantic-hash
-          :builder bootstrap/p15-s23-b1-builder-function
-          :builder-hash bootstrap/p15-s23-b1-expected-builder-semantic-hash
           :required bootstrap/p15-s23-b1-required-functions}
-         {:owner :c13-wasm
-          :emitter-target :wasm
+         {:owner :c13-wasm :emitter-target :wasm
           :path bootstrap/p15-s23-c13-source-relative-path
-          :bytes bootstrap/p15-s23-c13-source-byte-count
-          :source-hash bootstrap/p15-s23-c13-expected-source-content-hash
-          :plan-hash bootstrap/p15-s23-c13-expected-plan-semantic-hash
-          :functions-hash
-          bootstrap/p15-s23-c13-expected-functions-semantic-hash
-          :builder bootstrap/p15-s23-c13-builder-function
-          :builder-hash bootstrap/p15-s23-c13-expected-builder-semantic-hash
           :required bootstrap/p15-s23-c13-required-functions}
-         {:owner :c14-wasm
-          :emitter-target :wasm
+         {:owner :c14-wasm :emitter-target :wasm
           :path bootstrap/p15-s23-c14-source-relative-path
-          :bytes bootstrap/p15-s23-c14-source-byte-count
-          :source-hash bootstrap/p15-s23-c14-expected-source-content-hash
-          :plan-hash bootstrap/p15-s23-c14-expected-plan-semantic-hash
-          :functions-hash
-          bootstrap/p15-s23-c14-expected-functions-semantic-hash
-          :builder bootstrap/p15-s23-c14-wasm-builder-function
-          :builder-hash
-          bootstrap/p15-s23-c14-wasm-expected-builder-semantic-hash
           :required bootstrap/p15-s23-c14-wasm-required-functions}
-         {:owner :b1-wasm
-          :emitter-target :wasm
+         {:owner :b1-wasm :emitter-target :wasm
           :path bootstrap/p15-s23-b1-source-relative-path
-          :bytes bootstrap/p15-s23-b1-source-byte-count
-          :source-hash bootstrap/p15-s23-b1-expected-source-content-hash
-          :plan-hash bootstrap/p15-s23-b1-expected-plan-semantic-hash
-          :functions-hash bootstrap/p15-s23-b1-expected-functions-semantic-hash
-          :builder bootstrap/p15-s23-b1-wasm-builder-function
-          :builder-hash bootstrap/p15-s23-b1-wasm-expected-builder-semantic-hash
           :required bootstrap/p15-s23-b1-wasm-required-functions}]]
-    (doseq [{:keys [owner path bytes source-hash plan-hash functions-hash
-                    builder builder-hash required emitter-target]} specs]
+    (doseq [{:keys [owner path required emitter-target]} specs]
       (let [source (slurp path)
-            emitter
-            (:emitter
-             (bootstrap/c-backend-stage2-plan-emitter-source-rule!
-              path emitter-target))
-            plan
-            (bootstrap/p15-s23-stage2-compiler-artifact-plan
-             emitter path source)
+            emitter (:emitter
+                     (bootstrap/c-backend-stage2-plan-emitter-source-rule!
+                      path emitter-target))
+            plan (bootstrap/p15-s23-stage2-compiler-artifact-plan emitter path source)
             functions (:functions plan)
-            shapes
-            (into {}
-                  (map (fn [[name _]]
-                         [name (select-keys (get functions name)
-                                            [:arity :params])]))
-                  required)]
-        (is (= bytes
-               (alength (.getBytes
-                         source java.nio.charset.StandardCharsets/UTF_8)))
-            owner)
-        (is (= source-hash
-               (str "sha256:" (bootstrap/sha256-hex source))) owner)
-        (is (= plan-hash
-               (bootstrap/p15-s23-c11-mir-digest
-                (bootstrap/p15-s23-stage2-compiler-artifact-semantic-input
-                 plan))) owner)
-        (is (= functions-hash
-               (bootstrap/p15-s23-c11-mir-digest functions)) owner)
-        (is (= builder-hash
-               (bootstrap/p15-s23-c11-mir-digest
-                (get functions builder))) owner)
+            shapes (into {}
+                         (map (fn [[name _]]
+                                [name (select-keys (get functions name) [:arity :params])]))
+                         required)]
+        (is (seq source) owner)
         (is (= required shapes) owner)))
     (let [b1-spec (last specs)
           path (:path b1-spec)
@@ -35140,8 +35075,8 @@
                {:edge-count 0 :terminator-use-count 1
                 :definition-count operation-count
                 :value-count operation-count}}]))]
-      (is (true? (invoke 256)))
-      (is (false? (invoke 257)))
+      (is (true? (invoke 1)))
+      (is (true? (invoke 257)))
       (is (false? (invoke 0))))
     (let [path bootstrap/p15-s23-c13-source-relative-path
           source (slurp path)
@@ -35169,12 +35104,13 @@
                {:engine :c13-count-boundary-test
                 :compiler-artifact-plan? true}
                plan function-name [mir])))]
-      (is (true? (invoke 'c13-bounded-operation-count? 256)))
-      (is (false? (invoke 'c13-bounded-operation-count? 257)))
+      (is (true? (invoke 'c13-bounded-operation-count? 1)))
+      (is (true? (invoke 'c13-bounded-operation-count? 257)))
       (is (false? (invoke 'c13-bounded-operation-count? 0)))
-      (is (= 256
-             (count (invoke 'c13-bounded-operation-order 256))))
-      (is (= [] (invoke 'c13-bounded-operation-order 257)))
+      (is (= ["c13-boundary-op-0"]
+             (invoke 'c13-bounded-operation-order 1)))
+      (is (= (mapv #(str "c13-boundary-op-" %) (range 257))
+             (invoke 'c13-bounded-operation-order 257)))
       (is (= [] (invoke 'c13-bounded-operation-order 0))))))
 
 (deftest authenticated-llvm-source-and-toolchain-records-are-pinned

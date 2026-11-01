@@ -27,9 +27,10 @@
   "bootstrap/gravity/src/gravity/backend/b1_backend_interface_specification.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 141751)
+(def ^:private expected-source-byte-count
+  141715)
 (def ^:private expected-source-revision-id
-  "sha256:75a1fd3364636249919f9853bd3ace2e77fc5e69aaf7289b12d754924ed9eefe")
+  "sha256:523b7aa521b4ae6be3c43cc9b1bc4f5ff65679ceb90551f5fdc14ada53cdf9e1")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:e2da5de22c35745e7143916404ddd19ddc832ddbc88bd7820a99fa7e55b95214")
 (def ^:private expected-coverage
@@ -62,18 +63,18 @@
      b1-c13-source-rule-valid? b1-c14-source-rule-valid?
      b1-c14-verifier-valid? b1-c14-target-rejection?})
 (def ^:private expected-contract-value-hashes
-  {'b1-backend-interface-contract
-   "sha256:fbfa1e55088aeed8274b6001738675bc2ded9ddebb01264f7987bb7975ed2da5"
-   'b1-backend-input-contract
-   "sha256:8c38cc3ee37402da07b56fa55434ee0a4bc89de086684e6bbb33abf7d7254f69"
-   'b1-eligibility-contract
-   "sha256:25f8eccbcc1327a3a4e8d3fa5a419cf4d5487788bdd5b0fc8e48c49575d3f039"
-   'b1-emission-contract
-   "sha256:c0a3f46019c97d00c18c1f203f9f9a722ee48fdf9e29082fef4278a9f179f332"
-   'b1-proof-metadata-contract
-   "sha256:b097b05082a2030269913eef85d723b50f75575fb058afbd421b2355f7d305fb"
-   'b1-diagnostic-catalog
-   "sha256:b9668a9a583add75770107ed29e43160ecba362e2c7d4f192683b27dca98be88"})
+  '{b1-backend-input-contract
+   "sha256:8c38cc3ee37402da07b56fa55434ee0a4bc89de086684e6bbb33abf7d7254f69",
+   b1-backend-interface-contract
+   "sha256:fbfa1e55088aeed8274b6001738675bc2ded9ddebb01264f7987bb7975ed2da5",
+   b1-diagnostic-catalog
+   "sha256:b9668a9a583add75770107ed29e43160ecba362e2c7d4f192683b27dca98be88",
+   b1-eligibility-contract
+   "sha256:25f8eccbcc1327a3a4e8d3fa5a419cf4d5487788bdd5b0fc8e48c49575d3f039",
+   b1-emission-contract
+   "sha256:c0a3f46019c97d00c18c1f203f9f9a722ee48fdf9e29082fef4278a9f179f332",
+   b1-proof-metadata-contract
+   "sha256:b097b05082a2030269913eef85d723b50f75575fb058afbd421b2355f7d305fb"})
 (def ^:private expected-diagnostic-ids
   ["B1-INPUT" "B1-PROFILE" "B1-TARGET" "B1-ABI" "B1-RUNTIME"
    "B1-PROOF" "B1-CAPABILITY" "B1-UNSUPPORTED" "B1-METADATA"])
@@ -268,7 +269,7 @@
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b1-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 482 (count if-calls)))
+    (is (= 479 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path b1-relative-path)))))

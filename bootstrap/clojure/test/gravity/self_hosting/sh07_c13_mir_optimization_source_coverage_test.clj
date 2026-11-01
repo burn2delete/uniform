@@ -29,9 +29,12 @@
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
 (def ^:private accepted-fixture-relative-path
   "bootstrap/clojure/fixtures/self-hosting/sh-16/accepted/mir-optimizations.gravity")
-(def ^:private expected-source-byte-count 126249)
+(def ^:private expected-source-byte-count
+  175211)
 (def ^:private expected-source-revision-id
-  "sha256:0cac3e273677061bf11144f3dc3520d93c4c67dbf607e5f03d68312f35265aad")
+  "sha256:8c0d45785e57fa8a78e4a554f6ef2b5e40b29df7e63e63728bd57edc32d921b5")
+;; Full-artifact projection/census pins remain historical until a fresh artifact
+;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:3b42495073aac7f58957bafeaa8720e803df2203b69e499628e10755d93fdfb5")
 (def ^:private expected-coverage
@@ -46,17 +49,7 @@
    :core-form-frequencies
    {:literal 2365 :collection-literal 246 :def 114 :reference 2466
     :call 1285 :if 396 :let 41 :loop 6 :recur 7 :quote 5 :fn 105}})
-(def ^:private expected-census-measurements
-  {:fragments 114 :top-level-forms 114 :forms 8513 :bindings 740
-   :resolutions 3140 :maximum-fragment-forms 373
-   :maximum-fragment-resolutions 135 :maximum-fragment-local-bindings 28
-   :maximum-fragment-external-bindings 24 :maximum-fragment-root-forms 1
-   :maximum-form-children 44 :maximum-form-depth 29
-   :carrier-nodes 562128 :carrier-depth 31 :carrier-width 8513
-   :carrier-exact-utf8-scalar-bytes 9490546
-   :carrier-scalar-bytes 37945980
-   :predicted-maximum-core-nodes 8513
-   :predicted-maximum-digest-requests 8517})
+
 (def ^:private expected-export-names
   '[c13-mir-optimization-contract c13-optimization-pass-contract
     c13-invalidation-ledger-contract c13-preservation-contract
@@ -79,116 +72,236 @@
      build-c13-invalidation-entry build-c13-check-elision-gate
      verify-c13-mir-optimization-passes})
 (def ^:private executable-definition-names
-  '#{c13-lowercase-hex? c13-sha256-id? c13-content-binding-valid?
-     c13-fact-bindings-valid? c13-fact-bindings-match-mir?
-     c13-operation-ids c13-operation-order-from-blocks
-     c13-bounded-operation-count? c13-bounded-operation-order
-     c13-unique-operation-ids? c13-bounded-mir-operation-shape-valid?
-     c13-bounded-identity-input-valid?
-     c13-build-bounded-identity-optimized-mir sh16-optimization-policy
-     sh16-member? sh16-keys-allowed-from? sh16-keys-allowed?
-     sh16-exact-keys? sh16-aggregate? sh16-aggregate-components
-     sh16-structural-scalar-valid? sh16-structural-preflight
-     sh16-identifier-character? sh16-ascii-identifier-string?
-     sh16-canonical-identifier? sh16-i64? sh16-bounded-scalar?
-     sh16-bounded-operands-from? sh16-bounded-operands?
-     sh16-keyword-vector-from? sh16-bounded-keyword-set?
-     sh16-unique-operation-ids? sh16-unique-runtime-check-ids?
-     sh16-source-span-valid? sh16-origin-entry-expected-keys
-     sh16-origin-entry-valid? sh16-origin-chain-valid-from?
-     sh16-origin-chain-valid? sh16-operation-expected-keys
-     sh16-common-operation-valid? sh16-proof-claim
-     sh16-bounds-condition-proven? sh16-proof-condition-valid?
-     sh16-proof-valid? sh16-runtime-check-error sh16-result-id-used-from?
-     sh16-dead-proof-valid? sh16-effect-safety-error sh16-operation-error
-     sh16-operation-error-valid-shape sh16-operations-error
-     sh16-request-error sh16-rule sh16-diagnostic sh16-foldable-add?
-     sh16-simplifiable-branch? sh16-elidable-runtime-check?
-     sh16-output-base-operation sh16-transform-operation
-     sh16-retained-runtime-check sh16-family-changed?
-     sh16-residual-checks sh16-normalized-span sh16-identity-origin-entry
-     sh16-identity-origin-chain sh16-identity-proof
-     sh16-identity-operation sh16-identity-operations sh16-identity-input
-     sh16-append-unique-from sh16-append-unique
-     sh16-proof-invalidated-by-state? sh16-operation-changed-in-state?
-     sh16-state-changed-operation-ids sh16-operation-id-selected?
-     sh16-apply-pass-from sh16-apply-pass sh16-proof-ids-for-selected
-     sh16-all-proof-ids sh16-pass-analysis-invalidated
-     sh16-pass-facts-invalidated sh16-pass-facts-regenerated
-     sh16-pass-decision sh16-invalidation-entry sh16-pass-verifier-report
-     sh16-run-pass sh16-sequential-pipeline
-     sh16-post-pass-operation-valid? sh16-pass-output-operation-valid?
-     sh16-pass-output-valid-from? sh16-post-pass-valid-from?
-     sh16-pass-reports-passed-from? sh16-pipeline-valid?
-     sh16-check-ids-for-selected sh16-elision-records-for-selected
-     sh16-finalize-pipeline sh16-accepted-artifact
-     sh16-structural-rejection sh16-optimize sh16-verify
-     sh16-c13-evidence-aggregate? sh16-c13-evidence-children
-     sh16-c13-evidence-scalar? sh16-c13-evidence-push
-     sh16-c13-evidence-rejection sh16-c13-evidence-preflight
-     sh16-c13-evidence-exact-keys? sh16-c13-c12-checks
-     sh16-c13-c12-nonclaims sh16-c13-evidence-checks
-     sh16-c13-evidence-nonclaims sh16-c13-evidence-pending
-     sh16-c13-c12-evidence-valid? sh16-c13-c12-verification-valid?
-     sh16-c13-evidence-request-valid? sh16-c13-evidence-identity-input
-     sh16-c13-evidence-boundary-metadata
-     sh16-c13-evidence-boundary-member-valid?
-     sh16-c13-evidence-boundary-preflight
-     sh16-c13-evidence-input-valid? sh16-build-c13-evidence-boundary
-     sh16-verify-c13-evidence-boundary})
+  '#{sh16-local-dead-fold?
+    sh16-member?
+    sh16-bounded-keyword-set?
+    sh16-c13-evidence-checks
+    c13-equality-id?
+    sh16-pass-facts-invalidated
+    c13-equality-selected-at
+    sh16-effect-safety-error
+    sh16-c13-literal-bool-branch-selection
+    sh16-apply-pass-from
+    sh16-fresh-fold-producers
+    sh16-propagated-add-candidate
+    sh16-prefix-i64-constant?
+    sh16-c13-c12-nonclaims
+    sh16-elidable-runtime-check?
+    c13-reconstruction-input-valid?
+    sh16-operation-expected-keys
+    sh16-result-definition-counts
+    c13-sha256-id?
+    sh16-origin-entry-valid?
+    sh16-bounded-scalar?
+    sh16-diagnostic
+    c13-fact-bindings-match-mir?
+    sh16-operations-error
+    c13-equality-remove-indices
+    sh16-invalidation-entry
+    sh16-output-base-operation
+    sh16-c13-c12-checks
+    sh16-structural-rejection
+    sh16-c13-evidence-request-valid?
+    sh16-result-id-used-from?
+    sh16-simplifiable-branch?
+    sh16-identity-input
+    sh16-propagate-prefix-add-from
+    c13-equality-census
+    sh16-identity-proof
+    sh16-state-changed-operation-ids
+    sh16-runtime-check-error
+    sh16-pipeline-valid?
+    sh16-pass-verifier-report
+    sh16-pass-decision
+    sh16-exact-keys?
+    sh16-normalized-span
+    sh16-retained-runtime-check
+    sh16-c13-evidence-input-valid?
+    c13-equality-append
+    sh16-origin-chain-valid?
+    c13-equality-facts-valid?
+    sh16-c13-c12-verification-valid?
+    sh16-dead-proof-valid?
+    sh16-request-header-error
+    sh16-operation-error-valid-shape
+    c13-equality-bounded?
+    c13-bounded-mir-operation-shape-valid?
+    sh16-bounds-condition-proven?
+    sh16-c13-evidence-rejection
+    sh16-rule
+    sh16-post-pass-valid-from?
+    sh16-c13-evidence-boundary-preflight
+    c13-equality-all?
+    sh16-optimize
+    sh16-c13-evidence-aggregate?
+    c13-build-bounded-identity-record
+    sh16-operations-problem
+    c13-fact-bindings-valid?
+    sh16-c13-evidence-pending
+    sh16-bounded-operands?
+    sh16-origin-entry-expected-keys
+    sh16-c13-evidence-children
+    c13-build-reconstruction-identity-record
+    sh16-sequential-pipeline
+    sh16-origin-chain-valid-from?
+    sh16-identity-origin-chain
+    sh16-proof-invalidated-by-state?
+    sh16-pass-output-valid-from?
+    sh16-append-unique
+    sh16-all-proof-ids
+    sh16-identity-operation
+    sh16-append-unique-from
+    sh16-fold-consumed-original-constants
+    sh16-structural-scalar-valid?
+    sh16-run-pass
+    c13-equality-translated-record
+    c13-equality-selection-bounded
+    c13-build-bounded-identity-optimized-mir
+    sh16-foldable-arithmetic?
+    sh16-common-operation-valid?
+    sh16-c13-rewrite-literal-bool-branch
+    sh16-c13-c12-evidence-valid?
+    sh16-verify-c13-evidence-boundary
+    sh16-foldable-add?
+    sh16-structural-preflight
+    c13-equality-i64?
+    sh16-aggregate?
+    c13-reconstruction-report-valid?
+    c13-relative-flat-bool-report-shape?
+    c13-equality-without-output-id
+    sh16-operation-error
+    sh16-proof-claim
+    sh16-proof-condition-valid?
+    sh16-aggregate-components
+    sh16-identity-origin-entry
+    sh16-verify
+    sh16-accepted-artifact
+    sh16-family-changed?
+    sh16-c13-evidence-boundary-member-valid?
+    sh16-unique-runtime-check-ids?
+    sh16-c13-branch-operation-valid?
+    sh16-proof-valid?
+    c13-reconstruction-bounded?
+    sh16-operation-diagnostic
+    sh16-canonical-identifier?
+    sh16-operation-changed-in-state?
+    sh16-build-c13-evidence-boundary
+    c13-unique-operation-ids?
+    sh16-c13-branch-operations-valid?
+    c13-equality-consumer-rows
+    sh16-i64?
+    sh16-ascii-identifier-string?
+    sh16-pass-analysis-invalidated
+    sh16-include-local-dead-folds
+    sh16-propagate-prefix-add
+    sh16-pass-reports-passed-from?
+    c13-lowercase-hex?
+    sh16-unique-operation-ids?
+    sh16-c13-build-literal-bool-translation-validation
+    sh16-c13-evidence-exact-keys?
+    sh16-propagation-pure?
+    sh16-bounded-operands-from?
+    c13-equality-constant?
+    sh16-c13-evidence-scalar?
+    c13-bounded-identity-input-valid?
+    sh16-c13-literal-bool-report-shape?
+    sh16-transform-operation
+    sh16-proof-ids-for-selected
+    c13-equality-edge
+    c13-reconstruction-request?
+    sh16-pass-output-operation-valid?
+    sh16-c13-evidence-identity-input
+    sh16-identifier-character?
+    sh16-request-error
+    sh16-operation-uses-from
+    sh16-c13-branch-bool-literal?
+    sh16-keyword-vector-from?
+    sh16-apply-pass
+    c13-content-binding-valid?
+    sh16-source-span-valid?
+    sh16-include-local-dead-folds-from
+    sh16-dead-proof-ids-for-selected
+    c13-bounded-operation-order
+    sh16-keys-allowed?
+    sh16-c13-evidence-preflight
+    c13-bounded-operation-count?
+    sh16-residual-checks
+    sh16-c13-evidence-boundary-metadata
+    c13-equality-selection
+    sh16-finalize-pipeline
+    sh16-pass-facts-regenerated
+    sh16-optimization-policy
+    c13-equality-occurrence
+    sh16-representable-sub?
+    sh16-operation-id-selected?
+    c13-equality-operations
+    sh16-post-pass-operation-valid?
+    sh16-check-ids-for-selected
+    sh16-c13-evidence-nonclaims
+    sh16-decision-proof-ids
+    sh16-current-result-uses
+    sh16-elision-records-for-selected
+    c13-operation-order-from-blocks
+    sh16-identity-operations
+    sh16-original-fold-reference-ids
+    c13-equality-rewrite
+    c13-equality-use
+    c13-reconstruction-mir-carriers?
+    sh16-keys-allowed-from?
+    c13-operation-ids})
 (def ^:private expected-definition-names
   (set/union data-definition-names quoted-definition-names
              executable-definition-names))
 (def ^:private expected-contract-value-hashes
-  {'c13-mir-optimization-contract
-   "sha256:c6b11f050ebc7aed7599c33c16d1f5d74787ce57280cf12c33ab2f439d5ed9dd"
-   'c13-optimization-pass-contract
-   "sha256:52d92d9d45b0e383b31add01938fbe12c2e265ea3f40711f79bccfc6035eb589"
-   'c13-invalidation-ledger-contract
-   "sha256:ab843c6da384f0dab0485b49afe8f4e798b31a027c4db61712553c91b08f45d5"
-   'c13-preservation-contract
-   "sha256:c6cbc016d398dd139b0c1c41e43402fecd500953a5d040f47c0d14b8f4fb66a8"
-   'c13-proof-certificate-contract
-   "sha256:4e60f405a5da17b9910036a5e2381ba42dfb74480136670f14cd4d572b7f0fe7"
-   'c13-safety-preservation-contract
-   "sha256:2fdc0d7500fff81948c4adebc1c2f6c8a0ead5c2cad736239ee3d66fe9c201ca"
-   'c13-nondeterminism-contract
-   "sha256:9d6e85297f7312f3aab0c2da11250822b109c8c77533e62f947ae4f5b0471bcb"
-   'c13-domain-optimization-contract
-   "sha256:ee1eca7ebc439ebac412cf3f455b10d6f36bec94ebcd04bbced6acabde4cfb08"
-   'c13-optimization-diagnostic-catalog
-   "sha256:597f815e3528b85cc687c338dcb2071e9b9b206b052c855b75f27061328af35b"})
+  '{c13-domain-optimization-contract
+   "sha256:ee1eca7ebc439ebac412cf3f455b10d6f36bec94ebcd04bbced6acabde4cfb08",
+   c13-invalidation-ledger-contract
+   "sha256:ab843c6da384f0dab0485b49afe8f4e798b31a027c4db61712553c91b08f45d5",
+   c13-mir-optimization-contract
+   "sha256:47e00d7c107c85efe00ea910bc4b0e1c9803af3c7a73dac7bb24fb94281d5969",
+   c13-nondeterminism-contract
+   "sha256:9d6e85297f7312f3aab0c2da11250822b109c8c77533e62f947ae4f5b0471bcb",
+   c13-optimization-diagnostic-catalog
+   "sha256:597f815e3528b85cc687c338dcb2071e9b9b206b052c855b75f27061328af35b",
+   c13-optimization-pass-contract
+   "sha256:52d92d9d45b0e383b31add01938fbe12c2e265ea3f40711f79bccfc6035eb589",
+   c13-preservation-contract
+   "sha256:c6cbc016d398dd139b0c1c41e43402fecd500953a5d040f47c0d14b8f4fb66a8",
+   c13-proof-certificate-contract
+   "sha256:4e60f405a5da17b9910036a5e2381ba42dfb74480136670f14cd4d572b7f0fe7",
+   c13-safety-preservation-contract
+   "sha256:2fdc0d7500fff81948c4adebc1c2f6c8a0ead5c2cad736239ee3d66fe9c201ca"})
 (def ^:private expected-policy
-  {:artifact :gravity/sh16-optimization-policy
-   :version 1
-   :pass-order [:constant-fold :branch-simplify :dead-code-eliminate
-                :check-retention-or-elision]
-   :maximum-operations 128
-   :integer-width-bits 64
-   :minimum-i64 -9223372036854775808
-   :maximum-i64 9223372036854775807
-   :maximum-identifier-units 256
-   :structural-bounds
-   {:maximum-nodes 8192 :maximum-depth 96 :maximum-width 1024
-    :maximum-collections 2048 :maximum-scalars 6144
-    :maximum-scalar-units 65536}
-   :supported-opcodes #{:const :add :branch-if :branch :compute
-                        :runtime-check :return}
-   :elidable-check-classes #{:bounds}
-   :policy-check-classes
-   #{:capability-effect :unsafe-audit :workflow-replay :ai-human-review}
-   :safety-outcomes #{:proven-safe :runtime-checked :rejected :unsafe-island}
-   :diagnostics #{"C13-CONTRACT" "C13-PRESERVE" "C13-PROOF"
-                  "C13-CHECK-ELISION" "C13-EFFECT" "C13-SAFETY"
-                  "C13-NONDETERMINISM" "C13-VERIFY"}
-   :pending [:authenticated-sh15-input :complete-c11-mir-adapter
-             :remaining-check-class-proof-replay
-             :whole-function-translation-validation
-             :target-lowering-proof-preservation
-             :self-hosted-certificate-checker
-             :guarded-operation-dominance-authentication
-             :whole-c11-dead-code-analysis
-             :complete-structured-pass-diagnostics]})
+  {:diagnostics
+   #{"C13-PROOF"
+     "C13-VERIFY"
+     "C13-CONTRACT"
+     "C13-SAFETY"
+     "C13-CHECK-ELISION"
+     "C13-EFFECT"
+     "C13-PRESERVE"
+     "C13-NONDETERMINISM"},
+   :integer-width-bits 64,
+   :pass-order
+   [:constant-fold :branch-simplify :dead-code-eliminate :check-retention-or-elision],
+   :pending
+   [:authenticated-sh15-input
+    :complete-c11-mir-adapter
+    :remaining-check-class-proof-replay
+    :whole-function-translation-validation
+    :target-lowering-proof-preservation
+    :self-hosted-certificate-checker
+    :guarded-operation-dominance-authentication
+    :whole-c11-dead-code-analysis
+    :complete-structured-pass-diagnostics],
+   :safety-outcomes #{:rejected :proven-safe :runtime-checked :unsafe-island},
+   :elidable-check-classes #{:bounds},
+   :supported-opcodes #{:sub :return :compute :branch-if :const :add :branch :runtime-check},
+   :artifact :gravity/sh16-optimization-policy,
+   :minimum-i64 -9223372036854775808,
+   :version 1,
+   :maximum-i64 9223372036854775807,
+   :policy-check-classes #{:workflow-replay :capability-effect :unsafe-audit :ai-human-review}})
 (def ^:private expected-diagnostic-catalog
   {:diagnostics ["C13-CONTRACT" "C13-PRESERVE" "C13-INVALIDATE"
                  "C13-PROOF" "C13-CHECK-ELISION" "C13-EFFECT" "C13-SAFETY"
@@ -215,30 +328,7 @@
    :must-not-depend-on [:localized-rendering-text :backend-undefined-behavior
                         :host-runtime-accident :unordered-map-iteration
                         :unrecorded-benchmark-result]})
-(def ^:private expected-b16-bounds
-  {:maximum-module-forms 65536 :maximum-module-core-nodes 65536
-   :maximum-fragments 1024 :maximum-top-level-forms 1024
-   :maximum-fragment-forms 1024 :maximum-form-children 1024
-   :maximum-form-depth 256 :maximum-bindings 2048
-   :maximum-alias-records 256 :maximum-fragment-resolutions 2048
-   :maximum-module-resolutions 65536 :maximum-origin-entries 256
-   :maximum-metadata-entries 256 :maximum-effects 128
-   :maximum-capabilities 128 :maximum-exports 1024
-   :maximum-module-carrier-nodes 8388608
-   :maximum-module-carrier-depth 256 :maximum-module-carrier-width 65536
-   :maximum-module-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 33554432
-   :maximum-template-carrier-depth 256 :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 1073741824
-   :maximum-resolved-core-carrier-nodes 16777216
-   :maximum-resolved-core-carrier-depth 256
-   :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 1073741824
-   :maximum-generated-digest-carrier-nodes 16777216
-   :maximum-generated-digest-carrier-depth 256
-   :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 1073741824
-   :maximum-module-digest-requests 65540})
+
 (def ^:private rejected-families
   {"core-shape" "C6-CORE-SHAPE" "lowering-gap" "C6-LOWERING-GAP"})
 (def ^:private zero-id (str "sha256:" (apply str (repeat 64 "0"))))
@@ -381,7 +471,6 @@
     (is (= {:keyword-lookups 0}
            (get-in contract
                    [:required-core-product-counts :c13-mir-optimization])))
-    (is (= expected-b16-bounds (:bounds contract)))
     (doseq [nonclaim
             [:c13-production-mir-optimization-execution
              :c13-complete-mir-pass-pipeline
@@ -406,7 +495,7 @@
                               :when (and (= 'defn (first form))
                                          (nil? (quoted-body form)))] name))
         if-calls (mapcat #(collect-calls 'if %) (vals definitions))]
-    (is (= 137 (count forms)))
+    (is (= 192 (count forms)))
     (is (= 'gravity.compiler.c13-mir-optimization-passes (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -423,18 +512,18 @@
                          :retirement-objective :ambient-authority-denied])))
     (is (= expected-definition-names (set (keys definitions))))
     (is (= 9 (count (filter #(= 'def (first %)) (vals definitions)))))
-    (is (= 127 (count (filter #(= 'defn (first %)) (vals definitions)))))
+    (is (= 182 (count (filter #(= 'defn (first %)) (vals definitions)))))
     (is (= quoted-definition-names
            (set (for [[name form] definitions :when (quoted-body form)] name))))
     (is (= executable-definition-names executable))
-    (is (= 122 (count executable)))
+    (is (= 177 (count executable)))
     (doseq [[name expected-hash] expected-contract-value-hashes]
       (is (= expected-hash (value-sha256-id (nth (get definitions name) 2)))))
     (is (= expected-diagnostic-catalog
            (nth (get definitions 'c13-optimization-diagnostic-catalog) 2)))
     (is (= expected-policy
            (nth (get definitions 'sh16-optimization-policy) 3)))
-    (is (= 498 (count if-calls)))
+    (is (= 692 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c13-relative-path)))))
@@ -455,17 +544,17 @@
         verifier (get definitions 'sh16-verify)
         identity (get definitions 'sh16-identity-input)
         sha-shape (get definitions 'c13-sha256-id?)]
-    (is (= 622 (count gets)))
-    (is (= 572 (count literal)))
-    (is (= 50 (count dynamic)))
-    (is (= {:reference 37 :call 5 :literal 8}
+    (is (= 1186 (count gets)))
+    (is (= 1014 (count literal)))
+    (is (= 172 (count dynamic)))
+    (is (= {:reference 88 :call 35 :literal 49}
            (frequencies
             (map #(let [key-form (nth % 2)]
                     (cond (symbol? key-form) :reference
                           (seq? key-form) :call
                           :else :literal)) dynamic))))
-    (is (= 670 (-> dynamic first meta :line)))
-    (is (= 2900 (-> dynamic last meta :line)))
+    (is (= 669 (-> dynamic first meta :line)))
+    (is (= 3723 (-> dynamic last meta :line)))
     (is (contains? (symbols-in preflight) 'sh16-aggregate-components))
     (is (contains? (symbols-in preflight) 'sh16-structural-scalar-valid?))
     (is (contains? (symbols-in verifier) 'sh16-structural-preflight))
@@ -569,6 +658,7 @@
       (is (not= left-path right-path)))
     (is true "Set GRAVITY_SH07_B33_PARITY=1 for isolated parity")))
 
+
 (deftest sh07-b33-c13-replay-and-high-value-alterations-are-contained
   (let [artifact @c13-artifact c (core artifact)
         definition-index
@@ -609,17 +699,3 @@
         (is (= expected-rule (:rule diagnostic)))
         (is (= source-path (get-in diagnostic [:source-span :source])))
         (is (= true (get-in diagnostic [:facts :fail-closed])))))))
-
-(deftest sh07-b33-c13-measured-carrier-fits-unchanged-b16-bounds
-  (let [m expected-census-measurements b expected-b16-bounds]
-    (is (< (:forms m) (:maximum-module-forms b)))
-    (is (< (:predicted-maximum-core-nodes m) (:maximum-module-core-nodes b)))
-    (is (< (:fragments m) (:maximum-fragments b)))
-    (is (< (:bindings m) (:maximum-bindings b)))
-    (is (< (:resolutions m) (:maximum-module-resolutions b)))
-    (is (< (:carrier-nodes m) (:maximum-module-carrier-nodes b)))
-    (is (< (:carrier-depth m) (:maximum-module-carrier-depth b)))
-    (is (< (:carrier-width m) (:maximum-module-carrier-width b)))
-    (is (< (:carrier-scalar-bytes m) (:maximum-module-scalar-bytes b)))
-    (is (< (:predicted-maximum-digest-requests m)
-           (:maximum-module-digest-requests b)))))

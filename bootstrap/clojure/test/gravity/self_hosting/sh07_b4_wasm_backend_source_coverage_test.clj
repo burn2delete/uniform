@@ -27,9 +27,10 @@
   "bootstrap/gravity/src/gravity/backend/b4_wasm_backend_design.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 118633)
+(def ^:private expected-source-byte-count
+  118550)
 (def ^:private expected-source-revision-id
-  "sha256:96e2fa6a41118edacd026f878cc6c817a5d65f06973ccee24974b62a3b3d7488")
+  "sha256:d8cb9c1e18c56412c4c69839562eb726ff0c575ff048ee98a181f6e33fd2faaa")
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:eec6df18b4b20898f79da0b11d13c688fef58a0fcbe0f4a524ec65203345b812")
 (def ^:private expected-sh07-artifact-id
@@ -98,28 +99,28 @@
      b4-cfg-reason b4-operation-reason b4-first-operation-rejection
      b4-function-instructions b4-operation-bytes b4-evaluate-operations})
 (def ^:private expected-contract-value-hashes
-  {'b4-wasm-backend-contract
-   "sha256:dd3af395dac7c8a2f34922f6efd70ee5fe0c3637d94ce8445c72b0a62b35ca22"
-   'b4-target-feature-contract
-   "sha256:f3d8e3ed1feea396c98f5490988e0ff15a9556b73b5411da2aece9f280311a25"
-   'b4-component-contract
-   "sha256:3be327f1094bac76c0feff9ad8c97fd493442e7ed897a78b8c492523037c90dc"
-   'b4-canonical-abi-contract
-   "sha256:cd14d74ee59a5194f0d7e62b7558b0a18b3ace136bb0fa473a1a8eb51282a40a"
-   'b4-import-export-capability-contract
-   "sha256:d2e975698940b141a7b45d665251814385b2a952c9ac9b7e070d0f85c9345734"
-   'b4-linear-memory-contract
-   "sha256:5bbd0ef3313adb0dd868437e57f04f07b551ea9c1088c484f9d6fc0335483b74"
-   'b4-async-component-contract
-   "sha256:b89c7805ae360752e5fce895408284f76bbf7e14c7cb1cd221ec270a4a1088ae"
-   'b4-numeric-simd-atomic-contract
-   "sha256:6941ef834b4dc65910e79abea638ba8c700a8626a9bc10e8b76c6ac5302baa3b"
-   'b4-runtime-binding-contract
-   "sha256:d46dcc3c8165a4079fa4997a600ee70964d52d42b638a4ddd476995e5ebb5c16"
-   'b4-artifact-manifest-contract
-   "sha256:852af638b4fd361829738f43b9a384e6492ea122ddb210f64511d6e1e69887bb"
-   'b4-diagnostic-catalog
-   "sha256:0c1444a54f58a3fc02886375d3f73f1924a603335d091db0a0057e512cf0e4eb"})
+  '{b4-artifact-manifest-contract
+   "sha256:852af638b4fd361829738f43b9a384e6492ea122ddb210f64511d6e1e69887bb",
+   b4-async-component-contract
+   "sha256:b89c7805ae360752e5fce895408284f76bbf7e14c7cb1cd221ec270a4a1088ae",
+   b4-canonical-abi-contract
+   "sha256:cd14d74ee59a5194f0d7e62b7558b0a18b3ace136bb0fa473a1a8eb51282a40a",
+   b4-component-contract
+   "sha256:3be327f1094bac76c0feff9ad8c97fd493442e7ed897a78b8c492523037c90dc",
+   b4-diagnostic-catalog
+   "sha256:0c1444a54f58a3fc02886375d3f73f1924a603335d091db0a0057e512cf0e4eb",
+   b4-import-export-capability-contract
+   "sha256:d2e975698940b141a7b45d665251814385b2a952c9ac9b7e070d0f85c9345734",
+   b4-linear-memory-contract
+   "sha256:5bbd0ef3313adb0dd868437e57f04f07b551ea9c1088c484f9d6fc0335483b74",
+   b4-numeric-simd-atomic-contract
+   "sha256:6941ef834b4dc65910e79abea638ba8c700a8626a9bc10e8b76c6ac5302baa3b",
+   b4-runtime-binding-contract
+   "sha256:d46dcc3c8165a4079fa4997a600ee70964d52d42b638a4ddd476995e5ebb5c16",
+   b4-target-feature-contract
+   "sha256:f3d8e3ed1feea396c98f5490988e0ff15a9556b73b5411da2aece9f280311a25",
+   b4-wasm-backend-contract
+   "sha256:dd3af395dac7c8a2f34922f6efd70ee5fe0c3637d94ce8445c72b0a62b35ca22"})
 (def ^:private expected-diagnostic-ids
   ["B4-TARGET" "B4-COMPONENT" "B4-CANONICAL-ABI" "B4-IMPORT"
    "B4-EXPORT" "B4-MEMORY" "B4-BOUNDS" "B4-NONDETERMINISM"
@@ -315,8 +316,8 @@
     (is (= expected-diagnostic-ids
            (mapv :id (get-in (nth (get by-name 'b4-diagnostic-catalog) 2)
                              [:diagnostics]))))
-    (is (= 349 (count if-calls)))
-    (is (= {4 349} (frequencies (map count if-calls))))
+    (is (= 348 (count if-calls)))
+    (is (= {4 348} (frequencies (map count if-calls))))
     (is (empty?
          (filter #(not= 4 (count %))
                  (collect-calls
@@ -325,9 +326,11 @@
            (alength (source-bytes (path b4-relative-path)))))
     (is (= expected-source-revision-id
            (sha256-id (source-bytes (path b4-relative-path)))))
-    (is (= expected-source-byte-count
+    ;; Historical authentication pins intentionally remain unchanged. Current
+    ;; source coverage above is not renewed backend migration authority.
+    (is (= 118633
            bootstrap/p15-s23-b4-wasm-source-byte-count))
-    (is (= expected-source-revision-id
+    (is (= "sha256:96e2fa6a41118edacd026f878cc6c817a5d65f06973ccee24974b62a3b3d7488"
            bootstrap/p15-s23-b4-wasm-expected-source-content-hash))
     (is (= expected-plan-semantic-id
            bootstrap/p15-s23-b4-wasm-expected-plan-semantic-hash))
@@ -388,6 +391,13 @@
     (is (= "B1-INPUT" (:diagnostic rejected)))
     (is (= :verified-bounded-wasm-b1-packet (:missing-fact rejected)))
     (is (nil? (:operation-id rejected)))))
+
+(deftest sh07-b37-wasm-local-indices-use-existing-uleb-without-operation-quotas
+  (is (= [127] (invoke 'b4-u32-leb [127])))
+  (is (= [128 1] (invoke 'b4-u32-leb [128])))
+  (is (= [128 128 1] (invoke 'b4-u32-leb [16384])))
+  (is (= [32 128 1] (invoke 'b4-local-get [{:operation 128} :operation])))
+  (is (= [33 128 128 1] (invoke 'b4-local-set [{:operation 16384} :operation]))))
 
 (deftest sh07-b37-proof-contract-registration-is-ready-for-coordinator-gate
   (if (= "1" (System/getenv "GRAVITY_SH07_B37_CONTRACT"))

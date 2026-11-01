@@ -133,7 +133,6 @@
   (let [policy (invoke-engine 'sh16-optimization-policy [])]
     (is (= :gravity/sh16-optimization-policy (:artifact policy)))
     (is (= 1 (:version policy)))
-    (is (= 128 (:maximum-operations policy)))
     (is (= [:constant-fold
             :branch-simplify
             :dead-code-eliminate
@@ -1316,7 +1315,7 @@
                (:origin-chain diagnostic)))
         (is (keyword? (:remediation diagnostic)))))))
 
-(deftest sh16-proof-binding-and-operation-bounds-fail-closed
+(deftest sh16-proof-binding-and-operation-identities-fail-closed
   (let [request
         (request accepted-gravity-plan 'sh16-proof-elision-request)
         proof-path [:operations 0 :proof]
@@ -1333,7 +1332,7 @@
          (assoc-in request (conj proof-path :target) :llvm)
          (assoc-in request [:operations 0 :operands] [5 5])]
         operation (first (:operations request))
-        excessive
+        duplicate-identities
         (assoc request :operations (vec (repeat 129 operation)))
         empty-request (assoc request :operations [])]
     (doseq [candidate proof-mutations]
@@ -1341,10 +1340,11 @@
         (is (= :rejected (:status result)))
         (is (= "C13-PROOF"
                (get-in result [:diagnostics 0 :rule])))))
-    (doseq [candidate [excessive empty-request]]
+    (doseq [[candidate rule] [[duplicate-identities "C13-VERIFY"]
+                            [empty-request "C13-CONTRACT"]]]
       (let [result (optimize candidate)]
         (is (= :rejected (:status result)))
-        (is (= "C13-CONTRACT"
+        (is (= rule
                (get-in result [:diagnostics 0 :rule])))))))
 
 (deftest sh16-normalized-boundary-rejects-unbound-descriptor-data
@@ -1366,10 +1366,6 @@
          [(assoc request :target :x86-64)
           "C13-CONTRACT"]
          [(assoc-in request [:operations 0 :type] nil)
-          "C13-CONTRACT"]
-         [(assoc-in request
-                    [:operations 0 :operands]
-                    (vec (repeat 17 1)))
           "C13-CONTRACT"]
          [(assoc-in request
                     [:operations 1 :runtime-check-id]
@@ -1753,7 +1749,6 @@
         (request accepted-gravity-plan 'sh16-no-change-request)
         proof-request
         (request accepted-gravity-plan 'sh16-proof-elision-request)
-        overlong-id (keyword (apply str (repeat 300 "a")))
         candidates
         [(assoc-in base [:operations 0 :condition] true)
          (assoc-in base [:operations 0 :proof] {})
@@ -1763,7 +1758,6 @@
                    {:path "/checkout-private/value"})
          (assoc-in base [:operations 0 :origin-chain 0 :macro-id]
                    :macro/unbound)
-         (assoc base :request-id overlong-id)
          (assoc-in proof-request [:operations 0 :elide-requested] false)]]
     (doseq [candidate candidates]
       (let [result (optimize candidate)]
@@ -1775,82 +1769,57 @@
           (pr-str (:identity-input (optimize base)))
           "/checkout-a/")))))
 
-(deftest sh16-structural-preflight-guards-before-component-projection
-  (let [source (slurp (path "bootstrap/gravity/src/gravity/compiler/c13_mir_optimization_passes.gravity"))
-        start (str/index-of source "(defn sh16-structural-preflight ")
-        end (str/index-of source "\n(defn sh16-identifier-character?" start)
-        definition (binding [*read-eval* false] (read-string (subs source start end)))
-        forms (tree-seq coll? seq definition)
-        projection-count (fn [form]
-                           (count (filter #(and (seq? %) (= 'sh16-aggregate-components (first %)))
-                                          (tree-seq coll? seq form))))]
-    ;; Inspect this actual definition's guard order; no execution instrumentation.
-    (is (= 1 (projection-count definition)))
-    (doseq [condition ['(> next-nodes maximum-nodes) '(> depth maximum-depth)
-                       '(> width maximum-width) '(> next-collections maximum-collections)]]
-      (let [guard (first (filter #(and (seq? %) (= 'if (first %)) (= condition (second %))) forms))]
-        (is (some? guard))
-        (is (= 0 (projection-count (nth guard 2 nil))))
-        (is (= 1 (projection-count (nth guard 3 nil))))))
-    (let [append-loop (first (filter #(and (seq? %) (= 'loop (first %))
-                                          (= '[remaining components result frontier] (second %))) forms))
-          body (nth append-loop 2 nil)
-          cap-guard (nth body 3 nil)]
-      (is (some? append-loop))
-      (is (= '(= 0 (count remaining)) (second body)))
-      (is (= '(> (count result) maximum-nodes) (second cap-guard)))
-      (is (= 'result (nth cap-guard 2 nil)))
-      (is (= '(recur (rest remaining) (conj result [(first remaining) (+ depth 1)]))
-             (nth cap-guard 3 nil))))))
 
-(deftest sh16-structural-preflight-bounds-frontier-prefix
-  (let [scalars (vec (repeat 1024 0))
-        witness (vec (repeat 1024 scalars))
-        at-node-limit (into (vec (repeat 6 scalars))
-                            [(vec (repeat 1024 [])) (vec (repeat 1015 []))])]
-    (is (= {:status :accepted :nodes 8192 :collections 2048 :scalars 6144 :scalar-units 6144}
-           (invoke-engine 'sh16-structural-preflight [at-node-limit])))
-    ;; Node 8193 must still be visited and refused; the consumed prefix counts.
-    (doseq [[carrier reason]
-            [[(update at-node-limit 7 conj 0) :structure-node-bound]
-             [(update at-node-limit 7 conj []) :structure-node-bound]
-             [witness :structure-scalar-bound]
-             [(assoc witness 1023 (conj scalars 0)) :structure-width-bound]
-             [(assoc witness 1023 (iterate vector nil)) :structure-sequence-carrier]
-             [(assoc witness 0 (assoc scalars 0 9223372036854775808N)) :structure-scalar-type-or-range]]]
-      (is (= {:status :rejected :reason reason}
-             (invoke-engine 'sh16-structural-preflight [carrier]))))))
 
-(deftest sh16-structural-preflight-aggregate-width-boundaries
-  (is (= {:maximum-nodes 8192 :maximum-depth 96 :maximum-width 1024
-          :maximum-collections 2048 :maximum-scalars 6144 :maximum-scalar-units 65536}
-         (:structural-bounds (invoke-engine 'sh16-optimization-policy []))))
-  (doseq [[make-carrier class-name limit]
-          [[(fn [n] (into {} (map (fn [key] [key false]) (range n))))
-            "clojure.lang.PersistentHashMap" 512]
-           [(fn [n] (vec (range n))) "clojure.lang.PersistentVector" 1024]
-           [(fn [n] (set (range n))) "clojure.lang.PersistentHashSet" 1024]]]
-    (let [carrier (make-carrier limit) over (make-carrier (inc limit))
-          components (invoke-engine 'sh16-aggregate-components [carrier])]
-      (is (= class-name (.getName (class carrier))))
-      (is (= class-name (.getName (class over))))
-      (is (= 1024 (count components)))
-      (is (= (if (map? carrier) (vec (mapcat identity carrier)) (vec carrier)) components))
-      (is (= {:status :accepted :nodes 1025 :collections 1 :scalars 1024 :scalar-units 1024}
-             (invoke-engine 'sh16-structural-preflight [carrier])))
-      (is (= {:status :rejected :reason :structure-width-bound}
-             (invoke-engine 'sh16-structural-preflight [over])))))
-  (let [wide (vec (repeat 1025 nil))
-        at-collections [(vec (repeat 1024 [])) (vec (repeat 1021 []))]
-        over-collections [(vec (repeat 1024 [])) (vec (repeat 1024 []))]]
-    (is (= {:status :accepted :nodes 2048 :collections 2048 :scalars 0 :scalar-units 0}
-           (invoke-engine 'sh16-structural-preflight [at-collections])))
-    (doseq [[carrier reason] [[(nested-vector 97 wide) :structure-depth-bound]
-                              [(nested-vector 96 wide) :structure-width-bound]
-                              [over-collections :structure-collection-bound]
-                              [(assoc-in over-collections [1 1021] wide) :structure-width-bound]]]
-      (is (= {:status :rejected :reason reason}
-             (invoke-engine 'sh16-structural-preflight [carrier]))))))
+
+
+(deftest sh16-validates-complete-carriers-without-quotas
+  (let [many (vec (repeat 17 (vec (range 600))))
+        late-opaque (assoc-in many [16 599] (Object.))]
+    (doseq [carrier [(nested-vector 120 nil) (vec (range 1025))
+                     many (vec (repeat 2050 []))
+                     (apply str (repeat 65537 "x"))]]
+      (is (= {:status :accepted}
+             (invoke-engine 'sh16-structural-preflight [carrier]))))
+    (is (= {:status :rejected :reason :structure-scalar-type-or-range}
+           (invoke-engine 'sh16-structural-preflight [late-opaque])))
+    (let [base (request accepted-gravity-plan 'sh16-no-change-request)
+          subject (assoc base :request-id (keyword (apply str (repeat 300 "a"))))
+          result (optimize subject)]
+      (is (= :accepted (:status result)))
+      (is (= :passed (:status (invoke-engine 'sh16-verify [subject result])))))))
+
+(deftest sh16-validates-evidence-and-operation-identities-without-quotas
+  ;; The evidence boundary formerly capped depth at 256. Both an accepted
+  ;; leaf and an invalid leaf beyond that point must actually be visited.
+  (let [deep (nested-vector 300 :leaf)
+        opaque (nested-vector 300 (Object.))]
+    (is (= {:status :accepted}
+           (invoke-engine 'sh16-c13-evidence-preflight [deep])))
+    (is (true? (invoke-engine 'c13-reconstruction-bounded? [deep])))
+    (is (= {:status :rejected :reason :carrier-scalar}
+           (invoke-engine 'sh16-c13-evidence-preflight [opaque])))
+    (is (false? (invoke-engine 'c13-reconstruction-bounded? [opaque]))))
+  (let [carrier (vec (repeat 65 (vec (range 512))))]
+    (is (= {:status :accepted}
+           (invoke-engine 'sh16-c13-evidence-preflight [carrier])))
+    (is (= {:status :rejected :reason :carrier-scalar}
+           (invoke-engine 'sh16-c13-evidence-preflight
+                          [(assoc-in carrier [64 511] (Object.))]))))
+  (let [base (request accepted-gravity-plan 'sh16-no-change-request)
+        constant (first (:operations base))
+        constants (mapv (fn [index]
+                          (let [id (keyword "op" (str "constant-" index))]
+                            (assoc constant :op-id id :result id)))
+                        (range 129))
+        subject (assoc base :operations
+                       (conj constants (assoc (second (:operations base))
+                                              :operands [(:op-id (first constants))])))
+        problem (invoke-engine 'sh16-request-error [subject])]
+    (is (nil? problem))
+    (is (= :verify
+           (invoke-engine 'sh16-request-error
+                          [(update subject :operations conj (first constants))])))))
 
 (deftest sh16-structural-preflight-rejects-opaque-map-components-without-callbacks
   ;; Built-in persistent maps only; custom Map iteration can run host callbacks.
@@ -1861,7 +1830,7 @@
       (is (= class-name (.getName (class carrier))))
       (is (= (vec (mapcat identity carrier)) components))
       (is (= (* 2 (count carrier)) (count components)))
-      (is (= {:status :accepted :nodes 5 :collections 1 :scalars 4 :scalar-units 6}
+      (is (= {:status :accepted}
              (invoke-engine 'sh16-structural-preflight [carrier]))))
     (doseq [placement [:key :value]]
       (let [callbacks (atom {:hash 0 :equals 0 :string 0})
@@ -1878,41 +1847,32 @@
                (invoke-engine 'sh16-structural-preflight [carrier])))
         (is (= {:hash 0 :equals 0 :string 0} @callbacks))))))
 
-(deftest sh16-structural-preflight-contains-deep-and-sequence-carriers
-  (let [base
-        (request accepted-gravity-plan 'sh16-no-change-request)
+(deftest sh16-preserves-semantic-rejection-after-complete-carrier-validation
+  (let [base (request accepted-gravity-plan 'sh16-no-change-request)
         valid-result (optimize base)
-        deep-request
-        (assoc-in base [:operations 0 :result]
-                  (nested-vector 120 :op/deep))
-        sequence-request
-        (assoc base :operations (iterate vector nil))
-        unbounded-integer-request
-        (assoc-in base [:source-span :end]
-                  (bigint "9223372036854775808"))
-        deep-candidate
-        (assoc valid-result :diagnostics
-               (nested-vector 120 :deep-candidate))
-        sequence-candidate (iterate vector nil)
-        deep-request-result (optimize deep-request)
-        sequence-request-result (optimize sequence-request)
-        unbounded-integer-result (optimize unbounded-integer-request)
-        deep-verification
-        (invoke-engine 'sh16-verify [base deep-candidate])
-        sequence-verification
-        (invoke-engine 'sh16-verify [base sequence-candidate])]
-    (doseq [result [deep-request-result
-                    sequence-request-result
-                    unbounded-integer-result]]
+        deep-request (assoc-in base [:operations 0 :result] (nested-vector 120 :op/deep))
+        deep-candidate (assoc valid-result :diagnostics (nested-vector 120 :candidate))]
+    (is (= {:status :accepted}
+           (invoke-engine 'sh16-structural-preflight [deep-request])))
+    (is (= :rejected (:status (optimize deep-request))))
+    (is (= :rejected (:status (invoke-engine 'sh16-verify [base deep-candidate]))))
+    ;; Sequence carriers and non-i64 source offsets remain illegal through
+    ;; the optimizer and verifier, independently of removed size quotas.
+    (doseq [[candidate reason]
+            [[(assoc base :operations (iterate vector nil)) :structure-sequence-carrier]
+             [(assoc-in base [:source-span :end] 9223372036854775808N)
+              :structure-scalar-type-or-range]]]
+      (let [result (optimize candidate)]
+        (is (= :rejected (:status result)))
+        (is (= "C13-CONTRACT" (get-in result [:diagnostics 0 :rule])))
+        (is (= reason (get-in result [:diagnostics 0 :structural-preflight :reason])))))
+    (let [result (invoke-engine 'sh16-verify [base (iterate vector nil)])]
       (is (= :rejected (:status result)))
-      (is (= :request-structural-bound
-             (get-in result [:diagnostics 0 :reason]))))
-    (doseq [verification [deep-verification sequence-verification]]
-      (is (= :rejected (:status verification)))
-      (is (= "C13-VERIFY"
-             (get-in verification [:diagnostics 0 :rule])))
-      (is (= :candidate-structural-bound
-             (get-in verification [:diagnostics 0 :reason]))))))
+      (is (= "C13-VERIFY" (get-in result [:diagnostics 0 :rule])))
+      (is (= :structure-sequence-carrier
+             (get-in result [:diagnostics 0 :structural-preflight :reason]))))
+    (doseq [carrier [(iterate vector nil) 9223372036854775808N]]
+      (is (= :rejected (:status (invoke-engine 'sh16-structural-preflight [carrier])))))))
 
 (deftest sh16-transformed-operations-have-exact-clean-schemas
   (let [request

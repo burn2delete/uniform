@@ -26,9 +26,12 @@
   "bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity")
 (def ^:private proof-contract-relative-path
   "bootstrap/clojure/test/gravity/self_hosting/sh07_proof_contract.edn")
-(def ^:private expected-source-byte-count 173349)
+(def ^:private expected-source-byte-count
+  197074)
 (def ^:private expected-source-revision-id
-  "sha256:18843bb01315cd5a55902fd8c9f38875d93aeba3c2b2fd1e3252afa2107114aa")
+  "sha256:6c5f4c52cde5777c9adfdac70bb98d53aa06d69243945fe999bcca9c46e786b4")
+;; Full-artifact projection/census pins remain historical until a fresh artifact
+;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id
   "sha256:aee0b3c997a661ae9a08391a0468483b2459a2d814fe05e4f09a43ef90a1b70e")
 (def ^:private expected-coverage
@@ -43,17 +46,7 @@
    :core-form-frequencies
    {:literal 4079 :collection-literal 380 :def 143 :reference 4488
     :call 2531 :if 776 :let 74 :loop 31 :recur 32 :quote 14 :fn 135}})
-(def ^:private expected-census-measurements
-  {:fragments 143 :top-level-forms 143 :forms 15213 :bindings 936
-   :resolutions 5693 :maximum-fragment-forms 536
-   :maximum-fragment-resolutions 157 :maximum-fragment-local-bindings 27
-   :maximum-fragment-external-bindings 21 :maximum-fragment-root-forms 1
-   :maximum-form-children 74 :maximum-form-depth 30
-   :carrier-nodes 1015002 :carrier-depth 32 :carrier-width 15213
-   :carrier-exact-utf8-scalar-bytes 16757402
-   :carrier-scalar-bytes 67007600
-   :predicted-maximum-core-nodes 15213
-   :predicted-maximum-digest-requests 15217})
+
 (def ^:private expected-export-names
   '[c14-target-lowering-contract c14-lowering-request-contract
     c14-target-eligibility-contract c14-abi-layout-contract
@@ -85,46 +78,23 @@
      sh17-current-c11-revision sh17-structural-preflight
      sh17-build-target-lowering sh17-verify-target-lowering})
 (def ^:private expected-contract-value-hashes
-  {'c14-target-lowering-contract
-   "sha256:42f15447da1fa68a6609d1586cdfdeb5dee0be251e9c74b251c716c9bb2962ed"
-   'c14-lowering-request-contract
-   "sha256:ecdf044a1783722574535e04bb749b4556265700818a141d6bc646e44b7f6e8c"
-   'c14-target-eligibility-contract
-   "sha256:9f4740fe510034c962dbea4a78642e7c59565c826fdc9228f584bd589a1b9f14"
-   'c14-abi-layout-contract
-   "sha256:fb7cee8db30cb88c244799b533ec14bd8b0f109a1fbd0ee39525c9ceb6edfbf6"
-   'c14-runtime-provider-contract
-   "sha256:a167061ccb2ba0235eec98d8b894ddeff0cd4247912aeb4e6bb7300e3e75ee86"
-   'c14-proof-metadata-contract
-   "sha256:f08971bc7a939a0b6628042af668e07f90132ef689d9189801ebf7937b0f21fc"
-   'c14-emitted-artifact-contract
-   "sha256:74f36eef3c1ffe02441c66ef304539fe6b7bee59994bd1ccd6e6d3f980dc6004"
-   'c14-lowering-diagnostic-catalog
-   "sha256:890d79857481171987a9b377099fa2b9fead18206bade47fb3461ef0be30d285"})
-(def ^:private expected-b16-bounds
-  {:maximum-module-forms 65536 :maximum-module-core-nodes 65536
-   :maximum-fragments 1024 :maximum-top-level-forms 1024
-   :maximum-fragment-forms 1024 :maximum-form-children 1024
-   :maximum-form-depth 256 :maximum-bindings 2048
-   :maximum-alias-records 256 :maximum-fragment-resolutions 2048
-   :maximum-module-resolutions 65536 :maximum-origin-entries 256
-   :maximum-metadata-entries 256 :maximum-effects 128
-   :maximum-capabilities 128 :maximum-exports 1024
-   :maximum-module-carrier-nodes 8388608
-   :maximum-module-carrier-depth 256 :maximum-module-carrier-width 65536
-   :maximum-module-scalar-bytes 268435456
-   :maximum-template-carrier-nodes 33554432
-   :maximum-template-carrier-depth 256 :maximum-template-carrier-width 65536
-   :maximum-template-scalar-bytes 1073741824
-   :maximum-resolved-core-carrier-nodes 16777216
-   :maximum-resolved-core-carrier-depth 256
-   :maximum-resolved-core-carrier-width 65536
-   :maximum-resolved-core-scalar-bytes 1073741824
-   :maximum-generated-digest-carrier-nodes 16777216
-   :maximum-generated-digest-carrier-depth 256
-   :maximum-generated-digest-carrier-width 65536
-   :maximum-generated-digest-scalar-bytes 1073741824
-   :maximum-module-digest-requests 65540})
+  '{c14-abi-layout-contract
+   "sha256:fb7cee8db30cb88c244799b533ec14bd8b0f109a1fbd0ee39525c9ceb6edfbf6",
+   c14-emitted-artifact-contract
+   "sha256:74f36eef3c1ffe02441c66ef304539fe6b7bee59994bd1ccd6e6d3f980dc6004",
+   c14-lowering-diagnostic-catalog
+   "sha256:890d79857481171987a9b377099fa2b9fead18206bade47fb3461ef0be30d285",
+   c14-lowering-request-contract
+   "sha256:ecdf044a1783722574535e04bb749b4556265700818a141d6bc646e44b7f6e8c",
+   c14-proof-metadata-contract
+   "sha256:f08971bc7a939a0b6628042af668e07f90132ef689d9189801ebf7937b0f21fc",
+   c14-runtime-provider-contract
+   "sha256:a167061ccb2ba0235eec98d8b894ddeff0cd4247912aeb4e6bb7300e3e75ee86",
+   c14-target-eligibility-contract
+   "sha256:9f4740fe510034c962dbea4a78642e7c59565c826fdc9228f584bd589a1b9f14",
+   c14-target-lowering-contract
+   "sha256:42f15447da1fa68a6609d1586cdfdeb5dee0be251e9c74b251c716c9bb2962ed"})
+
 (def ^:private rejected-families
   {"core-shape" "C6-CORE-SHAPE" "lowering-gap" "C6-LOWERING-GAP"})
 (def ^:private zero-id (str "sha256:" (apply str (repeat 64 "0"))))
@@ -132,28 +102,23 @@
 (defn- path [relative] (str (.resolve @root relative)))
 (defn- source-bytes [source-path]
   (java.nio.file.Files/readAllBytes (.toPath (io/file source-path))))
-(def ^:private maximum-c14-source-bytes (* 1024 1024))
-(defn- bounded-source-text []
+
+(defn- source-text []
   (let [source-path (.toPath (io/file (path c14-relative-path)))
         options (into-array java.nio.file.OpenOption
                             [java.nio.file.StandardOpenOption/READ
                              java.nio.file.LinkOption/NOFOLLOW_LINKS])]
     (with-open [channel (java.nio.channels.FileChannel/open source-path options)]
-      (let [size (.size channel)]
-        (when (or (neg? size) (> size maximum-c14-source-bytes))
-          (throw (ex-info "C14 source exceeds the source-only parse bound"
-                          {:id "SH07-C14-SOURCE-BOUND"
-                           :maximum-bytes maximum-c14-source-bytes
-                           :actual-bytes size})))
-        (let [buffer (java.nio.ByteBuffer/allocate (int size))]
-          (loop []
-            (when (.hasRemaining buffer)
-              (let [read-count (.read channel buffer)]
-                (when (neg? read-count)
-                  (throw (ex-info "C14 source ended before its measured size"
-                                  {:id "SH07-C14-SOURCE-SHORT-READ"})))
-                (recur))))
-          (String. (.array buffer) java.nio.charset.StandardCharsets/UTF_8))))))
+      (let [size (.size channel)
+            buffer (java.nio.ByteBuffer/allocate (Math/toIntExact size))]
+        (loop []
+          (when (.hasRemaining buffer)
+            (let [read-count (.read channel buffer)]
+              (when (neg? read-count)
+                (throw (ex-info "C14 source ended before its measured size"
+                                {:id "SH07-C14-SOURCE-SHORT-READ"})))
+              (recur))))
+        (String. (.array buffer) java.nio.charset.StandardCharsets/UTF_8)))))
 (defn- sha256-id [bytes]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256") bytes)]
     (str "sha256:"
@@ -162,7 +127,7 @@
   (sha256-id (.getBytes (pr-str value) "UTF-8")))
 (defn- source-forms []
   (with-open [reader (clojure.lang.LineNumberingPushbackReader.
-                      (java.io.StringReader. (bounded-source-text)))]
+                      (java.io.StringReader. (source-text)))]
     (loop [forms []]
       (let [form (read {:eof ::eof} reader)]
         (if (= ::eof form) forms (recur (conj forms form)))))))
@@ -308,6 +273,28 @@
   (delay ((required-var 'sh06-resolution-artifact-verification)
           (:sh06-resolution-artifact @c14-artifact))))
 
+(deftest sh07-b34-c14-source-read-has-no-byte-quota-and-keeps-nofollow
+  (let [directory (java.nio.file.Files/createTempDirectory
+                   "sh07-c14-source-read"
+                   (make-array java.nio.file.attribute.FileAttribute 0))
+        source (.resolve directory "source.gravity")
+        link (.resolve directory "linked.gravity")
+        text (str "(ns source)\n;" (apply str (repeat 1100000 "x")) "\n")
+        bytes (.getBytes text "UTF-8")]
+    (try
+      (java.nio.file.Files/write source bytes (make-array java.nio.file.OpenOption 0))
+      (let [observed (with-redefs [path (fn [_] (str source))] (source-text))]
+        (is (= (count text) (count observed)))
+        (is (= (sha256-id bytes) (sha256-id (.getBytes observed "UTF-8")))))
+      (java.nio.file.Files/createSymbolicLink
+        link source (make-array java.nio.file.attribute.FileAttribute 0))
+      (is (thrown? java.io.IOException
+                   (with-redefs [path (fn [_] (str link))] (source-text))))
+      (finally
+        (java.nio.file.Files/deleteIfExists link)
+        (java.nio.file.Files/deleteIfExists source)
+        (java.nio.file.Files/deleteIfExists directory)))))
+
 (deftest sh07-b34-c14-source-parses-and-control-form-arities-are-exact
   (let [forms (source-forms)
         definitions (filter #(and (seq? %) (#{'def 'defn} (first %))) forms)
@@ -326,10 +313,10 @@
                                   (#{'def 'defn} (first %))) forms)
         by-name (into {} (map (juxt second identity)) definitions)
         if-calls (mapcat #(collect-calls 'if %) definitions)]
-    (is (= 147 (count forms)))
-    (is (= 146 (count definitions) (count by-name)))
+    (is (= 176 (count forms)))
+    (is (= 175 (count definitions) (count by-name)))
     (is (= 8 (count (filter #(= 'def (first %)) definitions))))
-    (is (= 138 (count (filter #(= 'defn (first %)) definitions))))
+    (is (= 167 (count (filter #(= 'defn (first %)) definitions))))
     (is (= 'gravity.compiler.c14-target-lowering-architecture (second ns-form)))
     (is (= :meta (:profile clauses)))
     (is (= :jvm (:target clauses)))
@@ -348,7 +335,7 @@
       (is (= expected-hash (value-sha256-id (nth (get by-name name) 2)))))
     (doseq [name target-builder-names]
       (is (= 2 (count (nth (get by-name name) 2))) (str name)))
-    (is (= 787 (count if-calls)))
+    (is (= 880 (count if-calls)))
     (is (every? #(= 4 (count %)) if-calls))
     (is (= expected-source-byte-count
            (alength (source-bytes (path c14-relative-path)))))
@@ -364,10 +351,10 @@
         build (get by-name 'sh17-build-target-lowering)
         verify (get by-name 'sh17-verify-target-lowering)
         identity (get by-name 'sh17-identity-input)]
-    (is (= 1134 (count gets)))
-    (is (= 1035 (count (filter #(keyword? (nth % 2 nil)) gets))))
-    (is (= 99 (count dynamic)))
-    (is (= {:reference 45 :call 54}
+    (is (= 1545 (count gets)))
+    (is (= 1345 (count (filter #(keyword? (nth % 2 nil)) gets))))
+    (is (= 200 (count dynamic)))
+    (is (= {:reference 83 :call 117}
            (frequencies (map #(if (symbol? (nth % 2)) :reference :call)
                              dynamic))))
     (is (contains? (symbols-in build) 'sh17-structural-preflight))
@@ -399,7 +386,6 @@
   (let [policy (invoke 'sh17-target-lowering-policy [])]
     (is (= [:llvm :c :wasm] (:backends policy)))
     (is (= [:hosted] (:profiles policy)))
-    (is (= 8192 (get-in policy [:structural-bounds :maximum-nodes])))
     (doseq [[function expected-artifact]
             [['c14-build-bounded-llvm-lowering-record
               :gravity/c14-bounded-llvm-lowering-record]
@@ -489,19 +475,7 @@
       (is (= :result-substitution
              (get-in verification [:diagnostics 0 :reason]))))))
 
-(deftest sh07-b34-c14-measured-carrier-fits-unchanged-b16-bounds
-  (let [m expected-census-measurements b expected-b16-bounds]
-    (is (< (:forms m) (:maximum-module-forms b)))
-    (is (< (:predicted-maximum-core-nodes m) (:maximum-module-core-nodes b)))
-    (is (< (:fragments m) (:maximum-fragments b)))
-    (is (< (:bindings m) (:maximum-bindings b)))
-    (is (< (:resolutions m) (:maximum-module-resolutions b)))
-    (is (< (:carrier-nodes m) (:maximum-module-carrier-nodes b)))
-    (is (< (:carrier-depth m) (:maximum-module-carrier-depth b)))
-    (is (< (:carrier-width m) (:maximum-module-carrier-width b)))
-    (is (< (:carrier-scalar-bytes m) (:maximum-module-scalar-bytes b)))
-    (is (< (:predicted-maximum-digest-requests m)
-           (:maximum-module-digest-requests b)))))
+
 
 (deftest sh07-b34-proof-contract-registration-is-ready-for-coordinator-gate
   (if (= "1" (System/getenv "GRAVITY_SH07_B34_CONTRACT"))
@@ -512,7 +486,7 @@
       (is (= {:keyword-lookups 0}
              (get-in contract
                      [:required-core-product-counts :c14-target-lowering])))
-      (is (= expected-b16-bounds (:bounds contract))))
+)
     (is true "Set GRAVITY_SH07_B34_CONTRACT=1 after coordinator registration")))
 
 (deftest sh07-b34-c14-authentic-source-core-and-reduced-replay
@@ -608,4 +582,4 @@
           (is (= (str right-path) (get-in right [:provenance :source-path])))
           (is (not= left-path (str right-path))))
         (finally (delete-tree! temp-root))))
-    (is true "Set GRAVITY_SH07_B34_PARITY=1 in an isolated 8 GiB JVM")))
+    (is true "Set GRAVITY_SH07_B34_PARITY=1 for explicit isolated artifact parity")))
