@@ -40,14 +40,16 @@
   bottom-up-mergesort ordering/bottom-up-mergesort)
 (def ^{:private true :arglists '([value path consume])}
   ordered-entries ordering/ordered-entries)
-(def ^{:private true :arglists '([value path])}
-  validate-closed-value! canonical/validate-closed-value!)
-(def ^{:private true :arglists '([value path])}
-  copy-value! canonical/copy-value!)
-(def ^{:private true :arglists '([value path])}
-  schema-id! schema/schema-id!)
-(def ^{:private true :arglists '([value])}
-  canonical-uint config/canonical-uint)
+(def ^{:private true :arglists '([value])} canonical-uint config/canonical-uint)
+
+(def ^:private construct-vector (fn [items] (vec items)))
+(def ^:private construct-map
+  (fn [entries]
+    (reduce (fn [result [key value]] (assoc result key value))
+            clojure.lang.PersistentHashMap/EMPTY entries)))
+
+(def ^{:private true :arglists '([value path])} copy-value! canonical/copy-value!)
+(def ^{:private true :arglists '([value path])} schema-id! schema/schema-id!)
 (def ^{:private true :arglists '([definition allowed required path])}
   exact-fields! schema/exact-fields!)
 (def ^{:private true :arglists '([definition name path])}
@@ -90,12 +92,6 @@
   validate-tagged! validation/validate-tagged!)
 (def ^{:private true :arglists '([registry schema-id value path])}
   validate-value! validation/validate-value!)
-
-(def ^:private construct-vector (fn [items] (vec items)))
-(def ^:private construct-map
-  (fn [entries]
-    (reduce (fn [result [key value]] (assoc result key value))
-            clojure.lang.PersistentHashMap/EMPTY entries)))
 
 (defn- execute [operation args]
   (execution/execute operation args construct-vector construct-map))

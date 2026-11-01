@@ -2195,25 +2195,20 @@
              "UEP-FIXTURE-BINDING-CLOSURE"
              "Fixture source binding closure references an unknown suite"
              {:row-id row-id :unknown (sorted-values unknown-suite-ids)})
-    (let [rows (vec
-                (mapcat (fn [suite]
-                          (concat (:accepted suite) (:rejected suite)))
-                        (filter #(contains? (set fixture-suite-ids) (:id %))
-                                table-suites)))]
-      (let [matches (vec (keep (fn [suite]
-                                 (when-let [row (some #(when (= row-id (:id %)) %)
-                                                      (concat (:accepted suite)
-                                                              (:rejected suite)))]
-                                   [suite row]))
-                               (filter #(contains? (set fixture-suite-ids) (:id %))
-                                       table-suites)))]
-        (ensure! (= 1 (count matches))
-                 "UEP-FIXTURE-BINDING-ROW"
-                 "Fixture row is not uniquely contained by the execution closure"
-                 {:row-id row-id
-                  :matches (mapv (comp :id first) matches)
-                  :fixture-suite-ids fixture-suite-ids})
-        (first matches)))))
+    (let [matches (vec (keep (fn [suite]
+                               (when-let [row (some #(when (= row-id (:id %)) %)
+                                                    (concat (:accepted suite)
+                                                            (:rejected suite)))]
+                                 [suite row]))
+                             (filter #(contains? (set fixture-suite-ids) (:id %))
+                                     table-suites)))]
+      (ensure! (= 1 (count matches))
+               "UEP-FIXTURE-BINDING-ROW"
+               "Fixture row is not uniquely contained by the execution closure"
+               {:row-id row-id
+                :matches (mapv (comp :id first) matches)
+                :fixture-suite-ids fixture-suite-ids})
+      (first matches))))
 
 (defn- fixture-source-binding-path
   [suite row key]

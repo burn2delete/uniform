@@ -55,10 +55,10 @@
           (recur (* 2 width) target source))))))
 
 (defn ordered-entries [value path consume]
-  (let [n (count value)]
-    (let [entries (seq value)]
-      (doseq [[key _] entries]
-        (when-not (config/exact-class? key String)
-          (config/fail! "E-TYPE" path))
-        (when-not (config/scalar-string? key) (config/fail! "E-TYPE" path)))
-      (consume (bottom-up-mergesort entries n)))))
+  (let [n (count value)
+        entries (seq value)]
+    (doseq [[key _] entries]
+      (when-not (config/exact-class? key String)
+        (config/fail! "E-TYPE" path))
+      (when-not (config/scalar-string? key) (config/fail! "E-TYPE" path)))
+    (consume (bottom-up-mergesort entries n))))
