@@ -9660,13 +9660,16 @@
             false) false) false)) false)
       false) false))
 
-(defn sh08-lset-type-fields? [type]
+(defn types-type-field-map-valid? [type]
   (if (map? type)
     (if (<= (count type) 3)
       (loop [fields (keys type)]
         (if (= 0 (count fields)) true
           (if (keyword? (first fields)) (recur (rest fields)) false))) false)
     (if (= nil type) true (keyword? type))))
+
+(defn sh08-lset-type-fields? [type]
+  (types-type-field-map-valid? type))
 
 (defn sh08-lset-type? [type]
   (if (map? type)
@@ -9862,12 +9865,7 @@
       false) false))
 
 (defn sh08-mkeys-type-fields? [type]
-  (if (map? type)
-    (if (<= (count type) 3)
-      (loop [fields (keys type)]
-        (if (= 0 (count fields)) true
-          (if (keyword? (first fields)) (recur (rest fields)) false))) false)
-    (if (= nil type) true (keyword? type))))
+  (types-type-field-map-valid? type))
 
 (defn sh08-mkeys-type? [type]
   (if (map? type)
@@ -10543,12 +10541,7 @@
       false) false))
 
 (defn sh08-vrest-type-fields? [type]
-  (if (map? type)
-    (if (<= (count type) 3)
-      (loop [fields (keys type)]
-        (if (= 0 (count fields)) true
-          (if (keyword? (first fields)) (recur (rest fields)) false))) false)
-    (if (= nil type) true (keyword? type))))
+  (types-type-field-map-valid? type))
 
 (defn sh08-vrest-type? [type]
   (if (map? type) (= :gravity.type/vector (get type :kind)) false))
@@ -10734,12 +10727,7 @@
       false) false))
 
 (defn sh08-vemp-type-fields? [type]
-  (if (map? type)
-    (if (<= (count type) 3)
-      (loop [fields (keys type)]
-        (if (= 0 (count fields)) true
-          (if (keyword? (first fields)) (recur (rest fields)) false))) false)
-    (if (= nil type) true (keyword? type))))
+  (types-type-field-map-valid? type))
 
 (defn sh08-vemp-type? [type]
   (if (= :gravity.type/vector type) true
@@ -13817,9 +13805,12 @@
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
      :dispatch :direct-keyword-set-contains :applied-keyword-set-contains descriptor :effect-facts-source :audited-keyword-set-membership-intrinsic}))))))
 
-(defn sh08-ksm-finish [header]
+(defn types-finish-boolean-result [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn sh08-ksm-finish [header]
+  (types-finish-boolean-result header))
 
 (defn sh08-ksm-derive [core node call edge nodes bindings types forms]
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
@@ -13949,8 +13940,7 @@
 
 
 (defn sh08-mc-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-mc-derive [core node call edge nodes bindings types forms]
   ; STD3 membership queries a known Map with an independently established
@@ -14339,8 +14329,7 @@
      :dispatch :direct-map-predicate :applied-map-predicate descriptor :effect-facts-source :audited-map-predicate-intrinsic}))
 
 (defn sh08-mapp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-mapp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -14485,8 +14474,7 @@
      :dispatch :direct-set-predicate :applied-set-predicate descriptor :effect-facts-source :audited-set-predicate-intrinsic}))
 
 (defn sh08-setp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-setp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -14639,8 +14627,7 @@
      :dispatch :direct-list-predicate :applied-list-predicate descriptor :effect-facts-source :audited-list-predicate-intrinsic}))
 
 (defn sh08-listp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-listp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -14789,8 +14776,7 @@
      :dispatch :direct-symbol-predicate :applied-symbol-predicate descriptor :effect-facts-source :audited-symbol-predicate-intrinsic}))
 
 (defn sh08-symp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-symp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -14936,8 +14922,7 @@
      :dispatch :direct-boolean-predicate :applied-boolean-predicate descriptor :effect-facts-source :audited-boolean-predicate-intrinsic}))
 
 (defn sh08-boolp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-boolp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -15100,8 +15085,7 @@
      :dispatch :direct-character-predicate :applied-character-predicate descriptor :effect-facts-source :audited-character-predicate-intrinsic}))
 
 (defn sh08-chp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-chp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -15281,8 +15265,7 @@
      :dispatch :direct-nil-predicate :applied-nil-predicate descriptor :effect-facts-source :audited-nil-predicate-intrinsic}))
 
 (defn sh08-nilp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-nilp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -15763,8 +15746,7 @@
          (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic))))})))
 
 (defn sh08-ane-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-ane-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -15938,8 +15920,7 @@
      :dispatch :direct-keyword-predicate :applied-keyword-predicate descriptor :effect-facts-source :audited-keyword-predicate-intrinsic}))
 
 (defn sh08-kp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-kp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -16083,8 +16064,7 @@
      :dispatch :direct-string-predicate :applied-string-predicate descriptor :effect-facts-source :audited-string-predicate-intrinsic}))
 
 (defn sh08-strp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-strp-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -16227,8 +16207,7 @@
      :dispatch :direct-integer-predicate :applied-integer-predicate descriptor :effect-facts-source :audited-integer-predicate-intrinsic}))
 
 (defn sh08-ip-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-ip-derive [core node call edge nodes bindings types forms]
   (let [args (get call :argument-node-ids) children (get node :children)]
@@ -16375,8 +16354,7 @@
 
 
 (defn sh08-vp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 
 (defn sh08-vp-derive [core node call edge nodes bindings types forms]
@@ -16520,8 +16498,7 @@
 
 
 (defn sh08-nt-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-nt-derive [core node call edge nodes bindings types forms]
   ; STD2/L2 not complements false/nil truthiness over every independently
@@ -16657,8 +16634,7 @@
 
 
 (defn sh08-ae-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-ae-derive [core node call edge nodes bindings types forms]
   ; STD2 value equality is closed here over six independently established
@@ -17045,8 +17021,7 @@
      :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact))))))
 
 (defn sh08-kse-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-kse-derive [core node call edge nodes bindings types forms]
   (if (sh08-bka-entry? node call nodes bindings types (get core :module))
@@ -17254,8 +17229,7 @@
      :dispatch :direct-list-equality :applied-list-equality descriptor :effect-facts-source :audited-list-value-intrinsic}))
 
 (defn sh08-le-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-le-derive [core node call edge nodes bindings types forms]
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
@@ -17542,8 +17516,7 @@
 
 
 (defn sh08-ve-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (types-finish-boolean-result header))
 
 (defn sh08-ve-derive [core node call edge nodes bindings types forms]
   (if (if (vector? (get call :argument-node-ids)) (= 2 (count (get call :argument-node-ids))) false)
