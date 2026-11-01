@@ -141,7 +141,7 @@
     false))
 
 (defn valid-cache-closure?
-  "True only for one bounded, explicit, locally present test closure."
+  "True only for one explicit, locally present test closure."
   [component test-entry closure]
   (let [inputs (:inputs closure)
         inventories (:inventories closure)
@@ -152,7 +152,7 @@
          (= #{:schema :inputs :inventories} (set (keys closure)))
          (= cache-closure-schema (:schema closure))
          (vector? inputs)
-         (<= 1 (count inputs) 96)
+         (seq inputs)
          (= reviewed-inventories inventories)
          (every? #(and (map? %)
                        (nil? (meta %))

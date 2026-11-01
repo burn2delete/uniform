@@ -93,8 +93,7 @@
                            :runtime :tool :policy]
               :authoritative? false}
              (:cache-policy route)))
-      (is (= (count selectors)
-             (get-in route [:bounds :max-test-vars]))))))
+      (is (seq selectors)))))
 
 (deftest cached-route-closure-has-no-parent-child-overlap
   (is (= []

@@ -189,7 +189,11 @@
   "bootstrap/clojure/src/gravity/syntax.clj"
   {:namespace gravity.syntax :owner :sh-syntax :slice "SH-04"
    :consumer-path "bootstrap/clojure/src/gravity/bootstrap_impl/components/compiler/00856-compiler-c3-syntax-source-artifact.clj"
-   :test-path "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"}}
+   :test-path "bootstrap/clojure/test/gravity/syntax/pipeline_test.clj"}
+  "bootstrap/clojure/src/gravity/process_supervision.clj"
+  {:namespace gravity.process-supervision :owner :master-coordinator :slice "SH-01"
+   :consumer-path "tools/ci/run.clj"
+   :test-path "tools/ci/run_test.clj"}}
 
  ;; Supplemental helper checks, outside the unchanged primary component pairs.
  :auxiliary-test-associations
@@ -329,6 +333,7 @@
   "bootstrap/clojure/src/gravity/checked_core.clj" :sh-core
   "bootstrap/clojure/src/gravity/macro.clj" :sh-macro
   "bootstrap/clojure/src/gravity/macro_run_storage.clj" :sh-macro
+  "bootstrap/clojure/src/gravity/process_supervision.clj" :master-coordinator
   "bootstrap/clojure/src/gravity/module_analysis.clj" :sh-resolution
   "bootstrap/clojure/src/gravity/optimization_lowering.clj" :sh-optimization
   "bootstrap/clojure/src/gravity/pass_cache.clj" :sh-incremental
@@ -430,6 +435,8 @@
  :standalone-test-owners
  {"bootstrap/clojure/test/gravity/release/pipeline_test.clj"
   {:namespace gravity.release.pipeline-test :slice "SH-00" :owner :master-coordinator}
+  "tools/ci/run_test.clj"
+  {:namespace ci.run-test :slice "SH-01" :owner :master-coordinator}
   "bootstrap/clojure/test/gravity/build/pipeline_test.clj"
   {:namespace gravity.build.pipeline-test :slice "SH-23" :owner :sh-package-build}
   "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj"
