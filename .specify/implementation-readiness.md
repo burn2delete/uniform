@@ -111,9 +111,10 @@ compiler-support and CLI compiler-command slices retain their finite scope.
 Compiler API, Domains and Platform have preserved source-reconciliation
 proposals with spec/plan changes. The existing chats were observed idle on
 2026-11-01; an immutable pending candidate is not an active-writer lock under
-AGENTS.md. This branch adds isolated implementation entries while preserving
-the inspected-main originals and all task/evidence bytes, without importing or
-accepting the proposed amendments. Their
+AGENTS.md. This branch initially added isolated implementation entries while
+preserving the inspected-main originals and all task/evidence bytes. Later
+proposed consumer and future-task additions are qualified below; none accepts
+the aggregate or its whole-file amendments. Their
 [proposed Compiler API](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/compiler-api-workflow/spec.md),
 [Domains](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/spec.md)
 and [Platform](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/platform-workflow/spec.md)
@@ -123,11 +124,30 @@ The new [Compiler API entry](../specs/compiler-api-workflow/spec.md),
 [Platform entry](../specs/platform-workflow/spec.md) retain the existing literal
 outcomes and unresolved architecture/operation restrictions. All 24 component
 packages now have behavior and planning entries above their preserved migration
-records. Domains routes the seven current keys and explicitly retains the nine
-additional proposed integration interfaces, without importing their task
-amendments or claiming that seven headings cover every domain contract. Exact affected
+records. Domains routes the seven current keys and now resumes the nine wider
+integration records as explicit future tasks in the same task file, outside
+the unchanged current SH region. The exact key is `crypto`, not the descriptive
+label cryptography. The seven additional Math/Schema producer records in the
+preserved proposal also have explicit future routes in the plan; their current
+composition remains pending. Seven headings do not cover every domain contract. Exact affected
 composition with the preserved proposals remains required; their additional
 integration interfaces and Platform product decisions are not replaced here.
+
+The nine [wider future task records](../specs/domains-workflow/tasks.md#wider-integration-task-proposals)
+preserve their IDs, Open states, criteria, owners and dependencies, with only an
+explicit source-context reference rebinding. Their original references require
+the full preserved 70-record Domains context (SHA-256
+`cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42`);
+the local same-named file retains one MIR-pass context only. No whole-file
+replacement or competing source/task database is imported. Their 30 criterion
+and 17 decision owner joins retain 558 source facets, including 65 explicitly
+unresolved support-surface facets across ten documents. Those are wider
+incumbent/support inventories and provider boundaries, not 65 new product
+decisions. Domain architecture and named specialists retain the source/task
+refinement; a reference workload cannot discharge the full required breadth.
+The seven Math/Schema producer proposals separately require exact source and
+current-accounting composition. No source/task alias, SH credit or domain
+implementation is accepted by resuming these records.
 The other component packages remain discoverable through the existing
 [component registry](../docs/component-roadmaps/README.md#component-registry).
 Their migration specs are not automatically accepted as complete implementation
@@ -382,3 +402,24 @@ language-boundary gate passed 6 tests / 11 assertions, and whitespace checks
 passed. No compiler, resolver, registry, governance or release operation was
 executed. Current source/task/receiver review, implementation and exact release
 acceptance remain separate unfinished obligations.
+
+The wider-Domains successor resumes nine existing future records in the same
+task file, outside its unchanged current seven-key SH region. All carried
+criterion bodies match the preserved source except the explicit full-context
+reference rebinding. Author checks verified thirty existing criterion/task
+joins, seventeen existing Open decision/task joins, 558 exact current source
+facet spans/hashes across ten documents and the full context's recorded hash.
+The 65 inherited unresolved support-surface facets remain qualified; source
+identity checks do not resolve their scope or establish implementation.
+
+Focused checks passed 62 changed files, including 61 Markdown files and 2,141
+local references, all 139 current component task routes, nine separate future
+task records and 48 historical spec/plan suffixes. Forty-five original task/
+evidence files remain untouched; removing only the three governance consumer
+blocks and the declared Domains future-record region restores the other three
+task files exactly. The ten governance task bytes still match their preserved
+source. Canonical document and full-language structural validators passed;
+dependency controls passed 18 tests / 419 assertions. Whitespace checks passed.
+No domain/compiler/provider execution, SH route adoption or independent source/
+composition acceptance followed. Seven Math/Schema producer records retain
+explicit existing future routes and pending current-accounting composition.

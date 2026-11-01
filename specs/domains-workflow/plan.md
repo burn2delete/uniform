@@ -4,9 +4,12 @@ Select one unresolved [existing domain task](tasks.md#implementation-tasks) and
 its actual operation/provider/target boundary. Read [spec.md](spec.md), the whole
 owning canonical contract and relevant profile/safety/backend/runtime/library
 rules. Retain current task identities, Open status and accepted receipt scope.
-For the nine proposed integration interfaces, reconcile the exact preserved
-source-family amendment into this same authority before claiming their task
-adoption; do not create a parallel task population.
+The nine wider integration records are resumed as
+[explicit future tasks](tasks.md#wider-integration-task-proposals) in this same
+file. Their source references use the full preserved context rather than the
+local one-record excerpt. The original seven-key SH region remains unchanged;
+future task/projection composition and independent acceptance remain pending.
+Do not treat source resumption as SH credit or create a parallel task ledger.
 
 Name the source construct, typed inputs/results, checked domain representation,
 producer and consumer versions, effects/grants, schema/numeric/privacy policy,
@@ -44,6 +47,56 @@ also run the language-boundary gate. Keep independent source/task review,
 component acceptance and coordinator integration pending until their exact
 evidence is present. Whole-domain, full-language, self-hosted and release claims
 remain governed by their separate existing outcomes.
+
+## Wider integration task selection
+
+Select the existing `automation`, `blockchain`, `crypto`, `formal`, `native`,
+`services`, `simulation`, `storage` or `visual` future record and its complete
+declared criterion closure. Use its existing literal criterion/decision IDs,
+owner role, actual typed producer/consumer dependencies, positive/negative
+fixtures and required outputs. The native SAXPY and service/physics examples
+are scoped end-to-end evidence, not replacements for the complete domain.
+For crypto and chains preserve real parameter/protocol/custody/replay rules.
+For proof systems distinguish relation emission, witness/setup provenance,
+proof production, public-input verification and recursive-chain checking.
+
+The same task file keeps the current seven-key SH projection separate from
+these proposed future records. Extending that exact projection is explicit
+remaining composition work, not an inference from the additional checkboxes.
+The preserved context also marks 65 support-surface facets unresolved across
+ten documents. Retain those incumbent/support inventories and provider
+boundaries with their exact original unit/facet IDs; finite integration
+examples do not establish the full replacement surface. Domain architecture
+and the named specialist owner must refine the affected source/task and
+cross-component allocation in the existing reconciliation before claiming that
+breadth. Do not invent a product-policy question where the source already names
+the required surface, or count a context flag as implementation acceptance.
+Record absent providers, target decisions, implementation and execution
+honestly; no held operation or existing writer is transferred here.
+
+## Remaining Math and Schema producer proposals
+
+The [preserved source authority](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md)
+also supplies these seven existing explicit future tasks. Their full source/
+criterion and current-accounting composition remain pending; they are not
+new completed components or an independent task denominator.
+
+| Existing proposed ID | Required producer or checker boundary |
+| --- | --- |
+| `math/eml-normalization-and-search` | Produce guarded/replayable candidates and traces; candidate discovery cannot authorize a runtime rewrite. |
+| `math/certified-implementation-synthesis` | Produce the actual domain/mode/target-bound approximation candidate, coefficients and separate error obligations. |
+| `math/interval-and-real-proof-production` | Produce exact enclosures, complete partitions, real/roundoff derivations and unresolved-cell obligations. |
+| `math/symbolic-rule-and-trace-production` | Produce typed/guarded symbolic rules and replayable transformation traces with semantic proof obligations. |
+| `math/independent-proof-and-certificate-checking` | Independently check the exact claim/candidate/certificate and assumptions before proof-dependent use. |
+| `schema/compatibility-and-migration` | Produce semantic compatibility diffs and checked migration/loss/deployment/rollback or forward-only plans. |
+| `schema/checked-consumer-projection` | Generate and exercise source-faithful API/database/ABI/config/artifact consumer projections with weakening/drift rejection. |
+
+Current AGENTS.md supersedes their older passages retaining project fuel,
+depth/time/candidate allowances for policy review. Those passages must receive
+an explicit superseded disposition in their existing lineage, without imposing
+replacement accounting. Preserve actual numeric error, cryptographic scheme,
+target-format, profile, ownership and provider constraints. Do not import a
+stale whole-file overlay or attribute a new correction to an earlier review.
 
 ## Historical workflow-transfer plan
 

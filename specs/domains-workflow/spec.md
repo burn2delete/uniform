@@ -36,11 +36,21 @@ The contracts retained below govern these distinguishing cases:
 
 The preserved [source-reconciliation proposal](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md#implementation-tasks)
 already names nine additional Open integration interfaces: `automation`,
-`blockchain`, `cryptography`, `formal`, `native`, `services`, `simulation`,
-`storage` and `visual`. Their exact source-facet/task entailment and composition
-remain pending in that lineage. They are explicit future task amendments to
-this authority, not nine completed domains or a second editable checklist here.
+`blockchain`, `crypto`, `formal`, `native`, `services`, `simulation`,
+`storage` and `visual`. Their records are now resumed as explicit future tasks
+in [the same authority](tasks.md#wider-integration-task-proposals), preserving
+every criterion except the declared source-context reference rebinding. Exact
+source-facet/task entailment and projection composition remain pending in that
+lineage. They are not nine completed domains or a second editable checklist.
 Do not omit these required outcomes because the inspected main has seven keys.
+
+The same preserved source also contains seven proposed Math/Schema producer
+records, identified in [the plan](plan.md#remaining-math-and-schema-producer-proposals).
+These retain explicit future task ownership and independent producer/checker
+boundaries; the current seven aggregate keys do not prove their implementation
+or discharge their source predicates. Current accounting removal supersedes
+old search-fuel/allowance review passages; it is not an unresolved permission
+decision.
 
 Their source obligations include actual DOM5 vector/native execution with
 proof-gated optimization and differential benchmarks; DOM8 service routes,
