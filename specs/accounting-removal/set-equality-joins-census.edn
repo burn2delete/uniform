@@ -1,0 +1,181 @@
+{:forgery-helper
+ {:original-name checked-dual-bare-set-forgeries,
+  :new-name descriptor-forgeries,
+  :original-file-sha256
+  "b6fb83b6c740bf0fc8aa65b0748aceebb26c1c0845b7eb2ceaaae757d07ee2f5",
+  :original-source-sha256
+  "60b196ef9ef6b0d65555327b049c4232d71cd8e003a97793b15401157a64efc0",
+  :complete-body-and-parameters :identical,
+  :original-mutants 15,
+  :dependency-reason :original-helper-absent-in-parent-host-namespace},
+ :path
+ "bootstrap/clojure/test/gravity/types/set_equality_joins_test.clj",
+ :source-pins
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :sha256
+   "901b55390c957c2eadeb68332a20647c8f12246dbf2a54f36e445897c03b4472",
+   :definitions
+   [{:name types-set-equality-derive,
+     :arguments [core node call edge nodes bindings types forms],
+     :form-sha256
+     "3a162e0429b1755b4b5dbf6ea0055859b981dcb87cdff936bd1360b3a4cc1f94"}
+    {:name types-set-equality-constraint,
+     :arguments [descriptor],
+     :form-sha256
+     "681ebe8d3726a4e733474d1f8c2c81b7d0b02ba49092b91325adf206ca0a7bfb"}
+    {:name types-set-equality-call-fact,
+     :arguments [descriptor module],
+     :form-sha256
+     "65178758f38a80aeaf6aebd31d2ba49368f39b090cfa379c5ce6d18dff0a1563"}
+    {:name sh08-ft-call-constraints,
+     :arguments
+     [calls edges nodes type-table binding-types function-types],
+     :form-sha256
+     "dd5eff305a0f7828d62dfea56d537464f5656a4937bc8847112b4e9f3e10aaef"}
+    {:name sh08-ft-call-facts,
+     :arguments [calls edges nodes type-table function-types module],
+     :form-sha256
+     "a60cb7ae54ec93c7e8df10f6350f8e27a0eaf212b662a7ec45405588f00577b2"}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :sha256
+   "0f507467aec793394827bc0fcc5a4b86de2b3662e8d3aac3898262df79b142a5",
+   :definitions
+   [{:name emit-set-equality-row-census,
+     :arguments
+     [core ledger nodes bindings types calls edges target descriptor],
+     :form-sha256
+     "67b90e728bc46bf23f5d88d10b588ff226ed9e2c6f2ed6280f1b494e677cdab5"}
+    {:name emit-set-equality-fact-census,
+     :arguments [facts module descriptors target],
+     :form-sha256
+     "77e94dd26dfc3d3b48e67dc5d6e5b7cd4982f76fe4a2c5982ae32a6dbfc4d88d"}
+    {:name p15-s23-typed-compile-node,
+     :arguments [context id budget],
+     :form-sha256
+     "6b4abe4ef88ab87ac793e090c0c9843f934eeeb5262e73056d9530d23c334a40"}
+    {:name emit-set-equality-compile,
+     :arguments [context node budget],
+     :form-sha256
+     "0468a445f18caf43e7521028afa3247ec25998aa84e69d97d6d07ca821d5fcf1"}]}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :sha256
+   "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+   :definitions
+   [{:name invoke-c7,
+     :arguments [function arguments],
+     :form-sha256
+     "a239a912a4d78b26ce7ddddb823152bddd50d73ce2af1f10890f8f35e6900a17"}
+    {:name atomic-equality-input,
+     :arguments [argument-types],
+     :form-sha256
+     "2ecb53fe23bf6c98e2c34e4ebd470e470adc8f5d180bb7634fff1acec95c63ac"}]}],
+ :removed-payment-test
+ {:name mixed-ledger-preserves-exact-payment-and-local-limit,
+  :sha256
+  "6c1d5513eeaf3b17121f4317899420702fc7023c860bb1f34277f07848bd2824",
+  :only-semantic-assertion-already-in-positive-test true,
+  :no-accounting-replacement true},
+ :nonclaims
+ [:independent-source-acceptance
+  :genuine-C7-Effects-lowering-runtime-acceptance
+  :authenticated-source
+  :DSE-parent-acceptance
+  :whole-ACC01
+  :PR502-closure
+  :main-integration
+  :release
+  :self-hosting],
+ :execution
+ {:genuine-tests :UNRUN,
+  :Bootstrap-loaded false,
+  :reader-eval false,
+  :new-model false,
+  :denied-selector-retry false},
+ :negative-controls
+ [:explicit-malformed-ordinary-tags
+  :opaque-zero-callbacks
+  :missing-and-stripped-tags
+  :duplicate-and-orphan-joins
+  :wrong-fact-map-key
+  :evaluation-order
+  :stale-source
+  :binding-class
+  :duplicate-originals
+  :coherent-fifteen-descriptor-forgeries],
+ :tests
+ [{:name actual-c7-ordinary-rows-compose-with-dse-in-both-orders,
+   :all-original-assertion-forms :identical,
+   :assertion-source-forms 13}
+  {:name malformed-and-forged-dse-joins-remain-rejected,
+   :all-original-assertion-forms :identical,
+   :assertion-source-forms 5}],
+ :raw-adaptations
+ [{:before
+   "gravity.self-hosting.sh01-checked-bare-set-equality-mixed-ledger-test",
+   :after "gravity.types.set-equality-joins-test",
+   :occurrences 1}
+  {:before "sh08-dse-derive",
+   :after "types-set-equality-derive",
+   :occurrences 1}
+  {:before "sh08-dse-constraint",
+   :after "types-set-equality-constraint",
+   :occurrences 2}
+  {:before "sh08-dse-call-fact",
+   :after "types-set-equality-call-fact",
+   :occurrences 2}
+  {:before "types (:forms input) 65536)",
+   :after "types (:forms input))",
+   :occurrences 1}
+  {:before "[context ledger descriptor budget]",
+   :after "[context ledger descriptor]",
+   :occurrences 1}
+  {:before "p15-s23-dse-row-census",
+   :after "emit-set-equality-row-census",
+   :occurrences 1}
+  {:before ":call descriptor budget))",
+   :after ":call descriptor))",
+   :occurrences 1}
+  {:before "[context facts descriptor budget]",
+   :after "[context facts descriptor]",
+   :occurrences 1}
+  {:before "p15-s23-dse-fact-census",
+   :after "emit-set-equality-fact-census",
+   :occurrences 1}
+  {:before "{:call descriptor} :call budget))",
+   :after "{:call descriptor} :call))",
+   :occurrences 1}
+  {:before "(row-census candidate rows descriptor 65536)",
+   :after "(row-census candidate rows descriptor)",
+   :occurrences 1}
+  {:before "(fact-census candidate facts descriptor 65536)",
+   :after "(fact-census candidate facts descriptor)",
+   :occurrences 1}
+  {:before "[:status :reason :work-count]",
+   :after "[:status :reason]",
+   :occurrences 2}
+  {:before "((helper 'checked-dual-bare-set-forgeries) descriptor)",
+   :after "(descriptor-forgeries descriptor)",
+   :occurrences 1}],
+ :original-file-sha256
+ "cca4115ba6b831d776850ae2b1ac5b11b06dad59c87cbaf2406d072303a8048a",
+ :candidate-file-sha256
+ "23a463a32be97259b910756cc1b47fec29719156f24c76be853c532258237af4",
+ :kind :preserved-DSE-mixed-ledger-controls,
+ :ordinary-cases
+ {:row-orders 2,
+  :fact-representations-and-orders 4,
+  :compiled-instruction-equality :retained},
+ :all-parent-files :unchanged,
+ :original-path
+ "bootstrap/clojure/test/gravity/self_hosting/sh01_checked_bare_set_equality_mixed_ledger_test.clj",
+ :generator
+ {:language :clojure,
+  :sha256
+  "4f6d30d9af6b71274b8a0d953c54eb99b476482b531190ad6d524d828426b5d0",
+  :preserved-locally true},
+ :base-tree "f97d45e232e67cb3097b7c7fc54cd7e447202de5",
+ :base "df1688b26123247e2c20eaf218ebcf7592481b15",
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}
