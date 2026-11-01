@@ -7,6 +7,9 @@ inputs:
   private-temp:
     description: Use an owned Java temporary directory for portable cache tests
     default: 'true'
+  install-static-tools:
+    description: Install the pinned clj-kondo and cljfmt tools used by static CI
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -27,5 +30,5 @@ runs:
     - uses: DeLaGuardo/setup-clojure@3fe9b3ae632c6758d0b7757b0838606ef4287b08 # 13.4
       with:
         cli: 1.12.5.1654
-        clj-kondo: 2025.10.23
-        cljfmt: 0.13.4
+        clj-kondo: ${{ inputs.install-static-tools == 'true' && '2025.10.23' || '' }}
+        cljfmt: ${{ inputs.install-static-tools == 'true' && '0.13.4' || '' }}
