@@ -1,6 +1,5 @@
 (ns gravity.cli.packaged-launcher-test
   (:require [clojure.edn :as edn]
-            [clojure.java.shell :as shell]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [gravity.cli :as cli]
@@ -8,6 +7,29 @@
 
 (def ^:private repository-root
   (System/getProperty "user.dir"))
+
+(defn- read-process-stream
+  [stream]
+  (with-open [input stream]
+    (let [buffer (byte-array 8192)
+          output (java.io.ByteArrayOutputStream.)]
+      (loop [count (.read input buffer)]
+        (if (neg? count)
+          (.toString output "UTF-8")
+          (do
+            (when (pos? count)
+              (.write output buffer 0 count))
+            (recur (.read input buffer))))))))
+
+(defn- stream-reader-thread
+  [stream result]
+  (Thread.
+   (reify Runnable
+     (run [_]
+       (try
+         (deliver result (read-process-stream stream))
+         (catch Throwable error
+           (deliver result error)))))))
 
 (defn- without-known-java-tool-options-banner
   [stderr]
@@ -21,14 +43,30 @@
         (recur (subs remaining (count banner)))
         remaining))))
 
-(defn- shell-result
+(defn- process-result
   [& arguments]
-  (apply shell/sh (concat arguments [:dir repository-root])))
+  (let [builder (doto (ProcessBuilder. ^java.util.List (mapv str arguments))
+                  (.directory (java.io.File. repository-root)))
+        process (.start builder)
+        stdout (promise)
+        stderr (promise)
+        stdout-thread (stream-reader-thread (.getInputStream process) stdout)
+        stderr-thread (stream-reader-thread (.getErrorStream process) stderr)]
+    (.start stdout-thread)
+    (.start stderr-thread)
+    (let [exit (.waitFor process)]
+      (.join stdout-thread)
+      (.join stderr-thread)
+      (let [out @stdout
+            err @stderr]
+        (when (instance? Throwable out) (throw ^Throwable out))
+        (when (instance? Throwable err) (throw ^Throwable err))
+        {:exit exit :out out :err err}))))
 
 (defn- build-current-package!
   []
   (let [result
-        (shell-result
+        (process-result
          "clojure" "-Srepro" "-M" "-e"
          "(require 'gravity.bootstrap) (println (gravity.bootstrap/p18-t02-build-packaged-jvm-cli!))")]
     (is (= 0 (:exit result))
@@ -51,9 +89,7 @@
              " :cli-loaded (boolean (find-ns 'gravity.cli))"
              " :packaged-jvm-cli? (= \"true\""
              " (System/getProperty \"gravity.packaged.jvm.cli\"))})")
-        result (apply shell/sh
-                      (concat (packaged-expression-command expression)
-                              [:dir repository-root]))
+        result (apply process-result (packaged-expression-command expression))
         lines (str/split-lines (:out result))]
     {:exit (:exit result)
      :err (:err result)
@@ -96,7 +132,7 @@
           [["--help" (str/trimr (cli/p18-cli-help-text true))]
            ["--version" (pr-str (cli/p18-cli-version-record true))]]]
     (testing (str "explicit alias " argument)
-      (let [result (shell-result "clojure" "-Srepro" "-M:packaged-gravity" argument)]
+      (let [result (process-result "clojure" "-Srepro" "-M:packaged-gravity" argument)]
         (is (= 0 (:exit result))
             (pr-str (select-keys result [:exit :out :err])))
         (is (= expected (str/trimr (:out result))))
