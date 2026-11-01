@@ -31,8 +31,10 @@ order. Existing invalid files must reject before decoding. Complete real Core
 products in both source spellings use only the authorized development-current
 route and preserve current-manifest provenance and semantic identity.
 
-The source intake candidate PR743 is the immutable parent of this isolated
-successor. That parent must integrate before this slice can integrate. Scope
+The source intake candidate PR743 is an explicit lifecycle prerequisite of
+this isolated successor. Its source parent is363c5f8e; PR743's later evidence
+commit is not an ancestor of this candidate. PR743 must integrate before this
+slice can integrate. Scope
 publication is not implementation or acceptance evidence. Exact source review,
 proportionate regression checks, own CI and a clean current-main preflight are
 required before integration.
@@ -51,9 +53,12 @@ bytes and Var ports remain trusted host dependencies, not evidence of authority.
 The existing two-argument body now lives in gravity.reader/reject-source-path!.
 Only its four owner lookups become explicit late Var ports. Bootstrap retains
 both compatibility arities, with its entire one-argument capture and late
-self-call unchanged. All three earlier Reader bodies and the Bootstrap loader
-are byte-identical to parent a05b1b5e0aff705123880bbb629fbff146356d12.
-The whole compatibility component differs only by its two-argument wrapper.
+self-call unchanged. The original extraction conserved the earlier Reader
+bodies against a05b1b5e0aff705123880bbb629fbff146356d12. The current composition
+instead binds conservation to Reader parent363c5f8e on mainbf5c4c36: its four-port
+source intake, decoder, artifact assembly and Bootstrap loader are exact parent.
+The whole compatibility component differs from that parent only by its
+two-argument wrapper. BF5's intentional byte-owner change is preserved.
 Reader now owns both native encoding and extension rule data; callers retain
 admission, identity resolution and publication.
 

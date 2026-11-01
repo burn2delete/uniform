@@ -40,7 +40,8 @@ commit carries no implementation credit or new authority.
 ## Implemented development evidence
 
 The source-intake body now lives in gravity.reader/read-source-text with
-four explicit late Var ports after the main byte-owner composition below.
+four explicit late Var ports in the bf5/Reader composition recorded in the
+[path-diagnostic evidence](reader-path-diagnostic-evidence.md).
 Bootstrap's compatibility arity remains [path]. The intake extraction
 preserves the supplied path-policy behavior; two-argument refusal/hash
 ownership is described by the separate path-diagnostic slice. Existing
