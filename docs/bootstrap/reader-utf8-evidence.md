@@ -73,6 +73,20 @@ control `/tmp/uniform-cli-core-arguments-control.clj`. Native products use
 main requires genuine composition, affected checks, exact review, own CI and
 clean preflight. Namespace presence is not Reader completion.
 
+## Verified Build main composition
+
+Own CI41269521720 passes nine enabled jobs on4d068936/base0e, with
+snapshot/prerelease skips. Main then advances through the Gravity compiler
+finalizer change and verified Build PR737 to
+3b2b7bb267b8a8b1c6a2811b89abba376a0ca2cc/tree
+65efa902052c808cb9083b5188a7312cf64ef583. The normal Reader composition has
+no conflicts; the independent namespace-map rows merge. Decoder, wrapper and
+tests remain unchanged. All incoming compiler/Build source, fixtures, unique
+helper/test identities and ownership metadata are preserved. Fresh actual-main
+native and genuine public Core controls, complete comparisons, affected checks,
+exact review, own CI and clean preflight remain required. The previous green
+does not accept the new tuple or renew migration/release authority.
+
 ## Unsupported boundaries
 
 This remains temporary native Clojure seed decoding. Trusted operation ports
