@@ -1,5 +1,5 @@
 (ns ci.lint-context
-  "Non-evaluating lint views of the reviewed Bootstrap and facade resource loaders."
+  "Non-evaluating lint views of the reviewed Bootstrap, checker, and facade resource loaders."
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str])
@@ -11,18 +11,26 @@
 (def manifest (str source-root "gravity/bootstrap_impl/load_order.edn"))
 (def semantic-late-manifest (str source-root "gravity/bootstrap_impl/semantic_late_order.edn"))
 (def loader (str source-root "gravity/bootstrap_impl/loader.clj"))
-(def loader-sha "ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7")
+(def loader-sha "3b399b57cc68325ea710d28454261f61ffa466ff7bc15bd37f8c1c1e9c0be56c")
+(def reviewed-loader-shas
+  #{"ac79eb7b09a0ad5cef2b67e92e8669e555ec26877caa50e2599a2b6ec200aee7"
+    loader-sha})
 (def facade (str source-root "gravity/authenticated_artifact_pipeline.clj"))
 (def facade-prefix (str source-root "gravity/authenticated_artifact_pipeline/"))
 (def facade-resources
   ["01-pipeline-schema-version" "02-clear-cache" "03-revalidate-payload"
    "04-envelope-valid" "05-run-pipeline"])
+(def checker (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity.clj"))
+(def checker-prefix (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity/"))
+(def checker-resources ["01-checker-specs" "02-source-product" "03-runtime-fingerprint"])
 
 (defn context-path? [path]
   (or (= bootstrap path) (str/starts-with? path (str source-root "gravity/bootstrap_impl/"))
-      (= facade path) (str/starts-with? path facade-prefix)))
+      (= facade path) (str/starts-with? path facade-prefix)
+      (= checker path) (str/starts-with? path checker-prefix)))
 
-(defn whole-context-path? [path] (contains? #{bootstrap manifest semantic-late-manifest loader facade} path))
+(defn whole-context-path? [path]
+  (contains? #{bootstrap manifest semantic-late-manifest loader facade checker} path))
 
 (defn source-text! [path bytes]
   (let [text (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)]
@@ -60,13 +68,16 @@
 (defn sha256 [bytes]
   (format "%064x" (java.math.BigInteger. 1 (.digest (MessageDigest/getInstance "SHA-256") bytes))))
 
-(defn resource-path! [resource]
-  (when-not (and (string? resource) (str/starts-with? resource "gravity/bootstrap_impl/")
-                 (str/ends-with? resource ".clj")
-                 (every? #(not (#{"" "." ".."} %)) (str/split resource #"/"))
-                 (not (str/includes? resource "\\")))
-    (throw (ex-info "Unsupported Bootstrap resource path" {:resource resource})))
-  (str source-root resource))
+(defn resource-path!
+  ([resource] (resource-path! resource false))
+  ([resource data-resource?]
+   (when-not (and (string? resource) (str/starts-with? resource "gravity/bootstrap_impl/")
+                  (or (str/ends-with? resource ".clj")
+                      (and data-resource? (str/ends-with? resource ".edn")))
+                  (every? #(not (#{"" "." ".."} %)) (str/split resource #"/"))
+                  (not (str/includes? resource "\\")))
+     (throw (ex-info "Unsupported Bootstrap resource path" {:resource resource})))
+   (str source-root resource)))
 
 (defn local-bytes! [path]
   (loop [file (io/file path)]
@@ -76,19 +87,22 @@
       (recur (.getParentFile file))))
   (java.nio.file.Files/readAllBytes (.toPath (io/file path))))
 
-(defn plan! [read-bytes]
-  (let [loader-bytes (read-bytes loader)
-        _ (when-not (= loader-sha (sha256 loader-bytes))
-            (throw (ex-info "Bootstrap loader changed; lint context requires independent review" {})))
-        _ (bootstrap-shape! (read-bytes bootstrap))
-        entries (manifest! (read-bytes manifest))
-        paths (into [bootstrap] (map #(resource-path! (:resource %)) entries))]
-    (when-not (= (count paths) (count (distinct paths)))
-      (throw (ex-info "Duplicate Bootstrap resource in lint context" {})))
-    {:paths paths :inputs (into {} (for [path (conj paths loader manifest)
-                                         :let [bytes (read-bytes path)
-                                               _ (when (str/ends-with? path ".clj") (source-forms! path bytes))]]
-                                     [path bytes]))}))
+(defn plan!
+  ([read-bytes] (plan! read-bytes loader-sha))
+  ([read-bytes expected-loader-sha]
+   (let [loader-bytes (read-bytes loader)
+         _ (when-not (= expected-loader-sha (sha256 loader-bytes))
+             (throw (ex-info "Bootstrap loader changed; lint context requires independent review" {})))
+         _ (bootstrap-shape! (read-bytes bootstrap))
+         entries (manifest! (read-bytes manifest))
+         paths (into [bootstrap]
+                     (map #(resource-path! (:resource %) (:data-resource %)) entries))]
+     (when-not (= (count paths) (count (distinct paths)))
+       (throw (ex-info "Duplicate Bootstrap resource in lint context" {})))
+     {:paths paths :inputs (into {} (for [path (conj paths loader manifest)
+                                          :let [bytes (read-bytes path)
+                                                _ (when (str/ends-with? path ".clj") (source-forms! path bytes))]]
+                                      [path bytes]))})))
 
 (defn facade-plan! [read-bytes]
   (let [entry (read-bytes facade)
@@ -113,19 +127,48 @@
                          (throw (ex-info "Unsupported namespace/load change in facade fragment" {:path path})))
                        [path bytes])))}))
 
-(defn selected-plan! [read-bytes selected]
-  (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
-        facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
-        plans (cond-> [] bootstrap? (conj (plan! read-bytes)) facade? (conj (facade-plan! read-bytes)))
-        combined {:paths (vec (mapcat :paths plans))
-                  :inputs (apply merge (map :inputs plans))
-                  :namespace-by-path (apply merge (map :namespace-by-path plans))
-                  :entrypoints (into #{bootstrap} (mapcat :entrypoints plans))}]
-    ;; The companion manifest is EDN data, linted separately from source forms.
-    (doseq [path selected :when (and (context-path? path) (not (#{loader manifest semantic-late-manifest} path)))]
-      (when-not (some #{path} (:paths combined))
-        (throw (ex-info "Changed fragment is absent from lint context" {:path path}))))
-    combined))
+(defn checker-plan! [read-bytes]
+  (let [entry (read-bytes checker)
+        [header load-form :as forms] (source-forms! checker entry)
+        expected (cons 'load (map #(str "/gravity/tools/sh07_b51_attempt32_checker_identity/" %)
+                                  checker-resources))
+        paths (into [checker] (map #(str checker-prefix % ".clj") checker-resources))]
+    (when-not (and (= 2 (count forms))
+                   (= '(ns gravity.tools.sh07-b51-attempt32-checker-identity) (take 2 header))
+                   (= expected load-form))
+      (throw (ex-info "Checker entrypoint changed; unsupported lint assembly recipe" {})))
+    {:paths paths
+     :namespace-by-path (zipmap paths (repeat 'gravity.tools.sh07-b51-attempt32-checker-identity))
+     :entrypoints #{checker}
+     :inputs (into {checker entry}
+                   (for [path (rest paths) :let [bytes (read-bytes path)
+                                                 forms (source-forms! path bytes)]]
+                     (do
+                       (when (some #(and (seq? %) (#{'ns 'in-ns 'clojure.core/ns 'clojure.core/in-ns
+                                                     'load 'clojure.core/load} (first %)))
+                                   (tree-seq coll? seq forms))
+                         (throw (ex-info "Unsupported namespace/load change in checker fragment" {:path path})))
+                       [path bytes])))}))
+
+(defn selected-plan!
+  ([read-bytes selected] (selected-plan! read-bytes selected loader-sha))
+  ([read-bytes selected expected-loader-sha]
+   (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
+         facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
+         checker? (some #(or (= checker %) (str/starts-with? % checker-prefix)) selected)
+         plans (cond-> []
+                 bootstrap? (conj (plan! read-bytes expected-loader-sha))
+                 facade? (conj (facade-plan! read-bytes))
+                 checker? (conj (checker-plan! read-bytes)))
+         combined {:paths (vec (mapcat :paths plans))
+                   :inputs (apply merge (map :inputs plans))
+                   :namespace-by-path (apply merge (map :namespace-by-path plans))
+                   :entrypoints (into #{bootstrap} (mapcat :entrypoints plans))}]
+     ;; The companion manifest is EDN data, linted separately from source forms.
+     (doseq [path selected :when (and (context-path? path) (not (#{loader manifest semantic-late-manifest} path)))]
+       (when-not (some #{path} (:paths combined))
+         (throw (ex-info "Changed fragment is absent from lint context" {:path path}))))
+     combined)))
 
 (defn assemble! [directory {:keys [paths inputs namespace-by-path entrypoints]}]
   (let [target (io/file directory "gravity/bootstrap.clj")
@@ -133,7 +176,7 @@
         row (atom 1)]
     (io/make-parents target)
     (with-open [writer (io/writer target)]
-      (doseq [path paths]
+      (doseq [path paths :when (str/ends-with? path ".clj")]
         (when-not (contains? (or entrypoints #{bootstrap}) path)
           ;; load-component! binds *ns* afresh for EVERY resource.
           (.write writer (str "(in-ns '" (get namespace-by-path path 'gravity.bootstrap) ")\n"))
@@ -171,12 +214,17 @@
                               :let [[header path] (str/split entry #"\t" 2)]]
                           [path (first (str/split header #" "))]))]
      (with-open [zip (ZipFile. (io/file archive))]
-       (selected-plan! (fn [path]
-                         (when-not (#{"100644" "100755"} (get modes path))
-                           (throw (ex-info "Missing or nonregular base context source" {:path path})))
-                         (let [entry (.getEntry zip path)]
-                           (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
-                           (with-open [input (.getInputStream zip entry)] (.readAllBytes input)))) selected)))))
+       (let [read-archived (fn [path]
+                             (when-not (#{"100644" "100755"} (get modes path))
+                               (throw (ex-info "Missing or nonregular base context source" {:path path})))
+                             (let [entry (.getEntry zip path)]
+                               (when-not entry (throw (ex-info "Missing archived context source" {:path path})))
+                               (with-open [input (.getInputStream zip entry)] (.readAllBytes input))))
+             archived-loader-sha (sha256 (read-archived loader))]
+         (when-not (contains? reviewed-loader-shas archived-loader-sha)
+           (throw (ex-info "Bootstrap loader changed; lint context requires independent review"
+                           {:loader-sha archived-loader-sha})))
+         (selected-plan! read-archived selected archived-loader-sha))))))
 
 (defn- core-operation [value]
   (when (and (symbol? value) (contains? #{nil "clojure.core"} (namespace value)))
