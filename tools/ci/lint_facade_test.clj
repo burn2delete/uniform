@@ -10,6 +10,8 @@
 
 (def fragment (str context/facade-prefix "04-envelope-valid.clj"))
 (def actual (context/facade-plan! context/local-bytes!))
+(def c2-fragment (str context/c2-pass-cache-prefix "source_snapshot.clj"))
+(def c2-actual (context/c2-pass-cache-plan! context/local-bytes!))
 (defn utf8 [text] (.getBytes ^String text "UTF-8"))
 
 (defn observe! [plan]
@@ -38,6 +40,16 @@
   (is (nil? (find-ns 'gravity.bootstrap)))
   (is (nil? (find-ns 'gravity.authenticated-artifact-pipeline))))
 
+(deftest actual-c2-facade-resolves-the-selected-fragment
+  (is (= 17 (count (:paths c2-actual))))
+  (is (= (:paths c2-actual) (:paths (context/selected-plan! context/local-bytes! [c2-fragment]))))
+  (let [findings (observe! c2-actual)]
+    (is (not-any? #(= :error (:level %)) findings) (pr-str findings))
+    (is (empty? (filter #(and (= c2-fragment (:filename %))
+                              (#{:warning :error} (:level %))) findings)) (pr-str findings)))
+  (is (nil? (find-ns 'gravity.bootstrap)))
+  (is (nil? (find-ns 'gravity.c2-pass-cache))))
+
 (deftest introduced-symbol-and-changed-context-still-block
   (doseq [plan [(update-in actual [:inputs fragment]
                            #(utf8 (str (String. ^bytes % "UTF-8") "\n(def bad (unknown-facade-function))\n")))
@@ -62,6 +74,33 @@
       (is (thrown? Exception (context/facade-plan! (read-inputs (assoc inputs fragment (utf8 body)))))))
     (is (thrown? Exception (context/selected-plan! (read-inputs inputs)
                                                    [(str context/facade-prefix "unregistered.clj")])))))
+
+(deftest unsupported-or-malformed-c2-load-context-fails-closed
+  (let [entry (String. ^bytes (get-in c2-actual [:inputs context/c2-pass-cache]) "UTF-8")
+        inputs (:inputs c2-actual)
+        read-inputs (fn [data] (fn [path] (or (get data path) (throw (ex-info "Missing resource" {:path path})))))]
+    (doseq [changed [(str/replace entry "gravity.c2-pass-cache" "gravity.wrong-c2")
+                     (str/replace entry "source_snapshot" "different-resource")
+                     (str entry "\n(load \"/gravity/c2_pass_cache/unreviewed\")")]]
+      (is (thrown? Exception (context/c2-pass-cache-plan!
+                              (read-inputs (assoc inputs context/c2-pass-cache (utf8 changed)))))))
+    (is (thrown? Exception (context/c2-pass-cache-plan!
+                            (read-inputs (dissoc inputs c2-fragment)))))
+    (doseq [body ["(def broken [" "(in-ns 'gravity.other)"
+                  "(load \"/gravity/c2_pass_cache/unreviewed\")"]]
+      (is (thrown? Exception (context/c2-pass-cache-plan!
+                              (read-inputs (assoc inputs c2-fragment (utf8 body)))))))
+    (let [adapter-request (str context/c2-pass-cache-prefix "adapter_request.clj")
+          body (String. ^bytes (get inputs adapter-request) "UTF-8")]
+      (is (thrown? Exception
+                   (context/c2-pass-cache-plan!
+                    (read-inputs (assoc inputs adapter-request
+                                        (utf8 (str/replace body
+                                                           "/gravity/c2_pass_cache/capacity_handoff"
+                                                           "/gravity/c2_pass_cache/unreviewed"))))))))
+    (is (thrown? Exception (context/selected-plan! (read-inputs inputs)
+                                                   [(str context/c2-pass-cache-prefix
+                                                         "unregistered.clj")])))))
 
 (deftest archived-context-rejects-unknown-loader-hash
   (let [directory (.toFile (java.nio.file.Files/createTempDirectory

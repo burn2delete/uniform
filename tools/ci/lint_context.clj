@@ -23,14 +23,24 @@
 (def checker (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity.clj"))
 (def checker-prefix (str source-root "gravity/tools/sh07_b51_attempt32_checker_identity/"))
 (def checker-resources ["01-checker-specs" "02-source-product" "03-runtime-fingerprint"])
+(def c2-pass-cache (str source-root "gravity/c2_pass_cache.clj"))
+(def c2-pass-cache-prefix (str source-root "gravity/c2_pass_cache/"))
+(def c2-pass-cache-resources
+  ["foundation" "canonical_encode" "canonical_decode" "source_security"
+   "source_snapshot" "key" "directories" "store_handles" "secure_io"
+   "locking" "lookup" "publication" "adapter_request"
+   "requested_hit_binding" "adapter_projection"])
+(def c2-pass-cache-nested-resources
+  {"adapter_request" ["capacity_handoff"]})
 
 (defn context-path? [path]
   (or (= bootstrap path) (str/starts-with? path (str source-root "gravity/bootstrap_impl/"))
       (= facade path) (str/starts-with? path facade-prefix)
-      (= checker path) (str/starts-with? path checker-prefix)))
+      (= checker path) (str/starts-with? path checker-prefix)
+      (= c2-pass-cache path) (str/starts-with? path c2-pass-cache-prefix)))
 
 (defn whole-context-path? [path]
-  (contains? #{bootstrap manifest semantic-late-manifest loader facade checker} path))
+  (contains? #{bootstrap manifest semantic-late-manifest loader facade checker c2-pass-cache} path))
 
 (defn source-text! [path bytes]
   (let [text (String. ^bytes bytes java.nio.charset.StandardCharsets/UTF_8)]
@@ -187,16 +197,58 @@
                          (throw (ex-info "Unsupported namespace/load change in checker fragment" {:path path})))
                        [path bytes])))}))
 
+(defn c2-pass-cache-plan! [read-bytes]
+  (let [entry (read-bytes c2-pass-cache)
+        [header & tail :as forms] (source-forms! c2-pass-cache entry)
+        expected (mapv #(list 'load (str "/gravity/c2_pass_cache/" %))
+                       c2-pass-cache-resources)
+        resources (vec (mapcat #(concat (get c2-pass-cache-nested-resources % []) [%])
+                               c2-pass-cache-resources))
+        paths (into [c2-pass-cache]
+                    (map #(str c2-pass-cache-prefix % ".clj") resources))
+        resource-paths (zipmap resources (rest paths))]
+    (when-not (and (= (inc (count expected)) (count forms))
+                   (= '(ns gravity.c2-pass-cache) (take 2 header))
+                   (= expected (vec tail)))
+      (throw (ex-info "C2 pass-cache entrypoint changed; unsupported lint assembly recipe" {})))
+    {:paths paths
+     :namespace-by-path (zipmap paths (repeat 'gravity.c2-pass-cache))
+     :entrypoints #{c2-pass-cache}
+     :inputs (into {c2-pass-cache entry}
+                   (for [resource resources
+                         :let [path (get resource-paths resource)
+                               bytes (read-bytes path)
+                               forms (source-forms! path bytes)
+                               forms-tree (tree-seq coll? seq forms)
+                               loads (filter #(and (seq? %) (= 'load (first %))) forms-tree)
+                               namespace-change? (some #(and (seq? %)
+                                                             (#{'ns 'in-ns 'clojure.core/ns
+                                                                'clojure.core/in-ns}
+                                                              (first %)))
+                                                       forms-tree)
+                               expected-loads (map #(list 'load
+                                                          (str "/gravity/c2_pass_cache/" %))
+                                                   (get c2-pass-cache-nested-resources resource []))]]
+                     (do
+                       (when (or namespace-change?
+                                 (not= (vec loads) (vec expected-loads)))
+                         (throw (ex-info "Unsupported namespace/load change in C2 pass-cache fragment"
+                                         {:path path :loads (vec loads)
+                                          :namespace-change? (boolean namespace-change?)})))
+                       [path bytes])))}))
+
 (defn selected-plan!
   ([read-bytes selected] (selected-plan! read-bytes selected loader-sha))
   ([read-bytes selected expected-loader-sha]
    (let [bootstrap? (some #(or (= bootstrap %) (str/starts-with? % (str source-root "gravity/bootstrap_impl/"))) selected)
          facade? (some #(or (= facade %) (str/starts-with? % facade-prefix)) selected)
          checker? (some #(or (= checker %) (str/starts-with? % checker-prefix)) selected)
+         c2-pass-cache? (some #(or (= c2-pass-cache %) (str/starts-with? % c2-pass-cache-prefix)) selected)
          plans (cond-> []
                  bootstrap? (conj (plan! read-bytes expected-loader-sha))
                  facade? (conj (facade-plan! read-bytes))
-                 checker? (conj (checker-plan! read-bytes)))
+                 checker? (conj (checker-plan! read-bytes))
+                 c2-pass-cache? (conj (c2-pass-cache-plan! read-bytes)))
          combined {:paths (vec (mapcat :paths plans))
                    :inputs (apply merge (map :inputs plans))
                    :namespace-by-path (apply merge (map :namespace-by-path plans))
