@@ -138,3 +138,16 @@ source verifier now independently compares all type tags as well as complete
 reconstructed text and printed forms. Earlier candidate acceptance and CI are
 not transferred to this source correction; fresh products, focused checks,
 independent exact acceptance and candidate-owned CI are required.
+
+## Current-main reconciliation
+
+Main advanced through PR 768 while the corrected candidate CI was running.
+The new integration base is 19d9426133c041088e2a11e2cf7c85d359a09630,
+tree 92d4442da6895feeb1aa065d4a26cbec1311af2b. Source composition
+18f90ec16f5dda2adbabc1c45cc64dff6db0d14a has tree
+c0f477a43b6c408fc08465aacfbe2f9c54b8b175. The main delta changes packaged CLI
+help/version and their tests; all three JVM production files are unchanged in
+that delta. Fresh complete products, affected backend and packaged-launcher
+checks, language/ownership, lint, independent acceptance and own CI bind this
+new composition. The earlier base/candidate acceptance and CI remain historical
+and confer no integration credit on the reconciled candidate.
