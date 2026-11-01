@@ -2315,8 +2315,9 @@
 (defn- prepend-effect-input [receiver value ordinal]
   (kernel-support/prepend-effect-input
    receiver value ordinal
-   (sh08-helper 'list-prepend-input)
-   (sh08-helper 'invoke-c7)))
+   (fn [receiver value]
+     (kernel-support/integral-ordering-input 'conj [receiver value]))
+   kernel-support/invoke-c7))
 
 (deftest body-nil-if-join-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
