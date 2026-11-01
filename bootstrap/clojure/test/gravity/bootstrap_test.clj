@@ -44244,6 +44244,45 @@
             (is (.isFile (java.io.File. verify-proof-path)))
             (is (.isFile (java.io.File. diagnostics-path)))))))))
 
+(deftest p18-public-self-host-verify-wrapper-does-not-export
+  (let [root-directory (System/getProperty "user.dir")
+        release-directory (java.io.File.
+                           root-directory
+                           "target/phase-18/release")
+        script-file
+        (java.io.File/createTempFile
+         "gravity-p18-t06-wrapper-"
+         ".sh"
+         release-directory)
+        artifact-directories
+        [(java.io.File. root-directory "docs/artifacts/phase-18/release")
+         (java.io.File. root-directory "docs/artifacts/phase-18/command")]
+        snapshot
+        (fn []
+          (into {}
+                (map (fn [file]
+                       [(.getPath ^java.io.File file)
+                        [(.lastModified ^java.io.File file)
+                         (.length ^java.io.File file)
+                         (slurp file)]])
+                     (filter #(.isFile ^java.io.File %)
+                             (mapcat file-seq artifact-directories)))))]
+    (try
+      (spit script-file (bootstrap/p18-t06-release-binary-script))
+      (.setExecutable script-file true false)
+      (let [before (snapshot)
+            result
+            (run-process-in-directory
+             root-directory
+             nil
+             [(.getAbsolutePath script-file) "self-host" "verify"])
+            after (snapshot)]
+        (is (= 1 (:exit result)))
+        (is (str/includes? (:err result) "P18T04007"))
+        (is (= before after)))
+      (finally
+        (.delete script-file)))))
+
 (deftest p18-public-self-host-verify-complete-route-does-not-export
   (with-temp-directory
     "gravity-p18-self-host-verify-"
@@ -44414,10 +44453,37 @@
               (rehash
                (assoc complete-proof-with-diagnostics
                       :capability-based-proof complete-capability-proof))
+              recomputed-proof
+              (fn [candidate]
+                (let [diagnostics
+                      (bootstrap/p18-t06-final-release-diagnostics
+                       :p18-t06-final-release candidate)
+                      capability
+                      (bootstrap/p18-t06-capability-proof
+                       (assoc candidate :diagnostics diagnostics))]
+                  (rehash
+                   (assoc candidate
+                          :diagnostics diagnostics
+                          :capability-based-proof capability))))
+              recomputed-empty-coverage
+              (recomputed-proof
+               (assoc complete-proof
+                      :accepted-command-proofs []
+                      :rejected-command-proofs []
+                      :rejected-release-candidates []))
+              recomputed-failed-command
+              (recomputed-proof
+               (assoc-in complete-proof
+                         [:accepted-command-proofs 0 :matches-expected?]
+                         false))
               stale-p15
               (rehash (assoc complete-p15 :proof-id "sha256:stale-p15"))
               invalid-cases
-              [[:wrong-kind
+              [[:recomputed-empty-coverage
+                recomputed-empty-coverage]
+               [:recomputed-failed-command
+                recomputed-failed-command]
+               [:wrong-kind
                 (rehash (assoc complete-proof
                                :kind :gravity/not-final-release-proof))]
                [:wrong-task
@@ -44532,7 +44598,27 @@
                   (name label))
               (is (= #{"P18T04007"}
                      (set (map :diagnostic (:diagnostics artifact))))
-                  (name label)))))))))
+                  (name label))))
+          (let [binary (java.io.File. bootstrap/p18-t06-release-binary-path)
+                originally-executable? (.canExecute binary)]
+            (try
+              (is originally-executable?)
+              (.setExecutable binary false false)
+              (let [artifact
+                    (verify-artifact
+                     (write-proof! :non-executable complete-proof)
+                     complete-p15)]
+                (is (= :incomplete (:status artifact)))
+                (is (false? (get-in artifact
+                                    [:p18-final-release-proof-verification
+                                     :release-binary-current?])))
+                (is (false? (get-in artifact
+                                    [:p18-final-release-proof-verification
+                                     :authenticated?])))
+                (is (= #{"P18T04007"}
+                       (set (map :diagnostic (:diagnostics artifact))))))
+              (finally
+                (.setExecutable binary originally-executable? false)))))))))
 
 (deftest p18-public-self-host-verify-preserves-interruption
   (let [was-interrupted? (Thread/interrupted)]

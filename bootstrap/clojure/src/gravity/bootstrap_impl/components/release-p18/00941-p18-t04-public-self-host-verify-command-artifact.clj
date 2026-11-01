@@ -49,9 +49,12 @@
 (defn- p18-t04-current-binary?
   [release-binary]
   (let [path (:path release-binary)
-        content-hash (:content-hash release-binary)]
+        content-hash (:content-hash release-binary)
+        file (when (string? path) (java.io.File. path))]
     (and (string? path)
          (= p18-t06-release-binary-path path)
+         (.isFile file)
+         (.canExecute file)
          (string? content-hash)
          (= content-hash (p18-file-sha256 path)))))
 
@@ -98,6 +101,36 @@
          (= content-hash (get-in sbom [:subject :content-hash]))
          (= content-hash
             (get-in signing [:payload :release-binary-content-hash])))))
+
+(defn- p18-t04-computed-release-complete?
+  [proof]
+  (let [capability (p18-t06-capability-proof proof)
+        diagnostics (p18-t06-final-release-diagnostics
+                     :p18-t06-final-release proof)
+        required-capability-flags
+        [:reproducible-rebuilds?
+         :provenance-complete?
+         :sbom-complete?
+         :signing-record-valid?
+         :governance-approved?
+         :target-claims-valid?
+         :all-release-boundary-seed-facts-false?
+         :accepted-fixtures-covered?
+         :accepted-check-run-compile-survived?
+         :stable-diagnostics-through-release-binary?
+         :release-blocker-diagnostics-covered?
+         :diagnostic-stream-covered?
+         :rejected-release-candidates-covered?
+         :bin-gravity-uses-final-release?
+         :phase-18-completion-gate-passed?
+         :final-release-eligible?]]
+    (and (= :complete (:status capability))
+         (every? #(boolean (get capability %)) required-capability-flags)
+         (false? (:clojure-seed-boundary? capability))
+         (empty? diagnostics)
+         (empty? (:diagnostics proof))
+         (= diagnostics (:diagnostics proof))
+         (= capability (:capability-based-proof proof)))))
 
 (defn- p18-t04-current-release-evidence?
   [proof]
@@ -228,7 +261,8 @@
            :p18-t06-final-release proof)
           (:diagnostics proof))
        (= (p18-t06-capability-proof proof)
-          (:capability-based-proof proof))))
+          (:capability-based-proof proof))
+       (p18-t04-computed-release-complete? proof)))
     (catch InterruptedException error
       (.interrupt (Thread/currentThread))
       (throw error))
