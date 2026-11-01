@@ -88,6 +88,16 @@ remain identical. Documentation records the new actual base. No proposed-stack
 CI result becomes current-main acceptance; this composition requires exact
 review, contextual lint, own CI and clean integration preflight.
 
+Main then advances through external PR731 to
+167ed15a2c3ce7d76e4eb6b9a761a55186f7a4ad/tree
+58ce57515855fd4df4925aec86dab707e1edb2e0, parentc542. Its only changes are
+the CI workflow and CI documentation: an always-failing placeholder that ran
+no compiler is removed. The CLI composition preserves both incoming files
+exactly. No compiler source, source-control input, real release admission or
+CLI implementation changes in that delta. The current integration base is167;
+routine CI must be observed under its actual workflow, without treating an
+absent readiness job as a source-Core or release pass.
+
 ## Unsupported boundaries
 
 This remains a Clojure bootstrap CLI increment. Existing SH07-CLI-ARGS and
