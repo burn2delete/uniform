@@ -23,28 +23,18 @@
   #{'gravity.self-hosting.sh08-function-call-type-test
     'gravity.self-hosting.sh09-body-effect-test})
 
-(def ^:private focused-namespaces
-  #{'gravity.self-hosting.sh09-private-self-effect-test
-    'gravity.self-hosting.sh09-evidence-metadata-test})
-
-(defn- focused-private-self-load-isolated?
-  [loaded]
-  (and (contains? loaded 'gravity.self-hosting.sh08-function-call-kernel-support)
-       (every? #(not (contains? loaded %)) monolithic-namespaces)
-       (every? #(contains? loaded %) focused-namespaces)))
-
 (deftest focused-private-self-load-isolation-development-check
-  (let [{:keys [completed? exit output] :as probe} (kernel-support/fresh-sh09-load-probe)]
+  (let [loaded-before (set (map ns-name (all-ns)))
+        {:keys [completed? exit output] :as probe} (kernel-support/fresh-sh09-load-probe)
+        loaded-after (set (map ns-name (all-ns)))
+        monoliths-loaded (fn [loaded]
+                           (set (filter #(contains? loaded %) monolithic-namespaces)))]
+    (is (= (monoliths-loaded loaded-before)
+           (monoliths-loaded loaded-after))
+        "The child probe must not mutate the parent's namespace set")
     (is completed? (pr-str probe))
-    (is (zero? exit) (pr-str probe))
-    (is (str/includes? output "SH09-FOCUSED-LOAD-ISOLATION") (pr-str probe)))
-  ;; A batched parent may already have loaded both monoliths; that must be
-  ;; detected rather than mistaken for fresh-child isolation.
-  (require 'gravity.self-hosting.sh08-function-call-type-test
-           'gravity.self-hosting.sh09-body-effect-test)
-  (let [loaded (set (map ns-name (all-ns)))]
-    (is (every? #(contains? loaded %) monolithic-namespaces))
-    (is (false? (focused-private-self-load-isolated? loaded)))))
+    (is (= 0 exit) (pr-str probe))
+    (is (str/includes? output "SH09-FOCUSED-LOAD-ISOLATION") (pr-str probe))))
 
 (deftest current-gravity-private-three-parameter-source-context-development-kernel
   (let [{:keys [core facts bindings forms proof]} (kernel-support/private-self-value-kernel-data :prior-three)

@@ -136,12 +136,18 @@
                   (.redirectErrorStream true))
         process (.start builder)
         completed? (.waitFor process 60 TimeUnit/SECONDS)]
-    (when-not completed?
-      (.destroyForcibly process)
-      (.waitFor process 5 TimeUnit/SECONDS))
-    {:completed? completed?
-     :exit (.exitValue process)
-     :output (String. (.readAllBytes (.getInputStream process)) StandardCharsets/UTF_8)}))
+    (letfn [(result [terminated?]
+              (with-open [stream (.getInputStream process)]
+                {:completed? (and completed? terminated?)
+                 :exit (when terminated? (.exitValue process))
+                 :output (if terminated?
+                           (String. (.readAllBytes stream) StandardCharsets/UTF_8)
+                           "")}))]
+      (if completed?
+        (result true)
+        (do
+          (.destroyForcibly process)
+          (result (.waitFor process 5 TimeUnit/SECONDS)))))))
 
 (defn- compile-plan
   []

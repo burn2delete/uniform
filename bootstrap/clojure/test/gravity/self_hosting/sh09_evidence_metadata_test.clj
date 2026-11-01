@@ -18,16 +18,17 @@
 
 (deftest focused-evidence-load-isolation-development-check
   ;; This group must remain cheap and independently discoverable.
-  (let [{:keys [completed? exit output] :as probe} (kernel-support/fresh-sh09-load-probe)]
+  (let [loaded-before (set (map ns-name (all-ns)))
+        {:keys [completed? exit output] :as probe} (kernel-support/fresh-sh09-load-probe)
+        loaded-after (set (map ns-name (all-ns)))
+        monoliths-loaded (fn [loaded]
+                           (set (filter #(contains? loaded %) monolithic-namespaces)))]
+    (is (= (monoliths-loaded loaded-before)
+           (monoliths-loaded loaded-after))
+        "The child probe must not mutate the parent's namespace set")
     (is completed? (pr-str probe))
-    (is (zero? exit) (pr-str probe))
-    (is (str/includes? output "SH09-FOCUSED-LOAD-ISOLATION") (pr-str probe)))
-  ;; The parent-side snapshot is intentionally a negative control.
-  (require 'gravity.self-hosting.sh08-function-call-type-test
-           'gravity.self-hosting.sh09-body-effect-test)
-  (let [loaded (set (map ns-name (all-ns)))]
-    (is (every? #(contains? loaded %) monolithic-namespaces))
-    (is (not (every? #(not (contains? loaded %)) monolithic-namespaces)))))
+    (is (= 0 exit) (pr-str probe))
+    (is (str/includes? output "SH09-FOCUSED-LOAD-ISOLATION") (pr-str probe))))
 
 (deftest cold-quote-metadata-effects-development-kernel
   (let [{:keys [core facts record bindings forms input]} (kernel-support/cold-metadata-input)
