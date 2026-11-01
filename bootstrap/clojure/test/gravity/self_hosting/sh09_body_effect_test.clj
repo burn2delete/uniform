@@ -1,5 +1,6 @@
 (ns gravity.self-hosting.sh09-body-effect-test
   (:require [clojure.test :refer [deftest is]]
+            [clojure.walk]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 
@@ -94,13 +95,12 @@
 (defn- reseal-effect-graph [candidate graph]
   (kernel-support/reseal-effect-graph candidate graph))
 (defn- node [n kind children]
-  {:node-id (sha n) :core-form kind :children (mapv sha children) :attributes {}
-   :source {:syntax-id (sha (+ n 100)) :form-id (sha (+ n 200))
-            :semantic-span {:start-byte n :end-byte (inc n)} :origin-chain [] :generated-origin nil}
-   :evaluation {:kind (case kind :fn :function-creation :quote :no-evaluation :left-to-right)
-                :order (if (#{:fn :quote} kind) []
-                         (mapv (fn [index n] {:index index :core-node-id (sha n)}) (range) children))}})
+  (kernel-support/node n kind children))
 
+
+
+
+;; Keep the reviewed warning coordinates stable after moving the shared node shape.
 (deftest fresh-type-products-construction-development-kernel
   ;; Mocked control-flow DATA checks work preservation, not authentication.
   (let [relative "normalized-type-products.gravity" events (atom []) seals (atom 0)
@@ -3500,101 +3500,101 @@
       (is (= #{:b} (get-in graphs [b :effect-graph :functions (sha 20) :inferred]))))))
 
 (defn- recursive-kernel-data []
-  (let [owner (fn [n] (assoc-in n [:evaluation :owner-function-syntax-id] (sha 20)))
-        nodes [(owner (assoc (node 1 :literal []) :attributes {:literal-kind :boolean :value false}))
-               (owner (assoc (node 2 :reference []) :attributes {:binding-id (sha 50)}))
-               (owner (assoc (node 3 :reference []) :attributes {:binding-id (sha 51)}))
-               (owner (node 4 :call [2 3]))
-               (owner (assoc (node 5 :literal []) :attributes {:literal-kind :integer :value 0}))
-               (owner (assoc (node 6 :if [1 4 5]) :evaluation
-                        {:kind :condition-then-exclusive-branch :owner-function-syntax-id (sha 20)
-                         :order [{:index 0 :core-node-id (sha 1)}]}))
-               (node 7 :fn [6]) (node 8 :def [7])
-               (assoc (node 9 :reference []) :attributes {:binding-id (sha 50)})
-               (assoc (node 10 :literal []) :attributes {:literal-kind :integer :value 7}) (node 11 :call [9 10])]
-        module {:namespace 'example.recursive :profile :meta :target :jvm :effects [] :capabilities []}
-        edge {:ordinal 0 :call-core-node-id (sha 4) :caller-function-syntax-id (sha 20) :caller-function-core-node-id (sha 7)
-              :callee-binding-id (sha 50) :callee-definition-syntax-id (sha 80) :callee-function-syntax-id (sha 20)
-              :callee-function-core-node-id (sha 7) :argument-core-node-ids [(sha 3)]
-              :ordered-evaluation-node-ids [(sha 2) (sha 3)] :evaluation-order :operator-then-arguments :classification :local-function}
-        external-edge (assoc edge :ordinal 1 :call-core-node-id (sha 11) :caller-function-syntax-id nil
-                             :caller-function-core-node-id nil :argument-core-node-ids [(sha 10)]
-                             :ordered-evaluation-node-ids [(sha 9) (sha 10)])
-        call {:core-node-id (sha 4) :argument-node-ids [(sha 3)]}
-        external-call {:core-node-id (sha 11) :argument-node-ids [(sha 10)]
-                       :ordered-evaluation-node-ids [(sha 9) (sha 10)] :evaluation-order :operator-then-arguments}
-        source (:source (get nodes 3)) external-source (:source (get nodes 10))
-        proof {:domain :gravity/sh08-authoritative-recursive-proof-v1 :function-syntax-id (sha 20)
-               :function-core-node-id (sha 7) :definition-binding-id (sha 50) :definition-syntax-id (sha 80)
-               :parameter-binding-ids [(sha 51)] :fixed-arity 1 :recursive-call-core-node-id (sha 4)
-               :recursive-argument-node-ids [(sha 3)] :recursive-edge edge
-               :recursive-call-source {:syntax-id (:syntax-id source) :source-span (:semantic-span source)
-                                       :origin-chain [] :generated-origin nil}
-               :recursive-call-profile :meta :recursive-call-target :jvm :recursive-call-effects [] :recursive-call-capabilities []
-               :base-node-id (sha 5) :base-type :gravity.type/integer :recursive-definition-binding-id (sha 50)
-               :parameter-evidence-call-core-node-id (sha 11)
-               :parameter-evidence-call {:call-core-node-id (sha 11) :caller-function-syntax-id nil :callee-function-syntax-id (sha 20)
-                 :argument-node-ids [(sha 10)] :ordered-evaluation-node-ids [(sha 9) (sha 10)] :evaluation-order :operator-then-arguments
-                 :argument-types [:gravity.type/integer] :result-type :gravity.type/integer
-                 :syntax-id (:syntax-id external-source) :source-span (:semantic-span external-source) :origin-chain [] :generated-origin nil
-                 :profile :meta :target :jvm :effects [] :capabilities [] :edge external-edge}
-               :parameter-types [:gravity.type/integer]
-               :proof-bound :one-named-self-recursive-positive-fixed-arity-positional-literal-base
-               :captures? false :higher-order? false :monotone-fixed-point? true}
-        core {:nodes nodes :module module :call-edges [edge external-edge] :calls [call external-call]
-              :definitions [{:binding-id (sha 50) :syntax-id (sha 80)}]
-              :function-records [{:function-syntax-id (sha 20) :function-core-node-id (sha 7) :body-core-node-id (sha 6)
-                                  :definition-binding-id (sha 50) :definition-kind :named-top-level :fixed-arity 1
-                                  :parameter-binding-ids [(sha 51)]}]
-              :recursion-components [{:ordinal 0 :kind :self-recursive :function-syntax-ids [(sha 20)]
-                                       :function-core-node-ids [(sha 7)] :internal-call-edge-ordinals [0]}]}
-        facts {:recursive-proof proof :function-type-table [{:function-id (sha 20) :body-core-node-id (sha 6)
-                  :parameters [{:binding-id (sha 51) :type :gravity.type/integer}] :return :gravity.type/integer}]
-               :type-table {(sha 1) :gravity.type/bool} :call-type-facts []}]
-    [core facts]))
+  (kernel-support/recursive-kernel-data))
 
-(defn- private-self-throw-data [data]
-  (require 'clojure.walk 'gravity.self-hosting.sh08-recursive-function-type-test)
-  (let [make-node (ns-resolve 'gravity.self-hosting.sh08-recursive-function-type-test 'node)
-        source (fn [id] {:form-id id :syntax-id id :semantic-span nil :origin-chain [] :generated-origin nil})
-        make (fn [id kind children attrs] (assoc (make-node id kind children attrs :helper-form) :source (source id)))
-        additions [(make :argument-condition :literal [] {:literal-kind :boolean :value true})
-                   (make :argument-payload :literal [] {:literal-kind :string :value "deep"})
-                   (make :argument-transfer :throw [:argument-payload] {})
-                   (make :argument-normal :reference [] {:symbol 'span :position :expression :binding-id :span-binding
-                                                          :binding-class :lexical :definition-syntax-id nil})
-                   (make :self-argument-if :if [:argument-condition :argument-transfer :argument-normal] {})]
-        core (-> (:core data)
-                 (update :function-records #(vector (first %)))
-                 (assoc-in [:module :exports] [])
-                 (assoc-in [:module :effects] [:error/throw])
-                 (update :nodes #(into additions %))
-                 (update :nodes #(mapv (fn [n]
-                                         (let [n (if (= :self-call (:node-id n))
-                                                   (assoc n :children [:self-op :self-argument-if]) n)
-                                               owner (get-in n [:evaluation :owner-function-syntax-id])
-                                               owner (when-not (contains? #{:caller-0 :caller-1} owner) owner)
-                                               children (:children n) kind (:core-form n)
-                                               ordered (cond (= kind :fn) [] (= kind :if) [(first children)] :else children)]
-                                           (assoc n :evaluation
-                                                  {:owner-function-syntax-id owner
-                                                   :kind (case kind :call :operator-then-arguments :if :condition-then-exclusive-branch :left-to-right)
-                                                   :order (mapv (fn [i id] {:index i :core-node-id id}) (range) ordered)}))) %))
-                 (update :calls #(mapv (fn [c] (if (= :self-call (:core-node-id c))
-                                                 (assoc c :argument-node-ids [:self-argument-if]
-                                                          :ordered-evaluation-node-ids [:self-op :self-argument-if]) c)) %))
-                 (update :call-edges #(mapv (fn [e] (if (= :self-call (:call-core-node-id e))
-                                                      (assoc e :argument-core-node-ids [:self-argument-if]
-                                                               :ordered-evaluation-node-ids [:self-op :self-argument-if])
-                                                      (assoc e :caller-function-syntax-id nil :caller-function-core-node-id nil))) %)))
-        forms (mapv #(if (= :self-call (:form-id %)) (assoc % :child-form-ids [:self-op :self-argument-if]) %) (:forms data))
-        forms (conj forms {:form-id :self-argument-if :syntax-id :self-argument-if :kind :list :parent-form-id :self-call
-                           :source-span nil :origin-chain [] :generated-origin nil
-                           :child-form-ids [:argument-condition :argument-transfer :argument-normal]})
-        ids (into {} (map-indexed (fn [i n] [(:node-id n) (sha (+ 30000 i))]) (:nodes core)))
-        renamed (clojure.walk/postwalk-replace ids (assoc data :core core :forms forms))]
-    (assoc renamed :node-id-map ids)))
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;; Keep the reviewed warning coordinates stable after moving recursive fixture assembly.
 (deftest current-gravity-set-conversion-source-development-kernel
   (require 'gravity.self-hosting.sh08-function-call-type-test)
   (let [upstream 'gravity.self-hosting.sh08-function-call-type-test
@@ -4942,296 +4942,296 @@
 
       (is (= 0 @visits)))))
 
-(defn- private-self-value-kernel-data [kind]
-  (require 'gravity.self-hosting.sh08-recursive-function-type-test)
-  (let [ns 'gravity.self-hosting.sh08-recursive-function-type-test
-        invoke (ns-resolve ns 'invoke-c7)
-        indexed? (contains? #{:indexed :indexed-sha} kind)
-        data ((ns-resolve ns (if indexed? 'indexed-private-self-data
-                                (if (= kind :prior-three) 'private-self-three-parameter-false-base-data
-                                  (if (= kind :head) 'private-self-homogeneous-head-data 'private-self-string-proof-data)))))
-        data (if (= kind :throw) (private-self-throw-data data) data)
-        ;; Rename canonical fixture inputs before deriving proofs and facts.
-        ;; Derived schema keys and map-order-dependent source vectors are not IDs.
-        data (if (= kind :indexed-sha)
-               (let [ids (set (concat (map :node-id (get-in data [:core :nodes]))
-                                      (map :form-id (:forms data))
-                                      (map :binding-id (:bindings data))
-                                      (map :function-syntax-id (get-in data [:core :function-records]))))
-                     renamed (into {} (map-indexed (fn [i id] [id (sha (+ 51000 i))])
-                                                  (sort-by str (filter keyword? ids))))]
-                 (assoc (clojure.walk/postwalk-replace renamed data) :node-id-map renamed)) data)
-        {:keys [core bindings forms]} data
-        nodes (into {} (map (juxt :node-id identity) (:nodes core)))
-        shape {:nodes (:nodes core) :analysis-core core :analysis-source-forms forms :analysis-imports {}}
-        proof (:recursive-proof (invoke 'sh08-ft-proof-results [shape (assoc core :node-table nodes) bindings (:module core)]))
-        skeletons (invoke 'sh08-ft-function-skeletons [(:function-records core) (:module core)])
-        functions (invoke 'sh08-ft-complete-function-skeletons [skeletons proof {}])
-        function (get functions (:function-syntax-id proof))
-        working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise proof))
-        cold (invoke 'sh08-is-cold-infer [working core (first (:function-records core)) nodes bindings forms {}
-                                         :body (:parameter-types proof)])
-        return (:inferred-return-type proof)
-        completed-types (clojure.walk/postwalk-replace (get data :node-id-map {})
-                        (merge
-                     {:self-op function :entry-operator-0 function :entry-operator-1 function
-                      :self-call return :entry-0 return :entry-1 return :recursive-body return
-                      :helper-fn function :helper-def function}
-                     (when (= kind :head) {:head-else return})
-                     (when indexed? {:ix-inner return})))
-        types (merge (get-in cold [:inference :type-table]) completed-types)
-        ledger (invoke 'sh08-ft-recursive-constraint-ledger [proof])
-        call-facts (invoke 'sh08-ft-call-facts [(:calls core) (:call-edges core) nodes types functions (:module core)])
-        facts {:domain (if indexed? :gravity/sh08-indexed-private-self-value-typed-core-v1
-                           :gravity/sh08-private-self-value-typed-core-v1)
-               :recursive-proof (invoke 'sh08-ft-recursive-proof-input [proof])
-               :function-type-table (if indexed?
-                                      (invoke 'sh08-ft-function-facts [functions nodes (:module core)])
-                                      (vec (vals functions)))
-               :type-table types
-               :call-type-facts call-facts :constraint-ledger (into ledger (get-in cold [:inference :constraints]))}]
-    {:core core :facts facts :bindings (into {} (map (juxt :binding-id identity) bindings))
-     :forms forms :nodes nodes :proof proof :cold cold :invoke invoke :data data}))
-
-(deftest current-gravity-private-three-parameter-source-context-development-kernel
-  (let [{:keys [core facts bindings forms proof]} (private-self-value-kernel-data :prior-three)
-        context (leaf 'body-is-context core facts bindings forms)]
-    (is (= :sh08-private-self-value-v1 (:rule-version proof)))
-
-    (is (= :accepted (:status context)) (pr-str context))
-    (is (= context (leaf 'body-is-context core facts bindings forms)))))
-
-(deftest current-gravity-indexed-private-source-context-development-kernel
-  (let [{:keys [core facts bindings forms nodes proof]} (private-self-value-kernel-data :indexed)
-        context (leaf 'body-is-context core facts bindings forms)
-        working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise context))
-        request {:canonical-core-artifact working :b47-context {:authenticated-core-request {:forms forms}}}
-        successor (leaf 'body-si-context request facts bindings)
-        getter (leaf 'body-mg-context request facts bindings)
-        equality (leaf 'body-ae-context request facts bindings)
-        counted (leaf 'body-cq-context request facts bindings)
-        checked (assoc facts :successor-context (:context successor) :map-get-context (:context getter)
-                             :equality-context (:context equality) :count-context (:context counted))
-        call #(first (filter (fn [c] (= % (:core-node-id c))) (:calls core)))
-        edge #(first (filter (fn [e] (= % (:call-core-node-id e))) (:call-edges core)))]
-    (is (= :accepted (:status proof)))
-    (is (= :accepted (:status context)) (pr-str context))
-    (is (= :gravity/sh08-indexed-private-self-entry-premise-v1 (get-in context [:parameter-value-premise :domain])))
-    (is (= context (leaf 'body-is-context core facts bindings forms)))
-    (is (= [:accepted :accepted :accepted :accepted]
-           (mapv :status [successor getter equality counted])))
-    (is (true? (leaf 'body-si-call-valid? working checked bindings (nodes :ix-step) (call :ix-step) (edge :ix-step) nodes)))
-    (is (true? (leaf 'body-mg-call-valid? working checked bindings (nodes :ix-get) (call :ix-get) (edge :ix-get) nodes)))
-    (is (true? (leaf 'body-call-joins-with-foreign-valid? working checked bindings {}))
-        (pr-str
-         (let [functions (into {} (map (juxt :function-id identity) (:function-type-table checked)))
-               records (into {} (map (juxt :function-syntax-id identity) (:function-records core)))
-               facts-by-id (into {} (map (juxt :call-core-node-id identity) (:call-type-facts checked)))]
-           {:calls (mapv (fn [e]
-                           (let [id (:call-core-node-id e) c (call id) f (facts-by-id id)
-                                 local? (= :local-function (:classification e))
-                                 validator (case (:dispatch f)
-                                             :direct-collection-count 'body-cq-call-valid?
-                                             :direct-integral-equality 'body-ie-call-valid?
-                                             :direct-atomic-equality 'body-ae-call-valid?
-                                             :direct-vector-get 'body-mg-call-valid?
-                                             :direct-bounded-unit-addition 'body-si-call-valid?
-                                             nil)]
-                             {:id id :dispatch (:dispatch f)
-                              :valid (if local?
-                                       [(leaf 'body-call-valid? e c f nodes functions records bindings (:type-table checked))
-                                        (leaf 'body-local-arguments-valid? working checked bindings e c f
-                                              (functions (:callee-function-syntax-id e)))]
-                                       (when validator (leaf validator working checked bindings (nodes id) c e nodes)))}))
-                         (:call-edges core))
-            :ledger (mapv #(select-keys % [:kind :producer-rule :lhs]) (:constraint-ledger checked))})))
-    (doseq [id [:ix-step :ix-get]]
-      (let [producer (if (= id :ix-step) :sh08-indexed-private-self-unit-addition-v1 :sh08-vector-get-indexed-private-self-v1)
-            row (first (filter #(= producer (:producer-rule %)) (:constraint-ledger checked)))
-            missing (update checked :constraint-ledger #(vec (remove (fn [r] (= row r)) %)))
-            duplicate (update checked :constraint-ledger conj row)
-            orphan (update checked :constraint-ledger conj (assoc-in row [:lhs :core-node-id] :orphan))]
-        (is (map? row))
-        (doseq [changed [missing duplicate orphan]]
-          (is (false? (leaf 'body-call-joins-with-foreign-valid? working changed bindings {}))))))
-    (doseq [changed [(assoc-in facts [:recursive-proof :parameter-value-premise :entry-values :normal-entry-count] 0)
-                     (assoc-in facts [:recursive-proof :parameter-value-premise :source-induction :vector-extent] 8)
-                     (assoc-in facts [:recursive-proof :return-witness :witnesses 0 :node-id] :ix-true)]]
-      (is (= :rejected (:status (leaf 'body-is-context core changed bindings forms)))))))
-
-(deftest current-gravity-private-self-effects-development-kernel
-  (let [{:keys [core facts bindings forms proof data]} (private-self-value-kernel-data :throw)
-        ids (:node-id-map data)
-        self (ids :self-call) body (ids :recursive-body)
-        _ (leaf 'body-is-context core facts bindings forms)
-        derived (leaf 'body-derive-recursive-nodes core facts {})
-        graph (:nodes derived)
-        checked (leaf 'body-tc-verify core facts bindings graph {:active? true})]
-    (is (= :accepted (:status proof)))
-
-
-    (is (= :effects-and-escaping-error-types (:summary-domain derived)))
-    (is (> (:fixed-point-rounds derived) 1))
-    (is (= #{:error/throw} (get-in graph [self :transitive])))
-    (is (= [:gravity.type/string] (get-in graph [self :escaping-thrown-error-types])))
-    (is (= [:gravity.type/string] (get-in graph [body :escaping-thrown-error-types])))
-    (is (true? (leaf 'body-graph-equations-valid? core facts {} graph)))
-    (is (= :accepted (:status checked)))
-    (is (= {:helper-form [:gravity.type/string]} (:functions checked)))
-    (is (= 3 (count (:rows checked))))
-    (is (every? #(= :sh09-private-self-error-equation-v1 (:producer-rule %)) (:rows checked)))
-    (is (= [:incoming-private-entry-call :incoming-private-entry-call :self-recursive-call]
-           (mapv :role (leaf 'body-recursive-call-facts facts))))
-    (is (= :accepted (:status (leaf 'body-derive-recursive-nodes core facts {}))))
-
-    (is (= :rejected (:status (leaf 'body-tc-verify core facts bindings
-                                   (assoc-in graph [self :escaping-thrown-error-types] []) {:active? true}))))
-    (let [inflated (leaf 'body-derive-nodes-pass core facts {} (:recursive-proof facts)
-                         {:transitive #{:error/throw} :escaping-thrown-errors #{:gravity.type/string :gravity.type/bool}
-                          :escaping-thrown-error-types [:gravity.type/string :gravity.type/bool]})]
-      (is (= :accepted (:status inflated)))
-      (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes inflated))))
-      (is (not= graph (:nodes inflated))))))
-
-(deftest current-gravity-private-self-source-context-development-kernel
-  (let [{:keys [core facts bindings forms proof cold]} (private-self-value-kernel-data :string)
-        derive (fn [c f bs fs] (leaf 'body-is-context c f bs fs))
-        result (derive core facts bindings forms)]
-    (is (= :accepted (:status proof)))
-    (is (= :accepted (:status cold)))
-    (is (= :gravity/sh08-private-self-value-proof-v1 (get-in facts [:recursive-proof :domain])))
-    (is (true? (leaf 'body-is-proof-valid? core facts)))
-
-    (is (= (:parameter-value-premise proof) (:parameter-value-premise result)))
+(defn private-self-value-kernel-data [kind]
+  (kernel-support/private-self-value-kernel-data kind))
 
 
 
-    (let [never-result (assoc-in facts [:type-table :entry-0] :gravity.type/never)]
-      (is (= result (derive core never-result bindings forms))))
-    (doseq [bad [(assoc-in facts [:type-table :input-0] :gravity.type/bool)
-                 (assoc-in facts [:recursive-proof :parameter-value-premise :entry-values :entries] 7)
-                 (assoc-in facts [:recursive-proof :parameter-value-premise :entry-values :entries]
-                           (vec (repeat 2048 (get-in facts [:recursive-proof :parameter-value-premise :entry-values :entries 0]))))
-                 (assoc-in facts [:recursive-proof :parameter-value-premise :cold-entry-derivation :source-argument-call-node-ids] [:forged])
-                 (assoc-in facts [:recursive-proof :cold-body-derivation :cut :excluded-node-ids] [])
-                 (assoc-in facts [:recursive-proof :return-witness :return-type] :gravity.type/bool)
-                 ;; Removed C7 accounting fields remain invalid as unknown proof keys.
-                 (assoc-in facts [:recursive-proof :work-count] nil)
-                 (assoc facts :constraint-ledger [])]]
-      (is (= :rejected (:status (derive core bad bindings forms)))))
-    (is (= :rejected (:status (derive (assoc-in core [:module :exports] ['without-path]) facts bindings forms))))
-    (is (= :rejected (:status (derive core facts (assoc-in bindings [:helper-binding :visibility] :public) forms))))
-    (is (= :rejected (:status (derive core facts bindings (mapv #(if (= :self-op (:form-id %)) (assoc % :value 'forged) %) forms)))))))
 
-(deftest current-gravity-private-self-head-source-context-development-kernel
-  (let [{:keys [core facts bindings forms nodes proof]} (private-self-value-kernel-data :head)
-        context (leaf 'body-is-context core facts bindings forms)
-        working (assoc core :sh08-private-self-parameter-premise (:parameter-value-premise context))
-        call (first (filter #(= :call (:core-node-id %)) (:calls core)))
-        node (nodes :call)
-        types (:type-table facts)
-        head (leaf 'body-lq-head-proof working node call nodes bindings types)]
-    (is (= :accepted (:status proof)))
 
-    (is (= :accepted (:status head)))
-    (is (= :nonempty (get-in head [:proof :knowledge])))
-    (is (= (:parameter-value-premise proof) (get-in head [:proof :immutable-binding-record :parameter-value-premise])))
-    (is (= (get-in types [:operator :head-proof]) (:proof head)))
-    (is (= :list-head-branch-proof-required
-           (:reason (leaf 'body-lq-head-proof core node call nodes bindings types))))
-    (is (= :rejected (:status (leaf 'body-is-context core
-                                    (assoc-in facts [:recursive-proof :parameter-value-premise :entry-values :normal-entry-count] 0)
-                                    bindings forms))))))
 
-(defn- declared-self-kernel-data []
-  (let [[old-core old-facts] (recursive-kernel-data)
-        owner #(assoc-in % [:evaluation :owner-function-syntax-id] (sha 20))
-        signature {:parameters [{:type-id :gravity.type/string}]
-                   :return {:type-id :gravity.type/string}}
-        function {:function-id (sha 20) :body-core-node-id (sha 6)
-                  :parameters [{:binding-id (sha 51) :type :gravity.type/string}]
-                  :return :gravity.type/string :latent-effects [:error/throw]
-                  :thrown-error-effects [:pending-sh09]}
-        payload (owner (assoc (node 12 :literal []) :attributes {:literal-kind :string :value "deep"}))
-        nodes (-> (:nodes old-core)
-                  (assoc 2 (owner (assoc (node 3 :literal []) :attributes {:literal-kind :string :value "next"})))
-                  (assoc 4 (owner (node 5 :throw [12])))
-                  (assoc-in [9 :attributes] {:literal-kind :string :value "entry"})
-                  (conj payload))
-        calls [(assoc (get-in old-core [:calls 0])
-                      :operator-binding-id (sha 50)
-                      :ordered-evaluation-node-ids (mapv sha [2 3])
-                      :evaluation-order :operator-then-arguments)
-               (assoc (get-in old-core [:calls 1]) :operator-binding-id (sha 50))]
-        core (-> old-core (assoc :nodes nodes :calls calls :lexical-bindings [])
-                 (assoc-in [:module :effects] [:error/throw])
-                 (assoc-in [:function-records 0 :signature] signature))
-        bindings {(sha 50) {:binding-id (sha 50)} (sha 51) {:binding-id (sha 51)}}
-        proof {:domain :gravity/sh08-declared-self-value-proof-v1
-               :function-syntax-id (sha 20) :function-core-node-id (sha 7)
-               :definition-binding-id (sha 50) :definition-syntax-id (sha 80)
-               :body-core-node-id (sha 6) :parameter-binding-ids [(sha 51)]
-               :parameter-types [:gravity.type/string] :declared-return-type :gravity.type/string
-               :signature signature :component (first (:recursion-components core))
-               :self-call-core-node-id (sha 4) :self-call (first calls) :self-edge (first (:call-edges core))
-               :self-call-source (:source (get nodes 3))
-               :owned-node-ids (mapv :node-id (filter #(= (sha 20) (get-in % [:evaluation :owner-function-syntax-id])) nodes))
-               :incoming-call-node-ids (mapv sha [4 11])
-               :value-check :complete-body-and-all-incoming-arguments
-               :effect-error-status :pending-sh09-recursive-body
-               :captures :own-parameters-and-lexical-locals-only}
-        types (merge (zipmap (map :node-id nodes) (repeat :gravity.type/string))
-                     {(sha 1) :gravity.type/bool (sha 5) :gravity.type/never (sha 7) function (sha 8) function})
-        facts {:recursive-proof proof :function-type-table [function] :type-table types :constraint-ledger []
-               :call-type-facts [{:call-core-node-id (sha 4) :result-type :gravity.type/string}
-                                {:call-core-node-id (sha 11) :result-type :gravity.type/string}]}]
-    [core facts bindings]))
 
-(deftest current-gravity-declared-self-effects-development-kernel
-  (let [[core facts bindings] (declared-self-kernel-data)
-        derived (leaf 'body-derive-recursive-nodes core facts {})
-        graph (:nodes derived)
-        checked (leaf 'body-tc-verify core facts bindings graph {:active? true})]
-    (is (true? (leaf 'body-recursive-proof-valid? core facts)))
-    (is (true? (leaf 'body-ds-captures-valid? core facts bindings)))
-    (is (= :accepted (:status derived)))
-    (is (= :effects-and-escaping-error-types (:summary-domain derived)))
-    (is (> (:fixed-point-rounds derived) 1))
-    (is (= #{:error/throw} (get-in graph [(sha 4) :transitive])))
-    (is (= [:gravity.type/string] (get-in graph [(sha 4) :escaping-thrown-error-types])))
-    (is (= [:gravity.type/string] (get-in graph [(sha 6) :escaping-thrown-error-types])))
-    (is (= [:gravity.type/string] (get-in graph [(sha 11) :escaping-thrown-error-types])))
-    (is (= [:gravity.type/string] (get-in graph [(sha 4) :throw-call-dependency :callee-error-types])))
-    (is (true? (leaf 'body-graph-equations-valid? core facts {} graph)))
-    (is (= :accepted (:status checked)))
-    (is (= {(sha 20) [:gravity.type/string]} (:functions checked)))
-    (is (= 2 (count (:rows checked))))
-    (is (every? #(= :sh09-declared-self-error-equation-v1 (:producer-rule %)) (:rows checked)))
-    (is (= [:self-recursive-call :incoming-declared-call]
-           (mapv :role (leaf 'body-recursive-call-facts facts))))
-    (is (= :accepted (:status (leaf 'body-derive-recursive-nodes core facts {}))))
 
-    (doseq [bad [(assoc-in facts [:recursive-proof :self-call-core-node-id] (sha 99))
-                 (assoc-in facts [:recursive-proof :owned-node-ids] [])
-                 (assoc-in facts [:recursive-proof :incoming-call-node-ids] [(sha 4)])
-                 (assoc-in facts [:recursive-proof :self-edge :ordinal] 9)
-                 (assoc-in facts [:recursive-proof :declared-return-type] :gravity.type/bool)
-                 (assoc-in facts [:function-type-table 0 :thrown-error-effects] [])]]
-      (is (false? (leaf 'body-recursive-proof-valid? core bad))))
-    (let [bad (assoc-in core [:nodes 2 :attributes :binding-id] (sha 99))
-          reference (assoc-in bad [:nodes 2 :core-form] :reference)]
-      (is (false? (leaf 'body-ds-captures-valid? reference facts bindings))))
-    (is (= :rejected
-           (:status (leaf 'body-tc-verify core facts bindings
-                          (assoc-in graph [(sha 4) :escaping-thrown-error-types] [])
-                          {:active? true}))))
-    (let [inflated (leaf 'body-derive-nodes-pass core facts {} (:recursive-proof facts)
-                         {:transitive #{:error/throw} :escaping-thrown-errors #{:gravity.type/string :gravity.type/bool}
-                          :escaping-thrown-error-types [:gravity.type/string :gravity.type/bool]})]
-      (is (= :accepted (:status inflated)))
-      (is (true? (leaf 'body-graph-equations-valid? core facts {} (:nodes inflated))))
-      (is (not= graph (:nodes inflated))))))
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;; Keep the reviewed warning coordinates stable after moving private-self kernels.
 (deftest body-effect-recursive-proof-development-kernel
   (let [[core facts] (recursive-kernel-data)]
     (is (true? (leaf 'body-recursive-proof-valid? core facts)))

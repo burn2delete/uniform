@@ -11,11 +11,14 @@
   [function & args]
   (apply kernel-support/leaf function args))
 
+(def ^:private namespaces-at-load
+  (set (map ns-name (all-ns))))
+
 (deftest focused-evidence-load-isolation-development-check
   ;; This group must remain cheap and independently discoverable.
   (is (some? (find-ns 'gravity.self-hosting.sh08-function-call-kernel-support)))
-  (is (nil? (find-ns 'gravity.self-hosting.sh08-function-call-type-test)))
-  (is (nil? (find-ns 'gravity.self-hosting.sh09-body-effect-test))))
+  (is (not (contains? namespaces-at-load 'gravity.self-hosting.sh08-function-call-type-test)))
+  (is (not (contains? namespaces-at-load 'gravity.self-hosting.sh09-body-effect-test))))
 
 (deftest cold-quote-metadata-effects-development-kernel
   (let [{:keys [core facts record bindings forms input]} (kernel-support/cold-metadata-input)

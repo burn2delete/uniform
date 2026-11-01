@@ -257,6 +257,72 @@
   [n]
   (str "sha256:" (format "%064x" n)))
 
+(defn node
+  "Build the source-linked node shape shared by recursive body kernels."
+  [n kind children]
+  {:node-id (sha n) :core-form kind :children (mapv sha children) :attributes {}
+   :source {:syntax-id (sha (+ n 100)) :form-id (sha (+ n 200))
+            :semantic-span {:start-byte n :end-byte (inc n)} :origin-chain [] :generated-origin nil}
+   :evaluation {:kind (case kind :fn :function-creation :quote :no-evaluation :left-to-right)
+                :order (if (#{:fn :quote} kind) []
+                         (mapv (fn [index n] {:index index :core-node-id (sha n)}) (range) children))}})
+
+(defn recursive-kernel-data
+  "Build the small recursive body proof fixture used by SH-09 controls."
+  []
+  (let [owner (fn [n] (assoc-in n [:evaluation :owner-function-syntax-id] (sha 20)))
+        nodes [(owner (assoc (node 1 :literal []) :attributes {:literal-kind :boolean :value false}))
+               (owner (assoc (node 2 :reference []) :attributes {:binding-id (sha 50)}))
+               (owner (assoc (node 3 :reference []) :attributes {:binding-id (sha 51)}))
+               (owner (node 4 :call [2 3]))
+               (owner (assoc (node 5 :literal []) :attributes {:literal-kind :integer :value 0}))
+               (owner (assoc (node 6 :if [1 4 5]) :evaluation
+                        {:kind :condition-then-exclusive-branch :owner-function-syntax-id (sha 20)
+                         :order [{:index 0 :core-node-id (sha 1)}]}))
+               (node 7 :fn [6]) (node 8 :def [7])
+               (assoc (node 9 :reference []) :attributes {:binding-id (sha 50)})
+               (assoc (node 10 :literal []) :attributes {:literal-kind :integer :value 7}) (node 11 :call [9 10])]
+        module {:namespace 'example.recursive :profile :meta :target :jvm :effects [] :capabilities []}
+        edge {:ordinal 0 :call-core-node-id (sha 4) :caller-function-syntax-id (sha 20) :caller-function-core-node-id (sha 7)
+              :callee-binding-id (sha 50) :callee-definition-syntax-id (sha 80) :callee-function-syntax-id (sha 20)
+              :callee-function-core-node-id (sha 7) :argument-core-node-ids [(sha 3)]
+              :ordered-evaluation-node-ids [(sha 2) (sha 3)] :evaluation-order :operator-then-arguments :classification :local-function}
+        external-edge (assoc edge :ordinal 1 :call-core-node-id (sha 11) :caller-function-syntax-id nil
+                             :caller-function-core-node-id nil :argument-core-node-ids [(sha 10)]
+                             :ordered-evaluation-node-ids [(sha 9) (sha 10)])
+        call {:core-node-id (sha 4) :argument-node-ids [(sha 3)]}
+        external-call {:core-node-id (sha 11) :argument-node-ids [(sha 10)]
+                       :ordered-evaluation-node-ids [(sha 9) (sha 10)] :evaluation-order :operator-then-arguments}
+        source (:source (get nodes 3)) external-source (:source (get nodes 10))
+        proof {:domain :gravity/sh08-authoritative-recursive-proof-v1 :function-syntax-id (sha 20)
+               :function-core-node-id (sha 7) :definition-binding-id (sha 50) :definition-syntax-id (sha 80)
+               :parameter-binding-ids [(sha 51)] :fixed-arity 1 :recursive-call-core-node-id (sha 4)
+               :recursive-argument-node-ids [(sha 3)] :recursive-edge edge
+               :recursive-call-source {:syntax-id (:syntax-id source) :source-span (:semantic-span source)
+                                       :origin-chain [] :generated-origin nil}
+               :recursive-call-profile :meta :recursive-call-target :jvm :recursive-call-effects [] :recursive-call-capabilities []
+               :base-node-id (sha 5) :base-type :gravity.type/integer :recursive-definition-binding-id (sha 50)
+               :parameter-evidence-call-core-node-id (sha 11)
+               :parameter-evidence-call {:call-core-node-id (sha 11) :caller-function-syntax-id nil :callee-function-syntax-id (sha 20)
+                 :argument-node-ids [(sha 10)] :ordered-evaluation-node-ids [(sha 9) (sha 10)] :evaluation-order :operator-then-arguments
+                 :argument-types [:gravity.type/integer] :result-type :gravity.type/integer
+                 :syntax-id (:syntax-id external-source) :source-span (:semantic-span external-source) :origin-chain [] :generated-origin nil
+                 :profile :meta :target :jvm :effects [] :capabilities [] :edge external-edge}
+               :parameter-types [:gravity.type/integer]
+               :proof-bound :one-named-self-recursive-positive-fixed-arity-positional-literal-base
+               :captures? false :higher-order? false :monotone-fixed-point? true}
+        core {:nodes nodes :module module :call-edges [edge external-edge] :calls [call external-call]
+              :definitions [{:binding-id (sha 50) :syntax-id (sha 80)}]
+              :function-records [{:function-syntax-id (sha 20) :function-core-node-id (sha 7) :body-core-node-id (sha 6)
+                                  :definition-binding-id (sha 50) :definition-kind :named-top-level :fixed-arity 1
+                                  :parameter-binding-ids [(sha 51)]}]
+              :recursion-components [{:ordinal 0 :kind :self-recursive :function-syntax-ids [(sha 20)]
+                                       :function-core-node-ids [(sha 7)] :internal-call-edge-ordinals [0]}]}
+        facts {:recursive-proof proof :function-type-table [{:function-id (sha 20) :body-core-node-id (sha 6)
+                  :parameters [{:binding-id (sha 51) :type :gravity.type/integer}] :return :gravity.type/integer}]
+               :type-table {(sha 1) :gravity.type/bool} :call-type-facts []}]
+    [core facts]))
+
 (defn list-query-input
   "Build the shared normalized input for a unary collection query."
   [operation argument-types]
@@ -394,6 +460,52 @@
                :call-type-facts call-facts :constraint-ledger (into ledger (get-in cold [:inference :constraints]))}]
     {:core core :facts facts :bindings (into {} (map (juxt :binding-id identity) bindings))
      :forms forms :nodes nodes :proof proof :cold cold :invoke invoke :data data}))
+
+(defn declared-self-kernel-data
+  "Build the declared-self effects fixture without loading the SH-09 suite."
+  []
+  (let [[old-core] (recursive-kernel-data)
+        owner #(assoc-in % [:evaluation :owner-function-syntax-id] (sha 20))
+        signature {:parameters [{:type-id :gravity.type/string}]
+                   :return {:type-id :gravity.type/string}}
+        function {:function-id (sha 20) :body-core-node-id (sha 6)
+                  :parameters [{:binding-id (sha 51) :type :gravity.type/string}]
+                  :return :gravity.type/string :latent-effects [:error/throw]
+                  :thrown-error-effects [:pending-sh09]}
+        payload (owner (assoc (node 12 :literal []) :attributes {:literal-kind :string :value "deep"}))
+        nodes (-> (:nodes old-core)
+                  (assoc 2 (owner (assoc (node 3 :literal []) :attributes {:literal-kind :string :value "next"})))
+                  (assoc 4 (owner (node 5 :throw [12])))
+                  (assoc-in [9 :attributes] {:literal-kind :string :value "entry"})
+                  (conj payload))
+        calls [(assoc (get-in old-core [:calls 0])
+                      :operator-binding-id (sha 50)
+                      :ordered-evaluation-node-ids (mapv sha [2 3])
+                      :evaluation-order :operator-then-arguments)
+               (assoc (get-in old-core [:calls 1]) :operator-binding-id (sha 50))]
+        core (-> old-core (assoc :nodes nodes :calls calls :lexical-bindings [])
+                 (assoc-in [:module :effects] [:error/throw])
+                 (assoc-in [:function-records 0 :signature] signature))
+        bindings {(sha 50) {:binding-id (sha 50)} (sha 51) {:binding-id (sha 51)}}
+        proof {:domain :gravity/sh08-declared-self-value-proof-v1
+               :function-syntax-id (sha 20) :function-core-node-id (sha 7)
+               :definition-binding-id (sha 50) :definition-syntax-id (sha 80)
+               :body-core-node-id (sha 6) :parameter-binding-ids [(sha 51)]
+               :parameter-types [:gravity.type/string] :declared-return-type :gravity.type/string
+               :signature signature :component (first (:recursion-components core))
+               :self-call-core-node-id (sha 4) :self-call (first calls) :self-edge (first (:call-edges core))
+               :self-call-source (:source (get nodes 3))
+               :owned-node-ids (mapv :node-id (filter #(= (sha 20) (get-in % [:evaluation :owner-function-syntax-id])) nodes))
+               :incoming-call-node-ids (mapv sha [4 11])
+               :value-check :complete-body-and-all-incoming-arguments
+               :effect-error-status :pending-sh09-recursive-body
+               :captures :own-parameters-and-lexical-locals-only}
+        types (merge (zipmap (map :node-id nodes) (repeat :gravity.type/string))
+                     {(sha 1) :gravity.type/bool (sha 5) :gravity.type/never (sha 7) function (sha 8) function})
+        facts {:recursive-proof proof :function-type-table [function] :type-table types :constraint-ledger []
+               :call-type-facts [{:call-core-node-id (sha 4) :result-type :gravity.type/string}
+                                {:call-core-node-id (sha 11) :result-type :gravity.type/string}]}]
+    [core facts bindings]))
 
 (defn nonnegative-integer-quotient-input [values]
   (let [base (integral-ordering-input 'quot (vec (repeat (count values) :gravity.type/integer)))

@@ -19456,22 +19456,10 @@
 
 
 (defn cold-metadata-input []
-  ;; Only the three metadata fields below are part of the cold-evidence view.
-  (let [record {:function-syntax-id :function :parameter-binding-ids []}
-        cut {:mode :entries :excluded-node-ids []}
-        core {:function-records [record] :calls [] :call-edges [] :nodes []
-              :lexical-bindings [] :definitions []}
-        input {:mode :entries :cut cut :source-argument-call-node-ids []
-               :source-preparation {:status :accepted}
-               :quoted-products {:status :accepted}
-               :inference {:status :converged}}
-        cold (invoke-c7 'sh08-is-cold-evidence [input])]
-    {:core core :facts {:imported-function-types []} :record record :bindings [] :forms []
-     :input input :cold cold :cut cut}))
+  (kernel-support/cold-metadata-input))
 
 (defn cold-metadata-invalid-inputs [input]
-  [(assoc input :quote-work-count 0) (assoc input :quote-work-count 1)
-   (assoc input :quote-work-count nil) (assoc input :unknown-field true)])
+  (kernel-support/cold-metadata-invalid-inputs input))
 
 (deftest cold-quote-metadata-production-development-kernel
   (let [{:keys [input cold cut]} (cold-metadata-input)
