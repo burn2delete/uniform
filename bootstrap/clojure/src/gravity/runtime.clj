@@ -1,9 +1,9 @@
 (ns gravity.runtime
-  "Temporary hosted Stage2 invocation, builtin/value operations and execution records; operations are trusted seed dependencies.")
+  "Temporary hosted Stage2 invocation, evaluation and builtin/value operations; operations are trusted seed dependencies.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
-    :contract-boundary :hosted-seed-stage2-invocation-builtin-and-value-operations
+    :contract-boundary :hosted-seed-stage2-invocation-evaluation-builtin-and-value-operations
     :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
     :public-api
     {hosted-add
@@ -52,6 +52,20 @@
                 [fail-builtin-error-var plan collection key not-found])
       :admission :none :hosted-seed-only? true :operation-vars [fail-builtin-error-var]
       :error-selection :late-after-lookup-failure :arity-validation-owner :existing-callers}
+     execute-value-scoped
+     {:arglists ([runtime plan env instruction reason public-invocation-scope operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:nontail-value! :execute-instruction-scoped]}
+     bind-values
+     {:arglists ([base names values]) :admission :none :hosted-seed-only? true}
+     execute-values-scoped
+     {:arglists ([runtime plan env instructions reason public-invocation-scope operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:execute-value-scoped]}
+     execute-map-entries-scoped
+     {:arglists ([runtime plan env entries public-invocation-scope operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:nontail-value! :execute-instruction-scoped]}
+     execute-instructions-scoped
+     {:arglists ([runtime plan env instructions public-invocation-scope operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:execute-instruction-scoped :recur-signal? :recur-fail! :recur-values]}
      hosted-builtin
      {:arglists ([plan callee args operations]) :admission :none :hosted-seed-only? true
       :operation-keys [:add :subtract :multiply :divide :equal :less-than :greater-than :less-than-or-equal :greater-than-or-equal :str :assert-min-arity! :assert-exact-arity! :assert-even-arity! :assert-between-arity! :fail-call-arity! :readable-pr-str :normalized-rest]
@@ -75,9 +89,12 @@
     :artifact-inputs [:runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
                       :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments :already-evaluated-seed-comparison-arguments :trusted-host-value-arguments
                       :lookup-collection-key-and-default :builtin-plan-and-host-exception :trusted-failure-operation-vars
-                      :ordinary-builtin-callee-and-evaluated-arguments :trusted-late-builtin-operation-vars]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result]
+                      :ordinary-builtin-callee-and-evaluated-arguments :trusted-late-builtin-operation-vars
+                      :trusted-environment-bindings-instruction-and-map-entry-carriers :opaque-invocation-scope
+                      :trusted-late-instruction-and-recurrence-operation-vars]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result]
     :diagnostic-ownership {:ordinary-builtin-dispatch-and-arity-placement :stage
+                           :evaluation-carrier-traversal-and-recur-check-placement :stage
                            :stage [L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
                            :existing-operations [L2-FUNCTION-ARITY :recur-arity :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-semantics
@@ -91,6 +108,7 @@
                   :runtime-family-selection :full-r1-r4-r11-r12-conformance :new-provider-authority
                   :native-target-or-backend-execution :general-gravity-numeric-modes :canonical-gravity-equality-and-ordering :canonical-formatting-and-collection-semantics :full-safe9-conformance
                   :untrusted-numeric-carriers :numeric-proof-or-check-records :redaction-and-publication :performance
+                  :canonical-instruction-admission :canonical-gravity-source-map-evaluation-order
                   :migration :release :self-hosting :seed-retirement]})
 
 (defn execute-function-scoped
@@ -459,5 +477,147 @@
                (into []
                      (subvec (nth args 0) (nth args 1) (nth args 2))))))
 
-(doseq [operation [#'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(defn execute-value-scoped
+  [runtime plan env instruction reason public-invocation-scope operations]
+  ((deref (get operations :nontail-value!))
+   plan
+   ((deref (get operations :execute-instruction-scoped))
+    runtime plan env instruction public-invocation-scope)
+   reason))
+
+(defn bind-values
+  [base names values]
+  ;; Function and loop binders are normally tiny. Avoid `zipmap`'s transient
+  ;; map plus `merge`'s seq traversal for the common fixed-arity cases.
+  (case (count names)
+    0 base
+    1 (assoc base (nth names 0) (nth values 0))
+    2 (assoc (assoc base
+                    (nth names 0) (nth values 0))
+             (nth names 1) (nth values 1))
+    3 (assoc (assoc (assoc base
+                          (nth names 0) (nth values 0))
+                   (nth names 1) (nth values 1))
+             (nth names 2) (nth values 2))
+    (merge base (zipmap names values))))
+
+(defn execute-values-scoped
+  [runtime plan env instructions reason public-invocation-scope operations]
+  ;; Builtin and function calls overwhelmingly carry zero to three arguments.
+  ;; `mapv` allocates a transient vector root/tail even for those tiny
+  ;; collections, which accounted for most allocation in a live B47 profile.
+  ;; Preserve the generic path for larger carriers.
+  (case (count instructions)
+    0 []
+    1 [((deref (get operations :execute-value-scoped))
+        runtime plan env (nth instructions 0) reason
+        public-invocation-scope)]
+    2 [((deref (get operations :execute-value-scoped))
+        runtime plan env (nth instructions 0) reason
+        public-invocation-scope)
+       ((deref (get operations :execute-value-scoped))
+        runtime plan env (nth instructions 1) reason
+        public-invocation-scope)]
+    3 [((deref (get operations :execute-value-scoped))
+        runtime plan env (nth instructions 0) reason
+        public-invocation-scope)
+       ((deref (get operations :execute-value-scoped))
+        runtime plan env (nth instructions 1) reason
+        public-invocation-scope)
+       ((deref (get operations :execute-value-scoped))
+        runtime plan env (nth instructions 2) reason
+        public-invocation-scope)]
+    (mapv (fn [instruction]
+            ((deref (get operations :execute-value-scoped))
+             runtime plan env instruction reason public-invocation-scope))
+          instructions)))
+
+(defn execute-map-entries-scoped
+  "Evaluate map-literal entries without allocating an intermediate pair.
+
+  Compiler plans represent entries as a vector of {:key ... :value ...}
+  records. The old `into {}`/`map` path evaluated each record into a fresh
+  two-element vector before conjoining it into the transient map. Large
+  compiler artifacts contain many map literals, so that short-lived carrier
+  became a measurable allocation and sequence-traversal hot path. Keep the
+  same left-to-right key/value evaluation and last-key-wins semantics while
+  associating directly into one transient map. The sequence branch preserves
+  the public helper's established behavior for direct list callers.
+  "
+  [runtime plan env entries public-invocation-scope operations]
+  (if (vector? entries)
+    (let [entry-count (count entries)]
+      (loop [index 0
+             result (transient {})]
+        (if (< index entry-count)
+          (let [{:keys [key value]} (nth entries index)
+                evaluated-key
+                ((deref (get operations :nontail-value!))
+                 plan
+                 ((deref (get operations :execute-instruction-scoped))
+                  runtime plan env key public-invocation-scope)
+                 :recur-inside-map-key)
+                evaluated-value
+                ((deref (get operations :nontail-value!))
+                 plan
+                 ((deref (get operations :execute-instruction-scoped))
+                  runtime plan env value public-invocation-scope)
+                 :recur-inside-map-value)]
+            (recur (inc index)
+                   (assoc! result evaluated-key evaluated-value)))
+          (persistent! result))))
+    (loop [remaining (seq entries)
+           result (transient {})]
+      (if (seq remaining)
+        (let [{:keys [key value]} (first remaining)
+              evaluated-key
+              ((deref (get operations :nontail-value!))
+               plan
+               ((deref (get operations :execute-instruction-scoped))
+                runtime plan env key public-invocation-scope)
+               :recur-inside-map-key)
+              evaluated-value
+              ((deref (get operations :nontail-value!))
+               plan
+               ((deref (get operations :execute-instruction-scoped))
+                runtime plan env value public-invocation-scope)
+               :recur-inside-map-value)]
+          (recur (next remaining)
+                 (assoc! result evaluated-key evaluated-value)))
+        (persistent! result)))))
+
+(defn execute-instructions-scoped
+  [runtime plan env instructions public-invocation-scope operations]
+  (if (vector? instructions)
+    ;; Compiler plans use vectors. Indexing avoids constructing a chunked seq
+    ;; and calling `next` for every interpreted function body.
+    (let [instruction-count (count instructions)]
+      (loop [index 0
+             result nil]
+        (if (< index instruction-count)
+          (let [value ((deref (get operations :execute-instruction-scoped))
+                       runtime plan env (nth instructions index)
+                       public-invocation-scope)
+                more? (< (inc index) instruction-count)]
+            (if (and ((deref (get operations :recur-signal?)) value) more?)
+              ((deref (get operations :recur-fail!))
+               plan nil (count ((deref (get operations :recur-values)) value))
+               :non-tail-sequential-position)
+              (recur (inc index) value)))
+          result)))
+    ;; Retain the established behavior for direct callers that supply lists.
+    (loop [remaining (seq instructions)
+           result nil]
+      (if-let [instruction (first remaining)]
+        (let [value ((deref (get operations :execute-instruction-scoped))
+                     runtime plan env instruction public-invocation-scope)
+              more (next remaining)]
+          (if (and ((deref (get operations :recur-signal?)) value) more)
+            ((deref (get operations :recur-fail!))
+             plan nil (count ((deref (get operations :recur-values)) value))
+             :non-tail-sequential-position)
+            (recur more value)))
+        result))))
+
+(doseq [operation [#'execute-value-scoped #'bind-values #'execute-values-scoped #'execute-map-entries-scoped #'execute-instructions-scoped #'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
