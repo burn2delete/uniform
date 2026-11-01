@@ -345,6 +345,28 @@
             #(bootstrap/p15-s23-closed-runtime-plan-validation!
               "malformed-unknown-op.gravity" :c malformed))))))
 
+(deftest closed-core-value-domain-accepts-former-scalar-limits
+  (let [large-string (apply str (repeat (inc (* 8 1024 1024)) "x"))
+        large-integer (.shiftLeft java.math.BigInteger/ONE 257)
+        value {:string large-string :integer large-integer}]
+    (is (= :passed
+           (:status
+            (bootstrap/p15-s23-closed-core-value-domain!
+             "large-value.gravity" value))))))
+
+(deftest closed-core-form-indexes-accept-form-tree-over-former-limit
+  (let [forms (vec (map (fn [form-id]
+                          {:form-id form-id :children []})
+                        (range 2049)))
+        indexes (bootstrap/p15-s23-closed-core-form-indexes
+                 "large-form-tree.gravity" forms [0])]
+    (is (= 2049 (count (:form-by-id indexes))))
+    (is (= [0] (get-in indexes [:structural-path-by-id 0])))
+    (is (= "C6-ORIGIN"
+           (diagnostic-id
+            #(bootstrap/p15-s23-closed-core-form-indexes
+              "missing-form.gravity" forms [2049]))))))
+
 (deftest former-accounting-allowances-do-not-reject-valid-plan-data
   (let [large-scalar (apply str (repeat 1025 "a"))
         large-generated-source (apply str (repeat 65537 "c"))

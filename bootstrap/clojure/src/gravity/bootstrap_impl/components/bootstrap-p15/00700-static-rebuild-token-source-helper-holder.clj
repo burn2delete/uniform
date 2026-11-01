@@ -86,8 +86,7 @@
           "C6-VERIFY"
           source-path
           {:missing-fact :host-stack-containment}
-          {:contained-host-error (.getName (class error)),
-           :maximum-plan-depth p15-s23-closed-core-max-plan-depth}))
+          {:contained-host-error (.getName (class error))}))
       (catch clojure.lang.ExceptionInfo ex (throw ex))
       (catch
         Exception

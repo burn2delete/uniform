@@ -36,20 +36,6 @@
         artifact
         {:missing-fact :trusted-mode-exact-authority-evidence-reissue-parity}))
     (when-not (and
-                (<= (count nodes) p15-s23-closed-core-max-derived-nodes)
-                (every?
-                  #(<= (:plan-depth %) p15-s23-closed-core-max-plan-depth)
-                  nodes))
-      (p15-s23-closed-core-fail!
-        "C6-VERIFY"
-        source-path
-        artifact
-        {:missing-fact :bounded-closed-core-artifact,
-         :observed-derived-nodes (when (vector? nodes) (count nodes)),
-         :observed-plan-nodes (when (vector? nodes) (count plan-nodes)),
-         :maximum-derived-nodes p15-s23-closed-core-max-derived-nodes,
-         :maximum-plan-depth p15-s23-closed-core-max-plan-depth}))
-    (when-not (and
                 (= (count node-ids) (count (set node-ids)))
                 (= (count paths) (count (set paths)))
                 (every? #(= p15-s23-closed-core-node-keys (set (keys %))) nodes))

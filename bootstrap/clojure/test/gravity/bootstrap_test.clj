@@ -31671,27 +31671,9 @@
         expanded
         (bootstrap/p15-s23-stage2-closed-checked-core-source-artifact
          "bound-129.gravity" (nested-source 128) :c)
-        wide
-        (vec (repeat
-              (inc bootstrap/p15-s23-closed-core-max-serialized-values)
-              nil))
-        oversized-scalar
-        (.repeat "x"
-                 (inc
-                  bootstrap/p15-s23-closed-core-max-artifact-scalar-bytes))
-        oversized-integer
-        (.shiftLeft java.math.BigInteger/ONE
-                    bootstrap/p15-s23-closed-core-max-integer-bits)
         lone-surrogate (char 0xD800)
         candidates
-        [[(assoc accepted :diagnostics wide)
-          :trusted-legacy-checked-core-carrier
-          :maximum-carrier-width]
-         [(assoc accepted :diagnostics [oversized-scalar])
-          :bounded-canonical-string-scalar nil]
-         [(assoc accepted :diagnostics [oversized-integer])
-          :bounded-closed-core-integer nil]
-         [(assoc accepted :diagnostics [lone-surrogate])
+        [[(assoc accepted :diagnostics [lone-surrogate])
           :unicode-scalar-character nil]
          [(assoc accepted :diagnostics [(Object.)])
           :trusted-legacy-checked-core-carrier
@@ -31716,16 +31698,7 @@
         (when expected-reason
           (is (= expected-reason (:reason data)) data))
         (is (not (str/includes? (pr-str data) ":fixture/")) data)))
-    (let [oversized-source
-          (.repeat "a"
-                   (inc bootstrap/p15-s23-closed-core-max-source-bytes))
-          data
-          (diagnostic-data
-           #(bootstrap/p15-s23-stage2-closed-checked-core-context
-             "oversized.gravity" oversized-source :c))]
-      (is (= "C6-VERIFY" (:id data)) data)
-      (is (= :bounded-closed-core-source-bytes
-             (:missing-fact data)) data))))
+    ))
 
 (deftest p15-s23-pinned-runtime-contract-bounds-and-loader-order
   (let [rule (bootstrap/c-backend-stage2-runtime-source-rule!
@@ -34514,7 +34487,7 @@
           (let [restored?
                 (try
                   (with-redefs
-                    [bootstrap/p15-s23-closed-core-bounded-utf8-count
+                    [bootstrap/p15-s23-closed-core-diagnostic-utf8-count
                      (fn [& _]
                        (throw
                         (InterruptedException.
