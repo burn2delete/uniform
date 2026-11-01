@@ -12414,9 +12414,12 @@
      :profile (get module :profile) :target (get module :target) :effects (get descriptor :direct-effects) :capabilities [] :status :inferred
      :dispatch :direct-keyword-set-contains :applied-keyword-set-contains descriptor :effect-facts-source :audited-keyword-set-membership-intrinsic}))))))
 
-(defn p15-s23-ksm-finish [header]
+(defn lower-finish-boolean-result [header]
   (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
     (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+
+(defn p15-s23-ksm-finish [header]
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-sysm-ledger-ids? [context rows]
   (loop [remaining rows]
@@ -12601,8 +12604,7 @@
 
 
 (defn p15-s23-mc-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-contains [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -12939,8 +12941,7 @@
      :dispatch :direct-map-predicate :applied-map-predicate descriptor :effect-facts-source :audited-map-predicate-intrinsic}))
 
 (defn p15-s23-mapp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-setp-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -13024,8 +13025,7 @@
      :dispatch :direct-set-predicate :applied-set-predicate descriptor :effect-facts-source :audited-set-predicate-intrinsic}))
 
 (defn p15-s23-setp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-symp-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -13110,8 +13110,7 @@
      :dispatch :direct-symbol-predicate :applied-symbol-predicate descriptor :effect-facts-source :audited-symbol-predicate-intrinsic}))
 
 (defn p15-s23-symp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-boolp-binding? [binding module]
   (if (if (vector? (get binding :profile-set)) (vector? (get binding :target-set)) false)
@@ -13196,8 +13195,7 @@
      :dispatch :direct-boolean-predicate :applied-boolean-predicate descriptor :effect-facts-source :audited-boolean-predicate-intrinsic}))
 
 (defn p15-s23-boolp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-chp-classification [type]
   (if (= :gravity.type/never type)
@@ -13300,8 +13298,7 @@
      :dispatch :direct-character-predicate :applied-character-predicate descriptor :effect-facts-source :audited-character-predicate-intrinsic}))
 
 (defn p15-s23-chp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-character-predicate [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -13498,8 +13495,7 @@
      :dispatch :direct-nil-predicate :applied-nil-predicate descriptor :effect-facts-source :audited-nil-predicate-intrinsic}))
 
 (defn p15-s23-nilp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-map-predicate [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -13736,8 +13732,7 @@
      :dispatch :direct-list-predicate :applied-list-predicate descriptor :effect-facts-source :audited-list-predicate-intrinsic}))
 
 (defn p15-s23-listp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-list-predicate [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -14496,8 +14491,7 @@
          (if (contains? descriptor :keyword-set-equality) :audited-keyword-set-inequality-intrinsic :audited-atomic-inequality-intrinsic))))})))
 
 (defn p15-s23-ane-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-atomic-inequality [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -14675,8 +14669,7 @@
      :dispatch :direct-keyword-predicate :applied-keyword-predicate descriptor :effect-facts-source :audited-keyword-predicate-intrinsic}))
 
 (defn p15-s23-kp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-keyword-predicate [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -14829,8 +14822,7 @@
      :dispatch :direct-string-predicate :applied-string-predicate descriptor :effect-facts-source :audited-string-predicate-intrinsic}))
 
 (defn p15-s23-strp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-string-predicate [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -14982,8 +14974,7 @@
      :dispatch :direct-integer-predicate :applied-integer-predicate descriptor :effect-facts-source :audited-integer-predicate-intrinsic}))
 
 (defn p15-s23-ip-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-integer-predicate [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -15138,8 +15129,7 @@
 
 
 (defn p15-s23-vp-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 
 (defn p15-s23-typed-compile-vector-predicate [context node]
@@ -15288,8 +15278,7 @@
 
 
 (defn p15-s23-nt-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-not [context node]
   (let [id (get node :node-id) core (get context :core)]
@@ -15424,8 +15413,7 @@
 
 
 (defn p15-s23-ae-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-bka-bare? [type]
   (if (keyword? type) (= :gravity.type/set type) false))
@@ -16201,8 +16189,7 @@
      :dispatch :direct-string-set-equality :applied-string-set-equality descriptor :effect-facts-source :audited-string-set-value-intrinsic} fact)))))
 
 (defn p15-s23-kse-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-keyword-set-equality [context node]
   (if (if (if (map? context) (map? node) false)
@@ -16463,8 +16450,7 @@
      :dispatch :direct-list-equality :applied-list-equality descriptor :effect-facts-source :audited-list-value-intrinsic}))
 
 (defn p15-s23-le-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 (defn p15-s23-typed-compile-list-equality [context node]
   (if (if (vector? (get node :children))
@@ -16799,8 +16785,7 @@
 
 
 (defn p15-s23-ve-finish [header]
-  (let [type (if (= :normal (get header :application)) :gravity.type/bool :gravity.type/never)]
-    (assoc header :parameter-types (get header :argument-types) :return type :result-type type)))
+  (lower-finish-boolean-result header))
 
 
 (defn p15-s23-typed-compile-vector-equality [context node]

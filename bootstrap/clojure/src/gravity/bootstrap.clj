@@ -4,7 +4,8 @@
   This seed exists to make the first Gravity milestone executable with a Lisp
   implementation. It is intentionally small and records unsupported behavior
   as diagnostics instead of pretending to be the final compiler."
-  (:require [gravity.bootstrap.module-literals]
+  (:require [gravity.build]
+            [gravity.bootstrap.module-literals]
             [gravity.checked-core]
             [gravity.mir]
             [gravity.lowering]
