@@ -17,22 +17,6 @@
 (defn- phm [entries]
   (reduce (fn [m [k v]] (assoc m k v)) PersistentHashMap/EMPTY entries))
 
-(defn- value-with-meter [total]
-  (let [string-count 12
-        payload (- total 5 (* string-count 5))
-        quotient (quot payload string-count)
-        remainder (rem payload string-count)]
-    (vec (map (fn [index]
-                (apply str (repeat (+ quotient (if (< index remainder) 1 0)) "a")))
-              (range string-count)))))
-
-(defn- short-schema-ids []
-  (take 512
-        (concat (map str "abcdefghijklmnopqrstuvwxyz")
-                (for [left "abcdefghijklmnopqrstuvwxyz"
-                      right "0123456789abcdefghijklmnopqrstuvwxyz-"]
-                  (str left right)))))
-
 (def scalar-registry
   {"nil" {"kind" "null"}
    "bool" {"kind" "boolean"}
@@ -110,7 +94,7 @@
         left-result (a1/canonical-copy left)
         right-result (a1/canonical-copy right)]
     (is (= left-result right-result))
-    (is (= "E-BOUND" (get left-result "diagnostic")))))
+    (is (= "E-TYPE" (get left-result "diagnostic")))))
 
 (deftest fixed-index-mergesort-bounds-reverse-and-interleaved-1024-keys
   (let [sort-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
@@ -224,151 +208,39 @@
     (is (= "E-ID-SYNTAX"
            (get (a1/validate-and-copy registry "Bad" 1) "diagnostic")))))
 
-(deftest bounds-are-terminal-and-precede-later-faults
-  (let [too-long (apply str (repeat 65537 "a"))
-        too-many (vec (repeat 1025 nil))
-        high-work (phm (map (fn [index]
-                              [(format "key-%04d-%040d" index index) nil])
-                            (range 1024)))
-        too-many-schemas
-        (phm (map (fn [index]
-                    [(format "s%03d" index) {"kind" "null"}])
-                  (range 513)))]
-    (doseq [value [too-long too-many high-work]]
-      (is (= "E-BOUND" (get (a1/canonical-copy value) "diagnostic"))))
-    (is (= "E-BOUND"
-           (get (a1/admit-schema-registry too-many-schemas) "diagnostic"))))
-  (let [later-invalid (conj (vec (repeat 1024 nil)) identity)]
-    (is (= "E-BOUND" (get (a1/canonical-copy later-invalid) "diagnostic")))))
-
-(deftest exact-resource-edges-are-accepted-before-limit-plus-one
-  (is (= "accepted" (get (a1/canonical-copy (apply str (repeat 65536 "a")))
-                          "status")))
-  (is (= "accepted" (get (a1/canonical-copy (vec (repeat 1024 nil))) "status")))
-  (let [registry (into {} (map #(vector % {"kind" "null"})
-                               (short-schema-ids)))]
-    (is (= 512 (count registry)))
-    (is (= "accepted" (get (a1/admit-schema-registry registry) "status"))))
-  (is (= "accepted" (get (a1/canonical-copy (value-with-meter 750000)) "status")))
-  (is (= "E-BOUND" (get (a1/canonical-copy (value-with-meter 750001))
-                         "diagnostic")))
-  (let [budget-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema 'budget)
-        meter-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema 'meter-value!)
-        exact-state ((var-get budget-var))
-        over-state ((var-get budget-var))]
-    ((var-get meter-var) exact-state (value-with-meter 786432) [] 0 :input)
-    (is (= 786432 (get-in @exact-state [:input :committed])))
-    (is (= "E-BOUND"
-           (try
-             ((var-get meter-var) over-state (value-with-meter 786433) [] 0 :input)
-             "OK"
-             (catch clojure.lang.ExceptionInfo failure
-               (:diagnostic (ex-data failure))))))))
-
-(deftest exact-input-meter-edge-is-observed-through-the-public-wrapper
-  (let [registry
-        (into {"nil" {"kind" "null"}}
-              (map (fn [index]
-                     [(str "p" index)
-                      {"kind" "tagged-union"
-                       "tag-key" (str (char (+ (int \A) index))
-                                      (apply str
-                                             (repeat (if (< index 11) 65535 64444)
-                                                     "x")))
-                       "variants" {"x" "nil"}}])
-                   (range 12)))
-        over-registry (update-in registry ["p11" "tag-key"] str "x")]
+(deftest larger-valid-values-keep-the-closed-domain
+  (let [long-string (apply str (repeat 65537 "a"))
+        large-vector (vec (repeat 1025 nil))
+        large-map (phm (map (fn [index] [(str "key-" index) nil])
+                            (range 1025)))
+        large-registry (phm (map (fn [index]
+                                   [(str "s" index) {"kind" "null"}])
+                                 (range 513)))]
+    (doseq [value [long-string large-vector large-map]]
+      (let [actual (a1/canonical-copy value)]
+        (is (= "accepted" (get actual "status")))
+        (is (= value (get actual "value")))))
     (is (= "accepted"
-           (get (a1/validate-and-copy registry "nil" nil) "status")))
-    (is (= "E-BOUND"
-           (get (a1/validate-and-copy over-registry "nil" nil) "diagnostic")))))
+           (get (a1/admit-schema-registry large-registry) "status")))))
 
-(deftest exact-work-edge-completes-through-the-public-wrapper
-  (let [sink-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                             '*audit-sink*)
-        sink (atom nil)
-        value (into {}
-                    (map (fn [index]
-                           [(str "k" index
-                                 (when (= index 299)
-                                   (apply str (repeat 936 "x"))))
-                            (cond
-                              (< index 4) [nil]
-                              (< index 7) 0N
-                              :else nil)])
-                         (range 300)))]
-    (with-bindings {sink-var sink}
-      (is (= "accepted" (get (a1/canonical-copy value) "status"))))
-    (is (= 65536 (get-in @sink [:work :committed])))
-    (is (zero? (get-in @sink [:work :reserved])))))
+(deftest declared-schema-bounds-remain-semantic
+  (let [registry {"text" {"kind" "string" "ascii-only" true "max-bytes" 3}
+                  "array" {"kind" "array" "item" "text"
+                            "min-items" 0 "max-items" 2 "unique" false}}]
+    (is (= "E-SCHEMA"
+           (get (a1/validate-and-copy registry "text" "four") "diagnostic")))
+    (is (= "E-SCHEMA"
+           (get (a1/validate-and-copy registry "array"
+                                      ["one" "two" "tri"]) "diagnostic")))))
 
-(deftest reservation-commit-and-live-counters-close-at-zero
-  (let [resolve-private #(var-get
-                           (ns-resolve 'gravity.self-hosting.a1-canonical-schema %))
-        make-budget (resolve-private 'budget)
-        reserve! (resolve-private 'reserve!)
-        commit! (resolve-private 'commit!)
-        release-reservation! (resolve-private 'release-reservation!)
-        acquire! (resolve-private 'acquire!)
-        release! (resolve-private 'release!)
-        state (make-budget)]
-    (reserve! state :output 100 [])
-    (commit! state :output 60)
-    (release-reservation! state :output 40)
-    (is (= {:limit 750000 :reserved 0 :committed 60}
-           (:output @state)))
-    (acquire! state :key-slots 1024 [])
-    (release! state :key-slots 1024)
-    (is (= 0 (get-in @state [:key-slots :live])))
-    (is (= 1024 (get-in @state [:key-slots :peak])))
-    (is (= "E-BOUND"
-           (try (reserve! state :output 750000 []) "OK"
-                (catch clojure.lang.ExceptionInfo failure
-                  (:diagnostic (ex-data failure))))))
-    (let [sink-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                               '*audit-sink*)
-          sink (atom nil)]
-      (with-bindings {sink-var sink} (a1/canonical-copy nil))
-      (is (zero? (get-in @sink [:work :reserved])))
-      (is (zero? (get-in @sink [:output :reserved])))
-      (is (false? (get-in @sink [:terminal-result :reserved?])))
-      (is (zero? (get-in @sink [:terminal-result :reserved])))
-      (is (= 128 (get-in @sink [:terminal-result :committed])))
-      (doseq [counter [:frames :key-slots :digest-slots]]
-        (is (zero? (get-in @sink [counter :live])))))))
-
-(deftest diagnostic-path-reservation-falls-back-to-terminal-empty-bound
-  (let [resolve-private #(var-get
-                           (ns-resolve 'gravity.self-hosting.a1-canonical-schema %))
-        state ((resolve-private 'budget))
-        path-of (resolve-private 'path-of)
-        emit! (resolve-private 'emit-rejection!)]
-    (swap! state assoc-in [:work :committed] 65526)
-    (is (= (result "E-BOUND" [])
-           (emit! state "E-TYPE" (path-of "field"))))
-    (is (zero? (get-in @state [:output :committed])))
-    (is (zero? (get-in @state [:output :reserved])))))
-
-(deftest depth-limit-allows-root-through-sixty-four
+(deftest nested-values-and-reference-graphs-have-no-global-depth-quota
   (letfn [(nested [depth]
             (loop [remaining depth value nil]
               (if (zero? remaining) value
                   (recur (dec remaining) [value]))))]
-    (is (= "accepted" (get (a1/canonical-copy (nested 64)) "status")))
-    (let [sink-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                               '*audit-sink*)
-          sink (atom nil)
-          actual (with-bindings {sink-var sink}
-                   (a1/canonical-copy (nested 65)))]
-      (is (= (result "E-BOUND" (vec (repeat 64 0))) actual))
-      (is (= (* 64 9) (get-in @sink [:output :committed])))
-      (is (zero? (get-in @sink [:output :reserved])))
-      (is (zero? (get-in @sink [:work :reserved])))
-      (is (false? (get-in @sink [:terminal-result :reserved?])))
-      (doseq [counter [:frames :key-slots :digest-slots]]
-        (is (zero? (get-in @sink [counter :live])))))))
+    (is (= "accepted" (get (a1/canonical-copy (nested 65)) "status")))))
 
-(deftest schema-reference-depth-has-the-same-sixty-four-edge-boundary
+(deftest schema-reference-graphs-retain-cycle-rejection
   (letfn [(chain [edges]
             (into {}
                   (concat
@@ -378,21 +250,19 @@
                             {"kind" "array" "item" (str "s" (inc index))
                              "min-items" 0 "max-items" 1 "unique" false}])
                          (range edges)))))]
-    (is (= "accepted" (get (a1/admit-schema-registry (chain 64)) "status")))
-    (is (= "E-BOUND" (get (a1/admit-schema-registry (chain 65)) "diagnostic")))))
+    (is (= "accepted" (get (a1/admit-schema-registry (chain 65)) "status")))
+    (is (= "E-CYCLE"
+           (get (a1/admit-schema-registry
+                 {"a" {"kind" "array" "item" "a"
+                        "min-items" 0 "max-items" 1 "unique" false}})
+                "diagnostic")))))
 
-(deftest wide-reference-traversal-retains-one-child-cursor-at-a-time
-  (let [sink-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                             '*audit-sink*)
-        sink (atom nil)
-        fields (into {} (map (fn [index] [(str (char index)) "leaf"])
+(deftest wide-reference-traversal-preserves-field-validation
+  (let [fields (into {} (map (fn [index] [(str "field-" index) "leaf"])
                              (range 500)))
         registry {"leaf" {"kind" "null"}
                   "root" {"kind" "object" "required" fields "optional" {}}}]
-    (with-bindings {sink-var sink}
-      (is (= "accepted" (get (a1/admit-schema-registry registry) "status"))))
-    (is (<= (get-in @sink [:frames :peak]) 65))
-    (is (zero? (get-in @sink [:frames :live])))))
+    (is (= "accepted" (get (a1/admit-schema-registry registry) "status")))))
 
 (deftest selected-tagged-branch-does-not-evaluate-unselected-branch
   (let [registry
@@ -406,28 +276,18 @@
                                      {"tag" "good" "value" nil})
                 "status")))))
 
-(deftest rejected-untagged-hostile-does-not-build-a-reference-graph
-  (let [sink-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                             '*audit-sink*)
-        sink (atom nil)
-        registry (into {}
+(deftest rejected-untagged-hostile-retains-schema-diagnostic
+  (let [registry (into {}
                        (map (fn [index]
                               [(str "s" index)
                                {"kind" "untagged-union"
                                 "variants" ["s0" "s1"]}])
                             (range 20)))]
-    (with-bindings {sink-var sink}
-      (is (= "E-SCHEMA"
-             (get (a1/admit-schema-registry registry) "diagnostic"))))
-    (is (not (true? (:registry-graph-built? @sink))))
-    (is (<= (get-in @sink [:work :committed]) 65526))
-    (doseq [counter [:frames :key-slots :digest-slots]]
-      (is (zero? (get-in @sink [counter :live]))))))
+    (is (= "E-SCHEMA"
+           (get (a1/admit-schema-registry registry) "diagnostic")))))
 
-(deftest unselected-hostile-branch-adds-no-phase-three-work
-  (let [sink-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                             '*audit-sink*)
-        base {"nil" {"kind" "null"}
+(deftest unselected-hostile-branch-does-not-change-validation
+  (let [base {"nil" {"kind" "null"}
               "union" {"kind" "tagged-union" "tag-key" "tag"
                        "variants" {"good" "nil"}}}
         hostile (assoc base
@@ -437,34 +297,16 @@
                                 "variants" {"good" "nil" "hostile" "deep"}})
         value {"tag" "good" "value" nil}
         run (fn [registry]
-              (let [sink (atom nil)]
-                (with-bindings {sink-var sink}
-                  (is (= "accepted"
-                         (get (a1/validate-and-copy registry "union" value)
-                              "status"))))
-                @sink))
-        base-audit (run base)
-        hostile-audit (run hostile)]
-    (is (= (- (get-in base-audit [:work :committed])
-              (:phase2-work base-audit))
-           (- (get-in hostile-audit [:work :committed])
-              (:phase2-work hostile-audit))))
-    (doseq [audit [base-audit hostile-audit]
-            counter [:frames :key-slots :digest-slots]]
-      (is (zero? (get-in audit [counter :live]))))))
+              (get (a1/validate-and-copy registry "union" value) "status"))]
+    (is (= "accepted" (run base)))
+    (is (= "accepted" (run hostile)))))
 
 (deftest host-exceptions-are-total-and-interrupt-is-preserved
   (let [constructor (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                                'construct-map)
-        sink-var (ns-resolve 'gravity.self-hosting.a1-canonical-schema
-                             '*audit-sink*)
-        sink (atom nil)]
-    (with-bindings {sink-var sink}
-      (with-redefs-fn {constructor (fn [_] (throw (Exception. "injected")))}
-        #(is (= (result "E-HOST" ["internal"])
-                (a1/canonical-copy {"x" 1})))))
-    (is (= 33 (get-in @sink [:output :committed])))
-    (is (zero? (get-in @sink [:output :reserved])))
+                                'construct-map)]
+    (with-redefs-fn {constructor (fn [_] (throw (Exception. "injected")))}
+      #(is (= (result "E-HOST" ["internal"])
+              (a1/canonical-copy {"x" 1}))))
     (with-redefs-fn {constructor (fn [_] (throw (InterruptedException. "stop")))}
       #(do
          (let [actual (a1/canonical-copy {"x" 1})

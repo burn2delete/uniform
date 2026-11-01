@@ -3,20 +3,6 @@
   (:import (clojure.lang BigInt PersistentArrayMap PersistentHashMap
                          PersistentVector)))
 
-(def limits
-  {:string-bytes 65536
-   :items 1024
-   :schemas 512
-   :depth 64
-   :input-bytes 786432
-   :output-bytes 750000
-   :frames 65
-   :key-slots 1024
-   :digest-slots 1024
-   :work 65536})
-
-(def terminal-work 10)
-(def terminal-bytes 128)
 (def uint64-max 18446744073709551615N)
 (def schema-id-pattern #"[a-z][a-z0-9-]{0,63}")
 (def allowed-kinds
@@ -48,7 +34,7 @@
   (cons segment path))
 
 (defn path-count [path]
-  (min 64 (count path)))
+  (count path))
 
 (defn path-segment [path index]
   (if (vector? path)
