@@ -4,7 +4,6 @@
             [clojure.string :as str]
             [gravity.tooling.strict-json :as json])
   (:import (java.nio.file Files LinkOption Path Paths)))
-
 (def ^:private root
   (.normalize (.toAbsolutePath (Paths/get "" (make-array String 0)))))
 (def ^:private docs (.resolve root "docs"))
@@ -25,7 +24,6 @@
   #"^\|\s*(\d{4}-\d{2}-\d{2})\s*\|\s*[^|]+\|\s*`(FL-P\d{2}-T\d{2})`\s*\|([^|]+)\|([^|]+)\|")
 (def ^:private command-pattern
   #"\b(gravity|bin/gravity|clojure -M(?::gravity| tools/))[^`;|]*")
-
 (def ^:private p00-required-tokens
   {"FL-P00-T00" ["public binary audit" "bin/gravity check"
                    "accepted fixture audit" "rejected fixture audit"
@@ -100,42 +98,57 @@
 (defn- phase-number [task-id]
   (Long/parseLong (subs (second (str/split task-id #"-")) 1)))
 
+(defn- matrix-result [^Path matrix-path ^Path gaps-path]
+  (if (or (not (exists? matrix-path)) (not (exists? gaps-path)))
+    {:errors (cond-> []
+              (not (exists? matrix-path))
+              (conj (str "missing coverage matrix " (.relativize root matrix-path)))
+              (not (exists? gaps-path))
+              (conj (str "missing coverage gap report " (.relativize root gaps-path))))
+     :snapshot nil}
+    (let [matrix-data (json/load-json matrix-path)
+          gaps-data (json/load-json gaps-path)
+          entries (get matrix-data "entries" [])
+          complete (filter #(true? (get % "fullLanguageComplete")) entries)
+          summary (get matrix-data "summary")
+          audit (get summary "publicAudit")
+          errors (cond-> []
+                   (not (and (= 240 (get matrix-data "inventoryCount"))
+                             (= 240 (count entries))))
+                   (conj "coverage matrix must enumerate exactly 240 normative documents")
+                   (not (= 240 (get gaps-data "inventoryCount")))
+                   (conj "coverage gap report must record inventoryCount 240")
+                   (not (= (count complete)
+                           (get-in matrix-data ["summary" "fullLanguageCompleteDocuments"])))
+                   (conj "coverage matrix fullLanguageCompleteDocuments does not match entries")
+                   true
+                   (into (mapcat
+                          (fn [entry]
+                            (let [id (get entry "id")]
+                              (cond-> []
+                                (seq (get entry "gaps"))
+                                (conj (str id " is fullLanguageComplete while gaps remain"))
+                                (true? (get entry "scaffoldOnlyCoverage"))
+                                (conj (str id " is fullLanguageComplete from scaffold-only coverage"))
+                                (not (true? (get entry "publicAccepted")))
+                                (conj (str id " is fullLanguageComplete without public accepted proof"))
+                                (not (true? (get entry "publicRejectedSpecific")))
+                                (conj (str id " is fullLanguageComplete without public rejected diagnostic proof")))))
+                          complete)))]
+      {:errors errors
+       :snapshot {:generated-on (get matrix-data "generatedOn")
+                  :completion-admission-disabled?
+                  (every? #(some #{"completion-admission-disabled"} (get % "completionGaps")) entries)
+                  :normative-documents (get summary "documents")
+                  :reported-complete-documents (get summary "fullLanguageCompleteDocuments")
+                  :accepted {:passing (get audit "acceptedPass") :total (get audit "acceptedTotal")}
+                  :rejected {:feature-specific (get audit "rejectedSpecificDiagnostic")
+                             :total (get audit "rejectedTotal")}}})))
+
 (defn validate-matrix
-  ([] (validate-matrix matrix gaps))
+  ([] (:errors (matrix-result matrix gaps)))
   ([^Path matrix-path ^Path gaps-path]
-   (cond-> []
-     (not (exists? matrix-path))
-     (conj (str "missing coverage matrix " (.relativize root matrix-path)))
-     (not (exists? gaps-path))
-     (conj (str "missing coverage gap report " (.relativize root gaps-path)))
-     (and (exists? matrix-path) (exists? gaps-path))
-     (into
-      (let [matrix-data (json/load-json matrix-path)
-            gaps-data (json/load-json gaps-path)
-            entries (get matrix-data "entries" [])
-            complete (filter #(true? (get % "fullLanguageComplete")) entries)]
-        (concat
-         (when-not (and (= 240 (get matrix-data "inventoryCount"))
-                        (= 240 (count entries)))
-           ["coverage matrix must enumerate exactly 240 normative documents"])
-         (when-not (= 240 (get gaps-data "inventoryCount"))
-           ["coverage gap report must record inventoryCount 240"])
-         (when-not (= (count complete)
-                      (get-in matrix-data ["summary" "fullLanguageCompleteDocuments"]))
-           ["coverage matrix fullLanguageCompleteDocuments does not match entries"])
-         (mapcat
-          (fn [entry]
-            (let [id (get entry "id")]
-              (cond-> []
-                (seq (get entry "gaps"))
-                (conj (str id " is fullLanguageComplete while gaps remain"))
-                (true? (get entry "scaffoldOnlyCoverage"))
-                (conj (str id " is fullLanguageComplete from scaffold-only coverage"))
-                (not (true? (get entry "publicAccepted")))
-                (conj (str id " is fullLanguageComplete without public accepted proof"))
-                (not (true? (get entry "publicRejectedSpecific")))
-                (conj (str id " is fullLanguageComplete without public rejected diagnostic proof")))))
-          complete)))))))
+   (:errors (matrix-result matrix-path gaps-path))))
 
 (defn seed-retirement-truth-errors [artifact-text documents]
   (if-not (every? #(str/includes? artifact-text %) incomplete-markers)
@@ -211,11 +224,16 @@
   (when-not (exists? roadmap)
     (throw (ex-info (str "missing " (.relativize root roadmap))
                     {:diagnostic "FLR001"})))
-  (let [errors (validate-text (read-text roadmap) true)]
+  (let [text (read-text roadmap)
+        matrix (matrix-result matrix gaps)
+        errors (vec (concat (validate-completion-claims text)
+                            (:errors matrix)
+                            (validate-seed-retirement-truth)))]
     (when (seq errors)
       (throw (ex-info (str/join "; " errors)
                       {:diagnostic "FLR002" :errors errors})))
-    {:tasks (count (parse-tasks (read-text roadmap)))}))
+    {:tasks (count (parse-tasks text))
+     :coverage-snapshot (:snapshot matrix)}))
 
 (defn- fixture-files [kind]
   (let [directory (.toFile (.resolve fixture-root kind))]

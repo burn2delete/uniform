@@ -49,12 +49,8 @@
               (invoke :c2-lexical-product-validation
                       source-text token-stream form-tree top-level-form-ids))
             graph-valid? (true? (:graph-valid? lexical))
-            depth-valid?
-            (and (integer? (:max-form-depth lexical))
-                 (<= (:max-form-depth lexical)
-                     (:max-reader-form-graph-depth *operations*)))
             recomputed-hashes
-            (when (and graph-valid? depth-valid?)
+            (when graph-valid?
               (invoke :c2-incremental-hashes
                       source-unit token-stream form-tree syntax-seeds
                       extension-invocations diagnostics))
@@ -176,7 +172,6 @@
              :source-id-valid? source-id-valid?
              :source-bytes-valid? (boolean source-bytes-valid?)
              :lexical-graph-valid? graph-valid?
-             :reader-depth-valid? depth-valid?
              :product-provenance-valid? product-provenance-valid?
              :reader-source-map-valid?
              (= expected-source-map (:reader-source-map c2-artifact))

@@ -21,6 +21,7 @@
    source-path c2-artifact))
 
 (declare c3-deferred-ratio-descriptor-from-raw
+         c3-form-index c3-token-index
          c3-ratio-descriptor-from-raw
          c3-lossless-literal-descriptor
          c3-tagged-literal-descriptor
@@ -30,6 +31,7 @@
 (defn- c3-literal-projection-ops
   []
   {:c3-c2-reader-integrity-report c3-c2-reader-integrity-report
+   :c3-form-index c3-form-index :c3-token-index c3-token-index
    :form-kind form-kind
    :c3-deferred-ratio-descriptor-from-raw
    c3-deferred-ratio-descriptor-from-raw

@@ -2,7 +2,7 @@
   ([source-path artifact]
     (p15-s23-closed-core-validate-structure! source-path artifact :pure nil))
   ([source-path artifact mode expected-authority-evidence]
-    (p15-s23-closed-core-bounded-value! source-path artifact)
+    (p15-s23-closed-core-value-domain! source-path artifact)
     (p15-s23-closed-core-validate-input-shape! source-path artifact mode)
     (let [state (hash-map
                   'source-path

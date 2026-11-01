@@ -2,16 +2,63 @@
   (:require [clojure.edn :as edn]
             [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [gravity.darwin-publication :as publication])
+            [gravity.darwin-publication :as publication]
+            [gravity.darwin-publication.contract :as contract]
+            [gravity.darwin-publication.native-call :as native-call]
+            [gravity.darwin-publication.native-runtime :as native-runtime])
   (:import [java.nio.file Files LinkOption OpenOption Path Paths
             StandardCopyOption StandardOpenOption]
            [java.nio.file.attribute FileAttribute PosixFilePermission]
-           [java.nio.charset StandardCharsets]
-           [java.util UUID]))
+           [java.nio.charset StandardCharsets]))
 
 (def ^:private file-names
   ["program.c" "program.h" "program.o" "program"
    "manifest.edn" "provenance.edn" "conformance.edn"])
+
+(deftest descriptor-stat-flags-preserve-supported-resolution-protection
+  ;; Independent ABI boundary: Apple XNU f6217f89 fstatat/fstatat64 allow only
+  ;; these public AT_* bits. Unknown bits return EINVAL before path resolution.
+  (let [allowed (bit-or 0x20 0x200 0x400 0x800 0x2000)
+        required (bit-or 0x800 0x2000)
+        flags contract/relative-unique-stat-flags]
+    (is (zero? (bit-and flags (bit-not allowed))))
+    (is (= required (bit-and flags required)))))
+
+(deftest confinement-preflight-probes-only-invalid-descriptors
+  ;; Branch controls only: mocked syscall results confer no native evidence.
+  (let [observed (atom [])
+        runtime {:test-runtime true}]
+    (binding [native-call/int-call-result
+              (fn [_runtime _arena operation arguments]
+                (swap! observed conj [operation arguments])
+                {:value -1 :errno 9})]
+      (is (identical? runtime (native-runtime/require-confinement-support! runtime))))
+    (is (= [:fstatat :fstatat :renameatx-np :renameatx-np] (mapv first @observed)))
+    (is (= [0 contract/relative-unique-stat-flags 0 contract/exclusive-rename-flags]
+           (mapv #(last (second %)) @observed)))
+    (doseq [[operation arguments] @observed]
+      (is (= (int -1) (first arguments)))
+      (is (instance? Integer (first arguments)))
+      (is (instance? Integer (last arguments)))
+      (when (= :renameatx-np operation)
+        (is (= (int -1) (nth arguments 2)))))))
+
+(deftest confinement-preflight-rejects-unexpected-results-without-later-probes
+  (doseq [index (range 4)
+          bad [{:value -1 :errno 22} {:value -1 :errno 38}
+               {:value 0} {:value -2 :errno 9}]]
+    (let [calls (atom 0)
+          error (binding [native-call/int-call-result
+                          (fn [_runtime _arena _operation _arguments]
+                            (if (= index (dec (swap! calls inc))) bad {:value -1 :errno 9}))]
+                  (try
+                    (native-runtime/require-confinement-support! {})
+                    nil
+                    (catch clojure.lang.ExceptionInfo error (ex-data error))))]
+      (is (= :native-preflight (:operation error)))
+      (is (= :unsupported-confinement-features (:reason error)))
+      (is (= (:value bad) (:return-code error)))
+      (is (= (inc index) @calls)))))
 
 (def ^:private owner-only-permissions
   #{PosixFilePermission/OWNER_READ
@@ -303,8 +350,8 @@
                    StandardOpenOption/WRITE]))
               assoc-failure
               (try
-                (assoc staged :file-specs {} :file-records {})
-                ::unexpected-success
+                (let [_ (assoc staged :file-specs {} :file-records {})]
+                  ::unexpected-success)
                 (catch ClassCastException _ :rejected))
               data
               (failure-data

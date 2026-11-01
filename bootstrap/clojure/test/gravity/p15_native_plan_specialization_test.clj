@@ -2,17 +2,22 @@
   "Focused evidence for authenticated plan-specialized C artifacts.
 
   The namespace consumes real stage2 runtime packets and executes a
-  Gravity-authored C-emitter helper through the bounded Clojure rule-runner
+  Gravity-authored C-emitter helper through the Clojure rule-runner
   seam. Tests compile/run the returned C source only inside a test-owned
   private root; production does not expose a second process runner.
   "
   (:require [clojure.test :refer [deftest is testing run-tests]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.p15-native-plan-specialization :as specialization])
+            [gravity.p15-native-plan-specialization :as specialization]
+            [gravity.p15-native-plan-specialization.contract :as contract]
+            [gravity.p15-native-plan-specialization.emission :as emission]
+            [gravity.p15-native-plan-specialization.plan-validation :as plan-validation]
+            [gravity.p15-native-plan-specialization.source-snapshot :as source-snapshot])
   (:import [java.nio ByteBuffer]
            [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file Files LinkOption OpenOption Path Paths]
-           [java.nio.file.attribute FileAttribute PosixFilePermissions]
+           [java.nio.file.attribute BasicFileAttributes FileAttribute
+            PosixFilePermissions]
            [java.util.concurrent TimeUnit]))
 
 (def ^:private compiler "/usr/bin/cc")
@@ -261,6 +266,25 @@
     (catch clojure.lang.ExceptionInfo error
       (:id (ex-data error)))))
 
+(defn- synthetic-stage2-runtime-kernel
+  [runtime-primitives]
+  (let [resolve-var (fn [name]
+                      (var-get (ns-resolve 'gravity.bootstrap name)))
+        required-instructions
+        (resolve-var 'p15-s23-stage2-runtime-kernel-required-instructions)]
+    {:engine :gravity-stage2-runtime-kernel-v1
+     :input :stage2-instruction-plan
+     :output :stage2-runtime-kernel-execution-record
+     :instruction-rules (zipmap required-instructions (repeat {}))
+     :runtime-primitives
+     {:engine :gravity-stage2-runtime-primitives-v1
+      :host-primitive-boundary :gravity-runtime-primitives
+      :functions runtime-primitives
+      :compiler-internal-builtin-arities
+      (resolve-var 'p15-s23-sh07-declared-builtin-exact-arities)
+      :compiler-internal-builtin-contracts
+      (resolve-var 'p15-s23-sh07-declared-builtin-contracts)}}))
+
 (defn- compile-and-run!
   [^Path directory generated-source]
   (let [source-path (.resolve directory "generated.c")
@@ -280,6 +304,232 @@
 
 (deftest fixed-real-packet-cache-is-bounded-and-source-coherent
   (assert-real-packet-cache-contract!))
+
+(deftest stage2-runtime-kernel-keeps-reader-bridge-outside-primitive-inventory
+  (let [stage0-builtins
+        (var-get (ns-resolve 'gravity.bootstrap 'stage0-builtin-functions))
+        reader-bridge 'build-read-declared-input
+        complete
+        (bootstrap/p15-s23-stage2-runtime-kernel-rule-record
+         (synthetic-stage2-runtime-kernel
+          (disj stage0-builtins reader-bridge)))
+        missing-ordinary-primitive
+        (bootstrap/p15-s23-stage2-runtime-kernel-rule-record
+         (synthetic-stage2-runtime-kernel
+          (disj stage0-builtins reader-bridge 'str)))]
+    (is (= :complete (:status complete)) complete)
+    (is (not (some #{reader-bridge}
+                   (:missing-runtime-primitives complete))) complete)
+    (is (= :failed (:status missing-ordinary-primitive))
+        missing-ordinary-primitive)
+    (is (= ['str] (:missing-runtime-primitives missing-ordinary-primitive))
+        missing-ordinary-primitive)))
+
+(deftest closed-runtime-plan-validation-keeps-real-shape-guards-without-node-quota
+  (let [plan {:entrypoint 'main
+              :functions
+              {'main {:arity 0
+                      :params []
+                      :instructions
+                      (vec (repeat 129 {:op :literal :value 1}))}}}
+        validation
+        (bootstrap/p15-s23-closed-runtime-plan-validation!
+         "synthetic-129-node.gravity" :c plan)
+        malformed
+        (assoc-in plan [:functions 'main :instructions 0 :op] :unknown)]
+    (is (= :complete (:status validation)) validation)
+    (is (= 129 (:node-count validation)) validation)
+    (is (not (contains? validation :maximum-nodes)) validation)
+    (is (not (contains? validation :maximum-depth)) validation)
+    (is (= "P15S23X002"
+           (diagnostic-id
+            #(bootstrap/p15-s23-closed-runtime-plan-validation!
+              "malformed-unknown-op.gravity" :c malformed))))))
+
+(deftest deep-closed-runtime-type-inference-is-iterative
+  (let [depth 10000
+        nested-if
+        (reduce
+          (fn [inner _]
+            {:op :if
+             :test {:op :literal :value true}
+             :then inner
+             :else {:op :literal :value 1}})
+          {:op :literal :value 1}
+          (range depth))
+        plan {:entrypoint 'main
+              :functions
+              {'main {:arity 0
+                      :params []
+                      :instructions
+                      [{:op :let
+                        :bindings [{:name 'value :expr nested-if}]
+                        :body [{:op :println
+                                :args [{:op :literal :value "deep"}]
+                                :effect :io/write
+                                :capability :io/stdout}]}]}}}
+        validation
+        (bootstrap/p15-s23-closed-runtime-plan-validation!
+          "deep-inferred-type.gravity" :c plan)
+        malformed (assoc nested-if :else nil)
+        malformed-plan (assoc-in plan
+                                 [:functions 'main :instructions 0
+                                  :bindings 0 :expr]
+                                 malformed)]
+    (is (= :complete (:status validation)) validation)
+    (is (= :gravity/integer
+           (bootstrap/p15-s23-closed-runtime-inferred-type
+             nested-if {} 0)))
+    (is (= "P15S23X002"
+           (diagnostic-id
+             #(bootstrap/p15-s23-closed-runtime-plan-validation!
+                "deep-malformed-if.gravity" :c malformed-plan))))))
+
+(deftest deep-helper-safety-proof-is-iterative
+  (let [depth 10000
+        nested-do
+        (reduce
+          (fn [inner _]
+            {:op :do :body [inner]})
+          {:op :println
+           :args [{:op :literal :value "deep"}]}
+          (range depth))
+        plan {:entrypoint 'main
+              :functions {'main {:instructions [nested-do]}}}
+        proof (contract/helper-safety-proof plan :test-helper)
+        malformed (assoc nested-do :body [{:op :unsupported}])
+        malformed-proof
+        (contract/helper-safety-proof
+          {:entrypoint 'main
+           :functions {'main {:instructions [malformed]}}}
+          :test-helper)
+        nil-child-proof
+        (contract/helper-safety-proof
+          {:entrypoint 'main
+           :functions {'main {:instructions [{:op :do :body [nil]}]}}}
+          :test-helper)
+        false-child-proof
+        (contract/helper-safety-proof
+          {:entrypoint 'main
+           :functions {'main {:instructions [{:op :do :body [false]}]}}}
+          :test-helper)]
+    (is (true? (:safe? proof)) proof)
+    (is (= :test-helper (get-in proof [:facts :contract])) proof)
+    (is (false? (:safe? malformed-proof)) malformed-proof)
+    (is (= :gravity-c-emitter-printable-ascii-subset
+           (get-in malformed-proof [:facts :missing-fact]))
+        malformed-proof)
+    (is (false? (:safe? nil-child-proof)) nil-child-proof)
+    (is (false? (:safe? false-child-proof)) false-child-proof)))
+
+(deftest closed-core-value-domain-accepts-former-scalar-limits
+  (let [large-string (apply str (repeat (inc (* 8 1024 1024)) "x"))
+        large-integer (.shiftLeft java.math.BigInteger/ONE 257)
+        value {:string large-string :integer large-integer}]
+    (is (= :passed
+           (:status
+            (bootstrap/p15-s23-closed-core-value-domain!
+             "large-value.gravity" value))))))
+
+(deftest closed-core-form-indexes-accept-form-tree-over-former-limit
+  (let [forms (vec (map (fn [form-id]
+                          {:form-id form-id :children []})
+                        (range 2049)))
+        indexes (bootstrap/p15-s23-closed-core-form-indexes
+                 "large-form-tree.gravity" forms [0])]
+    (is (= 2049 (count (:form-by-id indexes))))
+    (is (= [0] (get-in indexes [:structural-path-by-id 0])))
+    (is (= "C6-ORIGIN"
+           (diagnostic-id
+            #(bootstrap/p15-s23-closed-core-form-indexes
+              "missing-form.gravity" forms [2049]))))))
+
+(deftest former-accounting-allowances-do-not-reject-valid-plan-data
+  (let [large-scalar (apply str (repeat 1025 "a"))
+        large-generated-source (apply str (repeat 65537 "c"))
+        large-output (apply str (repeat 8193 "o"))
+        plan {:entrypoint 'main
+              :functions {'main {:arity 0
+                                 :instructions
+                                 (vec (repeat 129
+                                               {:op :literal
+                                                :value large-scalar}))}}}
+        reject (fn [source-path message facts]
+                 (throw (ex-info message (assoc facts
+                                                :source-path source-path))))]
+    (is (nil? (plan-validation/validate-plan-shape!
+               "synthetic" plan reject)))
+    (is (= :passed
+           (bootstrap/c-backend-validate-runtime-plan!
+            "synthetic" :c plan)))
+    ;; The helper execution is stubbed only to isolate the output admission
+    ;; seam.  Plan legality above still runs through the public C validator.
+    (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                  (fn [& _]
+                    {:status :complete
+                     :contract :p15-test-helper
+                     :implementation :gravity-source
+                     :source large-generated-source})]
+      (let [emitted (emission/validate-and-emit!
+                     {:plan plan :reference-output large-output}
+                     {:source-path "synthetic"}
+                     {:validate-plan-shape!
+                      #(plan-validation/validate-plan-shape!
+                        %1 %2 reject)
+                      :compile-helper! (fn [_] {:plan :helper})
+                      :helper-safety-proof
+                      (fn [_] {:safe? true :facts {}})
+                      :helper-contract :p15-test-helper
+                      :helper-function 'p15-test-helper
+                      :utf8-bytes
+                      (fn [value]
+                        (.getBytes ^String (str value)
+                                   StandardCharsets/UTF_8))
+                      :unsupported-fail! reject
+                      :helper-contract-fail! reject
+                      :helper-rejected-fail! reject
+                      :authentication-fail! reject})]
+        (is (= large-output (:expected-output emitted)))
+        (is (= 8193
+               (alength (.getBytes large-output StandardCharsets/UTF_8))))
+        (is (= 65537
+               (alength (.getBytes large-generated-source
+                                   StandardCharsets/UTF_8))))
+        (is (= large-generated-source (:source emitted)))))))
+
+(deftest helper-source-snapshot-accepts-source-over-former-quota
+  (let [payload (apply str (repeat 65537 "a"))
+        temporary (Files/createTempFile
+                   "gravity-p15-large-helper-"
+                   ".gravity"
+                   (make-array FileAttribute 0))
+        reject (fn [source-path message facts]
+                 (throw (ex-info message (assoc facts
+                                                :source-path source-path))))]
+    (try
+      (Files/write temporary
+                   (.getBytes payload StandardCharsets/UTF_8)
+                   (make-array OpenOption 0))
+      (let [attributes (Files/readAttributes temporary
+                                              BasicFileAttributes
+                                              no-follow-options)
+            snapshot (source-snapshot/helper-source-snapshot!
+                      "synthetic"
+                      {:helper-source-path!
+                       (fn [_] {:source-path temporary
+                                :attributes attributes})
+                       :strict-utf8
+                       (fn [source-path source bytes]
+                         (source-snapshot/strict-utf8
+                          source-path source bytes reject))
+                       :no-follow-options no-follow-options
+                       :helper-contract-fail! reject})]
+        (is (= 65537 (:source-byte-count snapshot)))
+        (is (= payload (:source-text snapshot)))
+        (is (re-matches #"sha256:[0-9a-f]{64}"
+                        (:source-content-hash snapshot))))
+      (finally
+        (Files/deleteIfExists temporary)))))
 
 (deftest authenticated-gravity-and-qst-packets-emit-and-run
   (if-not (arm64-darwin-toolchain-available?)
@@ -401,36 +651,6 @@
              (diagnostic-id
               #(specialization/specialize-native-runtime-plan
                 packet context))))
-      (is (zero? @helper-loader-calls)))))
-
-(deftest overbound-packet-tamper-rejects-before-validator
-  (let [relative (fixture-relative "accepted-print.gravity")
-        {:keys [packet context]} (real-packet relative)
-        entrypoint (:entrypoint (:plan packet))
-        instructions (get-in packet [:plan :functions entrypoint :instructions])
-        overbound-packet
-        (assoc-in packet [:plan :functions entrypoint :instructions]
-                  (vec (concat instructions (repeat 128 (first instructions)))))
-        validator (var-get #'bootstrap/c-backend-validate-runtime-plan!)
-        validator-calls (atom 0)
-        helper-loader (var-get
-                       #'specialization/*p15-native-plan-c-emitter-source-loader*)
-        helper-loader-calls (atom 0)]
-    (is (= 1 (get @*real-packet-derivation-counts* relative))
-        "the repeated accepted-print access reuses the first derivation")
-    (with-redefs [bootstrap/c-backend-validate-runtime-plan!
-                  (fn [& args]
-                    (swap! validator-calls inc)
-                    (apply validator args))
-                  specialization/*p15-native-plan-c-emitter-source-loader*
-                  (fn [& args]
-                    (swap! helper-loader-calls inc)
-                    (apply helper-loader args))]
-      (is (= "P15NS001"
-             (diagnostic-id
-              #(specialization/specialize-native-runtime-plan
-                overbound-packet context))))
-      (is (zero? @validator-calls))
       (is (zero? @helper-loader-calls)))))
 
 (deftest authenticated-validator-accepted-unsupported-helper-values-reject

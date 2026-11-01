@@ -209,7 +209,15 @@
         type {:kind :gravity.type/set :shape :literal :element-types (vec (repeat 1025 :gravity.type/string))}]
     (is (= {:status :accepted :constructors {:set-literal 1}}
            (invoke 'runtime-validate-initializer instruction)))
-    (is (= :accepted (:status (census (initializer-plan instruction type))))))
+    ;; Current collection validation and execution also have no size quota.
+    (let [plan (initializer-plan instruction type)
+          checked (census plan)
+          result (execute plan)
+          expected (set values)]
+      (is (= :accepted (:status checked)))
+      (is (= :complete (:status result)))
+      (is (true? (= [expected expected] (:entrypoint-result result))))
+      (is (= "" (:stdout result)))))
   (doseq [[value element duplicate-reason]
           [[:same :gravity.type/keyword :duplicate-set-literal-keyword]
            ["same" :gravity.type/string :duplicate-set-literal-string]]]
@@ -225,7 +233,9 @@
           evaluated (invoke 'p15-s23-runtime-evaluate-closed-instruction instruction {} "")]
       (is (= {:status :accepted :constructors {:set-literal 1}}
              (invoke 'runtime-validate-initializer instruction)))
-      (is (= [#{value} "" :normal] evaluated)))))
+      (is (= :normal (get evaluated 2)))
+      (is (true? (= #{value} (get evaluated 0))))
+      (is (= "" (get evaluated 1))))))
 
 (deftest set-literal-construction-has-no-width-or-content-allowance
   (doseq [[family values constructor]
@@ -238,10 +248,10 @@
           built (invoke constructor values)
           actual (invoke 'p15-s23-runtime-evaluate-closed-instruction instruction {} "")]
       (is (= :accepted (:status built)))
-      (is (= (count values) (:input-element-count built) (:insertions built)))
       (is (true? (= (set values) (:value built))))
       (is (true? (= [(set values) "" :normal] actual)))
-      (is (not-any? #(contains? built %) [:work-count :work-count-kind :representation-units :value-work-model]))
+      (is (not-any? #(contains? built %) [:work-count :work-count-kind :representation-units :value-work-model
+                                        :input-element-count :comparison-attempts :insertions]))
       (if (contains? #{:gravity.type/string :gravity.type/keyword} family)
         (let [plan (initializer-plan instruction type)
               checked (census plan) result (execute plan)]
@@ -281,8 +291,7 @@
             input [foreign-vector [foreign-map] [opaque] [cycle] invalid-view
                    (with-meta [:valid] {:hidden opaque})]]
       (let [result (invoke constructor input)]
-        (is (= :set-literal-native-data-required (:reason result)))
-        (is (= 0 (:comparison-attempts result) (:insertions result)))))
+        (is (= :set-literal-native-data-required (:reason result)))))
     (doseq [changed [foreign-map (assoc definition :type foreign-map)
                     (assoc-in definition [:type :element-types] foreign-vector)
                     (assoc-in definition [:type :element-types] [cycle])
@@ -300,6 +309,5 @@
             input (vec (concat (repeat 1029 value) [opaque]))
             result (invoke constructor input)]
         ;; A late invalid member is rejected before the earlier duplicates compare.
-        (is (= :set-literal-native-data-required (:reason result)))
-        (is (= 0 (:comparison-attempts result) (:insertions result)))))
+        (is (= :set-literal-native-data-required (:reason result)))))
     (is (zero? @callbacks))))

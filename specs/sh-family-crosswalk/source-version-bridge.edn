@@ -1,0 +1,834 @@
+{:predecessor-review-receipt-sha256
+ "4a3734f269e33467d5757ff54c44f1ad4515c92def2784237211fc27bb3b7355",
+ :applying-main "4325a9f46292472a7f984c5adfef81209874bb5c",
+ :incoming-public-prs
+ ["https://github.com/burn2delete/uniform/pull/491"
+  "https://github.com/burn2delete/uniform/pull/493"
+  "https://github.com/burn2delete/uniform/pull/492"],
+ :historical-reader-suffix-unchanged true,
+ :predecessor-mapping-commit
+ "641346a7a70ad5ff97ac678304614875c19d2bc7",
+ :source-files
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "efbc7f069f39bcfe6ed93eb3d068a05a5e9032cd39c2784c419f883767d5f31d"},
+   :after
+   {:commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :sha256
+    "b2c0dd7f07918dcee4b3aa9fba8d853ebd0eb8317ef3f2262abf0a23e46cbd55"},
+   :qualification
+   "Updated C7 test-source locator only, still source-inspection-not-execution and current applicability unassessed."}
+  {:path "docs/component-roadmaps/reader.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "716551afd019f285028d36e388dc6df342e3e53907890a6f52b3c18b733c8dc3"},
+   :after
+   {:commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :sha256
+    "de240261bf8b37fb8bb9681efd80eebd75fb7b01bace55207740548d52e11c1d"},
+   :qualification
+   "Owning deterministic projection of that same record."}
+  {:path "docs/self-hosting-slice-ownership.edn",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "76519d59d399e1bb487ddbe5459757f6117050afaf648d444345025f4afc0217"},
+   :after
+   {:commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :sha256
+    "b873f4663d5c8d5248f50bb665a3cb612910a048806069dffc15323c7cfc2194"},
+   :qualification
+   "Adds ownership for the new Resolution parent-mutation test; existing reservations remain."}
+  {:path "specs/reader-workflow/tasks.md",
+   :before
+   {:commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c"},
+   :after
+   {:commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573"},
+   :qualification
+   "Same seven literal task IDs and acceptance predicates; one owner-accepted selected-current Reader record changes status/evidence."}],
+ :authority :source-conservation-only,
+ :conservation
+ "No original SH requirement, criterion/task ID, task acceptance predicate, historical record, native assessment, phase18 outcome, global source baseline or equivalence changes. All180 current whole-criterion acceptance states stay unassessed. Only the four named applying file pins plus the new Reader receipt are adopted; all other original pins remain.",
+ :new-evidence
+ [{:path
+   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md",
+   :commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+   :sha256
+   "1c879a874faa0b995c2ad5899bcbee9167d831d65203a5e6b38b2cda28599f91",
+   :implementation-commit "1d6c26812ce3f32edefb36b82a54317e2f739586",
+   :composition-commit "07e5a32d3f63b236fbd92a1f33b0c7a2995df66d",
+   :reviewed-final-head "dd044747cfa25ca58d35d1aed91387d9cf60ff34",
+   :scope
+   "Selected-current development-unadmitted decode/source-identity row only; original failures/nonexecution retained; no full Reader/C3/C5/C14/public admission."}],
+ :original-task-and-evidence-baseline
+ "254a5b50ea5e2825c424248c9216802cc866c0fd",
+ :pkg5-interface-successor
+ {:applying-main "68a127520c2465a90a4a9b06742cb58ebaffca77",
+  :applying-task-source "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+  :scope
+  "Existing Build resolver closing evidence only: yank/revocation policy, locked status/history, explicit historical rebuild exception and PKG5006. No implementation acceptance or GOV10 repair.",
+  :source-files
+  [{:path "specs/build-workflow/tasks.md",
+    :before
+    {:commit "68a127520c2465a90a4a9b06742cb58ebaffca77",
+     :sha256
+     "675a71a78bb4628fc680987cf7074047370f0bbec3e61d82e46e300cd79cb39e"},
+    :after
+    {:commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+     :sha256
+     "6c88f677477ec41d755dbedd39d1e03de7c9ae81cc9a956a48c8cf319bfca1b0"}}
+   {:path "docs/component-roadmaps/build.md",
+    :before
+    {:commit "68a127520c2465a90a4a9b06742cb58ebaffca77",
+     :sha256
+     "659119eb7896c78e377687aaae931d88040403d621d734918e7fdcf629a635b0"},
+    :after
+    {:commit "3bd7e21145dfe5d71f45375f6e787b384d361e2e",
+     :sha256
+     "6c323fdbff67d18fd000161d27e44da2a57734f9d4e52c6acde4127eaaf8dc04"}}],
+  :task-ids-and-open-statuses :unchanged,
+  :other-four-records :identical,
+  :source-review-backlogs
+  {:accepted-isolated 586, :proposed-unverified 470},
+  :global-missing-interface-census :577-not-recomputed},
+ :pr530-ownership-successor
+ {:candidate "979f0a469b1b0f76aee90a1cb0fe6ae23d5c120e",
+  :authority :source-conservation-only,
+  :added-entry
+  {:section :standalone-test-owners,
+   :path
+   "bootstrap/clojure/test/gravity/self_hosting/private_collection_chain_test.clj",
+   :value
+   {:namespace gravity.self-hosting.private-collection-chain-test,
+    :slice "SH-08",
+    :owner :sh-types}},
+  :predecessor-bridge-sha256
+  "006cb58d41aceb56446164d00e4bb28a55da81b013066aa1b4b8e8d5b78ab507",
+  :kind :pr530-ownership-source-version,
+  :source-file
+  {:path "docs/self-hosting-slice-ownership.edn",
+   :before
+   {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :sha256
+    "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6"},
+   :after
+   {:commit "979f0a469b1b0f76aee90a1cb0fe6ae23d5c120e",
+    :sha256
+    "472432fb5dc87ec3adc497b372a73d2199926d7327fc847223bde64eaa210de3"}},
+  :prior-ownership-entries-unchanged true,
+  :qualification
+  "PC test ownership registration only. No runtime-shape import, semantic execution, new mapping acceptance or whole-SH acceptance. All180 current whole-criterion states remain unassessed; independent successor review is pending.",
+  :predecessor-input-fingerprint
+  "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68",
+  :task-authorities-and-history-unchanged true,
+  :candidate-tree "14825393391799cb186ae7dd9485bd1dd8ab3958"},
+ :kind :sh-family-source-version-bridge,
+ :reader-records
+ [{:id "reader/finite-remaining-work/contract-coverage-reconciliation",
+   :before
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 1246,
+     :end-byte 1796,
+     :start-line 24,
+     :end-line 28,
+     :sha256
+     "5384b59a84c9b592f0afb5c024dad95945f27591a4732736a4431d3d21513134",
+     :raw
+     "- [ ] `reader/finite-remaining-work/contract-coverage-reconciliation` Contract coverage reconciliation\n\nCurrent evidence/status: Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures.\n\nDone when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :id
+    "reader/finite-remaining-work/contract-coverage-reconciliation",
+    :checked false},
+   :after
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 1246,
+     :end-byte 1796,
+     :start-line 24,
+     :end-line 28,
+     :sha256
+     "5384b59a84c9b592f0afb5c024dad95945f27591a4732736a4431d3d21513134",
+     :raw
+     "- [ ] `reader/finite-remaining-work/contract-coverage-reconciliation` Contract coverage reconciliation\n\nCurrent evidence/status: Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures.\n\nDone when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :id
+    "reader/finite-remaining-work/contract-coverage-reconciliation",
+    :checked false},
+   :raw-unchanged true,
+   :acceptance-predicate-unchanged true}
+  {:id
+   "reader/finite-remaining-work/decode-and-source-identity-closure",
+   :before
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 1798,
+     :end-byte 2274,
+     :start-line 30,
+     :end-line 34,
+     :sha256
+     "e8422983b622ccc90644e8af6bbe9623da877d9d2150f7470c020f2c88d23a1c",
+     :raw
+     "- [ ] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure\n\nCurrent evidence/status: Partial; the linked pilot verifies paired source bytes/paths and strict decoding controls, not the complete span/options population.\n\nDone when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :id
+    "reader/finite-remaining-work/decode-and-source-identity-closure",
+    :checked false},
+   :after
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 1798,
+     :end-byte 3103,
+     :start-line 30,
+     :end-line 34,
+     :sha256
+     "10181f7316b5ed1f0d8afd76186c03c14b41abe4cd1b2f602ae046ac9b17ba5f",
+     :raw
+     "- [x] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure\n\nCurrent evidence/status: Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.\n\nDone when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :id
+    "reader/finite-remaining-work/decode-and-source-identity-closure",
+    :checked true},
+   :raw-unchanged false,
+   :acceptance-predicate-unchanged true}
+  {:id
+   "reader/finite-remaining-work/lexical-products-and-origins-closure",
+   :before
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 2276,
+     :end-byte 2987,
+     :start-line 36,
+     :end-line 40,
+     :sha256
+     "fd51b82d9346211d0c30ea10a71b920fe988b3f119c6f8919fc11463f9c3b0e9",
+     :raw
+     "- [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure\n\nCurrent evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.\n\nDone when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :id
+    "reader/finite-remaining-work/lexical-products-and-origins-closure",
+    :checked false},
+   :after
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 3105,
+     :end-byte 3816,
+     :start-line 36,
+     :end-line 40,
+     :sha256
+     "fd51b82d9346211d0c30ea10a71b920fe988b3f119c6f8919fc11463f9c3b0e9",
+     :raw
+     "- [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure\n\nCurrent evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.\n\nDone when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :id
+    "reader/finite-remaining-work/lexical-products-and-origins-closure",
+    :checked false},
+   :raw-unchanged true,
+   :acceptance-predicate-unchanged true}
+  {:id "reader/finite-remaining-work/extension-policy-closure",
+   :before
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 2989,
+     :end-byte 3400,
+     :start-line 42,
+     :end-line 46,
+     :sha256
+     "617e72d76b63149f625c7d78a1f17fac4780b95dae2fe2527451e0e4647cf2af",
+     :raw
+     "- [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure\n\nCurrent evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.\n\nDone when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :id "reader/finite-remaining-work/extension-policy-closure",
+    :checked false},
+   :after
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 3818,
+     :end-byte 4229,
+     :start-line 42,
+     :end-line 46,
+     :sha256
+     "617e72d76b63149f625c7d78a1f17fac4780b95dae2fe2527451e0e4647cf2af",
+     :raw
+     "- [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure\n\nCurrent evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.\n\nDone when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :id "reader/finite-remaining-work/extension-policy-closure",
+    :checked false},
+   :raw-unchanged true,
+   :acceptance-predicate-unchanged true}
+  {:id
+   "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+   :before
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 3402,
+     :end-byte 3986,
+     :start-line 48,
+     :end-line 52,
+     :sha256
+     "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+     :raw
+     "- [ ] `reader/finite-remaining-work/authentication-and-quota-removal-closure` Authentication and quota-removal closure\n\nCurrent evidence/status: Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open.\n\nDone when (yes/no): Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :id
+    "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+    :checked false},
+   :after
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 4231,
+     :end-byte 4815,
+     :start-line 48,
+     :end-line 52,
+     :sha256
+     "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+     :raw
+     "- [ ] `reader/finite-remaining-work/authentication-and-quota-removal-closure` Authentication and quota-removal closure\n\nCurrent evidence/status: Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open.\n\nDone when (yes/no): Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :id
+    "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+    :checked false},
+   :raw-unchanged true,
+   :acceptance-predicate-unchanged true}
+  {:id "reader/finite-remaining-work/fresh-syntax-handoff",
+   :before
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 3988,
+     :end-byte 5092,
+     :start-line 54,
+     :end-line 58,
+     :sha256
+     "2c49f48824c011e20bb47d9311082042f382271c14fc40ead8fa325e8db475ab",
+     :raw
+     "- [x] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff\n\nCurrent evidence/status: Accepted; selected-current, development-unadmitted boundary in the [finite family reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-fresh-syntax-row-20261027/docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md). Exact candidate `bcf9c72e` / tree `6043bc1d` completed four genuine constructions and fresh owner controls; independent review accepted scoped attribution while preserving the combined natural-exit-1 context failure (26 tests, 733 passes, one failure). Separate compiler-free composition passed 19 tests / 106 assertions on the same identity. PR471/478 retain their original span/provenance and ratio evidence. Other Reader rows, canonical Syntax generated-graph coverage, public admission, C5 and C14 remain open.\n\nDone when (yes/no): Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :id "reader/finite-remaining-work/fresh-syntax-handoff",
+    :checked true},
+   :after
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 4817,
+     :end-byte 5921,
+     :start-line 54,
+     :end-line 58,
+     :sha256
+     "2c49f48824c011e20bb47d9311082042f382271c14fc40ead8fa325e8db475ab",
+     :raw
+     "- [x] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff\n\nCurrent evidence/status: Accepted; selected-current, development-unadmitted boundary in the [finite family reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-fresh-syntax-row-20261027/docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md). Exact candidate `bcf9c72e` / tree `6043bc1d` completed four genuine constructions and fresh owner controls; independent review accepted scoped attribution while preserving the combined natural-exit-1 context failure (26 tests, 733 passes, one failure). Separate compiler-free composition passed 19 tests / 106 assertions on the same identity. PR471/478 retain their original span/provenance and ratio evidence. Other Reader rows, canonical Syntax generated-graph coverage, public admission, C5 and C14 remain open.\n\nDone when (yes/no): Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :id "reader/finite-remaining-work/fresh-syntax-handoff",
+    :checked true},
+   :raw-unchanged true,
+   :acceptance-predicate-unchanged true}
+  {:id "reader/finite-remaining-work/component-release-evidence",
+   :before
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "5acc60b5172a606381c8b37588511beb32d4deb73e1f4bde53a9fa06a72c7f6c",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 5094,
+     :end-byte 5545,
+     :start-line 60,
+     :end-line 64,
+     :sha256
+     "c73c7accbc926ef3bf7eec96e9b695b3a00d19bb5156fece1e62d01d3de84cb1",
+     :raw
+     "- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence\n\nCurrent evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.\n\nDone when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd",
+    :id "reader/finite-remaining-work/component-release-evidence",
+    :checked false},
+   :after
+   {:path "specs/reader-workflow/tasks.md",
+    :file-sha256
+    "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+    :authority :component-implementation-ledger,
+    :source
+    {:path "specs/reader-workflow/tasks.md",
+     :start-byte 5923,
+     :end-byte 6374,
+     :start-line 60,
+     :end-line 64,
+     :sha256
+     "c73c7accbc926ef3bf7eec96e9b695b3a00d19bb5156fece1e62d01d3de84cb1",
+     :raw
+     "- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence\n\nCurrent evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.\n\nDone when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome."},
+    :owner-source "docs/component-roadmaps/reader.md",
+    :component "reader",
+    :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+    :id "reader/finite-remaining-work/component-release-evidence",
+    :checked false},
+   :raw-unchanged true,
+   :acceptance-predicate-unchanged true}],
+ :current-main-successor
+ {:applying-main "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+  :historical-reader-suffix-unchanged true,
+  :source-files
+  [{:path "specs/reader-workflow/tasks.md",
+    :before
+    {:commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573"},
+    :after
+    {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75"}}
+   {:path "docs/component-roadmaps/reader.md",
+    :before
+    {:commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :sha256
+     "de240261bf8b37fb8bb9681efd80eebd75fb7b01bace55207740548d52e11c1d"},
+    :after
+    {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :sha256
+     "f8d579d2f4411e6c340447a579768834fc3eeef7875de9f5af8deee28a1521e0"}}
+   {:path "docs/self-hosting-slice-ownership.edn",
+    :before
+    {:commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :sha256
+     "b873f4663d5c8d5248f50bb665a3cb612910a048806069dffc15323c7cfc2194"},
+    :after
+    {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :sha256
+     "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6"}}],
+  :new-evidence
+  {:path
+   "docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md",
+   :commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+   :sha256
+   "6bf8d0fce1744526f500857eedfd03f11138ee4b0941c49ab787e5dacb5ba5d6"},
+  :incoming-public-pr
+  "https://github.com/burn2delete/uniform/pull/496",
+  :predecessor-bridge-sha256
+  "f830cf1ec4a496a596cacca2ce136b69e19ef5553571d5fcbc05ff980fe9e599",
+  :qualification
+  "Only the existing Reader lexical-products/origins record is owner-accepted at its enabled selected-current boundary. All seven predicates and six other raw blocks are unchanged. Ownership adds the SH05 macro-run-storage helper association and module owner plus four auxiliary Reader/Syntax leaf-test associations; primary component pairs and existing reservations remain unchanged. Source-only test locators keep their original inspected pins, not current execution credit. All180 whole SH acceptance states remain unassessed.",
+  :reader-task-comparisons
+  [{:id
+    "reader/finite-remaining-work/contract-coverage-reconciliation",
+    :before
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 1246,
+      :end-byte 1796,
+      :start-line 24,
+      :end-line 28,
+      :sha256
+      "5384b59a84c9b592f0afb5c024dad95945f27591a4732736a4431d3d21513134",
+      :raw
+      "- [ ] `reader/finite-remaining-work/contract-coverage-reconciliation` Contract coverage reconciliation\n\nCurrent evidence/status: Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures.\n\nDone when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :id
+     "reader/finite-remaining-work/contract-coverage-reconciliation",
+     :checked false},
+    :after
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 1246,
+      :end-byte 1796,
+      :start-line 24,
+      :end-line 28,
+      :sha256
+      "5384b59a84c9b592f0afb5c024dad95945f27591a4732736a4431d3d21513134",
+      :raw
+      "- [ ] `reader/finite-remaining-work/contract-coverage-reconciliation` Contract coverage reconciliation\n\nCurrent evidence/status: Open; source leaves above and the two governing contracts exist. Reader maintainer records each literal, abbreviation, namespace shape, extension and output against actual implementation and fixtures.\n\nDone when (yes/no): Every required surface/output has a concrete implementation location and accepted/rejected fixture, or an explicit failing case in the implementation change; no omitted family can be marked complete."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :id
+     "reader/finite-remaining-work/contract-coverage-reconciliation",
+     :checked false},
+    :acceptance-predicate-unchanged true,
+    :raw-unchanged true}
+   {:id
+    "reader/finite-remaining-work/decode-and-source-identity-closure",
+    :before
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 1798,
+      :end-byte 3103,
+      :start-line 30,
+      :end-line 34,
+      :sha256
+      "10181f7316b5ed1f0d8afd76186c03c14b41abe4cd1b2f602ae046ac9b17ba5f",
+      :raw
+      "- [x] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure\n\nCurrent evidence/status: Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.\n\nDone when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :id
+     "reader/finite-remaining-work/decode-and-source-identity-closure",
+     :checked true},
+    :after
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 1798,
+      :end-byte 3103,
+      :start-line 30,
+      :end-line 34,
+      :sha256
+      "10181f7316b5ed1f0d8afd76186c03c14b41abe4cd1b2f602ae046ac9b17ba5f",
+      :raw
+      "- [x] `reader/finite-remaining-work/decode-and-source-identity-closure` Decode and source identity closure\n\nCurrent evidence/status: Accepted; the [selected-current decoding and identity reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-decode-source-identity-20261027/docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md) covers both extensions, mixed newlines and Unicode spans, explicit roots/options, five malformed UTF-8 families and a genuine second process in a different working directory. Exact `1d6c2681` / tree `7e77bab3` passed population 2 tests / 2,712 assertions and foreign-directory comparison 2 tests / 1,158 assertions; both exited naturally 0 with fresh Reader/envelope verification. Earlier foreign-directory failure and broker-admission nonexecution are preserved. Separate composed-tree controls passed 15 tests / 51 assertions on `07e5a32d` without source replay. Semantic identities match while real invocation-root provenance remains distinct. Public admission, other Reader rows and downstream C5/C14 acceptance remain open.\n\nDone when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :id
+     "reader/finite-remaining-work/decode-and-source-identity-closure",
+     :checked true},
+    :acceptance-predicate-unchanged true,
+    :raw-unchanged true}
+   {:id
+    "reader/finite-remaining-work/lexical-products-and-origins-closure",
+    :before
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 3105,
+      :end-byte 3816,
+      :start-line 36,
+      :end-line 40,
+      :sha256
+      "fd51b82d9346211d0c30ea10a71b920fe988b3f119c6f8919fc11463f9c3b0e9",
+      :raw
+      "- [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure\n\nCurrent evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.\n\nDone when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :id
+     "reader/finite-remaining-work/lexical-products-and-origins-closure",
+     :checked false},
+    :after
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 3105,
+      :end-byte 4420,
+      :start-line 36,
+      :end-line 40,
+      :sha256
+      "998960c40a18b5a4ca2e9d33391b1c1c04fd6a79696156f06355d340b3a5e6dd",
+      :raw
+      "- [x] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure\n\nCurrent evidence/status: Accepted; the [finite current lexical/origin reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-lexical-origin-closure-20261027/docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md) records the complete enabled collection/literal/abbreviation/metadata population, exact/deferred facts, trivia filtering, graph/origin joins and malformed numeric rejection. Exact `8a0d6a90` / tree `79ed93ab` passed seven genuine Reader calls in two tests / 6,241 assertions with fresh Reader/envelope checks; pure source-identity controls passed 9 tests / 146 assertions. Separate compiler-free composed-tree controls passed 20 tests / 169 assertions on `3b7c1280`. The earlier escape-offset baseline remains a nonpass. PR478/482/492 retain their original complementary evidence. New suffix grammars, extension authorization/effects, quota/authentication closure, release and downstream acceptance remain open.\n\nDone when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :id
+     "reader/finite-remaining-work/lexical-products-and-origins-closure",
+     :checked true},
+    :acceptance-predicate-unchanged true,
+    :raw-unchanged false}
+   {:id "reader/finite-remaining-work/extension-policy-closure",
+    :before
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 3818,
+      :end-byte 4229,
+      :start-line 42,
+      :end-line 46,
+      :sha256
+      "617e72d76b63149f625c7d78a1f17fac4780b95dae2fe2527451e0e4647cf2af",
+      :raw
+      "- [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure\n\nCurrent evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.\n\nDone when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :id "reader/finite-remaining-work/extension-policy-closure",
+     :checked false},
+    :after
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 4422,
+      :end-byte 4833,
+      :start-line 42,
+      :end-line 46,
+      :sha256
+      "617e72d76b63149f625c7d78a1f17fac4780b95dae2fe2527451e0e4647cf2af",
+      :raw
+      "- [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure\n\nCurrent evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.\n\nDone when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :id "reader/finite-remaining-work/extension-policy-closure",
+     :checked false},
+    :acceptance-predicate-unchanged true,
+    :raw-unchanged true}
+   {:id
+    "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+    :before
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 4231,
+      :end-byte 4815,
+      :start-line 48,
+      :end-line 52,
+      :sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :raw
+      "- [ ] `reader/finite-remaining-work/authentication-and-quota-removal-closure` Authentication and quota-removal closure\n\nCurrent evidence/status: Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open.\n\nDone when (yes/no): Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :id
+     "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+     :checked false},
+    :after
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 4835,
+      :end-byte 5419,
+      :start-line 48,
+      :end-line 52,
+      :sha256
+      "db8a627d604e28b23ecf78b37189511a0f432b466365f397cf7e438713fd21f4",
+      :raw
+      "- [ ] `reader/finite-remaining-work/authentication-and-quota-removal-closure` Authentication and quota-removal closure\n\nCurrent evidence/status: Partial; merged current invocation and default/source-drift/tamper controls are evidenced by the pilot. The complete Reader fixture population remains open.\n\nDone when (yes/no): Original-source reconstruction rejects substituted/missing/duplicated graph references and stale hashes while accepting otherwise valid input without project accounting refusals. Real machine failure is reported as failure, not semantic rejection or acceptance."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :id
+     "reader/finite-remaining-work/authentication-and-quota-removal-closure",
+     :checked false},
+    :acceptance-predicate-unchanged true,
+    :raw-unchanged true}
+   {:id "reader/finite-remaining-work/fresh-syntax-handoff",
+    :before
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 4817,
+      :end-byte 5921,
+      :start-line 54,
+      :end-line 58,
+      :sha256
+      "2c49f48824c011e20bb47d9311082042f382271c14fc40ead8fa325e8db475ab",
+      :raw
+      "- [x] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff\n\nCurrent evidence/status: Accepted; selected-current, development-unadmitted boundary in the [finite family reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-fresh-syntax-row-20261027/docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md). Exact candidate `bcf9c72e` / tree `6043bc1d` completed four genuine constructions and fresh owner controls; independent review accepted scoped attribution while preserving the combined natural-exit-1 context failure (26 tests, 733 passes, one failure). Separate compiler-free composition passed 19 tests / 106 assertions on the same identity. PR471/478 retain their original span/provenance and ratio evidence. Other Reader rows, canonical Syntax generated-graph coverage, public admission, C5 and C14 remain open.\n\nDone when (yes/no): Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :id "reader/finite-remaining-work/fresh-syntax-handoff",
+     :checked true},
+    :after
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 5421,
+      :end-byte 6525,
+      :start-line 54,
+      :end-line 58,
+      :sha256
+      "2c49f48824c011e20bb47d9311082042f382271c14fc40ead8fa325e8db475ab",
+      :raw
+      "- [x] `reader/finite-remaining-work/fresh-syntax-handoff` Fresh Syntax handoff\n\nCurrent evidence/status: Accepted; selected-current, development-unadmitted boundary in the [finite family reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-fresh-syntax-row-20261027/docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md). Exact candidate `bcf9c72e` / tree `6043bc1d` completed four genuine constructions and fresh owner controls; independent review accepted scoped attribution while preserving the combined natural-exit-1 context failure (26 tests, 733 passes, one failure). Separate compiler-free composition passed 19 tests / 106 assertions on the same identity. PR471/478 retain their original span/provenance and ratio evidence. Other Reader rows, canonical Syntax generated-graph coverage, public admission, C5 and C14 remain open.\n\nDone when (yes/no): Fresh Syntax consumes actual Reader output for accepted and malformed/tampered cases, preserves spans/metadata/origins and reports owning-stage failures. No cached historical pass grants authority to this run."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :id "reader/finite-remaining-work/fresh-syntax-handoff",
+     :checked true},
+    :acceptance-predicate-unchanged true,
+    :raw-unchanged true}
+   {:id "reader/finite-remaining-work/component-release-evidence",
+    :before
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 5923,
+      :end-byte 6374,
+      :start-line 60,
+      :end-line 64,
+      :sha256
+      "c73c7accbc926ef3bf7eec96e9b695b3a00d19bb5156fece1e62d01d3de84cb1",
+      :raw
+      "- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence\n\nCurrent evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.\n\nDone when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "4325a9f46292472a7f984c5adfef81209874bb5c",
+     :id "reader/finite-remaining-work/component-release-evidence",
+     :checked false},
+    :after
+    {:path "specs/reader-workflow/tasks.md",
+     :file-sha256
+     "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75",
+     :authority :component-implementation-ledger,
+     :source
+     {:path "specs/reader-workflow/tasks.md",
+      :start-byte 6527,
+      :end-byte 6978,
+      :start-line 60,
+      :end-line 64,
+      :sha256
+      "c73c7accbc926ef3bf7eec96e9b695b3a00d19bb5156fece1e62d01d3de84cb1",
+      :raw
+      "- [ ] `reader/finite-remaining-work/component-release-evidence` Component release evidence\n\nCurrent evidence/status: Open; the accepted finite invocation receipt is not the complete Reader release outcome.\n\nDone when (yes/no): Owner supplies immutable source/fixture/runtime identities, complete surface results, diagnostic goldens, fresh handoff and residual-boundary statement; independent review and Deus disposition explicitly accept this outcome."},
+     :owner-source "docs/component-roadmaps/reader.md",
+     :component "reader",
+     :source-commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+     :id "reader/finite-remaining-work/component-release-evidence",
+     :checked false},
+    :acceptance-predicate-unchanged true,
+    :raw-unchanged true}],
+  :predecessor-bridge-commit
+  "8291463214306d4a1e0541b9d8fd8ecb4b0b2750"}
+ :native-v2-ownership-successor
+ {:source-commit "1dc2471f87f2d0915e9dd003bf420254759ee031",
+ :candidate "dced564a20c175b95dcb919459c3e673a4ca7ade",
+ :source-files
+ [{:path "docs/self-hosting-slice-ownership.edn",
+   :before
+   {:commit "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7",
+    :sha256
+    "7b08322372e708f4c27b19d82865e1e1af6b44e423e4af6dbb8a65a19d4bae97"},
+   :after
+   {:commit "1dc2471f87f2d0915e9dd003bf420254759ee031",
+    :sha256
+     "652dfa0eb3ab6852f64e67e02541ab57aeb4eca064608a3813a5bc5ea2b84e79"}}],
+ :historical-v2-source-tuple
+ {:core "0e7e30e1",
+  :mir "c41d9e03",
+  :reader "a74e3d1d",
+  :emitter "be4ba460",
+  :expression "23d49699"},
+ :evidence-reuse
+ "Original v2 receipts retain original physical inputs and execution identities. This metadata bridge does not establish conservation of the current execution closure or new semantic execution.",
+ :scope
+ "Paired source-interface-header source/test ownership and standalone namespace registration from PR453, adopted as the pure selector prerequisite with all current main owners. Stable task IDs, predicates and historical review records remain unchanged.",
+ :acceptance :source-conservation-only,
+ :status :pending-independent-source-version-review,
+ :kind :native-v2-ownership-source-version-bridge,
+ :incoming-main "60f59d225b03338eb30cdc22850838ecebd07303",
+ :latest-source-and-v3-admission false}
+}

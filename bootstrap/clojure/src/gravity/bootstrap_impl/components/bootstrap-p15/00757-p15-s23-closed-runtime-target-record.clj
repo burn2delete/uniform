@@ -13,8 +13,7 @@
         validation-product
         (assoc (select-keys validation
                             [:artifact :status :entrypoint :operation-set
-                             :observed-operation-set
-                             :maximum-depth :maximum-nodes])
+                             :observed-operation-set])
                :plan-id (:plan-id invocation))
         validation-hash
         (str "sha256:"

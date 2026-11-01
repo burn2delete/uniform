@@ -52,7 +52,7 @@
     (false? form) :boolean
     (integer? form) :integer
     (ratio? form) :ratio
-    (float? form) :decimal
+    (or (float? form) (decimal? form)) :decimal
     (string? form) :string
     (char? form) :character
     (symbol? form) :symbol

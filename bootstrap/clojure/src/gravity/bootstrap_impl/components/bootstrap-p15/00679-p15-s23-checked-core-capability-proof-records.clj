@@ -192,7 +192,7 @@
        (<= (count source-path) 4096)
        (= :valid
           (:status
-           (p15-s23-closed-core-bounded-utf8-count source-path 16384)))))
+           (p15-s23-closed-core-diagnostic-utf8-count source-path 16384)))))
 
 (defn p15-s23-checked-core-authority-small-map?
   [value maximum-count]

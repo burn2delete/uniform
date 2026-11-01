@@ -50,9 +50,7 @@
 (def p15-s23-stage2-runtime-artifact-required-capabilities
   #{:memory/allocator :io/stdout})
 
-(declare p15-s23-closed-runtime-max-depth
-         p15-s23-closed-runtime-max-nodes
-         p15-s23-closed-runtime-plan-validation!)
+(declare p15-s23-closed-runtime-plan-validation!)
 
 (def p15-s23-stage2-runtime-artifact-required-function-shape
   {:arity 1

@@ -2,156 +2,27 @@
 
 (defn jvm-backend-value-source
   [instruction counter indent env]
-  (let [padding (apply str (repeat indent "  "))
-        op (:op instruction)]
-    (cond
-      (#{:literal :quote} op)
-      (let [{:keys [source descriptor]}
-            (jvm-backend-value-declaration instruction counter indent)]
-        (str source (jvm-backend-write-source descriptor indent)))
-
-      (= :local op)
-      (jvm-backend-write-source (get env (:name instruction)) indent)
-
-      (= :builtin-call op)
-      (apply str
-             (map #(jvm-backend-value-source % counter indent env)
-                  (:args instruction)))
-
-      (= :if op)
-      (str padding "if ("
-           (jvm-backend-test-source (:test instruction) env)
-           ") {\n"
-           (jvm-backend-value-source (:then instruction) counter
-                                     (inc indent) env)
-           padding "} else {\n"
-           (jvm-backend-value-source (:else instruction) counter
-                                     (inc indent) env)
-           padding "}\n")
-
-      (= :let op)
-      (let [binding-state
-            (reduce (fn [state {:keys [name expr]}]
-                      (let [{:keys [source descriptor]}
-                            (jvm-backend-value-declaration
-                             expr counter indent)]
-                        {:source (str (:source state) source)
-                         :env (assoc (:env state) name descriptor)}))
-                    {:source "" :env env}
-                    (:bindings instruction))]
-        (str (:source binding-state)
-             (jvm-backend-value-source
-              (first (:body instruction)) counter indent
-              (:env binding-state))))
-
-      :else "")))
+  (gravity.backend.jvm/value-source #'jvm-backend-value-declaration #'jvm-backend-write-source #'jvm-backend-test-source #'jvm-backend-value-source instruction counter indent env))
 
 (defn jvm-backend-instruction-source
   ([instruction counter indent]
-   (jvm-backend-instruction-source instruction counter indent {}))
+   (gravity.backend.jvm/instruction-source #'jvm-backend-byte-array-source #'jvm-backend-write-source #'jvm-backend-value-source #'jvm-backend-test-source #'jvm-backend-value-declaration #'jvm-backend-instruction-source instruction counter indent))
   ([instruction counter indent env]
-   (let [padding (apply str (repeat indent "  "))
-         op (:op instruction)]
-     (cond
-       (#{:literal :quote :local} op) ""
-
-       (= :println op)
-       (str (apply str
-                   (map-indexed
-                    (fn [index argument]
-                      (str (when (pos? index)
-                             (let [name (str "gravitySpace"
-                                             (swap! counter inc))]
-                               (str (jvm-backend-byte-array-source
-                                     name [32] indent)
-                                    (jvm-backend-write-source
-                                     {:name name} indent))))
-                           (jvm-backend-value-source
-                            argument counter indent env)))
-                    (:args instruction)))
-            (let [name (str "gravityNewline" (swap! counter inc))]
-              (str (jvm-backend-byte-array-source name [10] indent)
-                   (jvm-backend-write-source {:name name} indent))))
-
-       (= :do op)
-       (apply str
-              (map #(jvm-backend-instruction-source % counter indent env)
-                   (:body instruction)))
-
-       (= :if op)
-       (str padding "if ("
-            (jvm-backend-test-source (:test instruction) env)
-            ") {\n"
-            (jvm-backend-instruction-source (:then instruction) counter
-                                            (inc indent) env)
-            padding "} else {\n"
-            (jvm-backend-instruction-source (:else instruction) counter
-                                            (inc indent) env)
-            padding "}\n")
-
-       (= :let op)
-       (let [binding-state
-             (reduce (fn [state {:keys [name expr]}]
-                       (let [{:keys [source descriptor]}
-                             (jvm-backend-value-declaration
-                              expr counter indent)]
-                         {:source (str (:source state) source)
-                          :env (assoc (:env state) name descriptor)}))
-                     {:source "" :env env}
-                     (:bindings instruction))]
-         (str (:source binding-state)
-              (apply str
-                     (map #(jvm-backend-instruction-source
-                            % counter indent (:env binding-state))
-                          (:body instruction)))))
-
-       :else ""))))
+   (gravity.backend.jvm/instruction-source #'jvm-backend-byte-array-source #'jvm-backend-write-source #'jvm-backend-value-source #'jvm-backend-test-source #'jvm-backend-value-declaration #'jvm-backend-instruction-source instruction counter indent env)))
 
 (defn jvm-backend-java-source
   [plan]
-  (let [counter (atom 0)
-        main (get-in plan [:functions (:entrypoint plan)])]
-    (str "package gravity.stage2;\n\n"
-         "public final class Program {\n"
-         "  private Program() {}\n\n"
-         "  public static void main(String[] args) {\n"
-         (apply str
-                (map #(jvm-backend-instruction-source % counter 2 {})
-                     (:instructions main)))
-         "  }\n"
-         "}\n")))
+  (gravity.backend.jvm/java-source #'jvm-backend-instruction-source plan))
 
-(def jvm-backend-module-source
-  (str "module " jvm-backend-module-name " {\n"
-       "  exports gravity.stage2;\n"
-       "}\n"))
+(def jvm-backend-module-source (gravity.backend.jvm/module-source jvm-backend-module-name))
 
 (defn jvm-backend-source-map
   [source-text java-source]
-  {:artifact :gravity/jvm-source-map
-   :schema-version 1
-   :source {:kind :co-canonical-gravity-source
-            :content-hash (str "sha256:" (sha256-hex source-text))
-            :content source-text}
-   :generated {:file "sources/gravity/stage2/Program.java"
-               :line-count (count (str/split-lines java-source))}
-   :origin-chain [:source-unit :c2-reader :stage2-source-front-end
-                  :stage2-plan-emitter :stage2-compiler-driver
-                  :jvm-lowering]
-   :coverage :source-unit-only
-   :per-form-origin-preserved? false
-   :status :partial})
+  (gravity.backend.jvm/source-map #'sha256-hex source-text java-source))
 
 (defn jvm-backend-output-paths
   [output-path]
-  {:java-source (str output-path "/sources/gravity/stage2/Program.java")
-   :module-source (str output-path "/sources/module-info.java")
-   :class-file (str output-path "/classes/gravity/stage2/Program.class")
-   :module-class (str output-path "/classes/module-info.class")
-   :jar (str output-path "/program.jar")
-   :source-map (str output-path "/source-map.edn")
-   :manifest (str output-path "/manifest.edn")
-   :provenance (str output-path "/provenance.edn")})
+  (gravity.backend.jvm/output-paths output-path))
 
 (defn jvm-backend-run-process!
   [command source-path diagnostic-id message]

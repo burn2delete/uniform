@@ -9,7 +9,7 @@ Follow the retained contracts linked in spec.md and [constitution](../../.specif
 
 ## Canonical task source
 
-These are the authoritative task/outcome sections; do not copy their task rows here:
+Edit the seven literal-key outcome/task records only in [tasks.md](tasks.md#implementation-tasks). The original sections below retain their unchanged registry/aggregate boundaries; the roadmap links directly to the ledger:
 
 - [math](../../docs/component-roadmaps/domains.md#math)
 - [schema](../../docs/component-roadmaps/domains.md#schema)
@@ -24,8 +24,8 @@ These are the authoritative task/outcome sections; do not copy their task rows h
 
 1. `spec.md`: scope, retained contract navigation and accepted/rejected workflow behavior.
 2. `plan.md`: canonical task anchors, interfaces and dependency boundaries.
-3. `tasks.md`: only migration preparation, validation, review and integration tasks.
-4. `evidence.md`: exact observed documentation checks, pending acceptance and implementation nonclaims.
+3. `tasks.md`: seven complete grouped outcome/task/acceptance records and the entire unchanged historical migration file, clearly separated.
+4. `evidence.md`: observed checks and implementation nonclaims.
 
 Central migration inventory/schema is owned separately. This package does not write shared indexes or transfer implementation ownership.
 
