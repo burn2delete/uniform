@@ -231,6 +231,55 @@
                                       :kind (if (= id :call) :list :symbol) :value (if (= id :operator) operation id)
                                       :parent-form-id (when-not (= id :call) :call) :child-form-ids (if (= id :call) children [])}]) (conj children :call)))}))
 
+(defn sha
+  "Return the deterministic scalar identity used by normalized kernel DATA."
+  [n]
+  (str "sha256:" (format "%064x" n)))
+
+(defn list-query-input
+  "Build the shared normalized input for a unary collection query."
+  [operation argument-types]
+  (let [input (integral-ordering-input operation argument-types)]
+    (assoc input
+           :binding-types (:types input)
+           :products {:calls (get-in input [:core :calls])
+                      :call-edges (get-in input [:core :call-edges])
+                      :module (:module input)})))
+
+(defn map-keys-input
+  "Build the map-keys input without reaching into the SH-08 test namespace."
+  [type]
+  (-> (list-query-input 'keys [type])
+      (assoc-in [:module :effects] [:memory/allocate])
+      (assoc-in [:core :module :effects] [:memory/allocate])))
+
+(defn set-conversion-input
+  "Build the normalized input for a persistent set conversion."
+  [argument-types]
+  (let [input (integral-ordering-input 'set argument-types)]
+    (assoc input
+           :binding-types (:types input)
+           :products {:calls (get-in input [:core :calls])
+                      :call-edges (get-in input [:core :call-edges])
+                      :module (:module input)})))
+
+(defn list-set-input
+  "Build the list-to-set input used by the SH-09 local-call census."
+  [type]
+  (-> (set-conversion-input [type])
+      (assoc-in [:module :effects] [:memory/allocate])
+      (assoc-in [:core :module :effects] [:memory/allocate])))
+
+(defn atomic-equality-input
+  "Build the normalized atomic equality input used by module traversal tests."
+  [argument-types]
+  (let [input (integral-ordering-input '= argument-types)]
+    (assoc input
+           :binding-types (:types input)
+           :products {:calls (get-in input [:core :calls])
+                      :call-edges (get-in input [:core :call-edges])
+                      :module (:module input)})))
+
 (defn nonnegative-integer-quotient-input [values]
   (let [base (integral-ordering-input 'quot (vec (repeat (count values) :gravity.type/integer)))
         input (reduce (fn [input [index value]]
