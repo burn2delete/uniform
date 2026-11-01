@@ -44,13 +44,14 @@ source-facet/task entailment and projection composition remain pending in that
 lineage. They are not nine completed domains or a second editable checklist.
 Do not omit these required outcomes because the inspected main has seven keys.
 
-The same preserved source also contains seven proposed Math/Schema producer
-records, identified in [the plan](plan.md#remaining-math-and-schema-producer-proposals).
-These retain explicit future task ownership and independent producer/checker
-boundaries; the current seven aggregate keys do not prove their implementation
-or discharge their source predicates. Current accounting removal supersedes
-old search-fuel/allowance review passages; it is not an unresolved permission
-decision.
+The same preserved source's seven proposed Math/Schema producer records are
+now resumed in [the same task file](tasks.md#math-and-schema-producer-task-proposals)
+and identified in [the plan](plan.md#math-and-schema-producer-proposals).
+They retain future task ownership and independent producer/checker boundaries;
+the current seven aggregate keys do not prove their implementation or discharge
+their source predicates. Four stale accounting/stopping passages are explicitly
+corrected under current AGENTS.md. This is not an unresolved permission
+decision; current source/facet and projection review remain pending.
 
 Their source obligations include actual DOM5 vector/native execution with
 proof-gated optimization and differential benchmarks; DOM8 service routes,

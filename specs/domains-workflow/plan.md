@@ -10,6 +10,12 @@ file. Their source references use the full preserved context rather than the
 local one-record excerpt. The original seven-key SH region remains unchanged;
 future task/projection composition and independent acceptance remain pending.
 Do not treat source resumption as SH credit or create a parallel task ledger.
+The seven Math/Schema producer/checker records are also resumed as
+[explicit future tasks](tasks.md#math-and-schema-producer-task-proposals), with
+four declared accounting-removal corrections. Parent `math` and `schema`
+criterion proposals retain their existing owners and separate current
+composition; producer dependencies are actual interface facts, not completion
+of those whole parent outcomes.
 
 Name the source construct, typed inputs/results, checked domain representation,
 producer and consumer versions, effects/grants, schema/numeric/privacy policy,
@@ -74,12 +80,12 @@ the required surface, or count a context flag as implementation acceptance.
 Record absent providers, target decisions, implementation and execution
 honestly; no held operation or existing writer is transferred here.
 
-## Remaining Math and Schema producer proposals
+## Math and Schema producer proposals
 
 The [preserved source authority](https://github.com/burn2delete/uniform/blob/55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6/specs/domains-workflow/tasks.md)
-also supplies these seven existing explicit future tasks. Their full source/
-criterion and current-accounting composition remain pending; they are not
-new completed components or an independent task denominator.
+supplies these seven existing future tasks, now resumed in the same task file.
+Their full source/criterion and SH projection composition remain pending;
+they are not completed components or an independent task denominator.
 
 | Existing proposed ID | Required producer or checker boundary |
 | --- | --- |
@@ -91,12 +97,28 @@ new completed components or an independent task denominator.
 | `schema/compatibility-and-migration` | Produce semantic compatibility diffs and checked migration/loss/deployment/rollback or forward-only plans. |
 | `schema/checked-consumer-projection` | Generate and exercise source-faithful API/database/ABI/config/artifact consumer projections with weakening/drift rejection. |
 
-Current AGENTS.md supersedes their older passages retaining project fuel,
-depth/time/candidate allowances for policy review. Those passages must receive
-an explicit superseded disposition in their existing lineage, without imposing
-replacement accounting. Preserve actual numeric error, cryptographic scheme,
+Current AGENTS.md supersedes the older project fuel/depth/time/stopping
+passages. Four exact passages now carry that disposition in the resumed
+records, without imposing replacement accounting. Preserve actual numeric error, cryptographic scheme,
 target-format, profile, ownership and provider constraints. Do not import a
 stale whole-file overlay or attribute a new correction to an earlier review.
+
+For planning, select the producer and exact declared criterion, distinguish
+generation from independent checking and later provider selection, and retain
+its full source-domain/branch/mode/precision/target contract. Check emitted
+proof/trace/certificate subjects and domain coverage with accepted/rejected
+replay; a synthesizer or search pass cannot approve its own output. Schema
+plans must pair generated validators/adapters with actual consumer and reload/
+migration/handler results under their declared grant and lifecycle rules.
+For proofs, runtime ranking is an optimization objective, not compiler work
+accounting. For schemas, gate production, actual consumer refusal and accountable
+release/publication decisions remain distinct. All seven records stay Open.
+Use the task preamble's existing Schema decision-role references: emission,
+operation checking, migration authority/validation and actual handler contract
+execution remain distinct roles. Do not normalize an older criterion label
+into a whole-task alias or let one HTTP test discharge the multi-consumer C6
+conjunction. Current parent-criterion and cross-component joins remain explicit
+remaining composition work.
 
 ## Historical workflow-transfer plan
 

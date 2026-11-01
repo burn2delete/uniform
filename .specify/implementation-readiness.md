@@ -127,9 +127,10 @@ packages now have behavior and planning entries above their preserved migration
 records. Domains routes the seven current keys and now resumes the nine wider
 integration records as explicit future tasks in the same task file, outside
 the unchanged current SH region. The exact key is `crypto`, not the descriptive
-label cryptography. The seven additional Math/Schema producer records in the
-preserved proposal also have explicit future routes in the plan; their current
-composition remains pending. Seven headings do not cover every domain contract. Exact affected
+label cryptography. The seven additional Math/Schema producer records are also
+resumed in that file as future tasks, with four explicit accounting-removal
+corrections. Their source/parent-criterion/SH composition still needs review.
+Seven headings do not cover every domain contract. Exact affected
 composition with the preserved proposals remains required; their additional
 integration interfaces and Platform product decisions are not replaced here.
 
@@ -145,9 +146,15 @@ unresolved support-surface facets across ten documents. Those are wider
 incumbent/support inventories and provider boundaries, not 65 new product
 decisions. Domain architecture and named specialists retain the source/task
 refinement; a reference workload cannot discharge the full required breadth.
-The seven Math/Schema producer proposals separately require exact source and
-current-accounting composition. No source/task alias, SH credit or domain
-implementation is accepted by resuming these records.
+The seven [Math/Schema producer proposals](../specs/domains-workflow/tasks.md#math-and-schema-producer-task-proposals)
+retain synthesis/search/trace/interval production, independent checking and
+schema migration/projection as distinct roles. Four inherited accounting/
+stopping passages now carry the current superseded disposition, preserving
+actual numeric error/domain/branch/rounding/target conditions and runtime
+ranking. Schema emission, client checking, migration authority/validation and
+actual handler tests retain their separate existing decision IDs; older
+criterion labels are not whole-operation aliases. No source/task alias, SH
+credit or domain implementation is accepted by resuming these records.
 The other component packages remain discoverable through the existing
 [component registry](../docs/component-roadmaps/README.md#component-registry).
 Their migration specs are not automatically accepted as complete implementation
@@ -421,5 +428,33 @@ task files exactly. The ten governance task bytes still match their preserved
 source. Canonical document and full-language structural validators passed;
 dependency controls passed 18 tests / 419 assertions. Whitespace checks passed.
 No domain/compiler/provider execution, SH route adoption or independent source/
-composition acceptance followed. Seven Math/Schema producer records retain
-explicit existing future routes and pending current-accounting composition.
+composition acceptance followed. At that checkpoint the seven Math/Schema
+producer records still had only preserved future routes; the next successor
+below resumes them with explicit current-accounting corrections.
+
+The producer successor resumes those seven Open records in the same task file,
+outside the unchanged current SH region. Exact body checks allow only four
+declared accounting/stopping corrections and explicit full-context reference
+rebinding; all other criterion text is preserved. Checks confirmed 39 retained
+criterion identities, 47 existing Open decision/task-role joins, 21 Math
+criterion dependency references in the existing producer/parent source, and
+byte equality of all twenty MATH/S source documents with the preserved
+aggregate. The Schema role references distinguish generation, operation
+checking, migration authority/validation and actual contract execution; they
+cannot discharge the full C6 multi-consumer conjunction or historical owners.
+Earlier Math20/Schema25 receipts retain their own subjects and qualifications;
+they do not accept the four current corrections or whole current composition.
+
+The current focused check covers 62 changed files, including 61 Markdown files
+and 2,147 local references, 139 current component task routes, all sixteen
+separate future Domain records and 48 historical spec/plan suffixes. The
+original 48 task/evidence file contents remain conserved: 45 are untouched;
+removing only the declared governance consumer blocks and the two Domains
+future-record regions restores the other three task files exactly. All ten
+governance task bytes and all nine wider-Domain criterion bodies retain their
+earlier verified source scope. Canonical and full-language structural validators
+passed; dependency controls passed 18 tests / 419 assertions, and whitespace
+checks passed. No compiler/domain/provider execution, policy decision,
+independent review or SH route adoption occurred. Current parent criteria,
+source/facet conjunctions, full support breadth, consumer and SH composition
+remain required work in the existing reconciliation lineage.
