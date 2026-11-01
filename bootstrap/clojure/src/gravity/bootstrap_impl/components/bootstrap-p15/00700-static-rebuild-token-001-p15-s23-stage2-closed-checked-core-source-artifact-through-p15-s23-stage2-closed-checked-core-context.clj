@@ -11,12 +11,12 @@
 
 (defn p15-s23-stage2-closed-checked-core-context
   ([source-path source-text requested-target]
-   (p15-s23-closed-core-source-request-bounds!
+   (p15-s23-closed-core-source-request-byte-count!
     source-path source-text requested-target)
    (p15-s23-stage2-closed-checked-core-context
     source-path source-text requested-target nil))
   ([source-path source-text requested-target authority-record]
-   (p15-s23-closed-core-source-request-bounds!
+   (p15-s23-closed-core-source-request-byte-count!
     source-path source-text requested-target)
    (if (some? authority-record)
      (do

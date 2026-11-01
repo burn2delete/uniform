@@ -12,8 +12,8 @@
 (defn p18-t02-source-hashes
   []
   (into (sorted-map)
-        (map (fn [{:keys [role path]}]
-               [role (if (string? path)
+        (map (fn [{:keys [path]}]
+               [path (if (string? path)
                        (p18-file-sha256 path)
                        "sha256:missing")]))
         p18-t02-source-inventory))
@@ -26,7 +26,11 @@
     (fn [{:keys [path jar-entry]}]
       (let [suffix (str "/" jar-entry)]
         (when (and (string? path) (string? jar-entry)
-                   (str/ends-with? path suffix))
+                   (= path (str p18-t02-source-root suffix))
+                   (not (str/starts-with? jar-entry "/"))
+                   (not (str/includes? jar-entry "\\"))
+                   (every? #(not (#{"." ".."} %))
+                           (str/split jar-entry #"/")))
           {:path path
            :source-root (subs path 0 (- (count path) (count suffix)))
            :jar-entry jar-entry}))))
@@ -57,13 +61,12 @@
         compiled-jar-entries (mapv :compiled-jar-entry compiled-inventory)
         material (p18-t02-source-material)
         valid?
-        (and (= #{:launcher :bootstrap :diagnostics :cli
-                  :darwin-publication :deps}
-                (set roles))
-             (= (count roles) (count (set roles)))
+        (and (every? #{:launcher :runtime-source :deps} roles)
+             (= 1 (count (filter #{:launcher} roles)))
+             (= 1 (count (filter #{:deps} roles)))
+             (pos? (count (filter #{:runtime-source} roles)))
              (= (count paths) (count (set paths)))
-             (= #{:bootstrap :diagnostics :cli :darwin-publication}
-                (set (map :role packaged-inventory)))
+             (every? #{:runtime-source} (map :role packaged-inventory))
              (= [:launcher] (mapv :role compiled-inventory))
              (= (count packaged-inventory) (count packaged-sources))
              (= (count jar-entries) (count (set jar-entries)))
@@ -74,7 +77,9 @@
                        (and (string? path)
                             (not (str/blank? path))
                             (not (.isAbsolute (java.io.File. path)))
-                            (.isFile (java.io.File. path))))
+                            (.isFile (java.io.File. path))
+                            (not (java.nio.file.Files/isSymbolicLink
+                                  (.toPath (java.io.File. path))))))
                      paths)
              (every? #(re-matches #"sha256:[0-9a-f]{64}" (:hash %))
                      material))]
@@ -96,7 +101,7 @@
               :observed-packaged-source-count
               (count (:packaged-source-entries report))
               :remediation
-              "Restore the exact declared launcher, bootstrap, diagnostics, CLI presentation, Darwin publication provider, and deps inputs before building the package."}))
+              "Restore the exact launcher and complete regular production source/data inventory before building the package."}))
     report))
 
 (defn p18-t02-jar-source-inventory-report

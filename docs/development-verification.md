@@ -35,6 +35,25 @@ separate export path when regenerating those artifacts is intentional. This
 describes current development behavior; it does not revise historical Phase 18
 evidence or claim seed retirement, release or self-hosting completion.
 
+### Explicit packaged JVM development entrypoint
+
+The Phase 18 implementation roadmap and phase README are frozen historical
+inputs for SH acceptance; they are not edited to describe this checkout's
+development routing. The current packaged JVM development command is explicit:
+
+```bash
+clojure -M:packaged-gravity --version
+clojure -M:packaged-gravity run examples/core-app.gravity
+```
+
+`bin/gravity` remains source-default and does not auto-select the packaged JAR.
+The explicit alias launches the current development package and preserves the
+accepted/rejected command checks, but it is bootstrap-hosted and is not a
+claim that the final Phase 18 seedless release or self-hosted compiler is
+complete. The byte-identical historical JAR and its Phase 18 evidence remain
+at their archived paths; current package outputs use the development output
+path.
+
 ## Remove project cost and budget mechanisms
 
 Project cost models, work-unit budgets, producer/caller debits, prospective

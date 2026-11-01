@@ -29,7 +29,7 @@
     :public-target-support-claim? false}
    :delegates-to
    (if packaged?
-     "java -cp target/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
+     "java -cp target/development-loop-batches/phase-18/jvm-cli/gravity-jvm-cli.jar gravity.cli.Main"
      "clojure -M:gravity")
    :replaced-by "Phase 18 self-hosted release artifact"})
 
@@ -103,20 +103,29 @@
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-version-record))))
     (is (= '([]) (:arglists (meta #'bootstrap/p18-cli-help-text))))))
 
+(deftest usage-text-remains-the-entrypoint-compatibility-value
+  (let [usage (cli/cli-usage-text)]
+    (is (= usage entrypoint/usage-text))
+    (is (string? usage))
+    (is (.startsWith usage "usage: clojure -M:gravity "))))
+
 (deftest cli-namespace-contract-is-narrow-and-acyclic
   (let [contract-var
         (get (ns-interns 'gravity.cli) 'namespace-contract)
         contract (var-get contract-var)]
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'sh07-core-input}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
+             'sh07-core-input}
            (set (keys (ns-publics 'gravity.cli)))))
     (is (true? (:private (meta contract-var))))
     (is (= 'gravity.cli (:namespace contract)))
     (is (= :bootstrap-cli-presentation-and-core-arguments
            (:contract-boundary contract)))
-    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'sh07-core-input}
+    (is (= #{'p18-cli-version-record 'p18-cli-help-text 'cli-usage-text
+             'sh07-core-input}
            (set (keys (:public-api contract)))))
     (is (= [:packaged-jvm-cli-state :selected-sh07-command-arguments] (:artifact-inputs contract)))
-    (is (= [:bootstrap-version-record :bootstrap-help-text :sh07-core-input]
+    (is (= [:bootstrap-version-record :bootstrap-help-text
+            :bootstrap-usage-text :sh07-core-input]
            (:artifact-outputs contract)))
     (is (= ['clojure.core]
            (get-in contract [:dependency-direction :requires])))
