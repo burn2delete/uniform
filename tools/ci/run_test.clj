@@ -587,5 +587,23 @@
     (is (thrown? Exception (context/source-forms! "reader-eval" (bytes "#=(+ 1 2)"))))
     (is (nil? (find-ns 'gravity.bootstrap)))))
 
+(deftest source-reader-resolves-ns-keywords-without-evaluation
+  (let [source-ns 'gravity.ci-lint-reader-regression
+        bytes #(.getBytes ^String % "UTF-8")
+        source (str "(ns " source-ns " (:require [clojure.test :as test]))\n"
+                    "(def test-fixture-key ::test/once-fixtures)\n"
+                    "(def local-key ::local)\n")
+        forms (context/source-forms! "reader-aliases" (bytes source))]
+    (is (= :clojure.test/once-fixtures
+           (nth (second forms) 2)))
+    (is (= :gravity.ci-lint-reader-regression/local
+           (nth (nth forms 2) 2)))
+    (is (thrown? Exception
+                 (context/source-forms!
+                  "unknown-reader-alias"
+                  (bytes (str "(ns " source-ns ")\n"
+                              "(def missing ::unknown/key)\n")))))
+    (is (nil? (find-ns source-ns)))))
+
 (let [result (run-tests)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))
