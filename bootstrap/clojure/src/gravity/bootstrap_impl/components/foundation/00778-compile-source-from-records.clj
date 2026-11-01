@@ -69,11 +69,8 @@
 
 (defn read-gravity-source-text
   [path]
-  (when-not (qst-or-gravity-source? path)
-    (source-path-policy-fail! path))
-  (decode-gravity-source-bytes
-   path
-   (sh03-reader-read-target-source-bytes! path)))
+  (gravity.reader/read-source-text #'qst-or-gravity-source? #'source-path-policy-fail!
+                                   #'decode-gravity-source-bytes #'sh03-reader-read-target-source-bytes! path))
 
 (defn compile-file
   [path]
