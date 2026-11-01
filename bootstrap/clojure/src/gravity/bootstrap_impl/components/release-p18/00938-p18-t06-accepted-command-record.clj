@@ -86,7 +86,11 @@
        (= p18-t06-release-binary-path
           (:release-binary-path artifact))
        (= (str p18-t06-artifact-dir "/p18-t06-final-release-proof.edn")
-          (:release-proof-record artifact))))
+          (:release-proof-record artifact))
+       (false? (:clojure-seed-boundary? artifact))
+       (true? (:reproducible-release? artifact))
+       (true? (:signed-release? artifact))
+       (true? (:governance-approved? artifact))))
 
 (defn p18-t06-accepted-command-proof-valid?
   [record]
@@ -108,12 +112,8 @@
            :reproducible-release? :signed-release?
            :governance-approved?]
           artifact-inspection-final-release?
-          (and (p18-t06-final-release-executable-artifact?
-                inspected-artifact fixture (:output-path fixture))
-               (false? (:clojure-seed-boundary? inspected-artifact))
-               (true? (:reproducible-release? inspected-artifact))
-               (true? (:signed-release? inspected-artifact))
-               (true? (:governance-approved? inspected-artifact)))
+          (p18-t06-final-release-executable-artifact?
+           inspected-artifact fixture (:output-path fixture))
           matches-expected?
           (and (map? fixture)
                (= :accepted (:status record))

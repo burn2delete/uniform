@@ -44516,6 +44516,42 @@
                    (assoc candidate
                           :diagnostics diagnostics
                           :capability-based-proof capability))))
+              recomputed-compile-flag-failure
+              (fn [flag value]
+                (let [compile-artifact
+                      (assoc
+                       (edn/read-string
+                        (get-in complete-proof
+                                [:accepted-command-proofs 0
+                                 :compile-result :out]))
+                       flag value)
+                      compile-artifact-record
+                      (select-keys
+                       compile-artifact
+                       [:kind :task :status :executable-path
+                        :release-binary-path :clojure-seed-boundary?
+                        :reproducible-release? :signed-release?
+                        :governance-approved?])]
+                  (recomputed-proof
+                   (assoc-in
+                    (assoc-in complete-proof
+                              [:accepted-command-proofs 0
+                               :compile-artifact]
+                              compile-artifact-record)
+                    [:accepted-command-proofs 0 :compile-result :out]
+                    (pr-str compile-artifact)))))
+              recomputed-compile-flag-failures
+              (mapv
+               (fn [[label flag value]]
+                 [label (recomputed-compile-flag-failure flag value)])
+               [[:compile-seed-boundary
+                 :clojure-seed-boundary? true]
+                [:compile-reproducible-release
+                 :reproducible-release? false]
+                [:compile-signed-release
+                 :signed-release? false]
+                [:compile-governance-approved
+                 :governance-approved? false]])
               recomputed-empty-coverage
               (recomputed-proof
                (assoc complete-proof
@@ -44680,7 +44716,8 @@
                            :signing-record stale-signing
                            :security-review-record stale-security-review
                            :governance-approval-record stale-governance)))]]
-               recomputed-nested-result-failures)
+               (concat recomputed-compile-flag-failures
+                       recomputed-nested-result-failures))
               valid-proof-path (write-proof! :valid complete-proof)
               valid-artifact (verify-artifact valid-proof-path complete-p15)
               verify-proof-path
