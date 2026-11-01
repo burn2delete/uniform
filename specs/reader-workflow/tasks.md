@@ -8,7 +8,7 @@ Authority transfer baseline: `c40d74aded3a019ff2bdeb1f4050cf95dbb11c1e`.
 
 This is the sole editable Reader implementation task ledger. The roadmap's
 [finite remaining work](../../docs/component-roadmaps/reader.md#finite-remaining-work)
-is generated from these records, not a second editable truth. Stable semantic
+is navigation to these records, not a second editable truth. Stable semantic
 IDs do not change with ordering. An unchecked box means not accepted complete;
 the evidence/status text distinguishes open, partial and unassessed evidence.
 Check a box only with an explicit accepted outcome and its immutable receipt in
@@ -33,15 +33,15 @@ Current evidence/status: Accepted; the [selected-current decoding and identity r
 
 Done when (yes/no): Both extensions preserve actual paths; byte/scalar and line/column spans, explicit roots/options and UTF-8 failures match contracts; ambient working-directory changes cannot alter identity.
 
-- [ ] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
+- [x] `reader/finite-remaining-work/lexical-products-and-origins-closure` Lexical products and origins closure
 
-Current evidence/status: Partial Reader and projection sources. The focused token-spelling reuse increment and its validation limits are recorded in [Reader evidence](https://github.com/burn2delete/uniform/blob/codex/reader-token-spelling-reuse-20261026/specs/reader-workflow/evidence.md#token-spelling-reuse); it does not close the complete lexical surface.
+Current evidence/status: Accepted; the [finite current lexical/origin reconciliation](https://github.com/burn2delete/uniform/blob/codex/reader-lexical-origin-closure-20261027/docs/artifacts/phase-06/reports/current-reader-lexical-products-origins.md) records the complete enabled collection/literal/abbreviation/metadata population, exact/deferred facts, trivia filtering, graph/origin joins and malformed numeric rejection. Exact `8a0d6a90` / tree `79ed93ab` passed seven genuine Reader calls in two tests / 6,241 assertions with fresh Reader/envelope checks; pure source-identity controls passed 9 tests / 146 assertions. Separate compiler-free composed-tree controls passed 20 tests / 169 assertions on `3b7c1280`. The earlier escape-offset baseline remains a nonpass. PR478/482/492 retain their original complementary evidence. New suffix grammars, extension authorization/effects, quota/authentication closure, release and downstream acceptance remain open.
 
 Done when (yes/no): All collection/literal/abbreviation/metadata families emit faithful products; malformed numeric candidates reject; valid deferred values retain exact spelling; trivia modes and generated origins round-trip as specified.
 
 - [ ] `reader/finite-remaining-work/extension-policy-closure` Extension policy closure
 
-Current evidence/status: Extension records/projected views exist; accepted authorization behavior not established here.
+Current evidence/status: Extension records/projected views exist; accepted authorization behavior not established here. The [bootstrap dispatch development increment](https://github.com/burn2delete/uniform/blob/f27f076231c056909e83a6dd59f662542cd4864f/specs/reader-workflow/dispatch-evidence.md) executes two implementation-owned handlers with focused grant/rejection controls; normal Reader integration and independent acceptance remain open.
 
 Done when (yes/no): Registered pure and explicitly granted handlers work; unknown/disallowed tags and undeclared effects reject without ambient execution; invocation records identify policy and handler.
 

@@ -10,12 +10,17 @@
 (defn- path [relative] (.getPath (io/file @root relative)))
 (defn- source-path [] (path "bootstrap/clojure/fixtures/self-hosting/sh-04/accepted/source-syntax.gravity"))
 (defn- reader-path [] (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"))
+(defn- invocation []
+  {:reader-source-path (reader-path)
+   :authenticated-envelope-options {:source :development-current}})
 (defn- project [] (bootstrap/reader-project-context-for-source (source-path)))
 (defn- bootstrap-var [name] (ns-resolve 'gravity.bootstrap name))
 (defn- construct [text]
-  (bootstrap/compiler-c3-syntax-source-artifact (source-path) text (project) nil nil (reader-path)))
+  (bootstrap/compiler-c3-syntax-source-artifact
+   (source-path) text (project) nil nil (reader-path) (invocation)))
 (defn- fresh-c2 [text]
-  (bootstrap/compiler-c2-reader-source-artifact (source-path) text (project) nil nil (reader-path)))
+  (bootstrap/compiler-c2-reader-source-artifact
+   (source-path) text (project) nil nil (reader-path) (invocation)))
 (def ^:private small-c2 (delay (fresh-c2 "1")))
 
 (defn- diagnostic [thunk]
@@ -43,19 +48,21 @@
         events (atom [])
         actual (observe-validations events
                  #(with-redefs-fn
-                    {worker-var (fn [source c2 report]
+                    {worker-var (fn [source c2 report invocation]
                                   (swap! events conj {:kind :worker :c2 c2 :report report})
-                                  (worker source c2 report))}
+                                  (worker source c2 report invocation))}
                     (fn [] (construct "1"))))
-        ;; Reconstruct the former path with the actual standalone public
-        ;; verifier and unchanged builder. No passed report is fabricated.
+        ;; Reconstruct double validation with the actual standalone verifier
+        ;; and unchanged worker, retaining explicit current-source context.
+        ;; The legacy two-argument builder has frozen envelope admission.
         reference (with-redefs-fn
-                    {worker-var (fn [source c2 _]
-                                  (with-redefs-fn {worker-var worker}
-                                    #(bootstrap/sh04-syntax-resolved-result! source c2)))}
+                    {worker-var (fn [source c2 _ invocation]
+                                  (worker source c2
+                                          (bootstrap/c3-validate-c2-reader-artifact! source c2)
+                                          invocation))}
                     #(construct "1"))
         [validation entry] @events
-        proof (bootstrap/c3-syntax-capability-proof actual)]
+        proof (bootstrap/c3-syntax-capability-proof actual (invocation))]
     (is (= [:validation :worker] (mapv :kind @events)))
     (is (identical? (:c2 validation) (:c2 entry)))
     (is (identical? (:report validation) (:report entry)))
@@ -68,7 +75,10 @@
     (is (= :passed (get-in actual [:syntax-verification-report :status])))
     (is (= :complete (:status proof)))
     (is (= :failed (:status (bootstrap/c3-syntax-capability-proof
-                             (assoc-in actual [:gravity-metadata-ledger :entries 0 :action] :substituted)))))
+                             (assoc-in actual [:gravity-metadata-ledger :entries 0 :action] :substituted)
+                             (invocation)))))
+    (is (= :development-unadmitted
+           (get-in actual [:gravity-syntax-boundary :authenticated-envelope :source-rule :admission-status])))
     (is (some? (get-in actual [:gravity-syntax-boundary :gravity-syntax-serialization :semantic-payload])))
     (is (= (get-in actual [:gravity-syntax-boundary :gravity-syntax-serialization :semantic-payload])
            (get-in actual [:gravity-syntax-boundary :gravity-syntax-deserialization :semantic-payload])))))
@@ -103,12 +113,16 @@
     (is (= 1 (count @events)))
     (is (= 0 @bindings))))
 
-(deftest sh04-standalone-public-entry-validates-every-call
+(deftest sh04-standalone-public-entry-validates-every-call-and-retains-frozen-admission
   (let [events (atom [])
         results (observe-validations events
-                  #(mapv (fn [_] (bootstrap/sh04-syntax-resolved-result! (source-path) @small-c2)) (range 2)))]
+                  #(mapv (fn [_] (diagnostic
+                                  (fn [] (bootstrap/sh04-syntax-resolved-result! (source-path) @small-c2))))
+                         (range 2)))]
     (is (= 2 (count @events)))
-    (is (= (first results) (second results)))
+    (is (= ["B1-INPUT" "B1-INPUT"] (mapv :id results)))
+    (is (= [:pinned-sh02-source-snapshot :pinned-sh02-source-snapshot]
+           (mapv :missing-fact results)))
     (is (every? #(identical? @small-c2 (:c2 %)) @events))
     (is (= "C3-FACT-STALE"
            (:id (diagnostic #(bootstrap/sh04-syntax-resolved-result!

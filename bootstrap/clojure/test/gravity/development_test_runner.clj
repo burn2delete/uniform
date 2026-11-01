@@ -4,7 +4,8 @@
   The legacy catalog remains an independently reviewed compatibility oracle.
   Optional catalog and warm-worker queries validate the UEP projection.
   Explicit test selections do not require that admission metadata."
-  (:require [clojure.java.io :as io]
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.test :as test])
@@ -21,6 +22,47 @@
   nil)
 
 (def machine-result-schema :gravity/development-test-result-v1)
+
+(defn- machine-result-file-sink
+  "One completion delivery. Request equality is binding data, not source or
+  effective-configuration attestation. Does not own the parent directory."
+  [{:keys [file limit-bytes request] :as delivery} inherited]
+  (when-not (and (= #{:file :limit-bytes :request} (set (keys delivery)))
+                 (string? file) (.isAbsolute (io/file file))
+                 (integer? limit-bytes) (pos? limit-bytes)
+                 (< limit-bytes Integer/MAX_VALUE)
+                 (= #{:id :source :selection} (set (keys request)))
+                 (string? (:id request)) (seq (:id request))
+                 (map? (:source request)) (map? (:selection request)))
+    (throw (ex-info "Invalid development result delivery" {:id "DEV-RESULT-DELIVERY"})))
+  (let [emitted? (atom false)]
+    (fn [result]
+      (when-not (compare-and-set! emitted? false true)
+        (throw (ex-info "Development result was emitted more than once"
+                        {:id "DEV-RESULT-DUPLICATE"})))
+      (when-not (= (:selection request) (:selection result))
+        (throw (ex-info "Development result selection differs from request"
+                        {:id "DEV-RESULT-SELECTION"})))
+      (let [bytes (.getBytes (str (pr-str {:schema :gravity/development-test-result-delivery-v1
+                                          :request request :result result}) "\n") "UTF-8")]
+        (when (> (alength bytes) limit-bytes)
+          (throw (ex-info "Development result exceeds declared capture limit"
+                          {:id "DEV-RESULT-LIMIT" :bytes (alength bytes) :limit limit-bytes})))
+        (java.nio.file.Files/write
+         (.toPath (io/file file)) bytes
+         (into-array java.nio.file.OpenOption
+                     [java.nio.file.StandardOpenOption/CREATE_NEW
+                      java.nio.file.StandardOpenOption/WRITE java.nio.file.LinkOption/NOFOLLOW_LINKS])))
+      (when inherited (inherited result)))))
+
+(defn result-delivery-sink
+  "Construct the existing one-shot normal completion writer in the child JVM.
+  Reuses the closed delivery validator, supplied capture allowance and original
+  IO/error behavior. Calls inherited only after the CREATE_NEW write succeeds.
+  Owns neither the output directory nor semantic/custody admission."
+  [delivery inherited]
+  (machine-result-file-sink delivery inherited))
+
 
 (def namespace-catalog
   [{:namespace 'gravity.bootstrap-test
@@ -106,8 +148,6 @@
 (def ^:private legacy-namespace-catalog namespace-catalog)
 (def ^:private catalog-by-namespace
   (into {} (map (juxt :namespace identity) namespace-catalog)))
-
-(def ^:private maximum-namespace-authority-entries 256)
 
 (defn- authority-failure
   [id message data]
@@ -233,9 +273,9 @@
             (->> (:entries generated)
                  (remove #(contains? legacy-by (:namespace %)))
                  (sort-by #(str (:namespace %))))))]
-      (when-not (<= 1 (count entries) maximum-namespace-authority-entries)
+      (when-not (seq entries)
         (authority-failure "DEV-NAMESPACE-AUTHORITY-BOUNDS"
-                           "namespace authority entry count exceeds bound"
+                           "namespace authority must contain at least one entry"
                            {:count (count entries)}))
       {:projection generated
        :entries entries
@@ -263,6 +303,8 @@
    "  --fail-fast       stop after the first test failure or error\n"
    "  --timing-receipt FILE\n"
    "                    write non-authoritative machine-readable EDN timing telemetry\n"
+   "  --machine-result EDN\n"
+   "                    deliver one closed completion record to the parent request\n"
    "  --help            print this help without loading tests\n"
    "\n"
    "Qualified selectors resolve only within explicitly selected namespaces.\n"))
@@ -296,6 +338,13 @@
                           (selector-value argument (first tail))))
             (throw (ex-info "--timing-receipt requires a non-empty value"
                             {:type ::invalid-selector :option argument})))
+
+          (= argument "--machine-result")
+          (if (and (seq tail) (not (contains? options :machine-result)))
+            (recur (next tail)
+                   (assoc options :machine-result (edn/read-string (first tail))))
+            (throw (ex-info "--machine-result requires one unique delivery argument"
+                            {:id "DEV-RESULT-DELIVERY"})))
 
           (= argument "--namespace")
           (if (seq tail)
@@ -566,7 +615,15 @@
   (flush))
 
 (defn run-cli! [args]
-  (let [options (parse-args args)]
+  (let [options (parse-args args)
+        sink (if-let [delivery (:machine-result options)]
+               (result-delivery-sink delivery *machine-result-sink*)
+               *machine-result-sink*)]
+    (when (and (contains? options :machine-result)
+               (or (nil? (:machine-result options)) (:help? options) (:catalog? options) (:list? options)))
+      (throw (ex-info "Machine delivery requires an executed selection"
+                      {:id "DEV-RESULT-DELIVERY"})))
+    (binding [*machine-result-sink* sink]
     (cond
       (:help? options) (do (print usage-text) 0)
       (:catalog? options) (do (print-catalog) 0)
@@ -614,7 +671,7 @@
                               :exit-code exit-code}]
                   (when *machine-result-sink*
                     (*machine-result-sink* result))
-                  exit-code)))))))))
+                  exit-code))))))))))
 
 (defn- report-cli-error [^Throwable ex]
   (binding [*out* *err*]

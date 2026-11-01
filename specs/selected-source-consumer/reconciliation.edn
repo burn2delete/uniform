@@ -1,0 +1,63 @@
+{:kind :selected-source-consumer-main-reconciliation
+ :supersedes-current-state-in "evidence.edn"
+ :preserves-historical-evidence true
+ :owner-thread "01a183df-1179-7b83-8bc0-dcabf4141f9d"
+ :PR 544 :state :draft :merge-to-main :not-performed
+ :prior {:head "68fd2d36a5aac51f34af5f1a9e9f3e7cdf406eb3"
+         :tree "a5bbadbb6cc34a4a9899c5b9f9d2ff676fcf62a5"
+         :CI {:run 40779932710 :terminal true :result :success
+              :passed [:static :portable-leaf :darwin-leaf :bootstrap :projections
+                       :experimental-source-snapshot :darwin-unsupported-host]
+              :skipped [:source-Core-readiness :experimental-prerelease]
+              :independent-readback true :rerun false}}
+ :filesystem-recovery
+ {:original-command "git fetch origin main"
+  :original-failure :terminal-FETCH_HEAD-write-permission-error
+  :failure-preserved true :original-ref-change-attribution :not-established
+  :inspection [:unchanged-prior-HEAD-and-tree :old-FETCH_HEAD-retained
+               :no-unmerged-index :no-relevant-locks :no-merge-state :no-pending-session]
+  :material-new-evidence :parent-exact-reconciliation-authority-and-current-unrestricted-filesystem
+  :same-actor-single-exact-command-retry :terminal-exit-0
+  :tool-policy :normal-exec-required-escalation-parameter-unavailable
+  :permission-change-by-agent false
+  :readback-main-and-FETCH_HEAD "68a127520c2465a90a4a9b06742cb58ebaffca77"
+  :private-failure-recovery-receipt-sha256 "c4823510b60e9ec99a7c8914d800b2f81a7770bc9c914568b7d63eb0ef201297"}
+ :composition
+ {:head "aa72d8990ec45c196837a3ee873a62822a1d5951"
+  :tree "1d5a0938382d82f89518c78b2c67c0cc6222a7a4"
+  :parents ["68fd2d36a5aac51f34af5f1a9e9f3e7cdf406eb3"
+            "68a127520c2465a90a4a9b06742cb58ebaffca77"]
+  :main-tree "9d5e5d28a5f1abdc200d1e8d1f38ffda837bbc66"
+  :command "git merge --no-edit origin/main" :exit 0 :conflicts false
+  :changed-paths ["docs/end-to-end-contracts.md"
+                  "specs/release-workflow/evidence.md" "specs/release-workflow/plan.md"
+                  "tools/acceptance_dependencies_test.clj" "tools/release_task_projection_test.clj"]}
+ :unchanged-inputs
+ {:harness-sha256 "467a604871676deda9f37b1811647a22047c927d1fe89e3f542b3dfcb6e6c5d9"
+  :controls-sha256 "55989950d95176ec43edf2f8bffd1b442efda46a70ae5d9bce4b0ec529108745"
+  :causal-kernel-sha256 "6365e48cc889349419e450eb58563ba8aca9f698e9c7f9fe7be56304378163f0"
+  :selected-Syntax-implementation :unchanged-by-this-merge}
+ :affected-cheap-validation
+ {:harness {:tests 7 :assertions 177 :fail 0 :error 0 :exit 0 :Bootstrap-loaded false}
+  :acceptance-dependencies {:command "clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj"
+                            :tests 14 :assertions 402 :fail 0 :error 0 :exit 0}
+  :release-projection {:command "clojure -J-Xmx256m -M tools/release_task_projection_test.clj"
+                       :tests 6 :assertions 98 :fail 0 :error 0 :exit 0}
+  :language-boundary {:command "clojure -J-Xmx256m -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
+                      :tests 6 :assertions 11 :fail 0 :error 0 :exit 0}}
+ :independent-changed-input-review
+ {:reviewer :review_selected_harness :exact-merge-and-parents :verified
+  :five-path-diff :verified :input-hashes :conserved
+  :disposition :scoped-conservation-accepted-no-contradiction
+  :prepared-harness-review :remains-valid
+  :reviewer-execution :none
+  :limits [:untracked-private-receipts-outside-committed-diff
+           :inherited-selected-source-implementation-and-admission-not-accepted]}
+ :no-actions [:GitHub-APPROVE :live-constructor :authentication-run :broker-acquisition
+              :process-inspection :lock-deletion :permission-change :reset :discard
+              :uncertain-operation-replay :other-checkout-edit]
+ :remaining-gates [:publication-head-CI :independent-inherited-composed-source-review
+                   :reviewed-normal-owner-prepared-input-and-runtime-tuple
+                   :supported-actual-admission-safety :genuine-selected-binding-Guest-AE-C5
+                   :real-generated-diagnostic-composition :paired-extension-and-relocation-if-claimed]
+ :nonclaims [:runtime-admission :genuine-execution :ACC13-closure :C12 :release]}

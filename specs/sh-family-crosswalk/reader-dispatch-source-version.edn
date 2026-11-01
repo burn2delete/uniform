@@ -1,0 +1,181 @@
+{:normal-dispatch-seam
+ {:status :pending-independent-source-version-review,
+  :incoming-main "43112981c2e6ee47e1cc1451dbe3b750f88ee874",
+  :source-files
+  [{:path "specs/reader-workflow/tasks.md",
+    :before
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"},
+    :after
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"}}
+   {:path "docs/component-roadmaps/reader.md",
+    :before
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"},
+    :after
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"}}
+   {:path "docs/self-hosting-slice-ownership.edn",
+    :before
+    {:commit "e446f3268ecc8ce25408236631a41c5939e7a952",
+     :sha256
+     "d8b3c24d7c619ab28bfc2a7bd70dde086c27b0b851e563d28cbfd3c79a5f631f"},
+    :after
+    {:commit "4d96671dcd5c649e6be1d8b8d3dcd6e7da8cfeb7",
+     :sha256
+     "7b08322372e708f4c27b19d82865e1e1af6b44e423e4af6dbb8a65a19d4bae97"}}],
+  :applying-input-fingerprint
+  "98c5fa7283ba55654d8cd4f5bce73bbcd687115d64adbccd0f2cd8fbb7362959",
+  :new-standalone-owners
+  {"bootstrap/clojure/test/gravity/reader/normal_dispatch_test.clj"
+   {:namespace gravity.reader.normal-dispatch-test,
+    :slice "SH-03",
+    :owner :sh-reader}},
+  :qualification
+  "Only standalone normal-dispatch fixture ownership changes strict projection inputs. Task status and predicates remain unchanged; parser/authentication/reconstruction and mapping promotion remain open.",
+  :current-main-composition
+  {:incoming-main "3ddff4b7d50dd874da8c8d62c8f75eef28647955",
+   :applying-input-fingerprint
+   "96346270c7fd3d6fd31e9f8e0aabf805cd7b9258a136ce6ec05df03e43ef9a9a",
+   :reader-source-review
+   {:commit "afe5d20b3d013beabec45fa23768949ea05f2611",
+    :receipt-sha256
+    "e05486a0e1e707a1c45e38a9b1e2a5bd53328058a58b6664cc315d136ebf448a",
+    :scope :finite-source-and-injected-fixtures-only},
+   :qualification
+   "Build source pins and normal Reader ownership composed without changing their source bytes. Prior lineages retained; mapping promotion and genuine Reader authentication remain open."}},
+ :implementation-review
+ {:commit "f27f076231c056909e83a6dd59f662542cd4864f",
+  :receipt-sha256
+  "9213fa159fabae82610edd7ec496f52e16735491897cd776342412cc5c49de80",
+  :scope :bootstrap-leaf-only},
+ :source-files
+ [{:path "specs/reader-workflow/tasks.md",
+   :before
+   {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :sha256
+    "2d2de8d574fb462cb88a8935698fca908fb14c8f9c695436a281280d0e7cae75"},
+   :after
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"}}
+  {:path "docs/component-roadmaps/reader.md",
+   :before
+   {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :sha256
+    "f8d579d2f4411e6c340447a579768834fc3eeef7875de9f5af8deee28a1521e0"},
+   :after
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"}}
+  {:path "docs/self-hosting-slice-ownership.edn",
+   :before
+   {:commit "bffefedfada9e3312e68e0a28a69d71db459d0e2",
+    :sha256
+    "01c59e7c55fc1a857071eb83d475047112ee8f9dee34a66a3f0e7932184525d6"},
+   :after
+   {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+    :sha256
+    "34b466a8ed22d5e50ccb7f39eedfb3c8fcc3f5f9e21590e7a8b9d068e26407b1"}}],
+ :scope
+ "Absolute immutable evidence link, generated Reader row and standalone dispatch test owner. All stable task IDs, checkboxes, routing and acceptance criteria retained; implementation files unchanged from f27f0762.",
+ :acceptance :no-new-implementation-or-integration-credit,
+ :applying-input-fingerprint
+ "63c65ce6be9510fcf7c41dd5b77ea37ef0872d30c0adb11ffaacb9568a8085d5",
+ :status :pending-independent-source-version-review,
+ :kind :reader-dispatch-source-version-bridge,
+ :current-main-composition
+ {:status :pending-independent-source-version-review,
+  :incoming-main "43112981c2e6ee47e1cc1451dbe3b750f88ee874",
+  :merge-source-commit "e446f3268ecc8ce25408236631a41c5939e7a952",
+  :applying-input-fingerprint
+  "8f9bca309f67fcdf293603bc1ad5392c138942cac159adb1de950c47ce73e587",
+  :source-files
+  [{:path "specs/reader-workflow/tasks.md",
+    :before
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"},
+    :after
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "8d65c7670095f4834b0339c55264851f5804f9063807e8cb4f567f589e62bd3e"}}
+   {:path "docs/component-roadmaps/reader.md",
+    :before
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"},
+    :after
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "ddb5e1fbcb9fce7e8e6813b37c6608b5844a3dbfdc5f7a2ea6c74ff195f252b4"}}
+   {:path "docs/self-hosting-slice-ownership.edn",
+    :before
+    {:commit "2e0292c61603aad200df397e397e94e3c7d24818",
+     :sha256
+     "34b466a8ed22d5e50ccb7f39eedfb3c8fcc3f5f9e21590e7a8b9d068e26407b1"},
+    :after
+    {:commit "e446f3268ecc8ce25408236631a41c5939e7a952",
+     :sha256
+     "d8b3c24d7c619ab28bfc2a7bd70dde086c27b0b851e563d28cbfd3c79a5f631f"}}],
+  :predecessor-reader-review
+  {:commit "da0337403c7a92428b1ac8a122536aa3c0a7df10",
+   :receipt-sha256
+   "d5c4be019502c982c8de9b54f0df9d5527c1cfd9e1c10d74485592fd11cfde97",
+   :scope :metadata-delta-only},
+  :incoming-mapping-review
+  {:reviewed-tree "b824c0d40abb35d47ed1625beac8088b1f916e27",
+   :reviewed-commit "ac5f4c6ea4105da0cf2626634e31424623d66b1e",
+   :predecessor-review
+   {:reviewed-tree "1229798edab46b3774dbab18c1c555c043eafa55",
+    :source-version-review
+    {:reviewed-commit "a7b52d4592d6b82e191ee1fba308ae5dc26625d4",
+     :reviewed-tree "49119f422a98f51131a5ee171ef3a107bdb7a2fb",
+     :receipt-sha256
+     "a660add10af34afc961231571dfc0763d1fd31fd79c6f4ad49442cd1922f3b70",
+     :scope
+     "Four named version changes, new Reader receipt, complete explicit-pin guard and metadata-only adoption for the identical ae42 payload."},
+    :reviewed-commit "c6c80530dd2b36a9b66ffd1a2a9042f0f43b4f36",
+    :locator-and-current-main-review
+    {:reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+     :reviewed-commit "79305c95a2440d3879940043494a5cad396b6100",
+     :reviewed-tree "bddcb3d9e7130eca8868ff2be1b98afdacc5747d",
+     :audit-commit "90b6f524a2f498fbb21bf9d63b7aef7c368922c3",
+     :receipt-sha256
+     "6130242a544f3db7bfd073d097279e7680144183022e29b36dc20efb4056050f",
+     :locator-receipt-sha256
+     "2cb188cd202a46cff696f818480f49230511269587482b728221bcbb924f833f",
+     :composition-receipt-sha256
+     "1357cf8975587dbf661ddd5ea9dfd4a2d1a8e6cde4ff423093cdb06900f73904",
+     :scope
+     "Exact inspected pins/live drift, current-main source-version composition, six lint fixes and corrected ownership provenance. Metadata-only adoption for the identical655a9b89 payload; no implementation or whole-SH acceptance."},
+    :status :accepted-mapping-only,
+    :receipt-sha256
+    "39e91ae6270c92ad789e15b635e7dbaf8890726ea2dd7c432ec019077375037c",
+    :qualification
+    "Independent acceptance of all180 mappings/18sequence rows and graph only. No implementation acceptance, global requirement denominator or rate.",
+    :predecessor-input-fingerprint
+    "cdca8f11a6ad11d3917646a932235a302f3356860ab5c559e2e4dd12166c4c5e",
+    :reviewer "01a17a6d-8d52-7002-999b-89d8cdd34008",
+    :review-text-sha256
+    "1269e58c6d1dc859f3d064bb8c3342a1d82061a26acc8252af7d32cc6e046942",
+    :input-fingerprint
+    "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"},
+   :audit-commit "9ac62964ac00eef5730785ba18062bcd508b238e",
+   :status :accepted-mapping-only,
+   :receipt-sha256
+   "fdb720fd1a9682753dcc2a334b414f9dea906ebaf788629f405c5b88c1ccd6b8",
+   :qualification
+   "Independently reviewed PR530 ownership source-version metadata adoption only, bound to this exact input fingerprint. All180 current whole-criterion acceptance states remain unassessed; no semantic, implementation, release or seedless credit.",
+   :reviewer "01a17a6d-1145-74dd-94c5-ecec12b8b005",
+   :input-fingerprint
+   "660701592149e71eae4ec4408301c54d34fd4ca7dcf58eebef1888cacadb5abb"},
+  :qualification
+  "Reader task/roadmap remain byte-identical to 2e0292c6; merged ownership retains both standalone tests. No mapping promotion or implementation acceptance."},
+ :predecessor-mapping-input-fingerprint
+ "655a9b89bf18eb04770ab27181d77097e72e751565352dad16745c9f108ecf68"}
