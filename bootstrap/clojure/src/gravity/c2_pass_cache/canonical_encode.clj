@@ -1,33 +1,16 @@
 ;; Semantic C2 pass-cache component loaded by gravity.c2-pass-cache.
 ;; It deliberately evaluates in the facade namespace to retain private test seams.
-(defn- canonical-capacity-or-key-fail!
-  [options resource maximum observed message data]
-  (if-let [capacity-failure! (:capacity-failure! options)]
-    (capacity-failure! resource maximum observed)
-    (cache-fail! "C16-KEY" message data)))
-
 (defn- encode-value
-  [value state depth {:keys [reject-metadata?] :as options}]
-  (let [nodes (swap! state inc)]
-    (when (> nodes maximum-canonical-nodes)
-      (canonical-capacity-or-key-fail!
-       options :canonical-nodes maximum-canonical-nodes nodes
-       "canonical value exceeds the node bound"
-       {:maximum-nodes maximum-canonical-nodes}))
-    (when (> depth maximum-canonical-depth)
-      (canonical-capacity-or-key-fail!
-       options :canonical-depth maximum-canonical-depth depth
-       "canonical value exceeds the depth bound"
-       {:maximum-depth maximum-canonical-depth}))
-    (when (and reject-metadata? (metadata-bearing? value))
-      (cache-fail! "C16-KEY"
-                   "semantic cache keys cannot depend on host metadata"
-                   {:value-class (.getName (class value))}))
-    (if (and (not reject-metadata?) (metadata-bearing? value))
-      [:meta
-       (encode-value (meta value) state (inc depth) options)
-       (encode-value (with-meta value nil) state (inc depth) options)]
-      (cond
+  [value {:keys [reject-metadata?] :as options}]
+  (when (and reject-metadata? (metadata-bearing? value))
+    (cache-fail! "C16-KEY"
+                 "semantic cache keys cannot depend on host metadata"
+                 {:value-class (.getName (class value))}))
+  (if (and (not reject-metadata?) (metadata-bearing? value))
+    [:meta
+     (encode-value (meta value) options)
+     (encode-value (with-meta value nil) options)]
+    (cond
         (nil? value) [:nil]
         (true? value) [:boolean true]
         (false? value) [:boolean false]
@@ -72,24 +55,24 @@
         (map? value)
         (let [entries
               (mapv (fn [[key item]]
-                      [(encode-value key state (inc depth) options)
-                       (encode-value item state (inc depth) options)])
+                      [(encode-value key options)
+                       (encode-value item options)])
                     value)]
           [:map (sorted-encoded entries)])
 
         (set? value)
-        [:set (sorted-encoded (encode-children value state depth options))]
+        [:set (sorted-encoded (encode-children value options))]
 
         (vector? value)
-        [:vector (encode-children value state depth options)]
+        [:vector (encode-children value options)]
 
         (seq? value)
-        [:list (encode-children value state depth options)]
+        [:list (encode-children value options)]
 
         :else
         (cache-fail! "C16-KEY" "unsupported value in canonical cache data"
-                     {:value-class (.getName (class value))})))))
+                     {:value-class (.getName (class value))}))))
 
 (defn- canonical-node
   [value options]
-  (encode-value value (atom 0) 0 options))
+  (encode-value value options))

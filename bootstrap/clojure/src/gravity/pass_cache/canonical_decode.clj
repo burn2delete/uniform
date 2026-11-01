@@ -1,5 +1,5 @@
 (ns gravity.pass-cache.canonical-decode
-  "Strict canonical cache decoding and EDN preflight."
+  "Strict canonical cache decoding and EDN validation."
   (:require [clojure.edn :as edn]
             [gravity.pass-cache.canonical-encode :refer :all]
             [gravity.pass-cache.policy :refer :all])
@@ -44,14 +44,7 @@
 (declare decode-node)
 
 (defn decode-node
-  [node state depth]
-  (when (> depth maximum-depth)
-    (fail! "C16-ENTRY" "decoded cache data exceeds its depth bound"
-           {:maximum-depth maximum-depth}))
-  (let [nodes (swap! state inc)]
-    (when (> nodes maximum-nodes)
-      (fail! "C16-ENTRY" "decoded cache data exceeds its node bound"
-             {:maximum-nodes maximum-nodes})))
+  [node]
   (when-not (and (vector? node) (keyword? (first node)))
     (fail! "C16-ENTRY" "cache data is not a canonical tagged node" {}))
   (case (first node)
@@ -128,21 +121,21 @@
     :vector (do (expect-node! node :vector 2)
                 (when-not (vector? (second node))
                   (fail! "C16-ENTRY" "canonical vector payload must be a vector" {}))
-                (mapv #(decode-node % state (inc depth)) (second node)))
+                (mapv decode-node (second node)))
     :list (do (expect-node! node :list 2)
               (when-not (vector? (second node))
                 (fail! "C16-ENTRY" "canonical list payload must be a vector" {}))
-              (apply list (map #(decode-node % state (inc depth)) (second node))))
+              (apply list (map decode-node (second node))))
     :set (do (expect-node! node :set 2)
              (sorted-node-vector! :set (second node))
-             (set (map #(decode-node % state (inc depth)) (second node))))
+             (set (map decode-node (second node))))
     :map (do (expect-node! node :map 2)
              (sorted-node-vector! :map (second node))
              (reduce (fn [result entry]
                        (when-not (and (vector? entry) (= 2 (count entry)))
                          (fail! "C16-ENTRY" "malformed canonical map entry" {}))
-                       (let [key (decode-node (first entry) state (inc depth))
-                             value (decode-node (second entry) state (inc depth))]
+                       (let [key (decode-node (first entry))
+                             value (decode-node (second entry))]
                          (when (contains? result key)
                            (fail! "C16-ENTRY" "duplicate canonical map key" {}))
                          (assoc result key value)))
@@ -160,64 +153,12 @@
     (catch CharacterCodingException _
       (fail! diagnostic "cache file is not valid UTF-8" {}))))
 
-(defn preflight-edn-text!
-  [^String text]
-  ;; Count containers and scalar tokens before invoking the EDN reader.  A
-  ;; delimiter-only scan does not bound a huge flat vector of atoms.
-  (letfn [(account-node! [nodes]
-            (let [next-nodes (inc nodes)]
-              (when (> next-nodes maximum-nodes)
-                (fail! "C16-ENTRY" "cache EDN exceeds its node bound"
-                       {:maximum-nodes maximum-nodes}))
-              next-nodes))]
-   (loop [index 0 depth 0 nodes 0 quoted? false escaped? false
-          comment? false token? false]
-    (if (= index (.length text))
-      (do
-        (when token? (account-node! nodes))
-        true)
-      (let [ch (.charAt text index)]
-        (cond
-          comment?
-          (recur (inc index) depth nodes false false
-                 (not (or (= ch \newline) (= ch \return))) false)
-          escaped? (recur (inc index) depth nodes true false false false)
-          (and quoted? (= ch \\))
-          (recur (inc index) depth nodes true true false false)
-          (and quoted? (= ch \"))
-          (recur (inc index) depth (account-node! nodes) false false false false)
-          quoted? (recur (inc index) depth nodes true false false false)
-          (= ch \;)
-          (recur (inc index) depth (if token? (account-node! nodes) nodes)
-                 false false true false)
-          (= ch \" )
-          (recur (inc index) depth (if token? (account-node! nodes) nodes)
-                 true false false false)
-          (#{\[ \{ \(} ch)
-          (let [next-depth (inc depth)
-                next-nodes (account-node!
-                            (if token? (account-node! nodes) nodes))]
-            (when (> next-depth maximum-depth)
-              (fail! "C16-ENTRY" "cache EDN exceeds its depth bound"
-                     {:maximum-depth maximum-depth}))
-            (recur (inc index) next-depth next-nodes false false false false))
-          (#{\] \} \)} ch)
-          (recur (inc index) (max 0 (dec depth))
-                 (if token? (account-node! nodes) nodes)
-                 false false false false)
-          (or (Character/isWhitespace ch) (= ch \,))
-          (recur (inc index) depth
-                 (if token? (account-node! nodes) nodes)
-                 false false false false)
-          :else (recur (inc index) depth nodes false false false true)))))))
-
 (defn decode-canonical-bytes
   [^bytes bytes byte-limit]
   (when (> (alength bytes) byte-limit)
     (fail! "C16-ENTRY" "cache file exceeds its read bound"
            {:maximum-bytes byte-limit :observed-bytes (alength bytes)}))
   (let [text (utf8-string bytes "C16-ENTRY")
-        _ (preflight-edn-text! text)
         node (try
                (edn/read-string
                 {:readers {}
@@ -233,7 +174,7 @@
                    (throw error)
                    (fail! "C16-ENTRY" "cache EDN is malformed"
                           {:contained-host-error (.getName (class error))}))))
-        value (try (decode-node node (atom 0) 0)
+        value (try (decode-node node)
                    (catch StackOverflowError _
                      (fail! "C16-ENTRY" "decoded cache data exceeds host stack bound" {})))
         canonical (canonical-bytes value byte-limit)]

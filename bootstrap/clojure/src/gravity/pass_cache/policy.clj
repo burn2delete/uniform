@@ -1,5 +1,5 @@
 (ns gravity.pass-cache.policy
-  "Shared cache bounds, ownership contract, authority, and diagnostics."
+  "Shared cache storage policy, ownership contract, authority, and diagnostics."
   (:import [java.nio.file LinkOption StandardOpenOption]
            [java.nio.file.attribute PosixFilePermissions]
            [java.util HashSet]
@@ -8,10 +8,7 @@
 (def schema-version 2)
 (def canonicalizer-version 2)
 (def cache-root-relative [".cpcache" "compiler-pass" "v2"])
-(def ^:dynamic maximum-depth 96)
-(def ^:dynamic maximum-nodes 32768)
 (def ^:dynamic maximum-file-bytes (* 48 1024 1024))
-(def ^:dynamic maximum-canonical-bytes maximum-file-bytes)
 (def ^:dynamic maximum-entry-bytes (* 4 1024 1024))
 (def ^:dynamic maximum-blob-bytes maximum-file-bytes)
 (def ^:dynamic maximum-entry-count 8192)
@@ -85,7 +82,7 @@
    :release-authority? false
    :self-hosting-authority? false
    :equivalence-authority? false
-   :owns [:bounded-semantic-stage-key
+   :owns [:semantic-stage-key
           :immutable-content-addressed-artifact-blobs
           :immutable-cache-entries
           :immutable-producer-receipts
@@ -175,8 +172,7 @@
   (when-not (vector? value)
     (fail! "C16-KEY" "semantic identity list must be a vector"
            {:field field :observed value}))
-  (when (or (> (count value) maximum-nodes)
-            (not (every? sha256-id? value))
+  (when (or (not (every? sha256-id? value))
             (not= (count value) (count (distinct value)))
             (not= value (vec (sort value))))
     (fail! "C16-KEY" "semantic identity list is malformed"

@@ -118,7 +118,7 @@
          :execution-mode :executed))
 
 (defn stage-cache-key
-  "Build a bounded semantic key over the full pass execution contract."
+  "Build a semantic key over the full pass execution contract."
   [request]
   (let [preimage (key-preimage request)
         semantic-preimage
