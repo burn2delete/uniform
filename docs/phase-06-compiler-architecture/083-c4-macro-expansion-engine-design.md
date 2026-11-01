@@ -63,7 +63,7 @@ recorded, and replayable.
  :macro-environment macro-env-hash
  :build-grants grant-hash
  :hermetic true
- :limits {:depth 128 :nodes 100000 :time-ms 5000}}
+ :host-safeguards {:timeout-ms 5000}}
 ```
 
 The macro environment includes macro vars, versions, exported API, safety
@@ -81,7 +81,9 @@ Expansion proceeds as:
 6. Invoke macro with syntax objects and compile-time context.
 7. Validate returned syntax object graph.
 8. Attach generated-origin, hygiene, and expansion trace entries.
-9. Repeat until no macro calls remain or a limit is reached.
+9. Repeat until no macro calls remain. Reject a non-progressing recursive
+   expansion deterministically; do not reject a finite expansion solely for its
+   depth, body-form count, or expanded size.
 10. Emit expanded syntax and trace.
 
 The engine does not type check the full generated program, but it performs early
@@ -172,8 +174,10 @@ Macro expansion diagnostics use `C4` identifiers:
 
 - `C4-NOT-MACRO` for invalid macro invocation.
 - `C4-RETURN` for macro output that is not valid syntax.
-- `C4-DEPTH` for expansion depth exhaustion.
-- `C4-SIZE` for expansion size limit exhaustion.
+- `C4-DEPTH` is retained for compatibility with recursive-expansion and host
+  containment records; it is not a project depth quota.
+- `C4-SIZE` remains a historical compatibility identifier for older fixture
+  records and is not emitted by the current engine as an expansion-size quota.
 - `C4-BUILD-EFFECT` for undeclared or ungranted build effects.
 - `C4-HYGIENE` for hygiene violations.
 - `C4-CAPTURE` for illegal capture.
@@ -204,7 +208,8 @@ A conforming macro expansion engine must demonstrate:
 - syntax-object input and output validation,
 - deterministic expansion traces,
 - hygiene preservation and intentional capture records,
-- recursion and size limit diagnostics,
+- recursive-cycle and host-containment diagnostics without project depth/size
+  quotas,
 - build-effect authorization and hermetic rejection,
 - generated-origin diagnostics for macro output,
 - generated unsafe acceptance and rejection cases,

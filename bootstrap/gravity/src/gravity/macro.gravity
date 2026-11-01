@@ -75,19 +75,13 @@
    :clojure-seed-boundary? true})
 
 (def sh05-macro-bounds
-  {:maximum-expansion-depth 64
-   :maximum-output-nodes 4096
-   :maximum-body-forms 256
-   :maximum-build-effects 32
+  {:maximum-build-effects 32
    :maximum-capabilities 32
    :maximum-hygiene-marks 64
    :maximum-origin-entries 32})
 
 (defn sh05-macro-bounds-value []
-  {:maximum-expansion-depth 64
-   :maximum-output-nodes 4096
-   :maximum-body-forms 256
-   :maximum-build-effects 32
+  {:maximum-build-effects 32
    :maximum-capabilities 32
    :maximum-hygiene-marks 64
    :maximum-origin-entries 32})
@@ -184,8 +178,7 @@
              :build-policy-id :trace-replay-id})
         (if (sh05-exact-keys?
              (get request :policy)
-             #{:macro-return-kind :expansion-depth :output-node-count
-               :requested-build-effects :declared-build-effects
+             #{:macro-return-kind :requested-build-effects :declared-build-effects
                :granted-build-effects :requested-capabilities
                :granted-capabilities :hidden-captures :capture-policy
                :generated-unsafe? :unsafe-declared? :allowed-profiles
@@ -244,20 +237,15 @@
     false)
     false))
 
-(defn sh05-id-vector? [values maximum]
+(defn sh05-id-vector? [values]
   (if (vector? values)
-    (if (<= (count values) maximum)
-      (loop [remaining values]
-        (if (= (count remaining) 0)
-          true
-          (if (sh05-sha256-id? (first remaining))
-            (recur (rest remaining))
-            false)))
-      false)
+    (loop [remaining values]
+      (if (= (count remaining) 0)
+        true
+        (if (sh05-sha256-id? (first remaining))
+          (recur (rest remaining))
+          false)))
     false))
-
-(defn sh05-nonnegative-integer? [value]
-  (if (integer? value) (>= value 0) false))
 
 (defn sh05-request-validation-fields? [request]
   (let [call (get request :call)
@@ -298,20 +286,12 @@
                                             (if (keyword?
                                                  (get policy
                                                       :generated-profile))
-                                              (if (sh05-nonnegative-integer?
-                                                   (get policy
-                                                        :expansion-depth))
-                                                (if (sh05-nonnegative-integer?
-                                                     (get policy
-                                                          :output-node-count))
-                                                  (if (string?
-                                                       (get context
-                                                            :trace-replay-id))
-                                                    (string?
-                                                     (get policy
-                                                          :recorded-trace-replay-id))
-                                                    false)
-                                                  false)
+                                              (if (string?
+                                                   (get context
+                                                        :trace-replay-id))
+                                                (string?
+                                                 (get policy
+                                                      :recorded-trace-replay-id))
                                                 false)
                                               false)
                                             false)
@@ -343,7 +323,7 @@
       (if (sh05-sha256-id? (get call :definition-syntax-id))
         (if (sh05-sha256-id? (get call :name-syntax-id))
           (if (sh05-sha256-id? (get call :parameter-vector-syntax-id))
-            (if (sh05-id-vector? (get call :body-syntax-ids) 256)
+            (if (sh05-id-vector? (get call :body-syntax-ids))
               (if (sh05-sha256-id?
                    (get request :reader-semantic-binding-id))
                 (if (sh05-sha256-id? (get request :source-revision-id))
@@ -370,44 +350,38 @@
       (if (= (get call :macro-name) 'defn)
         (if (= (get policy :macro-return-kind) :syntax)
           (if (= (get context :phase) :macro-expansion)
-            (if (<= (get policy :expansion-depth) 64)
-              (if (<= (get policy :output-node-count) 4096)
-                (if (<= (count (get call :body-syntax-ids)) 256)
-                  (if (sh05-vector-subset?
-                       (get policy :requested-build-effects)
-                       (get policy :declared-build-effects))
-                    (if (sh05-vector-subset?
-                         (get policy :declared-build-effects)
-                         (get policy :granted-build-effects))
-                    (if (sh05-vector-subset?
-                         (get policy :requested-capabilities)
-                         (get policy :granted-capabilities))
-                      (if (= (count (get policy :hidden-captures)) 0)
-                        (if (= (get policy :capture-policy) :explicit-only)
-                          (if (if (= (get policy :generated-unsafe?) false)
-                                true
-                                (= (get policy :unsafe-declared?) true))
-                            (if (sh05-vector-contains?
-                                 (get policy :allowed-profiles)
-                                 (get context :profile))
-                              (if (= (get policy :generated-profile)
-                                     (get context :profile))
-                                (if (= (get context :trace-replay-id)
-                                       (get policy
-                                            :recorded-trace-replay-id))
-                                  nil
-                                  "C4-TRACE")
-                                "C4-PROFILE")
-                              "C4-PROFILE")
-                            "C4-GENERATED-UNSAFE")
-                          "C4-CAPTURE")
-                        "C4-HYGIENE")
-                      "C4-BUILD-EFFECT")
-                    "C4-BUILD-EFFECT")
-                    "C4-BUILD-EFFECT")
-                  "C4-SIZE")
-                "C4-SIZE")
-              "C4-DEPTH")
+          (if (sh05-vector-subset?
+               (get policy :requested-build-effects)
+               (get policy :declared-build-effects))
+            (if (sh05-vector-subset?
+                 (get policy :declared-build-effects)
+                 (get policy :granted-build-effects))
+              (if (sh05-vector-subset?
+                   (get policy :requested-capabilities)
+                   (get policy :granted-capabilities))
+                (if (= (count (get policy :hidden-captures)) 0)
+                  (if (= (get policy :capture-policy) :explicit-only)
+                    (if (if (= (get policy :generated-unsafe?) false)
+                          true
+                          (= (get policy :unsafe-declared?) true))
+                      (if (sh05-vector-contains?
+                           (get policy :allowed-profiles)
+                           (get context :profile))
+                        (if (= (get policy :generated-profile)
+                               (get context :profile))
+                          (if (= (get context :trace-replay-id)
+                                 (get policy
+                                      :recorded-trace-replay-id))
+                            nil
+                            "C4-TRACE")
+                          "C4-PROFILE")
+                        "C4-PROFILE")
+                      "C4-GENERATED-UNSAFE")
+                    "C4-CAPTURE")
+                  "C4-HYGIENE")
+                "C4-BUILD-EFFECT")
+              "C4-BUILD-EFFECT")
+            "C4-BUILD-EFFECT")
             "C4-NOT-MACRO")
           "C4-RETURN")
         "C4-NOT-MACRO"))
@@ -668,9 +642,9 @@
     (if (= rule "C4-RETURN")
       "Return a valid syntax object from the macro."
       (if (= rule "C4-DEPTH")
-        "Reduce recursive expansion depth below the declared bound."
+        "Break the recursive expansion cycle or use the bounded host execution path."
         (if (= rule "C4-SIZE")
-          "Reduce generated syntax size below the declared bound."
+          "Use the current semantic expansion contract; project size quotas are retired."
           (if (= rule "C4-BUILD-EFFECT")
             "Declare and grant every macro build effect and capability."
             (if (= rule "C4-HYGIENE")
@@ -733,9 +707,9 @@
          (if (= rule "C4-RETURN")
            :macro-return-not-syntax
            (if (= rule "C4-DEPTH")
-             :expansion-depth-exhausted
+             :recursive-expansion-or-host-containment
              (if (= rule "C4-SIZE")
-               :expansion-size-exhausted
+               :historical-expansion-size-diagnostic
                (if (= rule "C4-HYGIENE")
                  :hidden-hygiene-capture
                  (if (= rule "C4-CAPTURE")
@@ -745,8 +719,6 @@
                      (if (= rule "C4-PROFILE")
                        :generated-profile-illegal
                        :trace-replay-mismatch)))))))
-         :expansion-depth (get policy :expansion-depth)
-         :output-node-count (get policy :output-node-count)
          :generated-profile (get policy :generated-profile)
          :caller-profile (get context :profile)
          :generated-unsafe? (get policy :generated-unsafe?)

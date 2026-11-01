@@ -106,10 +106,10 @@
         (operations/operation
          ops :expand-form-children
          (fn [r m syn value tr depth]
-           (expand-form-children r m syn value tr depth ops)))
-        max-depth (:max-macro-expansion-depth ops 16)]
+           (expand-form-children r m syn value tr depth ops)))]
     (loop [syntax initial-syntax
-           depth initial-depth]
+           depth initial-depth
+           seen-inputs #{}]
       (let [form (:form syntax)]
         (cond
           (form-op 'defmacro form)
@@ -117,16 +117,16 @@
 
           (macro-call-op registry form)
           (do
-            (when (>= depth max-depth)
+            (when (contains? seen-inputs form)
               (operations/fail!
                ops "L4-EXPANSION-DEPTH"
-               "macro expansion exceeded the configured depth limit"
+               "macro expansion repeated a non-progressing form"
                {:source-span (:span syntax)
                 :form form
                 :depth depth
-                :limit max-depth
+                :reason :recursive-expansion-cycle
                 :remediation
-                "Stop recursive expansion or raise the project expansion limit with evidence."}))
+                "Change the recursive macro so each expansion makes semantic progress."}))
             (let [macro (macro-call-op registry form)
                   input form
                   output (expand-macro module macro (vec (rest form))
@@ -153,7 +153,8 @@
                          (update :hygiene conj
                                  {:macro (:identity macro)
                                   :policy (:hygiene-policy macro)}))
-                     (inc depth))))
+                     (inc depth)
+                     (conj seen-inputs input))))
 
           (coll? form)
           (assoc syntax

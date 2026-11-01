@@ -161,7 +161,7 @@
             "L4-GENERATED-PROFILE"]
            (mapv first @failures)))))
 
-(deftest safety-depth-and-provenance-rejections-remain-exact
+(deftest safety-cycle-and-provenance-rejections-remain-exact
   (let [span {:source "macro.gravity" :form-index 4}
         effect :build/env
         undeclared (fail-data
@@ -200,14 +200,37 @@
                          :required-build-capabilities #{}
                          :hygiene-policy :hygienic
                          :expander (fn [_ _] '(again))}
-        depth (fail-data
+        cycle (fail-data
                #(macro-expansion/expand-syntax-object
                  {'again recursive-macro}
                  {:profile :hosted :metadata {}}
                  (syntax "recursive" '(again) 5)
                  (atom [])
-                 0
-                 {:max-macro-expansion-depth 1}))
+                 0))
+        finite-length 40
+        finite-registry
+        (into {}
+              (map (fn [index]
+                     (let [name (symbol (str "m" index))
+                           output (if (= index (dec finite-length))
+                                    :finished
+                                    (list (symbol (str "m" (inc index)))))]
+                       [name {:identity (symbol "example" (str "m" index))
+                              :version "1"
+                              :macro-namespace 'example
+                              :kind :built-in
+                              :build-effects #{}
+                              :required-build-capabilities #{}
+                              :hygiene-policy :hygienic
+                              :expander (fn [_ _] output)}]))
+                   (range finite-length)))
+        finite-trace (atom [])
+        finite (macro-expansion/expand-syntax-object
+                finite-registry
+                {:profile :hosted :metadata {}}
+                (syntax "finite" '(m0) 6)
+                finite-trace
+                0)
         missing-origin (fail-data
                         #(macro-expansion/expand-syntax-object
                           {'missing {:identity 'example/missing
@@ -235,8 +258,11 @@
     (is (= "L4-HYGIENE-CAPTURE" (:id capture)))
     (is (= 'captured (:symbol capture)))
     (is (= "L4-GENERATED-UNSAFE" (:id generated-unsafe)))
-    (is (= "L4-EXPANSION-DEPTH" (:id depth)))
-    (is (= 1 (:limit depth)))
+    (is (= "L4-EXPANSION-DEPTH" (:id cycle)))
+    (is (= :recursive-expansion-cycle (:reason cycle)))
+    (is (= :finished (:form finite)))
+    (is (= finite-length (count @finite-trace)))
+    (is (= (dec finite-length) (:depth (last @finite-trace))))
     (is (= "L4-PROVENANCE-MISSING" (:id missing-origin)))
     (is (= "L4-MACRO-NOT-SYNTAX" (:id malformed-return)))))
 
