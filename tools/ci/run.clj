@@ -395,22 +395,53 @@
                         {:namespace namespace-symbol
                          :candidates candidates})))))
 
-(def dynamic-dependency-heads
+(def leaf-dynamic-dependency-symbols
   '#{require clojure.core/require load clojure.core/load
-     load-file clojure.core/load-file load-string clojure.core/load-string})
+     load-file clojure.core/load-file load-string clojure.core/load-string
+     requiring-resolve clojure.core/requiring-resolve
+     resolve clojure.core/resolve})
 
 (defn leaf-dynamic-dependency-form? [form]
-  (or (and (seq? form) (contains? dynamic-dependency-heads (first form)))
+  (or (and (symbol? form) (contains? leaf-dynamic-dependency-symbols form))
       (and (coll? form) (some leaf-dynamic-dependency-form? form))))
 
 (defn leaf-source-forms [path]
   (binding [*read-eval* false]
-    (with-open [reader (java.io.PushbackReader. (io/reader path))]
-      (loop [forms []]
-        (let [form (read {:eof ::eof} reader)]
-          (if (= ::eof form)
-            forms
-            (recur (conj forms form))))))))
+    (let [eof (Object.)]
+      (with-open [reader (java.io.PushbackReader. (io/reader path))]
+        (loop [forms []]
+          (let [form (read {:eof eof} reader)]
+            (if (identical? eof form)
+              forms
+              (recur (conj forms form)))))))))
+
+(defn leaf-valid-reference-target? [value]
+  (or (= :all value)
+      (and (vector? value) (every? symbol? value))))
+
+(defn leaf-valid-rename-map? [value]
+  (and (map? value)
+       (every? (fn [[from to]] (and (symbol? from) (symbol? to))) value)))
+
+(defn leaf-validate-require-options! [spec clause]
+  (loop [options (seq (rest spec))]
+    (when options
+      (let [option (first options)
+            value (second options)]
+        (when-not (and (keyword? option) (next options))
+          (throw (ex-info "Unsupported leaf require option syntax"
+                          {:spec spec :clause clause})))
+        (when-not (case option
+                    :as (symbol? value)
+                    :as-alias (symbol? value)
+                    :refer (leaf-valid-reference-target? value)
+                    :refer-macros (leaf-valid-reference-target? value)
+                    :rename (leaf-valid-rename-map? value)
+                    :include-macros (boolean? value)
+                    false)
+          (throw (ex-info "Unsupported leaf require option"
+                          {:option option :value value :spec spec :clause clause})))
+        (recur (nnext options))))))
 
 (defn leaf-required-namespaces [form]
   (when-not (and (seq? form) (= 'ns (first form)))
@@ -423,7 +454,10 @@
                 (mapcat (fn [spec]
                           (let [dependency (cond
                                              (symbol? spec) spec
-                                             (vector? spec) (first spec)
+                                             (vector? spec)
+                                             (do
+                                               (leaf-validate-require-options! spec clause)
+                                               (first spec))
                                              :else nil)]
                             (when-not (symbol? dependency)
                               (throw (ex-info "Unsupported leaf require specification"

@@ -440,7 +440,11 @@
          (vec (ci/leaf-required-namespaces
                (read-string "(ns demo (:require [gravity.foo :as foo]))")))))
   (doseq [source ["(ns demo (:use [gravity.foo]))"
-                  "(ns demo (:require (gravity.foo [bar :as bar])))"]]
+                  "(ns demo (:require (gravity.foo [bar :as bar])))"
+                  "(ns demo (:require [some.dynamic (resolve x)]))"
+                  "(ns demo (:require [gravity.foo (if true :as :refer)]))"
+                  "(ns demo (:require [gravity.foo :as]))"
+                  "(ns demo (:require [gravity.foo :refer :bad]))"]]
     (is (thrown? Exception
                  (doall (ci/leaf-required-namespaces (read-string source))))
         source))
@@ -449,8 +453,8 @@
                             (make-array java.nio.file.attribute.FileAttribute 0)))
         path (.getPath (io/file directory "synthetic.clj"))]
     (try
-      (doseq [dependency-form ["(require 'gravity.hidden)"
-                               "(load \"gravity/hidden\")"]]
+      (doseq [dependency-form [":ci.run/eof\n(require 'gravity.hidden)"
+                               ":ci.run/eof\n(load \"gravity/hidden\")"]]
         (spit path (str "(ns demo)\n" dependency-form "\n"))
         (with-redefs [ci/leaf-namespace-path (constantly path)]
           (is (thrown? Exception
