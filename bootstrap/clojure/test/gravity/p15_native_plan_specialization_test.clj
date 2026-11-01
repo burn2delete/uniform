@@ -2,17 +2,21 @@
   "Focused evidence for authenticated plan-specialized C artifacts.
 
   The namespace consumes real stage2 runtime packets and executes a
-  Gravity-authored C-emitter helper through the bounded Clojure rule-runner
+  Gravity-authored C-emitter helper through the Clojure rule-runner
   seam. Tests compile/run the returned C source only inside a test-owned
   private root; production does not expose a second process runner.
   "
   (:require [clojure.test :refer [deftest is testing run-tests]]
             [gravity.bootstrap :as bootstrap]
-            [gravity.p15-native-plan-specialization :as specialization])
+            [gravity.p15-native-plan-specialization :as specialization]
+            [gravity.p15-native-plan-specialization.emission :as emission]
+            [gravity.p15-native-plan-specialization.plan-validation :as plan-validation]
+            [gravity.p15-native-plan-specialization.source-snapshot :as source-snapshot])
   (:import [java.nio ByteBuffer]
            [java.nio.charset CodingErrorAction StandardCharsets]
            [java.nio.file Files LinkOption OpenOption Path Paths]
-           [java.nio.file.attribute FileAttribute PosixFilePermissions]
+           [java.nio.file.attribute BasicFileAttributes FileAttribute
+            PosixFilePermissions]
            [java.util.concurrent TimeUnit]))
 
 (def ^:private compiler "/usr/bin/cc")
@@ -281,6 +285,93 @@
 (deftest fixed-real-packet-cache-is-bounded-and-source-coherent
   (assert-real-packet-cache-contract!))
 
+(deftest former-accounting-allowances-do-not-reject-valid-plan-data
+  (let [large-scalar (apply str (repeat 1025 "a"))
+        large-generated-source (apply str (repeat 65537 "c"))
+        large-output (apply str (repeat 8193 "o"))
+        plan {:entrypoint 'main
+              :functions {'main {:arity 0
+                                 :instructions
+                                 (vec (repeat 129
+                                               {:op :literal
+                                                :value large-scalar}))}}}
+        reject (fn [source-path message facts]
+                 (throw (ex-info message (assoc facts
+                                                :source-path source-path))))]
+    (is (nil? (plan-validation/validate-plan-shape!
+               "synthetic" plan reject)))
+    (is (= :passed
+           (bootstrap/c-backend-validate-runtime-plan!
+            "synthetic" :c plan)))
+    ;; The helper execution is stubbed only to isolate the output admission
+    ;; seam.  Plan legality above still runs through the public C validator.
+    (with-redefs [bootstrap/p15-s23-stage2-runtime-execute-function
+                  (fn [& _]
+                    {:status :complete
+                     :contract :p15-test-helper
+                     :implementation :gravity-source
+                     :source large-generated-source})]
+      (let [emitted (emission/validate-and-emit!
+                     {:plan plan :reference-output large-output}
+                     {:source-path "synthetic"}
+                     {:validate-plan-shape!
+                      #(plan-validation/validate-plan-shape!
+                        %1 %2 reject)
+                      :compile-helper! (fn [_] {:plan :helper})
+                      :helper-safety-proof
+                      (fn [_] {:safe? true :facts {}})
+                      :helper-contract :p15-test-helper
+                      :helper-function 'p15-test-helper
+                      :utf8-bytes
+                      (fn [value]
+                        (.getBytes ^String (str value)
+                                   StandardCharsets/UTF_8))
+                      :unsupported-fail! reject
+                      :helper-contract-fail! reject
+                      :helper-rejected-fail! reject
+                      :authentication-fail! reject})]
+        (is (= large-output (:expected-output emitted)))
+        (is (= 8193
+               (alength (.getBytes large-output StandardCharsets/UTF_8))))
+        (is (= 65537
+               (alength (.getBytes large-generated-source
+                                   StandardCharsets/UTF_8))))
+        (is (= large-generated-source (:source emitted)))))))
+
+(deftest helper-source-snapshot-accepts-source-over-former-quota
+  (let [payload (apply str (repeat 65537 "a"))
+        temporary (Files/createTempFile
+                   "gravity-p15-large-helper-"
+                   ".gravity"
+                   (make-array FileAttribute 0))
+        reject (fn [source-path message facts]
+                 (throw (ex-info message (assoc facts
+                                                :source-path source-path))))]
+    (try
+      (Files/write temporary
+                   (.getBytes payload StandardCharsets/UTF_8)
+                   (make-array OpenOption 0))
+      (let [attributes (Files/readAttributes temporary
+                                              BasicFileAttributes
+                                              no-follow-options)
+            snapshot (source-snapshot/helper-source-snapshot!
+                      "synthetic"
+                      {:helper-source-path!
+                       (fn [_] {:source-path temporary
+                                :attributes attributes})
+                       :strict-utf8
+                       (fn [source-path source bytes]
+                         (source-snapshot/strict-utf8
+                          source-path source bytes reject))
+                       :no-follow-options no-follow-options
+                       :helper-contract-fail! reject})]
+        (is (= 65537 (:source-byte-count snapshot)))
+        (is (= payload (:source-text snapshot)))
+        (is (re-matches #"sha256:[0-9a-f]{64}"
+                        (:source-content-hash snapshot))))
+      (finally
+        (Files/deleteIfExists temporary)))))
+
 (deftest authenticated-gravity-and-qst-packets-emit-and-run
   (if-not (arm64-darwin-toolchain-available?)
     (is true "no native claim: ARM64 macOS /usr/bin/cc is unavailable")
@@ -401,36 +492,6 @@
              (diagnostic-id
               #(specialization/specialize-native-runtime-plan
                 packet context))))
-      (is (zero? @helper-loader-calls)))))
-
-(deftest overbound-packet-tamper-rejects-before-validator
-  (let [relative (fixture-relative "accepted-print.gravity")
-        {:keys [packet context]} (real-packet relative)
-        entrypoint (:entrypoint (:plan packet))
-        instructions (get-in packet [:plan :functions entrypoint :instructions])
-        overbound-packet
-        (assoc-in packet [:plan :functions entrypoint :instructions]
-                  (vec (concat instructions (repeat 128 (first instructions)))))
-        validator (var-get #'bootstrap/c-backend-validate-runtime-plan!)
-        validator-calls (atom 0)
-        helper-loader (var-get
-                       #'specialization/*p15-native-plan-c-emitter-source-loader*)
-        helper-loader-calls (atom 0)]
-    (is (= 1 (get @*real-packet-derivation-counts* relative))
-        "the repeated accepted-print access reuses the first derivation")
-    (with-redefs [bootstrap/c-backend-validate-runtime-plan!
-                  (fn [& args]
-                    (swap! validator-calls inc)
-                    (apply validator args))
-                  specialization/*p15-native-plan-c-emitter-source-loader*
-                  (fn [& args]
-                    (swap! helper-loader-calls inc)
-                    (apply helper-loader args))]
-      (is (= "P15NS001"
-             (diagnostic-id
-              #(specialization/specialize-native-runtime-plan
-                overbound-packet context))))
-      (is (zero? @validator-calls))
       (is (zero? @helper-loader-calls)))))
 
 (deftest authenticated-validator-accepted-unsupported-helper-values-reject

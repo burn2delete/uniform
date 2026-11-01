@@ -2,11 +2,6 @@
   (:require [gravity.bootstrap :as bootstrap])
   (:import [java.nio.charset StandardCharsets]))
 
-(def max-plan-instructions 128)
-(def max-generated-source-bytes 65536)
-(def max-reference-output-bytes 8192)
-(def max-scalar-bytes 1024)
-(def max-helper-source-bytes 65536)
 (def helper-source-relative
   "bootstrap/gravity/p15_s23/native_plan_c_emitter.gravity")
 (def helper-function 'p15-s23-native-c-emit-plan)
@@ -88,25 +83,3 @@
           {:source-content-hash source-content-hash
            :function-shape function-shape
            :contract contract})))))
-
-(defn scalar-value?
-  [value]
-  (or (nil? value)
-      (boolean? value)
-      (string? value)
-      (number? value)
-      (char? value)
-      (keyword? value)
-      (symbol? value)))
-
-(defn scalar-bound!
-  [source-path value maximum-scalar-bytes bounds-fail!]
-  (when (and (scalar-value? value)
-             (> (alength (utf8-bytes (if (nil? value) "nil" value)))
-                maximum-scalar-bytes))
-    (bounds-fail! source-path
-                  "native plan scalar exceeds the bounded value size"
-                  {:maximum-scalar-bytes maximum-scalar-bytes
-                   :observed-scalar-bytes
-                   (alength (utf8-bytes (if (nil? value) "nil" value)))
-                   :missing-fact :bounded-native-scalar})))
