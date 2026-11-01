@@ -800,49 +800,19 @@
                 "late invalid candidate prevents both blob and receipt deletion"))))
       (finally (delete-tree! directory)))))
 
-(deftest canonical-accounting-and-recovery-traversal-are-bounded
-  (is (thrown? clojure.lang.ExceptionInfo
-               ((var-get (ns-resolve 'gravity.pass-cache 'canonical-bytes))
-                (vec (repeat 12 (apply str (repeat 100 "x")))) 512))
-      "aggregate scalar bytes reject before final encoding")
-  (let [canonical-bytes
-        (var-get (ns-resolve 'gravity.pass-cache 'canonical-bytes))]
+(deftest canonical-values-do-not-use-work-bounds-and-storage-limits-remain-explicit
+  (let [canonical-bytes (var-get (ns-resolve 'gravity.pass-cache 'canonical-bytes))
+        large-vector (vec (repeat 40000 "x"))
+        deep-value (nth (iterate vector :leaf) 120)
+        large-result (canonical-bytes large-vector)
+        deep-result (canonical-bytes deep-value)]
+    (is (pos? (alength ^bytes large-result))
+        "semantic identities accept vectors above the former node allowance")
+    (is (pos? (alength ^bytes deep-result))
+        "semantic identities accept nesting above the former depth allowance")
     (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes (apply str (repeat 2 (char 0))) 75))
-        "single scalar accounts printed control-character escapes")
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes
-                  (vec (repeat 5 (str "x" (char 0)))) 425))
-        "aggregate scalars account every printed escape")
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes
-                  (String. (Character/toChars 0x1f600)) 69))
-        "supplementary code points account four printed UTF-8 bytes")
-    (doseq [named [(keyword "namespace-1234567890" "name-1234567890")
-                   (symbol "namespace-1234567890" "name-1234567890")]]
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (canonical-bytes named 100))
-          "namespaced keyword/symbol components are both charged"))
-    (let [large-integer (java.math.BigInteger.
-                         (apply str (repeat 200 "9")))]
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (canonical-bytes large-integer 150))
-          "integer bit-length bounds decimal printing before str")
-      (is (thrown? clojure.lang.ExceptionInfo
-                   (canonical-bytes
-                    (clojure.lang.Ratio. large-integer
-                                         (.subtract large-integer
-                                                    java.math.BigInteger/ONE))
-                    300))
-          "ratio components are independently pre-accounted"))
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes
-                  (java.math.BigDecimal. java.math.BigInteger/ONE 1000000)
-                  1024))
-        "BigDecimal precision/scale bounds printing before str")
-    (is (thrown? clojure.lang.ExceptionInfo
-                 (canonical-bytes [nil nil] 200))
-        "container and child tagged-node syntax is conservatively charged"))
+                 (canonical-bytes large-vector 512))
+        "an explicit storage byte limit still rejects an oversized encoding"))
   (let [directory (Files/createTempDirectory
                    "gravity-pass-cache-recovery-bound-"
                    (make-array java.nio.file.attribute.FileAttribute 0))]

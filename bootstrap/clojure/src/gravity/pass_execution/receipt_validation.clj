@@ -1,7 +1,6 @@
 (ns gravity.pass-execution.receipt-validation
   "Receipt structure, fact-flow, evidence, and authority revalidation."
   (:require [clojure.set :as set]
-            [gravity.pass-execution.canonical :as canonical]
             [gravity.pass-execution.config :as config]
             [gravity.pass-execution.contract :as contract]
             [gravity.pass-execution.diagnostics :as diagnostics]
@@ -10,7 +9,6 @@
 
 (defn validate-receipt-structure!
   [value pass-contract]
-  (canonical/preflight-canonical! value)
   (validation/exact-map! value config/receipt-fields "C16-ENTRY" :receipt)
   (contract/validate-pass-contract! pass-contract)
   (when-not (and (= :gravity/pass-execution-receipt (:artifact value))
@@ -59,13 +57,6 @@
     (diagnostics/fail! "C18-EVIDENCE" "verifier reports must be a vector" {}))
   (when-not (vector? (:evidence-records value))
     (diagnostics/fail! "C18-EVIDENCE" "evidence records must be a vector" {}))
-  (when (or (> (count (:verifier-reports value))
-               config/maximum-evidence-records)
-            (> (count (:evidence-records value))
-               config/maximum-evidence-records))
-    (diagnostics/fail! "C18-EVIDENCE"
-                       "receipt evidence exceeds its record bound"
-                       {:maximum-records config/maximum-evidence-records}))
   (doseq [report (:verifier-reports value)]
     (validation/validate-verifier-report-shape!
      report (:output-artifact-id value) (:stage value)))
