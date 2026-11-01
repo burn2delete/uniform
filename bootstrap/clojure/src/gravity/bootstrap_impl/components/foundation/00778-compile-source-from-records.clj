@@ -1,3 +1,4 @@
+(declare sh03-reader-read-target-source-bytes!)
 
 
 (defn compile-source-from-records
@@ -109,8 +110,7 @@
     (source-path-policy-fail! path))
   (decode-gravity-source-bytes
    path
-   (java.nio.file.Files/readAllBytes
-    (.toPath (java.io.File. path)))))
+   (sh03-reader-read-target-source-bytes! path)))
 
 (defn compile-file
   [path]

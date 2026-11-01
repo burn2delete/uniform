@@ -4,8 +4,7 @@
             [clojure.test :refer [deftest is testing]]
             [gravity.bootstrap :as bootstrap])
   (:import [java.io File]
-           [java.nio.file Files]
-           [java.util.concurrent TimeUnit]))
+           [java.nio.file Files]))
 
 (defn- delete-file!
   [path]
@@ -25,50 +24,35 @@
   (.setExecutable ^File file true false)
   file)
 
-(defn- run-process
-  [working-directory environment arguments]
-  (let [stdout-file (File/createTempFile "gravity-p18-t06-test-out-" ".txt")
-        stderr-file (File/createTempFile "gravity-p18-t06-test-err-" ".txt")
-        process-builder
-        (doto (ProcessBuilder. ^java.util.List (mapv str arguments))
-          (.directory (io/file working-directory))
-          (.redirectOutput stdout-file)
-          (.redirectError stderr-file))]
-    (doseq [[key value] environment]
-      (.put (.environment process-builder) key value))
-    (try
-      (let [process (.start process-builder)
-            completed? (.waitFor process 90 TimeUnit/SECONDS)
-            exit-code (if completed?
-                        (.exitValue process)
-                        (do
-                          (.destroyForcibly process)
-                          (.waitFor process 5 TimeUnit/SECONDS)
-                          124))]
-        {:exit exit-code
-         :out (slurp stdout-file)
-         :err (slurp stderr-file)})
-      (finally
-        (delete-file! stdout-file)
-        (delete-file! stderr-file)))))
-
 (defn- write-test-release-script!
   [root-directory]
   (let [release-directory (io/file root-directory "target/phase-18/release")
+        _ (.mkdirs ^File release-directory)
         script-file (File/createTempFile "gravity-p18-t06-test-" ".sh"
                                          release-directory)]
     (write-executable! script-file (bootstrap/p18-t06-release-binary-script))))
 
 (defn- run-release
-  [root-directory script-file & arguments]
-  (run-process root-directory {} (into [(.getAbsolutePath ^File script-file)]
-                                      arguments)))
+  [_root-directory script-file & arguments]
+  (bootstrap/p18-shell-run
+   (into [(.getAbsolutePath ^File script-file)] arguments)))
 
 (deftest release-wrapper-uses-real-co-canonical-source-paths
   (let [root-directory (System/getProperty "user.dir")
         script-file (write-test-release-script! root-directory)
         output-files (atom [])]
     (try
+      (let [script-text (slurp script-file)]
+        (testing "source commands bypass the public release launcher"
+          (doseq [command ["check" "run" "compile"]]
+            (is (not (str/includes? script-text
+                                    (str "bin/gravity " command))))))
+        (is (str/includes? script-text
+                           "clojure -M:gravity check \"$source\""))
+        (is (str/includes? script-text
+                           "clojure -M:gravity run \"$source\""))
+        (is (str/includes? script-text
+                           "clojure -M:gravity compile \"$source\" \"$flag\" \"$output\"")))
       (doseq [{:keys [extension source expected-output]}
               [{:extension ".gravity"
                 :source "examples/core-app.gravity"
@@ -111,6 +95,7 @@
 (deftest release-wrapper-rejects-modified-and-missing-same-basename-inputs
   (let [root-directory (System/getProperty "user.dir")
         script-file (write-test-release-script! root-directory)
+        output-files (atom [])
         source-directory (temporary-directory "gravity-p18-t06-source-")
         missing-directory (io/file source-directory "missing")
         invalid-gravity (io/file source-directory "core-app.gravity")
@@ -131,13 +116,30 @@
       (doseq [[extension source]
               [[".gravity" missing-gravity]
                [".qst" missing-qst]]]
-        (let [result (run-release root-directory script-file
-                                  "check" (.getAbsolutePath ^File source))]
-          (testing (str "missing " extension " source")
-            (is (= 1 (:exit result)))
-            (is (not (str/includes? (:out result)
-                                    "gravity stage0 check passed"))))))
+        (let [source-path (.getAbsolutePath ^File source)
+              output-path
+              (str "target/phase-18/release/t06 missing output-"
+                   (System/nanoTime) extension)
+              output-file (io/file root-directory output-path)
+              artifact-file (io/file (str output-path ".gravity-artifact.edn"))
+              check-result (run-release root-directory script-file
+                                        "check" source-path)
+              run-result (run-release root-directory script-file
+                                      "run" source-path)
+              compile-result (run-release root-directory script-file
+                                          "compile" source-path "--output"
+                                          output-path)]
+          (swap! output-files conj output-file artifact-file)
+          (doseq [[command result]
+                  [["check" check-result]
+                   ["run" run-result]
+                   ["compile" compile-result]]]
+            (testing (str "missing " extension " source " command)
+              (is (= 1 (:exit result)))
+              (is (str/includes? (:err result) "C2-ENCODING"))))))
       (finally
+        (doseq [file @output-files]
+          (delete-file! file))
         (delete-file! invalid-gravity)
         (delete-file! invalid-qst)
         (delete-file! missing-gravity)
@@ -161,9 +163,10 @@
          "T06_SELF_HOST_ARGS" (.getAbsolutePath arguments-file)}]
     (try
       (let [self-host-result
-            (run-process root-directory path-environment
-                         [(.getAbsolutePath ^File script-file)
-                          "self-host" "verify"])
+            (bootstrap/p18-shell-run
+             path-environment
+             (into [(.getAbsolutePath ^File script-file)]
+                   ["self-host" "verify"]))
             invalid-output-result
             (run-release root-directory script-file
                          "compile" "examples/core-app.gravity"

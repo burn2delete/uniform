@@ -8,7 +8,8 @@
     "  esac\n"
     "  case \"$source\" in\n"
     "    examples/*.gravity|examples/*.qst|\"$root_dir\"/examples/*.gravity|\"$root_dir\"/examples/*.qst)\n"
-    "      (cd \"$root_dir\" && bin/gravity check \"$source\")\n"
+    "      (cd \"$root_dir\" && clojure -M:gravity check \"$source\")\n"
     "      return ;;\n"
     "  esac\n"
+    "  (cd \"$root_dir\" && clojure -M:gravity check \"$source\")\n"
     "\n"))
