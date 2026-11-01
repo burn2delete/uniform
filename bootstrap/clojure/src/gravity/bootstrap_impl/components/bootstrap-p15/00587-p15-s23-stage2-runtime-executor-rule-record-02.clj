@@ -37,37 +37,19 @@
 
 (defn- p15-s23-stage2-runtime-add
   [args]
-  (case (count args)
-    0 0
-    1 (nth args 0)
-    2 (+ (nth args 0) (nth args 1))
-    3 (+ (nth args 0) (nth args 1) (nth args 2))
-    (apply + args)))
+  (gravity.runtime/hosted-add args))
 
 (defn- p15-s23-stage2-runtime-subtract
   [args]
-  (case (count args)
-    1 (- (nth args 0))
-    2 (- (nth args 0) (nth args 1))
-    3 (- (nth args 0) (nth args 1) (nth args 2))
-    (apply - args)))
+  (gravity.runtime/hosted-subtract args))
 
 (defn- p15-s23-stage2-runtime-multiply
   [args]
-  (case (count args)
-    0 1
-    1 (nth args 0)
-    2 (* (nth args 0) (nth args 1))
-    3 (* (nth args 0) (nth args 1) (nth args 2))
-    (apply * args)))
+  (gravity.runtime/hosted-multiply args))
 
 (defn- p15-s23-stage2-runtime-divide
   [args]
-  (case (count args)
-    1 (/ (nth args 0))
-    2 (/ (nth args 0) (nth args 1))
-    3 (/ (nth args 0) (nth args 1) (nth args 2))
-    (apply / args)))
+  (gravity.runtime/hosted-divide args))
 
 (defn- p15-s23-stage2-runtime-equal
   [args]

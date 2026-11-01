@@ -1,12 +1,28 @@
 (ns gravity.runtime
-  "Temporary Stage2 invocation loops and execution records; operations are trusted seed dependencies.")
+  "Temporary hosted Stage2 invocation, arithmetic and execution records; operations are trusted seed dependencies.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
-    :contract-boundary :hosted-seed-stage2-invocation
-    :governing-contracts [D1 D2 D3 D8 D9 C1 C15 R1 R4 R11 R12 BOOT8 TEST2]
+    :contract-boundary :hosted-seed-stage2-invocation-and-arithmetic
+    :governing-contracts [D1 D2 D3 D8 D9 L2 C1 C15 SAFE9 R1 R4 R11 R12 BOOT8 TEST2]
     :public-api
-    {execute-function-scoped
+    {hosted-add
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-subtract
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-multiply
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     hosted-divide
+     {:arglists ([args]) :admission :none :hosted-seed-only? true
+      :arity-validation-owner :existing-builtin-dispatcher
+      :error-translation-owner :existing-builtin-dispatcher}
+     execute-function-scoped
      {:arglists ([runtime plan callee args public-invocation-scope operations]) :admission :none
       :operation-keys [:native-scope! :module-entry-scope! :registered-scope? :assert-function-entry!
                        :assert-scoped-function-entry! :module-scope? :fail! :fail-call-arity!
@@ -23,11 +39,12 @@
       :entry-protocol :legacy-main-arity-and-instruction-runner
       :adds-function-entry-scope-guard? false}}
     :artifact-inputs [:runtime-context :compiled-plan-data :function-and-arguments :native-invocation-scope
-                      :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record]
+                      :trusted-native-scope-module-guard-binding-instruction-and-diagnostic-operations :already-evaluated-seed-numeric-arguments]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :unchanged-host-failure]
     :diagnostic-ownership {:stage [L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY]
                            :existing-operations [L2-FUNCTION-ARITY :recur-arity :executor-lookup-and-arity
-                                                 :native-scope :module-scope :function-entry :instruction-semantics]}
+                                                 :native-scope :module-scope :function-entry :instruction-semantics
+                                                 :builtin-arity :builtin-host-error-translation]}
     :dependency-direction {:requires [clojure.core] :consumed-by [gravity.bootstrap]
                            :forbids [gravity.bootstrap gravity.cli gravity.release]}
     :scope-and-authority-checks :existing-seed-operations
@@ -35,7 +52,8 @@
     :canonical-runtime-manifest? false :stdout :existing-clojure-writer-capture
     :unsupported [:untrusted-callback-ingress :source-or-core-admission :public-plan-authentication
                   :runtime-family-selection :full-r1-r4-r11-r12-conformance :new-provider-authority
-                  :native-or-backend-execution :redaction-and-publication :performance
+                  :native-target-or-backend-execution :general-gravity-numeric-modes :full-safe9-conformance
+                  :untrusted-numeric-carriers :numeric-proof-or-check-records :redaction-and-publication :performance
                   :migration :release :self-hosting :seed-retirement]})
 
 (defn execute-function-scoped
@@ -153,5 +171,39 @@
 	     :effect-summary (:effect-summary plan)
 	     :status :complete}))
 
-(doseq [operation [#'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(defn hosted-add
+  [args]
+  (case (count args)
+    0 0
+    1 (nth args 0)
+    2 (+ (nth args 0) (nth args 1))
+    3 (+ (nth args 0) (nth args 1) (nth args 2))
+    (apply + args)))
+
+(defn hosted-subtract
+  [args]
+  (case (count args)
+    1 (- (nth args 0))
+    2 (- (nth args 0) (nth args 1))
+    3 (- (nth args 0) (nth args 1) (nth args 2))
+    (apply - args)))
+
+(defn hosted-multiply
+  [args]
+  (case (count args)
+    0 1
+    1 (nth args 0)
+    2 (* (nth args 0) (nth args 1))
+    3 (* (nth args 0) (nth args 1) (nth args 2))
+    (apply * args)))
+
+(defn hosted-divide
+  [args]
+  (case (count args)
+    1 (/ (nth args 0))
+    2 (/ (nth args 0) (nth args 1))
+    3 (/ (nth args 0) (nth args 1) (nth args 2))
+    (apply / args)))
+
+(doseq [operation [#'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))
