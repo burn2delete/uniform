@@ -254,8 +254,6 @@
                     (= (count selectors) (count (distinct selectors))))
                "UEP-LANE-SELECTION" "Execution plan selectors are invalid"
                {:selectors selectors})
-      (bounded-int (count selectors) "UEP-LANE-SELECTORS" :selectors
-                   (get-in plan-value [:resource-policy :max-test-vars]))
       {:namespace namespace :selectors selectors})))
 
 (defn- validate-plan-boundary!

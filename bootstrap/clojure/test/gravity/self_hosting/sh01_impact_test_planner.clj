@@ -112,7 +112,6 @@
         closure-paths (when (map? closure) (:paths closure))
         closure-valid?
         (and (vector? closure-paths) (every? string? closure-paths))
-        bounds (:bounds route)
         selectors-valid?
         (and (vector? selectors) (= 2 (count selectors))
              (= 2 (count (distinct selectors)))
@@ -130,7 +129,7 @@
                    (true? (get-in route [:executor :bounded?]))
                    (false? (get-in route [:executor :fresh-capable?]))
                    (= :non-authoritative (get-in route [:executor :authority]))
-                   (= 2 (:max-test-vars bounds)) (true? (:complete? closure))
+                   (true? (:complete? closure))
                    closure-valid? (contains? (set closure-paths) test-path))
       (route-failure!
        route-name
