@@ -1,5 +1,5 @@
 (ns gravity.runtime
-  "Temporary hosted Stage2 invocation, instruction/evaluation and builtin/value operations; trusted seed dependencies.")
+  "Temporary hosted Stage2 invocation, instruction/evaluation, builtin policy and rule data; trusted seed dependencies.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.runtime
@@ -52,6 +52,27 @@
                 [fail-builtin-error-var plan collection key not-found])
       :admission :none :hosted-seed-only? true :operation-vars [fail-builtin-error-var]
       :error-selection :late-after-lookup-failure :arity-validation-owner :existing-callers}
+     executor-rule-record
+     {:arglists ([runtime operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:declared-builtin-exact-arities :declared-builtin-contracts :difference :required-instructions :builtin-functions :sort-values] :completion-label-admits? false}
+     fail-call-arity!
+     {:arglists ([fail-var id plan callee args expected]) :admission :none :hosted-seed-only? true
+      :operation-vars [fail-var] :transport-owner :supplied-failure-operation}
+     assert-min-arity!
+     {:arglists ([fail-call-arity-var plan callee args n]) :admission :none :hosted-seed-only? true
+      :operation-vars [fail-call-arity-var]}
+     assert-exact-arity!
+     {:arglists ([fail-call-arity-var plan callee args n]) :admission :none :hosted-seed-only? true
+      :operation-vars [fail-call-arity-var]}
+     assert-between-arity!
+     {:arglists ([fail-call-arity-var plan callee args min-n max-n]) :admission :none :hosted-seed-only? true
+      :operation-vars [fail-call-arity-var]}
+     assert-even-arity!
+     {:arglists ([fail-call-arity-var plan callee args]) :admission :none :hosted-seed-only? true
+      :operation-vars [fail-call-arity-var]}
+     hosted-unary-builtin
+     {:arglists ([runtime plan function value operations]) :admission :none :hosted-seed-only? true
+      :operation-keys [:normalized-rest :invoke-builtin :fail-builtin-error!] :argument-evaluation-owner :existing-caller}
      execute-instruction-scoped
      {:arglists ([runtime plan env instruction public-invocation-scope operations]) :admission :none :hosted-seed-only? true
       :operation-keys [:fail! :execute-values-scoped :execute-map-entries-scoped :validate-module-effects! :artifact-invoke :artifact-println-function :artifact-println-two-function :join :artifact-function :execute-instructions-scoped :nontail-value! :execute-instruction-scoped :recur-signal? :recur-values :recur-fail! :bind-values :recur-signal :source-throw! :execute-value-scoped :invoke-get :fail-builtin-error! :invoke-compiler-internal-builtin :invoke-unary-or-generic-builtin :execute-generic-builtin-call-scoped :execute-call-scoped :module-execute-call]
@@ -97,15 +118,17 @@
                       :ordinary-builtin-callee-and-evaluated-arguments :trusted-late-builtin-operation-vars
                       :trusted-environment-bindings-instruction-and-map-entry-carriers :opaque-invocation-scope
                       :trusted-late-instruction-and-recurrence-operation-vars
-                      :trusted-instruction-function-and-data-operation-vars]
-    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control]
+                      :trusted-instruction-function-and-data-operation-vars
+                      :trusted-runtime-rule-data :call-signature-and-arity-data :trusted-late-policy-operation-vars]
+    :artifact-outputs [:function-result :runtime-artifact-function-result :stage2-runtime-execution-record :hosted-seed-numeric-result :hosted-seed-comparison-result :hosted-string :lookup-value :legacy-host-error-facts :unchanged-host-failure :ordinary-hosted-builtin-result :bound-environment :evaluated-argument-vector :evaluated-map :instruction-sequence-result :hosted-writer-effect :source-throw-control :legacy-executor-rule-record :nil-or-arity-refusal]
     :diagnostic-ownership {:ordinary-builtin-dispatch-and-arity-placement :stage
                            :evaluation-carrier-traversal-and-recur-check-placement :stage
                            :instruction-selection-core-control-and-fast-paths :stage
-                           :stage [L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
-                           :existing-operations [L2-FUNCTION-ARITY :recur-arity :executor-lookup-and-arity
+                           :arity-guards-call-facts-unary-selection-and-rule-data :stage
+                           :stage [L2-FUNCTION-ARITY L2-BUILTIN-ARITY L2-UNKNOWN-SYMBOL L2-THROW-ILLEGAL L2-UNKNOWN-CORE-FORM L3-UNKNOWN-ALIAS L2-MAIN-ARITY L2-BUILTIN-ERROR]
+                           :existing-operations [:recur-arity :executor-lookup-and-arity
                                                  :native-scope :module-scope :function-entry :instruction-primitives-and-call-authority
-                                                 :builtin-arity-facts :builtin-host-error-selection-and-transport]}
+                                                 :generic-builtin-host-error-boundary-and-failure-transport]}
     :dependency-direction {:requires [clojure.core] :consumed-by [gravity.bootstrap]
                            :forbids [gravity.bootstrap gravity.cli gravity.release]}
     :scope-and-authority-checks :existing-seed-operations
@@ -865,5 +888,143 @@
             :operator (:op instruction)
             :remediation "Regenerate the stage2 instruction plan with a supported stage2 plan emitter."})))
 
-(doseq [operation [#'execute-instruction-scoped #'execute-value-scoped #'bind-values #'execute-values-scoped #'execute-map-entries-scoped #'execute-instructions-scoped #'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
+(defn executor-rule-record
+  [runtime operations]
+  (let [instruction-rules (set (keys (:instruction-rules runtime)))
+        builtin-functions (set (get-in runtime
+                                       [:builtin-rules :functions]))
+        builtin-exact-arities
+        (get-in runtime [:builtin-rules :compiler-internal-builtin-arities])
+        builtin-contracts
+        (get-in runtime [:builtin-rules :compiler-internal-builtin-contracts])
+        declared-arities-current?
+        (= (deref (get operations :declared-builtin-exact-arities)) builtin-exact-arities)
+        declared-contracts-current?
+        (= (deref (get operations :declared-builtin-contracts)) builtin-contracts)
+        missing-instructions
+        ((deref (get operations :difference))
+         (deref (get operations :required-instructions))
+         instruction-rules)
+        missing-builtins
+        ((deref (get operations :difference)) (deref (get operations :builtin-functions)) builtin-functions)
+        complete?
+        (and (= :gravity-stage2-runtime-executor-rules-v1
+                (:engine runtime))
+             (= :stage2-instruction-plan (:input runtime))
+             (= :stage2-runtime-execution-record (:output runtime))
+             (empty? missing-instructions)
+             (empty? missing-builtins)
+             declared-arities-current?
+             declared-contracts-current?)]
+    {:artifact :gravity/p15-s23-stage2-runtime-executor-rule-record
+     :engine (:engine runtime)
+     :input (:input runtime)
+     :output (:output runtime)
+     :instruction-rules ((deref (get operations :sort-values)) instruction-rules)
+     :builtin-functions ((deref (get operations :sort-values)) builtin-functions)
+     :builtin-exact-arities builtin-exact-arities
+     :declared-builtin-arities-current? declared-arities-current?
+     :compiler-internal-builtin-contracts builtin-contracts
+     :declared-builtin-contracts-current? declared-contracts-current?
+     :missing-instructions ((deref (get operations :sort-values))
+                            missing-instructions)
+     :missing-builtin-functions ((deref (get operations :sort-values))
+                                 missing-builtins)
+     :rule-set-complete? complete?
+     :status (if complete? :complete :failed)}))
+
+(defn fail-call-arity!
+  [fail-var id plan callee args expected]
+  ((deref fail-var) id
+         (case id
+           "L2-FUNCTION-ARITY" "stage2 runtime function call has the wrong arity"
+           "L2-BUILTIN-ARITY" "stage2 runtime builtin call has the wrong arity"
+           "stage2 runtime call has the wrong arity")
+         {:source-span {:source (get-in plan [:source :path])}
+          :function callee
+          :expected-arity expected
+          :actual-arity (count args)
+          :remediation "Call the function with the arity supported by the stage2 hosted-core runtime subset."}))
+
+(defn assert-min-arity!
+  [fail-call-arity-var plan callee args n]
+  (when (< (count args) n)
+    ((deref fail-call-arity-var)
+     "L2-BUILTIN-ARITY" plan callee args (str "at least " n))))
+
+(defn assert-exact-arity!
+  [fail-call-arity-var plan callee args n]
+  (when-not (= n (count args))
+    ((deref fail-call-arity-var)
+     "L2-BUILTIN-ARITY" plan callee args n)))
+
+(defn assert-between-arity!
+  [fail-call-arity-var plan callee args min-n max-n]
+  (when-not (<= min-n (count args) max-n)
+    ((deref fail-call-arity-var)
+     "L2-BUILTIN-ARITY" plan callee args (str min-n " to " max-n))))
+
+(defn assert-even-arity!
+  [fail-call-arity-var plan callee args]
+  (when (odd? (count args))
+    ((deref fail-call-arity-var)
+     "L2-BUILTIN-ARITY" plan callee args "an even number of arguments")))
+
+(defn hosted-unary-builtin
+  [runtime plan function value operations]
+  ;; Argument evaluation deliberately happens at the call site, before this
+  ;; exception boundary and before compiler-context validation. This retains
+  ;; the generic path's evaluation order while avoiding its one-element vector.
+  (try
+    (case function
+      first (first value)
+      second (second value)
+      rest ((deref (get operations :normalized-rest)) value)
+
+      symbol? (do
+                (symbol? value))
+      keyword? (do
+                 (keyword? value))
+      char? (do
+              (char? value))
+      number? (do
+                (number? value))
+      seq? (do
+             (seq? value))
+      list? (do
+              (list? value))
+      vector? (do
+                (vector? value))
+      map? (do
+             (map? value))
+      set? (do
+             (set? value))
+      string? (do
+                (string? value))
+      even? (do
+              (even? value))
+      integer? (do
+                 (integer? value))
+      boolean? (do
+                 (boolean? value))
+
+      keys (do
+             (apply list (keys value)))
+      set (do
+            (set value))
+      sort-by-pr-str
+      (do
+        (apply list (sort-by pr-str value)))
+      vec (do
+            (into [] value))
+
+      ;; Variadic builtins, pr-str, and malformed callees retain generic
+      ;; dispatch after the sole argument has been evaluated exactly once.
+      ((deref (get operations :invoke-builtin)) runtime plan function [value]))
+    (catch clojure.lang.ExceptionInfo ex
+      (throw ex))
+    (catch Exception ex
+      ((deref (get operations :fail-builtin-error!)) plan function ex))))
+
+(doseq [operation [#'executor-rule-record #'fail-call-arity! #'assert-min-arity! #'assert-exact-arity! #'assert-between-arity! #'assert-even-arity! #'hosted-unary-builtin #'execute-instruction-scoped #'execute-value-scoped #'bind-values #'execute-values-scoped #'execute-map-entries-scoped #'execute-instructions-scoped #'hosted-builtin #'hosted-add #'hosted-subtract #'hosted-multiply #'hosted-divide #'hosted-equal #'hosted-less-than #'hosted-greater-than #'hosted-less-than-or-equal #'hosted-greater-than-or-equal #'hosted-str #'fail-builtin-error! #'hosted-get #'execute-function-scoped #'execute-function #'artifact-invoke #'execute-plan]]
   (alter-meta! operation assoc :gravity/namespace-contract namespace-contract))

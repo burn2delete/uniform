@@ -25,7 +25,9 @@
            'hosted-less-than-or-equal 'hosted-greater-than-or-equal
            'hosted-str 'fail-builtin-error! 'hosted-get 'hosted-builtin
            'bind-values 'execute-value-scoped 'execute-values-scoped
-           'execute-map-entries-scoped 'execute-instructions-scoped 'execute-instruction-scoped}
+           'execute-map-entries-scoped 'execute-instructions-scoped 'execute-instruction-scoped
+           'executor-rule-record 'fail-call-arity! 'assert-min-arity! 'assert-exact-arity!
+           'assert-between-arity! 'assert-even-arity! 'hosted-unary-builtin}
          (set (keys (ns-publics 'gravity.runtime)))))
   (doseq [[name operation] (ns-publics 'gravity.runtime)]
     (let [contract (:gravity/namespace-contract (meta operation))]
@@ -850,3 +852,140 @@
       (is (identical? marker (apply b/p15-s23-stage2-runtime-execute-instruction (subvec values 0 4)))))
     (is (= (conj values (instruction-operations)) (first @seen)))
     (is (= (conj (subvec values 0 4) nil (instruction-operations)) (second @seen)))))
+
+(def ^:private builtin-policy-programs
+  (delay (mapv (fn [[extension disposition]]
+                 (assoc (compile-source (str "bootstrap/clojure/fixtures/runtime-builtin-policy/" disposition extension))
+                        :extension extension :disposition disposition))
+               (for [extension [".gravity" ".qst"] disposition ["accepted" "rejected"]]
+                 [extension disposition]))))
+
+(deftest paired-builtin-policy-programs-preserve-values-refusals-and-identities
+  (doseq [{:keys [path plan disposition]} @builtin-policy-programs]
+    (is (= (str "sha256:" (b/sha256-hex (slurp path :encoding "UTF-8"))) (get-in plan [:source :sha256])))
+    (is (= (:plan-id plan)
+           (str "sha256:" (b/sha256-hex (pr-str (b/c-backend-canonical-value (dissoc plan :plan-id)))))))
+    (if (= "accepted" disposition)
+      (doseq [[callee expected] '[[first-value 7] [second-value 9] [rest-value (2 3)] [rest-empty ()] [symbol-kind true] [keyword-kind true] [char-kind true] [number-kind true] [seq-kind true] [list-kind true] [vector-kind true] [map-kind true] [set-kind true] [string-kind true] [even-value true] [integer-kind true] [boolean-kind true] [keys-value (:a)] [set-value #{1 2}] [sorted (1 2 3)] [vectorized [1 2]] [generic-add 7] [generic-subtract -7] [generic-string "7"] [empty-map {}] [valid-lookup 7]]]
+        (is (= expected (b/p15-s23-stage2-runtime-execute-function context plan callee [])) (str callee)))
+      (doseq [[callee builtin id] '[[bad-first first "L2-BUILTIN-ERROR"] [bad-even even? "L2-BUILTIN-ERROR"] [bad-vector vec "L2-BUILTIN-ERROR"] [min-arity - "L2-BUILTIN-ARITY"] [exact-arity first "L2-BUILTIN-ARITY"] [between-short get "L2-BUILTIN-ARITY"] [between-long get "L2-BUILTIN-ARITY"] [even-arity hash-map "L2-BUILTIN-ARITY"] [pairs-arity assoc "L2-BUILTIN-ARITY"]]]
+        (let [error (diagnostic #(b/p15-s23-stage2-runtime-execute-function context plan callee []))]
+          (is (= id (:id error)) (str callee)) (is (= builtin (:function error)))
+          (is (= {:source nil} (:source-span error)))))))
+  (doseq [disposition ["accepted" "rejected"]]
+    (is (apply = (map #(get-in % [:plan :plan-id])
+                     (filter #(= disposition (:disposition %)) @builtin-policy-programs))))))
+
+(defn- runtime-rule-operations []
+  (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-rule-operations)))
+(defn- runtime-unary-operations []
+  (var-get (ns-resolve 'gravity.bootstrap 'p15-s23-runtime-unary-operations)))
+(def ^:private compiler-runtime-rule
+  (delay (let [path (.getCanonicalPath (io/file "bootstrap/gravity/p15_s23/compiler.gravity"))
+               data (b/p15-s23-compiler-source-form-record path)]
+           {:path path :source data
+            :definition (b/p15-s23-compiler-def-value path (:forms data) 'p15-s23-stage2-runtime-executor)})))
+
+(deftest actual-compiler-source-rule-record-is-data-and-altered-rules-fail
+  (let [{:keys [path source definition]} @compiler-runtime-rule ops (runtime-rule-operations)
+        contract (:gravity/namespace-contract (meta #'runtime/executor-rule-record))
+        record (runtime/executor-rule-record definition ops)]
+    (is (.isFile (io/file path))) (is (seq (:source-text source)))
+    (is (= (b/p15-s23-stage2-runtime-executor-rule-record definition) record))
+    (is (= :complete (:status record)))
+    (is (false? (get-in contract [:public-api 'executor-rule-record :completion-label-admits?])))
+    (is (= (set (get-in contract [:public-api 'executor-rule-record :operation-keys])) (set (keys ops))))
+    (is (every? var? (vals ops)))
+    (doseq [changed [(update definition :instruction-rules dissoc :local)
+                     (update-in definition [:builtin-rules :functions] #(vec (remove #{'+} %)))
+                     (assoc-in definition [:builtin-rules :compiler-internal-builtin-arities] {})
+                     (assoc-in definition [:builtin-rules :compiler-internal-builtin-contracts] {})
+                     (assoc definition :engine :other) (assoc definition :input :other) (assoc definition :output :other)]]
+      (let [result (runtime/executor-rule-record changed ops)]
+        (is (= :failed (:status result))) (is (false? (:rule-set-complete? result)))
+        (is (= (b/p15-s23-stage2-runtime-executor-rule-record changed) result))))))
+
+(deftest rule-data-operations-are-selected-after-runtime-input-observation
+  ;; Mutate only an anonymous unit Var, never a pin, guard or authority owner.
+  (let [definition (:definition @compiler-runtime-rule)
+        exact (clojure.lang.Var/create {})
+        runtime-data (reify clojure.lang.ILookup
+                       (valAt [_ key]
+                         (when (= :instruction-rules key)
+                           (alter-var-root exact (constantly (get-in definition [:builtin-rules :compiler-internal-builtin-arities]))))
+                         (get definition key))
+                       (valAt [_ key fallback] (get definition key fallback)))
+        record (runtime/executor-rule-record runtime-data (assoc (runtime-rule-operations) :declared-builtin-exact-arities exact))]
+    (is (true? (:declared-builtin-arities-current? record)))
+    (is (= :complete (:status record)))))
+
+(deftest all-arity-guards-preserve-signature-legality-and-returned-refusals
+  (doseq [count-args (range 6)
+          [guard parameters valid? expected]
+          [[runtime/assert-min-arity! [2] (<= 2 count-args) "at least 2"]
+           [runtime/assert-exact-arity! [2] (= 2 count-args) 2]
+           [runtime/assert-between-arity! [2 3] (<= 2 count-args 3) "2 to 3"]
+           [runtime/assert-even-arity! [] (even? count-args) "an even number of arguments"]]]
+    (let [calls (atom []) marker (Object.) plan {:source {:path "unit.gravity"}} args (vec (range count-args))
+          failure (clojure.lang.Var/create (fn [& values] (swap! calls conj (vec values)) marker))
+          result (apply guard failure plan 'unit args parameters)]
+      (if valid?
+        (do (is (nil? result)) (is (empty? @calls)))
+        (do (is (identical? marker result))
+            (is (= [["L2-BUILTIN-ARITY" plan 'unit args expected]] @calls)))))))
+
+(deftest arity-failure-var-selection-retains-original-evaluation-order
+  (let [events (atom []) failure (clojure.lang.Var/create (fn [& _] :old))
+        args (reify clojure.lang.Counted
+               (count [_] (alter-var-root failure (constantly (fn [& values] (swap! events conj values) :new))) 0))]
+    (is (= :new (runtime/assert-min-arity! failure {} 'unit args 1)))
+    (is (= "L2-BUILTIN-ARITY" (ffirst @events))))
+  (let [events (atom []) failure (clojure.lang.Var/create (fn [& values] (swap! events conj values) :original))
+        args (reify clojure.lang.Counted (count [_] (alter-var-root failure (constantly (fn [& _] :changed))) 3))
+        result (runtime/fail-call-arity! failure "L2-FUNCTION-ARITY" {:source {:path "unit.gravity"}} 'unit args 2)]
+    (is (= :original result))
+    (let [[id message data] (first @events)]
+      (is (= "L2-FUNCTION-ARITY" id))
+      (is (= "stage2 runtime function call has the wrong arity" message))
+      (is (= {:source-span {:source "unit.gravity"} :function 'unit :expected-arity 2 :actual-arity 3
+              :remediation "Call the function with the arity supported by the stage2 hosted-core runtime subset."} data)))))
+
+(deftest unary-dispatch-retains-core-only-arms-fallback-and-exception-boundaries
+  (let [ops (runtime-unary-operations) contract (:gravity/namespace-contract (meta #'runtime/hosted-unary-builtin))]
+    (is (= (set (get-in contract [:public-api 'hosted-unary-builtin :operation-keys])) (set (keys ops))))
+    (is (every? var? (vals ops))))
+  (let [reads (atom 0) none (reify clojure.lang.ILookup (valAt [_ _] (swap! reads inc) nil))]
+    (is (= 7 (runtime/hosted-unary-builtin nil nil 'first [7] none))) (is (zero? @reads)))
+  (let [seen (atom []) marker (Object.)
+        invoke (clojure.lang.Var/create (fn [& args] (swap! seen conj args) marker))]
+    (is (identical? marker (runtime/hosted-unary-builtin :runtime :plan '+ 7 {:invoke-builtin invoke})))
+    (is (= '(:runtime :plan + [7]) (first @seen))))
+  (let [info (ex-info "unit unary" {:id :unit-unary}) errors (atom 0)
+        rest (clojure.lang.Var/create (fn [_] (throw info)))
+        failure (clojure.lang.Var/create (fn [& _] (swap! errors inc) :unexpected))]
+    (is (identical? info (observed-error #(runtime/hosted-unary-builtin nil nil 'rest []
+                                          {:normalized-rest rest :fail-builtin-error! failure}))))
+    (is (zero? @errors)))
+  (let [events (atom []) failure (clojure.lang.Var/create (fn [& _] :old)) host-error (Exception. "unit host")
+        rest (clojure.lang.Var/create
+               (fn [_] (alter-var-root failure (constantly (fn [& values] (swap! events conj values) :new)))
+                 (throw host-error)))]
+    (is (= :new (runtime/hosted-unary-builtin nil :plan 'rest [] {:normalized-rest rest :fail-builtin-error! failure})))
+    (is (= [:plan 'rest host-error] (vec (first @events))))))
+
+(deftest builtin-policy-compatibility-wrappers-retain-signatures-and-late-ports
+  (doseq [[legacy stage args prefix suffix]
+          [['p15-s23-stage2-runtime-executor-rule-record #'runtime/executor-rule-record '[runtime] nil (runtime-rule-operations)]
+           ['p15-s23-stage2-runtime-fail-call-arity! #'runtime/fail-call-arity! '[id plan callee args expected] #'b/fail! nil]
+           ['p15-s23-stage2-runtime-assert-min-arity! #'runtime/assert-min-arity! '[plan callee args n] #'b/p15-s23-stage2-runtime-fail-call-arity! nil]
+           ['p15-s23-stage2-runtime-assert-exact-arity! #'runtime/assert-exact-arity! '[plan callee args n] #'b/p15-s23-stage2-runtime-fail-call-arity! nil]
+           ['p15-s23-stage2-runtime-assert-between-arity! #'runtime/assert-between-arity! '[plan callee args min-n max-n] #'b/p15-s23-stage2-runtime-fail-call-arity! nil]
+           ['p15-s23-stage2-runtime-assert-even-arity! #'runtime/assert-even-arity! '[plan callee args] #'b/p15-s23-stage2-runtime-fail-call-arity! nil]
+           ['p15-s23-stage2-runtime-invoke-unary-or-generic-builtin #'runtime/hosted-unary-builtin '[runtime plan function value] nil (runtime-unary-operations)]]]
+    (let [compatibility (ns-resolve 'gravity.bootstrap legacy) values (mapv (fn [_] (Object.)) args)
+          seen (atom nil) marker (Object.)]
+      (is (= (list args) (:arglists (meta compatibility))))
+      (is (= (= legacy 'p15-s23-stage2-runtime-invoke-unary-or-generic-builtin) (true? (:private (meta compatibility)))))
+      (with-redefs-fn {stage (fn [& actual] (reset! seen (vec actual)) marker)}
+        #(is (identical? marker (apply (deref compatibility) values))))
+      (is (= (cond-> (if prefix (into [prefix] values) values) suffix (conj suffix)) @seen)))))

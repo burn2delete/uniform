@@ -47,3 +47,55 @@ namespace or L2/R4/R12/C15 conformance, runtime-manifest admission, untrusted
 operation ingress, new authority, performance, native/backend execution,
 migration, release, self-hosting or seed retirement. Preserve existing host
 and source-order gaps and all historical restricted routes, pins and guards.
+
+## Implemented bodies and source controls
+
+Six policy/data bodies (81 lines) and the55-line unary dispatcher now live in
+Runtime. Only owner names, explicit operation parameters and late Var ports
+change. The rule builder uses six function/data Vars; unary dispatch uses three;
+fact/guard APIs each receive their single failure Var explicitly. Bootstrap
+keeps original public/private argument lists and all remaining00587 pinned
+tables/authorization code exactly. All23 prior Runtime bodies, Bootstrap and
+nine other consumers/owners remain exact, including rule-admission code.
+
+Actual paired source plans execute26 unary/collection cases and reject9 real
+arity or host-operand failures per spelling. Accepted source
+387caa50c0659c59403c4cd5c5e0f1ac8c24ddca3c69c7db32d09fa7db22373e
+has plan sha256:feae0646bca2629313136cb936fd142c2bd2b5708f24e9fe01d6d21be4ee447f.
+Rejected source
+9f55f3cb3ed9b9e509ce2d0079823b496d9ed518990d434a9ab836f9f8401785
+has plan sha256:fa033578e05d8df0b2a5f164d1281f20a0cf3d98b02402a4710dd396c816fc4b.
+
+Actual compiler.gravity source SHA
+57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527
+is read through existing source-form/definition operations. Its executor-rule
+data returns complete for its declared legacy engine/input/output and required
+sets/signatures. Seven altered inputs return failed: missing instruction,
+missing builtin, changed arity/contracts, engine, input and output. Complete
+does not establish implementation behavior, current whole-runtime coverage,
+source authority, canonical manifest admission or self-hosting. No full proof
+or native source-artifact route is used to obtain this data.
+
+All eight complete data and original serialized pairs pass: four source/plan/
+value/refusal records, actual source/rule data and seven altered records,
+arguments and two complete public current Core artifacts. Before5221e680c,
+tree9bf84061019e097ef970c46df020efd02846a381, and working after controls use
+this same physical Runtime worktree. Both Core spellings retain25 nodes, one
+target read, source8e63 and recomputed Core16ec. No root, source pin, admission
+mode, authority callback or returned field is substituted.
+
+Focused tests pass48/2216; coupled literal/CLI/diagnostics/Reader/Release/
+Runtime/Safety tests101/3034; ownership/language47/1153. Host units cover every
+guard boundary, original facts and transport arguments, failure selection after
+counting, failure-operator lookup before field evaluation, rule data lookup
+after input observation, unary fallback, original ExceptionInfo identity,
+late host-error selection and all seven compatibility wrappers. Anonymous
+unit Vars never replace live guards or pins or serve as admission evidence.
+
+A temporary extractor syntax error stops before product writes; its report is
+retained. Corrected extraction then passes body/component conservation and
+the complete controls. Scripts/logs/products use uniform-runtime-builtin-policy-*
+under /tmp; complete Core products use runtime-builtin-policy-before/after
+under uniform-cli-core-arguments-evidence. Existing exact kernels, contextual
+lint, contract validators, current-main reconciliation, independent acceptance,
+own CI and clean preflight still govern integration.
