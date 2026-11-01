@@ -87,6 +87,24 @@ native and genuine public Core controls, complete comparisons, affected checks,
 exact review, own CI and clean preflight remain required. The previous green
 does not accept the new tuple or renew migration/release authority.
 
+## Verified CLI main composition
+
+The next normal composition uses actual main
+612367e981ec37072cc3d3525f09263bdc91b264/tree
+efc971c757313a418a7b40a7b14bcdeb7ef8b45e, the verified CLI PR729 merge.
+Its five incoming paths are preserved exactly, including the selected-command
+argument owner, compatibility wrapper, help golden and evidence. The independent
+namespace-map rows merge without conflict. Reader decoder, wrapper, component,
+assembly and tests remain exact aeaa8820. No semantic, authority or source-policy
+change is introduced by composition.
+
+Fresh checks include CLI and the existing Reader/Build/runtime/package/library
+and literal tests, language/ownership gates, native decoding and genuine complete
+public Core controls. Scripts and products use `cli-main-*`; the four complete
+and serialized comparisons retain their original before controls. Exact review,
+contextual lint, own new-head CI and clean current-base integration preflight
+remain required. Prior-base CI is historical and conveys no new-base acceptance.
+
 ## Unsupported boundaries
 
 This remains temporary native Clojure seed decoding. Trusted operation ports
