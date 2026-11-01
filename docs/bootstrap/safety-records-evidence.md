@@ -545,3 +545,33 @@ controls still accept both spellings with25 nodes/one target read/source8e63
 and recomputed Core16ec. Contextual lint passes7 paths/3486 unchanged warnings/0 blockers.
 Terminal lint receipts are archived outside the source checkout. Source
 admission, historical denied routes and migration pins remain unchanged.
+
+## Real compiler main and delegated byte capture
+
+Actual main bf5c4c36a4e7ca01b212b15a4018bceceb57a9cc/tree
+05145f228cde86f0dfea69c7da05f680cafee4b4 replaces release fixture
+response tables with compiler execution. Its run/release paths and tests
+remain preserved. Source intake now delegates bytes to the existing
+sh03-reader-read-target-source-bytes! owner, preserving regular-file and
+final-link checks and C2-ENCODING file diagnostics. No source-size quota
+is introduced. The owner declaration and component EOF are preserved.
+
+This candidate retains main's Reader compatibility body and byte-owner
+operation exactly. The separate Reader-intake PR makes four late owner
+ports explicit; that extraction is not part of this candidate. Current source
+controls continue through the existing owner without new authority.
+
+## Verified bf5 ordinary source checks
+
+Fresh Safety coupled30/521 and ownership/language47/1153 pass. All42 complete
+data and original serialized pairs pass with current source hashes and
+recomputed plan, proof and check identities. Whole-stage, whole-component
+and Bootstrap conservation pass against bf5c4c36. Current provenance records
+the actual fixed seed and native runtime execution; captured Gravity emitter
+and runtime inputs receive no execution or authority claim. Contextual lint
+passes7 paths/3486 unchanged baseline warnings/0 blockers.
+Terminal lint receipts are archived outside the checkout. Documentation,
+roadmap and governance validators pass. Independent exact-source acceptance,
+own current-head CI and clean current-base preflight remain integration gates.
+Older CI and immutable authority records are historical; no new authentication,
+migration, release, self-hosting or complete namespace claim is made.

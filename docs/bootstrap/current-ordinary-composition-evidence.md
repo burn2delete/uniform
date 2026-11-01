@@ -47,3 +47,9 @@ Its deterministic non-authoritative sh07-b10-regression/fast plan id is
 sha256:ec58f16d7eb23a0d498edf90e1ea307aaa99452d754e2742566b629f60409f01.
 The plan is constructed and validated only; its executor is not invoked,
 no execution receipt is fabricated, and no backend or proof credit follows.
+
+The next composed main isbf5c4c36a4e7ca01b212b15a4018bceceb57a9cc/tree
+05145f228cde86f0dfea69c7da05f680cafee4b4. Its real compiler dispatch
+and declared byte-owner capture are preserved. The preceding7ad identities
+and test results remain bound to their recorded inputs; current-base source
+and policy changes require fresh evidence and confer no release authority.
