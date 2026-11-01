@@ -111,3 +111,19 @@ function text. These corrections change no production predicate or guard.
 Language/ownership, committed contextual lint, final contract checks,
 independent exact review, actual-main reconciliation, own CI/artifact receipts
 and immediate clean integration preflight remain final gates.
+
+## Final local verification
+
+Source checkpoint7cbab18f06b8f8d8a86225b251453106fb0a63d6, tree
+50beb9a197e2b2fd3bb6d3f7b24316842f17b62a, contains the extraction, tests
+and evidence. Language/ownership tests pass47/1153. Committed contextual lint
+against predecessor2e73c5a6 covers three source/test paths with zero warnings
+and zero blockers. Receipts are archived outside the checkout at
+/tmp/uniform-effects-reports-lint-2e73c5a6. Canonical docs240/19, roadmap and
+governance185 validators pass. All local source/control/test processes are
+terminal. No policy, suppression, fingerprint, pin or guard is changed.
+
+Independent exact review, actual-main reconciliation after the inherited
+Runtime work, this slice's own CI/artifact receipts and immediate clean
+integration preflight remain required. Prior source or CI acceptance does not
+transfer to a different integration tuple.
