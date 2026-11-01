@@ -58,14 +58,25 @@ the explicit late diagnostic Var port. All other native checks and diagnostic
 construction remain unchanged. The existing sh-package-build / SH-23 inventory
 owns the new stage and standalone test; primary catalog counts are unchanged.
 
-Focused tests pass4/53, coupled Runtime/Package/Standard Library/literal-helper
-tests18/280, ownership37/1077 and language6/11. Host callback controls verify
+Focused tests pass4/53 and coupled Runtime/Package/Standard Library/literal-helper
+tests18/280. Host callback controls verify
 late root reads and unchanged exception identity; callbacks issue no authority.
 The first focused run4/53 had two incorrect expected line/column spans; the
 actual unchanged span is source plus form-index. Its log is retained. The first
 whole-component verifier caught an added final newline; restoring the original
 byte makes the complete comparison pass. Neither correction changes semantics
 or weakens comparisons.
+
+Independent review rejects sourcebbd8df0b for a duplicate helper id, and lint
+rejects a duplicate test Var name. Build now has the distinct stable helper id
+`build-metadata-validation` and test Var
+`build-metadata-helper-has-an-explicit-boundary`. The existing literal helper
+id/test remain unchanged. A regression checks global helper-id uniqueness,
+the Build index's actual source namespace and refusal of a duplicated id.
+Fresh ownership38/1093 and language6/11 pass. The earlier37/1077 run had
+overwritten the literal test Var and supplies no complete ownership coverage.
+Initial lint receipts are retained outside source as nonpass evidence; final
+lint and exact independent review are required on the corrected source.
 
 Scripts are `/tmp/uniform-build-validation-{control,verify}.clj`, products are
 `/tmp/uniform-build-validation-evidence/{before,after}-*`, and logs use

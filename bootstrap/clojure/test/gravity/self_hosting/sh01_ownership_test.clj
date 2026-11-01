@@ -569,7 +569,7 @@
               "consumer" {"path" bootstrap-literals-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
               "test" {"path" bootstrap-literals-stage-test "namespace" "gravity.bootstrap.module-literals-test"
                       "registration" "standalone"}}
-             {"id" "bootstrap-module-literals" "kind" "production-stage-helper" "owner" "sh-package-build"
+             {"id" "build-metadata-validation" "kind" "production-stage-helper" "owner" "sh-package-build"
               "source" {"path" build-validation-stage-path "namespace" "gravity.build"}
               "consumer" {"path" build-validation-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-package-build"}
               "test" {"path" build-validation-stage-test "namespace" "gravity.build.pipeline-test"
@@ -1434,12 +1434,15 @@
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
       (is (not (production-helper-registration-valid? record bad))))))
 
-(deftest bootstrap-module-literals-helper-has-an-explicit-boundary
+(deftest build-metadata-helper-has-an-explicit-boundary
   (require 'gravity.bootstrap-free-leaf-test-runner)
   (let [record (ownership-record)
         contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
-        index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "bootstrap-module-literals")]
+        index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "build-metadata-validation")]
     (is (not (neg? index)))
+    (let [ids (mapv #(get % "id") (get contract "production_helpers"))]
+      (is (= (count ids) (count (distinct ids)))))
+    (is (= "gravity.build" (get-in contract ["production_helpers" index "source" "namespace"])))
     (is (production-helper-registration-valid? record contract))
     (doseq [relative [build-validation-stage-path build-validation-stage-consumer build-validation-stage-test]]
       (is (.isFile (path relative))))
@@ -1451,7 +1454,8 @@
                  (update record :standalone-test-owners dissoc build-validation-stage-test)
                  (assoc-in record [:production-helper-associations build-validation-stage-path :namespace] 'gravity.forged)]]
       (is (not (production-helper-registration-valid? bad contract))))
-    (doseq [bad [(assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
+    (doseq [bad [(assoc-in contract ["production_helpers" index "id"] "bootstrap-module-literals")
+                 (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
       (is (not (production-helper-registration-valid? record bad))))))

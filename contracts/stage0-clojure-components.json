@@ -316,7 +316,7 @@
       "test": {"path": "bootstrap/clojure/test/gravity/bootstrap/module_literals_test.clj", "namespace": "gravity.bootstrap.module-literals-test", "registration": "standalone"}
     },
     {
-      "id": "bootstrap-module-literals",
+      "id": "build-metadata-validation",
       "kind": "production-stage-helper",
       "owner": "sh-package-build",
       "source": {"path": "bootstrap/clojure/src/gravity/build.clj", "namespace": "gravity.build"},
