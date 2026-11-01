@@ -320,10 +320,17 @@
 (def ^:private build-validation-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00537-validate-stage0-compiled-ai-provider.clj")
 (def ^:private build-validation-stage-test "bootstrap/clojure/test/gravity/build/pipeline_test.clj")
 
+(def ^:private release-inventory-stage-path "bootstrap/clojure/src/gravity/release.clj")
+(def ^:private release-inventory-stage-consumer "bootstrap/clojure/src/gravity/bootstrap_impl/components/release-p18/00906-p18-t02-source-material.clj")
+(def ^:private release-inventory-stage-test "bootstrap/clojure/test/gravity/release/pipeline_test.clj")
+
 (defn- production-helper-registration-valid? [record contract]
   (let [expected {:namespace 'gravity.macro-run-storage :owner :sh-macro :slice "SH-05"
                   :consumer-path macro-helper-consumer :test-path macro-helper-test}]
-    (and (= {build-validation-stage-path
+    (and (= {release-inventory-stage-path
+             {:namespace 'gravity.release :owner :master-coordinator :slice "SH-00"
+              :consumer-path release-inventory-stage-consumer :test-path release-inventory-stage-test}
+             build-validation-stage-path
              {:namespace 'gravity.build :owner :sh-package-build :slice "SH-23"
               :consumer-path build-validation-stage-consumer :test-path build-validation-stage-test}
              bootstrap-literals-stage-path
@@ -433,6 +440,9 @@
          (= :sh-package-build (get-in record [:module-owners build-validation-stage-path]))
          (= {:namespace 'gravity.build.pipeline-test :slice "SH-23" :owner :sh-package-build}
             (get-in record [:standalone-test-owners build-validation-stage-test]))
+         (= :master-coordinator (get-in record [:module-owners release-inventory-stage-path]))
+         (= {:namespace 'gravity.release.pipeline-test :slice "SH-00" :owner :master-coordinator}
+            (get-in record [:standalone-test-owners release-inventory-stage-test]))
          (= :sh-target-jvm (get-in record [:module-owners jvm-source-stage-path]))
          (= {:namespace 'gravity.backend.jvm.pipeline-test :slice "SH-00" :owner :sh-target-jvm}
             (get-in record [:standalone-test-owners jvm-source-stage-test]))
@@ -573,6 +583,11 @@
               "source" {"path" build-validation-stage-path "namespace" "gravity.build"}
               "consumer" {"path" build-validation-stage-consumer "namespace" "gravity.bootstrap" "owner" "sh-package-build"}
               "test" {"path" build-validation-stage-test "namespace" "gravity.build.pipeline-test"
+                      "registration" "standalone"}}
+             {"id" "release-jar-inventory" "kind" "production-stage-helper" "owner" "master-coordinator"
+              "source" {"path" release-inventory-stage-path "namespace" "gravity.release"}
+              "consumer" {"path" release-inventory-stage-consumer "namespace" "gravity.bootstrap" "owner" "master-coordinator"}
+              "test" {"path" release-inventory-stage-test "namespace" "gravity.release.pipeline-test"
                       "registration" "standalone"}}]
             (get contract "production_helpers")))))
 
@@ -1456,6 +1471,28 @@
       (is (not (production-helper-registration-valid? bad contract))))
     (doseq [bad [(assoc-in contract ["production_helpers" index "id"] "bootstrap-module-literals")
                  (assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
+                 (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
+                 (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
+      (is (not (production-helper-registration-valid? record bad))))))
+
+(deftest release-jar-inventory-helper-has-an-explicit-boundary
+  (require 'gravity.bootstrap-free-leaf-test-runner)
+  (let [record (ownership-record)
+        contract ((requiring-resolve 'gravity.bootstrap-free-leaf-test-runner/read-strict-component-contract))
+        index (.indexOf (mapv #(get % "id") (get contract "production_helpers")) "release-jar-inventory")]
+    (is (not (neg? index)))
+    (is (production-helper-registration-valid? record contract))
+    (doseq [relative [release-inventory-stage-path release-inventory-stage-consumer release-inventory-stage-test]]
+      (is (.isFile (path relative))))
+    (is (str/includes? (slurp (path release-inventory-stage-consumer)) "gravity.release/jar-inventory-report"))
+    (is (= :native-jar-inventory-reports
+           (:contract-boundary (:gravity/namespace-contract
+             (meta (requiring-resolve 'gravity.release/jar-inventory-report))))))
+    (doseq [bad [(assoc-in record [:module-owners release-inventory-stage-path] :sh-core)
+                 (update record :standalone-test-owners dissoc release-inventory-stage-test)
+                 (assoc-in record [:production-helper-associations release-inventory-stage-path :namespace] 'gravity.forged)]]
+      (is (not (production-helper-registration-valid? bad contract))))
+    (doseq [bad [(assoc-in contract ["production_helpers" index "source" "namespace"] "gravity.forged")
                  (assoc-in contract ["production_helpers" index "consumer" "path"] "forged.clj")
                  (assoc-in contract ["production_helpers" index "test" "registration"] "bootstrap-free")]]
       (is (not (production-helper-registration-valid? record bad))))))
