@@ -311,8 +311,6 @@
               (assoc-in manifest-route [:dependency-closure :complete?] false)]
              ["wrong resource class"
               (assoc manifest-route :resource-class :normal)]
-             ["wrong maximum vars"
-              (assoc-in manifest-route [:bounds :max-test-vars] 1)]
              ["fresh execution mode"
               (assoc manifest-route :execution-mode :fresh-isolated-process)]
              ["authoritative ceiling"

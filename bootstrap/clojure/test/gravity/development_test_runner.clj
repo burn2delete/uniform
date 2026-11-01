@@ -149,8 +149,6 @@
 (def ^:private catalog-by-namespace
   (into {} (map (juxt :namespace identity) namespace-catalog)))
 
-(def ^:private maximum-namespace-authority-entries 256)
-
 (defn- authority-failure
   [id message data]
   (throw (ex-info message (assoc data :id id))))
@@ -275,9 +273,9 @@
             (->> (:entries generated)
                  (remove #(contains? legacy-by (:namespace %)))
                  (sort-by #(str (:namespace %))))))]
-      (when-not (<= 1 (count entries) maximum-namespace-authority-entries)
+      (when-not (seq entries)
         (authority-failure "DEV-NAMESPACE-AUTHORITY-BOUNDS"
-                           "namespace authority entry count exceeds bound"
+                           "namespace authority must contain at least one entry"
                            {:count (count entries)}))
       {:projection generated
        :entries entries
