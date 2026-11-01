@@ -111,7 +111,7 @@
 (defn stop!
   ([^Process process children]
    (stop! process children (process-supervision/retain-owned-process! process)))
-  ([^Process process children owned]
+  ([^Process _process children owned]
    (swap! (:handles owned) #(vec (distinct (concat % children))))
    (let [cleanup (process-supervision/finalize-owned-process!
                   owned {:grace-ms 0 :timeout-ms 5000})]

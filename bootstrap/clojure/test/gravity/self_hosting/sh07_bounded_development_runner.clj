@@ -306,7 +306,7 @@
   ([^Process process]
    (cleanup-process-tree! process (process-supervision/retain-owned-process!
                                    process)))
-  ([^Process process owned]
+  ([^Process _process owned]
    (let [cleanup (process-supervision/finalize-owned-process!
                   owned {:grace-ms 0
                          :timeout-ms process-cleanup-timeout-ms
