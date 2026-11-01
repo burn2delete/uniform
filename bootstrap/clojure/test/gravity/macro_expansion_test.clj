@@ -1,7 +1,9 @@
 (ns gravity.macro-expansion-test
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.digest :as digest]
-            [gravity.macro-expansion :as macro-expansion]))
+            [gravity.macro-expansion :as macro-expansion]
+            [gravity.macro-expansion.engine :as engine]
+            [gravity.macro-expansion.operations :as operations]))
 
 (defn- syntax
   [syntax-id form index]
@@ -203,6 +205,48 @@
     (is (not= "sha256:forged-input" (:input-hash record)))
     (is (not= "sha256:forged-output" (:output-hash record)))
     (is (= "s-call" (get-in (first @origin-calls) [1 :syntax-id])))))
+
+(deftest var-backed-hash-interposition-does-not-poison-default-trace
+  (let [module {:module 'example.core
+                :profile :hosted
+                :target :jvm
+                :metadata {}}
+        definition (syntax "s-defmacro"
+                           '(defmacro twice [x]
+                              (syntax-quote (+ (unquote x) (unquote x))))
+                           1)
+        call (syntax "s-call" '(twice 4) 2)
+        registry (macro-expansion/macro-registry module [definition call])
+        real-sha256 digest/sha256-hex
+        hash-var #'digest/sha256-hex
+        actual-inputs (atom [])
+        ops (assoc (operations/default-ops)
+                   :sha256-hex hash-var
+                   :expansion-generated-origin
+                   (fn [macro syntax input output]
+                     (with-redefs [digest/sha256-hex (constantly "forged")]
+                       (engine/generated-origin
+                        macro syntax input output {:sha256-hex hash-var}))))
+        trace (atom [])
+        result
+        (with-redefs [digest/sha256-hex
+                      (fn [value]
+                        (swap! actual-inputs conj value)
+                        (real-sha256 value))]
+          (engine/expand-syntax-object registry module call trace 0 ops))
+        record (first @trace)]
+    (is (= "sha256:forged"
+           (get-in result [:generated-origin 0 :input-hash])))
+    (is (= "sha256:forged"
+           (get-in result [:generated-origin 0 :output-hash])))
+    (is (= [(pr-str '(twice 4)) (pr-str '(+ 4 4))]
+           @actual-inputs))
+    (is (= (str "sha256:" (real-sha256 (pr-str '(twice 4))))
+           (:input-hash record)))
+    (is (= (str "sha256:" (real-sha256 (pr-str '(+ 4 4))))
+           (:output-hash record)))
+    (is (not= "sha256:forged" (:input-hash record)))
+    (is (not= "sha256:forged" (:output-hash record)))))
 
 (deftest custom-trace-hook-retains-injected-record-and-default-origin
   (let [module {:module 'example.core

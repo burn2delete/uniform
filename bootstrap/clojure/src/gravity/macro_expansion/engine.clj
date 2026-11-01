@@ -5,7 +5,8 @@
 
 (defn- expansion-digests
   [input output ops]
-  (let [hash (operations/operation ops :sha256-hex digest/sha256-hex)]
+  (let [hash-operation (operations/operation ops :sha256-hex digest/sha256-hex)
+        hash (if (var? hash-operation) @hash-operation hash-operation)]
     {:input-hash (str "sha256:" (hash (pr-str input)))
      :output-hash (str "sha256:" (hash (pr-str output)))}))
 
@@ -13,14 +14,16 @@
 
 (defn- expansion-digest-context
   [input output ops]
-  {:input input
-   :output output
-   :hash-op (operations/operation ops :sha256-hex digest/sha256-hex)
-   :digests (volatile! nil)})
+  (let [hash-operation (operations/operation ops :sha256-hex digest/sha256-hex)]
+    {:input input
+     :output output
+     :hash-op (if (var? hash-operation) @hash-operation hash-operation)
+     :digests (volatile! nil)}))
 
 (defn- expansion-digests-for-context
   [input output ops]
-  (let [hash-op (operations/operation ops :sha256-hex digest/sha256-hex)
+  (let [hash-operation (operations/operation ops :sha256-hex digest/sha256-hex)
+        hash-op (if (var? hash-operation) @hash-operation hash-operation)
         context *expansion-digest-context*]
     (if (and (map? context)
              (= input (:input context))
