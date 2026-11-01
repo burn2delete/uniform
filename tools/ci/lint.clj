@@ -70,25 +70,25 @@
                       (java.io.StringReader. (str/join "\n" lines)))
               eof (Object.)]
           (with-open [_ reader]
-            (loop [definitions [] previous-end 0]
+            (loop [definitions [] context [] previous-end 0]
               (let [reader-line (.getLineNumber reader)
                     form (read {:eof eof} reader)]
                 (if (identical? eof form)
-                  definitions
+                  (with-meta definitions {:source-context context})
                   (let [start (max (if (pos? previous-end) (inc previous-end) 1)
                                    reader-line)
                         end (max start (.getLineNumber reader))
-                        identity (definition-identity form)]
+                        identity (definition-identity form)
+                        source-lines (subvec (vec lines)
+                                             (dec start)
+                                             (min end (count lines)))
+                        entry {:form form :source-lines source-lines}]
                     (recur (if identity
                              (conj definitions
-                                   {:identity identity
-                                    :form form
-                                    :start start
-                                    :end end
-                                    :source-lines (subvec (vec lines)
-                                                          (dec start)
-                                                          (min end (count lines)))})
+                                   (assoc entry :identity identity
+                                          :start start :end end))
                              definitions)
+                           (if identity context (conj context entry))
                            end))))))))
       (catch Exception _ []))))
 
@@ -103,6 +103,8 @@
           end (:end-row finding)
           current-definitions (or after-definitions (source-definitions after))
           baseline-definitions (or before-definitions (source-definitions before))
+          current-context (:source-context (meta current-definitions))
+          baseline-context (:source-context (meta baseline-definitions))
           current-candidates (filter #(and (<= (:start %) start)
                                            (<= end (:end %)))
                                      current-definitions)
@@ -117,7 +119,8 @@
                                        (= 1 (count baseline-same))
                                        (= (:form current) (:form baseline))
                                        (= (:source-lines current)
-                                          (:source-lines baseline)))
+                                          (:source-lines baseline))
+                                       (= current-context baseline-context))
                               [current baseline])))
                         current-candidates)]
       (when (= 1 (count matches))

@@ -131,6 +131,27 @@
     (let [result (classify base-text current-text current-warning)]
       (is (= [current-warning] (:baseline-warnings result)))
       (is (empty? (:blocking result))))
+    (let [renamed-base (str/replace base-text "(ns sample)" "(ns sample.old)")
+          renamed-current (str/replace current-text "(ns sample)" "(ns sample.new)")
+          result (classify renamed-base renamed-current current-warning)]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [current-warning] (:blocking result))))
+    (let [control-base (str "(ns sample)\n"
+                            "(set! *warn-on-reflection* true)\n"
+                            (subs base-text (count "(ns sample)\n")))
+          control-current (str "(ns sample)\n"
+                               "(set! *warn-on-reflection* false)\n"
+                               (subs current-text (count "(ns sample)\n")))
+          control-baseline-warning (assoc baseline-warning :row 5 :end-row 5)
+          control-current-warning (assoc current-warning :row 4 :end-row 4)
+          result (lint/classify [control-baseline-warning] [control-current-warning]
+                                {"sample.clj"
+                                 {:changes [{:old-start 2 :old-count 5
+                                             :new-start 2 :new-count 4}]
+                                  :before (str/split-lines control-base)
+                                  :after (str/split-lines control-current)}})]
+      (is (empty? (:baseline-warnings result)))
+      (is (= [control-current-warning] (:blocking result))))
     (let [changed-body (str/replace current-text "    :ok))" "    :changed))")
           result (classify base-text changed-body current-warning)]
       (is (empty? (:baseline-warnings result)))
