@@ -3,15 +3,26 @@
             [gravity.macro-expansion.operations :as operations]
             [gravity.macro-expansion.policy :as policy]))
 
+(defn- expansion-digests
+  [input output ops]
+  (let [hash (operations/operation ops :sha256-hex digest/sha256-hex)]
+    {:input-hash (str "sha256:" (hash (pr-str input)))
+     :output-hash (str "sha256:" (hash (pr-str output)))}))
+
+(defn- generated-origin-with-digests
+  [macro syntax digests]
+  (when-not (:omit-generated-origin? macro)
+    [{:from (:span syntax)
+      :macro (:identity macro)
+      :macro-version (:version macro)
+      :input-hash (:input-hash digests)
+      :output-hash (:output-hash digests)}]))
+
 (defn generated-origin
   [macro syntax input output ops]
-  (let [hash (operations/operation ops :sha256-hex digest/sha256-hex)]
-    (when-not (:omit-generated-origin? macro)
-      [{:from (:span syntax)
-        :macro (:identity macro)
-        :macro-version (:version macro)
-        :input-hash (str "sha256:" (hash (pr-str input)))
-        :output-hash (str "sha256:" (hash (pr-str output)))}])))
+  (when-not (:omit-generated-origin? macro)
+    (generated-origin-with-digests
+     macro syntax (expansion-digests input output ops))))
 
 (defn macro-call
   [registry form]
@@ -52,29 +63,34 @@
       (set (map #(expand-child registry module syntax % trace depth) form))
       :else form)))
 
+(defn- trace-record-with-digests
+  [_module macro syntax generated-origin depth digests]
+  {:macro (:identity macro)
+   :macro-version (:version macro)
+   :macro-namespace (:macro-namespace macro)
+   :caller-namespace (:namespace syntax)
+   :caller-profile (:profile syntax)
+   :depth depth
+   :call-span (:span syntax)
+   :input-syntax-id (:syntax-id syntax)
+   :input-hash (:input-hash digests)
+   :output-hash (:output-hash digests)
+   :build-effects (vec (sort-by str (or (:uses-build-effects macro)
+                                        (:build-effects macro)
+                                        #{})))
+   :generated-origin generated-origin
+   :generated-spans [(str "generated:" (:identity macro) ":"
+                          (get-in syntax [:span :form-index]))]
+   :hygiene-policy (:hygiene-policy macro)
+   :hygiene-marks (:hygiene syntax)
+   :metadata (:metadata syntax)
+   :diagnostics []})
+
 (defn trace-record
   [module macro syntax input output generated-origin depth ops]
-  (let [hash (operations/operation ops :sha256-hex digest/sha256-hex)]
-    {:macro (:identity macro)
-     :macro-version (:version macro)
-     :macro-namespace (:macro-namespace macro)
-     :caller-namespace (:namespace syntax)
-     :caller-profile (:profile syntax)
-     :depth depth
-     :call-span (:span syntax)
-     :input-syntax-id (:syntax-id syntax)
-     :input-hash (str "sha256:" (hash (pr-str input)))
-     :output-hash (str "sha256:" (hash (pr-str output)))
-     :build-effects (vec (sort-by str (or (:uses-build-effects macro)
-                                           (:build-effects macro)
-                                           #{})))
-     :generated-origin generated-origin
-     :generated-spans [(str "generated:" (:identity macro) ":"
-                            (get-in syntax [:span :form-index]))]
-     :hygiene-policy (:hygiene-policy macro)
-     :hygiene-marks (:hygiene syntax)
-     :metadata (:metadata syntax)
-     :diagnostics []}))
+  (trace-record-with-digests
+   module macro syntax generated-origin depth
+   (expansion-digests input output ops)))
 
 (defn distinct-by-pr-str
   [values]
@@ -92,16 +108,8 @@
          ops :expand-macro-form
          (fn [m mac args span]
            (policy/expand-macro-form m mac args span ops)))
-        origin-record
-        (operations/operation
-         ops :expansion-generated-origin
-         (fn [mac syn input output]
-           (generated-origin mac syn input output ops)))
-        trace-record-op
-        (operations/operation
-         ops :expansion-trace-record
-         (fn [m mac syn input output origin depth]
-           (trace-record m mac syn input output origin depth ops)))
+        origin-record-op (get ops :expansion-generated-origin)
+        trace-record-op (get ops :expansion-trace-record)
         expand-children
         (operations/operation
          ops :expand-form-children
@@ -131,7 +139,13 @@
                   input form
                   output (expand-macro module macro (vec (rest form))
                                        (:span syntax))
-                  origin (origin-record macro syntax input output)]
+                  [origin digests]
+                  (if origin-record-op
+                    [(origin-record-op macro syntax input output) nil]
+                    (let [digests (when-not (:omit-generated-origin? macro)
+                                    (expansion-digests input output ops))]
+                      [(generated-origin-with-digests macro syntax digests)
+                       digests]))]
               (when (empty? origin)
                 (operations/fail!
                  ops "L4-PROVENANCE-MISSING"
@@ -140,21 +154,27 @@
                   :macro (:identity macro)
                   :remediation
                   "Attach generated-origin metadata linking output syntax to the macro call site."}))
-              (swap! trace conj
-                     (trace-record-op module macro syntax input output origin
-                                      depth))
-              (recur (-> syntax
-                         (assoc :form output
-                                :origin :generated
-                                :phase :macro-expanded
-                                :generated-origin
-                                (vec (concat (:generated-origin syntax) origin))
-                                :macro-namespace (:macro-namespace macro))
-                         (update :hygiene conj
-                                 {:macro (:identity macro)
-                                  :policy (:hygiene-policy macro)}))
-                     (inc depth)
-                     (conj seen-inputs input))))
+              (let [digests (or digests
+                                (when (nil? trace-record-op)
+                                  (expansion-digests input output ops)))]
+                (swap! trace conj
+                       (if trace-record-op
+                         (trace-record-op module macro syntax input output origin
+                                          depth)
+                         (trace-record-with-digests
+                          module macro syntax origin depth digests)))
+                (recur (-> syntax
+                           (assoc :form output
+                                  :origin :generated
+                                  :phase :macro-expanded
+                                  :generated-origin
+                                  (vec (concat (:generated-origin syntax) origin))
+                                  :macro-namespace (:macro-namespace macro))
+                           (update :hygiene conj
+                                   {:macro (:identity macro)
+                                    :policy (:hygiene-policy macro)}))
+                       (inc depth)
+                       (conj seen-inputs input)))))
 
           (coll? form)
           (assoc syntax
