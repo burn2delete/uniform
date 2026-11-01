@@ -109,16 +109,16 @@
                             [java.nio.file.StandardOpenOption/READ
                              java.nio.file.LinkOption/NOFOLLOW_LINKS])]
     (with-open [channel (java.nio.channels.FileChannel/open source-path options)]
-      (let [size (.size channel)]
-        (let [buffer (java.nio.ByteBuffer/allocate (Math/toIntExact size))]
-          (loop []
-            (when (.hasRemaining buffer)
-              (let [read-count (.read channel buffer)]
-                (when (neg? read-count)
-                  (throw (ex-info "C14 source ended before its measured size"
-                                  {:id "SH07-C14-SOURCE-SHORT-READ"})))
-                (recur))))
-          (String. (.array buffer) java.nio.charset.StandardCharsets/UTF_8))))))
+      (let [size (.size channel)
+            buffer (java.nio.ByteBuffer/allocate (Math/toIntExact size))]
+        (loop []
+          (when (.hasRemaining buffer)
+            (let [read-count (.read channel buffer)]
+              (when (neg? read-count)
+                (throw (ex-info "C14 source ended before its measured size"
+                                {:id "SH07-C14-SOURCE-SHORT-READ"})))
+              (recur))))
+        (String. (.array buffer) java.nio.charset.StandardCharsets/UTF_8)))))
 (defn- sha256-id [bytes]
   (let [digest (.digest (java.security.MessageDigest/getInstance "SHA-256") bytes)]
     (str "sha256:"

@@ -1856,6 +1856,21 @@
            (invoke-engine 'sh16-structural-preflight [deep-request])))
     (is (= :rejected (:status (optimize deep-request))))
     (is (= :rejected (:status (invoke-engine 'sh16-verify [base deep-candidate]))))
+    ;; Sequence carriers and non-i64 source offsets remain illegal through
+    ;; the optimizer and verifier, independently of removed size quotas.
+    (doseq [[candidate reason]
+            [[(assoc base :operations (iterate vector nil)) :structure-sequence-carrier]
+             [(assoc-in base [:source-span :end] 9223372036854775808N)
+              :structure-scalar-type-or-range]]]
+      (let [result (optimize candidate)]
+        (is (= :rejected (:status result)))
+        (is (= "C13-CONTRACT" (get-in result [:diagnostics 0 :rule])))
+        (is (= reason (get-in result [:diagnostics 0 :structural-preflight :reason])))))
+    (let [result (invoke-engine 'sh16-verify [base (iterate vector nil)])]
+      (is (= :rejected (:status result)))
+      (is (= "C13-VERIFY" (get-in result [:diagnostics 0 :rule])))
+      (is (= :structure-sequence-carrier
+             (get-in result [:diagnostics 0 :structural-preflight :reason]))))
     (doseq [carrier [(iterate vector nil) 9223372036854775808N]]
       (is (= :rejected (:status (invoke-engine 'sh16-structural-preflight [carrier])))))))
 

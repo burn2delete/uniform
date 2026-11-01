@@ -478,7 +478,7 @@
   sh07-c13-mir-optimization-source-shape-and-control
   (testing
     non-authority-note
-    (let [{:keys [size forms ns-form tree if-shape-errors let-shape-errors]} (parse-shape)]
+    (let [{:keys [forms ns-form tree if-shape-errors let-shape-errors]} (parse-shape)]
       (is (seq forms))
       (let [namespace-forms (filter #(and (seq? %) (= 'ns (first %))) forms)]
         (is (= 1 (count namespace-forms)))
