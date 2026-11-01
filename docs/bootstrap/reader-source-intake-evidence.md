@@ -150,3 +150,23 @@ no fields are removed or rewritten to obtain equality. New complete API
 controls use the current manifest and compare against actual CLI output.
 The source-byte hash and semantic Core id remain unchanged. Older full
 artifact comparisons retain only their historical input authority.
+
+## Shared compiler test support main composition
+
+Actual main eb61e3823435b57c9d8e1bcb0f7fd136df6e4086/tree
+88c309d8013d169813765c2e9c4ba2dfb08ba396 adds exactly five test-only
+changes: shared normalized SH08 fixtures, their SH01/SH08/SH09 consumers,
+and removal of internal membership-call-count assertions and non-authoritative
+timing receipt equality. The normal conflict-free merge preserves all five
+files exactly. Implementation, deps.edn, stage tests, fixture sources and
+the source inputs of the current controls remain unchanged. No fixture
+labels or timing data are promoted into compiler authority.
+
+Current-manifest native intake and argument products retain two complete/text
+pairs; the prior four-pair comparison remains historical. New genuine Core API
+products and actual CLI products are compared without dropping identity fields.
+Whole-component conservation is rebound to this exact base. Contextual lint
+receipts bind da68 and its unchanged baseline source files: Reader3 paths/0
+warnings/0 blockers; Safety7 paths/3486 unchanged warnings/0 blockers.
+Terminal receipts are archived outside the source checkout. Exact source
+review, own CI and clean current-main integration preflight remain required.
