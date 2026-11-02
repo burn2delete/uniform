@@ -79,16 +79,16 @@
 (deftest parent-apis-reject-stale-rebound-and-forged-owners
   (let [c3 (bootstrap/compiler-c3-syntax-file-artifact accepted-path)
         c2 (:c2-reader-artifact c3)
-        snap (c2-pass-cache/bounded-source-snapshot! accepted-path)
+        snap (c2-pass-cache/source-snapshot! accepted-path)
         stale (assoc snap :bytes-hash "sha256:stale")
         rebound (assoc snap :canonical-path "/rebound/accepted.gravity")]
     (testing "stale bytes are rejected before consumption"
-      (with-redefs [c2-pass-cache/bounded-source-snapshot! (constantly stale)]
+      (with-redefs [c2-pass-cache/source-snapshot! (constantly stale)]
         (is (= "C4-RETURN"
                (str (ex-id #(bootstrap/sh05-macro-artifact-from-c3-artifact
                              accepted-path c3)))))))
     (testing "path rebinding is rejected at the authenticated boundary"
-      (with-redefs [c2-pass-cache/bounded-source-snapshot! (constantly rebound)]
+      (with-redefs [c2-pass-cache/source-snapshot! (constantly rebound)]
         (is (= "C4-RETURN"
                (str (ex-id #(bootstrap/sh05-macro-artifact-from-c3-artifact
                              accepted-path c3)))))))
@@ -98,7 +98,7 @@
                            accepted-path (assoc c3 :artifact-id "sha256:forged")))))))
     (testing "post-construction mutation is rejected"
       (let [calls (atom 0)]
-        (with-redefs [c2-pass-cache/bounded-source-snapshot!
+        (with-redefs [c2-pass-cache/source-snapshot!
                       (fn [_]
                         (if (= 1 (swap! calls inc)) snap stale))]
           (is (= "C4-RETURN"
@@ -200,9 +200,9 @@
         (is (= "C5-UNRESOLVED" (:id (first errors))))
         (is (= (first errors) (second errors)))
         (is (zero? @requests)))
-      (let [snapshot (c2-pass-cache/bounded-source-snapshot! accepted-path)
+      (let [snapshot (c2-pass-cache/source-snapshot! accepted-path)
             errors
-            (with-redefs [c2-pass-cache/bounded-source-snapshot!
+            (with-redefs [c2-pass-cache/source-snapshot!
                           (constantly (assoc snapshot :bytes-hash "sha256:stale"))]
               (mapv (fn [legacy?]
                       (failure #(run legacy? sh05
