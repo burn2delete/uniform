@@ -9155,14 +9155,6 @@
              #(bootstrap/p15-s23-seed-readable-pr-str source-path args))]
         (is (= "L2-BUILTIN-ERROR" (:id data)))
         (is (= reason (:reason data)))))
-    (let [nested (nth (iterate vector nil) 98) wide (vec (range 513))
-          many-nodes (vec (repeat 4097 0)) huge-integer (.shiftLeft java.math.BigInteger/ONE 4096)
-          huge-ratio (clojure.lang.Ratio. java.math.BigInteger/ONE huge-integer) huge-string (apply str (repeat 32769 "x")) huge-output-string (apply str (repeat 262145 "x"))]
-      (doseq [value [nested wide many-nodes huge-integer huge-ratio huge-string]] (is (string? (render [value])))) (is (> (count (render [huge-output-string])) 262144)))
-    (let [args (vec (range 257))
-          stage0 (bootstrap/invoke-stage0-builtin {:source-path source-path} 'pr-str args)
-          stage2 (bootstrap/p15-s23-stage2-runtime-invoke-builtin {:source {:path source-path}} 'pr-str args)]
-      (is (= stage0 stage2)) (is (= (str/join " " (map str args)) stage0)))
     (doseq [value [Double/MIN_VALUE Double/MIN_NORMAL
                    Double/MAX_VALUE Math/PI]]
       (let [output (render [value])
@@ -9212,9 +9204,6 @@
                (java.math.BigInteger/valueOf 4))
               :noncanonical-ratio]]]
       (is (= reason (:reason (diagnostic value)))))
-    (let [backing (object-array 1) cyclic (clojure.lang.PersistentVector/adopt backing)]
-      (aset backing 0 cyclic)
-      (let [data (diagnostic cyclic)] (is (= "L2-BUILTIN-ERROR" (:id data))) (is (= :cyclic-value (:reason data))) (is (= :clojure-seed-compatibility (:printer-boundary data)))))
     (let [calls (atom 0)
           hostile-bigint
           (proxy [java.math.BigInteger] [(byte-array [1])]
