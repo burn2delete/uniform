@@ -26,10 +26,16 @@
   "e3f5bb1c91e3ad59ddb64fceef4eccdb07b9960b")
 (def current-manifest-sha
   "8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e")
+(def candidate-source
+  "5a93ad9804cc7344cc57f3ecb9293ed3dae58595")
+(def candidate-source-git-tree
+  "3c28db82c4b751252c2fc8f37e754d5af01cc001")
+(def candidate-manifest-sha
+  "f104336a99da819d7a24f89ddcd7e48311b4def36fc45bc28d56444558828316")
 (def current-task-sha
   "ffbab8d449a74517497b0365b53ae41f767a55ac64134fb65b4f0256dcdf3341")
 (def current-plan-sha
-  "a6b52ae5da734e54335bfc43fa0c150dab9f07c25160ea5f7575f117828e9a1f")
+  "7ca9c4aa25a3961180728c1c75a672a68bf0bd656a3ed258d53a1d56e842e368")
 (def current-source-tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572")
 (def current-source-git-tree
   "c5f5941ca3db4ce38695f870276e1b345a323339")
@@ -43,6 +49,17 @@
   #{"specs/runtime-workflow/tasks.md"
     "specs/build-workflow/tasks.md"
     "specs/domains-workflow/tasks.md"})
+(def expected-candidate-bridge-paths
+  #{"specs/types-workflow/tasks.md"
+    "specs/runtime-workflow/tasks.md"
+    "specs/domains-workflow/tasks.md"})
+(def expected-candidate-bridges
+  {"specs/types-workflow/tasks.md"
+   {:current-sha256 "be4ab3523fcc9532a8f3dc7e36309843b5727cdb9bd5fea2ff8ba08faf07f946"}
+   "specs/runtime-workflow/tasks.md"
+   {:current-sha256 "644170d21c9015a96da5d3569739f186698933d81abd0e565f372b369f25fde5"}
+   "specs/domains-workflow/tasks.md"
+   {:current-sha256 "ffbab8d449a74517497b0365b53ae41f767a55ac64134fb65b4f0256dcdf3341"}})
 (def expected-facet-count 463)
 (def expected-facet-digest
   "9daedb26fb3bbee1ce9994d0cbec96cb8803f9428632cdb1a2f61d208850dcf1")
@@ -280,6 +297,60 @@
      :source-tree-unchanged true
      :source-baseline-unchanged true}))
 
+(defn candidate-manifest-transition!
+  ([] (let [text (slurp manifest-path)]
+        (candidate-manifest-transition! (edn/read-string text) text)))
+  ([candidate] (candidate-manifest-transition! candidate nil))
+  ([candidate candidate-text]
+   (let [main current-manifest
+         main-bridges (into {} (map (juxt :path identity)
+                                    (:task-source-version-bridges main)))
+         candidate-bridges (into {} (map (juxt :path identity)
+                                         (:task-source-version-bridges candidate)))
+         changed (get-in candidate [:task-source-version-bridges])
+         changed-paths (set (keys expected-candidate-bridges))]
+     (require! (or (nil? candidate-text)
+                   (= candidate-manifest-sha (sha256 candidate-text)))
+               "Candidate manifest bytes are not the authenticated transition input")
+     (require! (= (:source-tree main) (:source-tree candidate))
+               "Candidate manifest changed the authenticated source tree")
+     (require! (= (:source-baseline main) (:source-baseline candidate))
+               "Candidate manifest changed the authenticated source baseline")
+     (require! (= (count (:task-source-version-bridges main))
+                  (count changed))
+               "Candidate manifest changed task-source bridge population")
+     (require! (= (set (keys candidate-bridges)) (set (keys main-bridges)))
+               "Candidate manifest changed task-source bridge paths")
+     (doseq [path (sort changed-paths)
+             :let [before (get main-bridges path)
+                   after (get candidate-bridges path)
+                   expected (get expected-candidate-bridges path)]]
+       (require! (= (select-keys before [:path :marker :historical-ref
+                                         :historical-sha256 :changed-records])
+                     (select-keys after [:path :marker :historical-ref
+                                         :historical-sha256 :changed-records]))
+                    (str "Candidate bridge changed historical identity " path))
+       (require! (and (= candidate-source (:current-ref after))
+                      (= candidate-source-git-tree (:current-tree after))
+                      (= (:current-sha256 expected) (:current-sha256 after))
+                      (= :current-candidate-composition (:change-class after))
+                      (= current-source (:current-ref (get after :known-current-main)))
+                      (= "c5f5941ca3db4ce38695f870276e1b345a323339"
+                         (:current-tree (get after :known-current-main))))
+                 (str "Candidate bridge identity is not authenticated " path)))
+     (doseq [path (sort (set/difference (set (keys main-bridges)) changed-paths))]
+       (require! (= (get main-bridges path) (get candidate-bridges path))
+                 (str "Unscoped candidate bridge changed " path)))
+     {:from current-source
+      :to candidate-source
+      :main-manifest-sha256 current-manifest-sha
+      :candidate-manifest-sha256 candidate-manifest-sha
+      :candidate-source-git-tree candidate-source-git-tree
+      :changed-task-source-paths (vec (sort changed-paths))
+      :task-source-bridges (count changed)
+      :source-tree-unchanged true
+      :source-baseline-unchanged true})))
+
 (defn task-joins! [text]
   (doseq [{:keys [join markers]} current-join-task-specs]
     (text-markers! text markers (str "Current task source join " join)))
@@ -502,6 +573,17 @@
                       (str/replace-first text marker "forged-owner-task-marker")))))
                current-owner-task-specs)
               "Current owner-task source-join tamper control accepted")
+    (require! (catches?
+               #(candidate-manifest-transition!
+                 (update current-manifest :task-source-version-bridges
+                         (fn [bridges]
+                           (mapv (fn [bridge]
+                                   (if (= "specs/types-workflow/tasks.md" (:path bridge))
+                                     (assoc bridge :current-tree
+                                            (apply str (repeat 40 "0")))
+                                     bridge))
+                                 bridges)))))
+              "Candidate manifest bridge tamper control accepted")
     (doseq [[ref expected-sha expected-tree message]
             [[(apply str (repeat 40 "0")) historical-task-sha historical-task-tree
               "Historical task ref tamper control accepted"]
@@ -519,12 +601,14 @@
        (count source-join-specs)
        (count current-join-task-specs)
        (count current-join-plan-specs)
-       (count current-owner-task-specs))))
+       (count current-owner-task-specs)
+       1)))
 
 (when (= ["--check"] (vec *command-line-args*))
   (let [source-summary (source-pair!)
         source-join-summary (source-joins!)
         manifest-transition-summary (manifest-transition!)
+        candidate-manifest-transition-summary (candidate-manifest-transition!)
         proposal-summary (proposal! historical-proposal)
         task-summary (task! current-task-text)
         plan-summary (plan! current-plan-text)
@@ -543,6 +627,7 @@
           :source-pair source-summary
           :source-joins source-join-summary
           :manifest-transition manifest-transition-summary
+          :candidate-manifest-transition candidate-manifest-transition-summary
           :proposal proposal-summary
           :task task-summary
           :plan plan-summary

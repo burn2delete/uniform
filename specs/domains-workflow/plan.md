@@ -91,8 +91,11 @@ from the historical schema plan without replaying its 25 field operations:
 | api-client-openapi | `schema/graphql-generation/full-source-interface` | S5 OpenAPI artifacts and diagnostics | OpenAPI document, validators, typed client and handler parity joined to operation/schema, source/compiler/profile/target/provider and diagnostic identities |
 
 The [current-source checker](../../tools/schema_phase10_current.clj) authenticates
-these immutable normative paths at current main `585298b5faa75a307c5b06be19a0aebb8b09168c`
-and checks the candidate task/plan wording. Later current-source transitions
-(including the domains, runtime, and standard-library work) must preserve these
-joins by normal composition; no source hash is silently renewed. The checker
-does not execute a compiler, runtime, provider, hosted failure, or release gate.
+these immutable normative paths at current main `2d0844f8f7f21321d920b9245341a2b98adc642e`
+and checks the candidate task/plan wording, including the owning Types and
+Runtime task criteria. The transition from the preceding current source
+`585298b5faa75a307c5b06be19a0aebb8b09168c` preserves the embedded source tree
+and baseline while authenticating the task-source bridge additions. Later
+current-source transitions must preserve these joins by normal composition; no
+source hash is silently renewed. The checker does not execute a compiler,
+runtime, provider, hosted failure, or release gate.
