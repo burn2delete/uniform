@@ -19,8 +19,6 @@
 (def ^:private ^:dynamic *operations* {})
 (def ^:private ^:dynamic *active-operation-keys* #{})
 (def ^:private ^:dynamic *bypass-next-operation-keys* #{})
-(def ^:private function-operation-keys policy/function-operation-keys)
-(def ^:private scalar-operation-keys policy/scalar-operation-keys)
 (def ^:private operation-keys policy/operation-keys)
 (def ^:private known-source-profiles-default policy/known-source-profiles-default)
 (def ^:private supported-profiles-default policy/supported-profiles-default)
@@ -28,12 +26,6 @@
 (def ^:private effect-capability-default policy/effect-capability-default)
 (def ^:private profile-direct-imports-default policy/profile-direct-imports-default)
 (def ^:private namespace-contract (contract/namespace-contract operation-keys))
-(def ^{:private true :arglists '([value])}
-  valid-keyword-set? policy/valid-keyword-set?)
-(def ^{:private true :arglists '([value])}
-  valid-effect-capability? policy/valid-effect-capability?)
-(def ^{:private true :arglists '([value])}
-  valid-profile-direct-imports? policy/valid-profile-direct-imports?)
 (def ^{:private true :arglists '([id message data])}
   default-fail! policy/default-fail!)
 (def ^{:private true :arglists '([source-path form-index])}
