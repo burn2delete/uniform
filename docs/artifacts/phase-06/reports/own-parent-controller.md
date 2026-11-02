@@ -10,10 +10,15 @@ tree `c5f5941ca3db4ce38695f870276e1b345a323339`. The PR581 modified
 authenticated-pipeline test was not replayed: current main already carries the
 newer PR579 cache-hit assertion and its related controls.
 
-The selective source port began as a direct child of that base. Later normal
-main compositions retain the reviewed source unchanged; the coordinator binds
-the final base/head/tree tuple at integration preflight. Original PR581
-ancestry is preserved without importing its superseded tree.
+The PR582 source port was then based on the accepted PR581 composition
+`22d0a1bf9ca06176e85942aac4d51149e4687012`, tree
+`245b91f78cc5834200ad3eb520677e65a09ef961`; that composition already carries
+the newer PR579 cache-hit assertion and its related controls. This selective
+PR582 port began as a direct child of that accepted PR581 composition. Later
+normal main composition retains the reviewed PR581 source and adds only this
+reviewed single-broker acquisition delta; the coordinator binds the final
+base/head/tree tuple at integration preflight. Original PR581 and PR582
+ancestry are preserved without importing their superseded trees.
 
 ## Implementation and port boundary
 
@@ -43,25 +48,31 @@ or signature substitution fails closed; this helper performs no namespace
 resolution or launch.
 
 The order is admission, atomic one-shot output reservation, then the exact
-guard order in the authoritative coverage decision. The required classes are
-common broker, host-exclusive and canonical; no acquisition order is supplied
-as a default by this controller. Both order fields must be vectors; sets cannot
-supply an iteration-dependent order. Every returned
-opaque handle is validated and retained for release. The original normal
-broker acquire/validate/release functions and runner `start-process` and
-private `process-result` are exposed only by a lazy resolution helper. It is
-not called by loading the controller or by the injected tests. No generic
-broker, runner, security policy or artifact codec is changed.
+guard order in the authoritative coverage decision. Exactly one guard must
+declare `:acquisition :broker` and a supported `:resource-class`; at least one
+canonical guard must declare `:acquisition :non-broker`. Every non-broker guard
+binds its `:acquire-function` to the captured `:acquire-guard` port identity.
+The separate `:acquire` port handles only the single broker guard, and binding
+rejects the same callable supplied to both acquisition ports. Two broker
+descriptors and implicit canonical acquisition refuse before the clock,
+admission, reservation, acquisition or start. The declared guard vector and
+coverage order remain exact vectors; this controller supplies no default order.
+Every returned opaque handle is validated and retained for release through the
+owner-supplied validation/release ports. The original normal broker acquire,
+validate, release, runner `start-process` and private `process-result` remain
+lazy; no canonical-lock implementation or generic broker, runner, security
+policy or artifact codec is changed.
 
-The same owner must separately supply source-bound admission, non-broker
-guards, atomic reservation/publication, source/runtime observation and owned
-process finalization ports. There are deliberately no operational defaults for
-these missing bindings. The existing runner's natural root exit does not prove
-that owned descendants are gone. The finalizer consumes the original runner
-cleanup evidence, finalizes ownership once and must not kill/retry an already
-attempted or unknown cleanup. Missing or incomplete terminal ownership cannot
-pass. Neither normal runner cleanup flags nor a fabricated finalizer report
-can confer that authority.
+The same owner must separately supply source-bound admission, the non-broker
+guard acquisition/validation/release semantics, atomic
+reservation/publication, source/runtime observation and owned process
+finalization ports. There are deliberately no operational defaults for these
+missing bindings. The existing runner's natural root exit does not prove that
+owned descendants are gone. The finalizer consumes the original runner cleanup
+evidence, finalizes ownership once and must not kill/retry an already attempted
+or unknown cleanup. Missing or incomplete terminal ownership cannot pass.
+Neither normal runner cleanup flags nor a fabricated finalizer report can confer
+that authority.
 
 ## Failure, deadline and receipt behavior
 
@@ -118,16 +129,18 @@ handle and any original failure. A metadata receipt alone is never execution acc
 ## Compiler-free evidence and remaining decisions
 
 `parent_controller_test.clj` uses only fake guard/process/clock/receipt ports.
-Twenty-three tests and 497 assertions passed, with no real port resolution and
+Twenty-five tests and 556 assertions passed, with no real port resolution and
 Bootstrap, broker and normal runner namespaces absent. Controls cover identity
-and missing coverage before ports, ordering, partial acquisition release,
-denial/no-start, startup/release deadline charging, nonzero/timeout/capture
-failure, unknown owned cleanup, fatal propagation after cleanup, fatal
-precedence and suppression, deep/cyclic interruption, failed-history
-nonpublication, interruption, duplicate reservation/publication,
-release-before-success, false/nil launch-token refusal and preservation of the
-original error, plus current runner source/ABI drift. Interruption assertions
-capture the flag at return before reporting.
+and missing coverage before ports, single-broker/non-broker dispatch, nested
+broker and implicit-canonical refusal, acquisition alias refusal, declared
+order/reverse release, partial acquisition release, denial/no-start,
+startup/release deadline charging, nonzero/timeout/capture failure, unknown
+owned cleanup, fatal propagation after cleanup, fatal precedence and
+suppression, deep/cyclic interruption, failed-history nonpublication,
+interruption, duplicate reservation/publication, release-before-success,
+false/nil launch-token refusal and preservation of the original error, plus
+current runner source/ABI drift. Interruption assertions capture the flag at
+return before reporting.
 
 The following are still unbound operational facts, not implementation credit:
 
