@@ -3949,56 +3949,11 @@
    (original))))
 
 (doseq
- [operation
-  [#'accept-result!
-   #'assemble-fresh-reader!
-   #'assemble-reader!
-   #'boundary-fail!
-   #'build
-   #'build-plan-binding!
-   #'current-plan-binding!
-   #'current-reader-identity-view
-   #'current-reader-product-binding
-   #'current-reader-revision-authentic?
-   #'descendant-form-ids
-   #'descriptor-reader-product-binding
-   #'empty-hygiene
-   #'envelope-descriptor
-   #'execute-plan!
-   #'form-index
-   #'generated-products!
-   #'index-roots-current?
-   #'literal-index
-   #'logical-source-stem
-   #'native-keyword-map?
-   #'plan-binding-cache
-   #'plan-identities
-   #'project-registered-literal-values
-   #'read-pinned-plan-source!
-   #'reader-artifact-view
-   #'reader-expansion-history
-   #'reader-expansions-current?
-   #'reader-products-authentic?
-   #'reader-semantic-binding
-   #'registered-literal-fail!
-   #'registered-literal-projection-authentic?
-   #'registered-literal-registry
-   #'require-result-carrier!
-   #'resolve-object-template!
-   #'resolve-plan-source-path
-   #'resolve-request-preimage!
-   #'resolve-stream-request-preimage!
-   #'resolve-stream-template!
-   #'resolve-template!
-   #'rich-object
-   #'semantic-source-id
-   #'semantic-span
-   #'source-descriptor
-   #'strip-host-metadata
-   #'verify]]
- ^{:line 103, :column 39}
- (alter-meta!
-  operation
-  assoc
-  :gravity/namespace-contract
-  namespace-contract))
+ [name (keys (:public-api namespace-contract))
+  :let [operation (get (ns-interns *ns*) name)]]
+  ^{:line 103, :column 39}
+  (alter-meta!
+   operation
+   assoc
+   :gravity/namespace-contract
+   namespace-contract))
