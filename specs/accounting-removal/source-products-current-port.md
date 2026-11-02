@@ -14,6 +14,10 @@ historical PR593 review record or a source fixture into C7/B47 authority.
 - current implementation commit: `6edd97beb97cdeae38bd502d58a720c16a9427ff`
 - ancestry-preserving current merge: `fcd228ebb6372b1076e5506bdc03840c50c3dd32`
   (tree `a416c01193cc598676a0a8a1e03ef96dced7f49c`)
+- current-source handoff repair: `e91d132807c5fa6d1b5cea222c975752107308ca`
+  (tree `3b6adbf90cd25bae217dc1acbded11148b38d08f`), composed from the
+  reviewed current Syntax owner handoff and the explicit development-current
+  Reader/Syntax/Macro invocation in the SH08 fixture.
 - the current branch has the original PR593 head as its second parent; the
   current tree retains current-main quota-free owners and the current test
   transport rather than replaying the historical parent tree.
@@ -49,6 +53,12 @@ development-only.
   assertions / 0 failures / 0 errors.
 - C7 source form inventory: 1,124 forms, 1,123 definitions, 0 duplicate
   definitions, 39 GIS3 definitions and 11 `sh08-vf-*` definitions.
+- The repaired current-source control passed for both preserved fixtures:
+  `sh08-gis3-unmetered-current-source-product-development-kernel`, 1 test / 28
+  assertions / 0 failures / 0 errors. It freshly executed C3, SH05, SH06 and
+  SH07 with explicit current Reader/Syntax/Macro selection, then constructed
+  and freshly consumed the private GIS3 product. Candidate substitution,
+  source mutation, and opaque-callback controls remained rejecting/quiet.
 - Language boundary: 6 tests / 11 assertions passed.
 - Canonical documentation validator: 240 documents passed. Full-language
   roadmap structural validator passed.
@@ -60,13 +70,12 @@ development-only.
 
 ## Explicit nonpasses and nonclaims
 
-The actual current-source positive/negative GIS3 product controls were not
-counted. The bounded source/Core attempt stopped before C7 at the inherited
-C4 macro-source contract: `:exact-pinned-macro-source` reported expected
-56,488 bytes and observed 54,374 bytes for the current macro owner. The exact
-receipt is `/tmp/uniform-pr593-source-current-v2.log`. This is a current
-source compatibility/evidence gap, not a reason to bypass the macro owner,
-refresh a historical pin, or claim a source-product pass.
+The earlier current-source attempt stopped before C7 at the inherited C4
+macro-source contract: `:exact-pinned-macro-source` reported expected 56,488
+bytes and observed 54,374 bytes for the current macro owner. The exact
+historical receipt is `/tmp/uniform-pr593-source-current-v2.log`. The repair
+does not repin that historical source; it selects the authenticated
+development-current Macro route and the reviewed current Syntax source route.
 
 No native-C, restricted broker/process operation, full SH08 namespace, public
 function-type acceptance, B47/coordinator authentication, numeric proof,
