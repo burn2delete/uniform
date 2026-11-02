@@ -6,7 +6,15 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {module-keys {:arglists nil :admission :none :value-kind :native-module-key-set}
+    {node-opcode {:arglists ([node]) :admission :none :native-data-only? true}
+     node-facts {:arglists ([checked-core node]) :admission :none :native-data-only? true}
+     runtime-check-operation-id {:arglists ([check]) :admission :none :native-data-only? true}
+     runtime-check-token-id {:arglists ([check]) :admission :none :native-data-only? true}
+     node-operands {:arglists ([token-id node]) :admission :none :native-data-only? true
+       :operation-inputs [:runtime-check-token-id]}
+     runtime-check-source {:arglists ([node]) :admission :none :native-data-only? true}
+     runtime-check-fact-id {:arglists ([check fact-kind]) :admission :none :native-data-only? true}
+     module-keys {:arglists nil :admission :none :value-kind :native-module-key-set}
      function-keys {:arglists nil :admission :none :value-kind :native-function-key-set}
      validate-module-envelope!
      {:arglists ([owner-operations source-path checked-core mir]) :admission :none
@@ -60,7 +68,8 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-module-and-function-key-schemas :explicit-envelope-operations
+    :artifact-inputs [:native-node-and-fact-source-and-check-data :explicit-token-id-operation
+                      :native-module-and-function-key-schemas :explicit-envelope-operations
                       :explicit-fact-table-reconstruction-and-require-operations
                       :explicit-operation-rules-and-schema-data
                       :explicit-native-data-flow-rule-operations
@@ -72,12 +81,14 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-module-and-function-key-sets :native-envelope-products
+    :artifact-outputs [:native-opcodes-fact-references-operands-generated-source-and-ids
+                       :native-module-and-function-key-sets :native-envelope-products
                        :native-fact-table-rule-return :native-operation-products :native-data-flow-counts :native-effect-placement-result
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
+    :diagnostic-ownership {:stage [:native-node-opcode-and-fact-source-id-projection
+                                  :native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
                                   :native-fact-table-equality
                                   :native-operation-shape-parity-and-fact-references
                                   C11-MODULE C11-TARGET-LEAK C11-SAFETY
@@ -101,6 +112,96 @@
 
 
 
+
+(defn node-opcode
+  [node]
+  (case (:source-operation node)
+    :literal :constant
+    :implicit-nil :constant
+    :quote :constant
+    :local :local
+    :let-binding :local-binding
+    :truthy :truthiness
+    :integer-eq :integer-eq
+    :integer-lt :integer-lt
+    :integer-lte :integer-lte
+    :integer-gt :integer-gt
+    :integer-gte :integer-gte
+    :do :sequence
+    :if :conditional-join
+    :let :lexical-scope
+    :str :call
+    :println :call
+    :function :function-boundary
+    :unsupported-checked-core-operation))
+
+(defn node-facts
+  [checked-core node]
+  (let [node-id (:node-id node)
+        safety (:safety node)
+        runtime-check (:check safety)
+        capability-fact (get (:capability-facts checked-core) node-id)
+        safety-proof (:proof safety)]
+    {:type-fact-id (get-in checked-core [:type-facts node-id :fact-id])
+     :effect-fact-id (get-in checked-core [:effect-facts node-id :fact-id])
+     :capability-fact-id (str node-id ":capability-fact")
+     :capability-proof-ids
+     (vec (get-in capability-fact [:capability-proof :proof-ids] []))
+     :ownership-fact-id
+     (get-in checked-core [:ownership-facts node-id :fact-id])
+     :safety-outcome-id (str node-id ":safety-outcome")
+     :safety-proof-id (or (:proof-id safety-proof) :not-applicable)
+     :profile-target-fact-id (str node-id ":profile-target-fact")
+     :runtime-check-id (if runtime-check
+                         (:check-id runtime-check)
+                         :not-applicable)
+     :proof-certificate-ids
+     (cond-> (vec (get-in capability-fact
+                          [:capability-proof :proof-ids] []))
+       (:proof-id safety-proof) (conj (:proof-id safety-proof)))
+     :failure-behavior (if runtime-check
+                         (:failure runtime-check)
+                         :not-applicable)
+     :source-origin-id (get-in node [:source :origin-id])}))
+
+(defn runtime-check-operation-id
+  [check]
+  (str (:check-id check) ":mir:runtime-check"))
+
+(defn runtime-check-token-id
+  [check]
+  (str (:check-id check) ":mir:token"))
+
+(defn node-operands
+  [token-id node]
+  (if-let [check (get-in node [:safety :check])]
+    (into [(token-id check)]
+          (:operands node))
+    (:operands node)))
+
+(defn runtime-check-source
+  [node]
+  (let [check (get-in node [:safety :check])
+        source (:source node)]
+    {:origin-id (:origin-id source)
+     :span (:span source)
+     :enclosing-syntax-origin-id (:enclosing-syntax-origin-id source)
+     :generated? true
+     :generated-origin
+     [{:role :runtime-check-generated
+       :producer-operation-id (:node-id node)
+       :runtime-check-id (:check-id check)}]}))
+
+(defn runtime-check-fact-id
+  [check fact-kind]
+  (str (:check-id check)
+       (case fact-kind
+         :type ":mir:type-fact"
+         :effect ":mir:effect-fact"
+         :capability ":mir:capability-fact"
+         :ownership ":mir:ownership-fact"
+         :safety ":mir:safety-outcome"
+         :profile-target ":mir:profile-target-fact")))
 
 (def module-keys
   #{:artifact :schema-version :source-core :module-id :profile

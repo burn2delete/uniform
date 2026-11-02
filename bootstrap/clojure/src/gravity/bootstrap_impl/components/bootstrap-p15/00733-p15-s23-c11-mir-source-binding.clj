@@ -122,90 +122,28 @@
 
 (defn p15-s23-c11-mir-node-opcode
   [node]
-  (case (:source-operation node)
-    :literal :constant
-    :implicit-nil :constant
-    :quote :constant
-    :local :local
-    :let-binding :local-binding
-    :truthy :truthiness
-    :integer-eq :integer-eq
-    :integer-lt :integer-lt
-    :integer-lte :integer-lte
-    :integer-gt :integer-gt
-    :integer-gte :integer-gte
-    :do :sequence
-    :if :conditional-join
-    :let :lexical-scope
-    :str :call
-    :println :call
-    :function :function-boundary
-    :unsupported-checked-core-operation))
+  (gravity.mir/node-opcode node))
 
 (defn p15-s23-c11-mir-node-facts
   [checked-core node]
-  (let [node-id (:node-id node)
-        safety (:safety node)
-        runtime-check (:check safety)
-        capability-fact (get (:capability-facts checked-core) node-id)
-        safety-proof (:proof safety)]
-    {:type-fact-id (get-in checked-core [:type-facts node-id :fact-id])
-     :effect-fact-id (get-in checked-core [:effect-facts node-id :fact-id])
-     :capability-fact-id (str node-id ":capability-fact")
-     :capability-proof-ids
-     (vec (get-in capability-fact [:capability-proof :proof-ids] []))
-     :ownership-fact-id
-     (get-in checked-core [:ownership-facts node-id :fact-id])
-     :safety-outcome-id (str node-id ":safety-outcome")
-     :safety-proof-id (or (:proof-id safety-proof) :not-applicable)
-     :profile-target-fact-id (str node-id ":profile-target-fact")
-     :runtime-check-id (if runtime-check
-                         (:check-id runtime-check)
-                         :not-applicable)
-     :proof-certificate-ids
-     (cond-> (vec (get-in capability-fact
-                          [:capability-proof :proof-ids] []))
-       (:proof-id safety-proof) (conj (:proof-id safety-proof)))
-     :failure-behavior (if runtime-check
-                         (:failure runtime-check)
-                         :not-applicable)
-     :source-origin-id (get-in node [:source :origin-id])}))
+  (gravity.mir/node-facts checked-core node))
 
 (defn p15-s23-c11-mir-runtime-check-operation-id
   [check]
-  (str (:check-id check) ":mir:runtime-check"))
+  (gravity.mir/runtime-check-operation-id check))
 
 (defn p15-s23-c11-mir-runtime-check-token-id
   [check]
-  (str (:check-id check) ":mir:token"))
+  (gravity.mir/runtime-check-token-id check))
 
 (defn p15-s23-c11-mir-node-operands
   [node]
-  (if-let [check (get-in node [:safety :check])]
-    (into [(p15-s23-c11-mir-runtime-check-token-id check)]
-          (:operands node))
-    (:operands node)))
+  (gravity.mir/node-operands #'p15-s23-c11-mir-runtime-check-token-id node))
 
 (defn p15-s23-c11-mir-runtime-check-source
   [node]
-  (let [check (get-in node [:safety :check])
-        source (:source node)]
-    {:origin-id (:origin-id source)
-     :span (:span source)
-     :enclosing-syntax-origin-id (:enclosing-syntax-origin-id source)
-     :generated? true
-     :generated-origin
-     [{:role :runtime-check-generated
-       :producer-operation-id (:node-id node)
-       :runtime-check-id (:check-id check)}]}))
+  (gravity.mir/runtime-check-source node))
 
 (defn p15-s23-c11-mir-runtime-check-fact-id
   [check fact-kind]
-  (str (:check-id check)
-       (case fact-kind
-         :type ":mir:type-fact"
-         :effect ":mir:effect-fact"
-         :capability ":mir:capability-fact"
-         :ownership ":mir:ownership-fact"
-         :safety ":mir:safety-outcome"
-         :profile-target ":mir:profile-target-fact")))
+  (gravity.mir/runtime-check-fact-id check fact-kind))

@@ -42,7 +42,8 @@
            'expected-terminator-uses 'expected-terminator-value-uses 'expected-value
            'expected-runtime-check-value 'validate-effect-edge-placement! 'validate-data-flow!
            'validate-operations! 'validate-fact-tables! 'validate-module-envelope!
-           'module-keys 'function-keys}
+           'module-keys 'function-keys 'node-opcode 'node-facts 'node-operands
+           'runtime-check-operation-id 'runtime-check-token-id 'runtime-check-source 'runtime-check-fact-id}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -61,6 +62,72 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(deftest native-node-records-match-real-emitted-operations
+  (doseq [{:keys [checked by-id]} @products node (:core-nodes checked)
+          :let [operation (get by-id (:node-id node))] :when operation]
+    (is (= (:opcode operation) (mir/node-opcode node)))
+    (is (= (:operands operation) (mir/node-operands #'b/p15-s23-c11-mir-runtime-check-token-id node)))
+    (is (= (:facts operation) (mir/node-facts checked node))))
+  (is (= :unsupported-checked-core-operation (mir/node-opcode {:source-operation :unknown}))))
+
+(deftest native-fact-and-check-records-preserve-order-source-and-id-data
+  (let [span {:source "native" :form-index 2}
+        check {:check-id "check" :failure :panic}
+        operands ["left" "right"]
+        node {:node-id "node" :source {:origin-id "origin" :span span :enclosing-syntax-origin-id "syntax"}
+              :operands operands :safety {:check check :proof {:proof-id "safe"}}}
+        core {:type-facts {"node" {:fact-id "type"}} :effect-facts {"node" {:fact-id "effect"}}
+              :ownership-facts {"node" {:fact-id "owner"}}
+              :capability-facts {"node" {:capability-proof {:proof-ids ["cap" "cap"]}}}}
+        facts (mir/node-facts core node) generated (mir/runtime-check-source node)
+        calls (atom [])]
+    (is (= ["type" "effect" "owner" "node:capability-fact" "node:safety-outcome" "node:profile-target-fact"]
+           ((juxt :type-fact-id :effect-fact-id :ownership-fact-id :capability-fact-id
+                  :safety-outcome-id :profile-target-fact-id) facts)))
+    (is (= ["cap" "cap"] (:capability-proof-ids facts)))
+    (is (= ["cap" "cap" "safe"] (:proof-certificate-ids facts)))
+    (is (= ["check" :panic "origin" "safe"]
+           ((juxt :runtime-check-id :failure-behavior :source-origin-id :safety-proof-id) facts)))
+    (is (= ["origin" "syntax" true] ((juxt :origin-id :enclosing-syntax-origin-id :generated?) generated)))
+    (is (identical? span (:span generated)))
+    (is (= [{:role :runtime-check-generated :producer-operation-id "node" :runtime-check-id "check"}]
+           (:generated-origin generated)))
+    (is (= ["token" "left" "right"]
+           (mir/node-operands (fn [value] (swap! calls conj value) "token") node)))
+    (is (= [check] @calls))
+    (is (identical? operands (mir/node-operands nil (assoc node :safety {}))))
+    (is (= "check:mir:runtime-check" (mir/runtime-check-operation-id check)))
+    (is (= "check:mir:token" (mir/runtime-check-token-id check)))
+    (doseq [[kind suffix] [[:type ":mir:type-fact"] [:effect ":mir:effect-fact"]
+                         [:capability ":mir:capability-fact"] [:ownership ":mir:ownership-fact"]
+                         [:safety ":mir:safety-outcome"] [:profile-target ":mir:profile-target-fact"]]]
+      (is (= (str "check" suffix) (mir/runtime-check-fact-id check kind))))
+    (let [without (mir/node-facts {} (assoc node :safety {}))]
+      (is (= [:not-applicable :not-applicable :not-applicable [] []]
+             ((juxt :runtime-check-id :failure-behavior :safety-proof-id :capability-proof-ids
+                    :proof-certificate-ids) without)))))
+  (is (thrown? IllegalArgumentException (mir/runtime-check-fact-id {} :unknown))))
+
+(deftest native-node-wrappers-retain-arguments-and-live-token-operation
+  (doseq [[name args ports]
+          [['node-opcode [:node] []] ['node-facts [:core :node] []]
+           ['runtime-check-operation-id [:check] []] ['runtime-check-token-id [:check] []]
+           ['node-operands [:node] [#'b/p15-s23-c11-mir-runtime-check-token-id]]
+           ['runtime-check-source [:node] []] ['runtime-check-fact-id [:check :type] []]]]
+    (let [stage (ns-resolve 'gravity.mir name)
+          wrapper (ns-resolve 'gravity.bootstrap (symbol (str "p15-s23-c11-mir-" name)))
+          marker (Object.) observed (atom nil)]
+      (with-redefs-fn {stage (fn [& arguments] (reset! observed arguments) marker)}
+        #(is (identical? marker (apply wrapper args))))
+      (is (= (concat ports args) @observed))
+      (is (every? true? (map identical? ports (take (count ports) @observed))))))
+  (let [error (ex-info "late native token id" {})
+        operation #'b/p15-s23-c11-mir-runtime-check-token-id
+        caught (with-redefs [b/p15-s23-c11-mir-runtime-check-token-id (fn [& _] (throw error))]
+                 (try (mir/node-operands operation {:safety {:check {:check-id "check"}}})
+                      nil (catch clojure.lang.ExceptionInfo e e)))]
+    (is (identical? error caught))))
 
 (defn- envelope-validation-ports []
   {:entry-parameter! #'b/p15-s23-c11-mir-entry-parameter!
