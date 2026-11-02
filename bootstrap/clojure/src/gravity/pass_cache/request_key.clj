@@ -6,7 +6,8 @@
              :refer [canonicalizer-version execution-request-fields fail!
                      require-keyword-set! require-sha256! schema-version
                      sha256-id? sorted-sha-vector! validate-authority!]]
-            [gravity.pass-execution :as pass-execution]))
+            [gravity.pass-execution :as pass-execution]
+            [gravity.pass-execution.contract :as pass-contract]))
 
 (defn pass-request-fields
   [request]
@@ -14,15 +15,25 @@
     (fail! "C16-KEY" "pass cache request must be a map" {}))
   request)
 
+(defn- validate-stage-request-shape!
+  [request]
+  (when-not (= execution-request-fields (set (keys request)))
+    (fail! "C16-KEY" "pass execution request has unknown or missing fields"
+           {:expected execution-request-fields
+            :observed (set (keys request))}))
+  request)
+
 (defn validate-stage-request!
   [request]
   (let [request (pass-request-fields request)
         contract (:contract request)]
-    (when-not (= execution-request-fields (set (keys request)))
-      (fail! "C16-KEY" "pass execution request has unknown or missing fields"
-             {:expected execution-request-fields
-              :observed (set (keys request))}))
-    (pass-execution/validate-pass-contract! contract)
+    (validate-stage-request-shape! request)
+    ;; `key-preimage` establishes the contract identity once for this
+    ;; invocation.  Keep the public validator call for standalone callers and
+    ;; for injected validation, while avoiding a second underlying validation
+    ;; when that invocation-local identity is already present.
+    (when-not (pass-contract/validated-pass-contract-identity contract)
+      (pass-execution/validate-pass-contract! contract))
     (when-not (= (:stage request) (:pass contract))
       (fail! "D1-PIPELINE-ORDER" "request stage differs from pass contract"
              {:stage (:stage request) :pass (:pass contract)}))
@@ -88,30 +99,37 @@
 
 (defn key-preimage
   [request]
-  (let [request (validate-stage-request! request)
-        contract (:contract request)
-        contract-id (pass-execution/pass-contract-id contract)]
-    {:artifact :gravity/compiler-pass-cache-key
-     :schema-version schema-version
-     :canonicalizer-version canonicalizer-version
-     :stage (:stage request)
-     :pass-contract-id contract-id
-     :contract contract
-     :producer-binding-id (:producer-binding-id request)
-     :input-artifact-ids (:input-artifact-ids request)
-     :input-facts (:input-facts request)
-     :external-root-inputs (:external-root-inputs request)
-     :semantic-bindings (:semantic-bindings request)
-     :dependency-graph-id (:dependency-graph-id request)
-     :build-effect-replay-id (:build-effect-replay-id request)
-     :profile-id (:profile-id request)
-     :target-id (:target-id request)
-     :policy-ids (:policy-ids request)
-     :diagnostic-schema-id
-     (get-in request [:semantic-bindings :diagnostic-schema-id])
-     :diagnostic-stream-id (:diagnostic-stream-id request)
-     :provenance (:provenance request)
-     :authority (:authority request)}))
+  (let [request (pass-request-fields request)
+        _ (validate-stage-request-shape! request)
+        contract (:contract request)]
+    (pass-contract/with-validated-contract-identities
+      [contract]
+      pass-execution/validate-pass-contract!
+      (fn [_]
+        (let [request (validate-stage-request! request)
+              contract (:contract request)
+              contract-id (pass-execution/pass-contract-id contract)]
+          {:artifact :gravity/compiler-pass-cache-key
+           :schema-version schema-version
+           :canonicalizer-version canonicalizer-version
+           :stage (:stage request)
+           :pass-contract-id contract-id
+           :contract contract
+           :producer-binding-id (:producer-binding-id request)
+           :input-artifact-ids (:input-artifact-ids request)
+           :input-facts (:input-facts request)
+           :external-root-inputs (:external-root-inputs request)
+           :semantic-bindings (:semantic-bindings request)
+           :dependency-graph-id (:dependency-graph-id request)
+           :build-effect-replay-id (:build-effect-replay-id request)
+           :profile-id (:profile-id request)
+           :target-id (:target-id request)
+           :policy-ids (:policy-ids request)
+           :diagnostic-schema-id
+           (get-in request [:semantic-bindings :diagnostic-schema-id])
+           :diagnostic-stream-id (:diagnostic-stream-id request)
+           :provenance (:provenance request)
+           :authority (:authority request)})))))
 
 (defn request-from-key
   [key]

@@ -121,22 +121,28 @@
 
   The context is identity-keyed and private to one composition.  It is not a
   cache or a public trust marker; all entries are populated only after the
-  normal contract validator succeeds."
-  [contracts thunk]
-  (let [validated (mapv (fn [pass-contract]
-                          (validate-pass-contract! pass-contract)
-                          pass-contract)
-                        contracts)
-        entries (java.util.IdentityHashMap.)
-        context {:token validated-contract-context-token :entries entries}]
-    (doseq [pass-contract validated]
-      (.put entries pass-contract ::validated))
-    (binding [*validated-contract-context* context]
-      (let [identities
-            (mapv (fn [pass-contract]
-                    {:contract pass-contract
-                     :id (pass-contract-id pass-contract)})
-                  validated)]
-        (doseq [{:keys [contract] :as identity} identities]
-          (.put entries contract identity))
-        (thunk identities)))))
+  normal contract validator succeeds.  The three-argument form accepts the
+  caller's validator so facades retain their diagnostic interposition while
+  sharing the same invocation-local identity context."
+  ([contracts thunk]
+   (with-validated-contract-identities contracts
+     validate-pass-contract!
+     thunk))
+  ([contracts validate! thunk]
+   (let [validated (mapv (fn [pass-contract]
+                           (validate! pass-contract)
+                           pass-contract)
+                         contracts)
+         entries (java.util.IdentityHashMap.)
+         context {:token validated-contract-context-token :entries entries}]
+     (doseq [pass-contract validated]
+       (.put entries pass-contract ::validated))
+     (binding [*validated-contract-context* context]
+       (let [identities
+             (mapv (fn [pass-contract]
+                     {:contract pass-contract
+                      :id (pass-contract-id pass-contract)})
+                   validated)]
+         (doseq [{:keys [contract] :as identity} identities]
+           (.put entries contract identity))
+         (thunk identities))))))
