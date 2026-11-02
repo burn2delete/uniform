@@ -1,5 +1,6 @@
 (ns gravity.mir.pipeline-test
   (:require [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
             [gravity.mir :as mir]
@@ -39,7 +40,8 @@
            'profile-target-table 'capability-proof-table 'safety-proof-table
            'downstream-ids 'expected-block-operation-ids 'expected-data-flow 'expected-uses
            'expected-terminator-uses 'expected-terminator-value-uses 'expected-value
-           'expected-runtime-check-value 'validate-effect-edge-placement! 'validate-data-flow!}
+           'expected-runtime-check-value 'validate-effect-edge-placement! 'validate-data-flow!
+           'validate-operations!}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -58,6 +60,84 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(defn- operation-validation-ports []
+  {:entry-parameter! #'b/p15-s23-c11-mir-entry-parameter!
+   :operation-sequence #'b/p15-s23-c11-mir-operation-sequence
+   :runtime-check-operation-id #'b/p15-s23-c11-mir-runtime-check-operation-id
+   :expected-block-operation-ids #'b/p15-s23-c11-mir-expected-block-operation-ids
+   :require! #'b/p15-s23-c11-mir-require!
+   :block-keys b/p15-s23-c11-mir-block-keys
+   :node-facts #'b/p15-s23-c11-mir-node-facts
+   :operation-keys b/p15-s23-c11-mir-operation-keys
+   :node-opcode #'b/p15-s23-c11-mir-node-opcode
+   :allowed-opcodes b/p15-s23-c11-mir-allowed-opcodes
+   :allowed-source-operations b/p15-s23-c11-mir-allowed-source-operations
+   :node-operands #'b/p15-s23-c11-mir-node-operands
+   :expected-runtime-check-operation #'b/p15-s23-c11-mir-expected-runtime-check-operation
+   :set-union #'set/union})
+
+(deftest native-operation-rules-accept-real-emission-and-reject-changed-records
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [ports (operation-validation-ports)
+          accepted (mir/validate-operations! ports source checked emitted)
+          block-id (first (for [[id block] (get-in emitted [:functions (:entrypoint checked) :blocks])
+                               :when (seq (:instructions block))] id))
+          block-path [:functions (:entrypoint checked) :blocks block-id]
+          reorder-block-id (first (for [[id block] (get-in emitted [:functions (:entrypoint checked) :blocks])
+                                       :when (< 1 (count (:instructions block)))] id))
+          reorder-path [:functions (:entrypoint checked) :blocks reorder-block-id :instructions]
+          op-path (conj block-path :instructions 0)]
+      (is (= accepted (b/p15-s23-c11-mir-validate-operations! source checked emitted)))
+      (is (= 5 (count (:operations accepted))))
+      (is (identical? (:core-nodes checked) (:nodes accepted)))
+      (is (empty? (:runtime-nodes accepted)))
+      (is (some? reorder-block-id))
+      (doseq [[changed id missing]
+              [[(assoc-in emitted (conj op-path :opcode) :llvm/add)
+                "C11-TARGET-LEAK" :checked-core-operation-parity]
+               [(assoc-in emitted (conj op-path :type) :gravity/string)
+                "C11-TYPE" :resolvable-id-referenced-operation-facts]
+               [(assoc-in emitted (conj op-path :source) {:origin-id :forged})
+                "C11-ORIGIN" :checked-core-source-origin]
+               [(assoc-in emitted (conj op-path :facts :source-origin-id) :forged)
+                "C11-SAFETY" :linked-c6-c10-id-references]
+               [(assoc-in emitted (conj op-path :effects) #{:io})
+                "C11-EFFECT" :direct-intrinsic-effect-capability-ordering]
+               [(assoc-in emitted (conj block-path :extra) true)
+                "C11-BLOCK" :well-formed-mir-block]
+               [(update-in emitted (conj block-path :instructions) #(vec (rest %)))
+                "C11-MODULE" :one-core-operation-plus-one-derived-operation-per-runtime-check]
+               [(update-in emitted reorder-path #(vec (reverse %)))
+                "C11-DOMINANCE" :canonical-checked-core-instruction-order-and-placement]]]
+        (let [rejected (failure #(mir/validate-operations! ports source checked changed))]
+          (is (= id (:id rejected)))
+          (is (= missing (:missing-fact rejected)))
+          (is (= rejected (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed)))))))))
+
+(deftest operation-wrapper-retains-live-owner-vars-and-schema-data
+  (let [marker (Object.) observed (atom nil)]
+    (with-redefs [mir/validate-operations! (fn [& args] (reset! observed args) marker)]
+      (is (identical? marker (b/p15-s23-c11-mir-validate-operations! :source :core :mir))))
+    (is (= [:source :core :mir] (vec (rest @observed))))
+    (let [ports (first @observed) expected (operation-validation-ports)]
+      (is (= expected ports))
+      (is (every? true? (map #(identical? (get expected %) (get ports %)) (keys expected))))
+      (let [error (ex-info "late owner callback" {})
+            caught (with-redefs [b/p15-s23-c11-mir-entry-parameter! (fn [& _] (throw error))]
+                     (try (mir/validate-operations! ports :source :core :mir)
+                          nil (catch clojure.lang.ExceptionInfo e e)))]
+        (is (identical? error caught)))))
+  (let [{:keys [source checked] emitted :mir} (first @products)
+        ports (operation-validation-ports)
+        events (atom [])
+        observed (into {} (for [[key value] ports]
+                            [key (if (var? value)
+                                   (fn [& args] (swap! events conj key) (apply value args)) value)]))]
+    (is (= (mir/validate-operations! ports source checked emitted)
+           (mir/validate-operations! observed source checked emitted)))
+    (is (= [:entry-parameter! :operation-sequence :expected-block-operation-ids :set-union :require! :require!]
+           (vec (take 6 @events))))))
 
 (deftest fact-tables-preserve-ids-order-and-borrowed-data
   (let [source {:origin-id "origin" :generated-origin [:macro]}
