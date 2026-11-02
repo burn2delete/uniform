@@ -12,7 +12,7 @@
  {:source-view {:path "specs/requirement-reconciliation/phase-02-safety/current-source-view.edn"
                 :sha256 "c0b4a5e53649cedcd7fcb5bc498afe35fe4fcf50ae3e42813bd0a2738d6a782c"}
   :checker {:path "tools/safety_task_source_view.clj"
-            :sha256 "5665e0e03c2bd2fd1166e38dae2af45827fe8a5940fed805584ff93562e5e3f8"}}
+            :sha256 "e3214b5bbf5775ec225653613b8a1249aeb1bf9d6df02ba74e9221e1b507cf16"}}
  :conservation {:source-documents 16
                 :source-occurrences 1908
                 :source-dispositions 962

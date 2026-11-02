@@ -123,7 +123,6 @@
         base (get-in view [:base-source :task-sources])
         current (get-in view [:current-source :task-sources])
         current-commit (get-in view [:current-source :commit])
-        historical-commit (get-in view [:historical-source :proposal :commit])
         proposal-pin (get-in view [:historical-source :proposal])]
     (verify-commit-tree! proposal-pin)
     (verify-commit-tree! {:commit current-commit :tree (get-in view [:current-source :tree])})
