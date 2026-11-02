@@ -187,9 +187,10 @@
       (throw (ex-info "Malformed or out-of-scope lint output" {:path (str path)})))
     (mapv #(update % :filename rename) (:findings result))))
 
-(defn source-paths-for-warnings [paths current-plan whole-context? findings]
+(defn source-paths-for-warnings
   "Select only current warning filenames for source/definition mapping.
   Errors always block and informational findings never need source mapping."
+  [paths current-plan whole-context? findings]
   (let [candidates (distinct (concat paths (when whole-context? (:paths current-plan))))
         warnings (set (keep (fn [finding]
                               (when (= :warning (:level finding))
