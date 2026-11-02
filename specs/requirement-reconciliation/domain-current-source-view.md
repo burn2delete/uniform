@@ -12,11 +12,11 @@ denominator, or claim implementation or product completion.
   `ab4173148a9a2ffe64a7ac94e74289db0704080a`.
 - Historical current-ledger port: `db12333c03e448106c7b8607fc84aea9dfc13463`,
   tree `2da5a46eb4fbc0fce547604a29b5305127513127`, parent `12480d592`.
-- Current-main composition: `dbeda7c7dc9a7bb880baa90af1a89046828db327`, tree
-  `576075197b5b4e815b78bae7d949bfb5fe2d0437`.
-- Current source-view checkpoint: `710356676524bc3fe55440018002e90ba336f999`,
-  tree `31360b9122a3428575ad9216b2e33e3e903f6068`, with parents
-  `313405bf4b653f56f0d959ae7aa631dbbdb3b1dd` and `dbeda7c7`.
+- Current-main composition: `38add2342719b91c6ef22f064fa813a16e9a97b3`, tree
+  `5e260f72a8455fc44bb39039b9e0ce5f2be0907c`.
+- Current source-view checkpoint: `374aae5814d4f2027a613d2cd7a249ad2b08b07c`,
+  tree `358c68e3ea6dfe1bf4254448aad16faace470f76`, with parents
+  `8de866671bb0ec4af4c0aae4ce591ae69f22f498` and `38add234`.
 - Historical PR562 candidate: `2c3eac90b9736873ce7c439cdc9603b1e43249e5`,
   tree `3de79028eeaced10f00c6895f4f5cf446d7304f2`.
 - Historical family source: `6276c94b0b753c888ef8fecc794bcc81245ea3b3`,
@@ -41,14 +41,17 @@ occurrences, 777 source dispositions, 1,838 source facets, 139 inherited
 units, 64 field operations, 32 task-reference operations, and 107 unresolved
 stable IDs. Every source document has both original and current hashes; the
 current Phase 09 documents are unchanged in the review base. The family task
-criteria that PR562 actually supplies remain exact in the current `domains`
-ledger. The four historical `platform` criteria remain an authenticated
-prefix of the current-main platform rows; current main additionally supplies
-its current platform criteria and product projection. The checker verifies
-that transition against both immutable source commits, rather than treating
-the old platform file hash as current. Compiler API, build, legality, and
-runtime rows remain current-main composition; the historical compiler-api
-source had four rows while current main has added `domain-ir-boundaries`.
+criteria that PR562 actually supplies remain authenticated in the composed
+`domains` ledger: the historical Workflow/UI blocks are retained, while
+current main's SAFE9/SAFE13 Math/AI criteria are also present. The current-main
+domain bridge is pinned in the manifest and checked separately. The four
+historical `platform` criteria remain an authenticated prefix of the
+current-main platform rows; current main additionally supplies its current
+platform criteria and product projection. The checker verifies that transition
+against both immutable source commits, rather than treating the old platform
+file hash as current. Compiler API, build, legality, and runtime rows remain
+current-main composition; the historical compiler-api source had four rows
+while current main has added `domain-ir-boundaries`.
 
 The gap proposal retains 577 historical records, 70 assigned records and
 coverage operations, 15 existing-task amendments, nine new-task proposals,
@@ -64,8 +67,9 @@ The historical family manifest (`43ac4686...`) is a composed artifact that is
 not present in current main. The gap receipt manifest (`f4c17182...`) is kept
 as historical evidence at its pinned commit. The preserved PR445 manifest
 (`aa7ee8df...`) is also historical/external. Current main's manifest is
-`d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b`, and the
-checker rejects silent substitution of any historical manifest for it.
+`8a41f5aa638ec717b1321a02974e63c6afc8103f498ee5d7bfc5738ebb3ad21e`, and its
+exact Domain task-source bridge is pinned and checked. The checker rejects
+silent substitution of any historical manifest for it.
 
 ## Checker and evidence boundary
 
@@ -83,8 +87,9 @@ negative controls reject proposal/source tampering, task reorder, duplicate
 IDs, closed rows, wrong paths, canonical-adoption closure, and implementation
 closure. The successful scoped run reported 21 documents, 1,533 occurrences,
 1,838 facets, 139 family units, 70 assigned gap records, six current task
-sources, and all twelve controls passing, including family- and gap-proposal
-path tamper rejection.
+sources, and all fourteen controls passing, including domain-transition,
+current-manifest-bridge, family-proposal and gap-proposal path tamper
+rejection.
 
 The current-main platform projection check passed (5 tests, 90 assertions),
 shared acceptance dependencies passed (18 tests, 434 assertions), and

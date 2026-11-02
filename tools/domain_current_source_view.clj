@@ -487,6 +487,48 @@
                   (str "Historical PR562 platform criterion was not preserved: " id))))
     true))
 
+(defn validate-domain-transition! [view]
+  (let [transition (get-in view [:current-source :domain-criteria-transition])
+        path "specs/domains-workflow/tasks.md"
+        marker "domains-implementation-tasks"
+        historical-commit (:historical-commit transition)
+        current-main-commit (:current-main-commit transition)
+        composition-commit (get-in view [:current-source :commit])
+        historical (git-text historical-commit path)
+        current-main (git-text current-main-commit path)
+        composition (git-text composition-commit path)]
+    (verify-commit-tree! {:commit historical-commit
+                          :tree (:historical-tree transition)})
+    (verify-commit-tree! {:commit current-main-commit
+                          :tree (:current-main-tree transition)})
+    (verify-commit-tree! {:commit composition-commit
+                          :tree (get-in view [:current-source :tree])})
+    (require! (= (:historical-sha256 transition) (sha256 historical))
+              "Historical domain task source hash drift")
+    (require! (= (:current-main-sha256 transition) (sha256 current-main))
+              "Current-main domain task source hash drift")
+    (require! (= :family-criteria-preserved-plus-current-main-criteria
+                 (:mode transition))
+              "Domain source transition mode changed")
+    (let [historical-entry {:path path :marker marker
+                            :ordered-task-ids (:project-ids transition)}
+          current-main-entry (assoc historical-entry
+                                    :sha256 (:current-main-sha256 transition))
+          composition-entry (assoc historical-entry
+                                    :sha256 (sha256 composition))]
+      (validate-task-records! historical historical-entry)
+      (validate-task-records! current-main current-main-entry)
+      (validate-task-records! composition composition-entry)
+      (doseq [id (:project-ids transition)]
+        (let [old-block (task-block historical marker id)
+              current-main-block (task-block current-main marker id)
+              composition-block (task-block composition marker id)]
+          (require! (str/starts-with? composition-block old-block)
+                    (str "Historical PR562 domain criterion was not preserved: " id))
+          (require! (str/starts-with? composition-block current-main-block)
+                    (str "Current-main domain criterion was not preserved: " id)))))
+    true))
+
 (defn validate-current! [view]
   (let [current (get-in view [:current-source :task-sources])
         commit (get-in view [:current-source :commit])
@@ -510,12 +552,21 @@
       (when-let [historical (first (filter #(= (:path %) (:path entry)) family))]
         (require! (= (:marker historical) (:marker entry))
                   (str "Current task marker changed: " (:path entry)))))
-    (let [domain-path "specs/domains-workflow/tasks.md"
-          h (first (filter #(= domain-path (:path %)) family))
-          c (first (filter #(= domain-path (:path %)) current))]
-      (require! (= (:sha256 h) (:sha256 c))
-                "Family domain task criteria were not preserved in current ledger"))
+    (validate-domain-transition! view)
     (validate-platform-transition! view)
+    (let [manifest-pin (:current-manifest view)
+          manifest-text (slurp published-path)
+          manifest (edn/read-string manifest-text)
+          pinned-manifest (git-text (:commit manifest-pin) published-path)
+          bridge (first (filter #(= "specs/domains-workflow/tasks.md" (:path %))
+                                (:task-source-version-bridges manifest)))]
+      (verify-commit-tree! {:commit (:commit manifest-pin)
+                            :tree (:tree manifest-pin)})
+      (require! (= (:sha256 manifest-pin) (sha256 pinned-manifest)
+                   (sha256 manifest-text))
+                "Current manifest source hash drift")
+      (require! (= (:domain-task-source-bridge manifest-pin) bridge)
+                "Current manifest domain bridge drift"))
     (let [manifest (sha256 (slurp published-path))
           historical #{(get-in view [:historical-manifest :family :sha256])
                        (get-in view [:historical-manifest :gap-published :sha256])
@@ -594,6 +645,16 @@
      :current-source-hash-tamper
      (rejected? #(validate-view! (assoc-in view [:current-source :task-sources 0 :sha256] zero-hex)
                                  family gap))
+     :domain-transition-current-main-hash-tamper
+     (rejected? #(validate-view!
+                  (assoc-in view [:current-source :domain-criteria-transition
+                                  :current-main-sha256] zero-hex)
+                  family gap))
+     :current-manifest-domain-bridge-tamper
+     (rejected? #(validate-view!
+                  (assoc-in view [:current-manifest :domain-task-source-bridge
+                                  :current-sha256] zero-hex)
+                  family gap))
      :task-order-tamper
      (rejected? #(validate-task-records!
                   first-text
