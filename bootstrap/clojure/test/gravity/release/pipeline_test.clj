@@ -31,6 +31,12 @@
     (is (false? (:performs-io? contract)))
     (is (false? (:self-hosted? contract)))
     (is (= '[clojure.string] (get-in contract [:dependency-direction :requires])))
+    (is (= '([packaged-source-entries-supplier jar-entries])
+           (get-in contract [:public-api 'jar-source-inventory-report :arglists])))
+    (is (= '([expected-jar-file-entries-supplier jar-file-entries])
+           (get-in contract [:public-api 'jar-inventory-report :arglists])))
+    (is (= [:observed-native-entry-names :late-expected-inventory-supplier]
+           (:artifact-inputs contract)))
     (is (= (:gravity/namespace-contract (meta #'release/jar-source-inventory-report)) contract))))
 
 (deftest canonical-source-order-matches-the-existing-archive-reader
@@ -64,7 +70,7 @@
     (is (= [(last expected)]
            (:missing (bootstrap/p18-t02-jar-inventory-report (pop expected)))))))
 
-(deftest expected-inventory-vars-are-read-at-invocation
+(deftest expected-inventory-suppliers-are-called-at-invocation
   (doseq [[port direct wrapped expected]
           [[#'bootstrap/p18-t02-packaged-source-entries release/jar-source-inventory-report
             bootstrap/p18-t02-jar-source-inventory-report [{:jar-entry "z.clj"} {:jar-entry "a.clj"}]]
@@ -83,6 +89,32 @@
         (with-redefs-fn {port (fn [] (throw sentinel))}
           #(is (identical? sentinel (rejection (fn [] (invoke observed))))))
         (is (false? @touched))))))
+
+(deftest inventory-specific-wrappers-preserve-report-refusals
+  (let [inventory [{:path "bootstrap/clojure/src/gravity/custom.clj"
+                    :jar-entry "gravity/custom.clj"}]
+        source-valid
+        (bootstrap/p18-t02-jar-source-inventory-report
+         inventory ["gravity/custom.clj"])
+        source-duplicate
+        (bootstrap/p18-t02-jar-source-inventory-report
+         inventory ["gravity/custom.clj" "gravity/custom.clj"])
+        file-valid
+        (bootstrap/p18-t02-jar-inventory-report
+         inventory ["META-INF/MANIFEST.MF" "gravity/custom.clj"])
+        file-missing
+        (bootstrap/p18-t02-jar-inventory-report
+         inventory ["gravity/custom.clj"])]
+    (is (true? (:valid? source-valid)))
+    (is (= ["gravity/custom.clj"] (:expected source-valid)))
+    (is (false? (:valid? source-duplicate)))
+    (is (= {"gravity/custom.clj" 2}
+           (:entry-frequencies source-duplicate)))
+    (is (true? (:valid? file-valid)))
+    (is (= ["META-INF/MANIFEST.MF" "gravity/custom.clj"]
+           (:expected file-valid)))
+    (is (false? (:valid? file-missing)))
+    (is (= ["META-INF/MANIFEST.MF"] (:missing file-missing)))))
 
 (deftest real-disposable-jar-passes-both-inventory-reports
   (with-disposable-package
