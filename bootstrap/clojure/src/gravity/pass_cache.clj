@@ -20,10 +20,7 @@
 ;; These private compatibility vars remain observable to the existing hostile
 ;; filesystem tests. Public entrypoints bind their current values into the leaf
 ;; policy so with-redefs and subprocess crash hooks retain their exact behavior.
-(def ^:private maximum-depth policy/maximum-depth)
-(def ^:private maximum-nodes policy/maximum-nodes)
 (def ^:private maximum-file-bytes policy/maximum-file-bytes)
-(def ^:private maximum-canonical-bytes policy/maximum-canonical-bytes)
 (def ^:private maximum-entry-bytes policy/maximum-entry-bytes)
 (def ^:private maximum-blob-bytes policy/maximum-blob-bytes)
 (def ^:private maximum-entry-count policy/maximum-entry-count)
@@ -37,10 +34,7 @@
 
 (defmacro ^:private with-compatibility-policy
   [& body]
-  `(binding [policy/maximum-depth maximum-depth
-             policy/maximum-nodes maximum-nodes
-             policy/maximum-file-bytes maximum-file-bytes
-             policy/maximum-canonical-bytes maximum-canonical-bytes
+  `(binding [policy/maximum-file-bytes maximum-file-bytes
              policy/maximum-entry-bytes maximum-entry-bytes
              policy/maximum-blob-bytes maximum-blob-bytes
              policy/maximum-entry-count maximum-entry-count
@@ -91,7 +85,7 @@
     (path-policy/relative-name! value)))
 
 (defn stage-cache-key
-  "Build the exact, bounded semantic cache key for one pass request."
+  "Build the exact semantic cache key for one pass request."
   [request]
   (with-compatibility-policy
     (request-key/stage-cache-key request)))

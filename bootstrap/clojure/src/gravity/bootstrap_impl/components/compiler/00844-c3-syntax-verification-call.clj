@@ -34,5 +34,8 @@
 (defn c3-syntax-validate!
   ([source-path artifact] (c3-syntax-validate! source-path artifact nil))
   ([source-path artifact invocation]
-  (c3-syntax-verification-call
-   invocation c3-syntax-verification/c3-syntax-validate! source-path artifact)))
+   (if *c3-syntax-verification-leaf-call?*
+     (c3-syntax-verification/c3-syntax-validate! source-path artifact)
+     (binding [*c3-syntax-verification-leaf-call?* true]
+       (gravity.syntax/verify
+        source-path artifact (c3-syntax-verification-ops invocation))))))

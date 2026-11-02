@@ -1,0 +1,7 @@
+(ns gravity.resolution.lexical-leak
+  (:profile :meta) (:target :jvm) (:exports [leaked])
+  (:effects #{}) (:capabilities #{}) (:safety :safe))
+(defn leaked [items]
+  (do
+    (let [[left [right _]] items] (+ left right))
+    right))

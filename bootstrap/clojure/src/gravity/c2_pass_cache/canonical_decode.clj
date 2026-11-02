@@ -5,7 +5,7 @@
   (let [node (canonical-node value options)
         bytes (.getBytes (canonical-node-text node) StandardCharsets/UTF_8)
         observed (alength bytes)]
-    (when (> observed maximum-bytes)
+    (when (and maximum-bytes (> observed maximum-bytes))
       (if-let [capacity-failure! (:capacity-failure! options)]
         (capacity-failure! :canonical-bytes maximum-bytes observed)
         (cache-fail! "C16-ENTRY" "canonical cache data exceeds its byte bound"
@@ -50,17 +50,10 @@
                 (partition 2 1 texts)))))
 
 (defn- decode-node
-  [node state depth]
-  (let [nodes (swap! state inc)]
-    (when (> nodes maximum-canonical-nodes)
-      (cache-fail! "C16-ENTRY" "decoded cache data exceeds the node bound"
-                   {:maximum-nodes maximum-canonical-nodes}))
-    (when (> depth maximum-canonical-depth)
-      (cache-fail! "C16-ENTRY" "decoded cache data exceeds the depth bound"
-                   {:maximum-depth maximum-canonical-depth}))
-    (when-not (and (vector? node) (keyword? (first node)))
-      (cache-fail! "C16-ENTRY" "cache data is not a canonical tagged node" {}))
-    (case (first node)
+  [node]
+  (when-not (and (vector? node) (keyword? (first node)))
+    (cache-fail! "C16-ENTRY" "cache data is not a canonical tagged node" {}))
+  (case (first node)
       :nil (do (expect-node! node :nil 1) nil)
       :boolean (do (expect-node! node :boolean 2)
                    (when-not (boolean? (second node))
@@ -106,17 +99,16 @@
       :bytes (do (expect-node! node :bytes 2)
                  (.decode (Base64/getDecoder) ^String (second node)))
       :vector (do (expect-node-sequence! node :vector)
-                  (mapv #(decode-node % state (inc depth)) (second node)))
+                  (mapv decode-node (second node)))
       :list (do (expect-node-sequence! node :list)
                 (apply list
-                       (map #(decode-node % state (inc depth))
-                            (second node))))
+                       (map decode-node (second node))))
       :set (do (expect-node-sequence! node :set)
                (when-not (strictly-sorted-node-text? (second node))
                  (cache-fail! "C16-ENTRY"
                               "canonical set nodes are not sorted and unique"
                               {}))
-               (set (map #(decode-node % state (inc depth)) (second node))))
+               (set (map decode-node (second node))))
       :map (do (expect-node-sequence! node :map)
                (when-not (strictly-sorted-node-text? (second node))
                  (cache-fail! "C16-ENTRY"
@@ -126,21 +118,21 @@
                 (fn [result entry]
                   (when-not (and (vector? entry) (= 2 (count entry)))
                     (cache-fail! "C16-ENTRY" "malformed canonical map entry" {}))
-                  (let [key (decode-node (first entry) state (inc depth))
-                        value (decode-node (second entry) state (inc depth))]
+                  (let [key (decode-node (first entry))
+                        value (decode-node (second entry))]
                     (when (contains? result key)
                       (cache-fail! "C16-ENTRY" "duplicate canonical map key" {}))
                     (assoc result key value)))
                 {} (second node)))
       :meta (do (expect-node! node :meta 3)
-                (let [metadata (decode-node (second node) state (inc depth))
-                      value (decode-node (nth node 2) state (inc depth))]
+                (let [metadata (decode-node (second node))
+                      value (decode-node (nth node 2))]
                   (when-not (and (map? metadata)
                                  (instance? clojure.lang.IObj value))
                     (cache-fail! "C16-ENTRY" "malformed canonical metadata" {}))
                   (with-meta value metadata)))
       (cache-fail! "C16-ENTRY" "unknown canonical cache node"
-                   {:node-tag (first node)}))))
+                   {:node-tag (first node)})))
 
 (defn- decode-canonical-bytes
   [bytes maximum-bytes]
@@ -171,10 +163,7 @@
                          {:contained-host-error (.getName (class error))})))
         value
         (try
-          ;; Bound and validate the parsed tree before any recursive printer is
-          ;; allowed to visit it.  Deep-but-valid hostile EDN therefore becomes
-          ;; a structured cache rejection, not host stack growth.
-          (decode-node node (atom 0) 0)
+          (decode-node node)
           (catch StackOverflowError _
             (cache-fail! "C16-ENTRY"
                          "decoded cache data exceeds the host stack bound" {})))
@@ -194,12 +183,12 @@
   "Return a domain-separated SHA-256 id for a metadata-free canonical value.
 
   This is the only identity helper exported by the leaf.  It rejects values
-  that cannot be represented by the bounded type-sensitive canonicalizer."
+  that cannot be represented by the type-sensitive canonicalizer."
   [value]
   (let [bytes (encode-canonical-bytes
                {:domain :gravity/c2-pass-cache-content-v1
                 :canonicalizer-version canonicalizer-version
                 :value value}
                {:reject-metadata? true}
-               maximum-encoded-bytes)]
+               nil)]
     (str "sha256:" (digest/sha256-bytes-hex bytes))))

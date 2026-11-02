@@ -1,0 +1,190 @@
+{:nonclaims
+ [:reviewed-parent-stack-incorporation
+  :main-acceptance-inherited
+  :whole-quote-accounting-removal
+  :private-inference-accounting-removal
+  :authenticated-source
+  :genuine-helper-or-runtime-acceptance
+  :ACC-closure
+  :PR502-closure
+  :release
+  :self-hosting],
+ :tests
+ [{:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+   :base-file-sha256
+   "5cce988f440520052ae9379634c82c5f5dd60a8e9f71a55d56c74e133aa53443",
+   :candidate-file-sha256
+   "7c13569f22fe04f66ad3080b1ad57c738a2d56b41f869fe3a9ff6627dc764d6f",
+   :raw-added-span-sha256
+   "2c33e8671af8ad20e01c5cdfd253d55bad5b872657c36420c43834e7c9ac1aa2",
+   :reviewed-added-bytes-identical true,
+   :all-main-test-bytes-preserved true,
+   :added-names
+   [cold-metadata-input
+    cold-metadata-invalid-inputs
+    cold-quote-metadata-production-development-kernel],
+   :genuine-execution :UNRUN}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh09_body_effect_test.clj",
+   :base-file-sha256
+   "a706799cd44cfa8ddd3539869664012e9df17c421ef8ac7a9a2238d60a51fea9",
+   :candidate-file-sha256
+   "7b0797fcb989c3bdbe73433a4e1339336e5f6663f7f0849e44fce29ca85a2b94",
+   :raw-added-span-sha256
+   "dd7a1eb50d86d79f4197b922bc16bf92592b044c72539710404dc125b0d3e395",
+   :reviewed-added-bytes-identical true,
+   :all-main-test-bytes-preserved true,
+   :added-names [cold-quote-metadata-effects-development-kernel],
+   :genuine-execution :UNRUN}
+  {:path
+   "bootstrap/clojure/test/gravity/self_hosting/sh01_stage2_runtime_iteration_test.clj",
+   :base-file-sha256
+   "28fad6b2626c9def338f2bd76d06a1949e0dfe67262ac7f645dd08f204e1592a",
+   :candidate-file-sha256
+   "f334b4d2e292456c5cd7586286e875d34bdc354729fcd030303d22dcf4bfda52",
+   :raw-added-span-sha256
+   "10a75bfbaf22938abc464c8b8247223af0a84c96907cebddbd6f7aaf9c7ab0a1",
+   :reviewed-added-bytes-identical true,
+   :all-main-test-bytes-preserved true,
+   :added-names [cold-quote-metadata-lowering-development-kernel],
+   :genuine-execution :UNRUN}],
+ :consumed-review
+ {:candidate "3a1a553dbb1b3eb0ae472f5bf806171c02a71109",
+  :tree "c8600e2c52f4ba47f1366fae4035248d23365623",
+  :parent "2f2f8f701f19660dad89e98f351693669a97980b",
+  :receipt-sha256
+  "9892645f1804e7d9d9012dc5f69d90b693ca0aa0e5e8fea6759187b2acd16ec7",
+  :verdict :pass,
+  :scope :three-definitions-and-source-DATA-controls-only,
+  :genuine-owner-kernels :UNRUN,
+  :main-acceptance-inherited false},
+ :integration :pending-coordinator,
+ :production
+ [{:path
+   "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+   :all-other-main-bytes-and-forms-conserved true,
+   :before-raw-span-sha256
+   "c7fca8a9113d041f39c9059e8b8b92100e1310c4d1c970ba59b1a0e7a5fe41a7",
+   :after-raw-span-sha256
+   "389d1d0affb88906c905823059caf192cb6bef74a0bfad8bcfb9877379be088b",
+   :remaining-main-definitions 1088,
+   :function sh08-is-cold-evidence,
+   :base-file-sha256
+   "25e4dc4b35563524f149550dfa23cbc6b4df06a226d2e5756a2a219665c5f142",
+   :direct-source-dependencies [],
+   :candidate-file-sha256
+   "86a759cc5733e029bd7ee1938bb8c248ccf612e9e4bc88aeac0c7ff515cb63f8",
+   :reviewed-source-intervals-identical true,
+   :direct-main-callers
+   [{:name sh08-is-parameter-premise,
+     :unchanged-form-sha256
+     "42eb555c97ccae6db4e8c7b4cd29615f9695bdc9f09e8cf9ea5e99a38ae246e5",
+     :identical-to-reviewed-parent true}
+    {:name sh08-is-proof,
+     :unchanged-form-sha256
+     "443a7cc095c07b06e0fc51ed3d61f451dfbd1391b73246715c242e33aec1957a",
+     :identical-to-reviewed-parent true}]}
+  {:path "bootstrap/gravity/src/gravity/effects.gravity",
+   :all-other-main-bytes-and-forms-conserved true,
+   :before-raw-span-sha256
+   "555f231577cf7288a6d95af0ce456df62baa098873e86d4d668772c989c03d7d",
+   :after-raw-span-sha256
+   "30b3ca27d7d9e8edd62a80c6fb883b6a54dc7e1561db0fa0d12df65def9fda56",
+   :remaining-main-definitions 812,
+   :function body-is-cold-metadata-valid?,
+   :base-file-sha256
+   "11ab8e2cb4c74a30d5fd3fe48d86affe87966002f88815037a3253d9b4871f57",
+   :direct-source-dependencies
+   [{:name body-all?,
+     :unchanged-form-sha256
+     "59ecdffce4ac484afcc3264f368613c3e8aa6facf1451ec7f8376051b66d47de",
+     :identical-to-reviewed-parent true}
+    {:name body-is-cold-call-ids,
+     :unchanged-form-sha256
+     "e7a8e7e2907decc7c160baf1e776166cb9a2a60de32717b410e6ed361a44997c",
+     :identical-to-reviewed-parent true}
+    {:name sh09-exact-keys?,
+     :unchanged-form-sha256
+     "75d169eb443221a03f94c14e51d55fa4cd10f7ca9fd6057dc294ec3198329420",
+     :identical-to-reviewed-parent true}],
+   :candidate-file-sha256
+   "a1d6d01540ec67ac3c8aad270f946dfcdc21a94664ee36b4aa8848a18c56f3e5",
+   :reviewed-source-intervals-identical true,
+   :direct-main-callers
+   [{:name body-is-context,
+     :unchanged-form-sha256
+     "cd807968e066cf21cd6079a39010e47a2592e5f85a50856c1c820a5027307b5b",
+     :identical-to-reviewed-parent true}]}
+  {:path "bootstrap/gravity/p15_s23/emitter.gravity",
+   :all-other-main-bytes-and-forms-conserved true,
+   :before-raw-span-sha256
+   "f3f57b0aafa68c4be36955261636d78dd9be390edabf453258aef98421fd24ba",
+   :after-raw-span-sha256
+   "d0bd1ace8bb24f108eb21da1871db3fd269d74d874a74bdcf2cd188feec8daa0",
+   :remaining-main-definitions 696,
+   :function p15-s23-is-cold-metadata-valid?,
+   :base-file-sha256
+   "9ea39a7aa26fd53a3683091dd3bf49f3e0517d56e77b5a196c70261b55a43637",
+   :direct-source-dependencies
+   [{:name p15-s23-is-cold-call-ids,
+     :unchanged-form-sha256
+     "a79108b84485b0c817fbaa7f891d7d43fc1f2d2dbb920952babfca25cc1e2c04",
+     :identical-to-reviewed-parent true}
+    {:name p15-s23-is-exact-keys?,
+     :unchanged-form-sha256
+     "78757739e3dccd0485760af40c1840308b2c617facc00821097cbec6246852ef",
+     :identical-to-reviewed-parent true}
+    {:name p15-s23-typed-all,
+     :unchanged-form-sha256
+     "91661dc440f7f2bb726c2ca0916d05be087ac8a470300b87ea2d80f110e983ae",
+     :identical-to-reviewed-parent true}],
+   :candidate-file-sha256
+   "e49189aa370afcdf7c85a98d68cec02c3462e4f964285941e7f1dd956c5b68ae",
+   :reviewed-source-intervals-identical true,
+   :direct-main-callers
+   [{:name p15-s23-is-context,
+     :unchanged-form-sha256
+     "3690bde7f5bcd798a126fe825bdab1f543d9667b76cf4fec0e6139b986f87f03",
+     :identical-to-reviewed-parent true}
+    {:name p15-s23-ix-context,
+     :unchanged-form-sha256
+     "335bf13adb625a59d572a03cca4a090e58479ba1f477721e3df12343e5ac8bfd",
+     :identical-to-reviewed-parent true}]}],
+ :kind :cold-quote-metadata-main-extraction,
+ :generator
+ {:language :clojure,
+  :sha256
+  "e461188efe48a2b422a127f4efe90164f787eacf74d24cfd0b628a0b08a2964d",
+  :preserved-locally true},
+ :integration-preflight :UNRUN,
+ :changed-main-quote-product-boundary
+ [{:name sh08-qd-products,
+   :main-state :present,
+   :main-form-sha256
+   "e36d10edb8868b3eb75841828e902e25aeb1f4273abbd1388d40faa5a26a04d2",
+   :reviewed-state :present,
+   :reviewed-form-sha256
+   "5f8b2c883e8ff7a1453b92f3efd606820e3e0510ccdd4301ba60c3ca7127d69b",
+   :forms-identical false,
+   :unchanged-by-this-extraction true}
+  {:name sh08-qd-products-valid-data,
+   :main-state :absent,
+   :main-form-sha256 nil,
+   :reviewed-state :present,
+   :reviewed-form-sha256
+   "9e992cefd7c11b9da23a9c778c28cb62de6f7a00e525aec3bf076763a1bfe08a",
+   :forms-identical false,
+   :unchanged-by-this-extraction true}],
+ :base-tree "2b2168fe83fc08a7b4a882d75650c5b6e6eac31d",
+ :validation
+ {:source-checks :passed,
+  :reader-eval false,
+  :Bootstrap-loaded false,
+  :tracked-production-retired-field-references 0,
+  :genuine-execution :UNRUN},
+ :base "e047157d711652a5624012f0da7d6911ce086718",
+ :owner :ACC-01,
+ :independent-main-composition-disposition :pending,
+ :composition-limit
+ :main-quote-products-remain-metered-and-valid-data-helper-absent-unaccepted-parent-stack-not-copied}

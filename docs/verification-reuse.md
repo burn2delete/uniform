@@ -1523,6 +1523,202 @@ controls, independent retained-result acceptance and RV2/RV4 adoption remain
 OPEN. No genuine comparison, runtime retry or cache-policy admission is part
 of this source increment.
 
+#### Parent ownership adapter with unresolved reachability
+
+`gravity.build.parent-producer-observation/observe!` accepts a newly launched
+Process and forwards the caller's exact options to the canonical runner's
+three-argument `process-result`. It retains one raw ownership token and passes
+that same token exactly once. The runner owns wait, capture and finalization,
+including exception cleanup; the adapter neither repeats finalization nor
+reconstructs ownership from PIDs. Returned raw token/handles are local parent
+state, not serializable evidence. The full original process result survives.
+
+Root exit, tracked-owned-process completion, global cleanup and descendant
+coverage remain separate fields. The selected C2 workload's complete
+source-created child set has not been established by this increment. Its
+reachability is explicitly unresolved even when every retained handle is
+terminal. Capture-v1 readiness and cache admission remain false; the adapter
+does not call the serializer with tracked completion renamed as cleanup.
+
+Injected controls check exact token/options forwarding, single consumption,
+unknown/failed terminal preservation and original exception propagation. No
+producer launch, process/holder probe, held-operation retry or runtime admission
+is included. An executable method still needs exact source/loader, bounds and
+output destinations frozen and reviewed, plus source-grounded reachability
+resolution before capture-v1 serialization. All original RV2 real-producer,
+miss/hit, unrelated reuse, per-lexical-input invalidation, provenance and
+fresh-policy acceptance obligations remain OPEN.
+
+#### Fresh workload reachability and startup attribution
+
+The source trace below starts from the `:test` main entrypoint in `deps.edn`,
+with exactly `gravity.c2-artifact-identity-test`, a contained `result.edn`, and
+`:observe-producer? true` in the existing development-cache options. It covers
+the observer surrounding execution, rather than treating the test body as the
+whole workload. This is a source assessment, not an observed execution.
+
+| Reachable source boundary | Source result |
+| --- | --- |
+| `self_hosting_test_runner.clj` namespace initialization | Requires EDN, I/O, string, test and component-dependency namespaces. Its selectable namespace set calls `dependency-index`, which reads and validates the dependency contract; it does not require all selectable tests. Dedicated test discovery inventories paths. |
+| `-main` optional wiring load | `requiring-resolve` loads `sh01_development_loop_wiring.clj`, including basis, digest, component dependencies, cache and broker namespaces. Cache/broker initialization defines constants, functions and process-local atoms; loading them does not itself acquire a broker lease or run a producer. |
+| `observe-fresh-producer!` bookends | Each `observe-fresh-producer-binding!` calls `effective-child-runtime`, `prepare-context`, declared-file/inventory reads and `run-git-bytes!` for clean status. `prepare-context` also creates/checks private coordination directories; fresh-only does not mean no observation I/O. |
+| Repository identity subprocesses | `git-repository-root`/`git-common-directory`, `incremental-observation`, full-snapshot fallback and revision collection call the same `run-git-bytes!` port. Commands include `rev-parse`, `ls-files`, `config`, `check-attr` and `status`. This port constructs `["git" ...]`, starts a ProcessBuilder, writes stdin on a daemon thread, drains merged output, joins the writer and waits for the root. It does not retain a canonical ownership token or descendant finalization record. |
+| Selected test loading and callbacks | `run-one-namespace` requires the selected namespace immediately before `clojure.test/run-tests`. The test requires both C2 facades; identity requires its five extracted modules, lexical validation its three modules, with `clojure.string` in lexical product. These bodies perform collection projection, hashing, span and graph checks. The test's operation callbacks and printer interpositions exercise those bodies, local atoms and explicit exceptions; the callback APIs are not general effect restrictions. |
+| Report and parent boundary | The child atomically publishes its validated report, prints its summary and calls `shutdown-agents`. The merged parent adapter receives an already launched Process, retains one token and delegates wait/capture/finalization to the canonical runner. The serializer consumes a report and separately supplied terminal facts; it neither launches nor discovers descendants. |
+
+The identity facade, its five modules, lexical facade, its three modules and
+selected test have no direct subprocess launch in their reviewed bodies. That
+finite finding does not close initialization, Git's own execution or arbitrary
+callback/host behavior. In particular, the Git helper inherits its executable
+search and configuration environment. `base-runtime-identities` identifies
+Clojure, Java and the test command, not the executable launched as bare `git`.
+Child environment/property fingerprints and repository byte identity do not
+establish Git's effective executable/configuration or its descendant set.
+There is no complete source-created child-set proof for the whole workload.
+Root death and tracked-handle completion therefore still leave global cleanup
+and selected-workload descendant reachability unresolved.
+
+The trace also found a concrete attribution gap: the fresh-only branch returns
+before the ordinary reusable-child startup snapshot check. Equal fresh
+observer bookends could therefore describe a new clean snapshot after runner
+code had loaded from an older prelaunch snapshot. The fresh observer now
+compares its context snapshot with the parent's supplied repository identity
+before collecting the binding. Missing or changed identity rejects with
+`SH01-DEVELOPMENT-LOOP-SNAPSHOT-RACE` and `:input-kind :child-startup`.
+Injected controls cover both refusals and the matching-identity path; they do
+not launch Git or the selected producer.
+
+An executable capture method remains unprepared: its exact resolved launcher,
+Java/basis/ordered classpath and startup inputs, Git execution/configuration
+and lifecycle scope, parent/child bounds, and unique contained report/capture
+destinations must be bound together. The child report writer uses atomic
+replacement of contained `result.edn`; it is not a one-shot capture publisher.
+The parent adapter does not yet read that report or publish capture bytes.
+Resolving those concrete gaps requires affected method review before a
+separately authorized execution. This source correction does not establish
+descendant coverage, set capture readiness, enable cache admission or satisfy
+real miss/hit, unrelated reuse or per-lexical-input acceptance.
+
+#### Selected observer Git ownership without protocol replacement
+
+`gravity.build.producer-git-observation/run-selected!` is a direct source seam
+for the exact fresh C2 selection. It supplies lifecycle hooks only while each
+`observe-fresh-producer-binding!` bookend executes. The selected test operation
+runs outside that thread binding, and normal callers bind no hooks. The new
+module is an explicit runner input in the C2 declaration, with a path allowance
+restricted to that selection; freshness-required remains true.
+
+The Git port here is the existing ProcessBuilder implementation, not
+`clojure.java.shell/sh`. Its command vector/order, inherited environment,
+working directory, merged stderr, daemon stdin writer/close, complete byte
+drain, writer join, root wait and existing nonzero/input-error diagnostics are
+preserved. The ordinary runner's bounded text capture is not substituted:
+that would change complete byte output, merged-stream behavior and decoding.
+Only Git refusal output is decoded as before, using Java's UTF-8 replacement
+behavior. A source-form oracle retained from `40ecbb97` replaces only process
+construction with a fake and compares malformed UTF-8, NUL, output beyond
+1 MiB, stdin and nonzero-exit behavior. No subprocess is launched by it.
+
+Each launched Process is recorded before canonical retention is attempted.
+The same raw token is retained through root wait and one canonical finalizer
+call, including drain/writer/wait/error paths. Retention failure leaves the
+actual Process recorded with an unproven terminal; it does not invent a token
+or infer cleanup. Original errors survive ordinary cleanup failures as primary
+objects with suppressed details. Interruption is restored, and VM, linkage or
+ThreadDeath failures from cleanup are not demoted to ordinary Git refusals.
+Root-wait exit, raw handles and the finalizer's tracked/global-unknown facts
+remain separate local records. No PID lookup, global process registry, inferred
+release permission or descendant-complete claim is added.
+
+`freeze-binding!` and `verify-binding!` read an explicit method-supplied Git
+executable, dispatch files, selection links and configuration/absence witnesses
+before and after each command. PATH selection is rechecked; inherited
+environment values are represented by a hash. File reads compare metadata
+around hashing. Symbolic-link targets are retained, while linked directory
+contents are explicitly unbound. These are filesystem observations only; no
+Git discovery command is introduced. The explicit file set does not prove
+complete Git configuration search/includes, native dispatch/helper creation,
+or protection against change-and-restore between observations.
+
+Injected controls cover launch, retain, stream, wait, cleanup, interruption,
+identity drift and bookend scope restoration. The ACC13 implementation was a
+source reference only; its request, admission, roots, profile and review are
+not RV2 authority. The source seam now has the opt-in supported entrypoint
+described below; its exact operational launch remains unfrozen. Git's
+inherited root wait/full-stream protocol still needs the
+exact outer watchdog binding; this patch does not claim a bounded producer
+method or termination of unobserved helpers. Exact executable configuration,
+native/helper reachability, loader, watchdog and report/capture publication
+remain method gates. Capture readiness, cache admission and the original real
+producer/reuse/invalidation acceptance criteria remain unchanged and open.
+
+#### Supported opt-in child entrypoint and retained Git observations
+
+The existing `--development-cache` request now also accepts
+`:producer-git-binding` with schema `:gravity/rv2-git-binding-v1`, together
+with `:observe-producer? true`. This route requires exactly
+`gravity.c2-artifact-identity-test`; another or mixed selection, a missing
+opt-in, malformed root, unknown schema, or extra top-level lifecycle-hook data
+is rejected before dispatch. The actual binding is still revalidated against its explicit
+filesystem inputs before each Git command. Parsing this data is not method
+approval or executable authentication.
+
+The existing `self-hosting-test-runner` main entrypoint resolves
+`producer-git-observation/run-selected!` only for that explicit request.
+Requests without the binding use the existing wiring route. Thus this source
+route retains the normal main/basis/argument checks instead of introducing an
+alternate `-e` launch that the supported-runtime observer would reject.
+The parent-prelaunch identity and all fresh-only checks remain required.
+
+The supplied Git binding is included as
+`:selected-observer-git-binding` in the observer's runtime-tool identities.
+The report also retains `:test-producer-git-observation`: the frozen binding,
+per-command argv/CWD, root-wait result and original finalizer observations.
+Raw Process, ownership token and handles remain in local child records;
+Throwable values are represented only by class names in the serializable
+view. Root exit and tracked completion do not change unknown descendant
+coverage. The observation explicitly keeps capture-v1 readiness and cache
+admission false. Existing report serialization retains the extra observations
+without turning them into evidence of a real run.
+
+Injected controls cover the actual main dispatch, closed options and exact
+selection, binding identity inclusion, preservation through EDN round-trip,
+raw-token exclusion and unchanged default route. No selected producer or Git
+bookend workload is launched by these controls. A supported source entrypoint
+is now present; exact launch/configuration, native/helper reachability, outer
+watchdog, output/report/capture publication, independent method review and
+separate runtime admission remain open. Real miss/hit, unrelated reuse,
+per-lexical-input invalidation and independent result acceptance remain the
+original RV2 obligations.
+
+#### Retained parent observations connected to capture serialization
+
+`parent-producer-observation/serialize-capture` consumes the child report,
+dependency-contract bytes and the retained parent observation returned by
+`observe!`. It maps the normal runner's exit/wait, root and per-stream
+capture-status/error/truncation/forced-close fields to the existing terminal
+shape, then calls `serialize-observed-fresh-capture`. It copies
+`:cleanup-complete?` from the original process result unchanged. It never
+substitutes `:tracked-owned-processes-terminal?` or a root-exit flag for global
+cleanup, and never waits or finalizes the token again.
+
+Current canonical parent results have global cleanup nil on natural completion
+and false on containment paths. They therefore refuse capture-v1 serialization
+even when root exit and tracked-handle completion are both true. Unknown
+descendant coverage and readiness/cache-admission flags remain unchanged in the
+retained observation. This source connection removes manual terminal-map
+construction; it does not supply the missing workload/containment proof.
+
+The injected positive supplies a synthetic global-cleanup=true result solely
+to check byte/report preservation through the existing serializer. It is not a
+fact produced by the current runner or evidence that the method is ready.
+Negative controls retain the current nil-global/true-tracked case, failed or
+missing wait/root/stream facts, timeout, forced close, truncation and stream
+errors. Raw ownership stays local. Report-file reading, one-shot output
+publication, exact launch/loader/watchdog binding, native/helper reachability,
+independent method review, separate runtime admission and all original real
+producer/reuse/invalidation evidence remain open.
+
 ### RV1: retained checks at the live Resolve/Reader/AE boundary
 
 Source assessment: `dfa4c5b653d8049ac78dd30962172e0d91c768e2`.
@@ -1736,7 +1932,9 @@ ordered classpath and source bookends must still come from the separately
 reviewed existing owner harness; the preparation-base literal is never an
 applying/executed revision claim.
 
-These are **unrun genuine comparisons**. Compiler-free source reading,
+At preparation time these were **unrun genuine comparisons**. The retained
+operation record below updates that status without replaying any case.
+Compiler-free source reading,
 compilation of helper definitions against forbidden fake producer ports, and
 injected alias/dispatch/Throwable/restoration controls establish only harness
 mechanics. They do not load Bootstrap, authenticate input, run Reader/C5 or
@@ -1751,3 +1949,63 @@ fresh positive/public verification and changed case separately, preserve all
 errors and nonpasses, and review actual results before any acceptance. Do not
 run this namespace generically, borrow a proof transaction, replay an uncertain
 operation or infer RV1/RV2/RV4 closure or fragment equivalence from preparation.
+
+#### Retained operand results and stopped live-callee operation
+
+The original operation and independent result-review receipts dated
+2026-10-29 retain four finite operand results and one nonpassing live-callee
+operation, published with [PR578](https://github.com/burn2delete/uniform/pull/578).
+All five bind executed source `c25e4805d95ae36bdbd98664e6389556f3fc7690`,
+tree `fa0a8e5aa9c4f74f15265b676f8ac28ae1dfd4e9`, with identical clean
+source/runtime/classpath bookends. These are original execution identities,
+not an applying-source claim for later source increments.
+
+Each of the four completed operand fixtures records one test, 24 passing
+assertions, zero failures/errors and a new genuine positive/public C5 PASS.
+Its changed case rejects with `C5-UNRESOLVED` at
+`:final-authenticated-resolution-artifact`, preserves exact run storage,
+publishes no final C5 value and permits no subsequent Resolve consumption.
+Aliases and dispatch state are restored. The first template/resolved verifier
+outcomes distinguish the changed operands; the second run's verifiers pass.
+
+| Operand fixture | Changed first template / resolved verifier | Final operation receipt SHA-256 | Independent result-review SHA-256 |
+| --- | --- | --- | --- |
+| `actual-macro-template-operand-mutation-after-resolve` | FAIL / PASS | `505c8ec17f195167e1fe0cef30afc8c95a4b0c366ff40e8cff4bce999b0f95aa` | `1ce50390f4a1e4c0d0f468575d2d550f1e4a05733627c28be7c5ec2cd2abc8af` |
+| `actual-macro-resolved-operand-mutation-after-resolve` | PASS / FAIL | `cf7742be976132aa8769d84cb9968c326a3943ce1a31a3a0203ef61c562d8930` | `070ed275f9c365e87bf6fb8a2500d1f6a194fd20a2be9fe593151fb42d82094e` |
+| `actual-macro-request-operand-mutation-after-resolve` | FAIL / PASS | `5fb1dcee432b22b8fd5a4a54d5dde7d48e4df80d5b40b14ac9643a9d0a962fcc` | `2158f7e2dba7e435d72018e6a591bde3f5983a3583049a6f347ee525e7dab00a` |
+| `actual-macro-digest-operand-mutation-after-resolve` | PASS / FAIL | `3272ce806f5bde490efb4517308262d514d2ddff149f22d4515ce8d8a8dec5fe` | `35a00d622e346cf1f1bde3ccc15180032364fb78be6fbc04ec6213851bf0042c` |
+
+The request fixture changes the actual first digest-request ordinal from 0 to
+1. Its template header checks ordinal/purpose while the resolved verifier
+checks a different subset; claiming both verifiers failed would be incorrect.
+The digest fixture changes the actual first resolved-digest element through
+aliased storage. These results retain only their independently reviewed
+mutation/observation scope; no verifier call is elided by them.
+
+The first three operations used historical common-normal then host-exclusive
+admission with the canonical heavy lock. Those semantic observations remain
+retained; they establish no reusable nesting exception. The digest operation
+used the separately reviewed one-common-exclusive plus canonical-lock method,
+with no host-root acquisition. Original terminal cleanup/capture/release fields
+remain observations under each original method, not proof of current capacity,
+global host clearance or permission for another operation.
+
+`actual-macro-live-callee-swap-after-resolve` is terminal NONPASS from original
+owner session 6343: child timeout at 120 seconds, exit 124, no child or normal
+parent receipt, no observed assertion counts, positive/public C5 or mutation
+result. It establishes neither semantic PASS nor semantic FAIL. Its outer
+cleanup-complete field is false, cleanup-failed true and timeout containment
+unproven. Nested clean/root-dead observations do not override those flags;
+reported lock/lease release is not containment or capacity clearance. Its
+final operation receipt is
+`ce4ba8414e64660c37a6693d999221508d00225d8460be78206a41899a5ca9cf`;
+independent NONPASS review is
+`78600e07102c23dc5aee1f6fa7791da12be532e1d052e0923a76398a78e002a7`.
+
+The live-plan and same-function closed-state selectors remain UNRUN. No retry,
+recovery, selector reroute, bounds increase or process/holder probe follows
+from this record. Historical next-action fields retain their original time
+scope; they do not supersede the later live-callee stop. PR493 and all four
+completed results are retained without replay. Reader/DSE/R4 denials and the
+unknown 22232 operation remain untouched. Whole RV1, RV2 and RV4 acceptance,
+fragment equivalence, runtime/cache admission and elision remain open.

@@ -1,4 +1,4 @@
-
+(require '[gravity.build.reader-bridge :as declared-reader-bridge])
 
 (defn defn-form?
   [form]
@@ -25,7 +25,12 @@
 
 (def stage0-builtin-functions
   '#{+ - * / = < > <= >= str pr-str hash-map vector list conj assoc get
-     first second rest count})
+     first second rest count build-read-declared-input})
+
+(def stage0-build-read-builtin-contract
+  {:function 'build-read-declared-input :arity 1 :arguments [:string] :result :string
+   :profile :meta :target :jvm :effect :filesystem/read
+   :build-effect :build/read-file :capability :fs/read})
 
 (def stage0-core-app-rejected-fixtures
   [{:fixture "bootstrap/clojure/fixtures/rejected/core-app-function-arity.gravity"

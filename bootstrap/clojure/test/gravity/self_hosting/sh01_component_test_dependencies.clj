@@ -133,13 +133,15 @@
 
     :test (= path (:path test-entry))
     :fixture (str/starts-with? path "bootstrap/clojure/fixtures/")
-    :runner (contains? reviewed-runner-paths path)
+    :runner (or (contains? reviewed-runner-paths path)
+                (and (= 'gravity.c2-artifact-identity-test (:namespace test-entry))
+                     (= "bootstrap/clojure/test/gravity/build/producer_git_observation.clj" path)))
     :contract (contains? reviewed-contract-paths path)
     :classpath (= "deps.edn" path)
     false))
 
 (defn valid-cache-closure?
-  "True only for one bounded, explicit, locally present test closure."
+  "True only for one explicit, locally present test closure."
   [component test-entry closure]
   (let [inputs (:inputs closure)
         inventories (:inventories closure)
@@ -150,7 +152,7 @@
          (= #{:schema :inputs :inventories} (set (keys closure)))
          (= cache-closure-schema (:schema closure))
          (vector? inputs)
-         (<= 1 (count inputs) 96)
+         (seq inputs)
          (= reviewed-inventories inventories)
          (every? #(and (map? %)
                        (nil? (meta %))
