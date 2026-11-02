@@ -8,10 +8,15 @@ denominator, or claim implementation or product completion.
 
 ## Immutable source identities
 
-- Review base: `12480d592044cc667ba4908405b463b3de51a2e6`, tree
+- Historical PR562 port base: `12480d592044cc667ba4908405b463b3de51a2e6`, tree
   `ab4173148a9a2ffe64a7ac94e74289db0704080a`.
-- Current task-criteria port: `db12333c03e448106c7b8607fc84aea9dfc13463`,
+- Historical current-ledger port: `db12333c03e448106c7b8607fc84aea9dfc13463`,
   tree `2da5a46eb4fbc0fce547604a29b5305127513127`, parent `12480d592`.
+- Current-main composition: `dbeda7c7dc9a7bb880baa90af1a89046828db327`, tree
+  `576075197b5b4e815b78bae7d949bfb5fe2d0437`.
+- Current source-view checkpoint: `710356676524bc3fe55440018002e90ba336f999`,
+  tree `31360b9122a3428575ad9216b2e33e3e903f6068`, with parents
+  `313405bf4b653f56f0d959ae7aa631dbbdb3b1dd` and `dbeda7c7`.
 - Historical PR562 candidate: `2c3eac90b9736873ce7c439cdc9603b1e43249e5`,
   tree `3de79028eeaced10f00c6895f4f5cf446d7304f2`.
 - Historical family source: `6276c94b0b753c888ef8fecc794bcc81245ea3b3`,
@@ -36,16 +41,21 @@ occurrences, 777 source dispositions, 1,838 source facets, 139 inherited
 units, 64 field operations, 32 task-reference operations, and 107 unresolved
 stable IDs. Every source document has both original and current hashes; the
 current Phase 09 documents are unchanged in the review base. The family task
-criteria that PR562 actually supplies are ported exactly to the current
-`domains` and `platform` ledgers. Compiler API, build, legality, and runtime
-rows remain the current-main composition; the historical compiler-api source
-had four rows while current main has added `domain-ir-boundaries`.
+criteria that PR562 actually supplies remain exact in the current `domains`
+ledger. The four historical `platform` criteria remain an authenticated
+prefix of the current-main platform rows; current main additionally supplies
+its current platform criteria and product projection. The checker verifies
+that transition against both immutable source commits, rather than treating
+the old platform file hash as current. Compiler API, build, legality, and
+runtime rows remain current-main composition; the historical compiler-api
+source had four rows while current main has added `domain-ir-boundaries`.
 
 The gap proposal retains 577 historical records, 70 assigned records and
 coverage operations, 15 existing-task amendments, nine new-task proposals,
 and 57 unresolved source-qualified IDs. All 70 records remain Open,
-implementation acceptance is unassessed, and the proposed task count delta is
-zero; the nine new tasks are not inserted into the canonical ledger. Provider,
+implementation acceptance is unassessed; the proposed task count delta is
+nine while the actual canonical task-count delta is zero, because the nine new
+tasks are not inserted into the canonical ledger. Provider,
 target, protocol, crypto, physical, and other domain constraints remain
 semantic requirements. Removed work-unit/accounting obligations are not
 reintroduced as compiler or admission quotas.
@@ -54,7 +64,7 @@ The historical family manifest (`43ac4686...`) is a composed artifact that is
 not present in current main. The gap receipt manifest (`f4c17182...`) is kept
 as historical evidence at its pinned commit. The preserved PR445 manifest
 (`aa7ee8df...`) is also historical/external. Current main's manifest is
-`aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0`, and the
+`d24ed46e2de0c1672a1a37c0eeacb3340452dcf56ce1b511ecc678761909155b`, and the
 checker rejects silent substitution of any historical manifest for it.
 
 ## Checker and evidence boundary
@@ -75,9 +85,19 @@ closure. The successful scoped run reported 21 documents, 1,533 occurrences,
 1,838 facets, 139 family units, 70 assigned gap records, six current task
 sources, and all ten controls passing.
 
-This source view does not run the retired domain projection scripts, revive
-their deleted loader, execute the compiler/runtime/broker/native product, or
-turn source mapping into implementation, denominator, release, seed-retirement,
-or integration evidence. Historical candidate checker nonpasses remain
-historical nonpasses; independent review and canonical composition remain
-pending.
+The current-main platform projection check passed (5 tests, 90 assertions),
+shared acceptance dependencies passed (18 tests, 434 assertions), and
+reconciliation passed (31 tests, 270 assertions); the full reconciliation
+check also passed with 10,095 unresolved source occurrences and no
+denominator-ready claim. The restored current platform projection and
+acceptance-dependency helpers are exercised as current main. Historical failed
+projection invocations are retained as nonpasses and are not relabeled as
+current evidence. The current compiler-only `domain-ir-boundaries` task is
+recorded as unassessed scope, not as a claim that the historical four-row
+compiler view is complete.
+
+This source view does not revive retired domain loaders, execute the
+compiler/runtime/broker/native product, or turn source mapping into
+implementation, denominator, release, seed-retirement, or integration
+evidence. Historical candidate checker nonpasses remain historical nonpasses;
+independent review and canonical composition remain pending.

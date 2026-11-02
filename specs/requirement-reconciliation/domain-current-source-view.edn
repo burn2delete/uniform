@@ -81,8 +81,17 @@
                        "runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution"
                        "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"]}]}
  :current-source
- {:commit "db12333c03e448106c7b8607fc84aea9dfc13463"
-  :tree "2da5a46eb4fbc0fce547604a29b5305127513127"
+ {:commit "710356676524bc3fe55440018002e90ba336f999"
+  :tree "31360b9122a3428575ad9216b2e33e3e903f6068"
+  :platform-criteria-transition
+  {:historical-commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
+   :historical-tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
+   :historical-sha256 "cbc72be13969609f77f82ea5f7f36f45d1bda3703ebbc4b7c4b127f97de60250"
+   :current-main-commit "dbeda7c7dc9a7bb880baa90af1a89046828db327"
+   :current-main-tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"
+   :current-sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"
+   :mode :candidate-criteria-preserved-as-prefix-plus-current-main-criteria
+   :project-ids ["hardware" "firmware" "kernel" "devices"]}
   :task-sources
   [{:path "specs/build-workflow/tasks.md"
     :marker "build-implementation-tasks"
@@ -114,8 +123,8 @@
                        "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"]}
    {:path "specs/platform-workflow/tasks.md"
     :marker "platform-implementation-tasks"
-    :sha256 "cbc72be13969609f77f82ea5f7f36f45d1bda3703ebbc4b7c4b127f97de60250"
-    :change-class :family-criteria-preserved
+    :sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"
+    :change-class :current-main-composition-with-family-prefix-preserved
     :ordered-task-ids ["hardware" "firmware" "kernel" "devices"]}
    {:path "specs/runtime-workflow/tasks.md"
     :marker "runtime-implementation-tasks"

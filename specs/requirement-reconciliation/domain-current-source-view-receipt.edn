@@ -2,13 +2,18 @@
  :version 1
  :authority :proposal-only
  :scope-key "requirement-reconciliation/phase-09-domain-specific-computing-coverage"
- :review-base {:commit "12480d592044cc667ba4908405b463b3de51a2e6"
-               :tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"}
+ :historical-port-base {:commit "12480d592044cc667ba4908405b463b3de51a2e6"
+                        :tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"}
+ :review-base {:commit "dbeda7c7dc9a7bb880baa90af1a89046828db327"
+               :tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"}
  :current-source-checkpoint
- {:commit "db12333c03e448106c7b8607fc84aea9dfc13463"
-  :tree "2da5a46eb4fbc0fce547604a29b5305127513127"
-  :parent "12480d592044cc667ba4908405b463b3de51a2e6"
-  :task-criteria-port :domains-and-platform-only}
+ {:commit "710356676524bc3fe55440018002e90ba336f999"
+  :tree "31360b9122a3428575ad9216b2e33e3e903f6068"
+  :parents ["313405bf4b653f56f0d959ae7aa631dbbdb3b1dd"
+            "dbeda7c7dc9a7bb880baa90af1a89046828db327"]
+  :task-criteria-port :domains-preserved-platform-prefix-composed}
+ :main-composition {:commit "dbeda7c7dc9a7bb880baa90af1a89046828db327"
+                    :tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"}
  :historical-pr562
  {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
   :tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
@@ -22,13 +27,13 @@
   :gap-predecessor-tree "b90613cc0344b4b4a8bde0ff1afc61153723becf"}
  :source-view
  {:path "specs/requirement-reconciliation/domain-current-source-view.edn"
-  :sha256 "0d8e764df9c2605e3adcf679075638cf99eac4d93d6b54a0d220850ce9b86dda"
+  :sha256 "e805600663941da538fe8b60b52b03661f29f6b71d9b1fb6849d485e9ec1caee"
   :checker-path "tools/domain_current_source_view.clj"
   :checker-sha256
-  "abadd3393c0e1acc887f222225e0e49551ebc62f55ec49b0ac07f567bd919918"
+  "a77f4ae5dbd72bc1d29c4136d2efd663ebd685d5015716aaedae6a1c523d7108"
   :evidence-path "specs/requirement-reconciliation/domain-current-source-view.md"
   :evidence-sha256
-  "987df7f96376633373fd0edaa0ba6aafa01535d0ec52313180526ad49fec0856"}
+  "3866bd4018f210f8d0bc8a4ac56a6deed8a88d7abf76c909d36ef24eb9725826"}
  :counts {:source-documents 21
           :source-occurrences 1533
           :source-dispositions 777
@@ -50,6 +55,23 @@
    :exit 0
    :controls 10
    :result :pass}
+  :platform-projection
+  {:command "clojure -M tools/platform_task_projection.clj --check"
+   :exit 0 :result :pass}
+  :platform-projection-test
+  {:command "clojure -J-Xmx256m -M tools/platform_task_projection_test.clj"
+   :exit 0 :tests 5 :assertions 90 :result :pass}
+  :acceptance-dependencies-test
+  {:command "clojure -J-Xmx256m -M tools/acceptance_dependencies_test.clj"
+   :exit 0 :tests 18 :assertions 434 :result :pass}
+  :requirement-reconciliation-test
+  {:command "clojure -J-Xmx256m -M tools/requirement_reconciliation_test.clj"
+   :exit 0 :tests 31 :assertions 270 :result :pass}
+  :requirement-reconciliation-check
+  {:command "clojure -J-Xmx512m -M tools/requirement_reconciliation.clj --check"
+   :exit 0 :source-documents 245 :source-occurrences 19962
+   :source-facets 29177 :unresolved-source-occurrences 10095
+   :denominator-ready? false :result :pass}
   :language-boundary
   {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test"
    :exit 0 :tests 6 :assertions 11 :result :pass}

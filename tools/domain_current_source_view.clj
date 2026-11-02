@@ -100,6 +100,22 @@
               (str "Task source hash drift: " (:path entry)))
     (validate-task-records! text entry)))
 
+(defn task-block [text marker id]
+  (let [block (->> (str/split (marker-body text marker)
+                              #"(?m)(?=^- \[[ x]\] `)")
+                   (filter #(re-find (re-pattern (str "(?m)^- \\[[ x]\\] `"
+                                                       (java.util.regex.Pattern/quote id)
+                                                       "` ")) %))
+                   vec)]
+    (require! (= 1 (count block)) (str "Missing or duplicate task block: " id))
+    (first block)))
+
+(defn declared-work [text marker id]
+  (let [block (task-block text marker id)
+        match (re-find #"(?s)Declared completion and remaining work: (.*?)\n\nSource basis:" block)]
+    (require! match (str "Task lacks a declared-work field: " id))
+    (second match)))
+
 (defn working-task-source! [entry]
   (let [text (slurp (:path entry))]
     (require! (= (:sha256 entry) (sha256 text))
@@ -446,6 +462,31 @@
               "Gap concrete domain constraint qualification lost")
     true))
 
+(defn validate-platform-transition! [view]
+  (let [transition (get-in view [:current-source :platform-criteria-transition])
+        path "specs/platform-workflow/tasks.md"
+        historical-commit (:historical-commit transition)
+        current-main-commit (:current-main-commit transition)
+        historical (git-text historical-commit path)
+        current (git-text current-main-commit path)]
+    (verify-commit-tree! {:commit historical-commit
+                          :tree (:historical-tree transition)})
+    (verify-commit-tree! {:commit current-main-commit
+                          :tree (:current-main-tree transition)})
+    (require! (= (:historical-sha256 transition) (sha256 historical))
+              "Historical platform task source hash drift")
+    (require! (= (:current-sha256 transition) (sha256 current))
+              "Current platform task source hash drift")
+    (require! (= :candidate-criteria-preserved-as-prefix-plus-current-main-criteria
+                 (:mode transition))
+              "Platform source transition mode changed")
+    (doseq [id (:project-ids transition)]
+      (let [old-work (declared-work historical "platform-implementation-tasks" id)
+            current-work (declared-work current "platform-implementation-tasks" id)]
+        (require! (str/starts-with? current-work old-work)
+                  (str "Historical PR562 platform criterion was not preserved: " id))))
+    true))
+
 (defn validate-current! [view]
   (let [current (get-in view [:current-source :task-sources])
         commit (get-in view [:current-source :commit])
@@ -469,11 +510,12 @@
       (when-let [historical (first (filter #(= (:path %) (:path entry)) family))]
         (require! (= (:marker historical) (:marker entry))
                   (str "Current task marker changed: " (:path entry)))))
-    (doseq [path ["specs/domains-workflow/tasks.md" "specs/platform-workflow/tasks.md"]]
-      (let [h (first (filter #(= path (:path %)) family))
-            c (first (filter #(= path (:path %)) current))]
-        (require! (= (:sha256 h) (:sha256 c))
-                  (str "Family task criteria were not preserved in current ledger: " path))))
+    (let [domain-path "specs/domains-workflow/tasks.md"
+          h (first (filter #(= domain-path (:path %)) family))
+          c (first (filter #(= domain-path (:path %)) current))]
+      (require! (= (:sha256 h) (:sha256 c))
+                "Family domain task criteria were not preserved in current ledger"))
+    (validate-platform-transition! view)
     (let [manifest (sha256 (slurp published-path))
           historical #{(get-in view [:historical-manifest :family :sha256])
                        (get-in view [:historical-manifest :gap-published :sha256])
