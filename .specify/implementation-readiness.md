@@ -2477,3 +2477,104 @@ suffixes and all 48 original task/evidence contents. ASCII and whitespace checks
 pass. Scratch reader delimiters were corrected before the successful checks;
 failed preparation receives no credit. No compiler, proof checker, target,
 provider/runtime or held execution ran and no independent acceptance is claimed.
+
+## Root safety and unsafe-audit source refinement
+
+Source-only commit `790836d411b56136bd8a0a37fe14b0743324fdd2`, refining
+`3854f8f5`, restores six
+finite reviewed criteria and adds four current source criteria under the same
+[Legality authorities](../specs/legality-workflow/plan.md#root-safety-and-unsafe-audit-source-criteria).
+The complete [SAFE1](../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md)
+and [SAFE6](../docs/phase-02-safety/035-safe6-unsafe-code-and-audit-model.md)
+were read directly with the Safety phase and current governing contracts.
+Profile, classification, handoff and conformance remain Open with unchanged
+identities, titles, original clauses and historical receipts.
+
+The preserved safety107 review at `6fb01a54` and applicability `5cbcceae`
+explicitly cover six selected allocations: SAFE1 mode-policy/profile-legality
+and SAFE6 dependency-policy/generated-unsafe/isolation/review-policy. Their
+exact historical witnesses at `bc485c7e`, task-file hash
+`ffa5e2a4278d3114ec0a7a8d7347026f7f14701ee972e7cceb7cc1b37e4a1692`,
+were all absent literally from the current task file. The complete six clauses
+are restored byte-for-byte under the same two existing tasks, retaining actual
+positive/output/refusal/dependency/nonclaim conjunctions. Frozen review receipt
+`0e522488f2a5aa7c0bbc8b5da0e9bcc724fab15c86b2ee62117adcfa322098d7`
+remains scoped to the historical finite allocations. It excludes whole shared
+facets, implementation, other cohorts, metadata recovery and whole-project
+counts; later predicates and current composition need separate review. The
+preserved source artifacts match their exact recorded Git versions; no new
+aggregate publication or reviewer contact occurs.
+
+The all-240 census supplies 71 SAFE1 and 62 SAFE6 facets, 123 source occurrences
+and thirteen original owner allocations. Their original acceptance/context
+classifications and pending full-owner entailment remain. The current proposal
+joins 98 substantive facets across 88 occurrences; 35 heading/provenance facets
+remain context only. Two generic context facets are substantive source context,
+not context-only credit. Thirty-one document/section conjunctions bind related
+preambles, examples, lists and following conditions. Complete source-byte
+conservation does not establish independent semantic coverage.
+
+New criteria require real per-profile proof/check/provider/runtime decisions,
+all seven safety modes, exactly four operation outcomes, stronger caller API
+eligibility for weaker dependencies, explicit standard/profile-added unsafe
+families and complete source/package/provider/generator audit identity. Safe
+wrappers hide raw authority, enforce preconditions and defined failure, and
+connect cleanup to ownership/linear rules. Every island emits audits even when
+allowed. All five review policies bind required or supplied reviews to actual
+reviewer/date/source/island/evidence/expiry and affected-source invalidation;
+audit-only does not gate the
+build and cannot establish safe eligibility. Generated records bind requesting
+source and generator, and dependency summaries expose actual unsafe families,
+counts, wrappers, profiles, authority, reviews and certificates. Handoff retains
+the products through compiler/runtime/linked/package/release/tooling consumers;
+conformance requires actual accepted/refused checks and all nineteen SAFE1/SAFE6
+diagnostic meanings with their full context. Specialized family, profile,
+provider and consumer implementations keep their existing owners.
+
+Static inspection found `gravity.safety` creates seed check/proof records,
+validates record digests/structural conditions and rederives child obligations;
+its contract denies input authentication, certificates, admission, general
+analysis, provider grants, check execution/elision and release authority. The
+stage0 unsafe traversal excludes quoted data and checks explicit unsafe mode
+and required metadata keys. Its audit artifact projects fields from typed
+products. These are meaningful partial functions, not proof of complete review,
+wrapper or dependency-policy enforcement. The earlier C10 hosted and scoped
+Gravity observations retain their separate scope. No compiler or unsafe-policy
+path ran in this source/planning review.
+
+Metadata `:root-safety-refinement` retains predecessor `f2e9af03`, complete prior
+projection/fingerprint and all earlier C9/C10 source and dependency proposals.
+Four actual task-body hashes and the Legality plan inspection advance to this
+source commit, preserving 84 identical / 55 explicitly amended original bodies,
+31 source-file records, 149 current keys, 25 authorities, forty future records,
+original SH/SH07 routes and three Reader receipts. C10 tests now inspect their
+recorded predecessor so new clauses cannot renew old review. Fingerprint:
+`61927eb776878066aba57b734dd8240be5f9a1470dc1c5f51a9ffffc25a71411`.
+
+Current selected dependency declarations remain 320 joins with their existing
+C9/C10 scopes. Additional root profile, review, package and tooling interfaces
+remain explicit dependency-reconciliation work. Current whole-source review,
+global reconciliation and implementation acceptance remain pending/unassessed.
+All actual holds remain and no other chat is messaged. Reader contract coverage
+is still the first implementation preparation increment; no implementation,
+integration, release, self-hosting or seed-retirement completion is claimed.
+
+Root safety validation passes: 48 crosswalk tests / 7,831 assertions and 23
+dependency tests / 2,031 assertions, deterministic generation/check, read-only
+dependency audit, both document validators and the language boundary (six tests /
+eleven assertions). The controls compare all six exact historical/current
+criteria, 133 source spans, 123 occurrences, 31 section conjunctions, thirteen
+owner joins and four current clauses. Removed source occurrences, omitted
+section conditions and unknown criterion keys refuse conservation. Historical
+C10 subjects and all prior review/receipt scopes remain fixed. The
+[historical task source](https://github.com/burn2delete/uniform/blob/bc485c7e4b0197873f6a3104021764711215b3b1/specs/legality-workflow/tasks.md#implementation-tasks)
+was verified available on GitHub; no redundant source archive is added.
+
+Conservation passes for 83 changed files, 77 Markdown files, 3,097 local
+references, 139 original routes, 48 historical spec/plan suffixes and all 48
+original task/evidence contents. ASCII and whitespace checks pass. Audit-only
+wording was narrowed before final source binding so required/supplied review
+identity does not create an approval gate in audit-only mode. No failed or
+intermediate preparation receives passing credit. Full compiler/semantic,
+provider/runtime/target suites and held operations did not run; no current
+independent acceptance is claimed.
