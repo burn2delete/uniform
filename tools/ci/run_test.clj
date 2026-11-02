@@ -368,6 +368,24 @@
     (is (str/includes? workflow "&& 1 || 0"))
     (is (= 4 (count (re-seq #"persist-credentials: false" workflow))))))
 
+(deftest leaf-runner-selection-is-fail-closed-in-leaves-job
+  (let [workflow (slurp ".github/workflows/ci.yml")
+        leaves (second (re-find #"(?s)\n  leaves:\n(.*?)(?=\n  snapshot:)" workflow))]
+    (is (some? leaves))
+    ;; Keep the runner expression on the leaves job, with an explicit Darwin
+    ;; guard and a matrix-runner fallback.  Selector outputs and their valid
+    ;; true/false cases are covered by shared-selection-preserves-full-and-docs-contract-modes.
+    (is (= 1 (count (re-seq #"(?m)^    runs-on: \$\{\{.*\}\}$" (or leaves "")))))
+    (is (str/includes? leaves "matrix.platform == 'darwin'"))
+    (is (str/includes? leaves "needs.select.result == 'success'"))
+    (is (str/includes? leaves "needs.select.outputs.selection-valid == 'true'"))
+    (is (str/includes? leaves "needs.select.outputs[matrix.selection-key] == 'false'"))
+    (is (str/includes? leaves "'ubuntu-24.04' || matrix.runner"))
+    ;; The platform probes remain fail-closed: unselected Darwin skips the
+    ;; probe, while selector failure or malformed output keeps it on macOS.
+    (is (str/includes? leaves "matrix.platform == 'darwin' && (needs.select.result != 'success'"))
+    (is (str/includes? leaves "matrix.platform == 'unsupported' && (needs.select.result != 'success'"))))
+
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})
