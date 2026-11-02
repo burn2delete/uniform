@@ -93,8 +93,10 @@ source/test/receipt paths. The composed candidate is merge commit
 Those six Reader paths are disjoint from the CI workflow, `tools/ci/run.clj`,
 and `tools/ci/run_test.clj`. The harness loads the CI runner and its process
 and lint helpers only; it does not import or execute the Reader implementation.
-The final comparison against current main contains exactly the workflow, CI
-runner, focused harness, and this receipt.
+The final comparison against current main contains exactly the workflow,
+`docs/ci.md`, CI runner, focused harness, and this receipt. The `docs/ci.md`
+update is the owning contract-table/selection documentation for the current
+eight-job layout; it does not alter CI execution.
 
 Fresh exact-composition results:
 
@@ -102,5 +104,7 @@ Fresh exact-composition results:
 - Pinned changed-file lint for `tools/ci/run.clj` and
   `tools/ci/run_test.clj`: 0 unchanged baseline warnings, 0 blocking
   warnings/errors.
+- `clojure -M tools/validate_gravity_docs.clj`: passed, 240 documents and 19
+  phase indexes.
 
 No Resolution namespace was executed as part of this composition refresh.
