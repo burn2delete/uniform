@@ -94,8 +94,15 @@
         _ (when (and (seq tags) (not sealed?) (not resource?))
             (if pure?
               (reader-dispatch/validate-pure-tags! source-unit tags)
-              (reader-dispatch/validate-standard-tags!
-               source-unit standard-reader-policy tags)))]
+              (do
+                (reader-dispatch/validate-standard-tags!
+                 source-unit standard-reader-policy tags)
+                (reader-dispatch/validate-standard-source!
+                 source-unit source-bytes)
+                (when-not (and (= source-content-id (:bytes-hash source-unit))
+                               (= source-path (:path source-unit)))
+                  (sh03-reader-boundary-fail!
+                   source-path :sh03-reader-dispatch-source-binding source-unit {})))))]
     (loop [remaining (reverse form-tree)
            values {}
            observations []]
@@ -132,8 +139,17 @@
                   (if pure?
                     (reader-dispatch/dispatch-pure-tag
                      source-unit tag form (first child-values) implementation)
-                    (reader-dispatch/dispatch-standard-tag
-                     source-unit standard-reader-policy tag form (first child-values)))))))
+                    (do
+                      (reader-dispatch/validate-standard-form! form)
+                      (when-not (and (integer? (get-in form [:span :byte-start]))
+                                     (integer? (get-in form [:span :byte-end]))
+                                     (<= 0 (get-in form [:span :byte-start])
+                                         (get-in form [:span :byte-end])
+                                         (alength ^bytes source-bytes)))
+                        (sh03-reader-boundary-fail!
+                         source-path :sh03-reader-tag-source-span form {}))
+                      (reader-dispatch/dispatch-standard-tag
+                       source-unit standard-reader-policy tag form (first child-values))))))))
               value
               (case kind
                 (:nil :boolean :integer :ratio :decimal :string
@@ -191,6 +207,24 @@
                  (cond-> observations (and dispatch-result (not sealed?) (not resource?))
                    (conj (if pure? (:pure-result dispatch-result)
                              (:observation dispatch-result)))))))))))
+
+(defn reader-standard-dispatch-products-match?
+  [source-path source-bytes source-content-id scalar-boundaries raw-forms
+   semantic-index source-unit form-id-map form-tree observations]
+  ;; Only the registered standard handlers enter this reconstruction. Resource,
+  ;; sealed and pure products retain their separate producer/consumer contracts.
+  (and (not (reader-resource-options? (:reader-options source-unit)))
+       (not (reader-pure-text/options? (:reader-options source-unit)))
+       (not (reader-dispatch/pure-source? source-unit))
+       (let [fresh (sh03-reader-host-values!
+                    source-path source-bytes source-content-id scalar-boundaries
+                    raw-forms semantic-index source-unit)
+             forms-by-id (into {} (map (juxt :form-id identity) form-tree))]
+         (and (= (:extension-dispatch-observations fresh) observations)
+              (every? (fn [[raw-id value]]
+                        (let [form (get forms-by-id (get form-id-map raw-id))]
+                          (and form (= value (:value form)))))
+                      (:values fresh))))))
 
 (defn sh03-reader-legacy-trivia-hash
   [token-ids tokens-by-id]

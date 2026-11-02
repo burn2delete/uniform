@@ -3,13 +3,29 @@
   (:require [gravity.c17-c18-pass-cache.envelope :as envelope]
             [gravity.c17-c18-pass-cache.validation :as validation]))
 
+(def ^:private decoded-handoff-context-key
+  :gravity.pass-cache/decoded-artifact-handoff)
+
+(defn- decoded-handoff
+  [context]
+  (get (meta context) decoded-handoff-context-key))
+
 (defn stage-cache-operations
   [context stage produce validate operations]
   {:produce! (fn [_] (envelope/encode! stage (produce) operations))
    :validate-output!
    (fn [encoded _ _]
-     (envelope/decode! stage encoded validate operations)
-     encoded)
+     (let [artifact (envelope/decode! stage encoded validate operations)]
+       ;; The handoff is invocation-local and is populated only after the
+       ;; complete envelope identity and artifact validation above succeeds.
+       (when-let [decoded-handoff (decoded-handoff context)]
+         (swap! decoded-handoff assoc stage
+                {:stage stage
+                 :envelope encoded
+                 :artifact artifact
+                 :validator validate
+                 :operations operations}))
+       encoded))
    :artifact-id-of
    (fn [encoded]
      (validation/require-sha256! :artifact-id (:artifact-id encoded)))

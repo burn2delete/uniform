@@ -67,7 +67,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        mode: [static, contracts, bootstrap, macro, resolution, checked-core-runtime]
+        mode: [static, contracts, bootstrap, macro, checked-core-runtime]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -129,11 +129,76 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
+  resolution:
+    name: ${{ matrix.mode }}
+    needs: select
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-24.04
+    # Each serialized child owns an independent 600-second watchdog. The
+    # three jobs are serialized only within this resolution pool; no global
+    # parallelism or cost equivalence is implied.
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        mode: [resolution-pipeline, resolution-unmetered, resolution-invocation-selection]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Resolution selection retains the logical stage output while each
+          # matrix child records its own mode and fresh checkout.
+          fetch-depth: ${{ needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs.resolution == 'false' && 1 || 0 }}
+          persist-credentials: false
+      - uses: ./.github/actions/clojure
+        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'false') }}
+      - name: Retain unselected resolution status
+        if: ${{ always() && !cancelled() && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs.resolution == 'false' }}
+        env:
+          CI_MODE: ${{ matrix.mode }}
+        run: |
+          mkdir -p target/ci
+          printf '{:mode "%s" :status :skipped :reason :unaffected-shared-selection}\n' "$CI_MODE" > "target/ci/$CI_MODE-summary.edn"
+          echo "CI mode $CI_MODE skipped by the shared resolution selection; required matrix job retained"
+      - name: Run selected resolution check in a fresh child process
+        if: ${{ always() && !cancelled() && (needs.select.result != 'success' || needs.select.outputs.selection-valid != 'true' || needs.select.outputs.resolution != 'false') }}
+        env:
+          CI_MODE: ${{ matrix.mode }}
+          CI_BASE_SHA: ${{ github.event.before }}
+          CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: clojure -Srepro -M tools/ci/run.clj "$CI_MODE"
+      - name: Reject tracked source mutation
+        if: always()
+        run: git diff --exit-code HEAD
+      - name: Preserve resolution logs, receipts and provenance
+        if: always()
+        run: |
+          mkdir -p target/ci
+          git rev-parse HEAD 'HEAD^{tree}' > target/ci/checkout.txt
+          git status --porcelain > target/ci/worktree.txt
+          java -version > target/ci/java.txt 2>&1 || echo 'Java probe failed' >> target/ci/java.txt
+          clojure -Sdescribe > target/ci/clojure.txt 2>&1 || echo 'Clojure probe failed' >> target/ci/clojure.txt
+          printf '%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > target/ci/run-url.txt
+          ci_sum="$(mktemp "$RUNNER_TEMP/ci-checksums.XXXXXX")"
+          (cd target/ci && find . -type f ! -name SHA256SUMS -exec shasum -a 256 {} + | sort) > "$ci_sum"
+          mv "$ci_sum" target/ci/SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: ci-${{ matrix.mode }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: target/ci/
+          retention-days: 14
+          if-no-files-found: error
+
   leaves:
     name: ${{ matrix.check }}
     needs: select
     if: ${{ always() && !cancelled() }}
-    runs-on: ${{ matrix.runner }}
+    # The Darwin publication leaf may use Ubuntu only after the selector
+    # completed successfully and explicitly verified that it is unaffected.
+    # Any selected, full, missing, malformed, or failed selection keeps the
+    # platform-specific runner required by the matrix.
+    runs-on: ${{ matrix.platform == 'darwin' && needs.select.result == 'success' && needs.select.outputs.selection-valid == 'true' && needs.select.outputs[matrix.selection-key] == 'false' && 'ubuntu-24.04' || matrix.runner }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -267,7 +332,7 @@ jobs:
 
   publish:
     name: experimental-prerelease
-    needs: [checks, leaves, snapshot]
+    needs: [checks, resolution, leaves, snapshot]
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 5

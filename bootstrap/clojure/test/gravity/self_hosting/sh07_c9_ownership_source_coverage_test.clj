@@ -836,19 +836,27 @@
         sha-shape (definition 'sh10-sha256-id?)
         unique-events (definition 'sh10-unique-event-ids?)
         run-events (definition 'sh10-run-events)
+        carrier-preflight (definition 'sh10-identity-carrier-preflight)
         checker (definition 'sh10-check-ownership-request)
         verifier (definition 'sh10-verify-ownership-result)
         policy (nth (definition 'sh10-ownership-policy) 3)
         catalog (nth (definition 'c9-ownership-diagnostic-catalog) 2)]
-    (testing "bounded request/event schemas remain shallow and non-exact"
+    (testing "request/event schemas retain semantic shape checks"
       (is (not (contains? (symbols-in request-shape) 'sh10-exact-keys?)))
       (is (not (contains? (symbols-in event-shape) 'sh10-exact-keys?)))
-      (is (string/includes? (pr-str request-shape) "1024"))
+      (is (not (string/includes? (pr-str request-shape) "1024")))
       (is (not (string/includes? (pr-str request-shape)
                                  ":capability-proof-id"))))
-    (testing "digest and carrier validation remain seed-local"
+    (testing "digest and carrier legality remain seed-local"
       (is (not (contains? (symbols-in sha-shape)
                           'authenticated-envelope-verify-template)))
+      (is (contains? (symbols-in carrier-preflight)
+                     'sh10-identity-components))
+      (is (contains? (symbols-in carrier-preflight) 'seq?))
+      (is (string/includes? (pr-str carrier-preflight)
+                            ":identity-carrier-seq-unsupported"))
+      (doseq [retired ["16384" "512" "1024"]]
+        (is (not (string/includes? (pr-str carrier-preflight) retired))))
       (is (not (contains? (symbols-in checker) 'sh10-structural-preflight)))
       (is (not (string/includes? (pr-str checker) ":identity-cycle"))))
     (testing "event validation/execution and verification are recursive"
@@ -992,7 +1000,7 @@
               (assoc-in
                artifact
                [:gravity-core-boundary :canonical-core-artifact
-               :definitions 0 :binding-id]
+                :definitions 0 :binding-id]
                zero-id)
               :canonical-core-replays?]
              ["call binding"

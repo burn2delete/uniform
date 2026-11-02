@@ -3,7 +3,10 @@
             [gravity.c7-type-checker :as c7]
             [gravity.c7-type-checker.inference :as compatibility]
             [gravity.c7-type-checker.evidence :as record-compatibility]
+            [gravity.c7-type-checker.artifact :as artifact-compatibility]
             [gravity.c7-type-checker.verification :as verification]
+            [gravity.c7-type-checker.diagnostics :as diagnostic-compatibility]
+            [gravity.c7-type-checker.catalog :as catalog-compatibility]
             [gravity.types :as types]))
 
 (def module
@@ -176,7 +179,7 @@
   (let [contract (:gravity/namespace-contract (meta #'types/type-fact))
         publics (ns-publics 'gravity.types)]
     (is (= :seed-type-products-and-current-gravity-runtime (:contract-boundary contract)))
-    (is (= 20 (count publics)))
+    (is (= 29 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
@@ -188,11 +191,135 @@
       (is (false? (:proves-canonical-types? api)))
       (is (false? (:grants-authority? api))))
     (is (= [] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.bootstrap]
+    (is (= '[gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.c7-type-checker.artifact gravity.c7-type-checker.diagnostics gravity.c7-type-checker.catalog gravity.bootstrap]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (not (contains? (ns-aliases 'gravity.types) 'gravity.bootstrap)))
     (is (nil? (find-ns 'gravity.bootstrap)))))
+
+(deftest native-diagnostic-catalog-and-wrappers-retain-interposition
+  (doseq [[stage-name compatibility-name]
+          [['native-diagnostic-ids 'diagnostic-ids]
+           ['native-governing-document 'governing-document]
+           ['native-rejected-designs 'rejected-designs]
+           ['native-override-diagnostics 'override-diagnostics]]]
+    (let [stage-var (ns-resolve 'gravity.types stage-name)
+          wrapper-var (ns-resolve 'gravity.c7-type-checker.catalog compatibility-name)]
+      (is (identical? @stage-var @wrapper-var))
+      (is (= :data (get-in (meta stage-var)
+                           [:gravity/namespace-contract :public-api stage-name :api-kind])))))
+  (is (= 10 (count catalog-compatibility/diagnostic-ids)))
+  (is (= "Type checking failed" (catalog-compatibility/type-message :unknown)))
+  (is (= "typed-core verifier rejected the artifact"
+         (catalog-compatibility/type-message "C7-VERIFY")))
+  (is (= :live-message
+         (with-redefs [types/native-type-message (constantly :live-message)]
+           (catalog-compatibility/type-message "C7-VERIFY"))))
+  (doseq [[stage-name wrapper-name arity]
+          [['native-type-fail! 'type-fail! 8]
+           ['validate-native-overrides! 'validate-overrides! 6]
+           ['native-type-diagnostics 'type-diagnostics 5]]]
+    (let [arguments (vec (repeatedly arity #(Object.)))
+          marker (Object.) calls (atom [])
+          stage-var (ns-resolve 'gravity.types stage-name)
+          wrapper-var (ns-resolve 'gravity.c7-type-checker.diagnostics wrapper-name)]
+      (with-redefs-fn {stage-var (fn [& args] (reset! calls args) marker)}
+        #(is (identical? marker (apply wrapper-var arguments))))
+      (is (every? true? (map identical? arguments @calls)))))
+  (let [marker (Object.)]
+    (is (identical? marker
+                    (with-redefs [types/native-type-fail! (constantly marker)]
+                      (diagnostic-compatibility/type-fail! nil nil nil nil nil nil nil nil))))))
+
+(deftest native-type-failure-preserves-payload-precedence-and-callback-order
+  (let [events (atom []) marker (Object.)
+        span {:source "owner.gravity" :form-index 4}
+        origin [{:kind :macro :syntax-id :original}]
+        subject {:node-id :core :source {:syntax-id :syntax :span span :origin-chain origin}
+                 :binding-ref :binding :profile :hosted :target :jvm}
+        captured (atom nil)
+        fail (fn [id message payload]
+               (swap! events conj :failure)
+               (reset! captured [id message payload]) marker)
+        source-span (fn [path index] (swap! events conj [:span path index]) :fallback)
+        message (fn [id] (swap! events conj [:message id]) :message)]
+    (is (identical? marker
+                    (types/native-type-fail! fail source-span message :document
+                                             "C7-VERIFY" "owner.gravity" subject {})))
+    (is (= [[:message "C7-VERIFY"] :failure] @events))
+    (let [[id text payload] @captured]
+      (is (= ["C7-VERIFY" :message] [id text]))
+      (is (identical? span (:source-span payload)))
+      (is (identical? origin (:generated-origin-chain payload)))
+      (is (= {:diagnostic-family :c7-type-checker :stage :type-check :document-id "C7"
+              :expected-document :document :core-node-id :core :syntax-id :syntax
+              :expected-type "Typed" :actual-type "Dynamic" :active-profile :hosted
+              :target :jvm :relevant-binding-id :binding}
+             (dissoc payload :source-span :generated-origin-chain :remediation))))
+    (doseq [[subject expected]
+            [[(assoc subject :source-span :direct :span :third) :direct]
+             [(assoc subject :span :third) span]
+             [{:span :third} :third]
+             [{} :fallback]]]
+      (types/native-type-fail! fail source-span message :document :id "owner.gravity" subject {})
+      (is (= expected (get-in @captured [2 :source-span]))))
+    (reset! events [])
+    (types/native-type-fail! fail source-span message :document :id "owner.gravity" {}
+                             {:source-span :extra :document-id :extra :active-profile :extra})
+    ;; The owner span callback still runs before the extra payload overwrites it.
+    (is (= [[:message :id] [:span "owner.gravity" 0] :failure] @events))
+    (is (= :extra (get-in @captured [2 :source-span])))
+    (is (= :extra (get-in @captured [2 :document-id])))
+    (is (= :extra (get-in @captured [2 :active-profile])))
+    (is (nil? (get-in @captured [2 :target]))))
+  (doseq [failure-point [:message :span :failure]]
+    (let [events (atom []) error (ex-info "owner failure" {:at failure-point})
+          callback (fn [point result]
+                     (fn [& _]
+                       (swap! events conj point)
+                       (if (= point failure-point) (throw error) result)))
+          caught (try
+                   (types/native-type-fail! (callback :failure nil) (callback :span :span)
+                                            (callback :message :text) :document :id "x.gravity" {} {})
+                   nil (catch clojure.lang.ExceptionInfo e e))]
+      (is (identical? error caught))
+      (is (= (case failure-point :message [:message] :span [:message :span]
+                   :failure [:message :span :failure]) @events)))))
+
+(deftest native-registry-and-override-retain-source-data-without-admission
+  (let [calls (atom []) span {:source "registry.gravity" :form-index 3}
+        origin [{:kind :source}]
+        ids ["C7-VERIFY"] designs [{:diagnostic "C7-VERIFY" :fixture "fixture.gravity"}]
+        source-span (fn [path index] (swap! calls conj [path index]) :fallback)
+        registry (types/native-type-diagnostics source-span ids designs "registry.gravity"
+                                                [{:node-id :core :source {:syntax-id :syntax
+                                                                                       :span span :origin-chain origin}
+                                                  :profile :hosted :target :jvm}])
+        diagnostic (first (:diagnostics registry))]
+    (is (identical? ids (:required-diagnostic-ids registry)))
+    (is (= [["registry.gravity" 0]] @calls))
+    (is (identical? span (:source-span diagnostic)))
+    (is (identical? origin (:generated-origin-chain diagnostic)))
+    (is (= {:diagnostic "C7-VERIFY" :fixture "fixture.gravity" :core-node-id :core
+            :syntax-id :syntax :expected-type "Expected" :actual-type "Actual"
+            :active-profile :hosted :target :jvm :relevant-binding-id :core}
+           (dissoc diagnostic :source-span :generated-origin-chain :remediation)))
+    (is (= :complete (:status registry)))
+    (let [captured (atom nil) error (ex-info "override fixture" {})
+          caught (try
+                   (types/validate-native-overrides!
+                    source-span (fn [& args] (reset! captured args) (throw error))
+                    types/native-override-diagnostics "registry.gravity" module {:fail :verify})
+                   nil (catch clojure.lang.ExceptionInfo e e))]
+      (is (identical? error caught))
+      (is (= ["C7-VERIFY" "registry.gravity"] (vec (take 2 @captured))))
+      (is (= {:source-span :fallback :syntax-id "fixture-override" :core-node-id "fixture-override"
+              :expected-type "Expected" :actual-type "Actual" :profile :hosted :target :jvm
+              :generated-origin []} (nth @captured 2)))
+      (is (= {:missing-fields [:verify]} (nth @captured 3))))
+    (is (nil? (types/validate-native-overrides! source-span (fn [& _] (throw (Exception.)))
+                                               types/native-override-diagnostics "x.gravity" module
+                                               {:fail :unknown})))))
 
 (deftest types-stage-products-retain-source-facts-and-constraint-order
   (let [source {:syntax-id :syntax :span {:source "native.gravity" :form-index 2}
@@ -386,3 +513,49 @@
       (is (= arity (count @observed)))
       (is (every? true? (map identical? arguments @observed)))))
   (is (= [] (:records (record-compatibility/schema-links [])))))
+
+(deftest types-stage-assembly-compatibility-preserves-port-identity
+  (let [ports (Object.) source (Object.) text (Object.) result (Object.)
+        observed (atom nil)]
+    (with-redefs [types/assemble-source-artifact
+                  (fn [& values] (reset! observed values) result)]
+      (is (identical? result (artifact-compatibility/source-artifact ports source text))))
+    (is (= 3 (count @observed)))
+    (is (every? true? (map identical? [ports source text] @observed)))))
+
+(deftest types-stage-assembly-preserves-order-and-refusal-barriers
+  (doseq [stop [nil :overrides :validate]]
+    (let [events (atom []) failure (ex-info "owner refusal" {:marker (Object.)})
+          supplied (into {} (for [[key operation] (operations)]
+                              [key (fn [& args]
+                                     (swap! events conj key)
+                                     (apply operation args))]))
+          supplied (assoc supplied
+                          :c7-type-validate-overrides!
+                          (fn [& args]
+                            (swap! events conj :overrides)
+                            (when (= :overrides stop) (throw failure))
+                            (apply c7/c7-type-validate-overrides! args))
+                          :c7-type-validate!
+                          (fn [& args]
+                            (swap! events conj :validate)
+                            (when (= :validate stop) (throw failure))
+                            (apply c7/c7-type-validate! args))
+                          :c7-type-capability-proof
+                          (fn [& args]
+                            (swap! events conj :proof)
+                            (apply c7/c7-type-capability-proof args)))
+          result (try (c7/with-operations supplied
+                        #(c7/compiler-c7-type-source-artifact "c7-test.gravity" "ignored"))
+                      (catch clojure.lang.ExceptionInfo error error))]
+      (is (= (case stop
+               :overrides [:read-source-form-records :validate-ns-syntax! :parse-module :overrides]
+               :validate [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                          :compiler-c6-lowering-source-artifact :validate]
+               [:read-source-form-records :validate-ns-syntax! :parse-module :overrides
+                :compiler-c6-lowering-source-artifact :validate :proof :proof])
+             @events))
+      (if stop
+        (is (identical? failure result))
+        (do (is (= :passed (get-in result [:typed-core-verifier-report :status])))
+            (is (re-matches #"sha256:[0-9a-f]{64}" (:artifact-id result))))))))

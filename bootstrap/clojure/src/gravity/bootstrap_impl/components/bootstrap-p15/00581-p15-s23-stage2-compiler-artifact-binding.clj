@@ -1,7 +1,8 @@
-
-
 (defn- p15-s23-stage2-compiler-artifact-binding-from-source!
-  [emitter source-path target artifact-source artifact-text]
+  ([emitter source-path target artifact-source artifact-text]
+   (p15-s23-stage2-compiler-artifact-binding-from-source! emitter source-path target artifact-source artifact-text 1))
+  ([emitter source-path target artifact-source artifact-text version]
+  (let [contract (p15-s23-stage2-expression-source-contract version)]
   (when-not (and (string? artifact-source) (string? artifact-text))
       (p15-s23-stage2-plan-emitter-fail!
        "P15S23Q001" artifact-source nil
@@ -9,6 +10,12 @@
         :target target
         :missing-fields [:compiler-artifact-source]
         :missing-fact :stage2-expression-lowering-artifact}))
+  (when (and (= 2 version)
+             (not (and (= (:source-byte-count contract)
+                          (alength (.getBytes ^String artifact-text java.nio.charset.StandardCharsets/UTF_8)))
+                       (= (:source-content-hash contract) (str "sha256:" (sha256-hex artifact-text))))))
+    (p15-s23-stage2-plan-emitter-fail! "P15S23Q002" artifact-source nil
+     {:missing-fact :stage2-expression-lowering-source-content-hash}))
   (let [plan
           (try
             (p15-s23-stage2-compiler-artifact-plan
@@ -37,10 +44,10 @@
                 (map (fn [[name _]]
                        [name (select-keys (get functions name)
                                           [:arity :params])]))
-                p15-s23-stage2-compiler-artifact-required-functions)
+                (:required-functions contract))
           missing-functions
           (set (for [[name shape]
-                     p15-s23-stage2-compiler-artifact-required-functions
+                     (:required-functions contract)
                      :when (not= shape (get observed-arities name))]
                  name))
           semantic-hash
@@ -56,7 +63,7 @@
           :target target
           :missing-fact :stage2-expression-lowering-function-shape
           :missing-functions (vec (sort-by str missing-functions))}))
-      (when-not (= p15-s23-stage2-compiler-artifact-expected-semantic-hash
+      (when-not (= (:semantic-hash contract)
                    semantic-hash)
         (p15-s23-stage2-plan-emitter-fail!
          "P15S23Q002" artifact-source semantic-hash
@@ -64,11 +71,11 @@
           :target target
           :missing-fact :stage2-expression-lowering-semantic-hash
           :expected-semantic-hash
-          p15-s23-stage2-compiler-artifact-expected-semantic-hash
+          (:semantic-hash contract)
           :actual-semantic-hash semantic-hash}))
       (let [source-content-hash
             (str "sha256:" (sha256-hex artifact-text))]
-        (when-not (= p15-s23-stage2-compiler-artifact-expected-source-content-hash
+        (when-not (= (:source-content-hash contract)
                      source-content-hash)
           (p15-s23-stage2-plan-emitter-fail!
            "P15S23Q002" artifact-source source-content-hash
@@ -77,13 +84,15 @@
             :missing-fact
             :stage2-expression-lowering-source-content-hash
             :expected-source-content-hash
-            p15-s23-stage2-compiler-artifact-expected-source-content-hash
+            (:source-content-hash contract)
             :actual-source-content-hash source-content-hash})))
-      {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
+      (when (= 2 version)
+        (p15-s23-stage2-validate-current-expression-program! artifact-source plan))
+      (cond-> {:artifact :gravity/p15-s23-stage2-expression-lowering-binding
        :status :complete
        :source-path artifact-source
        :source-content-hash
-       p15-s23-stage2-compiler-artifact-expected-source-content-hash
+       (:source-content-hash contract)
        :semantic-hash semantic-hash
        :artifact-hash (str "sha256:"
                            (sha256-hex
@@ -97,10 +106,15 @@
        :invoked? true
        :generic-bridge-residual? true
        :clojure-seed-boundary? true
-       :self-hosted? false}))
-
+       :self-hosted? false}
+        (= 2 version) (assoc :source-contract-version version
+                            :functions-semantic-hash (:functions-semantic-hash contract)
+                            :function-count (count functions)
+                            :declared-plan-compiler-labels (:compiler plan)
+                            ;; Binding authentication is not expression execution.
+                            :invoked? false))))))
 (defn p15-s23-stage2-compiler-artifact-binding!
-  [emitter source-path target]
+  ([emitter source-path target]
   (if *p15-s23-sh07-b51-governed-source-session*
     (let [module-ordinal
           (p15-s23-sh07-b51-active-module-ordinal source-path)]
@@ -120,7 +134,8 @@
            (p15-s23-stage2-compiler-artifact-source-path))]
       (p15-s23-stage2-compiler-artifact-binding-from-source!
        emitter source-path target path text))))
-
+  ([emitter source-path target version]
+   (p15-s23-stage2-current-expression-binding! emitter source-path target version)))
 (defn p15-s23-stage2-compiler-artifact-invoke
   [function args]
   (let [binding *p15-s23-stage2-compiler-artifact-binding*

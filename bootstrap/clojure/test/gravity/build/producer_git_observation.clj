@@ -10,6 +10,20 @@
 
 (def ^:private no-links (into-array LinkOption [LinkOption/NOFOLLOW_LINKS]))
 
+(def ^:private process-option-keys
+  [:timeout-ms :capture-wait-ms
+   :output-limit-bytes :output-limit-chars
+   :capture-limit-bytes :capture-limit-chars
+   :output-cap-bytes :capture-cap-bytes
+   :max-output-bytes :max-capture-bytes
+   :output-cap-chars :capture-cap-chars
+   :max-output-chars :max-capture-chars
+   :output-cap :capture-cap :output-limit :capture-limit
+   :stdout-limit-bytes :stdout-limit-chars
+   :stdout-limit :stdout-chars :stdout-max-bytes :stdout-max-chars
+   :stderr-limit-bytes :stderr-limit-chars
+   :stderr-limit :stderr-chars :stderr-max-bytes :stderr-max-chars])
+
 (defn- require! [condition field]
   (when-not condition
     (throw (ex-info "RV2 Git observation cannot establish its binding"
@@ -91,6 +105,17 @@
   (when (cause-with #(instance? InterruptedException %) error)
     (.interrupt (Thread/currentThread))))
 
+(defn- retained-process-controller
+  "Adapt the existing SH01 runner controller to the selected Git lifecycle.
+  Wiring owns the port shape; this namespace supplies the runner-owned
+  implementation without making wiring depend back on the runner namespace."
+  []
+  {:start runner/start-process
+   :result runner/process-result
+   :terminal (fn [owned] @(:terminal owned))
+   :abort (fn [process]
+            (.destroyForcibly ^Process process))})
+
 (defn lifecycle
   "Build hooks for selected bookends. ports are the canonical retaining API;
   injected ports support compiler-free controls. Raw records stay local."
@@ -137,7 +162,8 @@
         (try ((:verify ports) binding)
              (catch Throwable error (swap! record assoc :identity-error error)
                     (swap! errors conj error)))
-        (doseq [error (cond-> @errors original (conj original))] (restore-interrupt! error))
+        (doseq [error (cond-> @errors original (conj original))]
+          (restore-interrupt! error))
         (when interrupted? (.interrupt (Thread/currentThread)))
         ;; Never demote fatal cleanup to an ordinary nonzero Git refusal.
         (let [primary (or (when (fatal original) original)
@@ -147,7 +173,10 @@
                     :when (and (not (identical? primary error))
                                (not (cause-with #(identical? primary %) error)))]
               (.addSuppressed ^Throwable primary error))
-            (when-not (identical? primary original) (throw primary))))))}))
+            (when-not (identical? primary original)
+              (throw primary))))))
+    :process-controller (:process-controller ports)
+    :process-options (:process-options ports)}))
 
 (defn- observation-view [binding records]
   {:schema :gravity/rv2-git-observation-v1
@@ -159,7 +188,8 @@
                        (if-let [error (get record field)]
                          (assoc view field {:class (.getName (class error))}) view))
                      (select-keys record [:argv :cwd :exit-code :root-wait-exited?
-                                          :finalization :descendant-coverage :terminal])
+                                          :finalization :descendant-coverage :terminal
+                                          :capture-receipt])
                      [:retain-error :operation-error :writer-error :finalization-error :identity-error])))
          @records)
    :capture-v1-ready? false :cache-admission? false})
@@ -174,9 +204,16 @@
                  (try (.isAbsolute (.toPath (io/file (:root binding))))
                       (catch Exception _ false))) :binding-shape)
   (require! (= (:root binding) (.getCanonicalPath (io/file (System/getProperty "user.dir")))) :root)
-  (let [report (wiring/run-child-unit! ['gravity.c2-artifact-identity-test]
+  (let [ports {:retain runner/retain-owned-process!
+               :handles runner/retained-process-handles
+               :finalize runner/finalize-owned-process!
+               :verify verify-binding!
+               :process-controller (retained-process-controller)
+               :process-options (select-keys options process-option-keys)}
+        report (wiring/run-child-unit! ['gravity.c2-artifact-identity-test]
                                       (assoc options :observe-producer? true
                                              :producer-git-binding binding
-                                             :producer-git-lifecycle (lifecycle binding records))
+                                             :producer-git-lifecycle
+                                             (lifecycle binding records ports))
                                       operation)]
     (assoc report :test-producer-git-observation (observation-view binding records))))
