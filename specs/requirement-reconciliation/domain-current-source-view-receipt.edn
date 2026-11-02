@@ -4,16 +4,16 @@
  :scope-key "requirement-reconciliation/phase-09-domain-specific-computing-coverage"
  :historical-port-base {:commit "12480d592044cc667ba4908405b463b3de51a2e6"
                         :tree "ab4173148a9a2ffe64a7ac94e74289db0704080a"}
- :review-base {:commit "dbeda7c7dc9a7bb880baa90af1a89046828db327"
-               :tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"}
+ :review-base {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
+               :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"}
  :current-source-checkpoint
- {:commit "710356676524bc3fe55440018002e90ba336f999"
-  :tree "31360b9122a3428575ad9216b2e33e3e903f6068"
-  :parents ["313405bf4b653f56f0d959ae7aa631dbbdb3b1dd"
-            "dbeda7c7dc9a7bb880baa90af1a89046828db327"]
-  :task-criteria-port :domains-preserved-platform-prefix-composed}
- :main-composition {:commit "dbeda7c7dc9a7bb880baa90af1a89046828db327"
-                    :tree "576075197b5b4e815b78bae7d949bfb5fe2d0437"}
+ {:commit "374aae5814d4f2027a613d2cd7a249ad2b08b07c"
+  :tree "358c68e3ea6dfe1bf4254448aad16faace470f76"
+  :parents ["8de866671bb0ec4af4c0aae4ce591ae69f22f498"
+            "38add2342719b91c6ef22f064fa813a16e9a97b3"]
+  :task-criteria-port :domains-family-and-current-main-composed-platform-prefix-composed}
+ :main-composition {:commit "38add2342719b91c6ef22f064fa813a16e9a97b3"
+                    :tree "5e260f72a8455fc44bb39039b9e0ce5f2be0907c"}
  :historical-pr562
  {:commit "2c3eac90b9736873ce7c439cdc9603b1e43249e5"
   :tree "3de79028eeaced10f00c6895f4f5cf446d7304f2"
@@ -27,13 +27,13 @@
   :gap-predecessor-tree "b90613cc0344b4b4a8bde0ff1afc61153723becf"}
  :source-view
  {:path "specs/requirement-reconciliation/domain-current-source-view.edn"
-  :sha256 "e805600663941da538fe8b60b52b03661f29f6b71d9b1fb6849d485e9ec1caee"
+  :sha256 "31928d89799c9a45e3f752f45f4fcf12187ca0d19b68e30251f3ce4bb158ea28"
   :checker-path "tools/domain_current_source_view.clj"
   :checker-sha256
-  "85fc06c7e2cce286f94f263b30b703671f6192093ad7e972d1b81fe539fa7c2f"
+  "200699746ad5b75408d624f0801520e8619162b42784ff5ce38d16569044e8e5"
   :evidence-path "specs/requirement-reconciliation/domain-current-source-view.md"
   :evidence-sha256
-  "a03661b6831d3367486dd41e3ac746daddc078728eface80128463d397661339"}
+  "a024791bca9656c77339b35660c1154b470156c44d48ef0a3cf329c31355cc4f"}
  :counts {:source-documents 21
           :source-occurrences 1533
           :source-dispositions 777
@@ -53,7 +53,7 @@
  {:source-view-checker
   {:command "clojure -M tools/domain_current_source_view.clj --check"
    :exit 0
-   :controls 12
+   :controls 14
    :result :pass}
   :platform-projection
   {:command "clojure -M tools/platform_task_projection.clj --check"
