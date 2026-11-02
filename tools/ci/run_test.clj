@@ -322,6 +322,48 @@
     (is (= [["whitespace" 30 ["git" "diff" "--check" base "HEAD"]]]
            (ci/docs-only-static-commands {:base base :kind :docs-only})))))
 
+(deftest shared-selection-preserves-full-and-docs-contract-modes
+  (let [full {:kind :full :reason :non-pull-request :paths []}
+        docs-only {:kind :docs-only :reason :known-documentation-only
+                   :paths ["README.md"]}
+        selected {:kind :selected :reason :affected-stage
+                  :modes #{"static" "contracts" "resolution"}}]
+    (is (= ["static=true"
+            "contracts=true"
+            "bootstrap=true"
+            "macro=true"
+            "resolution=true"
+            "checked-core-runtime=true"
+            "leaves-portable=true"
+            "leaves-darwin=true"
+            "darwin-unsupported=true"
+            "static-tools-required=true"
+            "selection-valid=true"]
+           (ci/selection-output-lines full)))
+    (is (= ["static=true"
+            "contracts=true"
+            "bootstrap=false"
+            "macro=false"
+            "resolution=false"
+            "checked-core-runtime=false"
+            "leaves-portable=false"
+            "leaves-darwin=false"
+            "darwin-unsupported=true"
+            "static-tools-required=false"
+            "selection-valid=true"]
+           (ci/selection-output-lines docs-only)))
+    (is (= "true" (last (str/split (nth (ci/selection-output-lines selected) 4) #"="))))
+    (is (= "true" (last (str/split (last (ci/selection-output-lines selected)) #"="))))))
+
+(deftest workflow-selector-fails-closed-for-missing-or-malformed-outputs
+  (let [workflow (slurp ".github/workflows/ci.yml")]
+    (is (str/includes? workflow "needs.select.outputs.selection-valid != 'true'"))
+    (is (str/includes? workflow "needs.select.outputs[matrix.mode] != 'false'"))
+    (is (str/includes? workflow "needs.select.outputs[matrix.selection-key] != 'false'"))
+    (is (str/includes? workflow "needs.select.outputs[matrix.mode] == 'false'"))
+    (is (str/includes? workflow "CI_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}"))
+    (is (str/includes? workflow "CI_BASE_SHA: ${{ github.event.before }}"))))
+
 (deftest stage-selection-follows-owned-downstream-closure
   (let [change (fn [path] {:old-mode "100644" :new-mode "100644"
                            :status "M" :path path})

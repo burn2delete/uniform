@@ -2788,7 +2788,7 @@
   {:artifact artifact-with-id, :descriptor descriptor}))
 
 
-(defn-
+(defn
  verify-current*
  [artifact construction? context operations]
  (let
@@ -3156,7 +3156,7 @@
    :gravity-verification gravity-report,
    :upstream-verification sh05-report}))
 
-(defn-
+(defn
  verify*
  [artifact construction? context operations]
  (let
@@ -3261,7 +3261,7 @@
   :gravity-verification nil,
   :upstream-verification nil})
 
-(defn-
+(defn
  verify-contained*
  [artifact construction? context operations]
  (let
@@ -3760,68 +3760,17 @@
   :foreign
   order))
 
-(doseq
- [operation
-  [#'analysis-inputs
-   #'artifact-id
-   #'artifact-identity-input
-   #'artifact-identity-input-with-chunks
-   #'assemble-candidate
-   #'base-request
-   #'binding-current!
-   #'boundary-fail!
-   #'boundary-keys-for
-   #'build-plan-binding!
-   #'candidate-for
-   #'core-record
-   #'core-records
-   #'current-plan-binding!
-   #'definition-kind
-   #'definition-records
-   #'dependency-edges
-   #'dependency-record
-   #'diagnostic-origin
-   #'digest-reference
-   #'envelope-descriptor
-   #'envelope-id
-   #'envelope-summary
-   #'envelope-summary-with-chunks
-   #'execute!
-   #'explicit-candidate-records
-   #'fixed-vector-pattern?
-   #'identity-chunks
-   #'import-binding-records
-   #'import-records
-   #'let-loop-binding-paths
-   #'match-pattern-binding-paths
-   #'module-request
-   #'order-compatibility
-   #'package-record
-   #'plan-identities
-   #'product-identity-chunks
-   #'product-projections
-   #'raise-rejection!
-   #'read-current-source!
-   #'read-pinned-source!
-   #'request-overrides
-   #'require-carrier!
-   #'resolve-analysis!
-   #'resolve-declared-id!
-   #'resolve-digest-requests!
-   #'resolve-record-binding-id!
-   #'resolve-source-path
-   #'run-request!
-   #'semantic-span
-   #'source-key
-   #'source-revision-id
-   #'unique-match-binding-paths
-   #'verification-failure
-   #'verify
-   #'verify*
-   #'verify-contained*
-   #'verify-current*]]
- (alter-meta!
-  operation
-  assoc
-  :gravity/namespace-contract
-  namespace-contract))
+(let [private-implementation (:private-implementation namespace-contract)
+      private-names (if (map? private-implementation)
+                      (keys private-implementation)
+                      private-implementation)]
+  (doseq
+   [name (concat (keys (:public-api namespace-contract)) private-names)
+    :let [operation (get (ns-interns *ns*) name)]]
+   (alter-meta!
+    operation
+    assoc
+    :gravity/namespace-contract
+    namespace-contract)
+   (when (some #{name} private-names)
+     (alter-meta! operation assoc :private true))))

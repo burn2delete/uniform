@@ -2,10 +2,8 @@
   (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as b]
             [gravity.safety :as safety]
-            [gravity.self-hosting.sh11-numeric-safety-test]))
-
-(defn- helper [name]
-  (var-get (ns-resolve 'gravity.self-hosting.sh11-numeric-safety-test name)))
+            [gravity.self-hosting.sh11-numeric-safety-fixture-support
+             :as fixture-support]))
 
 (defn- node [id operation operands effects capabilities outcome]
   {:node-id id :path [:test id] :source-operation operation :operands operands
@@ -39,14 +37,18 @@
   ;; Original normalized safety requests, not genuine source/Core or provider
   ;; admission. Unsafe/check records here are data, not executed native actions.
   (doseq [extension [".gravity" ".qst"]]
-    (let [compile-plan (helper 'compile-plan) invoke (helper 'invoke)
-          plan (compile-plan (str "bootstrap/clojure/fixtures/self-hosting/sh-11/accepted/numeric-safety-outcomes" extension))
-          bad-plan (compile-plan (str "bootstrap/clojure/fixtures/self-hosting/sh-11/rejected/invalid-numeric-safety" extension))
-          requests (mapv #(invoke (delay plan) % [])
+    (let [plan (fixture-support/compile-plan
+                (fixture-support/fixture-relative-path
+                 "accepted" "numeric-safety-outcomes" extension))
+          bad-plan (fixture-support/compile-plan
+                    (fixture-support/fixture-relative-path
+                     "rejected" "invalid-numeric-safety" extension))
+          requests (mapv #(fixture-support/invoke (delay plan) % [])
                          '[sh11-proven-division-request sh11-runtime-division-request sh11-unsafe-overflow-request])
-          bad-request (invoke (delay bad-plan) 'sh11-zero-divisor-request [])
-          results (mapv (helper 'classify) requests)
-          rejection ((helper 'classify) bad-request)]
+          bad-request (fixture-support/invoke (delay bad-plan)
+                                              'sh11-zero-divisor-request [])
+          results (mapv fixture-support/classify requests)
+          rejection (fixture-support/classify bad-request)]
       (doseq [compiled [plan bad-plan]]
         (is (= :gravity/stage2-compiler-artifact-plan (:kind compiled)))
         (is (= (:plan-id compiled)
@@ -57,7 +59,10 @@
       (is (= "C10-NUMERIC" (get-in rejection [:diagnostics 0 :rule])))
       (doseq [[request result] (map vector requests results)]
         (is (= (:source-span request) (get-in result [:preserves :source-span])))
-        (is (= :passed (:status ((helper 'invoke-c10) 'sh11-verify-safety-result [request result]))))))))
+        (is (= :passed
+               (:status
+                (fixture-support/invoke-c10
+                 'sh11-verify-safety-result [request result]))))))))
 
 (deftest check-and-proof-records-keep-exact-identity-and-provenance
   (let [subject (node :literal :literal [] #{} #{} :proven-safe)
