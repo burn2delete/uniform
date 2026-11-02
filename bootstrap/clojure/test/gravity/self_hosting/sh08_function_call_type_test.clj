@@ -19824,9 +19824,16 @@
   ([basename stage]
    (let [source-path (fixture-path "preserved" basename ".gravity")
          text (slurp source-path)
+         reader-source-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+         syntax-source-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+         invocation {:reader-source-path reader-source-path
+                     :authenticated-envelope-options {:source :development-current}
+                     :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                               :source-path syntax-source-path}
+                     :macro-source-mode :development-current}
          resolved (function-current-resolution source-path text
                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} stage)
-         artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved))
+         artifact (stage :sh07 #(bootstrap/sh07-core-from-resolution-artifact resolved invocation))
          boundary (:gravity-core-boundary artifact)]
      {:source-path source-path :source-text text :resolved resolved :core-wrapper artifact
       :core (:canonical-core-artifact boundary)
