@@ -44,7 +44,8 @@
            'validate-operations! 'validate-fact-tables! 'validate-module-envelope!
            'module-keys 'function-keys 'node-opcode 'node-facts 'node-operands
            'runtime-check-operation-id 'runtime-check-token-id 'runtime-check-source 'runtime-check-fact-id
-           'validate-carrier! 'metadata-free? 'require-strict-structure! 'require!}
+           'validate-carrier! 'metadata-free? 'require-strict-structure! 'require!
+           'pass-contract-record 'canonical-block-order 'operation-sequence 'path-prefix?}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -63,6 +64,69 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(deftest native-pass-and-order-records-match-real-emitted-mir
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [block-order (mir/canonical-block-order emitted)
+          operations (mir/operation-sequence #'b/p15-s23-c11-mir-canonical-block-order emitted)
+          block-id (first (for [[id block] (get-in emitted [:functions (:entrypoint checked) :blocks])
+                               :when (< 1 (count (:instructions block)))] id))
+          changed (update-in emitted [:functions (:entrypoint checked) :blocks block-id :instructions]
+                             #(vec (reverse %)))
+          rejected (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed))]
+      (is (= 4 (count block-order)))
+      (is (= block-order (b/p15-s23-c11-mir-canonical-block-order emitted)))
+      (is (= 5 (count operations)))
+      (is (= operations (b/p15-s23-c11-mir-operation-sequence emitted)))
+      (is (= operations (:operations (b/p15-s23-c11-mir-validate-operations! source checked emitted))))
+      (is (= (:pass-contract emitted) (mir/pass-contract-record)))
+      (is (= (mir/pass-contract-record) (b/p15-s23-c11-mir-pass-contract-record)))
+      (is (some? block-id))
+      (is (not= emitted changed))
+      (is (= "C11-DOMINANCE" (:id rejected)))
+      (is (= :canonical-checked-core-instruction-order-and-placement (:missing-fact rejected))))))
+
+(deftest native-order-and-path-helpers-retain-relative-data-semantics
+  (let [first-op (Object.) second-op (Object.)
+        module {:source-core "core"
+                :functions {"function" {:blocks {"core:mir:entry" {:instructions [first-op]}
+                                                 "core:mir:join" {:instructions [second-op]}}}}}
+        calls (atom [])
+        sequence (mir/operation-sequence (fn [value]
+                                          (swap! calls conj value)
+                                          ["core:mir:join" "missing" "core:mir:entry" "core:mir:join"])
+                                        module)]
+    (is (= ["core:mir:entry" "core:mir:then" "core:mir:else" "core:mir:join"]
+           (mir/canonical-block-order module)))
+    (is (= ["core:mir:entry"]
+           (mir/canonical-block-order (update-in module [:functions "function" :blocks] dissoc "core:mir:join"))))
+    (is (= [module] @calls))
+    (is (identical? module (first @calls)))
+    (is (vector? sequence))
+    (is (= 3 (count sequence)))
+    (is (every? true? (map identical? [second-op first-op second-op] sequence))))
+  (doseq [[prefix path expected] [[[] [] true] [[] [:a] true] [[:a] [:a :b] true]
+                                  [[:a :b] [:a] false] [[:a] [:b] false]
+                                  [nil [] false] [[:a] '(:a) false] ['(:a) [:a] false]]]
+    (is (= expected (mir/path-prefix? prefix path)))
+    (is (= expected (b/p15-s23-c11-mir-path-prefix? prefix path)))))
+
+(deftest native-order-wrappers-retain-arguments-and-live-block-order-var
+  (doseq [[stage wrapper args ports]
+          [[#'mir/pass-contract-record #'b/p15-s23-c11-mir-pass-contract-record [] []]
+           [#'mir/canonical-block-order #'b/p15-s23-c11-mir-canonical-block-order [:mir] []]
+           [#'mir/operation-sequence #'b/p15-s23-c11-mir-operation-sequence [:mir]
+            [#'b/p15-s23-c11-mir-canonical-block-order]]
+           [#'mir/path-prefix? #'b/p15-s23-c11-mir-path-prefix? [:prefix :path] []]]]
+    (let [observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage (fn [& supplied] (reset! observed supplied) marker)}
+        #(is (identical? marker (apply wrapper args))))
+      (is (= (vec (concat ports args)) (vec @observed)))
+      (is (every? true? (map identical? ports (take (count ports) @observed))))))
+  (let [operation #'b/p15-s23-c11-mir-canonical-block-order error (ex-info "late block order" {})]
+    (with-redefs [b/p15-s23-c11-mir-canonical-block-order (fn [& _] (throw error))]
+      (is (identical? error (try (mir/operation-sequence operation {})
+                                nil (catch clojure.lang.ExceptionInfo e e)))))))
 
 (defn- carrier-validation-ports []
   {:trusted-carrier-validation #'b/p15-s23-trusted-carrier-validation

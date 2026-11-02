@@ -6,7 +6,12 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {validate-carrier! {:arglists ([owner-operations source-path definition value]) :admission :none
+    {pass-contract-record {:arglists ([]) :admission :none :native-data-only? true}
+     canonical-block-order {:arglists ([mir]) :admission :none :native-data-only? true}
+     operation-sequence {:arglists ([block-order mir]) :admission :none :native-data-only? true
+       :operation-inputs [:canonical-block-order]}
+     path-prefix? {:arglists ([prefix path]) :admission :none :native-data-only? true}
+     validate-carrier! {:arglists ([owner-operations source-path definition value]) :admission :none
       :operation-inputs [:trusted-carrier-validation :valid-unicode-string? :fail! :contain-exception!]
       :native-data-only? true :authenticates-inputs? false}
      metadata-free? {:arglists ([value]) :admission :none :native-data-only? true}
@@ -76,7 +81,8 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-carrier-and-structural-comparison-data :explicit-carrier-unicode-diagnostic-and-containment-operations
+    :artifact-inputs [:native-mir-module-blocks-and-paths :explicit-block-order-operation
+                      :native-carrier-and-structural-comparison-data :explicit-carrier-unicode-diagnostic-and-containment-operations
                       :native-node-and-fact-source-and-check-data :explicit-token-id-operation
                       :native-module-and-function-key-schemas :explicit-envelope-operations
                       :explicit-fact-table-reconstruction-and-require-operations
@@ -90,14 +96,16 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-carrier-validation-result :metadata-predicate :relative-structure-and-condition-rule-results
+    :artifact-outputs [:native-pass-contract-record :canonical-native-block-order :native-operation-sequence :path-prefix-predicate
+                       :native-carrier-validation-result :metadata-predicate :relative-structure-and-condition-rule-results
                        :native-opcodes-fact-references-operands-generated-source-and-ids
                        :native-module-and-function-key-sets :native-envelope-products
                        :native-fact-table-rule-return :native-operation-products :native-data-flow-counts :native-effect-placement-result
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-carrier-unicode-metadata-and-relative-structure-rules
+    :diagnostic-ownership {:stage [:native-pass-contract-block-and-operation-order-and-path-rules
+                                  :native-carrier-unicode-metadata-and-relative-structure-rules
                                   :native-node-opcode-and-fact-source-id-projection
                                   :native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
                                   :native-fact-table-equality
@@ -123,6 +131,77 @@
 
 
 
+
+(defn pass-contract-record
+  []
+  {:artifact :gravity/compiler-pass-contract
+   :pass-id :c11-build-mir-bounded-slice
+   :owner :gravity-source
+   :input :gravity/safety-checked-core
+   :output :gravity/mir-module
+   :requires [:authenticated-checked-core-artifact
+              :canonical-core-node-order
+              :type-facts :effect-facts :effect-order-graph
+              :capability-facts :capability-proofs
+              :ownership-facts :safety-outcomes
+              :runtime-check-records :profile-facts
+              :complete-origin-closure]
+   :preserves [:checked-core-artifact-id :core-node-identity
+               :source-spans :origin-ids :generated-origin-chains
+               :types :effects :effect-order :capabilities
+               :ownership :safety :runtime-check-failure-behavior
+               :profile :source-target :target-request]
+   :invalidates [:core-control-shape]
+   :regenerates [:mir-block-placement :control-flow-graph
+                 :typed-data-flow-graph :mir-value-use-def
+                 :runtime-check-token-guards :mir-source-map]
+   :effects #{}
+   :capabilities #{}
+   :profiles [:hosted]
+   :source-targets [:jvm]
+   :target-independent-output? true
+   :emits [:mir-module :pending-build-mir-pass-execution-record
+           :c11-diagnostic]
+   :postcondition-verifier :clojure-stage0-independent-c11-verifier
+   :risk :bootstrap-seed-tcb
+           :scope {:operation-set
+           [:literal :implicit-nil :quote :local :let-binding :truthy
+            :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+            :do :if :let :str :println :function
+            :runtime-check]
+           :maximum-conditionals 1
+           :whole-c11? false
+           :self-hosted? false}})
+
+(defn canonical-block-order
+  [mir]
+  (let [source-core (:source-core mir)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        blocks (get-in mir [:functions
+                            (first (keys (:functions mir)))
+                            :blocks])]
+    (if (contains? blocks join-id)
+      [entry-id then-id else-id join-id]
+      [entry-id])))
+
+(defn operation-sequence
+  [block-order mir]
+  (let [blocks (get-in mir [:functions
+                            (first (keys (:functions mir)))
+                            :blocks])]
+    (vec
+     (mapcat #(get-in blocks [% :instructions] [])
+             (block-order mir)))))
+
+(defn path-prefix?
+  [prefix path]
+  (and (vector? prefix)
+       (vector? path)
+       (<= (count prefix) (count path))
+       (= prefix (subvec path 0 (count prefix)))))
 
 (defn validate-carrier!
   [owner-operations source-path definition value]
