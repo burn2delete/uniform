@@ -3187,3 +3187,123 @@ weakening source preservation. Temporary script parse corrections preceded their
 writes. The initial pre-clarification projection was superseded by the verified
 fingerprint and checks above. No current semantic, implementation, independent
 review, integration, release or seed-retirement completion is conferred.
+
+## Source effects and handler dependency continuation
+
+Source `5d027e24299abe52716a37f842a6832245b5a9c0` adds the
+[selected L6 dependency order](../specs/effects-workflow/plan.md#source-effect-and-handler-dependency-order)
+to the [existing table](../docs/acceptance-dependencies.md#future-task-construction-and-composition).
+The initial source declaration is `30a665aa841e4c6e607cd52ed02772d325d147aa`;
+`5cc492c2` and `5d027e24` distinguish derived action export with legality pending
+from checked Core/MIR export and later actual owner-example results.
+
+Twelve existing consumers gain routes: Effects1/2/4/5, Auth grants, Expand1/3,
+Runtime cleanup and distributed/AI, Stdlib testing, Workflow and AI. Nine existing
+routes retain all 74 prior selected inputs and their contract prefixes, adding
+20 inputs; the twelve new rows add 97 inputs. These 117 additions produce 191
+inputs across the 21 selected routes and 526 joins globally. All 52 unaffected
+route meanings remain. There are 73 declared routes: forty future consumers and
+33 existing parents, with no unresolved declaration. No task body/status or
+accepted receipt changes, and no new task or task authority is created.
+
+The declaration now exposes one 29-task compiler/authority/macro/interpreter/
+source-domain/Math/Formal/Safety/review cycle and the unchanged eight-task
+Release/Schema cycle. The former combines the previous Auth/Profile and
+sixteen-task source/memory cycle with eleven newly declared consumers; direct
+Effects1 inference stays outside that cycle. The graph does not prove a complete
+executable order. Consumer-specific products distinguish actual early inference,
+compatibility/grants and valid capture premises from combined handler legality,
+checked Core/MIR export and later execution/conformance. A supplied obligation,
+declaration or safe flag cannot stand in for the required valid premise.
+
+Macro program P has actual applicable typed/effect/profile/grant facts before
+invocation; generated caller Q enters ordinary checking afterward. Expand3's
+early enforcement/replay gate precedes Expand1 action execution; the later action
+trace feeds performed-work records. P cannot supply its own prior admission from
+Q, and metadata without actual applicable checked facts remains unassessed or
+refused. Exact hermetic premises, the recorded environment-wording issue, the
+Core/Resolve ordering question and C7 publication restriction remain.
+
+Runtime cleanup/service contracts precede selected continuation/resource use;
+actual primitive results precede later resumable-error and workflow/tool results.
+A record/read/append primitive used for scheduler replay must actually work;
+its declaration cannot establish that execution. Workflow/AI provide early
+actual typed graph/tool/schema/review-policy definitions and later consume real
+Runtime results. Schema supplies selected actual validation/codecs rather than
+whole migration acceptance. Required action review evidence is separately
+supplied and cannot be issued by a compiler, service or policy definition.
+These selected L6 boundaries accept no full Domain/AI/visual/store/backend or
+external-provider outcome and do not add live authority.
+
+Stdlib's actual fixture API precedes the Release harness that calls it, retaining
+the target profile, explicit fixture grants, original labels and absence of live
+authority. Effects4 distinguishes early obligations/schema from actual later
+build/interpreter records. Effects5 distinguishes pending-legality derived
+projections, checked compiler handoff and real owner examples including selected
+MIR/Opt/Lower preservation and source consumers. Release language/runtime/profile
+suites then perform their own subject/oracle/matrix execution; owner examples do
+not prove a suite run, independent admission or whole-component acceptance.
+Existing/new-stable registration and memory-weakening review are separately
+conditioned scopes of the unchanged Evolution task, with prior independent
+safety-review obligations preserved. Neither is an ordinary development gate or
+permission for an otherwise denied candidate, experiment or operation.
+
+Metadata `:source-effects-dependency-refinement` preserves predecessor `a12ad99e`,
+its complete projection/fingerprint, the full L6 source proposal and every older
+source/dependency qualification. It binds the dependency table/tool, eleven plan
+witnesses, 21 selected routes and 29 named consumer-specific staged results.
+Source-file records remain 32 and the semantic task-source input stays `5ea0927f`.
+All 149 current keys across 25 authorities, forty future records, original-body
+disposition 75 identical / 64 amended, task statuses, SH/SH07 routes and three
+scoped Reader receipts remain. The previous whole-L6 source controls now read
+their exact recorded subject; the current dependency controls check this matrix,
+missing source rows/inputs, unchanged bodies and distinct staged result subjects.
+
+Current source/interface entailment and independent review remain pending;
+implementation, actual interpreter execution and all wider support/profile/
+provider/runtime/library conjunctions remain unassessed. Reader contract coverage
+is still the first selected implementation increment. No other chat is messaged
+and no actual compiler/provider/native/callback/plugin/probe/replay/migration/
+review/signing/publication operation runs; every existing hold remains.
+
+Pin verification exposed a tooling defect before regeneration: historical C12
+Domains-plan bytes at `cbafeee1` were used as the expected digest for the new
+applying commit because the lookup keyed only by path. Fix `aac8b872f161635216bd8d45669e5d198816b87d`
+uses the current source digest or an exact commit/path locator for each applying
+pin and independently verifies every historical locator at its own immutable
+commit. It does not refresh historical review inputs. Positive current/history
+ordering and current-digest cases pass; missing current bindings, stale current
+digests and tampered current/history locators retain refusals. The two focused
+pin-validation tests pass 368 assertions. The initial failed pin capture receives
+no passing credit. New source/control hashes bind this fix separately from the
+unchanged semantic task-source commit.
+
+Preparation also caught an overbroad table-header assertion before source writes;
+it now scopes the assertion to the existing declaration region. The initial
+export-clarification helper changed the dependency row before its plan-marker
+assertion failed; `5d027e24` completes that plan qualification. Temporary script
+parse corrections preceded their writes. These preparation failures confer no
+passing credit or review authority. The successful source capture verifies all
+current pins against local Git without weakening retained source/receipt checks.
+
+Current input fingerprint:
+`53fab6b2463b167363e8f67353258cbe31d1b69ab6dd2798ac1de8ff631a775e`.
+
+Final validation: SH generation/read-only comparison and the read-only dependency
+audit pass. All 56 crosswalk tests / 15,075 assertions and 23 dependency tests /
+2,523 assertions pass with zero failures/errors. The two focused pin-validation
+controls pass 368 assertions. Current controls preserve exact old/new route
+inputs, all 52 unaffected route meanings, source/task/evidence identities,
+construction-versus-composition edges, all selected results as unassessed,
+macro P/Q and three effect-interface subjects, and the exact 29-plus-8 coarse
+cycle membership. Missing route/input and corrupt pin controls retain refusals.
+Canonical-document validation passes for 240 documents and nineteen phase
+indexes; full-language structural validation passes with its dated snapshot
+explicitly non-authoritative. Language boundary: six tests / eleven assertions
+pass after the pin-checker fix. Conservation/navigation passes for 87 changed
+files, 81 Markdown files, 3,245 local references, 139 original task routes,
+48 historical spec/plan suffixes and all 48 original task/evidence contents
+after declared additions are removed. ASCII and whitespace checks pass.
+These are source/planning/tooling consistency and preservation results, not
+current semantic acceptance, interpreter execution, release/self-hosting/seed
+completion, independent review or integration.
