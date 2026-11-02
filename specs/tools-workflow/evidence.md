@@ -68,14 +68,15 @@ source snapshot, proposal format, occurrence API and both historical task
 sources, and independently checks current document, manifest, format, API and
 task-source hashes.
 
-`clojure -M tools/tooling_requirements_test.clj` passed 6 tests / 38
+`clojure -M tools/tooling_requirements_test.clj` passed 7 tests / 43
 assertions, zero failures/errors. `clojure -M tools/tooling_requirements.clj
 --check` passed 13 source documents, 631 occurrences, 960 facets, 65
 requirements, 200 guarded edits and 16 task references. The checker verifies
 source spans and hashes, exact historical task acceptance-boundary hashes,
 current Open task identity/title boundaries, all primary and additional task
-interfaces, retained normative-facet unit links, contextual refinement state,
-stale/duplicate edit refusal and proposal-only nonclaims.
+interfaces, exact ordered requirement identity populations, exact paired
+current-document identities, retained normative-facet unit links, contextual
+refinement state, stale/duplicate edit refusal and proposal-only nonclaims.
 
 The language-boundary gate passed 6 tests / 11 assertions. The document
 validator passed 240 documents / 19 phase indexes; the full-language roadmap

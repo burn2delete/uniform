@@ -1,5 +1,6 @@
 (ns tooling-requirements-test
-  (:require [clojure.test :refer [deftest is run-tests]]))
+  (:require [clojure.string :as str]
+            [clojure.test :refer [deftest is run-tests]]))
 
 (binding [*command-line-args* nil]
   (load-file "tools/tooling_requirements.clj"))
@@ -46,6 +47,15 @@
     (is (refuses? #(tooling-requirements/historical-task!
                     (:source-view input)
                     (assoc reference :acceptance-boundary-sha256 "wrong"))))
+    (let [current-reference (current-reference reference)
+          current-text (slurp (:path current-reference))
+          closed-text (str/replace current-text
+                                  "Status: Open"
+                                  "Status: Closed")]
+      (is (refuses? #(tooling-requirements/task-details
+                      closed-text
+                      (assoc current-reference
+                             :sha256 (tooling-requirements/sha256 closed-text))))))
     (doseq [[key value] [[:path "specs/missing-workflow/tasks.md"]
                          [:sha256 (apply str (repeat 64 "0"))]
                          [:marker "renamed-implementation-tasks"]
@@ -64,6 +74,18 @@
            (update proposal :source-dispositions pop)
            (update proposal :units pop)]]
     (is (refuses? #(tooling-requirements/check! mutated input)))))
+
+(deftest current-document-pairs-refuse-valid-but-wrong-source
+  (let [source-view (tooling-requirements/view)
+        documents (vec (get-in source-view [:current-source :documents]))
+        replacement (second documents)
+        wrong-pair-view (assoc-in source-view [:current-source :documents 0]
+                                   replacement)]
+    (is (= source-view
+           (tooling-requirements/validate-document-pairs!
+            source-view proposal)))
+    (is (refuses? #(tooling-requirements/validate-document-pairs!
+                    wrong-pair-view proposal)))))
 
 (deftest stale-duplicate-and-out-of-scope-edits-refuse
   (let [manifest (:manifest input)
@@ -87,6 +109,9 @@
              (assoc-in proposal [:units 0 :task-gaps 0]
                        {:state :accepted :qualification "Complete"})
              (update-in proposal [:units 0 :task-references] pop)
+             (update proposal :unresolved-requirement-ids #(vec (reverse %)))
+             (assoc-in proposal [:unresolved-requirement-ids 1]
+                       (first (:unresolved-requirement-ids proposal)))
              (assoc-in proposal [:units 0 :task-references 0 :id] "renamed/task")
              (assoc-in proposal [:units 0 :task-references 0]
                        (dissoc (first (:task-references (first (:units proposal))))

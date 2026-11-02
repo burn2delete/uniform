@@ -135,12 +135,15 @@
             "Source-view nonclaims are missing or assert acceptance")
   v)
 
+(declare validate-document-pairs!)
+
 (defn immutable-inputs []
   (let [v (validate-view! (view))
         historical-proposal (get-in v [:historical-source :proposal])
         proposal-raw (git-text (:commit historical-proposal)
                                (:path historical-proposal))
         proposal (edn/read-string proposal-raw)
+        _ (validate-document-pairs! v proposal)
         manifest (edn/read-string
                   (slurp (get-in v [:current-source :manifest :path])))
         docs (vec (:source-documents proposal))
@@ -193,11 +196,13 @@
           blocks (str/split (first tails) #"(?m)(?=^- \[[ x]\] `)")
           matches (filter #(str/starts-with? % (str "- [ ] `" id "` ")) blocks)
           block (first matches)
+          open-status? (boolean (re-find #"(?m)^Status: Open$" (or block "")))
           acceptance (second (re-find
                              #"(?m)^Closing evidence(?: and governing contract)?: (.+)$"
                              (or block "")))
           title (second (re-find #"^- \[ \] `[^`]+` ([^\n]+)" (or block "")))]
       (require! (= 1 (count matches)) "Missing, renamed or accepted task")
+      (require! open-status? "Task status is not Open")
       (let [boundary-hash (when acceptance (sha256 acceptance))]
         (require! (or (nil? acceptance-boundary-sha256)
                       (= acceptance-boundary-sha256 boundary-hash))
@@ -217,14 +222,31 @@
                   (merge historical (select-keys reference
                                                   [:path :id :acceptance-boundary-sha256])))))
 
-(defn expected-source-ids [proposal]
-  (set (map :id (:preserved-requirements proposal))))
+(defn validate-document-pairs! [source-view proposal]
+  (let [proposal-documents (vec (:source-documents proposal))
+        current-documents (vec (get-in source-view [:current-source :documents]))
+        paired-current (mapv (fn [{:keys [id path sha256]}]
+                               {:id id :path path :current-sha256 sha256})
+                             current-documents)
+        paired-proposal (mapv #(select-keys % [:id :path :current-sha256])
+                              proposal-documents)
+        unique? (fn [rows key]
+                  (= (count rows) (count (set (map key rows)))))]
+    (require! (and (unique? proposal-documents :id)
+                   (unique? proposal-documents :path)
+                   (unique? current-documents :id)
+                   (unique? current-documents :path))
+              "Source document identities are not unique")
+    (require! (= paired-proposal paired-current)
+              "Current source documents do not match proposal identity pairs")
+    source-view))
 
 (defn check! [proposal input]
   (let [{:keys [source-view manifest docs facets requirements dispositions]} input
         frozen (:proposal input)
         units (:units proposal)
-        expected-ids (expected-source-ids frozen)
+        expected-id-sequence (mapv :id (:preserved-requirements frozen))
+        expected-ids (set expected-id-sequence)
         patched (apply-edits manifest (:edits proposal))
         by-id (into {} (map (juxt :id identity) (:requirements patched)))
         occurrence-fn (historical-source-occurrences)
@@ -257,9 +279,9 @@
               "Source occurrence population changed")
     (require! (= docs (:source-documents proposal))
               "Source document pins changed")
-    (require! (= expected-ids (set (:unresolved-requirement-ids proposal)))
+    (require! (= expected-id-sequence (:unresolved-requirement-ids proposal))
               "Unresolved requirement population changed")
-    (require! (= expected-ids (set (map :proposed-id units)))
+    (require! (= expected-id-sequence (mapv :proposed-id units))
               "Unit population changed")
     (require! (= (count expected-ids) (count units)) "Duplicate unit identity")
     (require! (= (get-in source-view [:expected :requirements]) (count units))
