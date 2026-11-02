@@ -49,6 +49,13 @@ positive/refusal clauses and actual producer/consumer evidence. Task ownership,
 Open status and historical receipts remain unchanged; source mapping and
 implementation acceptance are still unassessed.
 
+The [complete target-lowering source criteria](plan.md#complete-target-lowering-source-criteria)
+restore the existing C14 and selected PERF4 boundary conjunctions under the
+same five task owners. They require actual current inputs, layout/provider/
+proof records, unsupported/fallback refusals and real artifact consumers.
+Historical source review does not transfer to this head; full PERF4 optimizer
+coverage, implementation acceptance and held-operation clearance are not claimed.
+
 ## Starting work and completion
 
 Declared MIR/backend/runtime interfaces and verified fixtures permit local

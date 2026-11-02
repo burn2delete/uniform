@@ -43,6 +43,58 @@ checker identities, guard/fallback outcomes and unsupported diagnostics. Local
 interfaces permit focused construction; actual production and consumption are
 required for composition. Existing C12/native/provider execution holds remain.
 
+## Complete target-lowering source criteria
+
+Five preserved criteria from `c14-complete-current-facet-trace.edn` refine
+the existing five task records. Historical task source:
+`e94de7388589c8251f40fbb1da4a6af6da6f5918`. The tested historical GitHub
+trace reference is unavailable; current canonical sections and exact current
+task witnesses supply the implementation inputs without a dead link or
+aggregate publication. Task identities, statuses and prior criteria remain
+unchanged. The earlier source review retains its frozen subject and excludes
+later-head acceptance; independent current review is pending.
+
+| Existing task | Canonical conditions and actual required evidence |
+| --- | --- |
+| Input validation | Validate the actual [lowering request](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#lowering-request), current verified IR and every [eligibility condition](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#eligibility-checks). Retain machine-readable operation/feature/profile acceptance and refusal, including unsupported features and their alternatives. Missing, stale or supplied-success evidence cannot admit the input. |
+| ABI/layout derivation | Derive every [ABI/layout representation](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#abi-and-layout) and consume the selected [PERF4 boundary facts](../../docs/phase-04-performance-model/062-perf4-memory-layout-optimization-design.md#requirements). Preserve actual typed fields, alignment, padding/packing, alias/ownership, device-transfer and source/debug records. Exercise safe/unsafe target alignment and packing, initialization/padding-byte preservation, host/device mismatch and real consumer access. |
+| Provider selection | Explicitly select or refuse all [service families](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#runtime-and-provider-selection), binding actual target/profile/effect/capability/safety support. Exercise missing/forbidden services, hidden hosted dependencies and authority-widening fallback. A provider name neither implements the service nor grants authority. |
+| Proof/origin preservation | Bind every [proof-to-target metadata entry](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#proof-to-metadata-map) to actual operation, target, current assumptions and checked evidence. Exercise absent, stale, mismatched and invalidated proofs. Missing optional optimization evidence cannot erase required volatile, atomic or source safety semantics. |
+| Target-emission integration | Deliver accepted backend-ready input and complete [artifact manifests](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#emitted-artifact-manifest) to actual Emit/backend producers and package consumers. Retain real artifacts/content hashes and complete [unsupported/fallback records](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#unsupported-features); reject incomplete manifests, hidden services, widened authority and undefined-behavior paths. |
+
+The five criteria jointly preserve all [ten C14 diagnostic meanings and context
+fields](../../docs/phase-06-compiler-architecture/093-c14-target-lowering-architecture.md#diagnostics).
+The selected layout scope retains PERF4-LAYOUT/ALIGN/PACKED/DEVICE/PROOF
+conditions and type/field/span/target/profile/boundary/transform/missing-proof
+context. Examples such as kernel/LLVM/x86/SSE2 and Particle/F32/SoA/4/64 are
+illustrative, not target, type, strategy or alignment defaults.
+
+Lower consumes upstream layout transformation correctness, alias/ownership,
+address-identity and boundary evidence. Opt owns the transformation decisions;
+the proof checker owns proof validity; Runtime/Auth supply actual service and
+authority products. Lower owns ABI/layout selection and preserving these facts
+for Emit and backend/package/debugger/serializer/safety consumers. Emit/backend
+owners produce target bytes; Lower integration verifies the actual handoff and
+consumption. This creates no second optimizer, proof checker, emitter or task
+authority. The 23 selected PERF4 predicates do not accept the whole layout
+optimizer, its transformation families, cache claims or every diagnostic.
+
+Start focused construction and refusal fixtures against declared verified-IR,
+ABI/provider and consumer interfaces. Actual composition consumes current
+C11/C13 subjects and preserved/invalidated/regenerated facts, profile/backend
+eligibility, checked proof assumptions and actual provider support. Opt remains
+optional for valid unoptimized verified MIR. Domain IR verification is required
+when a domain input is used, without clearing C12 or other execution holds.
+Whole-component release or fresh migration admission is not a prerequisite for
+ordinary source work. The staged Linux LLVM release path remains selected;
+this generic contract does not adopt another target or prove wider support.
+
+Retain exact request/source/compiler/pass/profile/target/ABI/runtime/provider/
+proof/consumer identities, actual products and positive/refusal diagnostics.
+Source reconciliation, implementation, independent acceptance, integration and
+seedless release remain separate. No native/provider/domain/proof execution is
+authorized or claimed by restoring these criteria.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Lower task authority
