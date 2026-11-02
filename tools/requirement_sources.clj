@@ -278,6 +278,10 @@
    :path "specs/platform-workflow/tasks.md"
    :baseline-ref "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e"
    :applying-ref "2a86a9f1fc56b1eceacf4ca29aac7c95a1a4792b"
+   :historical-source-commit "254a5b50ea5e2825c424248c9216802cc866c0fd"
+   :historical-source-tree "abb83592fc9e5e81c0f041e59c67749dbb67b55c"
+   :baseline-tree "643afe5f3b00918fc3de76f2855294481a09b505"
+   :applying-tree "8a242945a690dcf4ae6a7b15ecc546c09179a80c"
    :baseline-sha256 "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f"
    :live-sha256 "19356a500121d7c0ad6e5284c4f415dc81861ec330f7e1120c9d28932420e92f"
    :baseline-blob "0c5e17169840e1a5deee71e5733955ff0a41805a"
@@ -610,7 +614,7 @@
     (require! (zero? exit) "Source version bridge commit/path cannot be read")
     out))
 
-(defn- git-blob-id [text]
+(defn git-blob-id [text]
   (let [bytes (.getBytes ^String text "UTF-8")
         header (.getBytes (str "blob " (alength bytes) "\u0000") "UTF-8")
         payload (byte-array (+ (alength header) (alength bytes)))]
@@ -618,9 +622,36 @@
     (System/arraycopy bytes 0 payload (alength header) (alength bytes))
     (format "%040x" (BigInteger. 1 (.digest (java.security.MessageDigest/getInstance "SHA-1") payload)))))
 
+(defn git-commit-tree [root ref require!]
+  (let [type-process (.start (.redirectErrorStream
+                              (ProcessBuilder. ^java.util.List
+                                               ["git" "-C" (str root) "cat-file" "-t" ref]) true))
+        type (with-open [input (.getInputStream type-process)] (slurp input :encoding "UTF-8"))
+        type-exit (.waitFor type-process)]
+    (require! (and (zero? type-exit) (= "commit" (str/trim type)))
+              (str "Pinned Git source is not a commit: " ref))
+    (let [tree-process (.start (.redirectErrorStream
+                                (ProcessBuilder. ^java.util.List
+                                                 ["git" "-C" (str root) "rev-parse" "--verify"
+                                                  (str ref "^{tree}")]) true))
+          tree (with-open [input (.getInputStream tree-process)] (slurp input :encoding "UTF-8"))
+          tree-exit (.waitFor tree-process)]
+      (require! (and (zero? tree-exit)
+                     (re-matches #"[0-9a-f]{40}" (str/trim tree)))
+                (str "Pinned Git source has no tree: " ref))
+      (str/trim tree))))
+
 (defn validate-snapshots! [bridge read-ref sha256 require!]
   (require! (and (string? (:path bridge)) (not (.isAbsolute (io/file (:path bridge)))))
             "Source version bridge path must be relative")
+  (let [trees [(:baseline-tree bridge) (:applying-tree bridge)]]
+    (when (some some? trees)
+      (require! (every? #(and (string? %) (re-matches #"[0-9a-f]{40}" %)) trees)
+                "Bridge tree identities must be complete and exact")
+      (doseq [[ref expected-tree] [[(:baseline-ref bridge) (:baseline-tree bridge)]
+                                   [(:applying-ref bridge) (:applying-tree bridge)]]]
+        (require! (= expected-tree (git-commit-tree "." ref require!))
+                  (str "Bridge commit/tree identity differs: " ref)))))
   (doseq [[ref expected expected-blob] [[(:baseline-ref bridge) (:baseline-sha256 bridge) (:baseline-blob bridge)]
                                         [(:applying-ref bridge) (:live-sha256 bridge) (:applying-blob bridge)]]]
     (require! (boolean (re-matches #"[0-9a-f]{40}" (or ref ""))) "Invalid bridge source identity")

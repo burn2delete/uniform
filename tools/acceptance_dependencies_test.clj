@@ -286,7 +286,30 @@
                     platform-rows snapshots slurp)))
       (is (thrown? Exception
                    (dependencies/platform-task-transition-view
-                    transition platform-rows snapshots replay-read))))))
+                    transition platform-rows snapshots replay-read))))
+    ;; The applying-row exception does not waive the historical locator. Every
+    ;; locator component remains bound to the pinned baseline Git source before
+    ;; the current transition is considered.
+    (doseq [mutated
+            [(assoc-in source [:task-authorities "platform" 0 :file-sha256]
+                       "0000000000000000000000000000000000000000000000000000000000000000")
+             (assoc-in source [:task-authorities "platform" 0 :source-commit]
+                       "0000000000000000000000000000000000000000")
+             (assoc-in source [:task-authorities "platform" 0 :source :start-byte]
+                       (inc (get-in source [:task-authorities "platform" 0 :source :start-byte])))
+             (assoc-in source [:task-authorities "platform" 0 :source :end-byte]
+                       (dec (get-in source [:task-authorities "platform" 0 :source :end-byte])))
+             (assoc-in source [:task-authorities "platform" 0 :source :start-line]
+                       (inc (get-in source [:task-authorities "platform" 0 :source :start-line])))
+             (assoc-in source [:task-authorities "platform" 0 :source :end-line]
+                       (inc (get-in source [:task-authorities "platform" 0 :source :end-line])))
+             (assoc-in source [:task-authorities "platform" 0 :source :sha256]
+                       "0000000000000000000000000000000000000000000000000000000000000000")
+             (assoc-in source [:task-authorities "platform" 0 :source :source-snapshot-ref]
+                       "0000000000000000000000000000000000000000000000000000000000000000")
+             (assoc-in source [:task-authorities "platform" 0 :source :path]
+                       "specs/core-workflow/tasks.md")]]
+      (is (thrown? Exception (dependencies/task-sh-view mutated slurp))))))
 
 (deftest historical-sh-routing-drift-stays-unassessed
   (let [source (edn/read-string (slurp dependencies/sh-crosswalk-path))

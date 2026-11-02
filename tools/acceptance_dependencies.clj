@@ -255,19 +255,67 @@
 (def platform-task-source-transition
   requirement-sources/platform-task-source-transition)
 
+(defn- platform-task-row-matches [text id]
+  (let [quoted-id (java.util.regex.Pattern/quote id)
+        pattern (re-pattern
+                 (str "(?ms)^- \\[([ xX])\\] `" quoted-id
+                      "` .*?(?=^\\- \\[|^<!-- platform-implementation-tasks:end -->)"))
+        matcher (re-matcher pattern text)]
+    (loop [matches []]
+      (if (.find matcher)
+        (recur (conj matches {:raw (str/trim (.group matcher))
+                              :start (.start matcher)}))
+        matches))))
+
 (defn platform-task-row
   "Return one exact Platform task row, excluding inter-row navigation whitespace.
   The row's status, criteria and source basis are all part of the authenticated
   bytes; only surrounding ledger layout is intentionally ignored."
   [text id]
-  (let [quoted-id (java.util.regex.Pattern/quote id)
-        pattern (re-pattern
-                 (str "(?ms)^- \\[([ xX])\\] `" quoted-id
-                      "` .*?(?=^\\- \\[|^<!-- platform-implementation-tasks:end -->)"))
-        matches (mapv first (re-seq pattern text))]
+  (let [matches (platform-task-row-matches text id)]
     (require! (= 1 (count matches))
               (str "Missing or duplicate Platform task row: " id))
-    (str/trim (first matches))))
+    (:raw (first matches))))
+
+(defn- utf8-line-number [bytes offset]
+  (inc (count (filter #(= 10 (aget bytes %)) (range offset)))))
+
+(defn- platform-task-locator [baseline id path]
+  (let [matches (platform-task-row-matches baseline id)]
+    (require! (= 1 (count matches))
+              (str "Missing or duplicate historical Platform task row: " id))
+    (let [{:keys [raw start]} (first matches)
+          bytes (.getBytes ^String baseline "UTF-8")
+          raw-bytes (.getBytes ^String raw "UTF-8")
+          end (+ start (alength raw-bytes))]
+      {:path path
+       :start-byte start
+       :end-byte end
+       :start-line (utf8-line-number bytes start)
+       :end-line (utf8-line-number bytes (dec end))
+       :sha256 (sha256 raw)
+       :source-snapshot-ref (sha256 raw)})))
+
+(defn- validate-platform-task-locator!
+  [transition row baseline snapshots]
+  (let [id (:id row)
+        path (:path transition)
+        source (:source row)
+        historical-source-commit (:historical-source-commit transition)
+        expected (platform-task-locator baseline id path)]
+    (require! (= path (:path row))
+              (str "Platform task file path changed: " id))
+    (require! (= historical-source-commit (:source-commit row))
+              (str "Platform task source commit changed: " id))
+    (require! (= (:baseline-sha256 transition) (:file-sha256 row))
+              (str "Platform task file digest changed: " id))
+    ;; Compare the complete historical locator, not merely its recovered text.
+    ;; This retains byte offsets, UTF-8 line bounds, span digest and snapshot
+    ;; identity before the current applying row is considered.
+    (require! (= expected source)
+              (str "Platform task source locator changed: " id))
+    (require! (= (platform-task-row baseline id) (source-raw source snapshots))
+              (str "Platform task source snapshot changed: " id))))
 
 (defn platform-task-transition-view
   "Authenticate the four Platform task rows across PR554's frozen source view.
@@ -297,12 +345,23 @@
                     "Platform task transition has missing or duplicate task identities")
         _ (requirement-sources/validate-snapshots!
            transition read-ref sha256 require!)
+        historical (read-ref (:historical-source-commit transition) path)
+        _ (require! (= (:historical-source-tree transition)
+                       (requirement-sources/git-commit-tree
+                        "." (:historical-source-commit transition) require!))
+                    "Platform historical source commit/tree changed")
+        _ (require! (= (:baseline-sha256 transition) (sha256 historical))
+                    "Platform historical source commit bytes differ from baseline")
+        _ (require! (= (:baseline-blob transition)
+                       (requirement-sources/git-blob-id historical))
+                    "Platform historical source commit blob differs from baseline")
         baseline (read-ref (:baseline-ref transition) path)
         applying (read-ref (:applying-ref transition) path)
         current (read-text path)]
     (doseq [{:keys [id source]} rows]
-      (require! (= path (:path source))
-                (str "Platform task source moved outside authenticated ledger: " id))
+      (validate-platform-task-locator! transition
+                                        (first (filter #(= id (:id %)) rows))
+                                        baseline snapshots)
       (let [raw (source-raw source snapshots)
             historical-row (platform-task-row baseline id)
             applying-row (platform-task-row applying id)
@@ -314,9 +373,14 @@
     {:kind (:kind transition)
      :path path
      :row-ids (vec (sort ids))
+     :historical-source-commit (:historical-source-commit transition)
+     :historical-source-tree (:historical-source-tree transition)
      :baseline-ref (:baseline-ref transition)
+     :baseline-tree (:baseline-tree transition)
      :applying-ref (:applying-ref transition)
+     :applying-tree (:applying-tree transition)
      :snapshot-provenance :git-bytes-verified
+     :locator-provenance :historical-git-blob-and-utf8-span-verified
      :authority :historical-routing-and-structural-only
      :current-file-sha256 (sha256 current)}))
 
