@@ -12,7 +12,7 @@
 
 ;; The moving source may grow, but this shape gate still admits one explicit
 ;; C13 public surface.  Keep this list synchronized with the source contract:
-;; the final three names are the evidence-boundary exports added by C13.
+;; the final four names are the evidence-boundary exports added by C13.
 (def ^:private expected-export-names
   '[c13-mir-optimization-contract
     c13-optimization-pass-contract
@@ -32,6 +32,7 @@
     sh16-optimization-policy
     sh16-optimize
     sh16-verify
+    sh16-c13-build-literal-bool-translation-validation
     sh16-c13-evidence-input-valid?
     sh16-build-c13-evidence-boundary
     sh16-verify-c13-evidence-boundary])

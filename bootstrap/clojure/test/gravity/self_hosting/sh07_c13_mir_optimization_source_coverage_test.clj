@@ -29,9 +29,9 @@
 (def ^:private accepted-fixture-relative-path
   "bootstrap/clojure/fixtures/self-hosting/sh-16/accepted/mir-optimizations.gravity")
 (def ^:private expected-source-byte-count
-  175301)
+  175365)
 (def ^:private expected-source-revision-id
-  "sha256:88ed5b2969992306f138e2a5dcea1391fdf5acf78461308f8dcfb6a6ec089ae3")
+  "sha256:7bf71720a67d665206259fc06de9eb1c87086f7712f98664fbfa2ca9d597c75a")
 ;; Full-artifact projection/census pins remain historical until a fresh artifact
 ;; run renews them. Static source-pin refresh does not confer artifact coverage.
 (def ^:private expected-sh06-semantic-projection-id
@@ -58,7 +58,8 @@
     build-c13-decision-record build-c13-invalidation-entry
     build-c13-check-elision-gate c13-build-bounded-identity-optimized-mir
     verify-c13-mir-optimization-passes sh16-optimization-policy
-    sh16-optimize sh16-verify sh16-c13-evidence-input-valid?
+    sh16-optimize sh16-verify sh16-c13-build-literal-bool-translation-validation
+    sh16-c13-evidence-input-valid?
     sh16-build-c13-evidence-boundary sh16-verify-c13-evidence-boundary])
 (def ^:private data-definition-names
   '#{c13-mir-optimization-contract c13-optimization-pass-contract
