@@ -1,0 +1,148 @@
+{:kind :gravity/noncanonical-profile-current-source-view
+ :version 1
+ :authority :proposal-only
+ :scope-key "requirement-reconciliation/phase-03-profile-system"
+ :base {:commit "4df59ab107d5865e3afbf9173041cc9401227542"
+        :tree "d977cf8ca3de45e73920d6d6a5f5f59aca219527"}
+ :historical-source
+ {:candidate {:commit "6f5081ba7196e27f5f11f22c17143d38b26ddc99"
+              :tree "7b67ec697adcb8b2846db197d39aee42b1e03a25"}
+  :source-baseline {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3"
+                    :tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"
+                    :original-commit "a1b991be499d50579a8b4366976c519ae8949224"}
+  :input-manifest {:commit "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30"
+                   :path "contracts/requirement-reconciliation.edn"
+                   :sha256 "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690"}
+  :frozen-inputs {:commit "53ae6a403b20d15155bb5b04911fe7ac0092b921"
+                  :path "specs/requirement-reconciliation/source-task-inputs.edn"
+                  :sha256 "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94"}
+  :proposal-format {:commit "53ae6a403b20d15155bb5b04911fe7ac0092b921"
+                    :path ".specify/requirement-proposal-format.edn"
+                    :sha256 "69ec49fb954ba66ce86621d5dfac3a4cb0b514b84915277b86944ae2ec857adc"}
+  :occurrence-api {:commit "c0dc5790197a1bbd3a8aa285e5458c272d877220"
+                   :path "tools/requirement_reconciliation.clj"
+                   :sha256 "c4e75d62509d137330893254a7ce3019561cb00e2d593c9925e7ae6d55d5adcb"}
+  :artifacts
+  [{:path "specs/requirement-reconciliation/profile-system/README.md"
+    :sha256 "7992c2830a6d9f8e4cbcb6eed9ac337ee184bbc4119484a3b2b1a370393f4a4d"}
+   {:path "specs/requirement-reconciliation/profile-system/controls.edn"
+    :sha256 "6b80af01a66b17586baf09f195ac1f5fcf21724c0f0fffdb1997035b9b1fb892"}
+   {:path "specs/requirement-reconciliation/profile-system/decision-allocation-controls.edn"
+    :sha256 "2436fd905dad9f28a73baf8d327ba4b1d2366d9ad0a294d79655b0197cc2a463"}
+   {:path "specs/requirement-reconciliation/profile-system/decision-allocation.edn"
+    :sha256 "f02acb11ecf0a7bfd70ce0ee3c2051e0803ca64322a1513dfa1f92b0afeae889"}
+   {:path "specs/requirement-reconciliation/profile-system/decision-allocation.md"
+    :sha256 "44ba198801d72af917dcb9e5ad6461ad3bae0f4b4e903eab1ae002cf673cb1da"}
+   {:path "specs/requirement-reconciliation/profile-system/decision_allocation.clj"
+    :sha256 "881c9bc27d6fc9648b7d2976b783a153e2fe2840c293f21dff7637c5d9111ad1"}
+   {:path "specs/requirement-reconciliation/profile-system/gap-completion.edn"
+    :sha256 "22ba3f689b81fd783d6854bc4c3b821e3ce2ad7eb73fb3ad1826c78ab374e027"}
+   {:path "specs/requirement-reconciliation/profile-system/gap-completion.md"
+    :sha256 "6870484318f1bd029bc4d4bfad594a70f1e1907fda4fd1af6ec856738f1a3e0c"}
+   {:path "specs/requirement-reconciliation/profile-system/gap-controls.edn"
+    :sha256 "e308a13e5e59b329d117c6e9b98ed1a3ea5b21403d765d4a5e4eccbb03a29966"}
+   {:path "specs/requirement-reconciliation/profile-system/profile_gap_completion.clj"
+    :sha256 "9bbe9c76484307a7ad293e8b886b64c3e350799a7e90bd11fbedffc36e781930"}
+   {:path "specs/requirement-reconciliation/profile-system/proposal.edn"
+    :sha256 "30896820a63f0803dba866b7123a3a7c12b9f1e38927fd1958f5c3bc511879fc"}
+   {:path "specs/requirement-reconciliation/profile-system/profile_requirements.clj"
+    :historical-path "specs/requirement-reconciliation/profile-system/profile_requirements.clj"
+    :historical-sha256 "32d05a8a2f7171a8c3dc18fe14df29ac23dc5279c8e4282b87e31243d3140b0c"}]
+  :task-sources
+  {"specs/auth-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256" :marker "auth-implementation-tasks"}
+   "specs/backends-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0" :marker "backends-implementation-tasks"}
+   "specs/core-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97" :marker "core-implementation-tasks"}
+   "specs/domains-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4" :marker "domains-implementation-tasks"}
+   "specs/effects-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0" :marker "effects-implementation-tasks"}
+   "specs/expand-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f" :marker "expand-implementation-tasks"}
+   "specs/legality-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e" :marker "legality-implementation-tasks"}
+   "specs/lower-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c" :marker "lower-implementation-tasks"}
+   "specs/opt-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908" :marker "opt-implementation-tasks"}
+   "specs/platform-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f" :marker "platform-implementation-tasks"}
+   "specs/resolve-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4" :marker "resolve-implementation-tasks"}
+   "specs/runtime-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972" :marker "runtime-implementation-tasks"}
+   "specs/types-workflow/tasks.md"
+   {:commit "6276c94b0b753c888ef8fecc794bcc81245ea3b3" :sha256 "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e" :marker "types-implementation-tasks"}}
+  :gap-partition {:commit "bd37ab50c50d27094dce664b34831fcc43c3e9c3"
+                  :path "specs/requirement-reconciliation/historical-gap-partition.edn"
+                  :sha256 "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a"}
+  :decision-partition {:commit "8b4543c35a1c267722428691ef7da62c5feb9d87"
+                       :sha256 "179e01ed0cd699663660404602543cde1c8e4317535eca1edbec90d4fcf7bb74"}
+  :decision-predecessor {:commit "86747916c4c876d707a1548113409fb939d854c9"
+                         :path "specs/requirement-reconciliation/source-dispositions.edn"
+                         :sha256 "448b46b360669a80328bd98abc24f39b39577091c81a396284c46bcaa65f13fe"}}
+ :current-source
+ {:manifest {:path "contracts/requirement-reconciliation.edn"
+             :sha256 "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
+  :documents
+  [{:id "P1" :path "docs/phase-03-profile-system/046-p1-profile-system-specification.md" :sha256 "3fe9fcaf0e9c6fca4e0fba40fcbc3241eca3f5b2a24b956a6a40e73c42f2806b"}
+   {:id "P2" :path "docs/phase-03-profile-system/047-p2-core-profile-specification.md" :sha256 "2b798e10ec4b716252d697b190f6735ac2a2db9332c448ed6bfa0f5a8f3f8645"}
+   {:id "P3" :path "docs/phase-03-profile-system/048-p3-meta-profile-specification.md" :sha256 "be58978f718cd94f43f9797adfb58056677ed99c856930abd499dd590d05538e"}
+   {:id "P4" :path "docs/phase-03-profile-system/049-p4-hosted-profile-specification.md" :sha256 "398fa6ef060559ad16006444279b6e138b1f164be855c3d8094d6ec7910217f7"}
+   {:id "P5" :path "docs/phase-03-profile-system/050-p5-native-profile-specification.md" :sha256 "7b6c5957d685afc2f9999a7c4047aac6144e030fc05e6b254dc9992978012083"}
+   {:id "P6" :path "docs/phase-03-profile-system/051-p6-firmware-profile-specification.md" :sha256 "fea9852e5d73c313aca5030cba74494d541844d22215ea3cbb742169f9204cbe"}
+   {:id "P7" :path "docs/phase-03-profile-system/052-p7-kernel-profile-specification.md" :sha256 "c9d3782e4ec071c20976b7c89d2c5c46b34bb4bedbfaa264271e7842db67ce68"}
+   {:id "P8" :path "docs/phase-03-profile-system/053-p8-hardware-profile-specification.md" :sha256 "70baf8abb2fc77bc0c5ef18ea53df98cb0e2429e23d7664e597987114f6d3e18"}
+   {:id "P9" :path "docs/phase-03-profile-system/054-p9-distributed-profile-specification.md" :sha256 "1d5c3fc42905ce65ff1422d773f97e900773ec090113aaff56c2a12e6ee3780e"}
+   {:id "P10" :path "docs/phase-03-profile-system/055-p10-ai-profile-specification.md" :sha256 "d57f505d8eb9eee0d4785b5a246c5dec1748f13796fd42acce14afba2e9b17cf"}
+   {:id "P11" :path "docs/phase-03-profile-system/056-p11-gpu-accelerator-profile-specification.md" :sha256 "887f756ac2a98e6789ecb9a2702011979c57fe193c6627e5987ba447102b9f7c"}
+   {:id "P12" :path "docs/phase-03-profile-system/057-p12-formal-verification-profile-specification.md" :sha256 "30a974a8b15b2bdb5abd5cc702ec941953558be3488a64cb9d022c194fb64471"}
+   {:id "P13" :path "docs/phase-03-profile-system/058-p13-profile-compatibility-matrix.md" :sha256 "893f3ee2c953d51946e9623485787c9680b69a35a1a4a8eb1807f71b9637634c"}]
+  :task-sources
+  [{:path "specs/auth-workflow/tasks.md" :sha256 "7afee81509aaab0f2787caace71c7966cdb5fe1c0792e1fafbbc12db650a96a1" :marker "auth-implementation-tasks"}
+   {:path "specs/backends-workflow/tasks.md" :sha256 "11a2f0af81732e0f9759a0553d037f304d5aeee0accd26f0a983f233d7f6b54f" :marker "backends-implementation-tasks"}
+   {:path "specs/core-workflow/tasks.md" :sha256 "40a5b6c724741f3efc6dc3b16780bfb0d0656c649648d6165e328166a24aea95" :marker "core-implementation-tasks"}
+   {:path "specs/domains-workflow/tasks.md" :sha256 "ac5436b11b3d5a9918c4471a9237fd9f8358eadd3f242abed78c7a7fe92d7cd4" :marker "domains-implementation-tasks"}
+   {:path "specs/effects-workflow/tasks.md" :sha256 "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e" :marker "effects-implementation-tasks"}
+   {:path "specs/expand-workflow/tasks.md" :sha256 "216dbb577f552d65f263bc7943a847b77500de1f50e06f5cb340e5419054ed74" :marker "expand-implementation-tasks"}
+   {:path "specs/legality-workflow/tasks.md" :sha256 "7ea9be2215a02987c86a57bb300fbe948391a46d1464353d1fe588e6a97f0007" :marker "legality-implementation-tasks"}
+   {:path "specs/lower-workflow/tasks.md" :sha256 "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2" :marker "lower-implementation-tasks"}
+   {:path "specs/opt-workflow/tasks.md" :sha256 "4422b1927be2fbd877aa5ee9bf208f44a30b5da0b4b14282c5ee58a503113225" :marker "opt-implementation-tasks"}
+   {:path "specs/platform-workflow/tasks.md" :sha256 "789f8482bf8212e68c978daaaa2487f39f66a46467385ba0b0350df82a78e39f" :marker "platform-implementation-tasks"}
+   {:path "specs/resolve-workflow/tasks.md" :sha256 "17013d1a1ad2f63a5191d5495d5104e93888c31039c7d8537c9504ff74336181" :marker "resolve-implementation-tasks"}
+   {:path "specs/runtime-workflow/tasks.md" :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972" :marker "runtime-implementation-tasks"}
+   {:path "specs/types-workflow/tasks.md" :sha256 "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f" :marker "types-implementation-tasks"}]}
+ :expected
+ {:documents 13
+  :occurrences 1254
+  :facets 1506
+  :dispositions 631
+  :requirements 55
+  :units 55
+  :edits 55
+  :task-record-amendments 14
+  :unique-task-references 27
+  :gap-mappings 34
+  :gap-task-amendments 12
+  :decision-rows 74
+  :decision-families {"phase-01" 64 "phase-03" 10}
+  :decision-row-order-sha256 "d77685e820751faae264cd331ab736d3c9c7c0d86a443fce9d47bcd8d69b2d97"}
+ :qualification-policy
+ {:historical-task-criteria :preserved-source-view-only
+  :current-task-status :open
+  :current-task-acceptance :not-replaced
+  :implementation-acceptance :unassessed
+  :independent-review :pending
+  :canonical-adoption :pending}
+ :accounting-policy
+ {:compiler-project-accounting :retired
+  :compiler-work-quotas :not-enforced
+  :external-provider-billing :preserved
+  :physical-profile-bounds :preserved
+  :mixed-p10-clause :open-source-policy-question}
+ :nonclaims [:canonical-adoption :implementation-acceptance :global-nonoverlap
+             :aggregate-adoption :denominator :release :seed-retirement
+             :current-task-criteria :independent-review :integration
+             :compiler-accounting-authority :provider-billing-authority]}
