@@ -50,6 +50,13 @@ positive/refusal clauses and actual producer/consumer evidence. Task ownership,
 Open status and historical receipts remain unchanged; source mapping and
 implementation acceptance are still unassessed.
 
+The [complete incremental-compilation source criteria](plan.md#complete-incremental-compilation-source-criteria)
+refine the existing cache and rebuild owners with producer-specific keys,
+inspectable entries, complete invalidation/revalidation, proof-node mappings,
+speculative publication refusal and actual recorded-input rebuild evidence.
+Existing criterion fragments are reused in place, task identities/statuses are
+unchanged and historical source review is not transferred to this head.
+
 ## Starting work and completion
 
 Explicit manifest/graph/compiler/provider interfaces and pinned fixtures allow
