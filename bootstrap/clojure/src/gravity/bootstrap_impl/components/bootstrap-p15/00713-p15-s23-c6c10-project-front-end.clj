@@ -137,12 +137,19 @@
   ([source-path source-text front-end c3-parent invocation]
   ;; This existing resolver projection constructs no SH-07 Core. Its original
   ;; SH-06 replay and C2 occurrence bijection own the binding/source premise.
-  (let [resolved (if (nil? c3-parent)
+  (let [reader-invocation (if (map? invocation)
+                            (dissoc invocation :macro-source-mode)
+                            invocation)
+        macro-source-mode (or (when (map? invocation)
+                                (:macro-source-mode invocation))
+                              :pinned)
+        resolved (if (nil? c3-parent)
                    (do (when (some? invocation)
                          (p15-s23-c6c10-host-fail! "C6-VERIFY" source-path :explicit-reader-c3-parent {}))
                        (sh06-resolution-source-artifact source-path source-text))
                    (let [parent (if (some? invocation)
-                                  (sh05-macro-artifact-from-c3-artifact source-path c3-parent invocation)
+                                  (sh05-macro-artifact-from-c3-artifact
+                                   source-path c3-parent reader-invocation macro-source-mode)
                                   (sh05-macro-artifact-from-c3-artifact source-path c3-parent))]
                      (if (some? invocation)
                        (sh06-resolution-artifact-from-sh05-artifact source-path parent

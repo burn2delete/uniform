@@ -597,11 +597,16 @@
         text (slurp source-path)
         context (bootstrap/reader-project-context-for-source source-path)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}}
         failure (thrown-data #(bootstrap/compiler-c2-reader-source-artifact
                               source-path text context))]
     (is (= "C2-HASH" (:id failure)))
     (let [artifact (bootstrap/compiler-c3-syntax-source-artifact
-                    source-path text context nil nil reader-path)
+                    source-path text context nil nil reader-path invocation)
           boundary (:gravity-syntax-boundary artifact)
           revision (:reader-source-revision boundary)
           actual (get-in boundary [:reader-authentication-provenance
@@ -616,22 +621,27 @@
       (is (= (:verifier-semantic-hash revision)
              (get-in actual [:function-shapes bootstrap/sh03-reader-verifier :semantic-hash])))
       (is (true? (bootstrap/c3-syntax-stream-reader-products-authentic?
-                   (:syntax-object-stream artifact) (:c2-reader-artifact artifact) boundary))))))
+                   (:syntax-object-stream artifact) (:c2-reader-artifact artifact) boundary invocation))))))
 
 (deftest sh03-current-reader-registered-literals-bind-the-original-envelope
   (let [temporary (java.io.File/createTempFile "gravity-sh03-current-registered-" ".gravity")
         source-path (.getAbsolutePath temporary)
         reader-path (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax-path (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader-path
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax-path}}
         text (str "(ns gravity.sh03.current-registered (:profile :hosted) (:target :jvm) "
                   "(:effects #{}) (:capabilities #{}) (:safety :safe) (:exports [main]))\n"
                   "(defn main [] #uuid \"123e4567-e89b-12d3-a456-426614174000\")\n")]
     (try
       (spit temporary text)
       (let [artifact (bootstrap/compiler-c3-syntax-source-artifact source-path text
-                       (bootstrap/reader-project-context-for-source source-path) nil nil reader-path)
+                       (bootstrap/reader-project-context-for-source source-path) nil nil reader-path invocation)
             c2 (:c2-reader-artifact artifact) boundary (:gravity-syntax-boundary artifact)
             stream (:syntax-object-stream artifact)
-            authentic? #(bootstrap/c3-syntax-stream-reader-products-authentic? stream %1 %2)
+            authentic? #(bootstrap/c3-syntax-stream-reader-products-authentic? stream %1 %2 invocation)
             revision (get-in c2 [:sh03-reader-authentication :reader-source-revision])
             other (assoc revision :source-content-hash (:plan-semantic-hash revision))
             retained (assoc-in c2 [:sh03-reader-authentication :reader-source-revision] other)
@@ -666,7 +676,7 @@
                              (assoc-in [:reader-authentication-provenance
                                         :actual-sh03-envelope-descriptor :source-revision :source-content-hash]
                                        bootstrap/sh03-reader-expected-source-content-hash))]
-          (is (true? (guard c2 boundary)))
+          (is (true? (guard c2 boundary invocation)))
           (doseq [hash [(get-in revision [:function-shapes bootstrap/sh03-reader-verifier :semantic-hash]) nil]]
             (let [candidate (assoc-in historical [:reader-authentication-provenance
                                                   :actual-sh03-envelope-descriptor :source-revision
@@ -674,7 +684,7 @@
               (is (contains? (get-in candidate [:reader-authentication-provenance
                                                :actual-sh03-envelope-descriptor :source-revision
                                                :function-shapes bootstrap/sh03-reader-verifier]) :semantic-hash))
-              (is (false? (guard omitted candidate)))
+              (is (false? (guard omitted candidate invocation)))
               (is (false? (authentic? omitted candidate)))))))
       (finally (.delete temporary)))))
 
