@@ -2,66 +2,14 @@
 
 (defn p15-s23-c11-mir-validate-fact-tables!
   [source-path checked-core mir]
-  (let [nodes (:core-nodes checked-core)
-        expected-type
-        (p15-s23-c11-mir-add-runtime-check-facts
-         checked-core :type
-         (p15-s23-c11-mir-reindex-fact-table
-          nodes (:type-facts checked-core) :fact-id ":type-fact"))
-        expected-effect
-        (p15-s23-c11-mir-add-runtime-check-facts
-         checked-core :effect
-         (p15-s23-c11-mir-reindex-fact-table
-          nodes (:effect-facts checked-core) :fact-id ":effect-fact"))
-        expected-ownership
-        (p15-s23-c11-mir-add-runtime-check-facts
-         checked-core :ownership
-         (p15-s23-c11-mir-reindex-fact-table
-          nodes (:ownership-facts checked-core)
-          :fact-id ":ownership-fact"))
-        expected-capability
-        (p15-s23-c11-mir-add-runtime-check-facts
-         checked-core :capability
-         (p15-s23-c11-mir-reindex-fact-table
-          nodes (:capability-facts checked-core)
-          :fact-id ":capability-fact"))
-        expected-safety
-        (p15-s23-c11-mir-add-runtime-check-facts
-         checked-core :safety
-         (p15-s23-c11-mir-reindex-fact-table
-          nodes (:safety-facts checked-core)
-          :outcome-id ":safety-outcome"))
-        expected-profile-target
-        (p15-s23-c11-mir-add-runtime-check-facts
-         checked-core :profile-target
-         (p15-s23-c11-mir-profile-target-table checked-core))
-        expected-capability-proofs
-        (p15-s23-c11-mir-capability-proof-table checked-core)
-        expected-safety-proofs
-        (p15-s23-c11-mir-safety-proof-table checked-core)]
-    (doseq [[expected observed id missing]
-            [[expected-type (:type-table mir)
-              "C11-TYPE" :id-indexed-c7-type-facts]
-             [expected-effect (:effect-table mir)
-              "C11-EFFECT" :id-indexed-c8-effect-facts]
-             [expected-ownership (:ownership-table mir)
-              "C11-VERIFY" :id-indexed-c9-ownership-facts]
-             [expected-capability (:capability-table mir)
-              "C11-EFFECT" :id-indexed-c8-capability-facts]
-             [expected-safety (:safety-table mir)
-              "C11-SAFETY" :id-indexed-c10-safety-outcomes]
-             [expected-profile-target (:profile-target-table mir)
-              "C11-MODULE" :id-indexed-profile-target-facts]
-             [expected-capability-proofs (:capability-proof-table mir)
-              "C11-EFFECT" :id-indexed-capability-proofs]]]
-      (p15-s23-c11-mir-require!
-       (= expected observed) id source-path mir missing))
-    (p15-s23-c11-mir-require!
-     (= {:capability-proof-table-reference :capability-proof-table
-         :safety-proofs expected-safety-proofs}
-        (:proof-certificate-table mir))
-     "C11-SAFETY" source-path mir
-     :id-indexed-authenticated-safety-proof-certificates))
+  (gravity.mir/validate-fact-tables!
+   {:add-runtime-check-facts #'p15-s23-c11-mir-add-runtime-check-facts
+    :reindex-fact-table #'p15-s23-c11-mir-reindex-fact-table
+    :profile-target-table #'p15-s23-c11-mir-profile-target-table
+    :capability-proof-table #'p15-s23-c11-mir-capability-proof-table
+    :safety-proof-table #'p15-s23-c11-mir-safety-proof-table
+    :require! #'p15-s23-c11-mir-require!}
+   source-path checked-core mir)
   (let [expected-effect-graph
         (p15-s23-closed-core-effect-event-ordering
          (:core-nodes checked-core))

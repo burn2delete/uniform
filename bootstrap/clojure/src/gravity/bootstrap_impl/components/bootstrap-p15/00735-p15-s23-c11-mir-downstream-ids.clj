@@ -34,19 +34,6 @@
   [node data-flow operation]
   (gravity.mir/expected-runtime-check-value #'p15-s23-c11-mir-runtime-check-token-id #'p15-s23-c11-mir-runtime-check-operation-id #'p15-s23-c11-mir-expected-uses #'p15-s23-c11-mir-runtime-check-source node data-flow operation))
 
-(def p15-s23-c11-mir-module-keys
-  #{:artifact :schema-version :source-core :module-id :profile
-    :source-target :target-request :target-request-metadata :functions
-    :globals :control-flow-graph :data-flow-graph :type-table
-    :effect-table :effect-order-graph :ownership-table
-    :capability-table :capability-proof-table :safety-table
-    :profile-target-table :runtime-check-table
-    :proof-certificate-table :source-map
-    :domain-anchors :diagnostics :provenance :construction
-    :pass-contract :pass-execution-record
-    :verification-status :target-independent? :b1-preflight :scope
-    :clojure-seed-boundary? :self-hosted?})
+(def p15-s23-c11-mir-module-keys gravity.mir/module-keys)
 
-(def p15-s23-c11-mir-function-keys
-  #{:artifact :fn-id :name :params :returns :latent-effects
-    :capabilities :blocks :entry :source :facts :provenance})
+(def p15-s23-c11-mir-function-keys gravity.mir/function-keys)
