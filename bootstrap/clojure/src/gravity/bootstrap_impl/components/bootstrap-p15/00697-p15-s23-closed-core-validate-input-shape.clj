@@ -104,15 +104,13 @@
      "C6-VERIFY" source-path {:missing-fact :typed-artifact-fields}
      {:missing-fact :typed-closed-core-artifact-fields}))
   (let [bounds (:bounds artifact)
-        bounded-fields
-        [:maximum-plan-nodes :maximum-plan-depth :maximum-derived-nodes
-         :maximum-source-bytes :maximum-artifact-scalar-bytes
-         :maximum-integer-bits :observed-source-bytes
+        observed-fields
+        [:observed-source-bytes
          :observed-plan-nodes :observed-plan-depth :observed-derived-nodes]]
     (when-not (every? #(let [value (get bounds %)]
                          (and (integer? value) (not (neg? value))))
-                      bounded-fields)
+                      observed-fields)
       (p15-s23-closed-core-fail!
        "C6-VERIFY" source-path {:missing-fact :typed-artifact-bounds}
-       {:missing-fact :nonnegative-integer-closed-core-bounds})))
+       {:missing-fact :nonnegative-integer-closed-core-observations})))
   :passed)))

@@ -19,7 +19,7 @@
     (p15-s23-closed-core-fail!
      "C8-CAPABILITY" "<checked-core-verification-replay>" {}
      {:missing-fact :bounded-authenticated-verification-replay-context}))
-  (p15-s23-closed-core-source-request-bounds!
+  (p15-s23-closed-core-source-request-byte-count!
    (:source-path context) (:source-text context)
    (:requested-target context))
   (let [source-path (:source-path context)

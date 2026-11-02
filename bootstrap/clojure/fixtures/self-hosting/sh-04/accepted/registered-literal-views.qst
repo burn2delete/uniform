@@ -1,0 +1,5 @@
+^{:doc "Registered literal provenance."}
+[#inst "2026-10-27T00:00:00.000-00:00"
+ {:id #uuid "550e8400-e29b-41d4-a716-446655440000"
+  :ordinary {:digest-ref 0}}
+ #uuid "550e8400-e29b-41d4-a716-446655440000"]

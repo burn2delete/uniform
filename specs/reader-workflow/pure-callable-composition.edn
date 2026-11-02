@@ -1,0 +1,84 @@
+{:kind :reader-pure-callable-source-composition
+ :reader-base "003d4a2321798a65a2e8d130304f8580b1f7d19f"
+ :reader-tree "6def023a46b4cdb168059af9ed6ca994fb1f13ab"
+ :common-basis "dcaf473d602126c5f226573e77a4b34acc0c2a1d"
+ :common-tree "8c98b2f678d4e0cbba5931f5aab87a982097bd1d"
+ :applicability {:file "/Users/matt/Documents/Codex/2026-10-26/task-23/ci-evidence/reader-pure-normal-003d-applicability.json"
+                 :sha256 "6526195066e66ca9f8a0cab75c4a52b4df22a6cc0c8c568c32d0904893e80d98"}
+ :accepted-source-pins
+ {"bootstrap/clojure/test/gravity/self_hosting/sh01_parallel_test_runner.clj" "2bff5864728834b7667f058012ec2380395108d6165388c832aaec07c27ecfe7"
+  "bootstrap/clojure/test/gravity/self_hosting/sh01_host_resource_broker.clj" "a14b41b1885d6ef261f1a9e630e29dabbe7e774b0bbdb2a14bc765dcc75d0924"
+  "bootstrap/clojure/test/gravity/development_test_runner.clj" "c468f9154d81e565cbeca5610db3c2dc0467ef9a1584998501b5a084421ef4b2"
+  "bootstrap/clojure/test/gravity/self_hosting/sh01_impact_test_planner.clj" "6570207c235b7ea337b0d587d356e263027ec98b39128e2dbed8ebb2f799f403"}
+ :reader-test-sha256 "63b79e9216b9c80f71ae8112949fff32ce551579f4432c83d9e2d54b7f4bf776"
+ :cwd "/Users/matt/.codex/worktrees/reader-pure-callable-composition/uniform"
+ :artifact-directory "/tmp/reader-pure-callable-source.OxVKNe"
+ :java "/opt/homebrew/Cellar/openjdk/26.0.1/libexec/openjdk.jdk/Contents/Home/bin/java"
+ :java-sha256 "2579f3ee229a109fbcfb4c61f2b31091a70ad66968a078f725f6b4dd46f9668f"
+ :ordered-classpath
+ ["/Users/matt/.codex/worktrees/reader-pure-callable-composition/uniform/bootstrap/clojure/src"
+  "/Users/matt/.codex/worktrees/reader-pure-callable-composition/uniform/bootstrap/clojure/test"
+  "/Users/matt/.m2/repository/org/clojure/clojure/1.12.5/clojure-1.12.5.jar"
+  "/Users/matt/.m2/repository/org/clojure/core.specs.alpha/0.4.74/core.specs.alpha-0.4.74.jar"
+  "/Users/matt/.m2/repository/org/clojure/spec.alpha/0.5.238/spec.alpha-0.5.238.jar"]
+ :job {:namespace gravity.reader.pure-integration-test :resource-class :exclusive}
+ :resource-class-origin :explicit-owner-choice-for-proposed-2GiB-child-not-planner-inference
+ :call {:function gravity.self-hosting.sh01-parallel-test-runner/run-namespace-process :arity 2
+        :synchronous true :outer-lease false :default-actual-process-launcher true}
+ :options-fixed
+ {:exact-test-vars ["gravity.reader.pure-integration-test/normal-pure-current-source"]
+  :child-fail-fast? false
+  :working-directory "/Users/matt/.codex/worktrees/reader-pure-callable-composition/uniform"
+  :resource-broker {:coordination-root "/Users/matt/code/burn2delete/uniform/.git/gravity-development-loop-v1/broker"
+                    :timeout-ms 30000}
+  :timeout-ms 180000 :max-capture-bytes 1048576 :max-capture-chars 1048576 :capture-wait-ms 5000
+  :parent-report {:file "/tmp/reader-pure-callable-source.OxVKNe/parent-report.edn" :limit-bytes 33554432}}
+ :development-result-binding {:source-commit :external-final-composed-commit
+                              :source-tree :external-final-composed-tree
+                              :configuration-sha256 :sha256-of-separate-configuration-file
+                              :limit-bytes 16384}
+ :command-binding {:parent-heap "-Xmx512m" :child-heap "-Xmx2048m"
+                   :parent-main "clojure.main" :child-main "gravity.development-test-runner"
+                   :parent-expression :direct-existing-arity2-call-reading-invocation-edn
+                   :child-prefix-must-end-at-development-runner true
+                   :child-suffix ["--namespace" "gravity.reader.pure-integration-test"
+                                  "--exact" "gravity.reader.pure-integration-test/normal-pure-current-source"
+                                  "--machine-result" :runner-owned-runtime-EDN-delivery]
+                   :delivery-generation :inside-single-existing-lease
+                   :runtime-delivery-id-and-file :not-materialized-in-source-only-preparation}
+ :inherited-defaults {:process-cleanup-grace-ms 100 :process-cleanup-timeout-ms 1500
+                      :process-post-cleanup-wait-ms 100 :capture-post-close-wait-ms 100
+                      :child-cache :not-configured :inside-lease-callback :not-configured}
+ :profile-status :fresh-owner-proposal-unmeasured-not-admitted
+ :completion {:schema :gravity/development-test-result-v1
+               :delivery :gravity/development-test-result-delivery-v1
+               :requested-test-count 1 :assertion-count :actual-executed-not-source-model
+               :parent-report :gravity/development-parent-report-v1
+               :limits :caller-supplied-equality-not-effective-runtime-attestation}
+ :environment-fingerprint-names
+ ["JAVA_HOME" "CLASSPATH" "JAVA_TOOL_OPTIONS" "JDK_JAVA_OPTIONS" "_JAVA_OPTIONS"
+  "DYLD_INSERT_LIBRARIES" "DYLD_LIBRARY_PATH" "LD_PRELOAD" "LD_LIBRARY_PATH" "PATH"]
+ :property-fingerprint-names
+ ["java.system.class.loader" "java.security.manager" "java.security.properties"
+  "java.library.path" "sun.boot.library.path" "jdk.module.path" "jdk.module.upgrade.path"
+  "jdk.module.patch.0" "jdk.module.addmods.0" "java.class.path"]
+ :fingerprints {:values :presence-length-and-sha256-only-no-raw-secrets
+                :scope :observed-source-tool-context-not-future-effective-parent-attestation}
+ :phase-contract
+ [:ordinary-owner-guard :validate-options :single-internal-with-lease
+  :fresh-owned-completion-delivery :namespace-command :pending-startup :ProcessBuilder-start
+  :actual-Process-token :cooperative-wait-and-capture :strict-child-completion
+  :release-or-in-JVM-quarantine :final-parent-report :return-or-original-error]
+ :nonclaims [:no-lease :no-child :no-execution-namespace-load :no-normal-Reader :no-actual-helper
+             :no-native-pre-return-bound :no-global-descendant-proof :no-durable-parent-exit-custody
+             :no-old-6343-or-22232-recovery :no-publication :no-merge-to-main]
+ :remaining-hold-comparison
+ {:held-request "b24f9a5e4ac61f2e863d1c154448e1596343eb9a23e526eb3beb3dedaec61e55"
+  :held-source "a9d43c5b3e4b19c0a7e2630ddc242d77c6e33532"
+  :semantic-target :distinct-pure-normal-products-not-standard-compiler-C2-or-private-consumer
+  :shared-phases [:parent-and-child-JVM-startup :broker-admission :ProcessBuilder-start
+                  :process-capture-and-custody :Bootstrap-load :current-Reader-plan-build
+                  :raw-producer-verifier :stage2-runner]
+  :decision-owner "OWN substantive phase/action assessment after exact source composition"
+  :status :unresolved-not-cleared-by-new-name-and-not-blanket-Bootstrap-ban}
+ :source-only true}

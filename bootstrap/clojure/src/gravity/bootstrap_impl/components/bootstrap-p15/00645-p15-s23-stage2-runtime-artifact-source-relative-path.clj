@@ -65,10 +65,12 @@
 (def p15-s23-stage2-runtime-artifact-expected-source-content-hash
   "sha256:2824d332b8208ef9ca4f47f9b0994886754cc2c6a61802bc8bc053515a8a673b")
 
+;; Fixed seed source revision, including the two declared build-read entries.
+;; Updating this input binding does not renew historical migration evidence.
 (def p15-s23-stage2-compiler-expected-source-content-hash
-  "sha256:be4ba46088d413322ba5cf86156bb22bb79aeb7bec1fcf3899d8b081019ef854")
+  "sha256:57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527")
 
-(def p15-s23-stage2-compiler-expected-source-byte-count 128447)
+(def p15-s23-stage2-compiler-expected-source-byte-count 128499)
 (def p15-s23-stage2-runtime-artifact-expected-source-byte-count 82780)
 
 (defn p15-s23-stage2-compiler-pinned-source!

@@ -205,8 +205,8 @@
                             (apply raw-reader args)))
         fabricated {:source-path path :source-text (:source-text pinned)
                     :records [{:form :fabricated-ambient-record}]}]
-    (is (= 128447 (:source-byte-count pinned)))
-    (is (= "sha256:be4ba46088d413322ba5cf86156bb22bb79aeb7bec1fcf3899d8b081019ef854"
+    (is (= 128499 (:source-byte-count pinned)))
+    (is (= "sha256:57c13e44b46726a136ecd237dde5e85d86cd55b82bd8ac6033afce2fb87bf527"
            (:source-content-hash pinned)))
     (binding [bootstrap/*authenticated-source-form-records* fabricated]
       (with-redefs-fn operations
@@ -241,6 +241,6 @@
                                      "<h6-tamper-control>" :jvm)))]
            (is (= "P15S23Q001" (:id error)))
            (is (= :stage2-compiler-source-content-hash (:missing-fact error)))
-           (is (= 128447 (alength changed)))))
+           (is (= 128499 (alength changed)))))
       (is (= [:authentication-started] @events))
       (finally (java.nio.file.Files/deleteIfExists path)))))

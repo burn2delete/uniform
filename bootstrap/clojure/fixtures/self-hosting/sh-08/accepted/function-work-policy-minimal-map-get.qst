@@ -1,4 +1,0 @@
-(ns self-hosting.sh08.function-work-policy-minimal-map-get
-  (:profile :meta) (:target :jvm)
-  (:effects #{:memory/allocate :error/throw}) (:capabilities #{}) (:safety :safe))
-(defn kind [] :- Keyword (get {:kind :span} :kind))

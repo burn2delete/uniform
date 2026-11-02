@@ -1,0 +1,321 @@
+{:prior-source-reviews :captured-subjects-only-not-renewed,
+ :coordinator-integration :required-separately,
+ :current-outcomes
+ ["pipeline"
+  "plugins"
+  "pass-evidence"
+  "domain-ir-boundaries"
+  "development-boundaries"],
+ :integration-eligibility :not-conferred,
+ :source-extraction-from "8ba98ee7683d7f87a431b7b6d273b06fd5d1a144",
+ :source-extraction-base-commit
+ "70dcb2220701529dbb02bd2317a822eb3ac72fed",
+ :existing-main-outcome-predicates :preserved-as-exact-prefixes,
+ :main-reconciliation
+ {:prior-candidate "feccc0e36169d72710ec4aaaa6525e7517e53ed6",
+  :merge-commit "55b2f836c0ff45e8bf04309fe1b919b9460881ac",
+  :owned-source-mode-and-blobs :identical-before-provenance-refresh,
+  :incoming-paths :four-disjoint-Resolver-fixture-and-test-paths,
+  :execution-credit :none},
+ :current-main-composition-review
+ :pending-independent-affected-composition-review,
+ :global-denominator :not-adopted,
+ :implementation-credit :none,
+ :source-documents :unchanged,
+ :selected-producer-source-context
+ {:path "specs/requirement-reconciliation/domain-gap-completion.edn",
+  :sha256
+  "d24b93ff6ea8ff3a8c422a19a0544eec60eff52a6dde6a848be17baf86edfec6",
+  :selected-criterion "domain/mir-pass-integration",
+  :source-facets 10,
+  :authority :captured-source-context-not-semantic-acceptance},
+ :scope
+ "Extract exact reviewed C17/C12 consumer and prerequisite producer criterion bodies from the sole editable task ledger; preserve existing main outcomes, source/version histories and source-only review ceilings. The isolated main composition is a new candidate requiring its own independent review. No other source cohort, global task count, release, migration or self-hosting acceptance follows. No compiler/plugin/domain/checker/provider/runtime/target or held operation is executed.",
+ :cohorts
+ [{:id :C17,
+   :source-facets 108,
+   :receipt
+   {:reference-kind :archived-exact-bytes,
+    :commit "e835a80f34138fd16277a510c0bca06287a3738e",
+    :path
+    "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn",
+    :sha256
+    "2e1b2332cbacfa337ba927492388f7300ec6c974bb1d33869fe025c38caebac7",
+    :original-path
+    "specs/requirement-reconciliation/c17-independent-source-review.edn"},
+   :qualified-adoption
+   {:reference-kind
+    :historical-Git-reference-not-live-check-dependency,
+    :commit "e835a80f34138fd16277a510c0bca06287a3738e",
+    :path
+    "specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn",
+    :sha256
+    "2e43be337762b080852afffdea9019ed7d13854822a22f6426b20fecd9c0f010"},
+   :frozen-subject
+   {:tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+    :repository "burn2delete/uniform",
+    :base-qualification
+    :task-refinement-predecessor-not-main-integration-base,
+    :subject-parent "c21cab926933da13962326ed592fff0946e9e870",
+    :task-source "726b04bbb4add5092074876522ced4792584ae30",
+    :commit "45fa1763f939bdad59a9ee78401223a957382454",
+    :predecessor-tree "18daf36fc83b668587edf2e48558955219beddc8",
+    :refinement-predecessor "41270eeab2b2dc9aa91a63df2884f26a5cdb295f",
+    :pr 554},
+   :normative-source
+   {:path
+    "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+    :file-sha256
+    "c01fbb0af5a25ed08a7d34855181699cabe9c351d65fdc5533232ec05ad5efe2",
+    :coverage
+    :full-document-all30-semantic-paragraph-conjunctions-and15-contexts},
+   :criteria
+   {:existing
+    {:reviewed-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "plugins",
+      :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+      :file-sha256
+      "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+      :start-byte 16703,
+      :end-byte 25488,
+      :raw-sha256
+      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "plugins",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :raw-sha256
+      "1de96abb4fcd3490c31d61487919f84d680afc8d1ea9bd95f26dd62f38174300",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+      :domain-owner-pin-refresh
+      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+      :end-byte 25488,
+      :start-byte 16703},
+     :authority :exact-current-raw-predicate-only},
+    :pipeline
+    {:reviewed-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "pipeline",
+      :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+      :file-sha256
+      "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+      :start-byte 832,
+      :end-byte 16612,
+      :raw-sha256
+      "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "pipeline",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :raw-sha256
+      "d3e89724cc38d9498f0948109167516485480bff8cbebda606ef8c13d557813a",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+      :domain-owner-pin-refresh
+      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+      :end-byte 16612,
+      :start-byte 832},
+     :authority :exact-current-raw-predicate-only},
+    :records
+    {:reviewed-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "plugins",
+      :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+      :file-sha256
+      "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+      :start-byte 25490,
+      :end-byte 29649,
+      :raw-sha256
+      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :task-id "plugins",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :raw-sha256
+      "a471224cdf968360b2da86b73625bd860b16bfa734ec72a2d2c0963d5e847e6b",
+      :marker "compiler-api-implementation-tasks",
+      :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+      :domain-owner-pin-refresh
+      :prior-predicate-raw-bytes-preserved-addition-not-inherited,
+      :end-byte 29649,
+      :start-byte 25490},
+     :authority :exact-current-raw-predicate-only}},
+   :reviewed-task-source
+   {:path
+    "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt",
+    :sha256
+    "e8502ac0d040284371def0ddb92dc2b4f53de931833fa55da9680ade904300ae",
+    :original-path "specs/compiler-api-workflow/tasks.md",
+    :original-commit "726b04bbb4add5092074876522ced4792584ae30"}}
+  {:id :C12,
+   :source-facets 115,
+   :receipt
+   {:reference-kind :archived-exact-bytes,
+    :commit "60ba445417ae22decbfbf57e35819d7493d9abd8",
+    :path
+    "specs/compiler-api-workflow/review-inputs/domain-source-review.edn",
+    :sha256
+    "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6",
+    :original-path
+    "specs/requirement-reconciliation/c12-independent-source-review.edn"},
+   :qualified-adoption
+   {:reference-kind
+    :historical-Git-reference-not-live-check-dependency,
+    :commit "60ba445417ae22decbfbf57e35819d7493d9abd8",
+    :path
+    "specs/requirement-reconciliation/c12-qualified-source-review-adoption.edn",
+    :sha256
+    "b9f56a99c2495f94e0435d97078f45fde537982770bec924545602f44fcdb686"},
+   :frozen-subject
+   {:tree "e08666f8a5c736ec70bb2eed8f286b52dabb4f26",
+    :repository "burn2delete/uniform",
+    :base-qualification
+    :task-refinement-predecessor-not-main-integration-base,
+    :subject-parent "09bc34ddf34c91facec6fe9c77b03c64746ed81d",
+    :task-source "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :tree-qualification
+    :actual-Git-object-corrects-owner-final-text-typo,
+    :commit "bec12ac1d543353325030f40db37490c5407d8d5",
+    :predecessor-tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+    :refinement-predecessor "45fa1763f939bdad59a9ee78401223a957382454",
+    :pr 554},
+   :normative-source
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :coverage
+    :full-document-all34-semantic-paragraph-conjunctions-and16-contexts},
+   :criteria
+   {:existing
+    {:reviewed-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "domain-ir-boundaries",
+      :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 41767,
+      :end-byte 47262,
+      :raw-sha256
+      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "domain-ir-boundaries",
+      :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 41767,
+      :end-byte 47262,
+      :raw-sha256
+      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"},
+     :authority :exact-current-raw-predicate-only},
+    :proof
+    {:reviewed-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "pass-evidence",
+      :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 29748,
+      :end-byte 41650,
+      :raw-sha256
+      "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "pass-evidence",
+      :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 29748,
+      :end-byte 41650,
+      :raw-sha256
+      "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"},
+     :authority :exact-current-raw-predicate-only},
+    :records
+    {:reviewed-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "domain-ir-boundaries",
+      :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 47264,
+      :end-byte 51509,
+      :raw-sha256
+      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "domain-ir-boundaries",
+      :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 47264,
+      :end-byte 51509,
+      :raw-sha256
+      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"},
+     :authority :exact-current-raw-predicate-only}},
+   :reviewed-task-source
+   {:path
+    "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt",
+    :sha256
+    "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+    :original-path "specs/compiler-api-workflow/tasks.md",
+    :original-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd"}}],
+ :owned-paths
+ ["specs/compiler-api-workflow/tasks.md"
+  "docs/component-roadmaps/compiler-api.md"
+  "tools/compiler_domain_source_test.clj"
+  "specs/compiler-api-workflow/spec.md"
+  "specs/compiler-api-workflow/plan.md"
+  "specs/compiler-api-workflow/evidence.md"
+  "specs/compiler-api-workflow/domain-contract-source-composition.edn"
+  "tools/sh_crosswalk.clj"
+  "specs/sh-family-crosswalk/crosswalk.edn"
+  "specs/sh-family-crosswalk/rollup.md"
+  "specs/compiler-api-workflow/review-inputs/plugin-source-review.edn"
+  "specs/compiler-api-workflow/review-inputs/plugin-reviewed-task-source.txt"
+  "specs/compiler-api-workflow/review-inputs/domain-source-review.edn"
+  "specs/compiler-api-workflow/review-inputs/domain-reviewed-task-source.txt"
+  "specs/requirement-reconciliation/domain-gap-completion.edn"],
+ :source-reference-closure
+ :archived-exact-receipts-and-reviewed-task-bytes,
+ :source-commit "f25e6f571e610587da8142f5b0fc33e7806d440e",
+ :original-833-and-561-populations :not-recounted-or-adopted-here,
+ :kind :finite-compiler-plugin-domain-source-composition,
+ :all-implementation-statuses :Open,
+ :unchanged-normative-mode-and-blob-pins
+ {"docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md"
+  "100644 blob 2be9027ab55776b326925a421ca7906d22786cf0\tdocs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+  "docs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md"
+  "100644 blob 2656b64762e849e8fbb75ad2b42aeeaf58b42f0c\tdocs/phase-06-compiler-architecture/096-c17-compiler-plugin-and-pass-api-specification.md",
+  "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"
+  "100644 blob 9f6bb4660bfec34af10fc99186d3d5034b5c79fd\tdocs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md"},
+ :base-tree "10296896f7c605b16b25cdf2981c23d0519b996c",
+ :base-commit "787637b9ae780a7cfef7ca5763611882a8f2b629",
+ :global-reconciliation-database :not-copied,
+ :source-file-pins
+ {"docs/component-roadmaps/compiler-api.md"
+  {:mode-and-blob
+   "100644 blob 778083262c8082dfab07082a36b6f0af2ca50294\tdocs/component-roadmaps/compiler-api.md",
+   :sha256
+   "375affc3a9cb5df192807d07179f2453587c58628af1d6da8451aa802f72446a"},
+  "specs/compiler-api-workflow/tasks.md"
+  {:mode-and-blob
+   "100644 blob f320b803ae659206ed727ae0706da6cd67b5c3a5\tspecs/compiler-api-workflow/tasks.md",
+   :sha256
+   "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26"}},
+ :prior-main-outcomes
+ ["pipeline" "plugins" "pass-evidence" "development-boundaries"]}

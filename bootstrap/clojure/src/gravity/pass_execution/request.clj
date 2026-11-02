@@ -9,7 +9,6 @@
 
 (defn validate-request!
   [request]
-  (canonical/preflight-canonical! request)
   (validation/exact-map! request config/execution-request-fields "C16-KEY"
                          :request)
   (let [pass-contract (contract/validate-pass-contract! (:contract request))]

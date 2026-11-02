@@ -42,25 +42,12 @@ references, not proposed implementation naming. No compiler test was run for
 this roadmap and no source inspection or pre-existing report is credited as
 release acceptance.
 
-This table is generated from the sole editable [Spec Kit implementation
-ledger](../../specs/syntax-workflow/tasks.md#implementation-tasks). Edit that
-ledger, then run `clojure -M tools/syntax_task_projection.clj --write`; use
-`--check` to reject drift.
+Task criteria, statuses, history and closing evidence live in the [sole editable task ledger](../../specs/syntax-workflow/tasks.md#implementation-tasks).
 
-<!-- syntax-task-projection:start -->
-| Task | Status | Concrete exit evidence |
-| --- | --- | --- |
-| syntax/1: Construct canonical syntax | Open; partial source evidence above is not closure | Implement every required form kind with stable semantic identity, namespace/profile/phase and metadata; reject malformed fields and source references. |
-| syntax/2: Preserve transformations | Open; partial source evidence above is not closure | Record generated producer/input origins, explicit metadata changes, hygiene marks and intentional captures; reject accidental capture. |
-| syntax/3: Invalidate facts | Open; partial source evidence above is not closure | Version attached facts and invalidate them when the producing input or transformation changes; reject stale fact reuse. |
-| syntax/4: Serialize and verify | Open; partial source evidence above is not closure | Round-trip all required form kinds and generated graphs, including shared origin references; demonstrate identity stability and tamper rejection. |
-| syntax/5: Integrate consumers | Open; partial source evidence above is not closure | Exercise Reader -> Syntax -> Expand and Resolve consumption with original/generated diagnostic spans; record source-pinned accepted and rejected artifacts. |
-<!-- syntax-task-projection:end -->
-
-The table above projects the canonical remaining tasks for this outcome. Close a row
+The task ledger is the canonical remaining list for this outcome. Close a row
 only with the exact source revision, actual invocation/result and relevant
 accepted/rejected artifacts, reviewed by the responsible owner. Do not infer
-completion from assertion counts, generated status fields or filenames.
+completion from assertion counts, status fields or filenames.
 
 ## Acceptance criteria (yes/no)
 
