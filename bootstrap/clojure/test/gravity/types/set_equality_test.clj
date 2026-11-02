@@ -3,7 +3,7 @@
   C7/C8/STD2/STD3 acceptance still requires the genuine compiler composition."
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :refer [deftest is]]
             [gravity.bootstrap]
             [gravity.self-hosting.sh08-function-call-kernel-support :as kernel-support]))
 

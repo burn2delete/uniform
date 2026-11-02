@@ -1,6 +1,6 @@
 (ns gravity.self-hosting.descriptor-reconstruction-test
   "Current checked bare-Set descriptor controls; runtime acceptance remains separate."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.self-hosting.sh08-function-call-type-test]
             [gravity.self-hosting.sh09-body-effect-test]))
