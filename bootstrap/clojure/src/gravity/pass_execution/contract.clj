@@ -6,6 +6,28 @@
             [gravity.pass-execution.diagnostics :as diagnostics]
             [gravity.pass-execution.validation :as validation]))
 
+(def ^:private validated-contract-context-token (Object.))
+(def ^:private ^:dynamic *validated-contract-context* nil)
+
+(defn- current-validated-contract
+  [contract]
+  (let [context *validated-contract-context*
+        entries (:entries context)]
+    (when (and (map? context)
+               (identical? validated-contract-context-token (:token context))
+               (instance? java.util.IdentityHashMap entries))
+      (.get ^java.util.IdentityHashMap entries contract))))
+
+(defn validated-pass-contract-identity
+  "Return the current composition-local identity, when one is active.
+
+  This is an internal read-only seam; the public `gravity.pass-execution`
+  facade does not expose composition contexts or trusted markers."
+  [contract]
+  (let [validated (current-validated-contract contract)]
+    (when (map? validated)
+      validated)))
+
 (defn validate-pass-contract!
   "Validate one exact C1/C16/C18 pass contract."
   [contract]
@@ -66,10 +88,8 @@
     (canonical/canonical-bytes contract)
     contract))
 
-(defn canonical-pass-contract
-  "Return the stable semantic projection used to identify a pass contract."
+(defn- canonical-pass-contract*
   [contract]
-  (validate-pass-contract! contract)
   (into (sorted-map)
         (map (fn [[key value]]
                [key (cond
@@ -78,8 +98,45 @@
                       :else value)]))
         contract))
 
+(defn canonical-pass-contract
+  "Return the stable semantic projection used to identify a pass contract."
+  [contract]
+  (if (current-validated-contract contract)
+    (canonical-pass-contract* contract)
+    (canonical-pass-contract* (validate-pass-contract! contract))))
+
 (defn pass-contract-id
   "Return the content identity of one validated pass contract."
   [contract]
-  (canonical/content-id :gravity/pass-contract-v1
-                        (canonical-pass-contract contract)))
+  (if-let [validated (current-validated-contract contract)]
+    (if (map? validated)
+      (:id validated)
+      (canonical/content-id :gravity/pass-contract-v1
+                            (canonical-pass-contract contract)))
+    (canonical/content-id :gravity/pass-contract-v1
+                          (canonical-pass-contract contract))))
+
+(defn with-validated-contract-identities
+  "Run `thunk` with one request-local identity for each validated contract.
+
+  The context is identity-keyed and private to one composition.  It is not a
+  cache or a public trust marker; all entries are populated only after the
+  normal contract validator succeeds."
+  [contracts thunk]
+  (let [validated (mapv (fn [pass-contract]
+                          (validate-pass-contract! pass-contract)
+                          pass-contract)
+                        contracts)
+        entries (java.util.IdentityHashMap.)
+        context {:token validated-contract-context-token :entries entries}]
+    (doseq [pass-contract validated]
+      (.put entries pass-contract ::validated))
+    (binding [*validated-contract-context* context]
+      (let [identities
+            (mapv (fn [pass-contract]
+                    {:contract pass-contract
+                     :id (pass-contract-id pass-contract)})
+                  validated)]
+        (doseq [{:keys [contract] :as identity} identities]
+          (.put entries contract identity))
+        (thunk identities)))))
