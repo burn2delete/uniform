@@ -255,7 +255,7 @@
   "specs/opt-workflow/plan.md"
   "d0489478bcf66691b3d678de96ced913d23f8e871aa18912cffbd3ef37d9f5ee",
   "specs/legality-workflow/plan.md"
-  "5c5c20180e1818c28d7e0e1d48d9827f98c903aaae7fff5ad225a89597244f67",
+  "15ba7270e09cf779f4b562f71a0e851782e2f56e89cfe500499f6fe00e381e5a",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "403faf1d18dab790276e8c5072ca42821e9754856127b73e72eef52ceb28a1f5",
   "docs/acceptance-dependencies.md"
@@ -274,7 +274,7 @@
    "evolution/security-review"
    "evolution/stabilization-decision"
    "evolution/target-support-admission"]},
- :source-input-commit "91828060eeacbb77219d3d7b9ad7113fdca110fe",
+ :source-input-commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
  :task-comparisons
  {:unchanged-body-count 84,
   :changed-bodies
@@ -458,7 +458,7 @@
     :before-sha256
     "10d87f565b8ab6ce18dd2b4601da0471878ea53ffece867893a496f791ab81f8",
     :after-sha256
-    "1156084f43baf1b6faa4d60716a879b3628c286cbb9a15282ab9d5344aa232a4",
+    "220e90c865800399d121c36ba2463184e210a0a16ada64144099ea0a0627bc5d",
     :before-checked false,
     :after-checked false}
    {:id
@@ -485,7 +485,7 @@
     :before-sha256
     "1872ebe2a5eda2592ba7d86bdd08c20da03a812a787e1044cffb32a1f8ddb50c",
     :after-sha256
-    "e8a50418ea8d9a5b0b30324579d3f391fef8fd8e047a955905038fadfed223ba",
+    "b9b08b13b216cabdf3ab39fdfc3c6fe2a63d837aa60e0b9baa06738138159a46",
     :before-checked false,
     :after-checked false}
    {:id
@@ -494,7 +494,7 @@
     :before-sha256
     "32d3c5b5450bedc27d7dd6e709396dee4335dcbe53273030a0f8690aa59ea907",
     :after-sha256
-    "b716b9a2b0a5ba1f8514394373cc61f6c2fbc3260de053b7d22e8b0a10e0e7c2",
+    "5aab58f79f84683471dc9a15683630a21149fb65690dd062387b2d1c9444d6f2",
     :before-checked false,
     :after-checked false}
    {:id
@@ -11610,9 +11610,9 @@
     :sha256
     "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e"},
    :after
-   {:commit "91828060eeacbb77219d3d7b9ad7113fdca110fe",
+   {:commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
     :sha256
-    "b412d564ed8d752bb0b5a68fab5f9eb3469fc3011a1ddc4dc5516f4046a1fc61"},
+    "2c84b66234d2f8369e53215ff1480da3ae1716775a8ff93d2fcc6697ce865b7c"},
    :scope :task-file-version}
   {:path "specs/lower-workflow/tasks.md",
    :before
@@ -11785,9 +11785,9 @@
    "d0489478bcf66691b3d678de96ced913d23f8e871aa18912cffbd3ef37d9f5ee",
    :kind :source-inspection-not-execution},
   "specs/legality-workflow/plan.md"
-  {:commit "14e97dee9205ffd6e3d1d07bb1af00bfbb724676",
+  {:commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
    :sha256
-   "5c5c20180e1818c28d7e0e1d48d9827f98c903aaae7fff5ad225a89597244f67",
+   "15ba7270e09cf779f4b562f71a0e851782e2f56e89cfe500499f6fe00e381e5a",
    :kind :source-inspection-not-execution},
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   {:commit "697917447d70ba0797a096d9427d4706bf5515df",
@@ -30943,13 +30943,13 @@
   "specs/resolve-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/legality-workflow/tasks.md"
-  "91828060eeacbb77219d3d7b9ad7113fdca110fe",
+  "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
   "specs/syntax-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/types-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
   "specs/legality-workflow/plan.md"
-  "14e97dee9205ffd6e3d1d07bb1af00bfbb724676",
+  "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
   "specs/domains-workflow/tasks.md"
   "92b3917ec51e882338fc221bddde86310815221f",
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
@@ -32735,5 +32735,3795 @@
      :sha256
      "95cb5fa0f1a72e27dc44ca7b64567c312eb2592a33d3811be547e511e485a4ca"}}],
   :implementation-acceptance :unassessed},
+ :safety-refinement
+ {:canonical-sources
+  {"docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md"
+   {:path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+    :sha256
+    "a31b94a1c53f9e1610e5c31ef30d53e0047c9d07c4be034cae8356d20780c657"},
+   "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md"
+   {:path "docs/phase-02-safety/030-safe1-safe-gravity-semantics.md",
+    :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+    :sha256
+    "220615f64d0041ab248dbf34c2ef5118a9a40ba07bed86b86436d2b0cb9bc3df"},
+   "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md"
+   {:path
+    "docs/phase-02-safety/044-safe15-safety-proof-and-certificate-model.md",
+    :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+    :sha256
+    "5e6a89a21baf9c7ace71e9065cc5e65483c769d0d8b1d0e213b9288a6f1d9759"},
+   "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md"
+   {:path
+    "docs/phase-02-safety/045-safe16-safety-conformance-test-plan.md",
+    :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+    :sha256
+    "9d6f56b496118a9680a7b963568dd25dc8c775e21c4ec6ec9d490022adcc0eb4"},
+   "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md"
+   {:path
+    "docs/phase-04-performance-model/068-perf10-performance-safety-check-elision-rules.md",
+    :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+    :sha256
+    "52a34276599945c7cfc88fbc64f3af1d56d359ae8a48ddf22afa443af72f24e3"},
+   "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md"
+   {:path
+    "docs/phase-00-foundation-and-thesis/009-d8-safety-philosophy-and-charter.md",
+    :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+    :sha256
+    "ef9a50aabbf60ecb1927ae86a77a54d40248ea759ab82df80bef70e794e39e63"},
+   "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md"
+   {:path
+    "docs/phase-00-foundation-and-thesis/010-d9-verifiability-and-mathematical-correctness-charter.md",
+    :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+    :sha256
+    "9defd108707c5359377d11e95d18f751f2de72d8981a3789d905118419c2d56b"}},
+  :new-task-identities [],
+  :current-role-population
+  {:retained-hierarchy-or-provenance-context 15,
+   :complete-source-predicate-conjunction 107},
+  :occurrence-cases
+  {"C10/source/205d38f8400e66f574326d2462c0fdbd8ea78d407081a210ace30d9ec2b9cfe4"
+   {:index 27,
+    :source-heading "Unsafe Island Extraction",
+    :source-span
+    {:start-byte 4747,
+     :end-byte 4778,
+     :sha256
+     "b9cd2d533ad5bcffa40743cf0570d6e4a7f43f614dab3880574ccd81cfe254e1"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/4bfbdfb498b18464f5cd2d35435d1519bff8287ba8117f0d9f9ed279d7406fcc"
+   {:index 7,
+    :source-heading "Dependencies",
+    :source-span
+    {:start-byte 1720,
+     :end-byte 1736,
+     :sha256
+     "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/7d687a6334a2e20e6a74be157c5723286ea925a39324d1c900d0d15345819e8e"
+   {:index 28,
+    :source-heading "Unsafe Island Extraction",
+    :source-span
+    {:start-byte 4779,
+     :end-byte 5453,
+     :sha256
+     "cc74408095db0abb671deb418fbedd424141f99a52770fae2e27885ccf30f4a4"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/18a21e16309750f041a950e4bb8e67114f55966bafa8ab4dcf8487e1c11cb90e"
+   {:index 18,
+    :source-heading "Runtime Check Records",
+    :source-span
+    {:start-byte 3883,
+     :end-byte 3908,
+     :sha256
+     "d3098427a1d9878f9dd98456ce62f2b52b8f7b9382a4a194baf0d5b5db880ee6"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/ecc5a3b013b452347fdcfda515484fee401a0756f00f2056c9bdcac28be0727a"
+   {:index 16,
+    :source-heading "Outcome Record",
+    :source-span
+    {:start-byte 3322,
+     :end-byte 3791,
+     :sha256
+     "e17720bead7e3683133dbae172467f0b0be16fe38b20f0031f8c099a735774ee"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb"
+   {:index 46,
+    :source-heading "Conformance Criteria",
+    :source-span
+    {:start-byte 7384,
+     :end-byte 7865,
+     :sha256
+     "73c8e496a10f78e7d80f443a855ac1c24c4c8ccf61e8f6b66c4e27e7cfb6a14b"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/4218a95faf12d2e8772890de399751c19840963c00e8210a6dcbd863f713e84f"
+   {:index 30,
+    :source-heading "Pipeline Order",
+    :source-span
+    {:start-byte 5534,
+     :end-byte 5552,
+     :sha256
+     "6847387325b242f25ba010b52bcd094328d33bdc28634a89bf329b9a42ad368c"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2"
+   {:index 20,
+    :source-heading "Runtime Check Records",
+    :source-span
+    {:start-byte 3933,
+     :end-byte 4183,
+     :sha256
+     "7c10135204a337781d320e90a64e97ea4408611c634fc14181c88f98d0f60fb9"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/5c419797ff06c0929d4ed1c95b18eb581f5544f0409c939ffc5e35c55ef1e090"
+   {:index 9,
+    :source-heading "Outputs and Artifacts",
+    :source-span
+    {:start-byte 2190,
+     :end-byte 2215,
+     :sha256
+     "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/cc44c1af7dea5304aafb320626a8878222e7e8e6a27bf4a999cf649ce60a4216"
+   {:index 1,
+    :source-heading "C10 - Safety Analysis Pipeline Design",
+    :source-span
+    {:start-byte 41,
+     :end-byte 317,
+     :sha256
+     "aec99a6d624dd39f29185119f00d42ce3639e51617157b06a21bf34ec065a5ee"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8b4238ba64958c7c835d43bf60e80017e75a3d131464b22b87fd091c60feba2b"
+   {:index 37,
+    :source-heading "Diagnostics",
+    :source-span
+    {:start-byte 6759,
+     :end-byte 6948,
+     :sha256
+     "1fc3c3e17737b9a7ff2c6d636f26fd52d8ea1f610d5d05150cc1455e930d212e"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d"
+   {:index 6,
+    :source-heading "Requirements",
+    :source-span
+    {:start-byte 818,
+     :end-byte 1719,
+     :sha256
+     "a79030826bafd3369a0e252ca99cb11916d0bd615841b36a701f98579f42691c"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/069d87b280d339115605dcdf469731e02827364f80a4294805b3e772310da824"
+   {:index 5,
+    :source-heading "Requirements",
+    :source-span
+    {:start-byte 801,
+     :end-byte 817,
+     :sha256
+     "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/ffc10d6d6b38a2138aa3fe382eca3c78323cee014d7bf121f90024a3df584f05"
+   {:index 35,
+    :source-heading "Diagnostics",
+    :source-span
+    {:start-byte 6098,
+     :end-byte 6149,
+     :sha256
+     "96747f939ab10d109a169ae0fb45505a63a816be1686f34ee7d7a3a5b3a9cff3"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8f951e474962d9a2121eb10bb07df6cc1ab087713f123fc4045a0ffca52c43d9"
+   {:index 21,
+    :source-heading "Runtime Check Records",
+    :source-span
+    {:start-byte 4184,
+     :end-byte 4276,
+     :sha256
+     "7738806131b3e1f40160c23c2ec0dda80e6eda41893dd3f30dba877d14d406c0"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/da20623b075f23cf720d31969f31125c4b72f29dd23dec8846360ba80410275c"
+   {:index 33,
+    :source-heading "Pipeline Order",
+    :source-span
+    {:start-byte 5958,
+     :end-byte 6081,
+     :sha256
+     "5d97618ef0cbb2d6aa58d714cbfa41e620b162e8cff3c65bb6fcdd08ec8fdd2a"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/b4c2279df0970458472b293f6afb07471c440296b0a85035fbf21777125b9c41"
+   {:index 29,
+    :source-heading "Unsafe Island Extraction",
+    :source-span
+    {:start-byte 5454,
+     :end-byte 5533,
+     :sha256
+     "11333a25467ee9a0e764ce1176023497a7712dffae0a727f07a86975dcdba389"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78"
+   {:index 24,
+    :source-heading "Proof Obligations",
+    :source-span
+    {:start-byte 4348,
+     :end-byte 4576,
+     :sha256
+     "8da60dc4aa857530a64302c501de96147c552481af0e773670566933b98e65a7"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8cb11c336a4206d896b935b6c178b65a3e7456a333774d9d185c6d1ae460596d"
+   {:index 39,
+    :source-heading "Rejected Designs",
+    :source-span
+    {:start-byte 6970,
+     :end-byte 7028,
+     :sha256
+     "001b2982496a29704d6f4da12f0dc863e67e0839b8909e57ec3ec3abf182d7b1"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/975c45e2da3ba6cd951e81778f67d65a619336e993c054eac250eb270466d1f4"
+   {:index 11,
+    :source-heading "Operation Inventory",
+    :source-span
+    {:start-byte 2484,
+     :end-byte 2507,
+     :sha256
+     "f768d84c809bd37d8cd3103970a11001f1d71c27b03f39827fe5616d0e5db43b"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4"
+   {:index 10,
+    :source-heading "Outputs and Artifacts",
+    :source-span
+    {:start-byte 2216,
+     :end-byte 2483,
+     :sha256
+     "532404d5e3a2ee9c01f629a2d8077de6d19aa8a7baae243b9a38e646a552fbec"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8aee2bd276386d6d9cc6f547343467c1a3c7589620507af67d8e22e54ec6b3ba"
+   {:index 45,
+    :source-heading "Conformance Criteria",
+    :source-span
+    {:start-byte 7336,
+     :end-byte 7383,
+     :sha256
+     "548bc6c9738d509693227247f6b7592094f4c7ee370484d082e57329020f563b"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/d7cc1e573c3ccbc83792bf557f5fc89d102b2bca985a828300b831caa41c3bf9"
+   {:index 0,
+    :source-heading "C10 - Safety Analysis Pipeline Design",
+    :source-span
+    {:start-byte 0,
+     :end-byte 40,
+     :sha256
+     "0df514021f9ebdcfe96c030dc4af85af0da899b59617f8cdd588274e89c6fa8f"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/3392daf14d3c84202dd07099d3193a1ef68803c5b3905b085e21650308cc7a90"
+   {:index 3,
+    :source-heading "Purpose",
+    :source-span
+    {:start-byte 330,
+     :end-byte 614,
+     :sha256
+     "7165d2fcb2c4d0cc84080a0bee036d7788cd9e5e23061e68ffd3ec20d42f7da0"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8296c849d8a0b04c68108e207c93b0e1475d0720ed294dd26b8bfbc9b3f0fb81"
+   {:index 22,
+    :source-heading "Proof Obligations",
+    :source-span
+    {:start-byte 4277,
+     :end-byte 4298,
+     :sha256
+     "1af77a1493035606e6b94cf1efdab81af02af8446696f913f942fe1d9265265a"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7"
+   {:index 32,
+    :source-heading "Pipeline Order",
+    :source-span
+    {:start-byte 5670,
+     :end-byte 5957,
+     :sha256
+     "c192c6e579a7519e3d86891aaf0b2632914df3b578a879872028baa15df61cc2"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/1760def5883f990c19f91873140b53350415b32763ff6324a5d8269d7f40c3f2"
+   {:index 41,
+    :source-heading "Rejected Designs",
+    :source-span
+    {:start-byte 7095,
+     :end-byte 7175,
+     :sha256
+     "c2bfc688a5316c1737f4c1a87bc582b567b11b95c6c87dc3e6ae3516868d34fb"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/d27aaca3e6cd34604caea4771ddc033c8605abde961686b11c949ab36e0fbf15"
+   {:index 14,
+    :source-heading "Operation Inventory",
+    :source-span
+    {:start-byte 3165,
+     :end-byte 3302,
+     :sha256
+     "528269984683ba48b1e288408d56301e78d500613d2067def99583ebd23f8a4f"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/ac99f0a7093b3c8c51552e0f5cef15f4abc842a58615e0c8af999d69b3a4a6a1"
+   {:index 42,
+    :source-heading "Rejected Designs",
+    :source-span
+    {:start-byte 7176,
+     :end-byte 7240,
+     :sha256
+     "f909915778c9be8acd3babe080a3b12264a289477715779ce3c7cd4d61c56b21"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/07d34aa1be0d5e6f71530a612c091aa7e547ca8b8679eb61cd3d8bd06be7542d"
+   {:index 23,
+    :source-heading "Proof Obligations",
+    :source-span
+    {:start-byte 4299,
+     :end-byte 4347,
+     :sha256
+     "42262028112e84798409226f983a1813758c51be554317b619ef8536f4642553"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/6454c390bc4b1f2197276cf1d998a94b6a0be5f67a066e497664b5b6e5fc4204"
+   {:index 25,
+    :source-heading "Proof Obligations",
+    :source-span
+    {:start-byte 4577,
+     :end-byte 4717,
+     :sha256
+     "c93c20f98cc55b28de0d9d589f696e74d9832aef0f682688d7f454cda9fef976"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/c860575672e032922d7ac7904934ee0e49b415597ba44f1aecf6a7d94b2a6ad3"
+   {:index 38,
+    :source-heading "Rejected Designs",
+    :source-span
+    {:start-byte 6949,
+     :end-byte 6969,
+     :sha256
+     "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172"
+   {:index 13,
+    :source-heading "Operation Inventory",
+    :source-span
+    {:start-byte 2572,
+     :end-byte 3164,
+     :sha256
+     "397be65bdcd1e75b9ee1df4abf79f6f0d44946897df6c4492d5d234d282e9800"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/311306cd9bb98989a175dec5fdc2f8b6207dad0d1677d5264d15efd4070cc629"
+   {:index 40,
+    :source-heading "Rejected Designs",
+    :source-span
+    {:start-byte 7029,
+     :end-byte 7094,
+     :sha256
+     "d6d73c2b807dcc6e57251ca1215a1eba31d27caa2a792b4b970f0315b2cda4c5"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/308a306b6f66d0b3d04049389b0344278552ca439cd3626713c27917b2fd8a13"
+   {:index 15,
+    :source-heading "Outcome Record",
+    :source-span
+    {:start-byte 3303,
+     :end-byte 3321,
+     :sha256
+     "51a8febf18ad6cd62385c240b2276a08596140935abe5705e99a9e41bb577360"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/f8a3b10ffa43a50fc70cca9ef026268753f5049b31a9c5c86267986c04118971"
+   {:index 34,
+    :source-heading "Diagnostics",
+    :source-span
+    {:start-byte 6082,
+     :end-byte 6097,
+     :sha256
+     "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/a5ae2f8bb40e63c94d17621cbcc78f5d697d2ba5864b8623d211d20ab1ce3bbe"
+   {:index 2,
+    :source-heading "Purpose",
+    :source-span
+    {:start-byte 318,
+     :end-byte 329,
+     :sha256
+     "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/2242d4bddfd0b06a7fb58e7a75ff22a7063690b1d7c3e9e5660b010085a532df"
+   {:index 12,
+    :source-heading "Operation Inventory",
+    :source-span
+    {:start-byte 2508,
+     :end-byte 2571,
+     :sha256
+     "34cfc5be86b51a1f3a4d4cc4d9af52b170d4025615f6d4ffd2d833cbbe5e1750"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/859af55c868c0efddc687c9c4b95143bff060dcb031b248eefa9f339b298b4ff"
+   {:index 19,
+    :source-heading "Runtime Check Records",
+    :source-span
+    {:start-byte 3909,
+     :end-byte 3932,
+     :sha256
+     "4a0adcba8331b40e4e2a15a94f37d0efaf20b1870dd0340b41446afc6f279888"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47"
+   {:index 8,
+    :source-heading "Dependencies",
+    :source-span
+    {:start-byte 1737,
+     :end-byte 2189,
+     :sha256
+     "407ea7b095ecfb32ecc76900e7c82d1e89f8ba768c9ed40d3804d05bdbb743cc"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1"
+   {:index 36,
+    :source-heading "Diagnostics",
+    :source-span
+    {:start-byte 6150,
+     :end-byte 6758,
+     :sha256
+     "a0c3ae2e0c5a9206d23e94bb6acb562636da140032155cb21b37c81e806298ca"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:decisions :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/54556ab553713430a48a1ccf013844d1d1e00a9676a59efdb86c57d40e432b2e"
+   {:index 31,
+    :source-heading "Pipeline Order",
+    :source-span
+    {:start-byte 5553,
+     :end-byte 5669,
+     :sha256
+     "a1c9618b11ac3e50ed8674216798a6f52fabc3ab8a9bdbd645d6978ea98b92f4"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/79515f3c721532a82bc533f7f570ae372b29c0202a014e11a90c4667dea8fbd4"
+   {:index 26,
+    :source-heading "Unsafe Island Extraction",
+    :source-span
+    {:start-byte 4718,
+     :end-byte 4746,
+     :sha256
+     "f0525ea3c1d52f2ff2648b28cb86b39b2fe09a91625e1f5a9a912f6ddfdf6062"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/8777ed9d6c0dde0a21106361f14b5f7822ced9b73c8d2dc0137b4f8c2f495fe3"
+   {:index 4,
+    :source-heading "Purpose",
+    :source-span
+    {:start-byte 615,
+     :end-byte 800,
+     :sha256
+     "7cfcb79f4035a90fac953e142e36572a776df75df02814c40403b6ecc50ec126"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/7d15203cfaa76755983387524a08e84a2e799c9ed306fda6c097f517d9d24394"
+   {:index 17,
+    :source-heading "Outcome Record",
+    :source-span
+    {:start-byte 3792,
+     :end-byte 3882,
+     :sha256
+     "e5b00f99b7b3c14194581e98359cb1f0da86e7a41c16b6646e33d770b420020f"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/db07d463e1c1cef178a5326130d57f3779da74a6b9420930593013b340475120"
+   {:index 43,
+    :source-heading "Rejected Designs",
+    :source-span
+    {:start-byte 7241,
+     :end-byte 7310,
+     :sha256
+     "494174ab239c0b38764dcf22342ab8d331f864f75638b264705362aa0bf1bf40"},
+    :role :complete-source-predicate-conjunction,
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :scope
+    :source-occurrence-conjoined-with-all-semantic-section-occurrences,
+    :current-entailment :proposal-pending-independent-review},
+   "C10/source/7b09cd1ab1fda0891b3a4fe9426a80226443c7104e6be5422c4d58a680a761a0"
+   {:index 44,
+    :source-heading "Conformance Criteria",
+    :source-span
+    {:start-byte 7311,
+     :end-byte 7335,
+     :sha256
+     "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+    :role :retained-hierarchy-or-provenance-context,
+    :criterion-keys [],
+    :scope :heading-or-file-provenance-only,
+    :current-entailment :proposal-pending-independent-review}},
+  :predecessor-readiness-successor
+  {:commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+   :path
+   "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+   :sha256
+   "0e0e2552e93a77b2c0071566de289fcd8d5bd78216bcc76562590f3ea7f7e192",
+   :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+   :projection-sha256
+   "34fc0e8a395f34f7ba846fc159255dcd5386a60b085c1fa4bbdc7c60e605dfaa",
+   :input-fingerprint
+   "6c8c36a240daf062c0d54823d6d6cbb252a374d3ccca6861db498ecb0a3e03aa"},
+  :dependency-review
+  :C9-rows-preserved-additional-C10-producer-results-explicitly-pending,
+  :plan-source
+  {:path "specs/legality-workflow/plan.md",
+   :before
+   {:commit "14e97dee9205ffd6e3d1d07bb1af00bfbb724676",
+    :sha256
+    "5c5c20180e1818c28d7e0e1d48d9827f98c903aaae7fff5ad225a89597244f67",
+    :kind :source-inspection-not-execution},
+   :after
+   {:commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+    :sha256
+    "15ba7270e09cf779f4b562f71a0e851782e2f56e89cfe500499f6fe00e381e5a",
+    :kind :source-inspection-not-execution}},
+  :criteria
+  [{:key :inventory,
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :current-witness
+    {:path "specs/legality-workflow/tasks.md",
+     :source-commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+     :sha256
+     "2c84b66234d2f8369e53215ff1480da3ae1716775a8ff93d2fcc6697ce865b7c",
+     :source-span
+     {:start-byte 10438,
+      :end-byte 12087,
+      :start-line 74,
+      :end-line 74,
+      :sha256
+      "a7cf0065d4046dea743e646c2341700ed848dec81cd6a5da8ae7f96167d954f0"}},
+    :status
+    :author-proposed-current-criterion-no-independent-acceptance}
+   {:key :decisions,
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :current-witness
+    {:path "specs/legality-workflow/tasks.md",
+     :source-commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+     :sha256
+     "2c84b66234d2f8369e53215ff1480da3ae1716775a8ff93d2fcc6697ce865b7c",
+     :source-span
+     {:start-byte 12413,
+      :end-byte 14510,
+      :start-line 82,
+      :end-line 82,
+      :sha256
+      "35bba651ff10a17e5da09c8ea33ce83bccd2b7928a8e9b90f0900473a5c65d33"}},
+    :status
+    :author-proposed-current-criterion-no-independent-acceptance}
+   {:key :preservation,
+    :task-id
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+    :current-witness
+    {:path "specs/legality-workflow/tasks.md",
+     :source-commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+     :sha256
+     "2c84b66234d2f8369e53215ff1480da3ae1716775a8ff93d2fcc6697ce865b7c",
+     :source-span
+     {:start-byte 17041,
+      :end-byte 18761,
+      :start-line 106,
+      :end-line 106,
+      :sha256
+      "2fa02518924d8851f4c409a63363f472c9a5282e3dd0bc1d92fb894328181071"}},
+    :status
+    :author-proposed-current-criterion-no-independent-acceptance}
+   {:key :conformance,
+    :task-id
+    "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface",
+    :current-witness
+    {:path "specs/legality-workflow/tasks.md",
+     :source-commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+     :sha256
+     "2c84b66234d2f8369e53215ff1480da3ae1716775a8ff93d2fcc6697ce865b7c",
+     :source-span
+     {:start-byte 21601,
+      :end-byte 23291,
+      :start-line 130,
+      :end-line 130,
+      :sha256
+      "8d589025181a65e56293fc3df225a279335d0f9b22de35b6a5b26b1434bff8ed"}},
+    :status
+    :author-proposed-current-criterion-no-independent-acceptance}],
+  :owner-joins
+  {"compiler/c10/generated-safety-origins"
+   {:id "compiler/c10/generated-safety-origins",
+    :original-obligation
+    "Diagnose generated unsafe or rejected code at both generated form and generator source without hiding authority-bearing operations.",
+    :captured-resolution-state
+    :task-reference-only-exact-criterion-join-pending,
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :criterion-keys [:decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :whole-attached-owner-predicate :unassessed,
+    :implementation-credit :none},
+   "compiler/c10/safety-proof-lifecycle"
+   {:id "compiler/c10/safety-proof-lifecycle",
+    :original-obligation
+    "Discharge policy-governed proof obligations with accepted evidence and preserve/regenerate proof mappings or rerun analyses after optimization before check removal.",
+    :captured-resolution-state
+    :task-reference-only-exact-criterion-join-pending,
+    :task-id
+    "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution",
+    :criterion-keys [:preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :whole-attached-owner-predicate :unassessed,
+    :implementation-credit :none},
+   "compiler/c10/unsafe-islands"
+   {:id "compiler/c10/unsafe-islands",
+    :original-obligation
+    "Extract complete owned unsafe audit records with invariants, safe wrappers, authority, review/re-review and provenance; reject when safety/package policy forbids them.",
+    :captured-resolution-state
+    :task-reference-only-exact-criterion-join-pending,
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :criterion-keys [:decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :whole-attached-owner-predicate :unassessed,
+    :implementation-credit :none},
+   "safety/safe1/outcomes"
+   {:id "safety/safe1/outcomes",
+    :original-obligation
+    "Classify every safety-sensitive operation into exactly one of proven-safe, runtime-checked, rejected or unsafe-island; safe behavior never depends on undefined behavior or host/backend assumptions.",
+    :captured-resolution-state
+    :criterion-candidates-present-exact-full-predicate-entailment-pending,
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :criterion-keys [:decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :whole-attached-owner-predicate :unassessed,
+    :implementation-credit :none},
+   "safety/safe1/runtime-checks"
+   {:id "safety/safe1/runtime-checks",
+    :original-obligation
+    "Emit required checks before unsafe behavior, with explicit conditions, declared profile-legal failure behavior, contexts and inspectable safety records.",
+    :captured-resolution-state
+    :criterion-candidates-present-exact-full-predicate-entailment-pending,
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :criterion-keys [:decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :whole-attached-owner-predicate :unassessed,
+    :implementation-credit :none},
+   "safety/safe1/safety-artifact"
+   {:id "safety/safe1/safety-artifact",
+    :original-obligation
+    "Emit a consumable safety artifact connecting operations, outcomes, checks, unsafe islands, proofs, diagnostics, profile and mode for certificates and conformance consumers.",
+    :captured-resolution-state
+    :criterion-candidates-present-exact-full-predicate-entailment-pending,
+    :task-id
+    "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries",
+    :criterion-keys [:inventory :decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :whole-attached-owner-predicate :unassessed,
+    :implementation-credit :none}},
+  :source-entailment
+  :author-assessed-complete-C10-coordinator-current-criterion-proposal,
+  :independent-current-review :pending,
+  :source-facets
+  [{:role :retained-hierarchy-or-provenance-context,
+    :source-section "C10 - Safety Analysis Pipeline Design",
+    :census-kind :context,
+    :source-span
+    {:start-byte 0,
+     :end-byte 40,
+     :sha256
+     "0df514021f9ebdcfe96c030dc4af85af0da899b59617f8cdd588274e89c6fa8f"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/d7cc1e573c3ccbc83792bf557f5fc89d102b2bca985a828300b831caa41c3bf9",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/0-40/0df514021f9ebdcf",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "C10 - Safety Analysis Pipeline Design",
+    :census-kind :context,
+    :source-span
+    {:start-byte 41,
+     :end-byte 317,
+     :sha256
+     "aec99a6d624dd39f29185119f00d42ce3639e51617157b06a21bf34ec065a5ee"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :owner-proposed-exact-disposition-pending-independent-facet-acceptance,
+    :source-occurrence-id
+    "C10/source/cc44c1af7dea5304aafb320626a8878222e7e8e6a27bf4a999cf649ce60a4216",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/41-317/aec99a6d624dd39f",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Purpose",
+    :census-kind :context,
+    :source-span
+    {:start-byte 318,
+     :end-byte 329,
+     :sha256
+     "994413297a3e95a9b72f5e4c04aa9c306f9009ad88fa0f99453d1963835668b9"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/a5ae2f8bb40e63c94d17621cbcc78f5d697d2ba5864b8623d211d20ab1ce3bbe",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/318-329/994413297a3e95a9",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Purpose",
+    :census-kind :context,
+    :source-span
+    {:start-byte 330,
+     :end-byte 614,
+     :sha256
+     "7165d2fcb2c4d0cc84080a0bee036d7788cd9e5e23061e68ffd3ec20d42f7da0"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/3392daf14d3c84202dd07099d3193a1ef68803c5b3905b085e21650308cc7a90",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/330-614",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Purpose",
+    :census-kind :context,
+    :source-span
+    {:start-byte 615,
+     :end-byte 800,
+     :sha256
+     "7cfcb79f4035a90fac953e142e36572a776df75df02814c40403b6ecc50ec126"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8777ed9d6c0dde0a21106361f14b5f7822ced9b73c8d2dc0137b4f8c2f495fe3",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/615-800",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Requirements",
+    :census-kind :context,
+    :source-span
+    {:start-byte 801,
+     :end-byte 817,
+     :sha256
+     "d8416f1863ce5290f0f41fa533fb9e10fef5d405c1300c03e276a0a894382b61"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/069d87b280d339115605dcdf469731e02827364f80a4294805b3e772310da824",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/801-817/d8416f1863ce5290",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Requirements",
+    :census-kind :requirement,
+    :source-span
+    {:start-byte 818,
+     :end-byte 885,
+     :sha256
+     "e7da52b4dee723e2ede4632f5411c1a9d807ed1493f0581590ef5c1816be8e90"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/818-885",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Requirements",
+    :census-kind :requirement,
+    :source-span
+    {:start-byte 885,
+     :end-byte 1103,
+     :sha256
+     "daef863e69e3485278fbeee9d21fc8365be93da96965d82ad09d16ef50097010"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/885-1103",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Requirements",
+    :census-kind :requirement,
+    :source-span
+    {:start-byte 1103,
+     :end-byte 1239,
+     :sha256
+     "f190d59154b4f9bd711a6ec7c3ea1cd377d43da32a875fb916db7ffc1e22e26e"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/1103-1239",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Requirements",
+    :census-kind :requirement,
+    :source-span
+    {:start-byte 1239,
+     :end-byte 1420,
+     :sha256
+     "cbd9789d260b925c4447f6b7dbe787b24ff767c6b2d407c35df663424c42c6ed"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/unsafe-islands"],
+    :id "C10/facet/1239-1420",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Requirements",
+    :census-kind :requirement,
+    :source-span
+    {:start-byte 1420,
+     :end-byte 1514,
+     :sha256
+     "ea9d70cdec4bd10516781ecf17b8462dfb6936e766341ac62fcb124e9664a1ee"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/generated-safety-origins"],
+    :id "C10/facet/1420-1514",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Requirements",
+    :census-kind :requirement,
+    :source-span
+    {:start-byte 1514,
+     :end-byte 1623,
+     :sha256
+     "84a225605833cfb4dc4826deed1c6107d08d1fb8523edc18fd2b1cd17f10a332"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/1514-1623",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Requirements",
+    :census-kind :requirement,
+    :source-span
+    {:start-byte 1623,
+     :end-byte 1719,
+     :sha256
+     "c5bc16ab350ce41e87863606b75e292e7947e35de4f4ea7cbb341a648e389a84"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/safety-artifact"],
+    :id "C10/facet/1623-1719",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 1720,
+     :end-byte 1736,
+     :sha256
+     "21d1931a332d9b7f509d0637a459922427a666e44b8a7f19d1a912664edf66f7"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/4bfbdfb498b18464f5cd2d35435d1519bff8287ba8117f0d9f9ed279d7406fcc",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/1720-1736/21d1931a332d9b7f",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 1737,
+     :end-byte 1774,
+     :sha256
+     "1af901c8b85cb354bca8d1a79e28cc70d08b4f8950c3bf59ed33b6618c6b0d75"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/1737-1774",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 1774,
+     :end-byte 1840,
+     :sha256
+     "cf7dd5d0458165666423b874ecdfc4b3dc5701df4f9853534d574bbe5d718e79"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/1774-1840",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 1840,
+     :end-byte 1892,
+     :sha256
+     "a1bd065aac59bdffaef625fe4b95e903d291b9d84a7c34b9cc15d86afab436dd"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/1840-1892",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 1892,
+     :end-byte 2000,
+     :sha256
+     "82f4475d61d879089951d703cc4d715e30864d92550f365aac66f3144c9ad029"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/1892-2000",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2000,
+     :end-byte 2038,
+     :sha256
+     "a0d13eebac39ac774fa0b4dcf4b6a0c86740bf53120cc5ef115935a647593892"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2000-2038",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2038,
+     :end-byte 2084,
+     :sha256
+     "5c2d9381908cc9db77aae72408106391b9f81c5b7382cec27fc2aee5c3887192"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2038-2084",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Dependencies",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2084,
+     :end-byte 2189,
+     :sha256
+     "4b4830b857dfb1b8baede3957be86359c31e76349588e0965bedf4074f6af43a"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2084-2189",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2190,
+     :end-byte 2215,
+     :sha256
+     "f4280a4d61a89adc67415f182bd6ae026ebf04a881b9948794b09fe7418ab882"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/5c419797ff06c0929d4ed1c95b18eb581f5544f0409c939ffc5e35c55ef1e090",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/2190-2215/f4280a4d61a89adc",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2216,
+     :end-byte 2246,
+     :sha256
+     "d800cb8db114820fca45d4aab996e503095db3ceadc9f42885a4b9e544ca3642"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2216-2246",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2246,
+     :end-byte 2272,
+     :sha256
+     "5434c7d9bdc9fa171652b521f7d07295dee2ad7763fc7818ef7f6ada018b7f2c"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2246-2272",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2272,
+     :end-byte 2294,
+     :sha256
+     "c30fe7a4d49a40aabab1f2826b2bb12255d68110c5ae81665770114aef45663a"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2272-2294",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2294,
+     :end-byte 2319,
+     :sha256
+     "37431fbff3b5bda4d213788adc318a5843adc1d01de2ff9d60a44bbb89b66a34"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2294-2319",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2319,
+     :end-byte 2355,
+     :sha256
+     "fb1ebb8940f291cc0535cde32f5864dccdf504abb8244de4c719b7915f5e482a"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2319-2355",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2355,
+     :end-byte 2387,
+     :sha256
+     "d680a09619d09890c84fbf1e509bbfa8e0107864ea7e12e065b6306f9c59b1e5"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2355-2387",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2387,
+     :end-byte 2425,
+     :sha256
+     "e775ae47b396aa3e2113e702cff15ddd39b749f9969c831f0184026620a26f72"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2387-2425",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2425,
+     :end-byte 2461,
+     :sha256
+     "826dfc37d681a2f6fbf6a89fa953f1a91188ef032cd7381d5928a16a2128fa1e"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2425-2461",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outputs and Artifacts",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2461,
+     :end-byte 2483,
+     :sha256
+     "db78d5b7cc5729aa371f77e4878d235e4441df90c406bc9e4026777010fc96b2"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/2461-2483",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Operation Inventory",
+    :census-kind :context,
+    :source-span
+    {:start-byte 2484,
+     :end-byte 2507,
+     :sha256
+     "f768d84c809bd37d8cd3103970a11001f1d71c27b03f39827fe5616d0e5db43b"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/975c45e2da3ba6cd951e81778f67d65a619336e993c054eac250eb270466d1f4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/2484-2507/f768d84c809bd37d",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2508,
+     :end-byte 2571,
+     :sha256
+     "34cfc5be86b51a1f3a4d4cc4d9af52b170d4025615f6d4ffd2d833cbbe5e1750"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/2242d4bddfd0b06a7fb58e7a75ff22a7063690b1d7c3e9e5660b010085a532df",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2508-2571",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2572,
+     :end-byte 2642,
+     :sha256
+     "e44390e342243e16fc776f747e92cb9dfd1c504cbf2d361ee3f6ac0c7cc0f5cd"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2572-2642",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2642,
+     :end-byte 2682,
+     :sha256
+     "4b545ac61d8dc1e2ee29a6ab85a41d4ffdea487101d1b1fa156d66fce8dacc3e"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2642-2682",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2682,
+     :end-byte 2706,
+     :sha256
+     "321c5bdb6450f57b57d6c78b10ab54c7adc42946e9407a173c04c30497710ab7"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2682-2706",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2706,
+     :end-byte 2784,
+     :sha256
+     "091e867de2c41abb1da190198821d6b53ef4de92bd705051d4c471d4700268fa"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2706-2784",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2784,
+     :end-byte 2849,
+     :sha256
+     "2b9d234b2fb649c062e64529c180e1dd5b3622a977c0378efc8b44d7a9dd641a"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2784-2849",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2849,
+     :end-byte 2884,
+     :sha256
+     "eb3aec86cc19ce43ba57e92eb6d7eaa40b0349de2ae6aa9e68de0eb31eb06c91"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2849-2884",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2884,
+     :end-byte 2955,
+     :sha256
+     "1077759d72ea540d4b50f5d1f282a0cf9289cfbc5fe086c73428643a24837c11"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2884-2955",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2955,
+     :end-byte 2973,
+     :sha256
+     "5c3ccdfb04e8971e4738aa0877f5079dc76576bbe493397c58d17fcacd4b26c4"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2955-2973",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 2973,
+     :end-byte 3013,
+     :sha256
+     "c3c3794537ae30eb086d9f1106a56cff5aa4d5abd78210899482fae878e84d7a"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/2973-3013",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3013,
+     :end-byte 3065,
+     :sha256
+     "46539cc978d31087b4b25a4a668f2d5543e95952026d747954176bce03f1aefb"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/3013-3065",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3065,
+     :end-byte 3110,
+     :sha256
+     "96244f49aabcf2e631b2bb7e6dffe0da7ee396763f660295d88c1bfb5d93c025"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/3065-3110",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3110,
+     :end-byte 3164,
+     :sha256
+     "31bc1ded8927e68463f4d43dba2532f26c7e484ee55dab74d80dfe0b1978ee39"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/3110-3164",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Operation Inventory",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3165,
+     :end-byte 3302,
+     :sha256
+     "528269984683ba48b1e288408d56301e78d500613d2067def99583ebd23f8a4f"},
+    :criterion-keys [:inventory],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/d27aaca3e6cd34604caea4771ddc033c8605abde961686b11c949ab36e0fbf15",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/3165-3302",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Outcome Record",
+    :census-kind :context,
+    :source-span
+    {:start-byte 3303,
+     :end-byte 3321,
+     :sha256
+     "51a8febf18ad6cd62385c240b2276a08596140935abe5705e99a9e41bb577360"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/308a306b6f66d0b3d04049389b0344278552ca439cd3626713c27917b2fd8a13",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/3303-3321/51a8febf18ad6cd6",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outcome Record",
+    :census-kind :schema,
+    :source-span
+    {:start-byte 3322,
+     :end-byte 3791,
+     :sha256
+     "e17720bead7e3683133dbae172467f0b0be16fe38b20f0031f8c099a735774ee"},
+    :criterion-keys [:inventory :decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ecc5a3b013b452347fdcfda515484fee401a0756f00f2056c9bdcac28be0727a",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/3322-3791",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Outcome Record",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3792,
+     :end-byte 3882,
+     :sha256
+     "e5b00f99b7b3c14194581e98359cb1f0da86e7a41c16b6646e33d770b420020f"},
+    :criterion-keys [:inventory :decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/7d15203cfaa76755983387524a08e84a2e799c9ed306fda6c097f517d9d24394",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/3792-3882",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Runtime Check Records",
+    :census-kind :context,
+    :source-span
+    {:start-byte 3883,
+     :end-byte 3908,
+     :sha256
+     "d3098427a1d9878f9dd98456ce62f2b52b8f7b9382a4a194baf0d5b5db880ee6"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/18a21e16309750f041a950e4bb8e67114f55966bafa8ab4dcf8487e1c11cb90e",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/3883-3908/d3098427a1d9878f",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3909,
+     :end-byte 3932,
+     :sha256
+     "4a0adcba8331b40e4e2a15a94f37d0efaf20b1870dd0340b41446afc6f279888"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/859af55c868c0efddc687c9c4b95143bff060dcb031b248eefa9f339b298b4ff",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/3909-3932",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3933,
+     :end-byte 3954,
+     :sha256
+     "d9a0dcab50023bdbd98cf5ec3a5553460c570654eae84c348263879f4d17485c"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/3933-3954",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3954,
+     :end-byte 3974,
+     :sha256
+     "1c7950526ad884e79749e85f1c5d3ba1d25ff7489e58f668082b4347cb884a48"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/3954-3974",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 3974,
+     :end-byte 4000,
+     :sha256
+     "32e340114bf2708b92b76167707feb97efc5693adb53d3481b919989db5df39c"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/3974-4000",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4000,
+     :end-byte 4022,
+     :sha256
+     "bcc94f61ca802c175ab4ca3f439725ebb2ca4779a849033f2a1dba4e14c059ab"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/4000-4022",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4022,
+     :end-byte 4042,
+     :sha256
+     "23d36da46bb7ec701870badadf7fa20d2163359c8a9c4cc57deac740d3e8dd97"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/4022-4042",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4042,
+     :end-byte 4077,
+     :sha256
+     "574acc291bf5f9999161ca776d20cd7c62964211bfca4345fcc32cc27650ed0b"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/4042-4077",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4077,
+     :end-byte 4098,
+     :sha256
+     "faac018ea509aa537657979f4747312c2271341cdc90b3879b47b4fe08e78586"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/4077-4098",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4098,
+     :end-byte 4156,
+     :sha256
+     "4c9af9f89d4c97d4dcf960091ec1c2e84920101961b5df6d76d9cf3fc3718c60"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/4098-4156",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4156,
+     :end-byte 4183,
+     :sha256
+     "9cac5877395df5636ade740970093c22c1ce337719d35ac94b5fb440d220413f"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/4156-4183",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Runtime Check Records",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4184,
+     :end-byte 4276,
+     :sha256
+     "7738806131b3e1f40160c23c2ec0dda80e6eda41893dd3f30dba877d14d406c0"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8f951e474962d9a2121eb10bb07df6cc1ab087713f123fc4045a0ffca52c43d9",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/4184-4276",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Proof Obligations",
+    :census-kind :context,
+    :source-span
+    {:start-byte 4277,
+     :end-byte 4298,
+     :sha256
+     "1af77a1493035606e6b94cf1efdab81af02af8446696f913f942fe1d9265265a"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/8296c849d8a0b04c68108e207c93b0e1475d0720ed294dd26b8bfbc9b3f0fb81",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/4277-4298/1af77a1493035606",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4299,
+     :end-byte 4347,
+     :sha256
+     "42262028112e84798409226f983a1813758c51be554317b619ef8536f4642553"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/07d34aa1be0d5e6f71530a612c091aa7e547ca8b8679eb61cd3d8bd06be7542d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4299-4347",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4348,
+     :end-byte 4358,
+     :sha256
+     "dff6451a7954c06a9564bfd37253c0e7b9bde1fed1f582f52b8401fd833607f3"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4348-4358",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4358,
+     :end-byte 4376,
+     :sha256
+     "8da18afe6ca59014a80bf2898d784aa461d19983b3e0359e79b78aab28d7bcdb"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4358-4376",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4376,
+     :end-byte 4388,
+     :sha256
+     "865ab245173f30172f6f57498c6c2f27c3968d3a0a2fc5d401a33d73466b7fbf"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4376-4388",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4388,
+     :end-byte 4400,
+     :sha256
+     "721b5e9589e0df387ad0ca24b0349bbcc2e76dd61765a719e238f4c8984cab9c"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4388-4400",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4400,
+     :end-byte 4417,
+     :sha256
+     "72c753f1fcbd28b39eabbef7a88f9d6315ae48ec5da3d9b1e0699e6bf16ad9aa"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4400-4417",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4417,
+     :end-byte 4444,
+     :sha256
+     "a996f17e21d6c7971b3313654c0ebd760c60dc2d79b169012e373cc715caf548"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4417-4444",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4444,
+     :end-byte 4465,
+     :sha256
+     "88db40066f1507576e249d0bc93c7717a9951ac623932df48d48cafa096ae3f1"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4444-4465",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4465,
+     :end-byte 4483,
+     :sha256
+     "1b3dcb82e90db299b1af72f650939f0ec53bb492def4d073128283c1e38c5aab"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4465-4483",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4483,
+     :end-byte 4503,
+     :sha256
+     "f7e58cc129319707d2832a723a8cff11df87f5fd732ff4c45262a82ba5d6d820"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4483-4503",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4503,
+     :end-byte 4525,
+     :sha256
+     "8457e6283511f5e716a1486952841a0638a9094cc00ac2fae31ca608fe41cc7b"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4503-4525",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4525,
+     :end-byte 4542,
+     :sha256
+     "53f346fc05bafe6456f134bd2532fa76cf478eead52b32e98f2ea38b4044307c"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4525-4542",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4542,
+     :end-byte 4558,
+     :sha256
+     "f67ef2015d37dd544299ddd19b971b84bdb36776a7a284305099ba241588aecd"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4542-4558",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4558,
+     :end-byte 4576,
+     :sha256
+     "ce3cec0f897d44cd64aae36728901e2b0ca911b58f77a833cf82216b2c344538"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4558-4576",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Proof Obligations",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4577,
+     :end-byte 4717,
+     :sha256
+     "c93c20f98cc55b28de0d9d589f696e74d9832aef0f682688d7f454cda9fef976"},
+    :criterion-keys [:decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/6454c390bc4b1f2197276cf1d998a94b6a0be5f67a066e497664b5b6e5fc4204",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/4577-4717",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Unsafe Island Extraction",
+    :census-kind :context,
+    :source-span
+    {:start-byte 4718,
+     :end-byte 4746,
+     :sha256
+     "f0525ea3c1d52f2ff2648b28cb86b39b2fe09a91625e1f5a9a912f6ddfdf6062"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/79515f3c721532a82bc533f7f570ae372b29c0202a014e11a90c4667dea8fbd4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/4718-4746/f0525ea3c1d52f2f",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Unsafe Island Extraction",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 4747,
+     :end-byte 4778,
+     :sha256
+     "b9cd2d533ad5bcffa40743cf0570d6e4a7f43f614dab3880574ccd81cfe254e1"},
+    :criterion-keys [:decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/205d38f8400e66f574326d2462c0fdbd8ea78d407081a210ace30d9ec2b9cfe4",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/unsafe-islands"],
+    :id "C10/facet/4747-4778",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Unsafe Island Extraction",
+    :census-kind :schema,
+    :source-span
+    {:start-byte 4779,
+     :end-byte 5453,
+     :sha256
+     "cc74408095db0abb671deb418fbedd424141f99a52770fae2e27885ccf30f4a4"},
+    :criterion-keys [:decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/7d687a6334a2e20e6a74be157c5723286ea925a39324d1c900d0d15345819e8e",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/unsafe-islands"],
+    :id "C10/facet/4779-5453",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Unsafe Island Extraction",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5454,
+     :end-byte 5533,
+     :sha256
+     "11333a25467ee9a0e764ce1176023497a7712dffae0a727f07a86975dcdba389"},
+    :criterion-keys [:decisions],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/b4c2279df0970458472b293f6afb07471c440296b0a85035fbf21777125b9c41",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/unsafe-islands"],
+    :id "C10/facet/5454-5533",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Pipeline Order",
+    :census-kind :context,
+    :source-span
+    {:start-byte 5534,
+     :end-byte 5552,
+     :sha256
+     "6847387325b242f25ba010b52bcd094328d33bdc28634a89bf329b9a42ad368c"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/4218a95faf12d2e8772890de399751c19840963c00e8210a6dcbd863f713e84f",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/5534-5552/6847387325b242f2",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5553,
+     :end-byte 5669,
+     :sha256
+     "a1c9618b11ac3e50ed8674216798a6f52fabc3ab8a9bdbd645d6978ea98b92f4"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/54556ab553713430a48a1ccf013844d1d1e00a9676a59efdb86c57d40e432b2e",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5553-5669",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5670,
+     :end-byte 5693,
+     :sha256
+     "4133fed4195ebecf84bf30a34401e4af95031b2e5861562b6bf32bee77223bee"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5670-5693",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5693,
+     :end-byte 5751,
+     :sha256
+     "ff27106d631e233be563a9b6c28150c3369ae867e72107b9886a4c9ddb7f64fc"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5693-5751",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5751,
+     :end-byte 5783,
+     :sha256
+     "d94691746f92941939274cac4c6a7b40b7d3fb6fa2e076b8ddd0c77aa09baf2a"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5751-5783",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5783,
+     :end-byte 5804,
+     :sha256
+     "de41b8c35f83c92fcbb9ec7cc098d53920d3e0079024e5007ac1c26c02865e07"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5783-5804",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5804,
+     :end-byte 5850,
+     :sha256
+     "7732773ca71c74b54730b06b551c25b565e31b1b899cf8af78841bb811e0b4a5"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5804-5850",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5850,
+     :end-byte 5877,
+     :sha256
+     "bc80cc6506aa02ac075b0069818780e086231637897524f7b4fc5cb7bb3f304e"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5850-5877",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5877,
+     :end-byte 5920,
+     :sha256
+     "7d0a2d36154e08eb39c7984dd2426cc4da0d5c0d5c59c87ffcf4920caa7ea9da"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5877-5920",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5920,
+     :end-byte 5957,
+     :sha256
+     "5f1d650a38c23640134361545845db1c9806949c1f810f06f97d1de59b111435"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5920-5957",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Pipeline Order",
+    :census-kind :semantic,
+    :source-span
+    {:start-byte 5958,
+     :end-byte 6081,
+     :sha256
+     "5d97618ef0cbb2d6aa58d714cbfa41e620b162e8cff3c65bb6fcdd08ec8fdd2a"},
+    :criterion-keys [:inventory :decisions :preservation],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/da20623b075f23cf720d31969f31125c4b72f29dd23dec8846360ba80410275c",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/5958-6081",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Diagnostics",
+    :census-kind :context,
+    :source-span
+    {:start-byte 6082,
+     :end-byte 6097,
+     :sha256
+     "84b964dab09b580d85bc6c25ae5289e07a178aada1792ed38b72a4e79230f004"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/f8a3b10ffa43a50fc70cca9ef026268753f5049b31a9c5c86267986c04118971",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/6082-6097/84b964dab09b580d",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6098,
+     :end-byte 6149,
+     :sha256
+     "96747f939ab10d109a169ae0fb45505a63a816be1686f34ee7d7a3a5b3a9cff3"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ffc10d6d6b38a2138aa3fe382eca3c78323cee014d7bf121f90024a3df584f05",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6098-6149",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6150,
+     :end-byte 6225,
+     :sha256
+     "61a39e1b9886e9630b7149992f989ae437c7cc3e8e52bd8bd11c6c54e5743bf5"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6150-6225",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6225,
+     :end-byte 6278,
+     :sha256
+     "5f212b48142c5b944d4cd67573f5040ac4fb7b8afd73b17351b02fe16631c5c5"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6225-6278",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6278,
+     :end-byte 6331,
+     :sha256
+     "f5c26d9f1cd389887bc2f3c39d766f9ebcd2e9f65ec86f045fe79fa5fbefb082"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6278-6331",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6331,
+     :end-byte 6402,
+     :sha256
+     "78e476221d223a6035880b5e3a5ca7eef851ebea9f23970797c32f3f8d347e3d"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6331-6402",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6402,
+     :end-byte 6478,
+     :sha256
+     "fdb50118234865545f4f776baa6f8e07c1dcc7982445b494f30100d2d957dc05"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6402-6478",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6478,
+     :end-byte 6531,
+     :sha256
+     "ea9407d7a69ee909e9f410b29dc6d334fefc0c2343024385fc045d397f2ab8d1"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6478-6531",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6531,
+     :end-byte 6601,
+     :sha256
+     "f4813f2b72efcff56b738db95e54d391bdb1da58132b2a66573e77418f3128d0"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6531-6601",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6601,
+     :end-byte 6647,
+     :sha256
+     "bddc128e82edebb93c739638e6f878ca675df40efb8c3054f27d3fe8357dae00"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6601-6647",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6647,
+     :end-byte 6688,
+     :sha256
+     "d012fb0ad4534e92bec3eb3fbd1953e77581ef34039e70f2bed9f34063b8cb91"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6647-6688",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6688,
+     :end-byte 6758,
+     :sha256
+     "172c4a092b17198a1b5dc3404670e4543c43c61410616820f30e36f92461fcbc"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6688-6758",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Diagnostics",
+    :census-kind :diagnostic,
+    :source-span
+    {:start-byte 6759,
+     :end-byte 6948,
+     :sha256
+     "1fc3c3e17737b9a7ff2c6d636f26fd52d8ea1f610d5d05150cc1455e930d212e"},
+    :criterion-keys [:decisions :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8b4238ba64958c7c835d43bf60e80017e75a3d131464b22b87fd091c60feba2b",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/6759-6948",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Rejected Designs",
+    :census-kind :context,
+    :source-span
+    {:start-byte 6949,
+     :end-byte 6969,
+     :sha256
+     "81a99744c82b0f200a1b23f569815e25e994ddb3455b81be46a31fd7408dcd80"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/c860575672e032922d7ac7904934ee0e49b415597ba44f1aecf6a7d94b2a6ad3",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/6949-6969/81a99744c82b0f20",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Rejected Designs",
+    :census-kind :negative-case,
+    :source-span
+    {:start-byte 6970,
+     :end-byte 7028,
+     :sha256
+     "001b2982496a29704d6f4da12f0dc863e67e0839b8909e57ec3ec3abf182d7b1"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8cb11c336a4206d896b935b6c178b65a3e7456a333774d9d185c6d1ae460596d",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/6970-7028",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Rejected Designs",
+    :census-kind :negative-case,
+    :source-span
+    {:start-byte 7029,
+     :end-byte 7094,
+     :sha256
+     "d6d73c2b807dcc6e57251ca1215a1eba31d27caa2a792b4b970f0315b2cda4c5"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/311306cd9bb98989a175dec5fdc2f8b6207dad0d1677d5264d15efd4070cc629",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/7029-7094",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Rejected Designs",
+    :census-kind :negative-case,
+    :source-span
+    {:start-byte 7095,
+     :end-byte 7175,
+     :sha256
+     "c2bfc688a5316c1737f4c1a87bc582b567b11b95c6c87dc3e6ae3516868d34fb"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/1760def5883f990c19f91873140b53350415b32763ff6324a5d8269d7f40c3f2",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/generated-safety-origins"],
+    :id "C10/facet/7095-7175",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Rejected Designs",
+    :census-kind :negative-case,
+    :source-span
+    {:start-byte 7176,
+     :end-byte 7240,
+     :sha256
+     "f909915778c9be8acd3babe080a3b12264a289477715779ce3c7cd4d61c56b21"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/ac99f0a7093b3c8c51552e0f5cef15f4abc842a58615e0c8af999d69b3a4a6a1",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/7176-7240",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Rejected Designs",
+    :census-kind :negative-case,
+    :source-span
+    {:start-byte 7241,
+     :end-byte 7310,
+     :sha256
+     "494174ab239c0b38764dcf22342ab8d331f864f75638b264705362aa0bf1bf40"},
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/db07d463e1c1cef178a5326130d57f3779da74a6b9420930593013b340475120",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/safety-artifact"],
+    :id "C10/facet/7241-7310",
+    :document-id "C10"}
+   {:role :retained-hierarchy-or-provenance-context,
+    :source-section "Conformance Criteria",
+    :census-kind :context,
+    :source-span
+    {:start-byte 7311,
+     :end-byte 7335,
+     :sha256
+     "4cea7efb2bd3a140f2517b9e6a6e71fc6809db54e3f8158b9ed8f31c3ae7eae2"},
+    :criterion-keys [],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :format-or-hierarchical-context-preserved-not-standalone-implementation,
+    :source-occurrence-id
+    "C10/source/7b09cd1ab1fda0891b3a4fe9426a80226443c7104e6be5422c4d58a680a761a0",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids [],
+    :id "C10/normalized-facet/7311-7335/4cea7efb2bd3a140",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7336,
+     :end-byte 7383,
+     :sha256
+     "548bc6c9738d509693227247f6b7592094f4c7ee370484d082e57329020f563b"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"
+     "interface/safety/safe1/runtime-checks"
+     "interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/8aee2bd276386d6d9cc6f547343467c1a3c7589620507af67d8e22e54ec6b3ba",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids
+    ["safety/safe1/safety-artifact"
+     "compiler/c10/generated-safety-origins"
+     "safety/safe1/runtime-checks"
+     "safety/safe1/outcomes"
+     "compiler/c10/safety-proof-lifecycle"
+     "compiler/c10/unsafe-islands"],
+    :id "C10/facet/7336-7383",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7384,
+     :end-byte 7416,
+     :sha256
+     "a1bfdf8a0601fbc5dec88ee75ed6d6f56b5b1c146abc9252ce9c9c15d886d7ac"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/7384-7416",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7416,
+     :end-byte 7476,
+     :sha256
+     "4663d7f9aeaaa10970b6d2cf795fd1a074478580f5569a8883d84158db97373f"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/7416-7476",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7476,
+     :end-byte 7533,
+     :sha256
+     "abad50af0f911851c92f91414deaba1756c938f33c83d18c9594a17e06c030d4"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/runtime-checks"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/runtime-checks"],
+    :id "C10/facet/7476-7533",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7533,
+     :end-byte 7576,
+     :sha256
+     "226433cf80c6e244995c32f11bfc1c18d35b5167929bf7dbe6990aac363e5974"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/7533-7576",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7576,
+     :end-byte 7630,
+     :sha256
+     "262864b24a00305bf00ccecc1c315f2f3f00489be053ca3cef69102e5d72f284"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/outcomes"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/outcomes"],
+    :id "C10/facet/7576-7630",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7630,
+     :end-byte 7673,
+     :sha256
+     "40700a41bc1164cde64dcc18a23937f011e54249693410091b7dbf01ee6907f2"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/unsafe-islands"],
+    :id "C10/facet/7630-7673",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7673,
+     :end-byte 7736,
+     :sha256
+     "c746a0eea153e32f23cd3ba05ae264d2de604688216d41df0cdadefeb1a005eb"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/generated-safety-origins"],
+    :id "C10/facet/7673-7736",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7736,
+     :end-byte 7796,
+     :sha256
+     "42d4f2b8d86b73a11aeb65e4cb3511178fe50d7ad5b4f58d7f1ab98f42f35d61"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids [],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["compiler/c10/safety-proof-lifecycle"],
+    :id "C10/facet/7736-7796",
+    :document-id "C10"}
+   {:role :complete-source-predicate-conjunction,
+    :source-section "Conformance Criteria",
+    :census-kind :acceptance-case,
+    :source-span
+    {:start-byte 7796,
+     :end-byte 7865,
+     :sha256
+     "40a2f7ac87202872725d5ad933018c57be0d43c30d5be1a4f39dd601d251cd34"},
+    :criterion-keys [:conformance],
+    :current-entailment :proposal-pending-independent-review,
+    :candidate-current-decision-ids
+    ["interface/safety/safe1/safety-artifact"],
+    :census-disposition
+    :exact-complete-predicate-conjunction-entailment-pending,
+    :source-occurrence-id
+    "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb",
+    :source-path
+    "docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md",
+    :owner-requirement-ids ["safety/safe1/safety-artifact"],
+    :id "C10/facet/7796-7865",
+    :document-id "C10"}],
+  :task-source
+  {:path "specs/legality-workflow/tasks.md",
+   :after
+   {:commit "4d3de0d4fe0eb43e5874e2988dbf03113755cd5b",
+    :sha256
+    "2c84b66234d2f8369e53215ff1480da3ae1716775a8ff93d2fcc6697ce865b7c"}},
+  :historical-review
+  {:source-census :qualified-conservation-only,
+   :C10-specific-review :not-supplied-by-this-proposal,
+   :current-acceptance :not-conferred,
+   :whole-owner-conjunctions :unassessed},
+  :markers
+  {:inventory "legality-canonical-safety-inventory",
+   :decisions "legality-canonical-safety-decisions",
+   :preservation "legality-canonical-safety-preservation",
+   :conformance "legality-canonical-safety-conformance"},
+  :changed-task-ids
+  ["legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
+   "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"
+   "legality/remaining-tasks-and-evidence/close-conformance-for-the-declared-profile-surface"],
+  :section-conjunctions
+  {"Dependencies"
+   {:occurrence-ids
+    ["C10/source/1c70f601efc71f19ebcd8e15c69c4090c6d6826d250463b88907b3386be56c47"],
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Operation Inventory"
+   {:occurrence-ids
+    ["C10/source/2242d4bddfd0b06a7fb58e7a75ff22a7063690b1d7c3e9e5660b010085a532df"
+     "C10/source/6b1a0f4112cff2f35dc9062955f3b838941d494445564b7c7fa3dc620eae8172"
+     "C10/source/d27aaca3e6cd34604caea4771ddc033c8605abde961686b11c949ab36e0fbf15"],
+    :criterion-keys [:inventory],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Outcome Record"
+   {:occurrence-ids
+    ["C10/source/ecc5a3b013b452347fdcfda515484fee401a0756f00f2056c9bdcac28be0727a"
+     "C10/source/7d15203cfaa76755983387524a08e84a2e799c9ed306fda6c097f517d9d24394"],
+    :criterion-keys [:inventory :decisions],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Pipeline Order"
+   {:occurrence-ids
+    ["C10/source/54556ab553713430a48a1ccf013844d1d1e00a9676a59efdb86c57d40e432b2e"
+     "C10/source/06548240fbb08f0499f4c536143899f45fe8596a19c25774094d96e479ba01f7"
+     "C10/source/da20623b075f23cf720d31969f31125c4b72f29dd23dec8846360ba80410275c"],
+    :criterion-keys [:inventory :decisions :preservation],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Diagnostics"
+   {:occurrence-ids
+    ["C10/source/ffc10d6d6b38a2138aa3fe382eca3c78323cee014d7bf121f90024a3df584f05"
+     "C10/source/24f5da57c3e02909e6a6322f53c729a16c4dc2b3998728e8ad5e1d8bd92961c1"
+     "C10/source/8b4238ba64958c7c835d43bf60e80017e75a3d131464b22b87fd091c60feba2b"],
+    :criterion-keys [:decisions :conformance],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Requirements"
+   {:occurrence-ids
+    ["C10/source/8a36dfee9b7f36d9ba3b4c1a1a7a33ce7dce439d0fd404a6d2d337607f264c4d"],
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Purpose"
+   {:occurrence-ids
+    ["C10/source/3392daf14d3c84202dd07099d3193a1ef68803c5b3905b085e21650308cc7a90"
+     "C10/source/8777ed9d6c0dde0a21106361f14b5f7822ced9b73c8d2dc0137b4f8c2f495fe3"],
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Conformance Criteria"
+   {:occurrence-ids
+    ["C10/source/8aee2bd276386d6d9cc6f547343467c1a3c7589620507af67d8e22e54ec6b3ba"
+     "C10/source/cc8cc54be7f889256afd6676b42df0e5206191cc27616e8b242254e6a74efbcb"],
+    :criterion-keys [:conformance],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Outputs and Artifacts"
+   {:occurrence-ids
+    ["C10/source/ecc4d6d10faec00f21bc2952a1e49a43e66970151e7318373b13b143579c7ca4"],
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Runtime Check Records"
+   {:occurrence-ids
+    ["C10/source/859af55c868c0efddc687c9c4b95143bff060dcb031b248eefa9f339b298b4ff"
+     "C10/source/8ccfd7b240df0c5d2de1e7f4221fe6efe934975bb72004e67cc00f9414d977b2"
+     "C10/source/8f951e474962d9a2121eb10bb07df6cc1ab087713f123fc4045a0ffca52c43d9"],
+    :criterion-keys [:decisions :preservation],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Unsafe Island Extraction"
+   {:occurrence-ids
+    ["C10/source/205d38f8400e66f574326d2462c0fdbd8ea78d407081a210ace30d9ec2b9cfe4"
+     "C10/source/7d687a6334a2e20e6a74be157c5723286ea925a39324d1c900d0d15345819e8e"
+     "C10/source/b4c2279df0970458472b293f6afb07471c440296b0a85035fbf21777125b9c41"],
+    :criterion-keys [:decisions],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Rejected Designs"
+   {:occurrence-ids
+    ["C10/source/8cb11c336a4206d896b935b6c178b65a3e7456a333774d9d185c6d1ae460596d"
+     "C10/source/311306cd9bb98989a175dec5fdc2f8b6207dad0d1677d5264d15efd4070cc629"
+     "C10/source/1760def5883f990c19f91873140b53350415b32763ff6324a5d8269d7f40c3f2"
+     "C10/source/ac99f0a7093b3c8c51552e0f5cef15f4abc842a58615e0c8af999d69b3a4a6a1"
+     "C10/source/db07d463e1c1cef178a5326130d57f3779da74a6b9420930593013b340475120"],
+    :criterion-keys [:inventory :decisions :preservation :conformance],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit},
+   "Proof Obligations"
+   {:occurrence-ids
+    ["C10/source/07d34aa1be0d5e6f71530a612c091aa7e547ca8b8679eb61cd3d8bd06be7542d"
+     "C10/source/32a08c4047318e98abdd2f0e8b80f4d9e73666a2a8fb8eeb05617b9dfc110d78"
+     "C10/source/6454c390bc4b1f2197276cf1d998a94b6a0be5f67a066e497664b5b6e5fc4204"],
+    :criterion-keys [:decisions :preservation],
+    :qualification
+    :preamble-list-example-and-following-condition-jointly-required-no-fragment-only-credit}},
+  :census-kind-population
+  {:context 33,
+   :requirement 7,
+   :semantic 53,
+   :schema 2,
+   :diagnostic 12,
+   :negative-case 5,
+   :acceptance-case 10},
+  :global-source-conjunctions :unassessed,
+  :qualification
+  "Reuse all 122 C10 census facet ids, 47 source occurrences and six owner allocations. Four clauses refine three already-amended Open Legality tasks without importing aggregate rows or adopting its global predicates. Section conjunctions retain preambles, lists, examples and following qualifiers; headings/provenance alone get context-only roles. Full specialized SAFE1-SAFE16/PERF10/profile/other attached-owner predicates, additional C10 dependency results and current implementation acceptance remain unassessed. No held action is executed or acceptance renewed.",
+  :source-census
+  {:path
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
+   :commit "55fed8d91eb6c9b3fb5c50c8ca5dbdf7d67545f6",
+   :sha256
+   "579b7d209794d104e321507c71935949dda3ca4d6a4566c13eb457497db583d8",
+   :selected-document "C10",
+   :selected-facets 122,
+   :selected-occurrences 47,
+   :authority
+   :preserved-identity-and-conservation-only-no-aggregate-adoption},
+  :implementation-source-inspection
+  {:scope
+   :static-selected-definitions-and-explicit-policy-nonclaims-not-execution,
+   :files
+   [{:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/inventory.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "c2576ff54f52f8a19acaf855d7bd53a28317379f06cae6f283c728d12c153338"}
+    {:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/outcomes.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "7833c0732d14c76c9d649143b4f6450acbd08b93590ac6d313e3910ca7758ba3"}
+    {:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/evidence.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "650d07278c0c3f3a7474957703ab1cde4b6cb94e88ca3d33c8b10a619c58192e"}
+    {:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/verification.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "0cf3125032bb6fff3d558643aa87a02da633642f97f9df88de9ce7a0f530038e"}
+    {:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/contract.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "8cf168a5af4006e251cfaaae637728cf88b73afe72fc4af3df52ae4858269ce3"}
+    {:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/policy.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "381a578ec0f749f6e4d40892dafc6d31247c538047c5f091c5f67cfaba082f9f"}
+    {:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/pipeline.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "58f1bbb4a653ef2a06477a26fb34fd1474344d86c68d9afb5b417cd38aaad92e"}
+    {:path
+     "bootstrap/clojure/src/gravity/c10_safety_analysis/defaults.clj",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "61ae1d239a5d54074ffcb25e093c593047d5e34ddd83ef4ccfd58cc3c363c23b"}
+    {:path
+     "bootstrap/gravity/src/gravity/compiler/c10_safety_analysis_pipeline.gravity",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "786b98b8c307bb96271126a3ab876bcb8c0d54037a26afe31020e79832826a11"}
+    {:path
+     "docs/artifacts/phase-06/reports/p06-d089-c10-safety-analysis-report.md",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "099381a1d661cd46a9b8cdbda548d1d381e9334c2ba80b66767b2cbfa79c7a43"}
+    {:path
+     "docs/artifacts/phase-15/reports/sh07-c10-development-artifact-reuse-attempt-2-evidence-erratum.md",
+     :source-commit "57540eaa7ed55fa3ae223e2cea926783bd358bcc",
+     :sha256
+     "102607f64334c54865765abb3b5a22504e350d430d3872d170a70feef09c5ea5"}],
+   :hosted
+   :fixed-examples-set-equality-and-assigned-states-not-complete-analysis,
+   :gravity
+   :normalized-numeric-recomputation-and-scoped-authenticated-read-numeric-adapters-with-explicit-seed-digest-and-operation-identity-residuals,
+   :accounting
+   :structural-quotas-removed-requirements-preserve-actual-type-index-width-authentication-semantics},
+  :newly-amended-original-task-ids [],
+  :implementation-acceptance :unassessed},
  :input-fingerprint
- "6c8c36a240daf062c0d54823d6d6cbb252a374d3ccca6861db498ecb0a3e03aa"}
+ "e5b755fbae65bb72ce6a160710a4f992e0684a3f09c238ab605e30ee9ae498b8"}

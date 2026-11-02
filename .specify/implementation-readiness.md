@@ -2313,3 +2313,93 @@ contents. All changed files are ASCII and whitespace checks pass. Test reader
 delimiters were corrected before the successful checks; failed preparation
 receives no passing credit. No compiler/provider/runtime/target or held
 execution ran, and no current independent acceptance is claimed.
+
+## Safety coordinator source refinement
+
+Source-only commit `4d3de0d4fe0eb43e5874e2988dbf03113755cd5b` refines the
+existing [Legality plan](../specs/legality-workflow/plan.md#complete-safety-pipeline-source-criteria)
+and three Open task bodies against the complete
+[C10 contract](../docs/phase-06-compiler-architecture/089-c10-safety-analysis-pipeline-design.md).
+Four new criterion blocks share the existing safety-classification, MIR/runtime
+handoff and profile-conformance tasks. Inventory and decision criteria have the
+same classification owner. No task identity, title, status, original criterion,
+historical receipt or accepted implementation result changes.
+
+The existing all-240 census at preserved `55fed8d9` supplies 122 C10 facet
+identities, 47 source occurrences and six owner allocations. No standalone C10
+qualified semantic review was supplied. Its original context/requirement/schema/
+semantic/diagnostic/refusal/acceptance classifications and pending/candidate
+owner dispositions remain. The current proposal joins 107 substantive facets
+across 32 source occurrences; fifteen headings/provenance facets remain context
+only. Thirteen section conjunctions explicitly retain every associated semantic
+preamble, list, example and following qualifier. Byte coverage and these joins
+test conservation and a reviewable proposal; they do not establish independent
+entailment or adopt the aggregate's global predicate.
+
+The new criteria require the real inventory of every C10 operation family,
+actual typed/effect/ownership/grant/profile/target/origin inputs and specialized
+SAFE checks in their governing order. Every actual operation needs exactly one
+four-way outcome. Missing, duplicate, conflicting and unknown operation/outcome
+records refuse; operation-ID set equality alone cannot prove uniqueness. The
+criteria require exact guarded-operation check conditions, emitted locations,
+failure/effect/performance/invalidation context, all thirteen proof-obligation
+families, policy-scoped discharge, full unsafe audits and safe-wrapper rules,
+taint/capability reports and dual source/generated diagnostics. All ten C10
+diagnostic meanings and their required context remain.
+
+Handoff composes actual check/proof/audit/source products through MIR, Opt,
+Lower, backend, Runtime and diagnostics. SAFE15 and PERF10 govern exact claim
+trust, dominance, preservation/regeneration, residual checks and restoration or
+rejection after invalidation. Policy checks require equivalent policy evidence;
+speed never grants capability, unsafe, replay or human-review authority.
+Conformance distinguishes fixture verdicts from operation outcomes, inspects
+actual artifacts and feeds existing SAFE15/SAFE16/Release consumers. It creates
+neither another analyzer for specialized SAFE families nor another test harness.
+
+Static inspection of the hosted C10 inventory/outcomes/evidence/verification/
+pipeline/contract shows fixed example products, assigned discharged/accepted
+states and presence/set-equality checks; its contract explicitly denies
+canonical and complete safety authority. In particular, set equality collapses
+duplicate outcomes. This observation is not an executed exploit or compiler
+test. Later Gravity definitions perform real normalized numeric classification
+and complete-result recomputation, scoped persistent-read binding, and exact
+residual division/bounds/overflow/narrowing checks with explicit seed, digest,
+numeric-value and operation-producer residuals. Those later kernels must not be
+erased by quoting the initial constructors, or promoted to full safety support.
+The retained structural input quotas remain removed requirements; actual type,
+index, width/representability and authentication requirements survive. The June
+25 C10 report remains stage0 document coverage; the SH07 development-carrier
+erratum does not grant safety or release acceptance. No such path ran here.
+
+Metadata `:safety-refinement` retains predecessor `57540eaa`, its complete
+projection/fingerprint and both C9 refinements unchanged. Only the affected
+Legality task/plan source pins advance. The 139-original-body comparison stays
+84 identical / 55 explicitly amended, with 149 current keys in 25 authorities,
+forty future records, all original SH/SH07 routes and three Reader receipts.
+Fingerprint:
+`e5b755fbae65bb72ce6a160710a4f992e0684a3f09c238ab605e30ee9ae498b8`.
+C9 controls now inspect their exact recorded checkpoint; the new C10 controls
+assess current source joins rather than attributing new clauses to old review.
+
+The existing 300 selected-result joins retain their C9 and other recorded
+scopes. Additional C10 dependency producers and full specialized SAFE/profile/
+PERF10/attached-owner conjunctions remain explicitly unassessed. Current semantic
+review and implementation acceptance remain pending. All actual execution and
+publication restrictions remain; no other chat is messaged. Reader contract
+coverage is still the first implementation preparation increment. Whole-project
+readiness, independent acceptance, integration and implementation are unfinished.
+
+C10 validation passes: 46 crosswalk tests / 6,828 assertions and 23 dependency
+tests / 1,950 assertions, deterministic projection generation/check, read-only
+dependency audit, both document validators and the language boundary (six tests /
+eleven assertions). Controls bind all 122 source spans, 47 occurrences, thirteen
+section conjunctions, six owners and four actual current clauses, with removed
+facet/section-condition and unknown-criterion controls. Historical C9 subjects
+remain fixed. Conservation passes for 83 changed files, 77 Markdown files, 3,077
+local references, 139 original routes, 48 historical spec/plan suffixes and all
+48 original task/evidence contents. ASCII and whitespace checks pass. Scratch
+reader delimiters were corrected before execution. An early dependency check
+read the previous projection before generation finished and refused stale plan
+inputs; the post-generation checks above pass. No failed preparation receives
+passing credit. Full compiler/semantic/provider/runtime/target suites and held
+actions were not run; no current independent acceptance is claimed.
