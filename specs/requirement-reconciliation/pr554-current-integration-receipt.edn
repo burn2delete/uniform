@@ -83,7 +83,9 @@
    {:command "clojure -M tools/pr554_frozen_source_view_test.clj"
     :tests 4 :assertions 48 :failures 0 :errors 0}
    :requirement-reconciliation
-   {:tests 31 :assertions 270 :source :existing-focused-gate}
+   {:command "clojure -M tools/requirement_reconciliation_test.clj"
+    :tests 31 :assertions 270 :failures 0 :errors 0
+    :log "/tmp/uniform-pr554-transition-reconciliation.log"}
    :frozen-source-view-verification
    {:verified 84 :entries 84 :result :pass}
    :pinned-lint
