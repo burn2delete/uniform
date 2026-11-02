@@ -3705,3 +3705,103 @@ spec/plan suffixes and all 48 original task/evidence contents after declared
 additions are removed. ASCII and whitespace checks pass. These checks execute
 traceability tooling; they establish no compiler/provider/runtime/release result,
 independent acceptance or integration.
+
+## Complete compile-time evaluation source continuation
+
+Direct review of complete L12 adds fifteen criteria to twelve existing tasks in
+Expand, Build, Auth and Compiler API. The [complete source criteria](../specs/expand-workflow/plan.md#complete-compile-time-evaluation-source-criteria)
+account for 131 facets, 89 source occurrences, twenty section conjunctions and
+eight original owners. The proposal retains complete source spans and separates
+106 semantic versus 25 contextual facets, and 67 semantic versus 22 contextual
+occurrences. This is proposed entailment, not independent source acceptance.
+
+Restore three missing profile74 witnesses in their existing evaluator,
+generated-program and build-phase owners; preserve two already exact build-effect
+and hermetic-reproduction predicates. All five remain finite historical review
+subjects, with no renewal or new consumption. Historical compiler-generated
+checks referenced Auth, but the existing qualified generated-program consumer is
+Expand5; Auth still supplies grants and secret policy. The evaluator stays at
+the existing Expand1 allocation, phase-graph execution at Build, and the compiler
+API retains actual pass/extension boundaries. No task identity or status changes.
+
+Completion needs computed values and target encodings, available eligible
+functions, ordinary semantic checks, complete generated origins/validation,
+immutable observable phases, actual scoped build actions, authentic namespace
+records, policy-validated cache reuse and repeated byte-identical typed Core.
+All thirteen build/compiler effects and nine explicit source profile cases stay
+visible. Build alone constructs/invalidates/revalidates cache entries; Expand
+consumes the result and Build reproducibility compares actual repeated builds.
+Archive/shipping/signing remain separate, policy-dependent consumers.
+
+Five source facets explicitly retain superseded accounting context: three fuel/
+totality-admission/diagnostic predicates and two model/tool cost references.
+Do not enforce L12-FUEL, rename it as another bound or require a replacement
+totality proof before useful evaluation. Preserve independent proof claims,
+explicit legal runtime fallback, semantic/phase/cycle failures, representation,
+provider identity/input/output/retention/review, real host/watchdog restrictions
+and external billing. Secret values remain excluded from public code, diagnostics,
+stable keys and provenance; private-store acceptance is a distinct held boundary.
+The existing phase-order and L6/L12 environment-wording decisions remain visible.
+
+Static selected-source inspection finds real hosted policy refusals and template
+expansion alongside assigned record-validation/replay/reuse statuses. The Gravity
+macro owner declares a narrower defn subset, and its compatibility facade denies
+authority credit. Those sources neither prove complete L12 evaluation/reproduction
+nor erase existing narrow implementation scopes. Fuel/depth source cleanup stays
+with the existing accounting-removal owner; no compiler operation is executed.
+
+The source subject is `3fca520b302f8f101282034d36855aa4d06b115f`, continuing
+`b847289f90e202ce7f1718744789938c1b43dad5`, with applying fingerprint
+`9cc48ef084675c97c45c03b1be83643d1f9bf32f49310f12c9d87853f0a508ea`.
+Four task files, fourteen plans and
+three specifications are refined; 149 keys, 25 authorities, forty future records
+and all original identities/statuses remain. Six previously identical original
+bodies now carry criteria: pipeline, plugins and Expand1/2/4/5. The original-body
+comparison is now 61 identical and 78 amended. All earlier source/dependency
+subjects stay frozen; the preceding live dependency regression now reads its
+complete recorded predecessor. The 834-join/91-route dependency table is unchanged.
+Seven of the twelve selected task consumers currently have routes with seventy
+selected inputs; Expand2 origins, Expand4 reuse, Expand5 generated integration,
+pipeline and plugins lack selected-result routes. These five gaps and complete
+L12 producer/consumer staging remain required. Current independent
+review, implementation acceptance, global source conjunctions and integration
+remain pending or unassessed. Reader contract coverage remains the first selected
+implementation increment; all actual holds and the stopped handoff remain.
+
+### Profile clarification and historical-test correction
+
+Final semantic self-review made each profile's concrete premises explicit in
+the existing completion criterion. Kernel, firmware and hardware require hermetic
+builds and reject generated GC, reflection, ambient allocation, host threads,
+wall clocks and dynamic loading unless their profile explicitly models the
+facility. Hosted reflection/library access and dynamic loading require grants
+and traces; native ABI/layout/linker specialization requires declared targets.
+Distributed workflow/schema/retry/binding/replay and AI model/prompt/input/output/
+retention/review records remain, while meta cannot bypass ordinary validation.
+
+The clarified source is `6dfaf54be773f7eece444c2e73ac08ec4ae4368a`, with fingerprint
+`037daf74d15b76ac24480602420e58c24ce695610e2b329e495764d18ca732b9`.
+The initial source and fingerprint above remain explicit unreviewed history.
+All source populations, fifteen clauses, twelve tasks, five finite witnesses,
+61-identical/78-amended original bodies and held/review dispositions stay unchanged.
+
+Initial focused tests passed 3,299 assertions across the new L12 regression and
+its frozen provider-dependency predecessor. The initial full run then reported
+61 tests, 26,064 assertions, seventeen failures and zero errors: eight failures
+in the historical plugin test and nine in the historical Domain IR test. Both
+mixed frozen whole-file witnesses with current Compiler API task bytes. The
+correction reads their complete existing pre-effects checkpoint consistently,
+including bridge, projection and source files. It changes no review hash,
+reviewed source, C12 restriction or acceptance scope. Final clarified-source
+verification is recorded separately below.
+
+Clarified-source verification passes: 61 crosswalk tests with 26,064 assertions,
+23 dependency tests with 3,213 assertions, both pinned projection checks and six
+language-boundary tests with eleven assertions. The unchanged canonical set's
+240-document/19-index and full-language structural checks remain applicable;
+their dated roadmap counts are not current execution evidence. Final navigation/
+conservation covers 88 changed files, 82 Markdown files, 3,423 local references,
+139 original routes, 48 historical spec/plan suffixes and all 48 original
+task/evidence contents after declared additions are removed. ASCII and whitespace
+checks pass. No compiler/provider/plugin/replay/native/release conformance,
+independent acceptance or integration follows from these traceability results.
