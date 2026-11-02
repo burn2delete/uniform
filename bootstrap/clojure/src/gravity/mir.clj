@@ -1,12 +1,28 @@
 (ns gravity.mir
-  "Native seed C11 fact tables, control-flow and use-dominance algorithms.")
+  "Native seed C11 fact/use records, control-flow and use-dominance algorithms.")
 
 (def ^:private namespace-contract
   '{:namespace gravity.mir
     :contract-boundary :native-seed-c11-control-flow-and-dominance
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {runtime-check-fact-record {:arglists ([fact-id operation-id token-id checked-core node fact-kind]) :admission :none
+    {downstream-ids {:arglists ([outside-nodes if-id]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     expected-block-operation-ids {:arglists ([entry-parameter! runtime-check-operation-id path-prefix? checked-core]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     expected-data-flow {:arglists ([runtime-check-token-id nodes operation-by-id]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     expected-uses {:arglists ([data-flow value-id]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     expected-terminator-uses {:arglists ([checked-core]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     expected-terminator-value-uses {:arglists ([terminator-uses value-id]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     expected-value {:arglists ([node-opcode expected-uses expected-terminator-value-uses node data-flow terminator-uses operation] [node-opcode expected-uses expected-terminator-value-uses node data-flow terminator-uses operation parameter]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     expected-runtime-check-value {:arglists ([runtime-check-token-id runtime-check-operation-id expected-uses runtime-check-source node data-flow operation]) :admission :none
+       :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
+     runtime-check-fact-record {:arglists ([fact-id operation-id token-id checked-core node fact-kind]) :admission :none
        :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
      add-runtime-check-facts {:arglists ([fact-id fact-record checked-core fact-kind table]) :admission :none
        :native-data-only? true :authenticates-inputs? false :issues-verifier-certificates? false}
@@ -23,14 +39,17 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-checked-core-node-fact-and-proof-data
+    :artifact-inputs [:native-node-path-operand-and-operation-data
+                      :explicit-parameter-opcode-id-source-and-use-operations
+                      :native-checked-core-node-fact-and-proof-data
                       :explicit-runtime-check-id-and-fact-record-operations
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-runtime-check-facts :id-indexed-fact-and-proof-tables
+    :artifact-outputs [:native-block-placement-data :native-use-definition-and-value-records
+                       :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [C11-BLOCK :terminating-pure-control-transfer :canonical-cfg-structure]
+    :diagnostic-ownership {:stage [:native-use-and-placement-reference-records C11-BLOCK :terminating-pure-control-transfer :canonical-cfg-structure]
                            :existing-caller [C11-TYPE C11-EFFECT C11-SAFETY C11-MODULE C11-VERIFY
                                              :fact-table-equality-and-admission C11-DOMINANCE :predicate-refusal]
                            :supplied-require-operation [:diagnostic-construction :throwing]}
@@ -43,6 +62,230 @@
                   :backend-or-native-execution :migration :release :self-hosting :seed-retirement]})
 
 
+
+
+
+
+(defn downstream-ids
+  [outside-nodes if-id]
+  (loop [known #{if-id}]
+    (let [expanded
+          (reduce
+           (fn [result node]
+             (if (some result (:operands node))
+               (conj result (:node-id node))
+               result))
+           known
+           outside-nodes)]
+      (if (= known expanded)
+        expanded
+        (recur expanded)))))
+
+(defn expected-block-operation-ids
+  [entry-parameter! runtime-check-operation-id path-prefix? checked-core]
+  (let [parameter (entry-parameter! (:source-path checked-core) checked-core)
+        nodes (filterv #(not= (:id parameter) (:node-id %)) (:core-nodes checked-core))
+        artifact-id (:artifact-id checked-core)
+        entry-id (str artifact-id ":mir:entry")
+        then-id (str artifact-id ":mir:then")
+        else-id (str artifact-id ":mir:else")
+        join-id (str artifact-id ":mir:join")
+        if-node (first (filter #(= :if (:source-operation %)) nodes))]
+    (letfn [(operation-ids [selected]
+              (vec
+               (mapcat
+                (fn [node]
+                  (if-let [check (get-in node [:safety :check])]
+                    [(runtime-check-operation-id check)
+                     (:node-id node)]
+                    [(:node-id node)]))
+                selected)))]
+     (if-not if-node
+      {entry-id (operation-ids nodes)}
+      (let [then-prefix (conj (:path if-node) :then)
+            else-prefix (conj (:path if-node) :else)
+            then-ids
+            (set (map :node-id
+                      (filter #(path-prefix?
+                                then-prefix (:path %))
+                              nodes)))
+            else-ids
+            (set (map :node-id
+                      (filter #(path-prefix?
+                                else-prefix (:path %))
+                              nodes)))
+            outside-nodes
+            (vec (remove #(or (contains? then-ids (:node-id %))
+                              (contains? else-ids (:node-id %)))
+                         nodes))
+            [entry-nodes continuation-nodes]
+            (split-with #(not= (:node-id if-node) (:node-id %))
+                        outside-nodes)
+            entry-ids (set (map :node-id entry-nodes))
+            continuation-ids (set (map :node-id continuation-nodes))
+            block-for
+            (fn [node]
+              (let [node-id (:node-id node)]
+                (cond
+                  (contains? then-ids node-id) then-id
+                  (contains? else-ids node-id) else-id
+                  (contains? entry-ids node-id) entry-id
+                  (contains? continuation-ids node-id) join-id
+                  :else entry-id)))]
+        (into {}
+              (map (fn [block-id]
+                     [block-id
+                      (operation-ids
+                       (filter #(= block-id (block-for %)) nodes))]))
+              [entry-id then-id else-id join-id]))))))
+
+(defn expected-data-flow
+  [runtime-check-token-id nodes operation-by-id]
+  (vec
+   (mapcat
+   (fn [node]
+      (let [node-id (:node-id node)
+            block-id (:block-id (get operation-by-id node-id))
+            check (get-in node [:safety :check])
+            operand-start (if check 1 0)
+            operand-edges
+            (mapv (fn [operand-index operand]
+                    {:from operand
+                     :consumer-kind :operation
+                     :consumer-id node-id
+                     :consumer-block block-id
+                     :operand-index operand-index
+                     :edge-kind :operand})
+                  (range operand-start
+                         (+ operand-start (count (:operands node))))
+                  (:operands node))]
+        (if check
+          (into
+           [{:from (runtime-check-token-id check)
+             :consumer-kind :operation
+             :consumer-id node-id
+             :consumer-block block-id
+             :operand-index 0
+             :edge-kind :runtime-check-guard}]
+           operand-edges)
+          operand-edges)))
+    nodes)))
+
+(defn expected-uses
+  [data-flow value-id]
+  (vec
+   (for [edge data-flow
+         :when (= value-id (:from edge))]
+     {:use-kind :instruction
+      :consumer-kind (:consumer-kind edge)
+      :consumer-id (:consumer-id edge)
+      :consumer-block (:consumer-block edge)
+      :operand-index (:operand-index edge)
+      :edge-kind (:edge-kind edge)})))
+
+(defn expected-terminator-uses
+  [checked-core]
+  (let [nodes (:core-nodes checked-core)
+        artifact-id (:artifact-id checked-core)
+        root-id (first (:root-node-ids checked-core))
+        root-node (first (filter #(= root-id (:node-id %)) nodes))
+        return-id (last (:operands root-node))
+        entry-id (str artifact-id ":mir:entry")
+        then-id (str artifact-id ":mir:then")
+        else-id (str artifact-id ":mir:else")
+        join-id (str artifact-id ":mir:join")
+        if-node (first (filter #(= :if (:source-operation %)) nodes))]
+    (if-not if-node
+      [{:value-id return-id
+        :consumer-kind :terminator
+        :consumer-id (str entry-id ":return")
+        :consumer-block entry-id
+        :operand-index 0
+        :edge-kind :return-value}]
+      (let [[condition-id then-result-id else-result-id]
+            (:operands if-node)]
+        [{:value-id condition-id
+          :consumer-kind :terminator
+          :consumer-id (str entry-id ":conditional")
+          :consumer-block entry-id
+          :operand-index 0
+          :edge-kind :condition}
+         {:value-id then-result-id
+          :consumer-kind :terminator
+          :consumer-id (str then-id ":branch")
+          :consumer-block then-id
+          :operand-index 0
+          :edge-kind :branch-value}
+         {:value-id else-result-id
+          :consumer-kind :terminator
+          :consumer-id (str else-id ":branch")
+          :consumer-block else-id
+          :operand-index 0
+          :edge-kind :branch-value}
+         {:value-id return-id
+          :consumer-kind :terminator
+          :consumer-id (str join-id ":return")
+          :consumer-block join-id
+          :operand-index 0
+          :edge-kind :return-value}]))))
+
+(defn expected-terminator-value-uses
+  [terminator-uses value-id]
+  (vec
+   (for [use terminator-uses
+         :when (= value-id (:value-id use))]
+     {:use-kind :terminator
+      :consumer-kind (:consumer-kind use)
+      :consumer-id (:consumer-id use)
+      :consumer-block (:consumer-block use)
+      :operand-index (:operand-index use)
+      :edge-kind (:edge-kind use)})))
+
+(defn expected-value
+  ([node-opcode expected-uses expected-terminator-value-uses node data-flow terminator-uses operation]
+   (expected-value node-opcode expected-uses expected-terminator-value-uses node data-flow terminator-uses operation nil))
+  ([node-opcode expected-uses expected-terminator-value-uses node data-flow terminator-uses operation parameter]
+  (let [node-id (:node-id node)]
+    {:artifact :gravity/mir-value
+     :value-id node-id
+     :kind (if parameter :parameter :instruction-result)
+     :type (:type node)
+     :constant-payload
+     (if (and (nil? parameter) (= :constant (node-opcode node)))
+       {:present? true :value (get-in node [:attributes :value])}
+       :not-applicable)
+     :defined-by (or (:definition parameter) {:value-id node-id
+                  :operation-id node-id
+                  :block-id (:block-id operation)})
+     :uses (vec (concat
+                 (expected-uses data-flow node-id)
+                 (expected-terminator-value-uses
+                  terminator-uses node-id)))
+     :source (:source node)
+     :ownership (:ownership node)
+     :effects (:effects node)
+     :safety (:safety node)})))
+
+(defn expected-runtime-check-value
+  [runtime-check-token-id runtime-check-operation-id expected-uses runtime-check-source node data-flow operation]
+  (let [check (get-in node [:safety :check])
+        value-id (runtime-check-token-id check)]
+    {:artifact :gravity/mir-value
+     :value-id value-id
+     :kind :runtime-check-token
+     :type :gravity/runtime-check-token
+     :constant-payload :not-applicable
+     :defined-by
+     {:value-id value-id
+      :operation-id (runtime-check-operation-id check)
+      :block-id (:block-id operation)}
+     :uses (expected-uses data-flow value-id)
+     :source (runtime-check-source node)
+     :ownership :not-applicable
+     :effects #{}
+     :safety {:outcome :runtime-check-token
+              :runtime-check-id (:check-id check)
+              :guarded-operation-id (:node-id node)}}))
 
 
 (defn runtime-check-fact-record
