@@ -68,16 +68,9 @@
 (def p15-s23-c11-mir-max-final-artifact-carrier-nodes 32768)
 (def p15-s23-c11-mir-max-carrier-depth 256)
 
-(def p15-s23-c11-mir-allowed-opcodes
-  #{:constant :local :local-binding :truthiness :sequence
-    :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
-    :conditional-join :lexical-scope :call :function-boundary
-    :runtime-check})
+(def p15-s23-c11-mir-allowed-opcodes gravity.mir/allowed-opcodes)
 
-(def p15-s23-c11-mir-allowed-source-operations
-  #{:literal :implicit-nil :quote :local :let-binding :truthy
-    :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
-    :do :if :let :str :println :function :runtime-check})
+(def p15-s23-c11-mir-allowed-source-operations gravity.mir/allowed-source-operations)
 
 (defn p15-s23-c11-mir-digest
   [value]

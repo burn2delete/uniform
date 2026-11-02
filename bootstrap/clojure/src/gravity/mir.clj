@@ -6,7 +6,12 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {pass-contract-record {:arglists ([]) :admission :none :native-data-only? true}
+    {allowed-opcodes {:arglists nil :admission :none :value-kind :native-opcode-set}
+     allowed-source-operations {:arglists nil :admission :none :value-kind :native-source-operation-set}
+     block-keys {:arglists nil :admission :none :value-kind :native-block-key-set}
+     operation-keys {:arglists nil :admission :none :value-kind :native-operation-key-set}
+     terminator-keys {:arglists nil :admission :none :value-kind :native-terminator-key-set}
+     pass-contract-record {:arglists ([]) :admission :none :native-data-only? true}
      canonical-block-order {:arglists ([mir]) :admission :none :native-data-only? true}
      operation-sequence {:arglists ([block-order mir]) :admission :none :native-data-only? true
        :operation-inputs [:canonical-block-order]}
@@ -81,7 +86,9 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-mir-module-blocks-and-paths :explicit-block-order-operation
+    :artifact-inputs [:native-opcode-and-source-operation-vocabularies
+                      :native-block-operation-and-terminator-schema-data
+                      :native-mir-module-blocks-and-paths :explicit-block-order-operation
                       :native-carrier-and-structural-comparison-data :explicit-carrier-unicode-diagnostic-and-containment-operations
                       :native-node-and-fact-source-and-check-data :explicit-token-id-operation
                       :native-module-and-function-key-schemas :explicit-envelope-operations
@@ -96,7 +103,9 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-pass-contract-record :canonical-native-block-order :native-operation-sequence :path-prefix-predicate
+    :artifact-outputs [:native-opcode-and-source-operation-sets
+                       :native-block-operation-and-terminator-key-sets
+                       :native-pass-contract-record :canonical-native-block-order :native-operation-sequence :path-prefix-predicate
                        :native-carrier-validation-result :metadata-predicate :relative-structure-and-condition-rule-results
                        :native-opcodes-fact-references-operands-generated-source-and-ids
                        :native-module-and-function-key-sets :native-envelope-products
@@ -104,7 +113,9 @@
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-pass-contract-block-and-operation-order-and-path-rules
+    :diagnostic-ownership {:stage [:native-opcode-and-source-operation-vocabularies
+                                  :native-block-operation-and-terminator-key-schemas
+                                  :native-pass-contract-block-and-operation-order-and-path-rules
                                   :native-carrier-unicode-metadata-and-relative-structure-rules
                                   :native-node-opcode-and-fact-source-id-projection
                                   :native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
@@ -131,6 +142,30 @@
 
 
 
+
+(def allowed-opcodes
+  #{:constant :local :local-binding :truthiness :sequence
+    :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+    :conditional-join :lexical-scope :call :function-boundary
+    :runtime-check})
+
+(def allowed-source-operations
+  #{:literal :implicit-nil :quote :local :let-binding :truthy
+    :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+    :do :if :let :str :println :function :runtime-check})
+
+(def block-keys
+  #{:artifact :block-id :arguments :instructions :terminator
+    :predecessors :successors :dominators :data-flow :source})
+
+(def operation-keys
+  #{:artifact :op-id :opcode :source-operation :operands :result
+    :result-kind :constant-payload :type :effects :capabilities :ordering :source
+    :profile :facts :domain-anchor :block-id :verifier-status})
+
+(def terminator-keys
+  #{:artifact :terminator-id :kind :operands :successors :effects
+    :ordering :source :profile :facts :verifier-status})
 
 (defn pass-contract-record
   []

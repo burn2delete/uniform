@@ -1,17 +1,10 @@
 
 
-(def p15-s23-c11-mir-block-keys
-  #{:artifact :block-id :arguments :instructions :terminator
-    :predecessors :successors :dominators :data-flow :source})
+(def p15-s23-c11-mir-block-keys gravity.mir/block-keys)
 
-(def p15-s23-c11-mir-operation-keys
-  #{:artifact :op-id :opcode :source-operation :operands :result
-    :result-kind :constant-payload :type :effects :capabilities :ordering :source
-    :profile :facts :domain-anchor :block-id :verifier-status})
+(def p15-s23-c11-mir-operation-keys gravity.mir/operation-keys)
 
-(def p15-s23-c11-mir-terminator-keys
-  #{:artifact :terminator-id :kind :operands :successors :effects
-    :ordering :source :profile :facts :verifier-status})
+(def p15-s23-c11-mir-terminator-keys gravity.mir/terminator-keys)
 
 (defn p15-s23-c11-mir-validate-module-envelope!
   [source-path checked-core mir]
