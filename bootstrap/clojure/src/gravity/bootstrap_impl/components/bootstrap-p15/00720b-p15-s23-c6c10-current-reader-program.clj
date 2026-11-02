@@ -1,4 +1,5 @@
-(declare sh03-reader-resolve-source-path sh03-reader-current-binding!)
+(declare sh03-reader-resolve-source-path sh03-reader-current-binding!
+         sh04-syntax-resolve-source-path)
 
 (defn- p15-s23-c6c10-validate-current-reader-program!
   [request-source expected-path binding emitter-rule]
@@ -59,7 +60,12 @@
     (p15-s23-c6c10-validate-current-reader-program! request-source path binding emitter-rule)
     {:binding binding
      :invocation {:reader-source-path path
-                  :authenticated-envelope-options {:source :development-current}}
+                  :authenticated-envelope-options {:source :development-current}
+                  :syntax-source-selection
+                  {:schema :gravity/sh04-development-syntax-selection-v1
+                   :source-path
+                   (p15-s23-c6c10-canonical-file-path
+                    (sh04-syntax-resolve-source-path))}}
      :c6-source-snapshot {:before source-before
                           :after source-after}
      :verification-scope :selected-source-reader-plan
