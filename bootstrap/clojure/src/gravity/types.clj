@@ -4,7 +4,39 @@
 (def
  ^{:private true} namespace-contract
  '{:public-api
-   {assemble-source-artifact
+   {native-type-fail!
+    {:api-kind :function, :arglists ([fail! source-span type-message governing-document id source-path subject extra]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    validate-native-overrides!
+    {:api-kind :function, :arglists ([source-span type-fail! override-diagnostics source-path module overrides]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    native-type-diagnostics
+    {:api-kind :function, :arglists ([source-span diagnostic-ids rejected-designs source-path nodes]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    native-diagnostic-ids
+    {:api-kind :data, :arglists nil,
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    native-governing-document
+    {:api-kind :data, :arglists nil,
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    native-rejected-designs
+    {:api-kind :data, :arglists nil,
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    native-override-diagnostics
+    {:api-kind :data, :arglists nil,
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    native-type-message
+    {:api-kind :function, :arglists ([id]),
+     :admission :none, :seed-compatibility-data-only? true,
+     :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
+    assemble-source-artifact
     {:arglists ([ops source-path source-text]),
      :admission :none, :seed-compatibility-data-only? true,
      :authenticates-inputs? false, :proves-canonical-types? false, :grants-authority? false},
@@ -127,7 +159,7 @@
      :grants-authority? false}},
    :dependency-direction
    {:requires [],
-    :consumed-by [gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.c7-type-checker.artifact gravity.bootstrap],
+    :consumed-by [gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.c7-type-checker.evidence gravity.c7-type-checker.artifact gravity.c7-type-checker.diagnostics gravity.c7-type-checker.catalog gravity.bootstrap],
     :forbids
     [gravity.bootstrap
      gravity.cli
@@ -136,7 +168,8 @@
    :legacy-status-labels-authoritative? false,
    :governing-contracts [D1 D2 D3 D8 D9 L5 L17 C1 C7 C15 BOOT8 TEST2],
    :unsupported
-   [:native-ingress-authentication
+   [:canonical-c15-diagnostic-schema :diagnostic-identity-binding :redaction-and-safe-publication
+    :native-ingress-authentication
     :callback-validation
     :complete-canonical-l5-c7-type-checking
     :integer-width-proof
@@ -152,7 +185,9 @@
     :self-hosting
     :seed-retirement],
    :artifact-inputs
-   [:owner-supplied-native-hosted-core-node-views
+   [:native-diagnostic-subject-extra-and-catalog-data
+    :explicit-message-span-and-failure-operations
+    :owner-supplied-native-hosted-core-node-views
     :explicit-type-classifier-callbacks
     :type-fact-data
     :explicit-emitter-source-path-and-text
@@ -166,13 +201,18 @@
     :source-path-and-text-with-explicit-source-core-type-diagnostic-and-identity-operations],
    :namespace gravity.types,
    :diagnostic-ownership
-   {:stage [:hosted-report-construction :ordered-missing-field-decisions],
+   {:stage [:native-catalog-defaults :native-message-text :native-payload-projection
+            :fixture-override-selection :hosted-report-construction :ordered-missing-field-decisions],
     :upstream [:core-node-source-and-origin-data],
     :existing-c7-owner
-    [:type-diagnostic-construction :catalog-and-source-mapping]
+    [:source-admission :source-mapping-operations :canonical-type-and-profile-rules
+     :diagnostic-identity-binding :redaction-and-publication]
     :propagated [:compiler-and-runtime-diagnostics :gravity-c7-diagnostics]},
    :artifact-outputs
-   [:seed-literal-and-node-classifications
+   [:native-catalog-defaults-and-message-text
+    :native-type-diagnostic-payloads-and-fixture-registry
+    :owner-failure-return-or-exception
+    :seed-literal-and-node-classifications
     :node-type-fact-data
     :type-environment-data
     :ordered-assignment-constraint-data
@@ -188,7 +228,146 @@
    :contract-boundary :seed-type-products-and-current-gravity-runtime
    :additional-contract-boundaries [:hosted-seed-verification-data-and-missing-field-checks
     :hosted-dynamic-cast-generic-dispatch-schema-and-layout-data
-    :hosted-source-artifact-orchestration]})
+    :hosted-source-artifact-orchestration :native-diagnostic-projection-and-catalog-defaults]})
+
+(def native-diagnostic-ids
+  ["C7-TYPE-MISMATCH"
+   "C7-ANNOTATION"
+   "C7-DYNAMIC"
+   "C7-CAST"
+   "C7-NULLABILITY"
+   "C7-GENERIC"
+   "C7-PROTOCOL"
+   "C7-LAYOUT"
+   "C7-SCHEMA"
+   "C7-VERIFY"])
+
+(def native-governing-document
+  "docs/phase-06-compiler-architecture/086-c7-type-checker-design.md")
+
+(def native-rejected-designs
+  [{:diagnostic "C7-TYPE-MISMATCH"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-type-mismatch.gravity"
+    :rejected-design :incompatible-inferred-and-expected-types}
+   {:diagnostic "C7-ANNOTATION"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-annotation.gravity"
+    :rejected-design :profile-required-type-fact-missing}
+   {:diagnostic "C7-DYNAMIC"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-dynamic.gravity"
+    :rejected-design :dynamic-fallback-in-constrained-profile}
+   {:diagnostic "C7-CAST"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-cast.gravity"
+    :rejected-design :unchecked-or-illegal-conversion}
+   {:diagnostic "C7-NULLABILITY"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-nullability.gravity"
+    :rejected-design :host-null-without-typed-wrapper}
+   {:diagnostic "C7-GENERIC"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-generic.gravity"
+    :rejected-design :failed-generic-instantiation}
+   {:diagnostic "C7-PROTOCOL"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-protocol.gravity"
+    :rejected-design :missing-protocol-implementation}
+   {:diagnostic "C7-LAYOUT"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-layout.gravity"
+    :rejected-design :missing-profile-required-layout-facts}
+   {:diagnostic "C7-SCHEMA"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-schema.gravity"
+    :rejected-design :schema-derived-type-weakened}
+   {:diagnostic "C7-VERIFY"
+    :fixture "bootstrap/clojure/fixtures/rejected/compiler-c7-verify.gravity"
+    :rejected-design :typed-core-verifier-failure}])
+
+(def native-override-diagnostics
+  {:type-mismatch "C7-TYPE-MISMATCH"
+   :annotation "C7-ANNOTATION"
+   :dynamic "C7-DYNAMIC"
+   :cast "C7-CAST"
+   :nullability "C7-NULLABILITY"
+   :generic "C7-GENERIC"
+   :protocol "C7-PROTOCOL"
+   :layout "C7-LAYOUT"
+   :schema "C7-SCHEMA"
+   :verify "C7-VERIFY"})
+
+(defn native-type-message
+  [id]
+  (case id
+    "C7-TYPE-MISMATCH" "inferred type is incompatible with the expected type"
+    "C7-ANNOTATION" "active profile requires a type annotation or layout fact"
+    "C7-DYNAMIC" "dynamic behavior is forbidden by the active profile"
+    "C7-CAST" "cast or conversion lacks a checked or unsafe classification"
+    "C7-NULLABILITY" "host null crossed into a non-null Gravity type without a wrapper"
+    "C7-GENERIC" "generic instantiation failed or omitted bound evidence"
+    "C7-PROTOCOL" "protocol dispatch lacks a matching implementation"
+    "C7-LAYOUT" "profile-required layout facts are missing"
+    "C7-SCHEMA" "schema-derived type lost source schema identity"
+    "C7-VERIFY" "typed-core verifier rejected the artifact"
+    "Type checking failed"))
+
+(defn native-type-fail!
+  [fail! source-span type-message governing-document
+   id source-path subject extra]
+  (fail! id
+         (type-message id)
+         (merge {:source-span (or (:source-span subject)
+                                  (get-in subject [:source :span])
+                                  (:span subject)
+                                  (source-span source-path 0))
+                 :diagnostic-family :c7-type-checker
+                 :stage :type-check
+                 :document-id "C7"
+                 :expected-document governing-document
+                 :core-node-id (or (:core-node-id subject) (:node-id subject))
+                 :syntax-id (or (:syntax-id subject)
+                                (get-in subject [:source :syntax-id]))
+                 :expected-type (or (:expected-type subject) "Typed")
+                 :actual-type (or (:actual-type subject) "Dynamic")
+                 :active-profile (:profile subject)
+                 :target (:target subject)
+                 :relevant-binding-id (:binding-ref subject)
+                 :generated-origin-chain (or (:generated-origin subject)
+                                             (get-in subject
+                                                     [:source :origin-chain]))
+                 :remediation "Emit typed-core facts, solved constraints, checked casts, dynamic boundary records, schema/layout links, generic and protocol evidence, and verifier-accepted diagnostics before effect checking."}
+                extra)))
+
+(defn validate-native-overrides!
+  [source-span type-fail! override-diagnostics source-path module overrides]
+  (when-let [fail-kind (:fail overrides)]
+    (when-let [id (get override-diagnostics fail-kind)]
+      (type-fail! id source-path
+                  {:source-span (source-span source-path 0)
+                   :syntax-id "fixture-override"
+                   :core-node-id "fixture-override"
+                   :expected-type "Expected"
+                   :actual-type "Actual"
+                   :profile (:profile module)
+                   :target (:target module)
+                   :generated-origin []}
+                  {:missing-fields [fail-kind]}))))
+
+(defn native-type-diagnostics
+  [source-span diagnostic-ids rejected-designs source-path nodes]
+  {:artifact :gravity/c7-type-diagnostic-registry
+   :required-diagnostic-ids diagnostic-ids
+   :diagnostics
+   (mapv (fn [design]
+           (let [node (first nodes)]
+             {:diagnostic (:diagnostic design)
+              :fixture (:fixture design)
+              :core-node-id (:node-id node)
+              :syntax-id (get-in node [:source :syntax-id])
+              :source-span (get-in node [:source :span]
+                                   (source-span source-path 0))
+              :expected-type "Expected"
+              :actual-type "Actual"
+              :active-profile (:profile node)
+              :target (:target node)
+              :relevant-binding-id (:node-id node)
+              :generated-origin-chain (get-in node [:source :origin-chain])
+              :remediation "Keep C7 type facts explicit and profile-gated."}))
+         rejected-designs)
+   :status :complete})
 
 (defn compile-plan [emitter source-path source-text operations]
   ((:compile-plan operations) emitter source-path source-text))
@@ -701,7 +880,8 @@
 
 (doseq
  [operation
-  [#'assemble-source-artifact
+  [#'native-type-fail! #'validate-native-overrides! #'native-type-diagnostics #'native-diagnostic-ids #'native-governing-document #'native-rejected-designs #'native-override-diagnostics #'native-type-message
+   #'assemble-source-artifact
    #'dynamic-boundary-records
    #'cast-records
    #'generic-instantiations

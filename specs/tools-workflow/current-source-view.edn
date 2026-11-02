@@ -1,0 +1,81 @@
+{:kind :gravity/noncanonical-tooling-current-source-view
+ :version 1
+ :authority :proposal-only
+ :scope-key "requirement-reconciliation/phase-13-tooling-and-developer-experience"
+ :base {:commit "6218e80e0238cbd071a8837193e7afb5f0b87869"
+        :tree "51a615a96828ecaff57824625bb062a9dd2c5f20"}
+ :historical-source
+ {:proposal {:commit "2ab753db9a43a5544379cf72c75c91eeab3d23b7"
+             :tree "c0610e6ac4dfccc9908273dd3a8aaf705a0fa332"
+             :path "specs/tools-workflow/requirement-proposal.edn"
+             :sha256
+             "8779c1a73781d241272aabe2868335068d27f3eafc346d861b46a8aae774af1f"}
+  :manifest {:commit "e9fa4d0d8e7c942e9ac1cc535c13f6d7840dae30"
+             :path "contracts/requirement-reconciliation.edn"
+             :sha256
+             "f4c171820dfdadaf7e7b5a3f04a701a124adfffd6cbaf6b598c1b82098aae690"}
+  :snapshot {:commit "53ae6a403b20d15155bb5b04911fe7ac0092b921"
+             :path "specs/requirement-reconciliation/source-task-inputs.edn"
+             :sha256
+             "423dd6ec37f6d8f461de4a24d325033902ccce3249187073b796065fa3ca5d94"}
+  :proposal-format {:commit "53ae6a403b20d15155bb5b04911fe7ac0092b921"
+                    :path ".specify/requirement-proposal-format.edn"
+                    :sha256
+                    "69ec49fb954ba66ce86621d5dfac3a4cb0b514b84915277b86944ae2ec857adc"}
+  :occurrence-api {:commit "c0dc5790197a1bbd3a8aa285e5458c272d877220"
+                   :path "tools/requirement_reconciliation.clj"
+                   :sha256
+                   "c4e75d62509d137330893254a7ce3019561cb00e2d593c9925e7ae6d55d5adcb"}
+  :task-sources
+  {"specs/tools-workflow/tasks.md"
+   {:commit "2ab753db9a43a5544379cf72c75c91eeab3d23b7"
+    :sha256 "0838ac2fd6d121358b880d261c9e7fe44c08f4a2e743b66d648e4d36781b85b9"
+    :marker "tools-implementation-tasks"}
+   "specs/cli-workflow/tasks.md"
+   {:commit "2ab753db9a43a5544379cf72c75c91eeab3d23b7"
+    :sha256 "8334b916a5dae13a9f9eac914367bf64ccc9dc197221d7f8c5d8ef88d9182447"
+    :marker "cli-implementation-tasks"}}
+ }
+ :current-source
+ {:manifest {:path "contracts/requirement-reconciliation.edn"
+             :sha256
+             "aa51bfad176edcf7ed75109a68ea1a0bcbcb3eeeedd6311db256bf331ad01ef0"}
+  :proposal-format {:path ".specify/requirement-proposal-format.edn"
+                    :sha256
+                    "69ec49fb954ba66ce86621d5dfac3a4cb0b514b84915277b86944ae2ec857adc"}
+  :occurrence-api {:path "tools/requirement_reconciliation.clj"
+                   :sha256
+                   "78c6f6856b1692c55c9dbb7c63a6e0a9e521a27b37e2a3a628669535a4212b9a"}
+  :documents
+  [{:id "T1" :path "docs/phase-13-tooling-and-developer-experience/177-t1-cli-specification.md" :sha256 "359d631dbb0330508657ef107bbc39c03ababf9c93f3b852db1def1a9fab1d23"}
+   {:id "T2" :path "docs/phase-13-tooling-and-developer-experience/178-t2-repl-ux-specification.md" :sha256 "87b37472e48dac58a867b1d567ec5f320a2586321abff9d41d105ed7c95d7548"}
+   {:id "T3" :path "docs/phase-13-tooling-and-developer-experience/179-t3-formatter-specification.md" :sha256 "a9e15e18331837d7cd5254b1df80fb16cd473e9f5b361245ea3f2138bef8ba39"}
+   {:id "T4" :path "docs/phase-13-tooling-and-developer-experience/180-t4-linter-specification.md" :sha256 "fcd60e3dd8fe94725d6beca29df0c6fd2edf04245034b837e683a5772668bf3f"}
+   {:id "T5" :path "docs/phase-13-tooling-and-developer-experience/181-t5-language-server-protocol-design.md" :sha256 "3d5d2159f9b5b61c6dcaa678a6d5451a1bb21d8760192d0831401d123f423585"}
+   {:id "T6" :path "docs/phase-13-tooling-and-developer-experience/182-t6-debugger-design.md" :sha256 "1fb3a120c4b66a96d7ddd6cc3e40d5690e520e21c898df5ded2edcbe46a5a992"}
+   {:id "T7" :path "docs/phase-13-tooling-and-developer-experience/183-t7-documentation-generator-design.md" :sha256 "d98d6875f3396a50d29a0c5c44924f1893294247e340757fd9c757df941c3794"}
+   {:id "T8" :path "docs/phase-13-tooling-and-developer-experience/184-t8-dev-server-design.md" :sha256 "797c50c0346b8ae435d5bbf1b1af7db6928e76d89650d4cca8c178d177660bff"}
+   {:id "T9" :path "docs/phase-13-tooling-and-developer-experience/185-t9-package-registry-ux-specification.md" :sha256 "4a9d0d82290ba9b1885e1f75d7eeff293958b0a512a37ee7ffc339b610c57617"}
+   {:id "T10" :path "docs/phase-13-tooling-and-developer-experience/186-t10-compiler-explorer-and-ir-inspector-design.md" :sha256 "ad38ff16e808b0f97ca67789ed435f8c201202a62d5132bf53d334625144791f"}
+   {:id "T11" :path "docs/phase-13-tooling-and-developer-experience/187-t11-profiler-and-performance-inspector-design.md" :sha256 "d3626f32bd86d876292a0947b1531daf6186a86f553af6521a6ee044c8e9d570"}
+   {:id "T12" :path "docs/phase-13-tooling-and-developer-experience/188-t12-safety-audit-explorer-design.md" :sha256 "c1a1ecbe9c56af1f4f15e9d1d85721e2d5f213184225f3900f5330a95b892bf4"}
+   {:id "T13" :path "docs/phase-13-tooling-and-developer-experience/189-t13-ai-assisted-development-tooling-specification.md" :sha256 "a06da161ec3bdd52bca08750f477b870bfbfa7725fa76f4e42c1b940b993e64d"}]
+  :task-sources
+  [{:path "specs/tools-workflow/tasks.md" :sha256 "beb9badf915de8c2d9952369a7832e623ebe2727c6ca0e5ca93d53f373a8fa54" :marker "tools-implementation-tasks"}
+   {:path "specs/cli-workflow/tasks.md" :sha256 "75300e2d2d3c9a44e0799ee203d3126eeba690adbbd89f0dcc8b4bbf4c7a88c7" :marker "cli-implementation-tasks"}]}
+ :expected {:source-documents 13
+            :source-occurrences 631
+            :source-facets 960
+            :source-dispositions 322
+            :requirements 65
+            :edits 200
+            :task-references 16}
+ :qualification-policy
+ {:historical-task-criteria :preserved-source-view-only
+  :current-task-status :open-and-unassessed
+  :current-task-acceptance :not-replaced
+  :implementation-acceptance :unassessed
+  :independent-review :pending}
+ :nonclaims [:canonical-adoption :implementation-acceptance :global-nonoverlap
+             :aggregate-adoption :denominator :release :seed-retirement
+             :current-task-criteria :independent-review :integration]}
