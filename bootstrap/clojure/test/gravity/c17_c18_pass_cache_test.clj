@@ -12,6 +12,7 @@
             [gravity.c18-verification :as c18]
             [gravity.digest :as digest]
             [gravity.pass-cache :as pass-cache]
+            [gravity.pass-cache.envelope-codec :as envelope-codec]
             [gravity.pass-execution :as pass-execution]
             [gravity.pass-execution.dag :as dag])
   (:import [java.nio.file Files LinkOption Path]
@@ -275,6 +276,146 @@
                (get-in second-result [:evidence-dag :evidence-root-id])))
         (is (false? (:release-authority? second-result)))
         (is (false? (:proof-authority? second-result)))))))
+
+(deftest default-handoff-decodes-each-downstream-stage-once-cold-and-warm
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            decode-calls (atom [])
+            original-decode envelope-codec/decode!]
+        (with-redefs
+         [envelope-codec/decode!
+          (fn [stage envelope validate operations options]
+            (swap! decode-calls conj stage)
+            (original-decode stage envelope validate operations options))]
+          (let [upstream (upstream-result store calls)
+                _ (reset! decode-calls [])
+                cold (cache/lookup-or-compute!
+                      store upstream (downstream-context)
+                      (downstream-operations calls))
+                cold-count (count @decode-calls)
+                warm (cache/lookup-or-compute!
+                      store upstream (downstream-context)
+                      (downstream-operations calls))
+                warm-decodes (drop cold-count @decode-calls)]
+            (is (= {:c17 1 :c18 1}
+                   (frequencies (take cold-count @decode-calls))))
+            (is (= {:c17 1 :c18 1}
+                   (frequencies warm-decodes)))
+            (is (= {:c15 1 :c16 1 :c17 1 :c18 1} @calls))
+            (is (= 4 (count (get-in warm [:evidence-dag :receipts]))))
+            (is (= 3 (count (get-in warm [:evidence-dag :edges]))))
+            (is (= :none
+                   (get-in warm [:evidence-dag :authority :effective-level])))
+            (is (false? (:release-authority? warm)))
+            (is (false? (:proof-authority? warm)))
+            (is (= (:evidence-root-id warm)
+                   (get-in warm [:evidence-dag :evidence-root-id])))
+            (is (= :gravity/stage0-c17-compiler-plugin-artifact
+                   (get-in cold [:c17-artifact :kind])))
+            (is (= :gravity/stage0-c18-compiler-verification-artifact
+                   (get-in warm [:c18-artifact :kind])))))))))
+
+(deftest default-handoff-retains-downstream-warm-validator-revalidation
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            producer-calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            validation-calls (atom {:c17 0 :c18 0})
+            upstream (upstream-result store producer-calls)
+            base-operations (downstream-operations producer-calls)
+            _ (cache/lookup-or-compute!
+               store upstream (downstream-context) base-operations)
+            instrumented
+            (-> (downstream-operations producer-calls)
+                (update :validate-c17!
+                        (fn [validate]
+                          (fn [artifact]
+                            (swap! validation-calls update :c17 inc)
+                            (validate artifact))))
+                (update :validate-c18!
+                        (fn [validate]
+                          (fn [artifact]
+                            (swap! validation-calls update :c18 inc)
+                            (validate artifact)))))
+            result (cache/lookup-or-compute!
+                    store upstream (downstream-context) instrumented)]
+        (is (= {:c17 1 :c18 1} @validation-calls))
+        (is (= {:c15 1 :c16 1 :c17 1 :c18 1} @producer-calls))
+        (is (= [:hit :hit]
+               [(get-in result [:c17-cache-evidence :status])
+                (get-in result [:c18-cache-evidence :status])]))))))
+
+(deftest downstream-decoder-interposition-disables-default-handoff
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            decode-calls (atom [])
+            original-decode gravity.c17-c18-pass-cache.envelope/decode!]
+        (with-redefs
+         [gravity.c17-c18-pass-cache.envelope/decode!
+          (fn [stage envelope validate operations]
+            (swap! decode-calls conj stage)
+            (original-decode stage envelope validate operations))]
+          (let [upstream (upstream-result store calls)
+                _ (reset! decode-calls [])
+                result (cache/lookup-or-compute!
+                        store upstream (downstream-context)
+                        (downstream-operations calls))]
+            (is (= {:c17 2 :c18 2} (frequencies @decode-calls)))
+            (is (= {:c15 1 :c16 1 :c17 1 :c18 1} @calls))
+            (is (= :none
+                   (get-in result [:evidence-dag :authority :effective-level])))
+            (is (false? (:release-authority? result)))
+            (is (false? (:proof-authority? result)))))))))
+
+(deftest downstream-envelope-identity-mismatch-falls-back-to-current-decoder
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            original-lookup pass-cache/lookup-or-compute!
+            first-lookup? (atom true)]
+        (with-redefs
+         [pass-cache/lookup-or-compute!
+          (fn [store key request operations]
+            (let [result (original-lookup store key request operations)]
+              (if (compare-and-set! first-lookup? true false)
+                (assoc result :artifact (into {} (:artifact result)))
+                result)))]
+          (let [result (cache/lookup-or-compute!
+                        store upstream (downstream-context)
+                        (downstream-operations calls))]
+            (is (= {:c15 1 :c16 1 :c17 1 :c18 1} @calls))
+            (is (= :gravity/stage0-c18-compiler-verification-artifact
+                   (get-in result [:c18-artifact :kind])))))))))
+
+(deftest downstream-tampered-envelope-cannot-use-handoff
+  (with-temporary-directory
+    (fn [directory]
+      (let [store (pass-cache/open-local-store directory)
+            calls (atom {:c15 0 :c16 0 :c17 0 :c18 0})
+            upstream (upstream-result store calls)
+            original-lookup pass-cache/lookup-or-compute!
+            first-lookup? (atom true)]
+        (with-redefs
+         [pass-cache/lookup-or-compute!
+          (fn [store key request operations]
+            (let [result (original-lookup store key request operations)]
+              (if (compare-and-set! first-lookup? true false)
+                (assoc result :artifact
+                       (assoc (:artifact result) :artifact-id (str "sha256:" (apply str (repeat 64 "f")))))
+                result)))]
+          (try
+            (cache/lookup-or-compute!
+             store upstream (downstream-context)
+             (downstream-operations calls))
+            (is false "tampered envelope must be rejected")
+            (catch clojure.lang.ExceptionInfo error
+              (is (= "C16-STALE" (:id (ex-data error)))))))))))
 
 (deftest default-orchestration-reuses-validated-boundaries-once
   (with-temporary-directory

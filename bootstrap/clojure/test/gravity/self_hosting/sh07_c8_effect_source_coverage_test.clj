@@ -93,7 +93,6 @@
      sh09-effect-policy
      sh09-diagnostic
      sh09-rejected
-     sh09-bounds-rejected
      sh09-not
      sh09-and
      sh09-not-equal
@@ -104,11 +103,6 @@
      sh09-exact-keys?
      sh09-lowercase-hex?
      sh09-sha256-id?
-     sh09-aggregate?
-     sh09-aggregate-width
-     sh09-aggregate-components
-     sh09-max
-     sh09-structural-preflight
      sh09-authority-collections-valid?
      sh09-hermetic-build-policy?
      sh09-valid-request-shape?
@@ -187,13 +181,6 @@
      :build/env :build/network :build/exec
      :build/time :build/random
      :build/model-call :build/tool-call}
-   :structural-bounds
-   {:maximum-nodes 8192
-    :maximum-depth 32
-    :maximum-width 256
-    :maximum-scalars 7000
-    :maximum-scalar-units 32768
-    :maximum-collections 2048}
    :authorities
    [:source-declaration :profile :package :deployment
     :build-policy :provider :grant :phase :safety]
@@ -402,10 +389,6 @@
     :slice-target-mismatch
     :unexpected-replay-record
     :unregistered-effect})
-(def ^:private expected-bound-reasons
-  #{:request-node-bound :request-depth-bound :request-width-bound
-    :request-collection-bound :request-scalar-count-bound
-    :request-scalar-bound})
 (def ^:private expected-nonclaims
   #{:c8-production-effect-checker-execution
     :c8-contract-and-diagnostic-schema-enforcement
@@ -466,16 +449,6 @@
     (walk/postwalk
      (fn [entry]
        (when (symbol? entry) (vswap! found conj entry))
-       entry)
-     value)
-    @found))
-
-(defn- keyword-literals-in
-  [value]
-  (let [found (volatile! #{})]
-    (walk/postwalk
-     (fn [entry]
-       (when (keyword? entry) (vswap! found conj entry))
        entry)
      value)
     @found))
@@ -734,7 +707,6 @@
         check-form (get definition-forms 'sh09-check-effect-request)
         request-shape-form
         (get definition-forms 'sh09-valid-request-shape?)
-        preflight-form (get definition-forms 'sh09-structural-preflight)
         verifier-form (get definition-forms 'sh09-verify-effect-result)
         legacy-verifier-form
         (get definition-forms 'verify-c8-effect-checker)
@@ -819,11 +791,6 @@
     (is (every? #(= 4 (count %))
                 (collect-calls 'if request-shape-form)))
     (is (= expected-check-rejection-reasons emitted-reasons))
-    (is (= expected-bound-reasons
-           (set
-            (filter
-             #(string/starts-with? (name %) "request-")
-             (keyword-literals-in preflight-form)))))
     (is (= :gravity/c8-effect-node
            (:artifact
             (quoted-body
@@ -839,9 +806,7 @@
     (is (contains? (symbols-in verifier-form)
                    'sh09-check-effect-request))
     (is (string/includes? (pr-str verifier-form)
-                          ":effect-result-substitution"))
-    (is (string/includes? (pr-str verifier-form)
-                          ":effect-result-structural-bound"))))
+                          ":effect-result-substitution"))))
 
 (deftest sh07-b29-c8-source-control-form-arities-are-bounded
   (let [forms (source-forms)
@@ -866,8 +831,6 @@
         request-shape-form (definition 'sh09-valid-request-shape?)
         provider-form (definition 'sh09-provider-allows?)
         grant-form (definition 'sh09-grant-allows?)
-        aggregate-form (definition 'sh09-aggregate-components)
-        preflight-form (definition 'sh09-structural-preflight)
         checker-form (definition 'sh09-check-effect-request)
         verifier-form (definition 'sh09-verify-effect-result)
         sha-form (definition 'sh09-sha256-id?)
@@ -896,13 +859,9 @@
       (is (= #{:meta} (:profiles policy)))
       (is (= #{:jvm} (:targets policy)))
       (is (empty? (set/intersection runtime-effects (:effects policy)))))
-    (testing "digest, traversal, and verification remain seed-local"
+    (testing "digest and verification remain seed-local"
       (is (not (contains? (symbols-in sha-form)
                           'authenticated-envelope-verify-template)))
-      (is (contains? (symbols-in aggregate-form) 'keys))
-      (is (not (contains? (symbols-in aggregate-form) 'sort)))
-      (is (not (string/includes? (pr-str preflight-form)
-                                 ":identity-cycle")))
       (is (contains? (symbols-in verifier-form)
                      'sh09-check-effect-request))
       (is (not (contains? (symbols-in verifier-form)
