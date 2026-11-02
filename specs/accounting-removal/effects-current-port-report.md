@@ -16,10 +16,17 @@ migration, release, self-hosting, or seed-retirement authority.
 - Selective-port ancestry merge: `8926a1ac4b3eedf6ac660ad1f78e5cac0663da2d`
 - Production quota removal already present through #725:
   `7019c174703d534e8da0341587a172a9214b9f20`
-- Final composition current-main base: `5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e`
-- Final composition merge: `e9342cc705ae832c5551867f7b000c6f0f86bddf`
-- Final composition tree before this report-only update:
+- Prior composition current-main base (historical):
+  `5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e`
+- Prior composition merge (historical):
+  `e9342cc705ae832c5551867f7b000c6f0f86bddf`
+- Prior composition tree before this refresh (historical):
   `0c13cf9c43c52664bcc8c171dddf82e9c5cac378`
+- Current composition main base: `2f785196707cee629e813d3fb435be82804de233`
+- Current composition main base tree: `1d3557547b8d83398e6320139646e0f9784825fb`
+- Current composition merge: `6b2248927604fa9972774ccc6f35b59ae54fa913`
+- Current composition merge tree before this report update:
+  `c69b749f2a5834a6e21e81e50106be16f192006f`
 
 The ancestry merge uses the current-main tree and records the original PR as a
 parent only. The PR's old `effects.gravity` production tree is not replayed.
@@ -112,13 +119,16 @@ before Reader authentication. Fresh controls cover current-positive,
 pinned-default, current-to-pinned downgrade, source/mode tampering, and fresh
 Macro-binding provenance (2 tests, 9 assertions passed).
 
-The current SH-01 custody adapter's inert controls pass in
-`producer-git-observation-test`: one positive case verifies controller launch,
-retention, stdin close, remaining-deadline handoff, strict complete capture,
-and published receipt metadata; one negative case rejects a truncated receipt
-after cleanup. The runner's existing process-result tests continue to cover
-owned-handle finalization and interruption behavior. These tests use injected
-process/controller ports and are not evidence of actual broker admission.
+The current SH-01 custody adapter's controls pass in
+`producer-git-observation-test` (17 tests, 288 assertions): positive coverage
+verifies controller launch, retention, concurrent large `git check-attr
+--stdin` capture, stdin close, remaining-deadline handoff, strict complete
+capture, and published receipt metadata; negative coverage rejects writer
+failure, truncation, interrupted writer joins, and a non-reading child after
+shared-deadline abort. The runner's existing process-result tests continue to
+cover owned-handle finalization and interruption behavior. These controls use
+the existing process controller and injected ports; they are not evidence of
+actual broker admission.
 
 The PMK composition selector was retried only after that owner repair. Its
 fresh JVM remained CPU-bound in the C5/C6 construction for approximately 40
@@ -157,13 +167,15 @@ negatives remain.
 
 ## Final composition check
 
-The selective port was normally merged with current `origin/main` at
-`5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e` in a clean reusable checkout.
-The merge had no conflicts and did not replay the original PR tree. Focused
-custody, runner UTF-8/capture, Effects adapter, vector, boundary, document,
-and roadmap checks were rerun on the composed tree. The broader SH-01 wiring
-suite still reports its existing standalone ownership/dependency-record
-failure; that remains a nonpass and is not relabeled as PR533 evidence.
+The selective port was normally merged with current main at
+`2f785196707cee629e813d3fb435be82804de233` (tree
+`1d3557547b8d83398e6320139646e0f9784825fb`) in a clean reusable checkout.
+The merge commit is `6b2248927604fa9972774ccc6f35b59ae54fa913`; it had no
+conflicts and did not replay the original PR tree. Focused custody, runner
+UTF-8/capture, Effects adapter, Reader571 dispatch, vector, boundary,
+document, and roadmap checks were rerun on the composed tree. The broader
+SH-01 wiring suite still reports its existing standalone ownership/dependency-
+record failure; that remains a nonpass and is not relabeled as PR533 evidence.
 Current-main changes outside the twelve listed port paths are inherited from
 the composition parent and are not attributed to PR533.
 
