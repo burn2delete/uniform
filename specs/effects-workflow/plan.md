@@ -23,6 +23,63 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Complete effect-checker source criteria
+
+Restore the five complete C8 criteria under the existing five task IDs, retaining
+their short original criteria and Open statuses. The preserved
+`c8-complete-current-facet-trace.edn` at
+`94dfa9c535268276765b76366c5c60687fa3807a`, SHA-256
+`783919a0db49d25e48c553dc8d28dcc13f8310efc212d5228c3f267d66ada199`,
+binds all 103 facets, fifty occurrences, 34 semantic conjunctions and five
+original owner joins. Its frozen review at `1ecdfa59` covers only those C8
+source conjunctions, excluding full L6, attached foundation predicates, later
+heads and actual implementation. Current independent review remains pending.
+
+| Existing task | Implementation and decisive evidence |
+| --- | --- |
+| `effects1-infer-direct-effects` | Compute real typed-Core expression/function/namespace/module/generated-output actions, with direct/latent/transitive/throws/build/replay/residual facts or a diagnostic for every effectful expression. Preserve registered concrete labels and source/generated identities. Keep the three [build/runtime/package domains](../../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md#build-and-runtime-effects) separate; exercise build-effectful macros emitting pure code and pure macros emitting effectful code. Reject hidden effects and unknown names. Residual checks/dispatch/provider/capability/logging remain visible. |
+| `effects2-propagate-latent-effects` | Derive call/closure/dispatch/recursive summaries to a sound fixed point from actual typed edges; declaration allowances are not inferred bodies. Preserve conservative branch unions, ordered evaluation, declared/inferred/latent/throws distinctions, handled/escaping labels, handler identity/residuals and changed-input invalidation. Exercise higher-order/recursive/branch/generated positives and missing-edge, underreported branch and false-erasure refusals. Types supplies actual call/handler request-response facts; handlers require the separate L6 conditions below. |
+| `effects3-check-legality-and-ordering` | Check all applicable source-function/namespace/profile/package/build/deployment/runtime-provider/safety conditions before MIR. Consume actual Auth grant evidence with scope/principal/phase/provider; effects and capability sets stay distinct, and authority evidence is not a safety proof. Emit all seven [ordering families](../../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md#ordering-constraints). Opt consumes actual legality/order facts before reordering/fusion/elimination. Exercise resource, volatile/MMIO/atomic, workflow and AI cases with refused widening, forbidden effects, missing grants/providers or order evidence. |
+| `effects4-record-replay-and-invalidation` | Emit obligations for all nine [replay-sensitive classes](../../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md#replay-and-nondeterminism), including `:ai/human-review`; record actual grants/performed build effects and invalidate changed call/type/declaration/provider/policy/replay inputs. Runtime/Workflow/AI/test owners perform actual record/replay. Reject missing/mismatched/reordered/extra records, replayed live nondeterminism, ungranted build actions and profiles forbidding replay gaps before lowering. Obligation records alone do not prove that consumers obey them. |
+| `effects5-integrate-checked-core-consumers` | Deliver actual versioned graph, latent/throws and namespace/module summaries, authority evidence, build log, replay obligations, order, residuals and diagnostics to Auth/Legality/MIR and selected Opt/Lower/Runtime/Tools consumers. Exercise actual accepted/refused producer-consumer cases and reject stale/malformed/missing semantic products. Preserve all nine [C8 diagnostic meanings](../../docs/phase-06-compiler-architecture/087-c8-effect-checker-design.md#diagnostics) and core-node/span/generated-origin/function/namespace/effect/capability/profile/target/provider/grant/remediation context. |
+
+The same task owners retain all six [L6 handler classes](../../docs/phase-01-core-language/016-l6-effect-system-specification.md#typed-effect-handlers).
+Types checks request/response/result facts; Effects preserves labels, handled/
+escaping summaries and residual actions; Auth checks authority; Legality checks
+profile, continuation/resource/safety obligations. Runtime/domain owners execute
+async/generator/resumable-error/workflow/tool/test interpretation, including
+resume/cancel/close/completion, affine defaults, explicit permitted multi-shot
+proofs, safe suspension transfers and record/replay rules. A fake records the
+original label, fixture identity/capability and absent live authority; it never
+grants a forbidden profile or hides an unexpected live effect. These interfaces
+remain required without treating C8's frozen review as full L6 acceptance.
+
+Restore two earlier source clauses that the C8 replay/handoff context depends
+on, under those same tasks. The record-versus-replay clause is qualified by
+[R6](../../docs/phase-08-runtime-architecture/117-r6-concurrency-runtime-design.md#replay-sensitive-concurrency),
+[R7](../../docs/phase-08-runtime-architecture/118-r7-distributed-runtime-design.md#event-logs-and-replay)
+and [R8](../../docs/phase-08-runtime-architecture/119-r8-ai-runtime-design.md#replay-and-budgets).
+Only an operation actually permitted by L6 and the active profile can use R6's
+declared replay-safe case, outside stricter R7/R8 recorded-output segments.
+Graph declarations never authorize arbitrary repeated external calls. The
+derived-manifest clause consumes [PKG6](../../docs/phase-12-build-package-and-artifact-system/170-pkg6-capability-and-permission-manifest-specification.md#permission-flow):
+Effects supplies actual analysis/derivation and deterministic capability-summary
+data; Build packages the manifest/provenance/SBOM, Auth owns grants and Runtime
+enforces scoped handles. Requests, denies and deployment grants stay distinct.
+Retain exact privileged/profile/target/dependency/tool/agent/FFI/unsafe/review/
+handle/audit fields and actual diff/refusal cases, without duplicating the
+package system or accepting whole PKG6/R6/R7/R8/foundation implementations.
+
+Start local inference/summary/refusal fixtures against explicit typed-Core,
+registry, grant, handler and runtime interfaces. Compose actual products for
+acceptance; no whole dependency release or fresh migration admission is an
+ordinary editing prerequisite. Do not execute held C7/C12/compiler/provider/
+replay/probe/publication routes to prepare this plan. Current accounting removal
+supersedes project work/token/call/fuel allowances in retained L6/R8 text;
+meaningful runtime timeout/retry/failure semantics, semantic validity, real host
+restrictions and external billing remain separate. Exact raw clause conservation
+does not accept current implementation, independence, release or self-hosting.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Effects task authority

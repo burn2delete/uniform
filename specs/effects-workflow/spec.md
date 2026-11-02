@@ -26,8 +26,12 @@ authority, and a capability does not establish inferred effects.
 The [sole marked ledger](tasks.md#implementation-tasks) retains
 `effects/current-evidence-and-remaining-work/` and these existing task suffixes.
 The preserved requirement-reconciliation lineage already proposes fuller C8
-criteria, including handled-effect facts, in these same records; those pending
-criteria are not silently adopted or independently accepted by this entry.
+criteria, including handled-effect facts, in these same records. The
+[complete effect-checker source criteria](plan.md#complete-effect-checker-source-criteria)
+restore five C8 clauses and the two earlier replay/manifest contexts under
+those existing IDs as a current proposal. Preserve the short original criteria
+and Open statuses. Their frozen review scope is not transferred to this head;
+full L6, attached dependencies and actual implementation remain unassessed.
 
 | Existing suffix | Required accepted behavior | Required rejection and evidence |
 | --- | --- | --- |
