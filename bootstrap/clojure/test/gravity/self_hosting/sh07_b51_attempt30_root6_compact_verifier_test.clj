@@ -6,7 +6,8 @@
              :as root6]
             [gravity.self-hosting.sh07-b51-attempt30-independent-census-test
              :as checker-fixture]
-            [gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test]
+            [gravity.self-hosting.sh07-b51-attempt30-fixture-support
+             :as fixture-support]
             [gravity.tools.sh07-b51-attempt30-independent-census :as checker]))
 
 (def report-id
@@ -22,13 +23,6 @@
      sh07-b51-r6-linked-reachable
      sh07-b51-r6-linked-module-census})
 
-(defn- private-host-value [name]
-  (var-get
-   (or (ns-resolve
-        'gravity.self-hosting.sh07-b51-attempt30-linked-carrier-host-test
-        name)
-       (throw (ex-info "missing Attempt30 host-test fixture" {:name name})))))
-
 (defn- checker-b-certificate []
   (let [envelope
         (assoc (checker-fixture/envelope)
@@ -39,10 +33,10 @@
     (:certificate result)))
 
 (defn- accepted-carrier []
-  (:carrier @(private-host-value 'accepted-fixture)))
+  (fixture-support/carrier))
 
 (defn- raw-carrier [carrier]
-  ((private-host-value 'raw-request) carrier))
+  (fixture-support/raw-request carrier))
 
 (defn- replace-carrier [raw carrier]
   (assoc raw :v18-executable-descriptor carrier))
