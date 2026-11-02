@@ -48,6 +48,13 @@ math modes. Distributed and AI work retain durable/replay, schema, taint and
 policy boundaries with their domain owners. These obligations are not compiler
 work allowances; superseded fuel/input-size accounting remains removed.
 
+The [complete memory-safety criteria](plan.md#complete-memory-safety-source-criteria)
+bind SAFE2-SAFE5 to the existing profile, ownership, classification, handoff and
+conformance tasks, preserving thirty finite reviewed predicates and all original
+owner roles. Current whole-source and dependency review remain pending; actual
+checks, cleanup, provider behavior and target preservation retain their separate
+implementation evidence requirements.
+
 The [root safety and unsafe-audit criteria](plan.md#root-safety-and-unsafe-audit-source-criteria)
 restore six finite reviewed SAFE1/SAFE6 predicates and bind the complete two
 root contracts to the four existing task owners. Mode/profile restrictions,

@@ -23,6 +23,65 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Complete memory-safety source criteria
+
+Use the complete [SAFE2](../../docs/phase-02-safety/031-safe2-memory-safety-model.md),
+[SAFE3](../../docs/phase-02-safety/032-safe3-ownership-borrowing-and-lifetimes.md),
+[SAFE4](../../docs/phase-02-safety/033-safe4-region-and-arena-safety.md) and
+[SAFE5](../../docs/phase-02-safety/034-safe5-linear-resource-safety.md)
+contracts through the five existing Legality tasks. The all-240 census retains
+288 facet identities, 264 source occurrences and 33 original owner allocations
+for these four documents. Their complete source-section conjunctions remain
+the review subject; byte coverage and owner names alone do not prove entailment.
+
+Thirty exact finite safety107 allocations remain with the existing ownership/
+initialization/lifetime task: ten SAFE2, six SAFE3, eight SAFE4 and six SAFE5.
+All thirty complete historical criteria were absent literally. Their positive,
+output, negative and identity fields are now present with their unchanged
+document-role, refusal, evidence, dependency and nonclaim context shared once.
+The source trace reconstructs every complete historical byte predicate from
+these current fields. Frozen review `6fb01a54`/applicability `5cbcceae` retains
+its finite allocation scope and explicit exclusions; it accepts neither new
+whole-source criteria nor current composition or implementation.
+
+| Existing task / criterion | Actual source products and decisive cases |
+| --- | --- |
+| Profile / memory availability | Publish all ten regimes and selected real provider/target support before affected lowering. Reject hidden managed fallback, unavailable metadata/failure/synchronization and forbidden hidden/panicking allocation. Keep real physical object/storage/layout/representability conditions; synthetic compiler work/input accounting stays removed. |
+| Ownership analysis / SAFE2 access | Derive all nine access premises and eighteen operation families, range-specific partial/moved/conditional/foreign/device initialization and initialized-only drop. Bind bounds to actual layout/ABI/padding/endianness and allocator/lifetime/alias/synchronization/authority facts. A valid bound alone cannot establish a safe access. |
+| Ownership analysis / SAFE3 borrowing | Preserve all ownership classes, explicit generic copy/borrow/move/mutate/consume contracts, inferred/explicit lifetimes, field/range splitting proof, every escape destination, structured versus detached concurrency and all seven foreign ownership modes. Reject hidden repair copies, invalid aliases, dangling captures and omitted foreign declarations. |
+| Ownership analysis / SAFE4 regions | Distinguish region lifetime, arena identity/generation, allocation and reset/release. Track nested invalidation and actual copy/serialization/transfer/nonretaining alternatives, complete provider behavior, all cleanup choices, concurrent reset/access and foreign reset/free authority. No hidden GC fallback. |
+| Ownership analysis / SAFE5 resources | Derive actual state/flow and exactly-once valid terminal or destination cleanup across every modeled exit, including provider timeout/task failure/shutdown. Preserve structured/manual/generated lowering, borrowed-resource permissions, error-object ownership, provider terminal/failure/effect/affinity/cancellation/poisoning contracts. Finalizers alone cannot prove deterministic cleanup. |
+| Safety classification / disposition | Consume the specialized facts and emit the single final SAFE1 operation outcome. Validate exact emitted guards, attached state, profile-legal failure and introduced effects, static proofs or permitted audited boundaries. The thirty original criteria still require their actual emitted/preserved consumer evidence; a record-only model cannot close them. |
+| MIR/runtime handoff / preservation | Compose actual producer facts with MIR, Opt, Lower/backend, Runtime and diagnostics. Retain or revalidate exact memory/check/proof/cleanup/source/provider facts after every governing transformation, restoring checks or refusing invalid evidence. Runtime/Backend owners implement actual checks, cleanup and transfer. |
+| Conformance / cases and diagnostics | Exercise all four source conformance families, actual accepted/rejected/check/audit artifacts and all 43 diagnostic meanings with document-specific context. Inspect actual backend preservation, cancellation, initialized-only cleanup, invalidated proof and generated-flow cases. Feed existing SAFE15/SAFE16/Release owners, without another harness or reverse final-release prerequisite. |
+
+The thirty finite criteria and all 33 original owner allocations retain the
+ownership-analysis task, including its per-rule refusal and required emission/
+preservation evidence. It produces specialized state/fact/check/audit products
+and composes the relevant consumers for those criteria; it does not create a
+second whole-program safety classifier, allocator, Runtime, backend or reviewer.
+Profile publishes availability; C10 classification owns the final four-way
+outcome; handoff owns cross-component preservation; conformance consumes their
+actual products. Existing C9 source criteria remain unchanged and cover their
+original compiler interfaces, rather than substituting for the full four SAFE
+contracts or accepting their other dependency documents.
+
+SAFE2/SAFE4 static resource language is subject to current accounting removal.
+An allocation no-failure or bounded-provider claim needs the concrete physical
+capacity/alignment/profile assumption it enforces; it cannot introduce node,
+form, width, token, work, task or attempt allowances for otherwise valid input.
+Declared allocation/cleanup failure, hidden allocation prohibitions, actual
+storage/ABI representability, provider restrictions and host limits survive.
+
+Start local fixtures against declared typed/effect/profile/provider/Core and
+consumer interfaces. The existing selected root/C9/C10 routes retain their
+recorded scopes; extending them for complete memory-family producer, operation,
+provider and consumer details remains explicit dependency reconciliation. Full
+L10/L18/SAFE7/SAFE8/profile/provider/source conjunctions and actual compiler/
+runtime/target evidence remain unassessed. Preserve every native/FFI/callback/
+provider/probe/replay/migration/review/signing/publication hold; no such action
+is executed by this source proposal.
+
 ## Root safety and unsafe-audit source criteria
 
 Use the complete [SAFE1 root semantics](../../docs/phase-02-safety/030-safe1-safe-gravity-semantics.md)
