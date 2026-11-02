@@ -2,6 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [gravity.c7-type-checker :as c7]
             [gravity.c7-type-checker.inference :as compatibility]
+            [gravity.c7-type-checker.verification :as verification]
             [gravity.types :as types]))
 
 (def module
@@ -174,7 +175,7 @@
   (let [contract (:gravity/namespace-contract (meta #'types/type-fact))
         publics (ns-publics 'gravity.types)]
     (is (= :seed-type-products-and-current-gravity-runtime (:contract-boundary contract)))
-    (is (= 11 (count publics)))
+    (is (= 14 (count publics)))
     (is (= (set (keys publics)) (set (keys (:public-api contract)))))
     (doseq [[name api] (:public-api contract)]
       (is (= (:arglists api) (:arglists (meta (publics name)))))
@@ -186,7 +187,7 @@
       (is (false? (:proves-canonical-types? api)))
       (is (false? (:grants-authority? api))))
     (is (= [] (get-in contract [:dependency-direction :requires])))
-    (is (= '[gravity.c7-type-checker.inference gravity.bootstrap]
+    (is (= '[gravity.c7-type-checker.inference gravity.c7-type-checker.verification gravity.bootstrap]
            (get-in contract [:dependency-direction :consumed-by])))
     (is (false? (:legacy-status-labels-authoritative? contract)))
     (is (not (contains? (ns-aliases 'gravity.types) 'gravity.bootstrap)))
@@ -237,3 +238,91 @@
   (is (= "StageInterposition"
          (with-redefs [types/literal-type (constantly "StageInterposition")]
            (c7/c7-node-type {:form :literal :value 1})))))
+
+(deftest types-stage-native-verification-retains-products-and-refusals
+  (let [artifact (c7/with-operations (operations)
+                   #(c7/compiler-c7-type-source-artifact "c7-test.gravity" "ignored"))
+        arguments [nodes (:type-facts artifact) (:constraint-ledger artifact)
+                   (:function-type-table artifact) (:dynamic-boundary-records artifact)
+                   (:cast-conversion-records artifact) (:generic-instantiation-table artifact)
+                   (:protocol-dispatch-type-table artifact) (:schema-type-links artifact)
+                   (:layout-facts artifact)]
+        report (apply types/typed-core-verifier-report arguments)
+        pending (assoc-in arguments [2 :constraints 0 :status] :pending)
+        rejected (apply types/typed-core-verifier-report pending)
+        failed-artifact (assoc artifact :typed-core-verifier-report rejected)
+        error (try (c7/c7-type-validate! "c7-test.gravity" failed-artifact)
+                   nil
+                   (catch clojure.lang.ExceptionInfo error error))]
+    ;; These supplied hosted seed fixtures are not canonical type evidence.
+    (is (= :passed (:status report)))
+    (is (= (:typed-core-verifier-report artifact) report))
+    (is (= (:capability-based-proof artifact)
+           (types/type-capability-proof c7/c7-type-diagnostic-ids artifact)))
+    (is (= :failed (:status rejected)))
+    (is (false? (:constraints-solved? rejected)))
+    (is (= "C7-VERIFY" (:id (ex-data error))))
+    (is (= [:constraints-solved?] (:missing-fields (ex-data error))))
+    (is (= "C7" (:document-id (ex-data error))))
+    (let [missing-origin (update-in arguments [0 0 :source] dissoc :syntax-id)
+          report (apply types/typed-core-verifier-report missing-origin)]
+      (is (= :failed (:status report)))
+      (is (false? (:origins-preserved? report))))
+    (is (= :failed (:status (apply types/typed-core-verifier-report
+                                  (assoc arguments 1 [])))))))
+
+(deftest types-stage-validation-preserves-callback-order-and-exception-identity
+  (let [events (atom []) artifact (Object.)
+        proof (fn [actual]
+                (is (identical? artifact actual))
+                (swap! events conj :proof)
+                {})
+        fail! (fn [id source subject extra]
+                (swap! events conj [id source subject extra]))]
+    (is (= :complete (types/validate! proof fail! "native.gravity" artifact)))
+    (is (= [:proof
+            ["C7-TYPE-MISMATCH" :every-core-node-has-type-or-diagnostic?]
+            ["C7-VERIFY" :constraints-solved?]
+            ["C7-VERIFY" :function-types-include-latent-effects?]
+            ["C7-DYNAMIC" :dynamic-boundaries-profile-gated?]
+            ["C7-CAST" :casts-classified?]
+            ["C7-GENERIC" :generic-and-protocol-evidence?]
+            ["C7-SCHEMA" :schema-identity-preserved?]
+            ["C7-LAYOUT" :layout-facts-recorded?]
+            ["C7-VERIFY" :diagnostics-covered?]
+            ["C7-VERIFY" :verifier-passed?]]
+           (into [:proof] (map (fn [[id source subject extra]]
+                                (is (= "native.gravity" source))
+                                (is (= {:stage :type-check} subject))
+                                [id (first (:missing-fields extra))])
+                              (rest @events)))))
+    (let [failure (ex-info "original failure" {:marker (Object.)})
+          calls (atom [])
+          actual (try (types/validate! (constantly {})
+                                       (fn [& args] (swap! calls conj args) (throw failure))
+                                       "native.gravity" artifact)
+                      nil
+                      (catch clojure.lang.ExceptionInfo error error))]
+      (is (identical? failure actual))
+      (is (= 1 (count @calls))))))
+
+(deftest types-stage-verification-entry-points-preserve-interposition
+  (doseq [[name arguments]
+          [['typed-core-verifier-report (vec (repeatedly 10 #(Object.)))]
+           ['type-capability-proof [(Object.) (Object.)]]
+           ['validate! [(Object.) (Object.) (Object.) (Object.)]]]]
+    (let [stage-var (ns-resolve 'gravity.types name)
+          wrapper (ns-resolve 'gravity.c7-type-checker.verification name)
+          observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage-var (fn [& values] (reset! observed values) marker)}
+        #(is (identical? marker (apply wrapper arguments))))
+      (is (every? true? (map identical? arguments @observed)))))
+  (let [marker (Object.) artifact (Object.)]
+    (is (identical? marker
+          (with-redefs [types/type-capability-proof
+                        (fn [catalog actual]
+                          (is (= c7/c7-type-diagnostic-ids catalog))
+                          (is (identical? artifact actual)) marker)]
+            (c7/c7-type-capability-proof artifact)))))
+  (is (= :complete
+         (verification/validate! (constantly {}) (fn [& _]) nil nil))))
