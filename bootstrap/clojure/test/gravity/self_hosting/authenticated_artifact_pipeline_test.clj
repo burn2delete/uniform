@@ -152,7 +152,7 @@
             cache (atom {key cached})
             events (atom [])]
         (is (not= (last parents) ((pipeline-function 'embedded-parent-id) stage foreign-payload)))
-        (is ((pipeline-function 'envelope-valid?) stage :fast key-id preimage cached
+        (is ((pipeline-function 'envelope-valid?) stage :fast key-id cached
              (:source-identity source) (:provenance source) parents))
         ;; Only invocation forwarding is adapted here: every rebuild delegates
         ;; to the real owner constructor. No verifier or report is substituted.
