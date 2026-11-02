@@ -168,7 +168,7 @@
                              (swap! events conj [:start command (str directory)])
                              process)
                     :retain (fn [p] (swap! events conj [:retain p]) token)
-                    :result (fn [p options owned]
+                    :result (fn [_ options owned]
                               (swap! events conj [:result (:timeout-ms options)
                                                    (:deadline-ns options) owned])
                               result)
