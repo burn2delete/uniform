@@ -120,3 +120,21 @@ checks remain 7 tests / 43 assertions, with the same 13-document, 631-
 occurrence, 960-facet, 65-requirement, 200-edit and 16-task-reference result.
 No hosted CI, GitHub write, push, native execution, release, canonical
 adoption or implementation acceptance is claimed by this composition.
+
+## Stage-owner main composition
+
+The next normal merge incorporates main
+`d4a7ddc3c01b91a6152120b44aaa9498950878ae`, tree
+`df7d6b2f8b8117c81f4d396aa4b2210e28709c14`. Its sixteen MIR/Types
+implementation, test, and Bootstrap evidence paths are disjoint from the
+checker, focused tests, source view, and their referenced proposal, occurrence,
+task, manifest and Phase 13 document inputs. The three executable/view blobs
+remain byte-identical to the accepted candidate; this receipt adds only the
+composition observation. The frozen baseline remains `6218e80e` as above.
+
+Fresh checks on this composition passed: 7 tests / 43 assertions; the complete
+13-document, 631-occurrence, 960-facet, 65-requirement, 200-edit and
+16-task-reference checker; the 240-document validator; and whitespace. Logs:
+`/tmp/uniform-pr557-815-tests.log`, `/tmp/uniform-pr557-815-check.log`, and
+`/tmp/uniform-pr557-815-docs.log`. Source-proposal review and implementation
+acceptance remain separately unassessed.
