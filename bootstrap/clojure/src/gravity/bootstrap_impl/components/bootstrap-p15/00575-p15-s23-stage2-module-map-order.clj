@@ -5,7 +5,7 @@
   (let [c2 (get-in source [:artifact :sh05-macro-artifact :gravity-macro-boundary
                            :authenticated-sh04-artifact :c2-reader-artifact])
         records (:form-tree c2) index (into {} (map (juxt :form-id identity)) records)
-        orders (atom {}) used (atom #{}) visits (atom 0)
+        orders (atom {}) used (atom #{})
         fail (fn [reason record]
                (p15-s23-stage2-module-fail! reason {:source-path (:source-path source)
                                                    :source-form-id (:form-id record)}))]
@@ -25,8 +25,7 @@
                   (let [items (children record)]
                     (when-not (= 2 (count items)) (fail :map-source-metadata-shape record))
                     (recur (second items) (conj seen (:form-id record)))) record)))
-            (walk [record value function path depth]
-              (when (or (> depth 64) (> (swap! visits inc) 65536)) (fail :map-source-work-limit record))
+            (walk [record value function path]
               (let [record (unwrap record) items (children record) kind (:kind record)]
                 (when (contains? @used (:form-id record)) (fail :map-source-occurrence-duplicate record))
                 (swap! used conj (:form-id record))
@@ -52,20 +51,20 @@
                            {:source-form-id (:form-id record) :source-children (:children record)
                             :host-keys (mapv first entries) :entry-order order})
                     (doseq [[pair slot] (map vector pairs order)]
-                      (walk (first pair) (get-in entries [slot 0]) function (conj path (* 2 slot)) (inc depth))
-                      (walk (second pair) (get-in entries [slot 1]) function (conj path (inc (* 2 slot))) (inc depth))))
+                      (walk (first pair) (get-in entries [slot 0]) function (conj path (* 2 slot)))
+                      (walk (second pair) (get-in entries [slot 1]) function (conj path (inc (* 2 slot))))))
                   (set? value)
                   (let [values (vec (sort-by pr-str value)) slots (zipmap values (range))
                         positions (mapv #(get slots (:value %)) items)]
                     (when-not (and (= :set kind) (= (count items) (count values) (count (set positions)))
                                    (every? some? positions)) (fail :map-source-set-bijection record))
                     (doseq [[item slot] (map vector items positions)]
-                      (walk item (get values slot) function (conj path slot) (inc depth))))
+                      (walk item (get values slot) function (conj path slot))))
                   (or (seq? value) (vector? value))
                   (do (when-not (and (= (if (vector? value) :vector :list) kind) (= (count items) (count value)))
                         (fail :map-source-sequence-shape record))
                       (doseq [[slot item child] (map vector (range) items value)]
-                        (walk item child function (conj path slot) (inc depth))))
+                        (walk item child function (conj path slot))))
                   (seq items) (fail :map-source-atomic-children record))))]
       (doseq [[name definition] (:functions source)]
         (let [syntaxes (filterv #(and (seq? (:form %)) (= 'def (first (:form %))) (= name (second (:form %)))) (:syntax source))
@@ -81,7 +80,7 @@
                          (= (count items) (+ 3 (count (:body definition)))))
             (fail :map-source-defn-transfer record))
           (doseq [[slot item value] (map vector (range) (drop 3 items) (:body definition))]
-            (walk item value name [slot] 0)))))
+            (walk item value name [slot])))))
     @orders))
 
 (defn p15-s23-stage2-module-map-entries [module form path]
@@ -98,16 +97,12 @@
 (defn p15-s23-stage2-module-map-reference-index [caller syntax definition]
   ;; Index actual C5 enumeration, not source evaluation order or name counts.
   ;; Scope/resolution/binding authority remains the original verified C5 rows.
-  (let [refs (get-in caller [:request :references]) rows (atom []) work (atom 0)
+  (let [refs (get-in caller [:request :references]) rows (atom [])
         module {:p15-s23-stage2-map-order (:map-order caller)
                 :p15-s23-sh07-enclosing-function (:name definition)}
         fail (fn [reason] (p15-s23-stage2-module-fail! reason {:function (:name definition)}))
-        charge! (fn [amount] (when (> (swap! work + amount) 65536) (fail :map-reference-work-limit)))
         emit! (fn [symbol position path] (swap! rows conj {:symbol symbol :position position :path path}))]
-    (charge! (count refs))
-    (letfn [(walk [actual seed path position depth]
-              (charge! 1)
-              (when (> depth 64) (fail :map-reference-depth-limit))
+    (letfn [(walk [actual seed path position]
               (cond
                 (symbol? actual)
                 (do (when-not (= actual seed) (fail :map-reference-value-mismatch)) (emit! actual position nil))
@@ -122,35 +117,33 @@
                     (= 'quote op) (when-not (= 2 (count actual)) (fail :map-reference-quote-shape))
                     (contains? '#{let loop} op)
                     (let [bindings (second actual) target (second seed)]
-                      (charge! (count bindings))
                       (when-not (and (vector? bindings) (even? (count bindings)) (= (count bindings) (count target))
                                      (every? symbol? (take-nth 2 bindings))
                                      (= (vec (take-nth 2 bindings)) (vec (take-nth 2 target))))
                         (fail :unsupported-map-reference-bindings))
                       (doseq [slot (range 1 (count bindings) 2)]
-                        (walk (get bindings slot) (get target slot) (when path (conj path 1 slot)) :expression (inc depth)))
+                        (walk (get bindings slot) (get target slot) (when path (conj path 1 slot)) :expression))
                       (doseq [slot (range 2 (count actual))]
-                        (walk (nth actual slot) (nth seed slot) (when path (conj path slot)) :expression (inc depth))))
+                        (walk (nth actual slot) (nth seed slot) (when path (conj path slot)) :expression)))
                     :else (doseq [slot (range 1 (count actual))]
-                            (walk (nth actual slot) (nth seed slot) (when path (conj path slot)) position (inc depth)))))
+                            (walk (nth actual slot) (nth seed slot) (when path (conj path slot)) position))))
                 (map? actual)
                 (let [entries (if (map? seed) (vec seed) []) host-keys (mapv first entries) slots (zipmap host-keys (range))]
-                  (charge! (* 2 (count actual)))
                   (when-not (and (map? seed) (= (count actual) (count seed)) (every? #(or (keyword? %) (string? %)) (keys actual))
                                  (= (set (keys actual)) (set host-keys))) (fail :map-reference-key-bijection))
                   (when path (p15-s23-stage2-module-map-entries module seed path))
                   (doseq [[key value] actual]
                     (let [slot (get slots key)]
-                      (walk key key (when path (conj path (* 2 slot))) :expression (inc depth))
-                      (walk value (get seed key) (when path (conj path (inc (* 2 slot)))) :expression (inc depth)))))
+                      (walk key key (when path (conj path (* 2 slot))) :expression)
+                      (walk value (get seed key) (when path (conj path (inc (* 2 slot)))) :expression))))
                 (vector? actual)
                 (do (when-not (and (vector? seed) (= (count actual) (count seed))) (fail :map-reference-vector-shape))
                     (doseq [slot (range (count actual))]
-                      (walk (get actual slot) (get seed slot) (when path (conj path slot)) position (inc depth))))
+                      (walk (get actual slot) (get seed slot) (when path (conj path slot)) position)))
                 (set? actual)
                 (do (when-not (and (set? seed) (= actual seed)) (fail :map-reference-set-shape))
                     ;; Imports here were already rejected by the inherited Set fence.
-                    (doseq [item actual] (walk item item nil position (inc depth))))
+                    (doseq [item actual] (walk item item nil position)))
                 (not= actual seed) (fail :map-reference-value-mismatch)))]
       (let [form (:form syntax) function (when (seq? form) (nth form 2 nil)) params (:params definition)
             owned (filterv #(= (:span syntax) (:source-span (second %))) (mapv vector (range 1 (inc (count refs))) refs))]
@@ -158,10 +151,9 @@
                        (seq? function) (= 'fn (first function)) (= params (second function))
                        (vector? params) (every? symbol? params) (= (count (:body definition)) (- (count function) 2)))
           (fail :unsupported-map-reference-header))
-        (charge! (+ (count params) (count owned)))
         (emit! 'def :operator nil) (emit! 'fn :operator nil)
         (doseq [[slot actual seed] (map vector (range) (drop 2 function) (:body definition))]
-          (walk actual seed [slot] :expression 0))
+          (walk actual seed [slot] :expression))
         (when-not (= (count owned) (count @rows)) (fail :map-reference-owner-census))
         (doseq [[[ordinal reference] row] (map vector owned @rows)]
           (let [symbol (:symbol row) position (:position row)]

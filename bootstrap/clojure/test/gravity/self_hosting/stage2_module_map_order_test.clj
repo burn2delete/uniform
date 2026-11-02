@@ -90,6 +90,21 @@
                              (:entries (bootstrap/p15-s23-stage2-seed-compile-collection emitter module #{} value))))))
       (is (every? #(identical? module %) @seen)))))
 
+(deftest stage2-module-map-order-accepts-unmetered-shapes
+  (let [deep (nth (iterate vector :leaf) 66)
+        deep-source (normalized-source deep [])
+        keys (mapv #(keyword (str "k" %)) (range 32768))
+        wide (zipmap keys (repeat :value))
+        wide-source (normalized-source wide keys)
+        rows (bootstrap/p15-s23-stage2-module-map-order wide-source)]
+    ;; These inputs exceed the retired depth and visit ceilings while retaining
+    ;; the owner record shape and source-order contract.
+    (is (= {} (bootstrap/p15-s23-stage2-module-map-order deep-source)))
+    (is (= 1 (count rows)))
+    (is (= (count keys) (count (:entry-order (get rows ['main [0]])))))
+    (is (= (set (range (count keys)))
+           (set (:entry-order (get rows ['main [0]])))))))
+
 (deftest stage2-module-map-order-diagnostic-kernel
   (doseq [[value keys expected] [[{:a '(recur) :z '(throw)} [:z :a] "L2-THROW-ILLEGAL"]
                                   [{:a '(throw) :z '(recur)} [:z :a] "L2-RECUR-TARGET"]]]
