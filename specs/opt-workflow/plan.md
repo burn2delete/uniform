@@ -48,6 +48,20 @@ Reuse these products across tasks instead of repeating the verifier, proof
 checker or pass implementations. MIR, proof/domain producers and Lower retain
 their own semantic implementations and actual acceptance products.
 
+[C18's verification matrix](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#verification-matrix)
+qualifies C13's general high-risk evidence list. Behavior-relevant MIR changes
+require evidence for affected functions: actual per-function translation
+validation or a stronger mechanized pass proof covering the selected change.
+Bind input/output MIR, changed functions, observable results, effects and safety
+outcomes under [the translation-validation contract](../../docs/phase-06-compiler-architecture/097-c18-compiler-verification-and-pass-correctness-strategy.md#translation-validation).
+A structural verifier, generic differential fixture, local assertion or
+nonsemantic conformance receipt cannot silently replace that required scope.
+Task 4 consumes the actual risk/evidence policy and checker products from
+[Compiler API's pass-evidence owner](../compiler-api-workflow/tasks.md#implementation-tasks),
+retains rejected validation/counterexamples and the prior valid artifact, and
+supplies current results to task 5. This qualification does not accept all C18
+or authorize an unavailable checker.
+
 Preserve all [ten C13 diagnostic meanings and complete subject context](../../docs/phase-06-compiler-architecture/092-c13-mir-optimization-passes-design.md#diagnostics):
 pass/decision/input-output MIR identities, available source span, changed
 operations, missing fact, proof, profile, target and remediation. Exercise each
