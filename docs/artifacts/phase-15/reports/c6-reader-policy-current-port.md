@@ -88,11 +88,14 @@ The control run passed:
 ```text
 clojure -J-Xmx256m -M tools/c6_reader_policy_test.clj
 relative policy: 4 tests / 54 assertions / 0 failures / 0 errors
-reader policy: 6 tests / 40 assertions / 0 failures / 0 errors
+reader policy: 6 tests / 42 assertions / 0 failures / 0 errors
 ```
 
-The port intentionally does not claim the original test's 25 additional
-assertions verbatim. Their disposition is explicit:
+The initial port ran 6 tests / 40 assertions. The current Syntax invocation
+compatibility change supplies its path resolver as a declared oracle and adds
+two returned-selection schema/path checks, bringing the current run to 42.
+The following records the disposition of 25 original assertion forms; the
+foreign-callback assertion was restored directly:
 
 - 6 old assertions were the v3 Reader-positive loop and the per-version
   `:admission-status` nonclaim. Current public C6 construction is v2-only;
