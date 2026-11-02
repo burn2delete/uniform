@@ -215,6 +215,65 @@
 (defn read-source [file]
   (java.nio.file.Files/readString (.toPath (io/file file)) java.nio.charset.StandardCharsets/UTF_8))
 
+(defn git-tree [root ref require!]
+  (let [process (.start (.redirectErrorStream (ProcessBuilder. ^java.util.List
+                                                               ["git" "-C" (str root)
+                                                                "rev-parse" (str ref "^{tree}")]) true))
+        output (with-open [input (.getInputStream process)] (slurp input))
+        exit (.waitFor process)]
+    (require! (zero? exit) "Task source version tree cannot be read")
+    (str/trim output)))
+
+(defn task-record-digest [record sha256]
+  (sha256 (pr-str (select-keys record [:id :checked? :status :acceptance]))))
+
+(defn validate-task-source-versions! [root manifest]
+  (let [bridges (:task-source-version-bridges manifest)
+        by-path (into {} (map (juxt :path identity) bridges))
+        refs (mapcat (fn [requirement]
+                       (concat (when-let [task (:task-reference requirement)] [task])
+                               (:additional-task-interfaces requirement)))
+                     (:requirements manifest))]
+    (require! (and (vector? bridges) (seq bridges)
+                   (= (count bridges) (count by-path)))
+              "Missing or duplicate task source version bridge")
+    (doseq [{:keys [path historical-ref historical-sha256 current-ref current-tree current-sha256
+                    marker changed-records change-class qualification] :as bridge} bridges]
+      (require! (and (string? path) (not (.isAbsolute (io/file path)))
+                     (re-matches #"[0-9a-f]{40}" (or historical-ref ""))
+                     (re-matches #"[0-9a-f]{40}" (or current-ref ""))
+                     (re-matches #"[0-9a-f]{64}" (or historical-sha256 ""))
+                     (re-matches #"[0-9a-f]{64}" (or current-sha256 ""))
+                     (re-matches #"[0-9a-f]{40}" (or current-tree ""))
+                     (string? marker) (not (str/blank? marker))
+                     (keyword? change-class) (string? qualification) (not (str/blank? qualification)))
+              (str "Invalid task source version bridge: " path))
+      (require! (= current-tree (git-tree root current-ref require!))
+                (str "Task source version tree drift: " path))
+      (let [historical (requirement-sources/git-source root historical-ref path require!)
+            current (requirement-sources/git-source root current-ref path require!)]
+        (require! (= historical-sha256 (sha256 historical))
+                  (str "Historical task source bridge hash drift: " path))
+        (require! (= current-sha256 (sha256 current))
+                  (str "Current task source bridge hash drift: " path))
+        (require! (not= historical current)
+                  (str "Task source bridge does not identify a change: " path))
+        (doseq [{record-id :id :keys [historical-record-sha256 current-record-sha256]} changed-records]
+          (let [old-record (requirement-evidence/task-record historical marker record-id)
+                current-record (requirement-evidence/task-record current marker record-id)]
+            (require! (= historical-record-sha256 (task-record-digest old-record sha256))
+                      (str "Historical task record digest drift: " path "#" record-id))
+            (require! (= current-record-sha256 (task-record-digest current-record sha256))
+                      (str "Current task record digest drift: " path "#" record-id))))))
+    (doseq [{:keys [path] expected-sha :sha256} refs]
+      (if-let [bridge (get by-path path)]
+        (require! (= expected-sha (:historical-sha256 bridge))
+                  (str "Task reference lost historical identity: " path))
+        (let [current (read-source (checked-path root path))]
+          (require! (= expected-sha (sha256 current))
+                    (str "Task/evidence source drift: " path)))))
+    bridges))
+
 (defn validate-bridge-projections! [manifest projected-views baseline-texts]
   (doseq [bridge (:source-version-bridges manifest)
           :when (requirement-sources/baseline-projection-kind? (:kind bridge))]
@@ -248,7 +307,9 @@
                  (mapv (fn [d] {"id" (:id d) "path" (:path d) "sequence" (:sequence d)}) original))
               "Original inventory identities/order changed")
     (require! (= (:inventory-sha256 manifest) (sha256 (read-source inventory-path))) "Inventory source drift")
-    (let [raw (into (sorted-map) (for [{:keys [id path]} sources] [id (read-source (checked-path root path))]))
+    (let [task-source-bridges (validate-task-source-versions! root manifest)
+          task-source-by-path (into {} (map (juxt :path identity) task-source-bridges))
+          raw (into (sorted-map) (for [{:keys [id path]} sources] [id (read-source (checked-path root path))]))
           documents (into {} (map (juxt :id identity) sources))
           bridges (mapv (fn [bridge]
                           (let [document (get documents (:document-id bridge))]
@@ -275,15 +336,27 @@
       (require! (= (count sources) (count texts)) "Duplicate original/extension source ID")
       (assoc result :source-baseline (:source-baseline manifest)
              :source-version-bridges bridges
+             :task-source-version-bridges task-source-bridges
              :evidence-projections
              (mapv (fn [requirement]
                      (requirement-evidence/project
                       requirement
                       (fn [{:keys [path sha256]}]
-                        (let [text (read-source (checked-path root path))]
-                          (require! (= sha256 (requirement-reconciliation/sha256 text))
-                                    (str "Task/evidence source drift: " path))
-                          text)) sha256 (:source-baseline manifest)))
+                        (if-let [bridge (get task-source-by-path path)]
+                          (let [working (read-source (checked-path root path))
+                                current (requirement-sources/git-source root (:current-ref bridge)
+                                                                      path require!)]
+                            (require! (= (:current-sha256 bridge) (requirement-reconciliation/sha256 current))
+                                      (str "Current task source bridge hash drift: " path))
+                            (require! (= working current)
+                                      (str "Working task source differs from bound current ref: " path))
+                            (require! (= sha256 (:historical-sha256 bridge))
+                                      (str "Task reference lost historical identity: " path))
+                            current)
+                          (let [text (read-source (checked-path root path))]
+                            (require! (= sha256 (requirement-reconciliation/sha256 text))
+                                      (str "Task/evidence source drift: " path))
+                            text))) sha256 (:source-baseline manifest)))
                    (:requirements manifest))
              :manifest-sha256 (sha256 (read-source (checked-path root manifest-path)))
              :source-digests (into (sorted-map) (map (fn [[id text]] [id (sha256 text)]) texts))))))

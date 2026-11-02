@@ -1,5 +1,6 @@
 (ns requirement-reconciliation-test
-  (:require [clojure.test :refer [deftest is run-tests]] [clojure.string :as str]))
+  (:require [clojure.edn :as edn]
+            [clojure.test :refer [deftest is run-tests]] [clojure.string :as str]))
 (binding [*command-line-args* nil] (load-file "tools/requirement_reconciliation.clj"))
 (require '[requirement-reconciliation :as rr])
 (require 'requirement-evidence 'requirement-sources)
@@ -165,6 +166,29 @@
     (is (nil? (:overall-rate report)))
     (is (seq (:unresolved-source-occurrences report)))
     (is (some #{:no-dashboard-write} (:limits report)))))
+
+(deftest task-source-bridges-bind-history-current-main-and-changed-records
+  (let [manifest (edn/read-string (slurp "contracts/requirement-reconciliation.edn"))
+        bridges (rr/validate-task-source-versions! "." manifest)
+        by-path (into {} (map (juxt :path identity) bridges))
+        refs (mapcat (fn [requirement]
+                       (concat (when-let [task (:task-reference requirement)] [task])
+                               (:additional-task-interfaces requirement)))
+                     (:requirements manifest))]
+    (is (= 15 (count bridges)))
+    (is (= 580 (count (filter #(= (:sha256 %) (:historical-sha256 (get by-path (:path %)))) refs))))
+    (is (= #{:navigation-only :acceptance-boundary-extension :status-and-development-evidence}
+           (set (map :change-class bridges))))
+    (is (= 3 (count (:changed-records (nth bridges 2)))))
+    (is (= 2 (count (:changed-records (nth bridges 11)))))
+    (is (thrown? Exception
+                 (rr/validate-task-source-versions!
+                  "." (assoc-in manifest [:task-source-version-bridges 0 :current-sha256]
+                                (apply str (repeat 64 "0"))))))
+    (is (thrown? Exception
+                 (rr/validate-task-source-versions!
+                  "." (assoc-in manifest [:task-source-version-bridges 2 :changed-records 0
+                                           :current-record-sha256] "wrong"))))))
 
 (deftest proposed-source-disposition-is-not-reviewed-closure
   (let [[manifest sources] (complete-fixture)
