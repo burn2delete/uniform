@@ -44,7 +44,8 @@ The foreign-cache selector constructs a second genuine prefix from the existing
 foreign child into an actual facade envelope, requires envelope admission to
 pass, and exercises the real fast cache gate. The foreign parent must be
 different, the entry must be evicted before rebuild, owner replay must not run
-before that miss, and the actual rebuilt child must retain the selected parent.
+before that miss, the rebuilt envelope's actual `:cache-policy :observed-hit?`
+must remain false, and the actual rebuilt child must retain the selected parent.
 Cache retention is not required when the existing cache policy declines it.
 
 Its narrow harness adapter replaces `build-payload` only to forward the

@@ -170,6 +170,7 @@
                            (:provenance source) (:path inputs) (:text inputs) (:context inputs) previous request)]
               (is (= [:rebuild] @events))
               (is (false? (:cache-hit? rebuilt)))
+              (is (false? (get-in rebuilt [:cache-policy :observed-hit?])))
               (is (= (last parents) ((pipeline-function 'embedded-parent-id) stage (:payload rebuilt))))
               (is (not= cached (get @cache key))))))
           (finally
