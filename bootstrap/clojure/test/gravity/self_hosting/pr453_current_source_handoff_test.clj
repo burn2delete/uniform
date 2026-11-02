@@ -1,5 +1,5 @@
 (ns gravity.self-hosting.pr453-current-source-handoff-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [gravity.bootstrap :as bootstrap]
             [gravity.c6-c10.source-contract :as c6-source-contract]
             [gravity.c6-c10.source-interface :as c6-source-interface]
