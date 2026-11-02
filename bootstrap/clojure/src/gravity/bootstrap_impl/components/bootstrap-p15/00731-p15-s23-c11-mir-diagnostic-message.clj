@@ -2,24 +2,11 @@
 
 (defn p15-s23-c11-mir-diagnostic-message
   [rule]
-  (if (contains? (set c11-mir-diagnostic-ids) rule)
-    (c11-mir-message rule)
-    "authenticated checked-core validation failed"))
+  (gravity.mir/diagnostic-message c11-mir-diagnostic-ids #'c11-mir-message rule))
 
 (defn p15-s23-c11-mir-throw-record!
   [record]
-  (let [rule (:rule record)
-        message (p15-s23-c11-mir-diagnostic-message rule)]
-    (throw
-     (ex-info
-      message
-      (merge record
-             {:id rule
-              :message message
-              :bootstrap-stage :stage0
-              :source-span (get-in record [:primary :span])
-              :missing-fact (get-in record [:facts :missing-fact])
-              :fallback-status :rejected})))))
+  (gravity.mir/throw-record! #'p15-s23-c11-mir-diagnostic-message record))
 
 (defn p15-s23-c11-mir-fail!
   [id source-path subject extra]
