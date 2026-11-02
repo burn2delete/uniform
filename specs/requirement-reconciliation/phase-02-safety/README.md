@@ -104,6 +104,32 @@ receipt remains historical; the new receipt pins the current checker. Exact
 successor review remains queued for the same ACC12 after its existing Reader549
 and current work. No duplicate review or owner notification is initiated here.
 
+## Current-main source view
+
+The current-main port keeps the historical proposal bytes and candidate task
+source pins intact. `current-source-view.edn` records the exact transition from
+the PR560 candidate (`24c2b6f`) to the composed current source checkpoint
+`c6044c5eac93d358ca2bf8ff1351d83496767eb0`. It binds every task path, marker,
+candidate hash, current hash, canonical row order and unique task ID. All
+current rows remain unchecked and Open (including the explicitly partial
+Expand status), and the source view remains proposal-only.
+
+The current-source checker validates both immutable Git trees, the preserved
+proposal conservation counts, exact candidate/current task-reference pairs,
+status/order/duplicate-ID controls, and false-closure controls without loading
+the retired task projection helper:
+
+```bash
+clojure -M tools/safety_task_source_view.clj --check
+```
+
+This view does not replace the historical manifest-backed checker. The
+preserved PR445 applying manifest is not available in Git and the historical
+checker therefore remains a separately recorded nonpass; no manifest hash is
+renewed or regenerated here. Current task criteria, source-family semantics,
+implementation acceptance, canonical adoption and integration remain
+unassessed.
+
 Next adoption step: the canonical reconciliation owner routes independent
 review of the immutable candidate and resolves exact later predecessor
 conflicts before adopting this family patch. Review, canonical adoption,
