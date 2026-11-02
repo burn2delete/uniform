@@ -226,3 +226,9 @@
     3 c6-source-contract/flat-bool-compiler-program
     (p15-s23-c6c10-host-fail! "C6-VERIFY" "<gravity-checked-core>"
                              :explicit-c6-source-contract-version {})))
+
+(defn p15-s23-c6c10-source-program-version [inputs]
+  ;; Only the source-binding owner's own input records call this helper.
+  (let [version (get inputs :source-contract-version 1)]
+    (p15-s23-c6c10-source-program-contract version)
+    version))
