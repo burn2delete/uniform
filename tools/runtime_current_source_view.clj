@@ -23,7 +23,7 @@
    "runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration"])
 (def expected-current-task-source
   {:path "specs/runtime-workflow/tasks.md"
-   :sha256 "acf984517dbb6370c640a8d1fced94ddbc6799b86041746791959246da90c972"
+   :sha256 "64063a3fc0c38b2903a42e62f80fc1e2bb7ee820f8cefcad0256c9ce53b2db06"
    :marker "runtime-implementation-tasks"})
 (def expected-current-contracts
   [{:id :runtime-workflow-spec
