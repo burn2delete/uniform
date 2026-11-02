@@ -42,6 +42,13 @@ implementation acceptance are still unassessed.
 
 ## Starting work and completion
 
+The [complete diagnostic source criteria](plan.md#complete-diagnostic-source-criteria)
+route C15's full record/stream, identity, view/redaction and selected foundation
+conditions through the existing tasks. Release retains its TEST2 comparison
+producer. The current source-conjunction proposal preserves the historical
+review's scope; it does not confer current independent or implementation
+acceptance.
+
 Canonical carrier and rendering fixtures permit local work while producer
 components mature. Real composition requires actual producer failures and
 consumer views, including generated code and runtime/Build failure paths.
