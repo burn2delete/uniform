@@ -1,0 +1,115 @@
+{:restored-tests
+ [sh08-quoted-data-guard-development-kernel
+  sh08-quoted-data-recursive-development-kernel],
+ :before-sha256
+ "48d3fcaa665f273361c098890ab1d326e51fd84eee4f588827cd020f6f698de1",
+ :nonclaims
+ [:host-constructor-equivalence
+  :source-authentication
+  :genuine-compiler-runtime-acceptance
+  :parent-quote-stack-acceptance
+  :whole-path-incorporation
+  :ACC01-closure
+  :PR502-closure
+  :release
+  :self-hosting],
+ :execution
+ {:read-eval false, :Bootstrap-loaded false, :genuine-tests :UNRUN},
+ :raw-intervals
+ [{:before-sha256
+   "5dab12ce02b15b1a6e3a70c7599cd08fd6a0a1116115e94f9bbe9294f05d0ed0",
+   :historical-and-candidate-sha256
+   "89aebae16d5dbe2431cd3a2cadf7deedefb7cf430c8c28f8bcc3dbfb7261436f"}
+  {:before-sha256
+   "c74d867c945609b0d5db95e4216e0eb5012f8525b54ce13b88fa24fe474f37a9",
+   :historical-and-candidate-sha256
+   "181517dc0635e1b707014c9d2c8965a0234c7c6a712ecdbef6d24cb0b164d05b"}],
+ :test-path
+ "bootstrap/clojure/test/gravity/self_hosting/sh08_function_call_type_test.clj",
+ :integration :UNRUN,
+ :shared-test-helpers
+ [{:name quoted-data-input,
+   :form-sha256
+   "04c5e89223bf83830e0f594a12e70817194feb072210e57c754a2630201ee15c",
+   :historical-identical true}
+  {:name literal-guard-input,
+   :form-sha256
+   "ba5edb2b77236a5ec42c2feddf1f399ab6022f0e02496a20b67618c1a6b1a212",
+   :historical-identical true}],
+ :production
+ {:changed false,
+  :path
+  "bootstrap/gravity/src/gravity/compiler/c7_type_checker_engine.gravity",
+  :file-sha256
+  "9c026369dfeb7d44e531c8dfda63f72eea5c14d30e9abf092ccf604944ee7d64",
+  :direct-definition-pins
+  [{:name sh08-bm-products,
+    :arguments [core products source-forms],
+    :form-sha256
+    "868abb6c7bc140160c039a3536d4038ebc5067fe70185aaa017d3870de7f8136",
+    :historical-form-sha256
+    "868abb6c7bc140160c039a3536d4038ebc5067fe70185aaa017d3870de7f8136",
+    :historical-identical true}
+   {:name sh08-ft-infer-acyclic-with-context,
+    :arguments
+    [node-sequence
+     node-table
+     lexical-bindings
+     definitions
+     calls
+     edges
+     function-types
+     binding-types
+     maximum-rounds
+     context],
+    :form-sha256
+    "c2f6f9204e6a81309b4ae7402f93ae1da851542592c8471023daa334da1abbce",
+    :historical-form-sha256
+    "c2f6f9204e6a81309b4ae7402f93ae1da851542592c8471023daa334da1abbce",
+    :historical-identical true}
+   {:name sh08-gd-result,
+    :arguments [group branch types validate?],
+    :form-sha256
+    "cc830ca05c3dbbc35bde0a9041482ec7f51441657d16aa1bfd4af4a4e06ff729",
+    :historical-form-sha256
+    "cc830ca05c3dbbc35bde0a9041482ec7f51441657d16aa1bfd4af4a4e06ff729",
+    :historical-identical true}
+   {:name sh08-qd-node,
+    :arguments [node forms],
+    :form-sha256
+    "31dd3ca59e9ea792603c596cd74f4de0c69bdbbd968c15a754d61b056e96e0cb",
+    :historical-form-sha256
+    "1544243a1032d866dda4d43a984da441c453df24f8e9019cf4958c9feb0418f2",
+    :historical-identical false}
+   {:name sh08-qd-products,
+    :arguments [nodes source-forms module],
+    :form-sha256
+    "e36d10edb8868b3eb75841828e902e25aeb1f4273abbd1388d40faa5a26a04d2",
+    :historical-form-sha256
+    "e704f964b5a3a220abd35920a553ea92ca027cb7989d7600b91bd3f202538912",
+    :historical-identical false}
+   {:name sh08-sm-check,
+    :arguments [group types functions module],
+    :form-sha256
+    "523cb74b439c5d8932d5682998fcc1bcea3afc92e28fc1dd51524e4f270da0b4",
+    :historical-form-sha256
+    "523cb74b439c5d8932d5682998fcc1bcea3afc92e28fc1dd51524e4f270da0b4",
+    :historical-identical true}]},
+ :reason
+ :retain-original-explicit-list-fixture-construction-without-assuming-host-equivalence,
+ :original-bodies :byte-identical,
+ :all-other-test-bytes :unchanged,
+ :independent-source-review :pending,
+ :kind :preserved-quoted-data-fixture-restoration,
+ :candidate-sha256
+ "03207474a0e691a2ba235ac8aefa0132abf0af4b81f7ae8554cac32ab3becd71",
+ :generator
+ {:language :clojure,
+  :sha256
+  "58e44d6300b4d70b5ce4e4da71311b3f86cff07c2d3fa53e5de8d2edcb598e63",
+  :preserved-locally true},
+ :base "2654d155322f7863dd087065f19000b43c877cbe",
+ :all-other-test-forms :unchanged,
+ :assertions :unchanged-from-historical-and-current,
+ :historical "6a4f87f013d0076b81aba9e0667650e70d28e635",
+ :owner :ACC-01}

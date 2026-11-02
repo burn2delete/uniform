@@ -25,7 +25,11 @@
              stage1-read-source-formal-release-governance-seed-retirement
              sh03-reader-contract
              sh03-read-source-unit
-             sh03-verify-reader-result])
+             sh03-verify-reader-result
+             reader-prepare-resources
+             reader-verify-resource-preparation
+             reader-complete-resources
+             reader-verify-resource-result])
   (:effects #{})
   (:capabilities #{})
   (:safety :safe)
@@ -1534,16 +1538,35 @@
     true
     (= tag [117 117 105 100])))
 
+(defn sh03-reader-pure-tags? [tags]
+  (if (vector? tags)
+    (loop [remaining tags]
+      (if (= (count remaining) 0)
+        true
+        (if (if (sh03-registered-tag? (first remaining))
+              true
+              (= (first remaining) [116 101 120 116]))
+          (recur (rest remaining))
+          false)))
+    false))
+
 (defn sh03-reader-policy-valid? [policy]
   (if (sh03-exact-keys?
        policy
-       #{:artifact :schema-version :retain-trivia :enabled-reader-tags})
+       (if (contains? #{:gravity/pure-text-reader :gravity/sealed-pure-text-reader}
+                      (get policy :extension-policy))
+         #{:artifact :schema-version :retain-trivia :enabled-reader-tags :extension-policy}
+         #{:artifact :schema-version :retain-trivia :enabled-reader-tags}))
     (if (= (get policy :artifact) :gravity/sh03-reader-policy)
       (if (= (get policy :schema-version) 1)
         (if (boolean? (get policy :retain-trivia))
           (let [tags (get policy :enabled-reader-tags)]
             (if (vector? tags)
-              (if (sh03-reader-tags-registered-shape? tags)
+              (if (if (= (get policy :extension-policy) :gravity/sealed-pure-text-reader)
+                    (= tags [[116 101 120 116]])
+                    (if (= (get policy :extension-policy) :gravity/pure-text-reader)
+                    (sh03-reader-pure-tags? tags)
+                    (sh03-reader-tags-registered-shape? tags)))
                   (sh03-all-unique? tags)
                   false)
               false))
@@ -3692,7 +3715,14 @@
         (sh03-inst-codepoints-valid? codepoints)
         (if (= tag [117 117 105 100])
           (sh03-uuid-codepoints-valid? codepoints)
-          false))
+          (if (= tag [116 101 120 116])
+            (= (get frame :extension-policy) :gravity/sealed-pure-text-reader)
+            (if (= tag [114 101 115 111 117 114 99 101])
+              (if (= (get frame :extension-policy)
+                     :gravity/declared-input-reader-preparation)
+                (> (count codepoints) 0)
+                false)
+              false))))
       false)))
 
 (defn sh03-frame-rejection [rule engine reason span raw facts]
@@ -4097,8 +4127,15 @@
                     (recur (+ cursor 1)
                              (+ next-form-index 1)
                              (conj frames
-                                   (sh03-open-tag-frame
-                                    token cursor next-form-index parent-id))
+                                   (if (contains? #{:gravity/sealed-pure-text-reader
+                                                   :gravity/declared-input-reader-preparation}
+                                                 (get reader-policy :extension-policy))
+                                     (assoc (sh03-open-tag-frame
+                                             token cursor next-form-index parent-id)
+                                            :extension-policy
+                                            (get reader-policy :extension-policy))
+                                     (sh03-open-tag-frame
+                                      token cursor next-form-index parent-id)))
                              (conj records nil) roots root-values)
                     (sh03-frame-rejection
                      "C2-EXTENSION" "STAGE1READER004"
@@ -4524,8 +4561,10 @@
   (if (= tag-codepoints [105 110 115 116])
     [103 114 97 118 105 116 121 46 114 101 97 100 101 114 46
      115 116 97 110 100 97 114 100 47 114 101 97 100 45 105 110 115 116]
-    [103 114 97 118 105 116 121 46 114 101 97 100 101 114 46
-     115 116 97 110 100 97 114 100 47 114 101 97 100 45 117 117 105 100]))
+    (if (= tag-codepoints [116 101 120 116])
+      [103 114 97 118 105 116 121 46 114 101 97 100 101 114 47 114 101 97 100 45 116 101 120 116]
+      [103 114 97 118 105 116 121 46 114 101 97 100 101 114 46
+       115 116 97 110 100 97 114 100 47 114 101 97 100 45 117 117 105 100])))
 
 (defn sh03-extension-invocations-for-tag [forms tag-codepoints]
   (loop [remaining forms result []]
@@ -4568,6 +4607,70 @@
      :status (if (> (count invocations) 0)
                :invoked
                :registered-not-invoked)}))
+
+(defn sh03-reader-sealed-text-forms-valid? [forms]
+  (loop [remaining forms]
+    (if (= (count remaining) 0)
+      true
+      (let [form (first remaining)]
+        (if (= (get form :kind) :tagged-literal)
+          (if (= (get form :tag-codepoints) [116 101 120 116])
+            (if (= (count (get form :children)) 1)
+              (if (= (get (sh03-record-by-id forms (first (get form :children)))
+                          :kind) :string)
+                (recur (rest remaining))
+                false)
+              false)
+            false)
+          (recur (rest remaining)))))))
+
+(defn sh03-reader-read-text [seed]
+  seed)
+
+(defn sh03-reader-sealed-text-record [forms reader-policy]
+  (let [invocations
+        (loop [remaining forms result []]
+          (if (= (count remaining) 0)
+            result
+            (let [form (first remaining)]
+              (if (= (get form :kind) :tagged-literal)
+                (let [payload-id (first (get form :children))
+                      payload (sh03-record-by-id forms payload-id)
+                      seed {:source-id {:digest-ref 1}
+                            :source-content-id {:digest-ref 0}
+                            :form-id (get form :form-id)
+                            :payload-form-id payload-id
+                            :span (get form :span)
+                            :datum {:kind :string
+                                    :decoded-codepoints
+                                    (get (get payload :value) :decoded-codepoints)}}
+                      returned (sh03-reader-read-text seed)]
+                  (recur
+                   (rest remaining)
+                   (conj result
+                         {:form-id (get form :form-id)
+                          :payload-form-id payload-id
+                          :span (get form :span)
+                          :raw (get form :raw)
+                          :input-seed seed
+                          :returned-seed returned
+                          :invocation {:handler (quote sh03-reader-read-text)
+                                       :policy reader-policy
+                                       :build-effects #{} :capabilities #{}
+                                       :status :invoked}})))
+                (recur (rest remaining) result)))))]
+    {:artifact :gravity/reader-extension-invocation
+     :schema-version 2
+     :policy reader-policy
+     :tag {:kind :symbol :name-codepoints [116 101 120 116]}
+     :tag-codepoints [116 101 120 116]
+     :handler (quote sh03-reader-read-text)
+     :handler-policy {:registered? true :enabled? true
+                      :input :syntax-seed :output :syntax-seed
+                      :ambient-authority-denied? true}
+     :build-effects #{} :capabilities #{} :profiles #{:meta}
+     :invocations invocations
+     :status (if (> (count invocations) 0) :invoked :registered-not-invoked)}))
 
 (defn sh03-reader-extension-invocation-records [forms reader-policy]
   (loop [remaining (get reader-policy :enabled-reader-tags) result []]
@@ -4712,6 +4815,8 @@
       (if (= (count remaining) 0)
         result
         (let [record (first remaining)]
+          (if (= (get record :schema-version) 2)
+            (recur (rest remaining) (conj result record))
           (recur
            (rest remaining)
            (conj result
@@ -4727,7 +4832,7 @@
                   :invocations
                   (sh03-semantic-extension-invocations
                    (get record :invocations))
-                  :status (get record :status)})))))))
+                  :status (get record :status)}))))))))
 
 (defn sh03-extension-records-have-invocations? [records]
   (loop [remaining records]
@@ -4803,7 +4908,9 @@
       :depends-on
       (if (sh03-extension-records-have-invocations?
            semantic-extension-records)
-        [0 3]
+        (if (= (get reader-policy :extension-policy) :gravity/sealed-pure-text-reader)
+          [0 1 3]
+          [0 3])
         [3])
       :preimage
       {:domain :gravity/sh03-extension-invocation-set-v1
@@ -4953,6 +5060,9 @@
 ; replay do not depend on a projected construction-work allowance.
 (defn sh03-construct-parsed-source-unit
   [source-unit source-bytes reader-policy tokens parsed]
+  (if (if (= (get reader-policy :extension-policy) :gravity/sealed-pure-text-reader)
+        (sh03-reader-sealed-text-forms-valid? (get parsed :form-tree))
+        true)
                     (let [raw-output-tokens
                           (sh03-filter-output-tokens
                            tokens (get reader-policy :retain-trivia))
@@ -4976,8 +5086,11 @@
                           (sh03-deferred-literal-records
                            forms form-value-index)
                           extension-records
-                          (sh03-reader-extension-invocation-records
-                           forms reader-policy)
+                          (if (= (get reader-policy :extension-policy) :gravity/declared-input-reader)
+                            (get parsed :resource-extension-records)
+                          (if (= (get reader-policy :extension-policy) :gravity/sealed-pure-text-reader)
+                            [(sh03-reader-sealed-text-record raw-forms reader-policy)]
+                            (sh03-reader-extension-invocation-records forms reader-policy)))
                           source-map
                           (sh03-source-map-record output-tokens forms)
                           semantic-template
@@ -5026,7 +5139,12 @@
                        :diagnostics []
                        :bounds (sh03-bounds-record)
                        :execution-boundary
-                       (sh03-execution-boundary-record)}))
+                       (sh03-execution-boundary-record)})
+    (sh03-rejected-result
+     source-unit source-bytes reader-policy
+     {:rule "C2-EXTENSION" :engine nil :reason :sealed-pure-text-population
+      :span (sh03-empty-span-at-byte 0) :raw nil :facts {}
+      :token-id nil :form-id nil :related []})))
 
 (defn sh03-rejected-decoded-source-unit
   [source-unit source-bytes reader-policy decoded]
@@ -5047,6 +5165,162 @@
             :line (get decoded :line)
             :column (get decoded :column)}
     :token-id nil :form-id nil :related []}))
+
+(defn reader-resource-forms [forms]
+  (loop [remaining forms resources []]
+    (if (= (count remaining) 0)
+      {:status :prepared :resources resources}
+      (let [form (first remaining)]
+        (if (= (get form :kind) :tagged-literal)
+          (let [payload-id (first (get form :children))
+                payload (sh03-record-by-id forms payload-id)
+                codepoints (get (get payload :value) :decoded-codepoints)]
+            (if (if (= (get form :tag-codepoints) [114 101 115 111 117 114 99 101])
+                  (if (= (count (get form :children)) 1)
+                    (if (= (get payload :kind) :string)
+                      (> (count codepoints) 0)
+                      false)
+                    false)
+                  false)
+              (recur (rest remaining)
+                     (conj resources
+                           {:form-id (get form :form-id)
+                            :payload-form-id payload-id
+                            :span (get form :span)
+                            :raw (get form :raw)
+                            :input-codepoints codepoints}))
+              {:status :rejected :reason :resource-form-contract}))
+          (recur (rest remaining) resources))))))
+
+; Pure preparation is not a C2 result and never invokes an extension. The
+; fixed policy is separate from every normal/pure Reader policy. Original
+; bytes survive in this pending product so fresh replay covers their identity,
+; including equivalent spellings and trivia, before a host constructs requests.
+(defn reader-prepare-resources [source-unit source-bytes]
+  (if (if (sh03-source-unit-valid? source-unit)
+        (sh03-source-byte-vector-valid? source-unit source-bytes)
+        false)
+    (let [reader-policy
+          {:artifact :gravity/reader-resource-preparation-policy
+           :schema-version 1
+           :retain-trivia true
+           :enabled-reader-tags [[114 101 115 111 117 114 99 101]]
+           :extension-policy :gravity/declared-input-reader-preparation}]
+      (loop [phase :decode characters nil tokens nil parsed nil]
+        (if (= phase :decode)
+          (let [decoded (sh03-decode-source-bytes source-unit source-bytes)]
+            (if (= (get decoded :status) :accepted)
+              (recur :scan (get decoded :characters) nil nil)
+              {:artifact :gravity/reader-resource-preparation
+               :schema-version 1 :status :rejected :failure decoded}))
+          (if (= phase :scan)
+            (let [scanned (sh03-scan-tokens characters)]
+              (if (= (get scanned :status) :accepted)
+                (recur :parse nil (get scanned :tokens) nil)
+                {:artifact :gravity/reader-resource-preparation
+                 :schema-version 1 :status :rejected :failure scanned}))
+            (if (= phase :parse)
+              (let [parsed-result (sh03-parse-tokens tokens reader-policy)]
+                (if (= (get parsed-result :status) :accepted)
+                  (recur :prepare nil tokens parsed-result)
+                  {:artifact :gravity/reader-resource-preparation
+                   :schema-version 1 :status :rejected :failure parsed-result}))
+              (let [population (reader-resource-forms (get parsed :form-tree))]
+                (if (= (get population :status) :prepared)
+                  {:artifact :gravity/reader-resource-preparation
+                   :schema-version 1 :status :prepared
+                   :source-unit source-unit :source-bytes source-bytes
+                   :reader-policy reader-policy :tokens tokens :parsed parsed
+                   :resources (get population :resources)}
+                  {:artifact :gravity/reader-resource-preparation
+                   :schema-version 1 :status :rejected :failure population})))))))
+    {:artifact :gravity/reader-resource-preparation
+     :schema-version 1 :status :rejected :reason :source-input-contract}))
+
+(defn reader-verify-resource-preparation [source-unit source-bytes preparation]
+  (let [expected (reader-prepare-resources source-unit source-bytes)]
+    {:artifact :gravity/reader-resource-preparation-verification
+     :schema-version 1
+     :status (if (= (get expected :status) :prepared)
+               (if (= expected preparation) :accepted :rejected)
+               :rejected)}))
+
+(defn reader-resource-policy []
+  {:artifact :gravity/sh03-reader-policy :schema-version 1
+   :retain-trivia true :enabled-reader-tags [[114 101 115 111 117 114 99 101]]
+   :extension-policy :gravity/declared-input-reader})
+
+(defn reader-resource-returns-valid? [source-unit resources invocations]
+  (if (= (count resources) (count invocations))
+    (loop [remaining resources returned invocations]
+      (if (= (count remaining) 0)
+        true
+        (let [resource (first remaining)
+              invocation (first returned)
+              seed (get invocation :input-seed)
+              result (get invocation :returned-seed)]
+          (if (if (= (get resource :form-id) (get invocation :form-id))
+                (if (= (get resource :payload-form-id) (get invocation :payload-form-id))
+                  (if (= (get resource :span) (get invocation :span))
+                    (if (= (get resource :raw) (get invocation :raw))
+                      (if (= (get seed :source-content-id)
+                             (get source-unit :source-content-hash))
+                        (if (sh03-sha256-id? (get seed :source-id))
+                          (if (= (get seed :form-id) (get resource :form-id))
+                            (if (= (get seed :payload-form-id) (get resource :payload-form-id))
+                              (if (= (get seed :span) (get resource :span))
+                                (if (string? (get seed :datum))
+                                  (if (string? (get result :datum))
+                                    (= result (assoc seed :datum (get result :datum)))
+                                    false)
+                                  false)
+                                false)
+                              false)
+                            false)
+                          false)
+                        false)
+                      false)
+                    false)
+                  false)
+                false)
+            (recur (rest remaining) (rest returned))
+            false))))
+    false))
+
+; Invocations here are the actual scoped handler returns supplied by the
+; trusted host. This pure constructor grants no authority to those data. The
+; host and C2 consumer independently replay the original lexical issuer results.
+(defn reader-complete-resources [source-unit source-bytes preparation invocations]
+  (if (= (get (reader-verify-resource-preparation source-unit source-bytes preparation)
+              :status) :accepted)
+    (if (reader-resource-returns-valid? source-unit (get preparation :resources) invocations)
+      (let [policy (reader-resource-policy)
+            record {:artifact :gravity/reader-extension-invocation :schema-version 3
+                    :policy policy
+                    :tag {:kind :symbol :name-codepoints [114 101 115 111 117 114 99 101]}
+                    :tag-codepoints [114 101 115 111 117 114 99 101]
+                    :handler (quote gravity.reader/read-input)
+                    :handler-policy {:registered? true :enabled? true :input :syntax-seed
+                                     :output :syntax-seed :ambient-authority-denied? true}
+                    :build-effects #{:build/read-file} :capabilities #{:fs/read}
+                    :profiles #{:meta} :invocations invocations
+                    :status (if (> (count invocations) 0) :invoked :registered-not-invoked)}]
+        (sh03-construct-parsed-source-unit
+         source-unit source-bytes policy (get preparation :tokens)
+         (assoc (get preparation :parsed) :resource-extension-records [record])))
+      {:status :rejected :reason :resource-return-contract})
+    {:status :rejected :reason :resource-preparation-mismatch}))
+
+(defn reader-verify-resource-result [source-unit source-bytes preparation invocations result]
+  (let [expected (reader-complete-resources source-unit source-bytes preparation invocations)]
+    (if (if (= (get expected :status) :accepted) (= expected result) false)
+      {:artifact :gravity/sh03-reader-verification-report :schema-version 1
+       :status :accepted :verified? true :reader-result-status :accepted
+       :semantic-reader-template (get expected :semantic-reader-template)
+       :digest-requests (sh03-digest-request-summaries (get expected :digest-requests))
+       :diagnostics [] :bounds (sh03-bounds-record)
+       :execution-boundary (sh03-execution-boundary-record)}
+      {:status :rejected :verified? false :reason :resource-result-replay-mismatch})))
 
 ; Recur replaces the interpreter loop environment with just its outer source
 ; arguments plus the four loop locals. It does not retain a prior phase's let

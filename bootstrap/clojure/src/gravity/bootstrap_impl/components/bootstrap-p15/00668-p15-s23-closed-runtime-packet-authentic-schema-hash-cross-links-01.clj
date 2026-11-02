@@ -59,12 +59,10 @@
       (=
         #{:observed-operation-set
           :node-count
-          :maximum-depth
           :operation-set
           :status
           :entrypoint
-          :artifact
-          :maximum-nodes}
+          :artifact}
         (set (keys validation)))
       (=
         #{:self-hosted?

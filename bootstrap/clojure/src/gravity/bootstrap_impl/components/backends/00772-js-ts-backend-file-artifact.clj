@@ -47,20 +47,7 @@
 
 (defn jvm-backend-validate-plan!
   [source-path plan]
-  (try
-    ;; Reuse the shared iterative scalar/control-flow validator, but remap its
-    ;; historical C diagnostic at this concrete backend boundary.
-    (c-backend-validate-runtime-plan! source-path jvm-backend-target plan)
-    (catch clojure.lang.ExceptionInfo ex
-      (if (= "B2-UNSUPPORTED" (:id (ex-data ex)))
-        (jvm-backend-fail!
-         "C14-UNSUPPORTED"
-         "JVM backend cannot lower this stage2 instruction plan"
-         source-path plan
-         {:unsupported-op (:unsupported-op (ex-data ex))
-          :missing-fact :jvm-stage2-lowering-rule})
-        (throw ex))))
-  :passed)
+  (gravity.backend.jvm/validate-plan! #'c-backend-validate-runtime-plan! #'jvm-backend-fail! jvm-backend-target source-path plan))
 
 (defn jvm-backend-validate-packet!
   [source-path packet trusted-emitter-rule trusted-driver-rule
@@ -160,34 +147,19 @@
 
 (defn jvm-backend-byte-array-source
   [name bytes indent]
-  (let [padding (apply str (repeat indent "  "))]
-    (str padding "byte[] " name " = new byte[]{"
-         (str/join "," (map #(str "(byte)" %) bytes)) "};\n")))
+  (gravity.backend.jvm/byte-array-source name bytes indent))
 
 (defn jvm-backend-value-declaration
   [instruction counter indent]
-  (let [name (str "gravityValue" (swap! counter inc))
-        value (:value instruction)]
-    {:source (jvm-backend-byte-array-source
-              name (c-backend-runtime-bytes value) indent)
-     :descriptor {:name name
-                  :truth (not (or (nil? value) (false? value)))}}))
+  (gravity.backend.jvm/value-declaration #'jvm-backend-byte-array-source #'c-backend-runtime-bytes instruction counter indent))
 
 (defn jvm-backend-write-source
   [descriptor indent]
-  (let [padding (apply str (repeat indent "  "))
-        name (:name descriptor)]
-    (str padding "System.out.write(" name ", 0, " name ".length);\n")))
+  (gravity.backend.jvm/write-source descriptor indent))
 
 (defn jvm-backend-test-source
   [instruction env]
-  (case (:op instruction)
-    :literal (if (or (nil? (:value instruction))
-                     (false? (:value instruction))) "false" "true")
-    :quote (if (or (nil? (:value instruction))
-                   (false? (:value instruction))) "false" "true")
-    :local (if (get-in env [(:name instruction) :truth]) "true" "false")
-    "false"))
+  (gravity.backend.jvm/test-source instruction env))
 
 (declare jvm-backend-value-source)
 (declare jvm-backend-instruction-source)

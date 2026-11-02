@@ -11,11 +11,4 @@
    :registry {"n" {"kind" "null"}
               "u" {"kind" "tagged-union" "tag-key" "tag"
                    "variants" {"none" "n"}}}
-   :schema-id "u" :value {"tag" "none" "value" nil} :diagnostic "OK"}]
- :generated-boundaries
- [{:resource :string-utf8-bytes :accepted 65536}
-  {:resource :container-items :accepted 1024}
-  {:resource :schema-count :accepted 512}
-  {:resource :nesting-depth :accepted 64}
-  {:resource :input-meter :accepted 786432}
-  {:resource :accepted-value-meter :accepted 750000}]}
+   :schema-id "u" :value {"tag" "none" "value" nil} :diagnostic "OK"}]}

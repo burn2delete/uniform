@@ -8,7 +8,7 @@ Authority transfer baseline: `31193e634ec99b2cd5ebfd90304e323840fcf7b9`.
 
 This is the sole editable Core implementation task ledger. The roadmap's
 [current evidence and remaining work](../../docs/component-roadmaps/core.md#current-evidence-and-remaining-work)
-is generated from these records. IDs preserve the established phase/title slug
+is a navigation view of these records. IDs preserve the established phase/title slug
 convention; the original `core/1` through `core/5` labels remain display
 text. Order is display order, not dependency evidence. An unchecked box means
 not accepted complete. Check a box only with explicit `Accepted;` status and an

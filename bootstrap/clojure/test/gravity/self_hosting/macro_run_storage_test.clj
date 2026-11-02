@@ -1,6 +1,5 @@
 (ns gravity.self-hosting.macro-run-storage-test
   (:require [clojure.test :refer [deftest is]]
-            [clojure.java.io :as io]
             [gravity.macro-run-storage :as storage]))
 
 (defn- exact-keys? [value expected] (= expected (set (keys value))))
@@ -116,6 +115,19 @@
                                 (assoc-in value (conj path extra) nil))]
       (is (= (original [changed]) (storage/exact? [changed]))))))
 
+(defn- consumer-forms []
+  (binding [*read-eval* false]
+    (let [forms (read-string (str "(" (slurp "bootstrap/clojure/src/gravity/macro.clj") ")"))
+          dependency (first (filter #(and (vector? %) (= 'gravity.macro-run-storage (first %)))
+                                    (rest (last (first forms)))))
+          verify (first (filter #(and (seq? %) (= 'defn (first %)) (= 'verify (second %))) forms))
+          helper (first (filter #(= 'semantic-late-sh05-macro-artifact-verification*-expansion-replay (first %))
+                                (second (nth verify 3))))]
+      (when-not (and dependency helper)
+        (throw (ex-info "Actual macro storage consumer is absent" {})))
+      [(list 'require (list 'quote dependency))
+       (apply list 'defn (first helper) (conj (second helper) 'operations) (drop 2 helper))])))
+
 (deftest actual-expansion-stage-keeps-live-call-order
   ;; Execute the actual consumer form with explicitly modeled collaborators.
   ;; This tests adapter wiring, not an authenticated artifact or Gravity replay.
@@ -132,21 +144,15 @@
          'sh05-macro-trace-id (fn [& _] (swap! events conj :trace-id) :trace)
          'sh05-expanded-syntax-stream-id (fn [& _] (swap! events conj :stream-id) :stream)
          'sh05-macro-version :version}
-        source "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj"]
+        stage-operations (assoc (into {} (for [[name value] operations :when (fn? value)]
+                                          [(keyword (str name)) value]))
+                                :input {:sh05-macro-version :version})]
     (try
       (binding [*ns* namespace]
         (clojure.core/refer 'clojure.core)
         (require '[clojure.set :as set])
         (is (nil? (get (ns-aliases namespace) 'macro-run-storage)))
-        (doseq [[name operation] operations] (intern namespace name operation))
-        (with-open [reader (java.io.PushbackReader. (io/reader source))]
-          (binding [*read-eval* false]
-            (let [eof (Object.)]
-              (loop []
-                (let [form (read {:eof eof} reader)]
-                  (when-not (identical? eof form)
-                    (eval form)
-                    (recur)))))))
+        (doseq [form (consumer-forms)] (eval form))
         (is (= 'gravity.macro-run-storage
                (some-> (get (ns-aliases namespace) 'macro-run-storage) ns-name))))
       (let [stage (ns-resolve namespace 'semantic-late-sh05-macro-artifact-verification*-expansion-replay)
@@ -161,31 +167,24 @@
                        :template-passed? true :resolved-passed? true}]
             (dotimes [_ 2]
               (reset! events [])
-              (let [result (stage state)]
+              (let [result (stage state stage-operations)]
                 (is (= (original runs) (:run-storage-exact? result)))
                 (is (= expected @events)))))))
       (finally (remove-ns (ns-name namespace))))))
 
 (deftest missing-consumer-require-is-a-load-error
-  ;; Bootstrap's ordered manifest reaches this stage before the public facade.
-  ;; Omitting the stage's require must not be masked by a primed test alias.
-  (let [namespace (create-ns (gensym "macro-storage-unprimed-"))
-        source "bootstrap/clojure/src/gravity/bootstrap_impl/semantic_late/150856-sh05-verification-expansion-replay.clj"]
+  ;; The stage namespace owns the require. A primed test alias must not mask it.
+  (let [namespace (create-ns (gensym "macro-storage-unprimed-"))]
     (try
       (binding [*ns* namespace]
         (clojure.core/refer 'clojure.core)
         (require '[clojure.set :as set])
-        (doseq [name '[sh05-source-syntax-stream parse-module sh05-defn-form?
-                       sh05-expanded-syntax-object sh05-package-trace sh05-macro-trace-id
-                       sh05-expanded-syntax-stream-id sh05-macro-version]]
-          (intern namespace name))
         (is (nil? (get (ns-aliases namespace) 'macro-run-storage)))
-        (with-open [reader (java.io.PushbackReader. (io/reader source))]
-          (binding [*read-eval* false]
-            (let [dependency (read reader) consumer (read reader)
+        (binding [*read-eval* false]
+            (let [[dependency consumer] (consumer-forms)
                   _ (is (= '(require '[gravity.macro-run-storage :as macro-run-storage]) dependency))
                   failure (caught #(eval consumer))
                   messages (map #(.getMessage ^Throwable %) (take-while some? (iterate ex-cause failure)))]
               (is (instance? clojure.lang.Compiler$CompilerException failure))
-              (is (some #(and % (.contains ^String % "No such namespace: macro-run-storage")) messages))))))
+              (is (some #(and % (.contains ^String % "No such namespace: macro-run-storage")) messages)))))
       (finally (remove-ns (ns-name namespace))))))

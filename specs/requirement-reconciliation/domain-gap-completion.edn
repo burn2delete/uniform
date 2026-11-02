@@ -1,0 +1,383 @@
+{:captured-input
+ {:commit "8ba98ee7683d7f87a431b7b6d273b06fd5d1a144",
+  :path "specs/requirement-reconciliation/domain-gap-completion.edn",
+  :sha256
+  "cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42",
+  :original-records 70,
+  :reference-kind :historical-Git-object},
+ :selected-criterion "domain/mir-pass-integration",
+ :authority :captured-source-predicate-context-only,
+ :implementation-credit :none,
+ :selected-record-sha256
+ "732d1bfd89077feee9b4a530428d9674e3e712e08a06941d9b27d43cbdc1afe8",
+ :current-whole-owner-acceptance :not-conferred,
+ :scope
+ "Only the one Pass Evidence criterion's original record and all10 source-facet witnesses are retained to close its literal source-context reference. Before/after coverage fields are captured history, not new current admission. No other69 records, global database, task denominator or whole DOM17/C18/domain implementation is imported or accepted.",
+ :records
+ [{:inherited-current-owners
+   {"facet/runtime-domains-schema/dom17/af1a8004ed058adf14b99137"
+    ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/9d1eb8498fd424e07eb4feb6"
+    ["domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/0f371c091544a6fd6470c53f"
+    ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/26e07e4b42da3cf06a68d7d8"
+    ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/797101013c2e300817d49547"
+    ["domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/43a10ab917abd42e0f2c1c28"
+    ["domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d" nil,
+    "facet/runtime-domains-schema/dom17/060c272bfe0fee9e48896ba3"
+    ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/f0f41a33bfd713c42b764b34"
+    ["domain/mir-pass-integration"],
+    "facet/runtime-domains-schema/dom17/303f441bdcfb4439b5dfadab"
+    ["domain/mir-pass-integration"]},
+   :required-output
+   "before/after MIR inspector artifacts and differential/rejection fixtures",
+   :before-sha256
+   "ef62b235d26f94368758c892b1c4e42bd9b221de37b684307479fc1a3d83de28",
+   :criterion-text
+   "Criterion `domain/mir-pass-integration`: Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence. Accepted fixture: Execute the declared typed MIR optimization with pass I/O, preserved facts, invalidations, effects/grants and semantic/provenance comparison. Negative fixture: Reject metadata loss, missing required facts or ungranted transformation effects. Required evidence: before/after MIR inspector artifacts and differential/rejection fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume pipeline, opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.",
+   :criterion-sha256
+   "1a3d8162c325be7e6876c3c40b03cc50dd287228d9d2255041d4cf4d446cf6da",
+   :negative-fixture
+   "Reject metadata loss, missing required facts or ungranted transformation effects.",
+   :criterion-id "acceptance/domain/mir-pass-integration",
+   :evidence :not-yet-produced,
+   :historical-obligation
+   "Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence.",
+   :historical-id "domain/mir-pass-integration",
+   :dispatch
+   {:primary-source-contract "DOM17",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/dom17/26e07e4b42da3cf06a68d7d8"
+     "facet/runtime-domains-schema/dom17/af1a8004ed058adf14b99137"
+     "facet/runtime-domains-schema/dom17/060c272bfe0fee9e48896ba3"
+     "facet/runtime-domains-schema/dom17/0f371c091544a6fd6470c53f"
+     "facet/runtime-domains-schema/dom17/9d1eb8498fd424e07eb4feb6"
+     "facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d"
+     "facet/runtime-domains-schema/dom17/797101013c2e300817d49547"
+     "facet/runtime-domains-schema/dom17/303f441bdcfb4439b5dfadab"
+     "facet/runtime-domains-schema/dom17/43a10ab917abd42e0f2c1c28"
+     "facet/runtime-domains-schema/dom17/f0f41a33bfd713c42b764b34"],
+    :affected-source-families ["phase-09"],
+    :historical-obligation
+    "Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence.",
+    :primary-dispatch-family "phase-09",
+    :required-return
+    [:exact-existing-criterion-witness
+     :finite-actionable-task-interface
+     :justified-historical-or-superseded-disposition],
+    :id "domain/mir-pass-integration",
+    :historical-record-sha256
+    "81a7b0437748f0426d3f9a92d865ddbde5e911b89530dde41f51254df08fc99d",
+    :source-facet-records-sha256
+    "9323fd809f4cef0f2f2e67269ba78552a36c86d268e3ddfab65b60bf4aa6d2b5",
+    :current-open-decision-ids
+    ["interface/domain/mir-pass-integration"],
+    :source-contracts nil,
+    :current-disposition :explicit-open-source-interface-work,
+    :implementation-acceptance :unassessed},
+   :after
+   {:criterion-source nil,
+    :criterion-text
+    "Criterion `domain/mir-pass-integration`: Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence. Accepted fixture: Execute the declared typed MIR optimization with pass I/O, preserved facts, invalidations, effects/grants and semantic/provenance comparison. Negative fixture: Reject metadata loss, missing required facts or ungranted transformation effects. Required evidence: before/after MIR inspector artifacts and differential/rejection fixtures; bind source/compiler/profile/target/provider identities, source-mapped stable diagnostics and every applicable source facet field/exception/negative condition listed for this criterion in specs/requirement-reconciliation/domain-gap-completion.edn. Dependencies consume pipeline, opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts outputs under their stated contracts; no whole-component completion prerequisite. Status: Open; implementation acceptance unassessed.",
+    :criterion-sha256
+    "1a3d8162c325be7e6876c3c40b03cc50dd287228d9d2255041d4cf4d446cf6da",
+    :source-facet-ids
+    ["facet/runtime-domains-schema/dom17/26e07e4b42da3cf06a68d7d8"
+     "facet/runtime-domains-schema/dom17/af1a8004ed058adf14b99137"
+     "facet/runtime-domains-schema/dom17/060c272bfe0fee9e48896ba3"
+     "facet/runtime-domains-schema/dom17/0f371c091544a6fd6470c53f"
+     "facet/runtime-domains-schema/dom17/9d1eb8498fd424e07eb4feb6"
+     "facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d"
+     "facet/runtime-domains-schema/dom17/797101013c2e300817d49547"
+     "facet/runtime-domains-schema/dom17/303f441bdcfb4439b5dfadab"
+     "facet/runtime-domains-schema/dom17/43a10ab917abd42e0f2c1c28"
+     "facet/runtime-domains-schema/dom17/f0f41a33bfd713c42b764b34"],
+    :criterion-id "acceptance/domain/mir-pass-integration",
+    :historical-obligation
+    "Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence.",
+    :coverage-disposition :finite-actionable-task-interface-proposed,
+    :id "domain/mir-pass-integration",
+    :criterion-task-id "pass-evidence",
+    :historical-coverage-history
+    [{:criterion-source nil,
+      :criterion-text nil,
+      :source-facet-ids
+      ["facet/runtime-domains-schema/dom17/26e07e4b42da3cf06a68d7d8"
+       "facet/runtime-domains-schema/dom17/af1a8004ed058adf14b99137"
+       "facet/runtime-domains-schema/dom17/060c272bfe0fee9e48896ba3"
+       "facet/runtime-domains-schema/dom17/0f371c091544a6fd6470c53f"
+       "facet/runtime-domains-schema/dom17/9d1eb8498fd424e07eb4feb6"
+       "facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d"
+       "facet/runtime-domains-schema/dom17/797101013c2e300817d49547"
+       "facet/runtime-domains-schema/dom17/303f441bdcfb4439b5dfadab"
+       "facet/runtime-domains-schema/dom17/43a10ab917abd42e0f2c1c28"
+       "facet/runtime-domains-schema/dom17/f0f41a33bfd713c42b764b34"],
+      :historical-obligation
+      "Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence.",
+      :coverage-disposition :explicit-open-source-interface-work,
+      :id "domain/mir-pass-integration",
+      :criterion-task-id nil,
+      :whole-facet-entailment-acceptance :not-conferred,
+      :qualification
+      "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+      :current-open-decision-ids
+      ["interface/domain/mir-pass-integration"],
+      :implementation-acceptance :not-inferred}],
+    :whole-facet-entailment-acceptance
+    :pending-independent-source-review,
+    :qualification
+    "Concrete executable acceptance/rejection outputs and dependencies proposed; not yet adopted or implementation evidence. Retired semantic parents remain historical; these are task-interface criteria, not new requirement identities.",
+    :current-open-decision-ids
+    ["interface/domain/mir-pass-integration"],
+    :implementation-acceptance :unassessed},
+   :status :open,
+   :positive-fixture
+   "Execute the declared typed MIR optimization with pass I/O, preserved facts, invalidations, effects/grants and semantic/provenance comparison.",
+   :historical-record-sha256
+   "81a7b0437748f0426d3f9a92d865ddbde5e911b89530dde41f51254df08fc99d",
+   :source-evidence
+   [{:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 33,
+     :raw-sha256
+     "64113adb694193b4f864a8c713acf155a1629b984ed45e9ff44ec2526e9a275a",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/aaa2b0538151b9b2aca94b5e0995ea24fb7ced2d47de20b6b10ca6205fa53373",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/26e07e4b42da3cf06a68d7d8",
+     :kind :context,
+     :document-id "DOM17",
+     :end-byte 1540,
+     :end-line 34,
+     :unit-ids
+     ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+     :start-byte 1419}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 35,
+     :raw-sha256
+     "e6aa93f50214f4e3f0dc5b4537b11d41e0ad264d7b762cfb73ad72642e8625d9",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/aaa2b0538151b9b2aca94b5e0995ea24fb7ced2d47de20b6b10ca6205fa53373",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/af1a8004ed058adf14b99137",
+     :kind :context,
+     :document-id "DOM17",
+     :end-byte 1603,
+     :end-line 35,
+     :unit-ids
+     ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+     :start-byte 1540}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 36,
+     :raw-sha256
+     "6833a2f947591db4db75be1056c6c13c9ea20a4becb67b805d7b2b763065d421",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/aaa2b0538151b9b2aca94b5e0995ea24fb7ced2d47de20b6b10ca6205fa53373",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/060c272bfe0fee9e48896ba3",
+     :kind :context,
+     :document-id "DOM17",
+     :end-byte 1690,
+     :end-line 37,
+     :unit-ids
+     ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+     :start-byte 1603}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 38,
+     :raw-sha256
+     "93c709ef0edf4e51a526ba0eab7d029a01da71fbffb415a1c333891888cc0a53",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/aaa2b0538151b9b2aca94b5e0995ea24fb7ced2d47de20b6b10ca6205fa53373",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/0f371c091544a6fd6470c53f",
+     :kind :context,
+     :document-id "DOM17",
+     :end-byte 1767,
+     :end-line 38,
+     :unit-ids
+     ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+     :start-byte 1690}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 81,
+     :raw-sha256
+     "fc236e240c287c749309786ad701710bab397de89f658bfc70d4112d12d6fa04",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/eea04d61eb8bebfc31020e3644e90d3de387b32dc361d9001f043b7e74773420",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/9d1eb8498fd424e07eb4feb6",
+     :kind :condition,
+     :document-id "DOM17",
+     :end-byte 2900,
+     :end-line 81,
+     :unit-ids ["domain/mir-pass-integration"],
+     :start-byte 2847}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 83,
+     :raw-sha256
+     "3dd771a217e94fdfc6ff6b567e46bdf51161b6423ee8ef11393aae51716a368c",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/e63c652c755b6a29def149deaf03261cda110c15ab9055739211b50dea8f20e9",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d",
+     :kind :condition,
+     :document-id "DOM17",
+     :end-byte 2998,
+     :end-line 84,
+     :unit-ids
+     ["domain/compiler-plugin-boundary" "domain/mir-pass-integration"],
+     :start-byte 2901}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 85,
+     :raw-sha256
+     "070fe004e661bb1185245b424b878899a497e31028b1ee6e8f02798adf08da1c",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/e63c652c755b6a29def149deaf03261cda110c15ab9055739211b50dea8f20e9",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/797101013c2e300817d49547",
+     :kind :condition,
+     :document-id "DOM17",
+     :end-byte 3053,
+     :end-line 85,
+     :unit-ids ["domain/mir-pass-integration"],
+     :start-byte 2998}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 86,
+     :raw-sha256
+     "31ecf79ae5662fbac45c877f430fcfa278b71e4b600db3803f5672d78fe632de",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/e63c652c755b6a29def149deaf03261cda110c15ab9055739211b50dea8f20e9",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/303f441bdcfb4439b5dfadab",
+     :kind :condition,
+     :document-id "DOM17",
+     :end-byte 3125,
+     :end-line 86,
+     :unit-ids ["domain/mir-pass-integration"],
+     :start-byte 3053}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 87,
+     :raw-sha256
+     "46902153adfd8eb9ab1907837a2f76aafcc8883b494fdba14f9c7deb198b0b80",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/e63c652c755b6a29def149deaf03261cda110c15ab9055739211b50dea8f20e9",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/43a10ab917abd42e0f2c1c28",
+     :kind :condition,
+     :document-id "DOM17",
+     :end-byte 3178,
+     :end-line 87,
+     :unit-ids ["domain/mir-pass-integration"],
+     :start-byte 3125}
+    {:path
+     "docs/phase-09-domain-specific-computing-coverage/140-dom17-compiler-and-language-tooling-domain-specification.md",
+     :start-line 88,
+     :raw-sha256
+     "d483a1b41e1e68dc6bb420b8ca031d7e7a8b7cd5b4adbf7dc5c7d9478bd41ceb",
+     :unresolved false,
+     :source-occurrence-id
+     "DOM17/source/e63c652c755b6a29def149deaf03261cda110c15ab9055739211b50dea8f20e9",
+     :original-source-sha256
+     "d5a7deb061acdbf186a0027d65bf0343833cd574e285519776879706b7a60e69",
+     :id "facet/runtime-domains-schema/dom17/f0f41a33bfd713c42b764b34",
+     :kind :condition,
+     :document-id "DOM17",
+     :end-byte 3220,
+     :end-line 88,
+     :unit-ids ["domain/mir-pass-integration"],
+     :start-byte 3178}],
+   :before
+   {:criterion-source nil,
+    :criterion-text nil,
+    :source-facet-ids
+    ["facet/runtime-domains-schema/dom17/26e07e4b42da3cf06a68d7d8"
+     "facet/runtime-domains-schema/dom17/af1a8004ed058adf14b99137"
+     "facet/runtime-domains-schema/dom17/060c272bfe0fee9e48896ba3"
+     "facet/runtime-domains-schema/dom17/0f371c091544a6fd6470c53f"
+     "facet/runtime-domains-schema/dom17/9d1eb8498fd424e07eb4feb6"
+     "facet/runtime-domains-schema/dom17/b0c52f59c5551ad540c5823d"
+     "facet/runtime-domains-schema/dom17/797101013c2e300817d49547"
+     "facet/runtime-domains-schema/dom17/303f441bdcfb4439b5dfadab"
+     "facet/runtime-domains-schema/dom17/43a10ab917abd42e0f2c1c28"
+     "facet/runtime-domains-schema/dom17/f0f41a33bfd713c42b764b34"],
+    :historical-obligation
+    "Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence.",
+    :coverage-disposition :explicit-open-source-interface-work,
+    :id "domain/mir-pass-integration",
+    :criterion-task-id nil,
+    :whole-facet-entailment-acceptance :not-conferred,
+    :qualification
+    "Historical retention or a missing same-ID decision is not concrete implementation coverage. Resolve any alias/split and the full task criterion before claiming coverage.",
+    :current-open-decision-ids
+    ["interface/domain/mir-pass-integration"],
+    :implementation-acceptance :not-inferred},
+   :new-task? false,
+   :dependencies
+   ["pipeline"
+    "opt/current-evidence-and-remaining-work/opt1-execute-pass-contracts"],
+   :current-open-decisions
+   [{:source-document-ids [],
+     :required-output
+     "Identify and bind the actual producer, checker or consumer task, criteria, dependencies and source evidence for: Demonstrate the declared typed MIR pass with before/after semantic/provenance and rejected missing-fact/authority evidence.",
+     :supporting-task-ids ["pass-evidence"],
+     :source-facet-ids
+     ["facet/runtime-domains-schema/dom17/060c272bfe0fee9e48896ba3"
+      "facet/runtime-domains-schema/dom17/0f371c091544a6fd6470c53f"
+      "facet/runtime-domains-schema/dom17/26e07e4b42da3cf06a68d7d8"
+      "facet/runtime-domains-schema/dom17/303f441bdcfb4439b5dfadab"
+      "facet/runtime-domains-schema/dom17/43a10ab917abd42e0f2c1c28"
+      "facet/runtime-domains-schema/dom17/797101013c2e300817d49547"
+      "facet/runtime-domains-schema/dom17/9d1eb8498fd424e07eb4feb6"
+      "facet/runtime-domains-schema/dom17/af1a8004ed058adf14b99137"
+      "facet/runtime-domains-schema/dom17/f0f41a33bfd713c42b764b34"
+      "finite18/facet/68c7d815a928b2376c0155266d509e87"
+      "finite18/facet/7b959e6910eaa4b9a9f7bfda62c87bd8"],
+     :task-granularity :unassessed,
+     :accountable-task
+     "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance",
+     :status :open,
+     :id "interface/domain/mir-pass-integration",
+     :kind :interface-and-evidence-qualification,
+     :historical-qualifications
+     [{:state :partial-acceptance-interface,
+       :reason
+       "The literal task owns the phase-09 behavior of domain/mir-pass-integration. Its named source predicates, diagnostic fields, artifacts and positive/negative end-to-end fixtures remain Open. This mapping confers no implementation acceptance, exclusive ownership or cross-family equivalence."}],
+     :semantic-source-id "domain/mir-pass-integration",
+     :qualification
+     "Source-backed remaining work. Accountability and partial supporting references do not establish implementation entailment or task equivalence. Concrete allocation, acceptance criteria, dependencies and task granularity require review before a whole-project denominator can be claimed.",
+     :families ["phase-09"]}],
+   :task-reference
+   {:path "specs/compiler-api-workflow/tasks.md",
+    :marker "compiler-api-implementation-tasks",
+    :id "pass-evidence"}}],
+ :kind :finite-producer-criterion-source-context-excerpt}

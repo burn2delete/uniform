@@ -14,12 +14,7 @@
         (str "unresolved bootstrap CLI operation: " operation)))))
 
 (defn- sh07-public-core-cli-input [arguments]
-  (let [[_ path & flags] arguments]
-    (when-not (and (string? path) (not (.startsWith ^String path "-"))
-                   (or (empty? flags) (= ["--development-current-reader"] (vec flags))))
-      (throw (ex-info "usage: gravity sh07-core FILE [--development-current-reader]"
-                      {:id "SH07-CLI-ARGS" :stage :command-line :severity :error})))
-    [path (if (empty? flags) {} {:reader :development-current})]))
+  (cli/sh07-core-input arguments))
 
 (defn -main
   [& arguments]
