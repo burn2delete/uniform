@@ -1351,3 +1351,109 @@ private-store or product-publication operation ran, and no other chat was
 messaged. Independent current review, global substantive reconciliation and
 implementation evidence assessment remain unfinished; the goal remains active.
 Reader contract coverage remains the first implementation preparation increment.
+
+## Complete target-lowering source review
+
+Direct review of C14 and PERF4 restores five preserved criteria under the
+five existing [Lower tasks](../specs/lower-workflow/tasks.md#implementation-tasks).
+The [Lower plan](../specs/lower-workflow/plan.md#complete-target-lowering-source-criteria)
+binds actual request/eligibility, ABI/layout, provider selection, checked
+proof-to-target metadata and target-emission/unsupported outcomes to owning
+canonical sections and real positive/refusal evidence. All nine eligibility
+conditions, ten C14 diagnostic meanings and complete context fields remain.
+Fallback must preserve the same semantics, effects, capabilities, safety and
+profile contract. Target undefined behavior cannot legalize unsupported input.
+
+The source binding retains all 122 C14 facets (106 semantic and sixteen
+context), 49 occurrence cases including 33 semantic conjunctions, 23 selected
+PERF4 boundary predicates and four original owner joins. The 145 source spans
+and two whole-file canonical identities match their preserved inputs. C14 spans
+cover every nonwhitespace document byte; conservation is not semantic entailment.
+The selected PERF4 subset requires concrete manifest fields, alignment/packing
+target support, trap/atomic/vector/fallback conditions, initialization/padding
+preservation, device-transfer validation, diagnostic context and actual
+backend/debugger/serializer/safety consumers. The full PERF4 optimizer,
+transformation families, address-identity and cache-claim coverage remain
+separate obligations. Lower consumes upstream checked transformation evidence;
+it does not become a second optimizer or proof checker. Emit/backend producers
+and package consumers retain actual byte production and manifest validation.
+
+Trace SHA-256 is
+`1f01e802c48d8b477b35cf8c962360eca8d11174120f0e085c2cea25db91e678`,
+with historical criterion source `e94de7388589c8251f40fbb1da4a6af6da6f5918`.
+The independent source review retains candidate `9d151739`, its exact
+source-criterion verdict, later-head noninheritance and excluded-scope
+dispositions. It confers no whole-PERF4, implementation, target allocation,
+integration or release acceptance here. Current entailment remains an
+author-assessed unchanged-predicate proposal, independent current review is
+pending and implementation/global conjunctions are unassessed. The tested
+historical GitHub trace reference returned Not Found; current canonical and
+task witnesses are used without a dead link, aggregate publication or stopped
+handoff retry.
+
+Source `2e4e449125785161c2a4ef4c7c7a0a23c90725eb` advances only the Lower
+task/plan inputs from predecessor `fa0932c0`, preserving its complete metadata,
+projection and pending review. All five task bodies gain explicit conditions;
+two already had foundation additions, so three more original bodies now differ.
+Of 139 original bodies, 99 remain identical and forty have declared additions.
+Original IDs/statuses, 149 current task keys, forty future records, SH/SH07
+routes and three scoped Reader receipts remain conserved. No target is adopted
+or execution enabled; the staged Linux LLVM release path is unchanged, and
+valid verified unoptimized MIR remains eligible without mandatory Opt completion.
+
+The explicit bridge retains thirty source-version file records and advances
+the existing Lower task/plan inspection locators and task witnesses. The first
+crosswalk run found a frozen foundation test reading live Lower task bytes;
+it now reads its exact historical checkpoint. The current task inspection hash
+also advances explicitly, with a new consistency assertion. The initial run's
+one failure receives no passing credit. Final generation succeeds at current
+fingerprint `8c89933a66ea777dfc26095474feea78eab1d4d9c00ce619bc8e00046d5f3a63`;
+mapping review remains pending and implementation acceptance unchanged.
+
+Static inspection of selected unchanged implementation files retains existing
+partial work without promoting labels to conformance. The [Clojure adapter](../bootstrap/clojure/src/gravity/c14_lowering/artifact.clj)
+consumes C13 through injected operations and constructs a hosted stage0 artifact.
+Its [projection](../bootstrap/clojure/src/gravity/c14_lowering/projection.clj)
+assigns hosted JVM eligibility, provider and completion fields and hashes a
+JVM bytecode plan; those are not proof of actual bytecode or native generation.
+The [validator](../bootstrap/clojure/src/gravity/c14_lowering/validation.clj)
+checks several status/presence fields and proof references, which do not alone
+establish current proof validity, provider authority or every C14 condition.
+Its [declared policy](../bootstrap/clojure/src/gravity/c14_lowering/policy.clj)
+explicitly disclaims canonical C14, target/provider/proof, self-hosting and
+release authority.
+
+Selected [Gravity source](../bootstrap/gravity/src/gravity/compiler/c14_target_lowering_architecture.gravity)
+contains a quoted generic verifier declaration as well as actual bounded
+request/dependency/proof-shape validation and LLVM/C/Wasm record constructors.
+The SH17 path validates and constructs target-program records with pending
+outcomes; static inspection is not execution or whole-source audit. Legacy
+operation-count and SH17 node/depth/width/scalar allowances remain visible
+cleanup work under [accounting removal](../specs/accounting-removal/spec.md),
+not conformance requirements or authority to increase their constants. Real
+signed-integer/target-format representability remains distinct. The
+[2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d093-c14-lowering-report.md)
+retains its historical stage0 document boundary and backend/release/self-hosting
+exclusions; its tests were not rerun or promoted to current acceptance.
+
+Final validation passes: 37 crosswalk tests / 3,532 assertions, 23 dependency
+tests / 1,774 assertions, deterministic generation/check, read-only dependency
+audit, canonical document/full-language structural validators and the language
+boundary (six tests / eleven assertions). Conservation/navigation passes for
+80 changed files, 74 Markdown files, 2,877 local references, 139 original routes,
+48 historical spec/plan suffixes and all 48 original task/evidence contents
+after stripping declared additions. All changed files are ASCII and whitespace
+checks pass. Initial helper syntax errors and the initial history-check failure
+receive no passing credit. No compiler/native/provider/C12/device/migration,
+signing, private-store or product-publication operation ran; no other chat was
+messaged. Independent current review, global substantive reconciliation and
+implementation evidence assessment remain unfinished. The goal remains active.
+
+The next source review is C13. Its canonical document and current Opt tasks
+were read; five preserved criterion spans at
+`ded6c1d2eede7985e078af57ed53fa367645436a` hash-verify but are not literal
+current Opt task text. The trace SHA-256 is
+`84d36992e56fd44bb12e471be51e38a9dd7b8c26ad5845ff0a6a763fecd26b99`.
+Its 120 facets, 47 occurrences and 32 semantic conjunctions still require
+complete predicate/current-owner review before amendments or source credit.
+Reader contract coverage remains the first implementation preparation increment.
