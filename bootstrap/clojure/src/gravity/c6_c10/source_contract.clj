@@ -4,6 +4,9 @@
    the explicit current public Core constructor/verifier is wired.")
 
 (def current-compiler-program
+  ;; Historical source-contract DATA.  Public current-v2 construction uses the
+  ;; explicit owner-produced development route below; this record remains
+  ;; available to the fixed source-contract selector and legacy controls.
   {:version 2
    :source-relative-path "bootstrap/gravity/src/gravity/compiler/c6_c10_checked_core_pipeline.gravity"
    :source-byte-count 186870
@@ -18,6 +21,18 @@
    ;; These are the observed complete source manifest and existing Merkle wire
    ;; format. They are source identity/encoding, not a function/work allowance.
    :function-count 170 :chunk-size 64 :chunk-counts [64 64 42]})
+
+(def current-compiler-program-abi
+  "Stable ABI facts for the explicit current-source owner.
+
+   The owner derives source bytes and all semantic identities at invocation;
+   only these exported names and shapes are fixed here.  This is not a source
+   pin and does not select the historical DATA record above."
+  {:version 2
+   :source-relative-path (:source-relative-path current-compiler-program)
+   :builder-function 'c6-c10-build-checked-core-template
+   :verifier-function 'c6-c10-verify-checked-core-template
+   :required-functions (:required-functions current-compiler-program)})
 
 ;; Independently reviewed observation of the changed C6 program. This record is
 ;; not selected by a public version3 route until the complete C6/C11 transaction
