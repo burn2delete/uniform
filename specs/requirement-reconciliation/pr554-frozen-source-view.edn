@@ -1,0 +1,2101 @@
+{:comparison
+ {:current-main "5dfe15c9fad14e5abebf23bf1e645bf9154a2e1e",
+  :current-main-tree "643afe5f3b00918fc3de76f2855294481a09b505"},
+ :nonclaims
+ [:not-current-canonical-source
+  :not-requirement-denominator
+  :not-task-acceptance
+  :not-implementation-credit
+  :not-source-version-admission
+  :not-whole-pr-or-sh-acceptance
+  :not-release-or-self-hosting
+  :no-std3-accounting-revival
+  :no-blind-hash-refresh
+  :no-denied-action-retry],
+ :value-map
+ [{:family :conservation-inventory,
+   :paths
+   ["specs/requirement-reconciliation/all240-current-source-facet-inventory.edn"],
+   :value
+   "The all-240 source/facet inventory and its owner-resolution counts are retained as a frozen source view.",
+   :current-disposition :historical-only-not-canonical-authority}
+  {:family :qualified-b6-receipts,
+   :paths
+   ["specs/requirement-reconciliation/b6-frozen-source-review-authentication.edn"
+    "specs/requirement-reconciliation/b6-independent-frozen-source-controls.edn"
+    "specs/requirement-reconciliation/b6-independent-frozen-source-goal-completion.json"
+    "specs/requirement-reconciliation/b6-independent-frozen-source-review.edn"
+    "specs/requirement-reconciliation/b6-qualified-frozen-source-review-adoption.edn"
+    "specs/requirement-reconciliation/b6-reviewed-frozen-backend-tasks.md"
+    "specs/requirement-reconciliation/b6-reviewed-frozen-source-trace.edn"],
+   :value
+   "B6 source-entailment controls, qualified review and adoption receipts preserve exact identities, negative controls and source-only limits.",
+   :current-disposition
+   :qualified-history-only-no-backend-or-denominator-acceptance}
+  {:family :qualified-c18-receipts,
+   :paths
+   ["specs/requirement-reconciliation/c18-affected-review-inputs.edn"
+    "specs/requirement-reconciliation/c18-bookkeeping-source-controls.edn"
+    "specs/requirement-reconciliation/c18-bookkeeping-transaction.edn"
+    "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn"
+    "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn"
+    "specs/requirement-reconciliation/c18-independent-review-authentication.edn"
+    "specs/requirement-reconciliation/c18-independent-source-goal-completion.json"
+    "specs/requirement-reconciliation/c18-independent-source-review.edn"
+    "specs/requirement-reconciliation/c18-owner-current-witness-applicability.edn"
+    "specs/requirement-reconciliation/c18-owner-source-refinement.edn"
+    "specs/requirement-reconciliation/c18-qualified-adoption-conservation.edn"
+    "specs/requirement-reconciliation/c18-qualified-current-applicability.edn"
+    "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn"],
+   :value
+   "C18 bookkeeping controls and qualified applicability retain source joins, byte continuity and no-acceptance boundaries.",
+   :current-disposition :historical-input-only-no-canonical-renewal}
+  {:family :source-decisions-and-historical-mappings,
+   :paths
+   ["specs/requirement-reconciliation/accepted-historical-mappings-275.edn"
+    "specs/requirement-reconciliation/accepted-historical-mappings-345.edn"
+    "specs/requirement-reconciliation/accepted-historical-mappings-430.edn"
+    "specs/requirement-reconciliation/accepted-historical-mappings-493.edn"
+    "specs/requirement-reconciliation/accepted-historical-mappings-561.edn"
+    "specs/requirement-reconciliation/accepted-historical-mappings.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-accounting-policy1.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-domains30.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-governance-ai31.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-governance14-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-gpu2-metadata.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-historical561.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-math20-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-math20.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-package7-adopted.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-package7.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-performance-ai17-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-policy-product2-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-product1.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-profile74-adopted.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-profile74.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-resolve-owner.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed115.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed190.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-runtime20.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-safety107.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-schema25-reviewed.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-schema25.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-stdlib83.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-tooling65.edn"
+    "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn"
+    "specs/requirement-reconciliation/source-dispositions.edn"],
+   :value
+   "Historical mapping batches, current-criterion witnesses and source dispositions remain recoverable by exact source bytes.",
+   :current-disposition :not-replayed-into-current-manifest}
+  {:family :domain-gap-context,
+   :paths
+   ["specs/requirement-reconciliation/domain-gap-completion.edn"
+    "specs/requirement-reconciliation/historical-gap-partition.edn"],
+   :value
+   "Domain gap proposals and dispatch partitions preserve unresolved criteria, residual identities and proposal-only status.",
+   :current-disposition :proposal-context-only}
+  {:family :read-only-census-tooling,
+   :paths
+   ["tools/sh_crosswalk.clj"
+    "tools/sh_crosswalk_test.clj"
+    "tools/task_baseline.clj"
+    "tools/task_baseline_test.clj"],
+   :value
+   "The original census/crosswalk tools are fingerprinted for historical comparison; their stale generated dependencies are not replayed.",
+   :current-disposition :successor-or-frozen-history-only}
+  {:family :read-only-census-and-manifest-input,
+   :paths ["specs/requirement-reconciliation/task-baseline.edn"],
+   :value
+   "The provisional task census is preserved as an immutable observation, never as a current denominator.",
+   :current-disposition :provisional-observation-only}],
+ :selected-entry-count 82,
+ :entries
+ [{:path
+   "specs/requirement-reconciliation/accepted-historical-mappings-275.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "ba1f761d7be9f214e498c55f2e7a965de76859ef9e59718dab79dade539930c4",
+    :blob "c5de5550c828d1261c5e47bda862778ccb3c30b0",
+    :bytes 26448},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :accepted-historical-obligation-to-criterion-mappings,
+     :schema-version 1,
+     :authority
+     :independent-source-criterion-composition-adoption-only,
+     :implementation-credit :none,
+     :task-count-delta 0,
+     :scope-limit
+     "Only the enumerated historical obligation-to-criterion mappings are accepted. Release-extension scope is separate; no blanket inherited-facet entailment, whole-project granularity/count, implementation, whole-PR/SH source-version, milestone or integration acceptance follows."},
+    :collection-counts
+    {:remaining-ids 286, :accepted-ids 275, :accepted-new-ids 75}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/accepted-historical-mappings-345.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "09f697de6f6501891ca786b81289a1d40f03b692942300e770c20ed98a881f65",
+    :blob "b4ac9047749901d6cb6f572d1e9d1da53614050f",
+    :bytes 26432},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :accepted-historical-obligation-to-criterion-mappings,
+     :schema-version 1,
+     :authority
+     :independent-source-criterion-composition-adoption-only,
+     :implementation-credit :none,
+     :task-count-delta 9,
+     :scope-limit
+     "Sequential finite mapping acceptance only: 200 plus75 plus70. Frozen Domains review metadata predates the75 adoption and is retained as history. Original-contract and extension relations remain separate; no blanket inherited-facet entailment, whole-project granularity/count, implementation, whole-PR/SH source-version, milestone or integration acceptance follows."},
+    :collection-counts
+    {:remaining-ids 216, :accepted-ids 345, :accepted-new-ids 70}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/accepted-historical-mappings-430.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "996a2d56fe9f58a5e776e1c7f071d5e0b1fc289cd100f88b7cf16da96f0b6ff0",
+    :blob "2471d99143312115c24ce86a25219ff74c814bd8",
+    :bytes 26320},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :accepted-historical-obligation-to-criterion-mappings,
+     :schema-version 1,
+     :authority
+     :independent-source-criterion-composition-adoption-only,
+     :implementation-credit :none,
+     :scope-limit
+     "Only the enumerated historical obligation-to-criterion mappings and declared Open producer interfaces are accepted. Original-contract and extension relations remain separate. No blanket full-facet entailment, final task granularity/count, implementation, whole-SH/PR source-version, milestone, release or integration acceptance follows."},
+    :collection-counts
+    {:remaining-ids 131,
+     :accepted-ids 430,
+     :accepted-new-ids 85,
+     :new-cohorts 2}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/accepted-historical-mappings-493.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "d8afc85647114e63699db6a49fec6715dd503fa6959fdcb7d06e12e1d3177147",
+    :blob "c0e25dcf9099eb73d547bcf384bb237936ffe296",
+    :bytes 32288},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :accepted-historical-obligation-to-criterion-mappings,
+     :schema-version 1,
+     :authority
+     :independent-source-criterion-composition-adoption-only,
+     :implementation-credit :none,
+     :scope-limit
+     "Only enumerated historical source-operation-to-criterion mappings and declared Open interfaces are adopted. Frozen receipt qualifications survive, including GOV10 overlay not adopted and legacy ACC statuses without denominator credit. Later predicates, whole facets, final task granularity/count, implementation, release, seed retirement, whole-SH source version and integration are not accepted."},
+    :collection-counts
+    {:remaining-ids 68,
+     :accepted-ids 493,
+     :accepted-new-ids 63,
+     :new-cohorts 4}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/accepted-historical-mappings-561.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "8cece6ea69d14fb857f0ac047e070bf0f1f6e4552886c44fe315220b59f649bd",
+    :blob "7e853aabf5ac8638493e7c3b0e63a36bc1453d67",
+    :bytes 31252},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :accepted-historical-obligation-to-criterion-mappings,
+     :schema-version 1,
+     :authority
+     :independent-source-criterion-composition-adoption-only,
+     :implementation-credit :none,
+     :scope-limit
+     "Only enumerated historical source-operation-to-criterion mappings are accepted. The68 Build mappings have an independently checked current composition; prior source-PASS provenance retains the explicit unavailable-private-receipt/readback-only caveat. All earlier receipts and qualifications remain history. No implementation, whole-facet, atomicity/nonoverlap, task completion/denominator, release, self-hosting, seed-retirement, whole-SH version or integration acceptance."},
+    :collection-counts
+    {:remaining-ids 0,
+     :accepted-ids 561,
+     :accepted-new-ids 68,
+     :new-cohorts 1}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/accepted-historical-mappings.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "1496c831e3cbf1a5f2a88b586db496fc5d7e83b8aa213e0be1fecbbc37675f03",
+    :blob "fd29823caa329b8f3699a10403e2b26f33732ae3",
+    :bytes 23173},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :accepted-historical-obligation-to-criterion-mappings,
+     :schema-version 1,
+     :authority
+     :independent-source-criterion-composition-adoption-only,
+     :implementation-credit :none,
+     :task-count-delta 0,
+     :scope-limit
+     "Acceptance covers only these historical obligation-to-current-actionable-criterion mappings. It does not entail every sentence of broad inherited facets, establish task granularity or a whole-project ratio, close implementation, or accept the whole PR/SH source version/integration."},
+    :collection-counts
+    {:source-decisions-open 7, :remaining-ids 361, :accepted-ids 200}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/all240-current-source-facet-inventory.edn",
+   :family :conservation-inventory,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "7b23703e1b5e3d28d6ff4cf7c1211e0a07f9eb66f65cdb6211128b0be8cda3a5",
+    :blob "0cfcf33e8d73beb09f56e080f8a66a6e4aa63998",
+    :bytes 38000847},
+   :summary
+   {:kind :ALL240-current-source-occurrence-facet-inventory,
+    :authority
+    :source-conservation-with-qualified-independent-conjunction-overlays,
+    :implementation-credit :none,
+    :final-task-or-requirement-denominator :not-conferred,
+    :counts
+    {:documents 240,
+     :occurrences 9945,
+     :facets 28785,
+     :owner-resolutions 1188}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/b6-frozen-source-review-authentication.edn",
+   :family :qualified-b6-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "c537b71412a6b94db6ac56faa974f014dea3ac7b0e5200e1c23c219df6bdb667",
+    :blob "64428d9f10821837c579547d320498abbb22f48a",
+    :bytes 3113},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :B6-frozen-source-review-authentication,
+     :implementation-credit :none,
+     :final-denominator :not-adopted},
+    :collection-counts {:protected-canonical-paths 9}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/b6-independent-frozen-source-controls.edn",
+   :family :qualified-b6-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "d6d86788f1d96e2e5d91cb7eb58cf77344612e8042c4891aeded384019eeb693",
+    :blob "909eccd05b4743b2c7b3bae0ee9c77372b7d588e",
+    :bytes 71365},
+   :summary
+   {:kind :edn-source-summary,
+    :fields {:kind :independent-B6-core-DATA-controls},
+    :collection-counts {:controls 174, :limits 3}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/b6-independent-frozen-source-goal-completion.json",
+   :family :qualified-b6-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "0c0e060dcfece86cdd1bdd43a3014cd5d25fe7025126d2354c9e421da676eca1",
+    :blob "702e1938ea15ee41a0a5ef9169d7a59fd420f5fc",
+    :bytes 5478},
+   :summary {:kind :non-edn-source, :format "json"},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/b6-independent-frozen-source-review.edn",
+   :family :qualified-b6-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "249459010fd0b578c3d5817c84513c337cc767e56555625fdc1ab2370cf7aacc",
+    :blob "01264d341d72f587a38e9116dcc365f9678a42c6",
+    :bytes 31669},
+   :summary
+   {:kind :edn-source-summary,
+    :fields {:kind :independent-qualified-B6-source-entailment-review},
+    :collection-counts {:findings 0, :limits 11, :artifacts 10}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/b6-qualified-frozen-source-review-adoption.edn",
+   :family :qualified-b6-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "c4dd0a7f5eb651945b370a823081477cd8c831820231d6a4230354efb697aeb0",
+    :blob "cd55a1912e878cb132dd08b67870d21de3a53099",
+    :bytes 22477},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :qualified-B6-frozen-source-review-adoption,
+     :status :qualified-frozen-source-only,
+     :implementation-credit :none,
+     :qualification
+     "Consume once as qualified source authority for exact07d8 only. Preserve all roles, conditional conjunctions and context noncredit. The immutable trace and backend bytes are archives, not current canonical task authority. No B6 backend amendment, canonical witness/index/count/denominator promotion, C18 renewal, implementation or integration acceptance follows. This records no new hold clearance; coordinator's separate startup36 assessment is not adopted as startup acceptance."},
+    :collection-counts {:limits 11}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/b6-reviewed-frozen-backend-tasks.md",
+   :family :qualified-b6-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "3572eaa8753ff585ca497bb49b347a2978490c1a3bf77b8a3db1fa568e97bcf0",
+    :blob "6e6f51bfbfed6d750ef803ccab12426fe16de3a5",
+    :bytes 57861},
+   :summary {:kind :non-edn-source, :format "md"},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/b6-reviewed-frozen-source-trace.edn",
+   :family :qualified-b6-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "05180467b44c6cea70b115573dfbb73a3764f97e99c33da375942ab04fc60691",
+    :blob "93e4a17ffbd89c6e116c8d071cbf66ace3ccd792",
+    :bytes 677952},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :complete-B6-source-entailment-proposal,
+     :authority :owner-proposal-pending-affected-independent-review,
+     :implementation-credit :none,
+     :final-denominator :not-adopted,
+     :qualification
+     "B6 task-source entailment only. Seven existing original task-reference-only owners receive proposed complete conjunctions without changing their canonical resolution states. Conditional UI and illustrative manifest values retain their exact source meanings. Prior complete task predicates, all15 backend IDs/Open statuses and backend-conformance bytes survive. No production backend/compiler/provider/runtime execution, numeric/fixed-width acceptance, held payload import, old-review reopening or C18 reviewer work is performed."},
+    :collection-counts {:dependency-joins 2, :facets 398}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-affected-review-inputs.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "1821800780cbfa54bc0392a32e3cfa91f1ff97d7ebcc69aa098deee360bc9d0f",
+    :blob "46c3d937e67b732edf5e749d22e0340d005f1136",
+    :bytes 7610},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :finite-C18-source-and-affected-bookkeeping-review-inputs,
+     :implementation-credit :none,
+     :final-denominator :not-accepted,
+     :qualification
+     "Exactly one affected independent review is requested through the coordinator. No reviewer is assigned by the author. Mechanical checker results are source/data self-audit evidence, not independent acceptance. Routine canonical checkpoint publication is separate from publishing a new finite integration candidate."},
+    :collection-counts {:review-scope 7, :exclusions 9}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-bookkeeping-source-controls.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "52b4a7b46aaefdb4e54470d3034eef4eade8bcbaa486437b5d21a0f3177ee938",
+    :blob "264cc8a6fdfbcead5b92ee7b75bd560d3d2c142b",
+    :bytes 2815},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :separately-implemented-mechanical-source-controls,
+     :independent-acceptance :pending},
+    :collection-counts {:controls 15}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-bookkeeping-transaction.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "c17b4c9f5107e38d335aeb91a2629d2c6914fc71d2be54b5a980f53614e8a474",
+    :blob "eca2d6753be5300f444d8c56f7e04dc36e44de36",
+    :bytes 9155},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :C18-scoped-bookkeeping-staged-transaction,
+     :implementation-credit :none},
+    :collection-counts {}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-captured-review-byte-continuity.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "892086f90c4ec9253f243ab4375b9dd023fceeac3ce193bbfe009afdc246f383",
+    :blob "9969866c9e584cf4501399aa13e8914513de908b",
+    :bytes 117121},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :captured-review-exact-current-byte-continuity,
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :implementation-credit :none},
+    :collection-counts {:joins 71}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-complete-current-facet-trace.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "a5761a9b95de0d9f670edca8fd33e2c81b8323a54fe6b5caeb8f5656222e095d",
+    :blob "0c03dba09d4980bc387f16bd64574cea24ae1fa8",
+    :bytes 186929},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :complete-C18-current-source-facet-proposal,
+     :source-commit "984f1e74f98905f53b4b20c63b8f76d2a948dae3",
+     :authority
+     :owner-proposal-pending-independent-current-source-review,
+     :implementation-credit :none,
+     :task-count-delta 0,
+     :qualification
+     "Complete C18 source proposal only. Six original owners were candidates; one unchanged backend producer gets an exact proposed witness without global join promotion. Prior C17/C12 predicate bytes survive, while their containing-file/current witness refresh and full current composition remain separate. No compiler, pass/checker, proof replay, backend/target/runtime/provider, held operation, implementation, release, self-hosting, global denominator or integration credit."},
+    :collection-counts
+    {:dependency-joins 2,
+     :facets 101,
+     :coherent-clause-removal-controls 32}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-independent-review-authentication.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "99e2b99c98379f2ae174a5c9c5ab155ed6bea674f9278089ba5d32740f7cf11d",
+    :blob "2b6119d9c55b8158fdb7cc88ee766e1a3d2a171e",
+    :bytes 3636},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :C18-qualified-independent-source-review-authentication,
+     :implementation-credit :none,
+     :final-denominator :not-accepted},
+    :collection-counts {:artifact-hashes 16}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-independent-source-goal-completion.json",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "10e6cbdc64c0b1e75ee2c748c291866867e522024c7f3f99590ae1424d34997b",
+    :blob "6ae343b252d72d3c28184079ff1a1dcae68c9b8e",
+    :bytes 5420},
+   :summary {:kind :non-edn-source, :format "json"},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-independent-source-review.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "3f4c5a490289833417793f167aa9bf1a6b4e9ecd1fcb0c47a64e0a330e694990",
+    :blob "3591708f609016f19404f1e64d9807f4513ae6b1",
+    :bytes 149036},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind
+     :independent-C18-affected-source-entailment-and-bookkeeping-review,
+     :schema-version 1},
+    :collection-counts
+    {:findings 0, :facet-verdicts 101, :scope-limits 18}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-owner-current-witness-applicability.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "cae59716657d1d3cdc58e3db8318b8479865167c1db141c1df2c62b967dd834e",
+    :blob "850dfe998ecbda135c4ae7ccbe989d745cfa512b",
+    :bytes 3424},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :C18-scoped-owning-witness-and-proposal-index-transaction,
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :implementation-credit :none,
+     :final-denominator :not-accepted,
+     :task-count-delta 0,
+     :qualification
+     "One affected metadata transaction, not whole833/561 semantic re-review. Existing canonical qualified source scopes and raw history remain unchanged; C18 new clauses and seven proposed owner conjunctions remain unaccepted. Missing or partial staged outputs must fail before canonical mutation."},
+    :collection-counts {}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-owner-source-refinement.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "f684ad4ecd3e9879dbae9cb267902b7b7cfa7f51296f5743f5aab59ac939bd35",
+    :blob "ef2ae0b6415f9cd3e28c4a7df7c60ed2859a50aa",
+    :bytes 24976},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :C18-existing-pass-evidence-source-refinement,
+     :status :source-amended-independent-source-review-pending,
+     :source-commit "f232769efd6cd38c9751c437bb0acbd82494657e",
+     :implementation-credit :none,
+     :task-count-delta 0,
+     :qualification
+     "C18 source obligation amendment only. Existing outcomes, statuses and source-review predicate bytes remain; old containing-file pins require separately authenticated current applicability. No closed review is renewed and no implementation, global count or integration acceptance follows."},
+    :collection-counts {:outcome-ids 5, :operations 2}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-qualified-adoption-conservation.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "ff88cc3b64fa2f05921386ad886ac9c56bb59ecae7f66ef360cf5395aa5e249f",
+    :blob "eff2f2493cd13c7c0e8ec0d1cc9bccb9fddf4ee1",
+    :bytes 2489},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :C18-qualified-adoption-author-conservation-check,
+     :implementation-credit :none,
+     :final-denominator :not-accepted,
+     :independent-acceptance :not-conferred-by-this-check},
+    :collection-counts {:coherent-clause-removal-refusals 3}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-qualified-current-applicability.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "97e6f90989dc3842837416c42ba9d57a6ab5869546fa4e8a49a8c454723b02e1",
+    :blob "3cdf48c29027f6f956ac0f446b7681a2fbeccc6d",
+    :bytes 3627},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :C18-qualified-source-current-applicability,
+     :implementation-credit :none,
+     :final-denominator :not-accepted,
+     :qualification
+     "Only the exact C18 source conjunctions and retained contexts are qualified. One prior pending provenance overlap is one context identity. Earlier qualified records and 833/561/71 histories retain their exact scope. Seven source joins confer no whole-owner or backend acceptance. B6 containing-file drift is excluded. Implementation, migration, release, whole-head, final denominator and held-action clearance remain unaccepted. Finite current-main composition requires its own affected review."},
+    :collection-counts {}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/c18-qualified-source-review-adoption.edn",
+   :family :qualified-c18-receipts,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "a488c944971b25d59c9bc2b99446db2a834c8392994604b869400902bef47976",
+    :blob "5eebc62479455a33622bd180adcdc0346b1b8cc0",
+    :bytes 156357},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :qualified-independent-C18-source-review-adoption,
+     :implementation-credit :none,
+     :final-denominator :not-accepted,
+     :qualification
+     "Only the exact C18 source conjunctions and retained contexts are qualified. One prior pending provenance overlap is one context identity. Earlier qualified records and 833/561/71 histories retain their exact scope. Seven source joins confer no whole-owner or backend acceptance. B6 containing-file drift is excluded. Implementation, migration, release, whole-head, final denominator and held-action clearance remain unaccepted. Finite current-main composition requires its own affected review."},
+    :collection-counts
+    {:context-facet-ids 235,
+     :semantic-facet-ids 1449,
+     :reviewed-facet-ids 1686,
+     :new-C18-context-facet-ids 15,
+     :pending-finite-proposal-ids 631,
+     :history-facet-ids 2,
+     :new-C18-semantic-facet-ids 86,
+     :new-C18-facet-ids 101}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-accounting-policy1.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "bac0312a18522fa14ef0dd3ece9c35eccff0f59532fdf4de8416b237a070bf7c",
+    :blob "c5f24d4f4d8c7ee4ef64ea511a81b15d37c82c3d",
+    :bytes 1667517},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "71b7adb71e229358f2fcf32136f42732be9dbc4e",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings retain unchanged task bytes and their exact source scopes. One mixed accounting-policy decision now binds existing AI external-spend and Runtime policy criteria with15 source clauses,15 contexts and policy authority; no new task clause is added. Project work/input/call/time/retry accounting remains removed, real external provider billing/account policy and independent semantics remain. Private proposal-only PASS does not confer current-composition acceptance. All833 remain Open;769 concrete links,386 qualified source reviews,80 pending and64 unallocated. Historical493 accepted/68 pending and provisional3/182 task status unchanged. Full facets, granularity, ACC, final counting and integration remain open; no implementation credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-b2-fixed-width.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "afdc75a8a18b640768a2ee9ec694afd2daf2bbc9ecf313cd0c5fdc03d7c20aba",
+    :blob "97797574ceb3a55b40293ad2e2a99267cf33e5a4",
+    :bytes 4362133},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "89a96a0c132790a256fad24bf86810c5b6c5b4bd",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs retain their accepted original scopes and4819 authenticated current spans after a separate B2 fixed-width source predicate is appended to backend-c. Only two historical Backend-file span maps refresh source/offset/file pins; raw predicate bytes and all833 decision records remain unchanged. All five independently reviewed C criterion bodies are exact and have fresh current-file pins; their qualified source authority is retained separately from the newly pending width predicate. Granularity13, ACC13 and C5 independent adoptions remain confined to their recorded scopes; none accepts the width addition, complete B2/global facet entailment, implementation or a final project denominator. All195 task records and3 prior Accepted states are unchanged. Step-specific pending labels remain derivation history under explicit adopted authorities."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap-diagnostic.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "06fc51ee46d659538b862dce3830e3fc4bbf9857eac3b94747e64790a44b3604",
+    :blob "02bdb1a8d47141fe3e99ffa6343ba0af11193215",
+    :bytes 4362548},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "81197c45c2a63f3c627eadfd5fac6fa4c8ceb04f",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and raw predicate bodies retain their prior accepted scopes. One historical Diagnostics-file witness refreshes current-file/source pins after a separately reviewable bootstrap diagnostic predicate is appended. All833 decision records and all task identities/states are conserved. Earlier independent source reviews do not accept the new predicate, full original facet entailment, implementation, or a final denominator."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "6a4da49e04efecb16bbbb5574969bd324fdb03308e6f2daa163b86d867e757e1",
+    :blob "01e985aaf56ae0a480377d002e7b9cfcfadab2fc",
+    :bytes 1693623},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "4686e37b28181c5c712573cafc651d74ef40166a",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     {:sha256
+      "87504b6664b57fe30a07f3a3aed3710c8d8544ad5a40c7d6278e38bc349eb6b3",
+      :length 1255}},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-bootstrap25.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "23defa1f5b730126d5b6d39cb5743a6e21819c7b0af707b01b90ed3a49e1e88b",
+    :blob "55852f49bab37cda5d740d67e8873710c8c2e22e",
+    :bytes 1693342},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "3993e0fd95b455e766896bfa8557871cb7ba062f",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses retain exact original predicate bytes after eight Bootstrap25 field appends across six existing task fields. Expanded whole-task contexts require exact inversion of only their declared authenticated appends; new clauses inherit no historical review acceptance. All833 stable decisions remain Open and now have concrete criterion/context allocations:474 qualified current source reviews,56 pending current reviews andzero remaining allocations. Original303 review scopes remain recorded separately. Bootstrap25 conserves973 original source-facet memberships,adds8 predicate groups and reuses17 existing groups withzero new task units. Native ABI/source-language boundaries, diagnostic phase availability, actual provider and profile policy, ordinary-development versus authoritative migration, exact signing/provenance and distinct unsafe audit production/review remain required. Historical561 mappings stay accepted withzero pending or unbound; provisional3/182 task states are unchanged. Whole-facet entailment,granularity,legacy ACC,independent final counting andcoordinator integration remain open. No implementation,milestone,release orseed-retirement credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c13-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "a3fa246b8185c666ab01ab13b48373202f3bc0efd93a062de9682ec63094cb4f",
+    :blob "c0332a7105f60b5b02728092891d0a5feb438f86",
+    :bytes 4779078},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "ded6c1d2eede7985e078af57ed53fa367645436a",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw predicate spans retain prior accepted scopes after the five existing Opt tasks gain exact C13 source criteria. Affected Opt-file span maps refresh current file/source pins with unchanged raw predicates. Earlier supplemental MIR/Lower/Effects criteria remain current. All833 decision records and task identities/statuses are conserved. New C13 source proposals require independent acceptance and confer no optimizer/verifier/proof/domain/runtime/benchmark/probe execution, implementation or final-count credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c14-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "264c90cce0e3ef90bed5146b88243a401074f637301ce2f67c0a4c934e9351b7",
+    :blob "42d528d624c4cdbe6beb22c201511e359c9cdb00",
+    :bytes 4771600},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "e94de7388589c8251f40fbb1da4a6af6da6f5918",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw predicate spans retain prior accepted scopes after the existing Lower tasks gain exact C14/PERF4 source criteria. Four historical Lower-file span maps refresh file/source pins with unchanged raw predicate bodies. Earlier supplemental criteria, including all six MIR criteria, remain byte-identical and current. All833 decision records and task identities/statuses are conserved. New source predicates and complete facet proposals require independent acceptance; no execution, implementation, final-count or target-adoption credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c15-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "1213bd39dbd1cbb8489e779ce37b4c1a82240f1365ad0d729a498b04c4b81b25",
+    :blob "71d1bc38ded6cc6a7c108739ddf9fe250f07cd49",
+    :bytes 4768558},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "916f020c064991fd308550e4e934c0b4443f6d6b",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw predicate spans retain prior accepted scopes after the existing Diagnostics producer and view/redaction tasks gain source criteria. One historical Diagnostics-file witness and the separately active bootstrap diagnostic criterion refresh file/source pins; raw predicate bytes remain unchanged. All833 decision records and task identities/statuses are conserved. New C15/foundation owner joins and complete facet proposals remain pending independent acceptance; no implementation or final-count credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c18-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "baf61f87cf76deb7736c03c8b679d80f719e3ee022e672ecba79dfed8af3a26d",
+    :blob "c939de5e8e9cdd701f0e8f62364a8ef5d3a42597",
+    :bytes 4818492},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "e043420b8db65f14e93558f72bbf80eaa7eb6903",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "Scoped C18 pin refresh only. All561 memberships, roles, statuses and4819 raw predicates preserve their captured authority. Only affected Compiler API file pins and source offsets refresh; prior supplemental predicate bodies remain exact. C18 source, implementation, final count and full-current-composition acceptance remain pending."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-c8-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "36001b0ac83bad44f00fc7e08bf1cdfed58282854f12fc387183966c77d549fe",
+    :blob "2620c75fe46da671bea8bdbb09dabebe67c01d68",
+    :bytes 4774485},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "94dfa9c535268276765b76366c5c60687fa3807a",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw predicate spans retain prior accepted scopes after the existing Effects tasks gain exact C8 source criteria. Affected historical Effects-file span maps refresh file/source pins with unchanged raw predicate bodies. Earlier supplemental MIR and Lower criteria remain byte-identical and current. All833 decision records and task identities/statuses are conserved. New source predicates and complete C8 facet proposals require independent acceptance; no compiler/runtime/replay/provider/probe execution, implementation or final-count credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "5bc2fb8d29c22ffb9ed02b4a18090df296442085557850c18cb947f4d7f8521a",
+    :blob "e709195655e785ff5aa200b1c94b63047411c9db",
+    :bytes 1668023},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "79876421a2576008e005b6cbcc31b5570db8ad6f",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings retain their current task bytes and scopes. The existing completed Compiler/Testing34 PASS is adopted through an exact later-source join, without a duplicate review or retry of the stopped old303/Syntax request. All34 allocation payloads,37 criteria,34 current task contexts,44 dependency interfaces,35 original source documents and30 recorded later field operations preserve their exact scopes. D1/C1 order, C18 optional/required evidence, real/unavailable counterexamples, TEST6 comparator availability, SAFE5 terminal-flow and full C12 domain registration plus verification qualifications remain. Three metadata gaps remain unassessed. Qualified current source reviews440;777 concrete links,34 pending reviews and56 unallocated, all833 Open. Historical493 accepted/68 pending and provisional3/182 unchanged. No implementation/full-facet/denominator credit; granularity, ACC, final counting and integration remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-compiler-testing34.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "d4db0c00859c1a8580be3ae9b863737640891fac086eba141eee41fec0b234c9",
+    :blob "5430aed5378c95cacbca0348d63ab26d118ea7be",
+    :bytes 1665333},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "e3f51140beb4665f1f612b1c195ac3967697eeff",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the twelve Compiler/Testing task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,337 now have concrete links, including34 explicitly pending independent current-composition review;496 allocation cases remain. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-core-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "597317730ad1faaed1563a2217d595bf83ab6cfe0926dcf85dbcdb4a5903cd16",
+    :blob "7e657495378e7afac025a63732fd449e991bbad9",
+    :bytes 4787195},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "a330051b3c0062cff2fb91df5bd6ff6252676c08",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw spans retain recorded scopes after five existing Core tasks gain C6 criteria. Affected Core-file pins refresh unchanged predicates. MIR/Lower/Effects/Opt/Resolve/Types supplemental bodies remain current. All833 decisions and task IDs/statuses are conserved. Earlier qualified reviews retain captured subjects and exclusions and accept no new Core appends. No compiler/domain checker/runtime/probe execution, implementation or final-count credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-d2-triage.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "341d17966de07584818eb6b6fe32a91607f789c16d4fc074f9a8d1c412f0df25",
+    :blob "753a26c5acc656ee1df1fc21c3c4ebed41727897",
+    :bytes 4766180},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "2c88b9796fc0d0e6ca0bdc93cbfba41cb6921dcc",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and raw predicate bodies retain their prior accepted scopes after the D2 support-triage fixture is appended within the existing AI task. Domains-file witnesses refresh exact current-file/source pins without absorbing the new predicate into earlier source acceptance. All833 decision records and all task identities/states are conserved. Earlier independent reviews and retired-owner successor proposals do not accept the new fixture, full attached-facet entailment, execution, implementation or a final denominator."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-domain-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "94c4fa00b0f302cf4e275f36c492193f54c00bb95a3937e6c6297f0bc19f2122",
+    :blob "2990a13c7e968d142449aba5292f9476c351ea08",
+    :bytes 4817137},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw spans retain recorded scopes after the existing domain-IR task gains explicit C12 record/transition/verifier/family/diagnostic obligations. Affected Compiler API file pins and three prior C17 criterion pins refresh identical predicates. All833 decisions and existing task IDs/statuses conserve. C17 remains frozen at45fa1763 for its separate review; current C12 clauses inherit no C17 or earlier source acceptance. No domain callback/compiler/target/runtime/provider/proof-checker/probe execution or implementation/final-count credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-domains30.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "177402867a94c259ff0f3e090c531f39f45de43acf57b7d9fd8cb7ef04e4de77",
+    :blob "01f865b76c017e1fca2d8266258c3c7e25908b31",
+    :bytes 1665709},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "6bb2e263f167ec3d7748f3de13c68284367ad283",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the 10 Domains/Runtime task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,464 now have concrete links, including161 explicitly pending independent current-composition review;369 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-existing-c5.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "1042a5fba3773ad3e8ac7ce798a05bdaaf9b34bcfe413cf801ed7836497f6d7b",
+    :blob "06b9f471330faf41444d8acab924ff78485dd80a",
+    :bytes 4358602},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "a1423da161a8026fe97c7b21c6d38ffdf3cc1fa3",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and their prior accepted predicate scopes survive the five original C obligation refinements. Every current witness authenticates exact current source bytes. Expanded C task contexts reverse exactly to their original reviewed bytes after removing the declared append. New C source/ABI/memory/numeric/helper clauses receive no inherited acceptance. All833 decision records and Open states are unchanged;530 qualified source-predicate reviews retain their earlier scopes. Existing granularity and legacy ACC source-scope adjudications remain pending independent acceptance. The provisional registry remains195 tasks with3 Accepted and192 remaining. No runtime, compilation, implementation, whole-facet or final-count acceptance is conferred."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "4dfcf1628e9b4cba998fc3092bf9cea0edbd01fdc0304b6808335118f4c6ef65",
+    :blob "0d4a75db6cc144234ab4fc22b599b4f46982a239",
+    :bytes 1668218},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "bac911632784079dbbeb93e244a3489c4208d234",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings retain unchanged current task bytes and review scopes. Foundation7 adds7 qualified current source-composition adoptions and reviews3 actual refinements, for total472. All7 records,13 criterion witnesses,15 declared dependency contexts,50 registry task/plan files and240 original documents remain applicable. Supporting prerequisites in exact criteria remain required beyond the15 declared vectors. D1/C1/C6 ordering remains an actual Open governing decision; policy output is not actual change approval and milestone claims require executable evidence. Whole Legality context grants no blanket unrelated-Safety acceptance. All833 remain Open;777 concrete links,2 pending allocation reviews and56 unallocated. Remaining pending cohorts are Accounting-policy1 andProduct1. Historical493 accepted/68 pending and provisional3/182 unchanged. No implementation/whole-facet/denominator credit; granularity, ACC, full facets, final counting and integration remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-foundation7.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "71c12dabbea70904ef038e51e6fda2deb8c1f1e2acd90f4d94703ff8db63cfce",
+    :blob "2ea480618e481ab43fb9dd743424432dce7c8cb4",
+    :bytes 1667733},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "8677d9e3daa440b9f1f7af3d62cee67ef595a2e4",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the three Foundation task-field refinements. Historical acceptance remains493 with68 composed mappings pending. Of833 Open decisions,777 have concrete links, including68 pending independent current-composition reviews;56 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. All406 qualified current source-review adoptions remain preserved, without extending independent review to later predicates. Math20 actual current-composition PASS and its formatting adjustment are adopted separately; Foundation7 current composition remains pending, with original source-review pins retaining their scope. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-governance-ai31.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "dbb29d5160f66c6fb114333d0ff02e67bfea1ef0af526cde42aa04c784061786",
+    :blob "e1ea37fc16f7e4986b6be78eddc9301edf0eaaf3",
+    :bytes 1676189},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "370a7b5d26814243b1a8fecbfd2ebf0b904db489",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the ten Governance/Performance/AI field refinements with no task-unit delta. Historical acceptance remains561 withzero pending andzero unbound; prior source-review qualifications survive. All833 decisions remain Open:808 concrete allocations,472 qualified current source reviews,33 pending allocation reviews and25 Bootstrap allocation cases remaining. Governance14 adds two current admission/deprecation refinements across eight fields and reuses12 existing clauses; Performance/AI17 adds three criteria across two fields and reuses14 existing clause groups. Ordinary development is not gated by these governance artifact interfaces. Project accounting/input quotas remain removed while external provider policy and independent semantics survive. Full facets, granularity, ACC, independent final counting and integration remain open. No implementation or denominator credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-governance14-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "ce86c5aacc8c7cea39e2785a51889c762f0e4661010813dcafcbc73c368c41d1",
+    :blob "406d401e6ad3ec4bdae6603e4d3df6a4a64ba0cb",
+    :bytes 1693890},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "fc9eeaf61a61726027261d954907fddf8bbffdbe",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     {:sha256
+      "0528e9b8743ef09921ebb3b3db6f0958a8219410508568ff76c9a6ebf533cf94",
+      :length 1446}},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-gpu2-metadata.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "a6167ac7135249bfdad21f87d439c34b98c25a7182e74c9ac99dbe3835d0b8b2",
+    :blob "ba6f1ea18b52b0bbd6b155a173e1a40328ade505",
+    :bytes 1667223},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "2c16e1dbe634189e203356e00e5a2007a5cf8e44",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings survive the exact two GPU supporting-context metadata admission. One current kernel-lowering qualifier is replaced under exact before/after guards; no runtime predicate or additional requirement is introduced. Frozen reviews retain their scopes. All833 decisions remain Open;768 concrete allocations,386 qualified current source reviews,79 pending reviews and65 unallocated. Historical mappings493 accepted and68 pending. Task denominator, granularity, full facets and ACC audit remain provisional. No implementation or task-completion credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "15d5afcad1d9e3649f4b444a4f9e88361bbfce11608fd27101eaae6b9fda6d13",
+    :blob "0103683d53a98cd0b5cfc5cd66fd56d590ecd007",
+    :bytes 4359850},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "611fc634c62910ca040ae47c66e62674c6678a6a",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "Independent granularity13 SOURCE/DATA PASS applies to the frozen145442c5 source envelopes and witness routing after exact current joins at611fc634. All nine reviewed artifacts and all833 decision records are unchanged. All50 registry task/roadmap files reconstruct exactly after inverting the five later C clauses and their boundary separator; all240 original documents remain identical. Current561 binding rows reconstruct the reviewed rows after two later C file-span pin inversions and retain4819 authenticated current spans. Source acceptance covers the thirteen Open sibling leaves and their declared producer/checker/API-consumer separation, not implementation or final whole-project counting. Tooling65 and PlatformProduct11 semantic acceptance are excluded; legacy unpinned contexts never independently authenticate themselves. Original530 predicate reviews retain their scopes; later C5, ACC13 and386 facet dispositions receive no acceptance. Step-specific pending flags remain derivation history under the explicit adoption authority. Provisional195 records with3 prior Accepted remain scoped observations; full-facet entailment and coordinator integration remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-granularity13.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "b7fe854166976b13a064800c4ebc470b51b951f293470f05436d9ea7c5945982",
+    :blob "42e0ffc28caaaf441f19dfb64e893c7495ba9c2a",
+    :bytes 4356201},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "74851dc3a03642f2e8c22a12eab0df7c13fb30f0",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs andaccepted predicate scopes survive the13-sibling source repartition. Changed Math/Schema/adapter contexts are represented by explicit current leaf contexts or exact retained predicate fragments; authenticated frozen references retain original source/byte/hash provenance. New leaf envelopes, public API consumer routing andgranularity receive no inherited acceptance. All833 stable decisions remain Open andallocated;530 qualified source-predicate reviews retain their previous scope,zero pending new-allocation reviews andzero unallocated. Task authorities contain13 additional Open leaves,withprovisional3/195 status pending derived-census refresh andindependent final counting. Existing20 STD12/STD13 aliases gain actual public library consumer links whileDomain/Runtime producers remain separate. Source-only criteria,manifest/publication,provider execution,checker verdict andhuman policy are distinct. Historical561 acceptance supplies no implementation orwhole-facet credit. Granularity acceptance,ACC adjudication,complete source/facet entailment andcoordinator integration remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-historical493.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "2361911fca48e9a083fa1f95b901c05c0c89b080c0a0f62968eb10279ed41195",
+    :blob "906406a4f8930419f2c69e374aae88178573a648",
+    :bytes 1666651},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "66d6bfa395c64e3cf5ee28a71380d15328131433",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical mappings retain current exact task witnesses;493 enumerated mappings are independently accepted and68 remain pending. Current833 decisions stay Open:748 concrete allocations,196 qualified source reviews,249 pending allocation reviews and85 allocation cases remaining. Historical task-row states remain derivation history; canonical adoption authority is the enumerated manifest. Original240 and policy/release/product scopes remain separate. No implementation, whole-facet, denominator, release or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-historical561.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "b1afac0c2ff9cff17412f3472d52accad4abc0287766b69795075e5c22d67d39",
+    :blob "ece8bde4d0563eb01ed8639187f0d18c48fc2552",
+    :bytes 1668373},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "712b7bef6d9e3a1c9aaadb1b222b4973e2b525b7",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 enumerated historical source-operation-to-criterion mappings are independently accepted through their recorded scoped receipts and current joins; none remain pending or unbound. Historical577 equals13 prior witnesses plus3 retained retirements plus561 accepted mappings. Binding row states remain immutable derivation history; the enumerated manifest is adoption authority. Build68 current composition is independently checked; its earlier source-PASS provenance remains supported-readback-only with unavailable private receipt bytes, without claiming a local rehash. All833 necessary decisions remain Open:777 allocated,56 unallocated,472 qualified source reviews and2 pending allocation reviews. Original240/policy/release/product scope remains separate. No implementation/full-facet/atomicity/task/denominator/release/self-hosting/integration credit; granularity, ACC, final counting and full facets remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-incremental-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "23251b23d620b4140bb50714b73f3c0145b2a70de8eb73f918d0fde3f2634f21",
+    :blob "a37292224c97346c199ef7fd229770e3dad90d9a",
+    :bytes 4805909},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "0cbc3d4c00c47831d7e3ab6cdb63e289707167a7",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw spans retain recorded scopes after one existing Build cache task gains complete C16 artifact/diagnostic detail. Affected Build-file pins refresh unchanged predicates. MIR/Lower/Effects/Opt/Resolve/Types/Core supplemental bodies remain current. All833 decisions and all task IDs/statuses are conserved. Earlier qualified reviews retain captured subjects and exclusions and accept no new incremental clauses. No compiler/cache-build/runtime/probe execution, implementation or final-count credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-math20-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "4e03175abfe896b3c57b75c4eaed115506b3b231f8e0b2ef3ca98204ccafe229",
+    :blob "bd0be965144854528c944859b5d0be2798f664fb",
+    :bytes 1667610},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "9640d60e5e5aeb7fb5d860fdfc0c19debb942c42",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings retain unchanged task bytes and exact reviewed scopes. Math20 adds20 qualified current source-review adoptions, including the single formatting adjustment, for total406. All task and plan files and240 original documents are unchanged since its independent frozen source. Nine unresolved B4/B6 metadata IDs over13 incidences remain unassessed. Accounting-policy1 and Product1 remain separately pending current composition review. All833 decisions remain Open;770 concrete links,61 pending reviews and63 unallocated. Historical493 accepted/68 pending and provisional3/182 tasks unchanged. No implementation/full-facet/denominator credit; granularity, ACC, final counting and integration remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-math20.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "ad9d8239da3c1c6d823ca463204fb7dc21d568bfc4e47a6ab4c91b9b9c08510a",
+    :blob "8ead8aec5bd638de32deb7772f185a31cfd3e130",
+    :bytes 1666888},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "ce2ad9f00c69a8ade2cac5cdd20eb7ffa52bff33",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the six Math/Backend task-field refinements. Historical acceptance remains493 with68 composed mappings pending. Of833 Open decisions,768 now have concrete links, including269 explicitly pending independent current-composition review;65 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. All196 qualified current source-review adoptions remain preserved, without extending independent review to later predicates. The Math20 private-proposal PASS and one Markdown formatting adjustment retain separate scope pending actual current-composition review. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-package7-adopted.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "2e555e4a9394fdd6cfa9f49aaa982cef738d566543733e78964e818402701a74",
+    :blob "ae8631e86d992d5f6bf1a1971c5c3333ef7f5ed8",
+    :bytes 1666085},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "176eed5dd0d0a8cf3ab034602f3574bbd5282180",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses retain their exact committed task sources and current bytes. Historical acceptance remains430 with131 pending. Seven independently reviewed unchanged Package predicates have qualified canonical current applicability; later added predicates retain separate pending review. Concrete decision links665, pending355, remaining168. No historical mapping or task-completion credit; final facet, granularity, ACC and counting gates remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-package7.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "26b027957ba73e02e1d2f09545afb56d4850c54c95ae41f12447a00609f6b8eb",
+    :blob "414714ff2f7485f443874640d437a07994345ce3",
+    :bytes 1665438},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "1fe616719bc9f27236d44a2c003d1b3b19756247",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the package recipe refinement. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,344 now have concrete links, including41 explicitly pending independent current-composition review;489 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-performance-ai17-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "c801484e40b4a4d933119c6b17e8668ccd2e1d9725f3c0e3190746092d482cdf",
+    :blob "87180b72eddc62defb50fe4ec022b35f02ee0d3a",
+    :bytes 1693464},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "c55255b582504bf44f4dbe661b3674daeb785963",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings and1262 current spans retain their exact bytes and review scopes. Independent Performance/AI17 actual-composition review at frozen63284c85 applies to17 unchanged current decision records and22 exact criteria after current joins and inversion of the eight later Bootstrap25 field appends across50 registry task/plan files. All240 original source documents remain unchanged. Source review covers468 memberships andthe declared generated-source/profile admission,tool-authority conjunction,prompt sanitizer-or-delimiter exception without authority promotion,typed workflow compensation/replay,taint/retrieval/sharing,evaluation gates andtarget-intrinsic contracts. Runtime dependency contexts receive no new independent runtime-semantic acceptance. Governance14 andlater Bootstrap25 semantics inherit no review acceptance. All833 decisions remain Open andallocated:491 qualified current reviews,39 pending (Governance14,Bootstrap25),zero unallocated. Historical561 acceptance andprovisional3/182 task status remain unchanged. Full facets,granularity,legacy ACC,independent final counting andcoordinator integration remain open. No implementation orcount credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-plugin-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "4d85a944eaebebe9baa5e9ccc45cd6ff0159eb77106888b0fdf1faf1e5af3d6c",
+    :blob "4fe47d6dba819b07b3bac3d2372b08c3ba313421",
+    :bytes 4811400},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "726b04bbb4add5092074876522ced4792584ae30",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw spans retain recorded scopes after the existing Plugin Host task gains explicit C17 manifest/scope/trust/diagnostic obligations. Affected Compiler API file pins refresh unchanged predicates. MIR/Lower/Effects/Opt/Resolve/Types/Core/incremental supplemental bodies remain current. All833 decisions and task IDs/statuses are conserved. Earlier qualified source reviews retain captured subjects and exclusions and accept no new C17 clause. No plugin/callback/sandbox/domain/compiler/runtime/probe execution, implementation or final-count credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-policy-product2-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "3d3f583875676acd8c296c69bfceef5ded926c16cab976b70753179d29d634d2",
+    :blob "5cb05475a05e170dd674a583f7baa205246cef22",
+    :bytes 1676334},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "eac630f380023ab9d91eb548594f21d566b7a39c",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings and1262 current spans retain their exact bytes and review scopes. Two independent frozen-f117 reviews apply to unchanged Accounting-policy1 andProduct1 records after current joins and inversion of ten later field appends across50 registry task/plan files; all240 original documents remain unchanged. Total474 qualified current source reviews,31 pending Governance14/PerformanceAI17 reviews and25 unallocated Bootstrap decisions. All833 decisions remain Open. Project accounting remains removed; actual provider billing remains required. Four architecture producers andseven conditional consumers select no product or physical architecture. Later Governance/AI clauses inherit no review credit. Historical561 acceptance andprovisional3/182 task status remain unchanged. Full facets,granularity,legacy ACC,independent final counting andintegration remain open. No implementation orcount credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-product1.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "f7b234705c97ffb4718ff0c2bd92beec03440abc4d026334b095cfae96403207",
+    :blob "b21b02fdab818963924b6f8ada0b659afc7d2ffb",
+    :bytes 1667509},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "7543e6ec966d96678843a176d8d30820ee4c07a8",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings retain unchanged task bytes and exact scopes. One conditional Product architecture decision binds four existing architecture-record producers and seven conditional consumers. No ISA, kernel, application inventory, physical boundary or product is selected. Current proposal review remains pending; frozen source-policy and Product proposal-only reviews retain their original scopes. All833 remain Open;770 concrete links,386 qualified source reviews,81 pending and63 unallocated. Historical493 accepted/68 pending and provisional3/182 task status unchanged. Full facets, granularity, ACC, final counting and integration remain open; no implementation credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-profile74-adopted.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "53cc4a1526fe26a232364de6947d21dd0c692b79f8f9e44e434844ba07faac44",
+    :blob "8f10960ac0cc2354cbe77d7adc93e2a82a4b4de6",
+    :bytes 1666575},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "8cae809f6c374465ac11ff28c58ed9b525c29bc0",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses retain their exact committed task sources and current bytes. Historical acceptance remains430 with131 pending. Core/Profile74 adds74 qualified source-review adoptions and74 current criterion witnesses, preserving the prior122 qualified reviews. Exact guard lineage, roles and declared task dependencies retain their independent scope. Seventeen recovered GPU metadata IDs over22 incidences have scoped source/context PASS without canonical index adoption. Later added predicates retain separate pending review. Concrete decision links748, pending249, remaining85. No historical mapping or task-completion credit; final facet, granularity, ACC and counting gates remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-profile74.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "bd79139054c9d34c568f2cb74957d98d4e4fdfdd4dcaadc08cff3bc81eaa85f3",
+    :blob "d90ff3b368b4029012ab972fbc1e0fbee6ecc792",
+    :bytes 1665870},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "7063afd8bfdf2d77d95e1b9f591f9d523f4b5393",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the 21 Core/Profile task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,558 now have concrete links, including255 explicitly pending independent current-composition review;275 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-resolve-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "872e73b9d8a4bb00216f4992fd1bb000e6eb0672357f67204c5bd5bec94f70f4",
+    :blob "b7ed4ff67312ecbfa2fe120ebdd4cf0de017cef0",
+    :bytes 4782069},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "11350110bc0c0456699a31151b321a7ddfaa6d7e",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw predicate spans retain recorded scopes after the five existing Resolve tasks gain exact C5/L3 criteria. Affected Resolve-file span maps refresh around unchanged raw predicates. Earlier supplemental MIR/Lower/Effects/Opt criteria remain current. All833 decision records and task identities/statuses are conserved. Earlier qualified source and extension-byte reviews retain their captured subjects and exclusions; no review inherits these Resolve additions. New source proposals require independent acceptance and confer no resolver/compiler/runtime/profile/package/probe execution, implementation or final-count credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed115.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "30f2457b26d1bd03518e1ccbeb58c5dc48784eb982a2b46d424dcd7a1d66bd31",
+    :blob "c3d3e958d3722f120c5e21f68610266019e585aa",
+    :bytes 1666484},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "4ee78ca564d73063dbba833793555fb6d68f5e82",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses retain their exact committed task sources and current bytes. Historical acceptance remains430 with131 pending. Tooling65, Runtime20 and Domains30 have115 newly qualified source-review adoptions, preserving the prior seven Package adoptions. All130 exact criterion witnesses and declared dependency contracts pass current applicability. Later added predicates retain separate pending review, as do Domains30's two unresolved metadata IDs and Tooling65's historical-offset qualifications. Concrete decision links748, pending323, remaining85. No historical mapping or task-completion credit; final facet, granularity, ACC and counting gates remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-reviewed190.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "e46460855df01064e968f92ee354c687a316daac7beafc76a81ead0535a5a7ef",
+    :blob "052e9762ec710f2c583398da052a67403af4a179",
+    :bytes 1666948},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "5331194fcf47baf9419566e839b11607e45470a3",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses retain their exact committed task sources and current bytes. Historical acceptance remains493 with68 pending. Safety107 and Stdlib83 add190 qualified source-review adoptions and194 current criterion witnesses, preserving prior196 qualified reviews for total386. Current dependencies and all later field operations are checked. Their two and three proposed metadata recoveries remain separately unadopted. Later Math20 predicates and its formatting adjustment retain separate pending review. Concrete decision links768, pending79, remaining65. No historical mapping or task-completion credit; final facet, granularity, ACC and counting gates remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-runtime20.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "0aac9654a12c73cedd795afc1e1bff89583360ddf675757a2b7d00d1a6e79cb8",
+    :blob "c35711e560f279335414a0f579bf2b477908b6b7",
+    :bytes 1665783},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "714c9e057bb89e9af0fc87e921da6106e5fd1f29",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the four Runtime task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,484 now have concrete links, including181 explicitly pending independent current-composition review;349 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-safety107.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "153796f893ffdaf175d31af735f5a651e26644d54100aa22a3c2fa07434162eb",
+    :blob "6c8e64ccaa4775866519a59dc8abf9c7a46ec351",
+    :bytes 1665982},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "e8b30404da883433274acf7eabb90e9077f56e8e",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the 16 Safety task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,665 now have concrete links, including362 explicitly pending independent current-composition review;168 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-schema25-reviewed.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "be26b81588b918d57ded78e201e317ddca9f37472c37a3f4336bee0e2510eea4",
+    :blob "94bd4b40af5df8132c08c89c708b2ea7dac48ed5",
+    :bytes 1668081},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "65e0704bc180521c3393725b39c284995657a065",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical bindings retain their current task bytes and scopes. The existing Schema25 PASS adds25 qualified current source-criterion composition adoptions for total465. All25 allocation records and27 criteria, declared roles/dependencies and19 normative source documents retain their reviewed semantics. Seventy-two later field operations reconstruct complete current files; all25 registry task/plan pairs are checked. Generation, checking, static type projection, semantic compatibility and actual runtime authority/admission remain separate. No whole-facet or later-predicate acceptance is inherited. All833 remain Open;777 concrete links,9 pending reviews and56 unallocated. Remaining pending cohorts are Accounting-policy1,Product1 andFoundation7. Historical493 accepted/68 pending and provisional3/182 unchanged. No implementation/denominator credit; granularity, ACC, final counting and integration remain open."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-schema25.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "ec9699f564a7a32ece6f27673075292a71a04b167639509de2acbdf691112f74",
+    :blob "e52e0b44025516439db869ee08ae789e34eb2a8c",
+    :bytes 1665517},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "1ce47440d9c8bf1f2a1b684bb8a10def96fd7946",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the three schema task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,369 now have concrete links, including66 explicitly pending independent current-composition review;464 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-stdlib83.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "68c5323dffcce19b8d92a697a6c6ebf61fb46296c0c863a0653c1df1f0666b04",
+    :blob "8ae62e0609f543164ca735cc2b968b8731927f0a",
+    :bytes 1666267},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "848cb140b132109a692ed7e1781f77a589a8c62b",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the four Stdlib task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,748 now have concrete links, including438 explicitly pending independent current-composition review;85 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. Seven qualified Package source-review adoptions remain preserved, without extending independent review to later predicates. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-tooling65.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "224064bc18e93029a2bca96bb51d67a3586808209756dc8136bf804ff0edadbb",
+    :blob "c0f192c4320c6d24621c5c43d490b99a0bbef1ed",
+    :bytes 1665620},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "f1b78d6d368ea6b636e131d258ec342decc88fba",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical witnesses survive the 15 tooling task-field refinements. Historical acceptance remains430 with131 composed mappings pending. Of833 Open decisions,434 now have concrete links, including131 explicitly pending independent current-composition review;399 allocation cases remain. Existing aliases and retirements are unchanged. Legacy ACC scope, complete facet entailment, task granularity and independent final counting remain open. No implementation or integration credit."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path
+   "specs/requirement-reconciliation/current-criterion-bindings-561-types-owner.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "5e4ddc4b22776f1a592f7644e30320559521d9bc02eb6457d58a2e3c0ee9e945",
+    :blob "090343b43cf0c189242207a15c5ee51a9c0ae577",
+    :bytes 4784573},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :derived-current-historical-criterion-bindings,
+     :schema-version 1,
+     :source-commit "505d8cd3ec02bc9a29ea3444b1665d9d8b7808ea",
+     :authority :read-only-review-and-current-source-witnesses,
+     :qualification
+     "All561 historical IDs and4819 raw spans retain their scopes after five existing Types tasks gain C7/L5 criteria. Affected Types-file pins refresh unchanged predicates. MIR/Lower/Effects/Opt/Resolve supplemental bodies remain current. All833 decisions and task IDs/statuses are conserved. Earlier qualified reviews retain captured subjects and exclusions and accept no new Types appends. No compiler/type helper/runtime/probe execution, implementation or final-count credit follows."},
+    :collection-counts
+    {:new-task-identities 0,
+     :bindings 561,
+     :remaining-ids 0,
+     :bound-ids 561}},
+   :current-main {:state :absent}}
+  {:path "specs/requirement-reconciliation/domain-gap-completion.edn",
+   :family :domain-gap-context,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "cbb47d98fc6120ecfc9a9145c8897151046a89feada36c98f5f820842e844d42",
+    :blob "77f14aaa03b43f31352bfe859c8a4b226d60e97c",
+    :bytes 3875814},
+   :summary
+   {:kind :domain-historical-gap-completion-patch,
+    :schema-version 1,
+    :authority :proposal-only,
+    :adoption-state
+    :pending-independent-review-and-canonical-composition,
+    :counts
+    {:records 70,
+     :assigned-ids 70,
+     :new-task-proposals 9,
+     :unresolved-semantic-ids 57}},
+   :current-main
+   {:state :changed,
+    :sha256
+    "d24b93ff6ea8ff3a8c422a19a0544eec60eff52a6dde6a848be17baf86edfec6",
+    :blob "00526d6bbafa3a91dfe15e5acbf0ded30bd1e401",
+    :bytes 21183}}
+  {:path
+   "specs/requirement-reconciliation/historical-gap-partition.edn",
+   :family :domain-gap-context,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "f370fbae2cd2247f3347a61754789aeb232d2d0fdc5e1e233e206debc727e02a",
+    :blob "5a5df329c8a28a18df4f4fa17b274dba0b176734",
+    :bytes 1337693},
+   :summary
+   {:kind :historical-gap-dispatch-partition,
+    :schema-version 1,
+    :authority :noncanonical-dispatch-input-only,
+    :counts
+    {:residual-records 561,
+     :partitions 22,
+     :retained-terminal-history 16}},
+   :current-main {:state :absent}}
+  {:path "specs/requirement-reconciliation/source-dispositions.edn",
+   :family :source-decisions-and-historical-mappings,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "0b5ef8028bb286b04b9437c4824b704dd6087097ea0b04ec4d08011089bb5fd5",
+    :blob "e7da41980724d2159161dfb5483fbb89c3c6f89e",
+    :bytes 21435754},
+   :summary
+   {:kind :canonical-task-source-dispositions,
+    :schema-version 1,
+    :authority :derived-source-disposition-and-review-input-only,
+    :implementation-acceptance :not-conferred,
+    :counts
+    {:original-documents 240,
+     :remaining-decisions 833,
+     :reviewed-family-inputs 13,
+     :retained-source-family-inputs 3,
+     :historical-interface-compositions 17,
+     :published-missing-interface-count 577}},
+   :current-main {:state :absent}}
+  {:path "specs/requirement-reconciliation/task-baseline.edn",
+   :family :read-only-census-and-manifest-input,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "614d677fb15137c3a6122412cb3b6b137a2ec2cc767120ade4be0dd0cf908528",
+    :blob "1eb8d595af7595e40bec469ab63a872bcc390e72",
+    :bytes 223019},
+   :summary
+   {:kind :edn-source-summary,
+    :fields
+    {:kind :provisional-derived-task-census,
+     :schema-version 1,
+     :source-commit "de9b456b1b33eb7c8b79f51e981cf60a2a1b5bea",
+     :authority :read-only-derived-task-census,
+     :nonclaims {:count 4}},
+    :collection-counts {:nonclaims 4, :tasks 195}},
+   :current-main {:state :absent}}
+  {:path "tools/sh_crosswalk.clj",
+   :family :read-only-census-tooling,
+   :change-status :m,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "678ea3174948f3ad337b13916c1899c637d0707783c21f595e9521cd6ab576ce",
+    :blob "f5006e28e4ded7011f1d3fa7c80bc0e07584ca6e",
+    :bytes 199087},
+   :summary {:kind :non-edn-source, :format "clj"},
+   :current-main
+   {:state :changed,
+    :sha256
+    "736245f4b52a963d2855e607d2165e994d2ffd4cd97c7fad04230ff04ad6632a",
+    :blob "5af762b686b52fcbd50a63ebe2f1365b7aa80a16",
+    :bytes 85314}}
+  {:path "tools/sh_crosswalk_test.clj",
+   :family :read-only-census-tooling,
+   :change-status :m,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "15fa1e637bceb3eca67c234d4d1faf29240b0f58505c27303c4c16d5ee9c20c2",
+    :blob "a38547d75bae0a2d770e33f1e659107ced6b069b",
+    :bytes 17401},
+   :summary {:kind :non-edn-source, :format "clj"},
+   :current-main
+   {:state :changed,
+    :sha256
+    "06914ad5102aa97bd2f8e6d13e0f03cbbf2c744c0223261c23b7c7b2ff638ddb",
+    :blob "ff98e57275cebac675090e40a4eec08684acf7c5",
+    :bytes 38437}}
+  {:path "tools/task_baseline.clj",
+   :family :read-only-census-tooling,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "00ed24f4fa0189476c24a72005ceb71e2c8f07ffe0833499b8a7fedac2f6fc08",
+    :blob "992fa1ba2d331543c12d40772cca98b85b16807d",
+    :bytes 11333},
+   :summary {:kind :non-edn-source, :format "clj"},
+   :current-main {:state :absent}}
+  {:path "tools/task_baseline_test.clj",
+   :family :read-only-census-tooling,
+   :change-status :a,
+   :source
+   {:commit "e7a93606858e543119f807130f1583f1b011b151",
+    :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+    :sha256
+    "39ae327d28978cf3c59e784946478f7ce92a3a93513964a20b1f4bb2afc87771",
+    :blob "e96b7250d37da02868396c6c39d4165e6a9424d3",
+    :bytes 2767},
+   :summary {:kind :non-edn-source, :format "clj"},
+   :current-main {:state :absent}}],
+ :authority :historical-source-view-and-reproducibility-index-only,
+ :reproduction
+ {:write "clojure -M tools/pr554_frozen_source_view.clj --write",
+  :check "clojure -M tools/pr554_frozen_source_view.clj --check",
+  :source-policy
+  "Read exact original Git blobs; never refresh current hashes or write canonical manifest state.",
+  :large-input-policy
+  "Large generated EDN is represented by exact bytes/blob/SHA256 and bounded known summaries; full bytes remain recoverable from the frozen source commit."},
+ :schema-version 1,
+ :source
+ {:head "e7a93606858e543119f807130f1583f1b011b151",
+  :tree "4c8d0e6c77482b75917ca8ad60605bef4f36f3d8",
+  :authored-base "6276c94b0b753c888ef8fecc794bcc81245ea3b3",
+  :authored-base-tree "9f464ed0f03866bd4978e4213a488f3b1ae48683"},
+ :kind :pr554-frozen-source-view-index,
+ :families
+ {:source-decisions-and-historical-mappings 54,
+  :conservation-inventory 1,
+  :qualified-b6-receipts 7,
+  :qualified-c18-receipts 13,
+  :domain-gap-context 2,
+  :read-only-census-and-manifest-input 1,
+  :read-only-census-tooling 4}}
