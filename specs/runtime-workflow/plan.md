@@ -22,6 +22,10 @@ the existing selected task. Distinguish compiler-service subset acceptance,
 wider families, independent review/integration and release; do not restore
 removed project accounting as a runtime admission requirement.
 
+## Complete concurrency source interface
+
+Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). The five existing tasks select support, perform cleanup, execute tasks/synchronization/messages, perform durable/AI replay, and enforce actual action policy. Runtime records do not substitute for those behaviors. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Separate early service/cleanup contracts, actual selected continuation/scheduler/record primitives and later complete error/async/generator/workflow/tool examples. Workflow/AI supply early definitions and later consume actual results; separately required review evidence remains external.

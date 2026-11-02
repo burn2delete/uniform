@@ -23,6 +23,90 @@ Record exact source/fixture/consumer identities and passed, failed or unrun work
 preserve operation restrictions and separate author checks, independent
 acceptance, integration and the complete profile/provider matrix.
 
+## Complete concurrency source criteria
+
+This proposal reads complete L11, SAFE8 and R6 as joint contracts, with selected
+STD7 library and B8/B9 target synchronization interfaces. It refines eighteen
+existing tasks in eight authorities; it creates no implementation task or status.
+The existing dependency table remains the only editable dependency authority.
+Its 526 joins and 73 routes survive; complete concurrency-specific result joins
+and cycle staging still require a separate review. The following table describes
+interfaces, not additional task completion prerequisites.
+
+| Existing authority | Required behavior and actual evidence |
+| --- | --- |
+| [Core3/Core5](../core-workflow/tasks.md) | Ordered task/cleanup control and actual checked Core from Types, Effects, Auth and Legality products |
+| [Effects3](../effects-workflow/tasks.md) | Actual concurrency effects, blocking, synchronization order and replay legality |
+| [Auth provider selection](../auth-workflow/tasks.md) | Compatible named scheduler/synchronization services and their promised semantics, distinct from grants and execution |
+| [Legality profile](tasks.md) | All thirteen L11 concurrency families and nine explicit profile cases; no hidden host scheduler |
+| [Legality analysis](tasks.md) | Actual conflicting-access, capture, ownership, immutable-representation and GPU barrier facts |
+| [Legality classification](tasks.md) | Four safety outcomes with preventive synchronization, guard/message/unsafe checks and actual refusals |
+| [Legality handoff](tasks.md) | Atomic order/scope/fence and all task/synchronization proof/check facts surviving MIR, optimization and lowering |
+| [Legality conformance](tasks.md) | All 28 source diagnostic meanings and accepted/refused construct/profile/target cases with real artifacts |
+| [Runtime selection](../runtime-workflow/tasks.md) | Truthful support descriptors followed by actual service composition satisfying the selected manifest |
+| [Runtime cleanup](../runtime-workflow/tasks.md) | Actual linear release, handlers and preserved diagnostics on cancellation, failure and partial initialization |
+| [Runtime memory/concurrency](../runtime-workflow/tasks.md) | Actual tasks, async wakeup, atomics, locks, channels and actors with typed lifecycle/transfer/result traces |
+| [Runtime distributed/AI](../runtime-workflow/tasks.md) | Actual recorded concurrent choices, typed messages and replay without repeated external work |
+| [Runtime enforcement](../runtime-workflow/tasks.md) | Actual per-action policy checks, revocation, deployment narrowing and redacted observability |
+| [Stdlib resource/concurrency](../stdlib-workflow/tasks.md) | Real typed task/future/channel/actor/synchronization APIs over Runtime services, with normalized diagnostics |
+| [HDL/GPU backends](../backends-workflow/tasks.md) | Actual clocked hardware state or GPU synchronization lowering and target refusals, retaining current holds |
+| [Lower4](../lower-workflow/tasks.md) | Actual target order/fence/proof/source preservation and affected invalidation |
+
+A structured child must complete, cancel or explicitly transfer its handle before
+scope exit. R6's alternative lifecycle owner is allowed only where its execution
+model permits it. Detachment still cannot capture non-static borrows under SAFE8;
+an owner declaration cannot waive that rule. A safe runtime synchronization check
+must prevent unsafe access; debug reporting after a race cannot substitute.
+Immutable sharing additionally requires a concurrent-safe representation, including
+lazy caches and memoization. Linear lock guards release exactly once on all paths.
+
+The source default atomic order is sequential consistency unless an explicit
+profile/library contract permits a weaker order. Preserve operation, order,
+scope, alignment and actual target support; host defaults do not govern. Hardware
+concurrency means signals/state with clocks, resets, memory and timing. GPU means
+workgroups/spaces/barriers and explicit dependencies. Neither implies host threads.
+Hardware clock-domain crossing needs its actual protocol or hardware-policy waiver;
+generic unsafe marking does not supply one. Mailbox capacity, target resources and
+runtime timeout/retry semantics survive project accounting removal.
+
+Restore the exact finite source predicates at their existing candidate links:
+32 byte witnesses describe 27 distinct records, with 29 missing witnesses restored
+and three already present preserved. Runtime cleanup/policy snippets are conjunctive
+fragments of seven runtime records, not twelve separate tasks. The eight empty
+historical task-reference fields gain their already-recorded candidate routes;
+no new task authority is invented. SAFE8 workflow replay uses its recorded Runtime
+consumer while retaining Legality's safety production. The unchanged existing
+[Evolution change-review](../evolution-workflow/tasks.md) predicate owns conditional
+semantic changes and affected suites, without an ordinary-development review gate.
+
+Historical profile74 and safety107 review receipts remain finite and frozen.
+Runtime20 actual composition remains pending. The R6 task-record/cancellation
+review covers only its bounded clauses and is already sealed/consumed once; it
+is not consumed again. Its local source commit is unavailable from GitHub, and
+neither that source nor the preserved aggregate is published or relabeled here.
+The restored clauses are a current proposal requiring their own review. The old
+GPU finite18 context remains historical; the later authenticated seventeen IDs
+and twenty-two incidences do not imply current canonical-index adoption or a
+new source-recovery gate for ordinary edits.
+
+Static inspection finds hosted records with actual profile/form checks alongside
+supplied race-free, capture-valid, synchronization and conformance assertions.
+The R6 builder assembles manifests/task trees/policies; these do not establish
+actual scheduling, atomics, message execution or cancellation release. Later
+Gravity ownership/safety kernels have meaningful partial behavior and explicitly
+leave concurrency pending. Backend synchronization contract data does not itself
+emit target operations. No compiler/provider/native/device/replay execution occurs
+in this proposal, and no old receipt gains wider acceptance.
+
+Completion requires actual source-to-checked-Core-to-MIR-to-target/Runtime behavior,
+positive and negative fixtures, valid task/transfer/synchronization/cleanup/replay
+artifacts and applicable independent review. Consume those results in the existing
+Release language/profile/runtime suites; API definitions, declarations and suite
+execution remain distinct. All earlier source refinements, held C12/target/native/
+callback/provider operations, language boundary and final release obligations remain.
+Full STD7, B8 and B9 source entailment beyond the selected interfaces is unassessed.
+Whole-source/current independent review and implementation acceptance remain pending.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Derive actual valid selected capture/lifetime/transfer/cloning premises before Effects3's combined handler decision; later memory-policy analysis still consumes checked Effects3. A candidate obligation is not a required valid-transfer proof.

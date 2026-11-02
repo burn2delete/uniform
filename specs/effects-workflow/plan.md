@@ -23,6 +23,10 @@ provider/replay operations. Refine the existing authoritative task only, record
 exact passed/failed/unrun evidence and retain separate independent acceptance,
 integration and wider-runtime/handler completion boundaries.
 
+## Complete concurrency source interface
+
+Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Effects3 checks actual blocking, synchronization order and replay effects from the existing fact producers. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
+
 ## Source memory-model and provider interface
 
 Use the [complete source memory-model and provider criteria](../legality-workflow/plan.md#complete-source-memory-model-and-provider-criteria) with the existing task authority.

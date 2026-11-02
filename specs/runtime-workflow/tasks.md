@@ -30,6 +30,14 @@ Foundation requirement gravity/runtime-manifest-closure: Close the selected runt
 <!-- runtime-foundation-service-closure:end -->
 
 
+<!-- concurrency-source-selection:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete concurrency runtime selection criterion (Open): Select only an actually supported admitted model: atomics/locks, structured native/hosted tasks, async futures/promises, channels, actors, durable workflow or GPU queue/barrier support as permitted. First expose truthful support descriptors; actual Runtime service composition must satisfy the resulting concurrency manifest and scheduler delegation. Record model, scheduler/thread provider, task lifecycle, cancellation/failure, memory order, replay and per-model blocking/priority/detachment/affinity behavior. Refuse unsupported no-runtime/profile/target combinations and undeclared OS services. A manifest names obligations; it does not demonstrate execution.
+<!-- concurrency-source-selection:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/finish-managednative-execution-startup-panic-and-cleanup` Finish managed/native execution, startup, panic and cleanup
 
 Status: Open
@@ -46,6 +54,20 @@ Source obligation `language/effects/interpret-resumable-error`: Interpret typed 
 
 L6 actual resumable-error interpretation criterion (Open): Execute the selected typed handler's normal resume, abort and cleanup paths under its checked label/request/response/result/resume contract and real profile/grant/capture facts. Preserve original handler/effect identity and exact cleanup ordering on panic/finalization and reject invalid payload/result/resume types, resume after finalization or repeated affine resume, invalid captured state and undeclared residual effects/authority. Consume the Runtime memory/concurrency boundary's legal continuation/resource interface and actual selected services where required; do not require final memory-program teardown before executing its own cleanup. Produce actual resume/abort/cleanup values and traces and owning diagnostics, distinct from describing a panic or assigning completed status.
 <!-- source-effects-errors:end -->
+
+
+<!-- concurrency-source-cleanup:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and historical source context:
+
+deterministic linear cleanup independent of process exit or GC
+
+execute deterministic cleanup for linear host resources despite GC
+
+Complete concurrency cleanup execution criterion (Open): Execute cancellation, failure, timeout, partial initialization and parent-scope exit cleanup using real task/resource identities. Release each required linear resource, complete handlers and preserve diagnostic/failure records in the specified order independent of GC or process exit. Retain actual normal/cancel/failure traces, including locks/guards and runtime-owned resources, and reject missing cleanup behavior. Runtime3 supplies task transitions and legal resource boundaries; this task performs the cleanup rather than accepting a cancellation flag or declared cleanup policy.
+<!-- concurrency-source-cleanup:end -->
 
 
 - [ ] `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries` Implement memory, concurrency and typed FFI boundaries
@@ -89,6 +111,30 @@ L6 actual async/generator interpretation criterion (Open): Execute typed suspend
 <!-- source-effects-async-generator:end -->
 
 
+<!-- concurrency-source-execution:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and historical source context:
+
+Source obligation `language/concurrency/execute-owned-actor-message`: Execute typed/effect-visible actor messages against actor-owned state, preserving scheduler/failure assumptions and explicit durable schema/replay boundaries. Accept: Execute typed, effect-visible messages against actor-owned state with explicit capability requirements, scheduler assumptions and failure behavior. A durable actor/service boundary carries schema/artifact identity and replay records. Reject: Reject state access outside actor ownership, untyped or undeclared-effect messages, missing required grants and durable delivery without schema/replay evidence. Required outputs: Actor state/message schemas, scheduler/failure manifest, ownership/effect/grant decisions and durable replay/denial traces. Dependencies consume versioned facts/receipts from effects/current-evidence-and-remaining-work/effects3-check-legality-and-ordering, auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime, runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution; they do not require blanket component completion. Implementation status remains Open.
+
+For every selected atomic/lock/thread/scheduler provider execute the declared operation, memory order, synchronization scope, alignment and target support under accepted race/ownership evidence. Emit operation/provider/target records and synchronization/transfer traces; accept representable supported synchronization and reject unsupported orders/scopes, misalignment, unprotected shared mutation and undeclared host-thread fallback. Compile-time race evidence remains required independently of debug checks.
+
+declared allocation and cleanup failures, partial initialization cleanup
+
+Execute tasks under the declared scheduler with a parent scope or explicit lifecycle owner, validated captures/ownership transfers, result/failure propagation, timeout, cancellation and deterministic cleanup. Emit task-tree, ownership-transfer, cancellation/failure and cleanup traces. Reject orphaned or lifecycle-less tasks, incompatible capture/transfer, missing cleanup or worker/job policy with the owning R6-TASK/R6-CANCEL/DOM8-JOB diagnostics. Preserve R7 failure-policy and Behavior A4 ownership; scheduler availability grants no missing authority or policy.
+
+Deliver channel/actor messages under declared schemas/versions, ownership transfers, ordering/delivery guarantees, mailbox/backpressure, cancellation and failure policies for the selected scheduler/transport. Emit actual transfer and receive traces with source/context/authority and schema validation; accept isolated/owned messages and reject schemaless/mismatched messages, illegal shared mutation, invalid transfer/lifetime and unsupported blocking/ordering behavior. Durable transports retain event-log/idempotency/compensation and migration/replay records; no hidden host scheduler or ambient network grant is implied.
+
+R6 cancellation cleanup criterion (Open): Cancellation releases linear resources, completes cleanup handlers and preserves diagnostic records. Emit task-tree, cancellation, cleanup and failure records tied to task/source, ownership and provider identities; reject missing cancellation/cleanup behavior with R6-CANCEL and applicable owning diagnostic context. A cancellation flag or policy name alone is not evidence that required resource release, handlers and diagnostics survived. Keep the already-required admitted scheduler/profile, typed suspension/timeout, ownership transfer and failure behavior conjunctive. Timeout and cancellation are declared runtime semantics, not project work or failed-attempt allowances. Preserve R7/R8 recorded-output requirements and the existing restricted R6 replay-safe alternative without granting live external replay. Fixtures describe required future evidence and do not execute or accept an implementation.
+
+R6 structured-task record criterion (Open): Record the parent scope, or the runtime-manifest-declared alternative lifecycle owner where permitted, together with child task id, source span, captured values, ownership transfers, effects, capabilities, cancellation behavior, timeout, result type and failure mapping. Where the selected execution model permits detached execution, require its lifecycle owner, cleanup path and observability hooks; an owner declaration alone does not select or permit detached execution. Reject orphaned, leaked, unjoined or lifecycle-less task records with R6-TASK and the source/task/actor/channel/profile/runtime-family/scheduler/effect/capability/synchronization/missing-proof-or-schema/remediation context. Captured values in the typed task record do not authorize unredacted secret/raw-memory logging. Compile-time SAFE8 evidence remains authoritative; runtime debug checks cannot replace it.
+
+Complete concurrency runtime behavior criterion (Open): Execute admitted structured tasks and async suspend/await/wakeup, atomic/fence, lock/synchronized-cell, typed channel and owned actor operations through the selected actual providers. Retain parent scope or permitted alternative lifecycle owner, child/task/source, captures/transfers, effects/grants, cancellation/timeout, result and failure mapping. Detached execution additionally requires a model that permits it, cleanup and observability, and must satisfy SAFE8's non-static-borrow prohibition; an owner alone grants neither detachment nor safe capture. Preserve parent consumption, join/receive/response ownership return, actor-owned state, typed/effectful messages and scheduler/failure contracts. Execute cancellation handlers and linear release with Runtime2, preserving failure diagnostics. Produce actual state/value/task/synchronization/transfer/cleanup traces and target-supported atomic operation/order/scope/alignment results; declarations and supplied task trees are insufficient. Preserve admitted typed FFI restrictions; no native/callback/provider/device operation is authorized by these planning criteria.
+<!-- concurrency-source-execution:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/connect-distributedai-replay-and-interactive-execution` Connect distributed/AI replay and interactive execution
 
 Status: Open
@@ -109,6 +155,22 @@ L6 actual workflow/tool interpreter criterion (Open): Interpret workflow event/r
 <!-- source-effects-workflow-tool:end -->
 
 
+<!-- concurrency-source-replay:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and historical source context:
+
+Allocation interface/safety/safe8/workflow-replay (Open). Role: runtime owning producer or consuming-boundary checker. Input: task/shared-location/synchronization graph and selected target/provider memory model. Required positive predicate: Record nondeterminism, external calls, retry/signal/timer/idempotency and compensation/cancellation for workflow concurrency and reject unreplayable workflow actions. Positive output witness: Nondeterminism/external-call/retry/signal/timer/idempotency/compensation/cancellation replay records. Concrete negative case: Concurrent workflow behavior makes an unrecorded external call or replays a retry/timer/signal as a new side effect. Required refusal: this counterexample must not be accepted as ordinary safe behavior; retain only the governing proven-safe/runtime-checked/rejected/explicit-audited-unsafe alternatives and actual mode/profile exceptions. Evidence: inspect these actual output records and owning diagnostic IDs/source or generated-origin spans; record failed/unavailable/unrun cases, never turn a source fixture or manifest flag into execution acceptance. Dependencies: workflow supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries supplies Source-qualified provider/runtime/domain safety result and exact consuming-boundary evidence; no whole-component completion prerequisite. Whole shared-facet entailment and implementation acceptance are not conferred.
+
+Execute durable steps against versioned recorded inputs/outputs with workflow/step/event/effect/provider identity, idempotency and declared completion/transaction boundaries. Recorded-output segments consume matching records without reissuing external actions, rejecting missing/mismatched/order-inconsistent records; preserve retries, cancellation and compensation policy. R6 graph-declared replay-safe repetitions may execute only where no R7/R8 recorded-output obligation applies and authority still holds. Emit restart/replay equality and actual no-duplicate-effect traces; a replay-safe label cannot override required recorded behavior.
+
+For each admitted runtime action whose replay or audit policy requires recording, persist typed input/output digests, provider/action identity, error/retry decisions, timestamp source and source/generated origin; record scheduler decisions where replay depends on them. Emit actual record-mode traces and matching replay consumption, rejecting absent/mismatched identity/order/cardinality and silent live reexecution in recorded-output mode. Record-mode action and replay-mode consumption are conditional alternatives, not simultaneous mandatory effects; retain R6's authorized graph-declared repetition exception outside R7/R8 recorded-output obligations.
+
+Complete concurrent workflow/AI replay criterion (Open): Execute admitted durable/AI task scheduling and typed messages using stable event, actor/task/step, schema and provider identities. Record replay-relevant scheduler choices, external/nondeterministic results, retries, signals, timers, idempotency, compensation and cancellation; preserve failure and typed actor-state snapshot/recovery behavior. Replay consumes matching recorded outputs without repeating external work, rejecting missing/mismatched/reordered/extra or race-relevant unrecorded choices. Keep the restricted R6 graph-safe alternative qualified by L6/profile and outside stricter R7/R8 recorded-output segments. Workflow/AI domain owners supply source graphs/policy; this task supplies actual Runtime values and traces. Project work/call/token/fuel accounting remains removed; independently meaningful timeout/retry/backpressure and actual external billing restrictions survive.
+<!-- concurrency-source-replay:end -->
+
+
 - [ ] `runtime/remaining-tasks-and-evidence/close-enforcement-and-observability-integration` Close enforcement and observability integration
 
 Status: Open
@@ -116,6 +178,24 @@ Status: Open
 Evidence baseline: [Capability runtime contract](../../docs/phase-08-runtime-architecture/122-r11-runtime-capability-enforcement-design.md)
 
 Closing evidence: Denial at actual service hook, redacted diagnostics and source-map preservation
+<!-- concurrency-source-enforcement:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Preserved finite predicate conjunctions and historical source context:
+
+every authority-bearing action carries principal/package/deployment/artifact/source/effect/capability identity
+
+deny by default and check both caller grant and tool/plugin contract
+
+use-after-revocation rejection
+
+enforce deployment narrowing
+
+Complete concurrency enforcement/observability criterion (Open): Enforce actual selected service authority and deployment narrowing for each scheduler/task/actor/channel action, including principal/package/deployment/artifact/source/effect/capability identity, deny-by-default grants, provider contract and use-after-revocation refusal. Preserve real task/cancellation/failure/cleanup/replay traces and owning diagnostic context with appropriate redaction; typed captured-value fields do not authorize secret or raw-memory logging. Debug diagnostics may supplement prevention but cannot legalize compile-time-invalid code or replace race-freedom evidence. Return actual allowed/refused actions and observable results rather than an assigned enforcement status.
+<!-- concurrency-source-enforcement:end -->
+
+
 <!-- runtime-implementation-tasks:end -->
 
 ## Historical workflow migration record

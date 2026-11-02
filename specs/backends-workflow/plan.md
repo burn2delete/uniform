@@ -21,6 +21,10 @@ yourself. Refine only that existing record, coordinating genuine overlapping
 writers and shared interfaces. Preserve restricted operations and publication/
 signing authority. Independent family acceptance and release remain separate.
 
+## Complete concurrency source interface
+
+Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Existing GPU/HDL tasks preserve actual synchronization or clocked state in emitted artifacts and target refusals. Selected interfaces do not accept full B8/B9, device execution or current C12/target holds. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
+
 ## Historical task-authority-transfer plan
 
 # Implementation plan: Backends family task authority

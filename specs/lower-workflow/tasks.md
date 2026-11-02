@@ -72,6 +72,14 @@ Apply the [complete target-lowering source criteria](plan.md#complete-target-low
 C14 proof criterion compiler/c14/proof-target-metadata (Open): Bind each no-overflow/noalias/dereferenceable/alignment/FMA/fast-math/volatile/atomic-order target metadata decision to its actual operation, target, typed/numeric/memory assumptions and justifying Gravity proof/certificate valid at lowering. Preserve source/generated origins, safety/check/proof and dependency provenance through the actual map and artifact output. Required outputs: source-operation/proof-to-target metadata map with current proof-check results and actual accepted/refused lowering fixtures. Positive cases justify the selected metadata for the exact subject and target; reject absent, stale, mismatched or invalidated proof/certificate, numeric-mode or ownership/lifetime/ordering assumptions with C14-PROOF-METADATA and contextual diagnostics. Keep required volatile/atomic/source safety semantics; missing optional optimization evidence cannot justify silently deleting them. Consume applicable SAFE15/PERF10/math, semantic and transformation evidence; target metadata or an unresolved proof reference is not a checked Gravity proof.
 <!-- lower-canonical-proof:end -->
 
+<!-- concurrency-source-lower:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete concurrency target-preservation criterion (Open): Lower actual checked synchronization, ownership/task lifetime, atomic order/scope/fences and runtime-check/unsafe/proof facts into supported target operations with original source/generated/proof origins. Refuse lost or weakened ordering, unsupported target representation, implicit host/runtime fallback and stale facts. Changed representation, alias, control, provider or target assumptions require affected invalidation and recheck; an explicitly permitted equivalent provider still needs actual equivalence and admitted profile support. Emit real lowered operations and positive/refusal artifacts for the existing backend owners; record copying is not preservation proof.
+<!-- concurrency-source-lower:end -->
+
+
 - [ ] `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` lower/5: Integrate target emission
 
 Current evidence/status: Open; partial source evidence above is not closure

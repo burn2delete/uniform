@@ -4,6 +4,8 @@ Implementation scope added under the 2026-11-01 request. Existing named family,
 interface, emission and conformance owners retain their responsibilities.
 Historical task transfer below does not establish target support.
 
+The [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) reconcile L11/SAFE8/R6 behavior, accepted/refused cases and real task/synchronization/cleanup/replay/target evidence under eighteen existing tasks. Selected STD7 and B8/B9 interfaces retain their separate broader obligations. Historical receipts do not establish whole-source or current implementation acceptance.
+
 ## Behavior and interfaces
 
 Implement the independently named [backend outcomes](../../docs/component-roadmaps/backends.md#release-outcome)

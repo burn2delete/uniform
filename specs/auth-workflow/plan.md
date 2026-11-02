@@ -23,6 +23,10 @@ the selected authoritative task. Record exact passed, failed and unrun evidence,
 residual host/trust assumptions, independent review and integration separately.
 A structurally valid manifest or supplied verdict does not close enforcement.
 
+## Complete concurrency source interface
+
+Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). The existing provider-selection task declares and selects compatible actual services; a declaration is separate from grants and execution. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Early actual provider/form/resume support precedes profile compatibility and grants; grants consume actual early inferred requirements before final combined handler legality. Handling/fixtures never mint authority.

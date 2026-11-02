@@ -88,6 +88,14 @@ L6 typed-handler and continuation criterion (Open): Consume actual Types request
 <!-- source-effects-handlers:end -->
 
 
+<!-- concurrency-source-effects:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete concurrency effects criterion (Open): Check actual task spawning, suspension/resumption, blocking, lock/atomic/channel/actor operations, scheduling and durable/AI concurrent actions against inferred effects, the narrowest allowance, grants and active profile. Preserve ordered observable effects and scheduler/replay nondeterminism through handler interpretation and lowering. Use registered semantic extensions where required; a synchronization type or provider label does not register or authorize a new effect. Refuse hidden blocking, undeclared actions, grant widening, reordered synchronization and unrecorded replay-relevant actions with the owning diagnostics and source identities.
+<!-- concurrency-source-effects:end -->
+
+
 - [ ] `effects/current-evidence-and-remaining-work/effects4-record-replay-and-invalidation` effects/4: Record replay and invalidation
 
 Current evidence/status: Open; partial source evidence above is not closure

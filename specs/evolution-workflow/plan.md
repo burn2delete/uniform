@@ -5,6 +5,10 @@ Evidence: [evidence.md](evidence.md). Owner role: language-evolution/governance
 maintainer; accountable individual remains unassigned. Independent acceptance
 and integration stay with the existing coordinator responsibilities.
 
+## Complete concurrency source interface
+
+Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). The already-exact conditional concurrency semantic-change predicate stays unchanged under change-review; its task bytes and status are preserved, with no new ordinary-development gate. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
+
 ## Source effect dependency interface
 
 Use the [source effect and handler dependency order](../effects-workflow/plan.md#source-effect-and-handler-dependency-order) and the existing selected-result table. Existing new-stable effect/handler/resume/replay registration consumes the affected actual checker/grant/interpreter/fixture/source results only where that adoption is sought. It neither gates unchanged-contract development nor authorizes a denied experiment or operation; memory-weakening review remains distinct.

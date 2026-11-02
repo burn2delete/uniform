@@ -4,6 +4,8 @@ Implementation scope added under the 2026-11-01 request. Existing runtime,
 memory, concurrency, FFI, workflow/AI and enforcement owners retain their scope.
 Historical workflow migration below supplies no execution or release acceptance.
 
+The [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) reconcile L11/SAFE8/R6 behavior, accepted/refused cases and real task/synchronization/cleanup/replay/target evidence under eighteen existing tasks. Selected STD7 and B8/B9 interfaces retain their separate broader obligations. Historical receipts do not establish whole-source or current implementation acceptance.
+
 ## Behavior and interfaces
 
 Implement [the Runtime outcome](../../docs/component-roadmaps/runtime.md#release-outcome)

@@ -21,6 +21,10 @@ recording exact passed, failed or unrun cases and residual target/host bounds.
 Do not replace actual layouts or helper linkage with manifest assertions.
 Independent acceptance, other target families and release remain separate.
 
+## Complete concurrency source interface
+
+Use the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria). Lower4 preserves actual task/synchronization/order/fence/source/proof products and invalidates changed assumptions before target consumption. Historical finite reviews remain scoped; current source composition and implementation acceptance remain pending. Preserve every held operation.
+
 ## Foundation source criteria
 
 Three preserved clauses from the

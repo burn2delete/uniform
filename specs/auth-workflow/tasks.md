@@ -27,6 +27,14 @@ L18 alternative-memory declaration and selection criterion (Open): Validate each
 <!-- auth-canonical-memory-model-provider-contract:end -->
 
 
+<!-- concurrency-source-provider:start -->
+
+Apply the [complete concurrency source criteria](../legality-workflow/plan.md#complete-concurrency-source-criteria) within this existing task. Status remains Open; historical finite reviews do not accept this whole-source/current implementation proposal.
+
+Complete concurrency provider criterion (Open): Declare and select actual scheduler/thread, atomic/fence, lock, channel, actor and synchronization providers with deterministic identity, profile/target compatibility and their promised blocking, cancellation, priority, detachment, affinity, fairness, reentrancy, poisoning, ordering, replay and failure behavior where applicable. Distinguish a provider declaration, a capability grant, compile-time legality and the service that enforces the promise. Refuse absent or incompatible support and preserve the selected contract for checked Core, Runtime and lowering. No declaration permits hidden host threads, implicit runtime fallback or a held provider/device/native action.
+<!-- concurrency-source-provider:end -->
+
+
 - [ ] `auth/remaining-tasks-and-evidence/enforce-grant-intersection-attenuation-revocation-phase-and-lifetime` Enforce grant intersection, attenuation, revocation, phase and lifetime
 
 Status: Open
