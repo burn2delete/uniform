@@ -358,7 +358,23 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 6 (count (:declared-parent-consumers review))))
+    (is (= 7 (count (:declared-parent-consumers review))))
+    (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
+    (let [text (slurp dependencies/future-dependency-path)
+          removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
+          altered (dependencies/future-task-view future current snapshots
+                    #(if (= dependencies/future-dependency-path %) removed (slurp %)))
+          route (first (filter #(= "domain-ir-boundaries" (:consumer %)) (:routes review)))]
+      (is (= ["domain-ir-boundaries"] (get-in altered [:dependency-review :unresolved-consumers])))
+      (is (empty? (:start-results route)))
+      (is (= 13 (count (:composition-results route))))
+      (doseq [producer (:composition-results route)]
+        (is (some #(= ["task:domain-ir-boundaries/implementation" (str "task:" producer "/interface") :declared-producer-interface]
+                      [(:from %) (:to %) (:kind %)]) edges))
+        (is (some #(= ["task:domain-ir-boundaries/composition" (str "result:domain-ir-boundaries:" producer) :actual-selected-producer-result]
+                      [(:from %) (:to %) (:kind %)]) edges)))
+      (is (not-any? #(and (= "task:domain-ir-boundaries/implementation" (:from %))
+                         (clojure.string/starts-with? (:to %) "result:")) edges)))
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))

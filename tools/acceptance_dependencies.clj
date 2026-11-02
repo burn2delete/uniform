@@ -174,6 +174,14 @@
 
 (def future-dependency-path "docs/acceptance-dependencies.md")
 
+(def selected-parent-consumers
+  #{"domain-ir-boundaries" "math"
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+    "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"})
+
 (defn future-dependency-routes [text task-ids consumer-ids]
   (let [marker "future-composition-dependencies"
         start (str "<!-- " marker ":start -->") end (str "<!-- " marker ":end -->")
@@ -500,7 +508,10 @@
      :limits [:source-criteria-not-tasks :baseline-links-not-canonical-entailment
               :runner-not-independent-admission :source-declarations-not-execution]}))
 
-(defn future-task-view [authorities current-tasks snapshots read-text]
+(defn future-task-view
+  ([authorities current-tasks snapshots read-text]
+   (future-task-view authorities current-tasks snapshots read-text selected-parent-consumers))
+  ([authorities current-tasks snapshots read-text required-parent-consumers]
   (let [future-tasks (vec (mapcat val authorities))
         future-map (into {} (map (juxt :id identity) future-tasks))
         all-tasks (merge current-tasks future-map)
@@ -527,7 +538,9 @@
                                          (set (keys all-tasks)))
         all-declared (set (map :consumer routes))
         declared (set/intersection all-declared (set (keys future-map)))
-        unresolved (vec (sort (remove declared (keys future-map))))
+        unresolved (vec (sort (set/difference
+                               (set/union (set (keys future-map)) (set required-parent-consumers))
+                               all-declared)))
         math (math-output-view all-tasks snapshots)
         release (release-source-view (authorities "release-testing-proposals") snapshots)
         named-inputs (group-by (juxt :consumer-task :producer-task) (:cross-task-inputs math))
@@ -589,6 +602,7 @@
                                :kind :actual-selected-producer-result :source source}))) routes)))]
     {:nodes nodes :typed-edges edges
      :dependency-review {:task-count (count future-map) :declared-consumers (vec (sort declared))
+                         :required-parent-consumers (vec (sort required-parent-consumers))
                          :declared-parent-consumers (vec (sort (set/difference all-declared declared)))
                          :unresolved-consumers unresolved :routes routes
                          :math-outputs math
@@ -596,7 +610,7 @@
                          :declared-output-adjacency output-graph :declared-output-cycles (cycles output-graph)
                          :authority :source-declarations-not-execution
                          :future-sh-and-full-language-joins :pending
-                         :implementation-acceptance :unassessed}}))
+                         :implementation-acceptance :unassessed}})))
 
 (defn finish-line-routes [text task-ids consumers]
   (let [start "<!-- finish-line-dependencies:start -->" end "<!-- finish-line-dependencies:end -->"

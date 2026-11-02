@@ -329,8 +329,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -1324,8 +1324,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -2508,8 +2508,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -3611,8 +3611,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -7894,8 +7894,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}
     {:path "specs/opt-workflow/plan.md",
@@ -8827,8 +8827,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -10017,8 +10017,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -11578,8 +11578,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -12322,8 +12322,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -12747,8 +12747,8 @@
      :current-applicability :unassessed}
     {:path "specs/compiler-api-workflow/plan.md",
      :sha256
-     "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
-     :source-commit "0bd2713e104ec12b8def7c7e757293561bcede31",
+     "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+     :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
      :kind :source-inspection-not-execution,
      :current-applicability :unassessed}],
    :qualification
@@ -15065,7 +15065,7 @@
    :source-version-bridge
    "specs/sh-family-crosswalk/macro-runtime-source-version.edn"},
   :input-fingerprint
-  "ba642d24d8a07bc69942f36d7bc854191ad47ebb4f83624d63f2699015fc2044"},
+  "4880fe8e8a186e4f33bfbaf22277cb78293e0a0b6a276da1554ae51a40a165f1"},
  :implementation-readiness-source-version
  {:foundation-tools-refinement
   {:new-task-identities [],
@@ -34585,6 +34585,258 @@
    "Resume thirteen existing test/seed producers and the detailed criteria of the five aggregate Release tasks. Keep actual evidence production, stage comparison, intermediate admission and final release separate. Existing native receipts retain their original scopes. TEST6 remains with Backends. Budget/resource labels concern real external billing or host/platform restrictions, not compiler work quotas. No suite, native observation, held operation or release decision ran.",
    :math-consumer-context :future-release-testing-records-now-resumed,
    :implementation-acceptance :unassessed},
+  :domain-ir-refinement
+  {:new-task-identities [],
+   :canonical-source
+   {:path
+    "docs/phase-06-compiler-architecture/091-c12-domain-ir-architecture.md",
+    :file-sha256
+    "0da19ebf3f391ee140d55a1b2e2c622aae2fcd9b7fa23b818a3f406177b19b74",
+    :coverage
+    :full-document-all34-semantic-paragraph-conjunctions-and16-contexts},
+   :conformance-minimum [:efir :schema :workflow :hdl],
+   :predecessor-readiness-successor
+   {:commit "2db1597f41ca4a0aea77a336abecc39e4e346fd1",
+    :path
+    "specs/sh-family-crosswalk/implementation-readiness-source-version.edn",
+    :sha256
+    "136ddd561bd5ebf0ca6729217a14006525bc690119938e2e32f4ec30c8b82f52",
+    :projection-path "specs/sh-family-crosswalk/crosswalk.edn",
+    :projection-sha256
+    "7f9e5f061a01dbf713278ca84a50a200b4b52cf4d3273774fd77437b3ecb3745",
+    :input-fingerprint
+    "ba642d24d8a07bc69942f36d7bc854191ad47ebb4f83624d63f2699015fc2044"},
+   :composition-route
+   {:consumer "domain-ir-boundaries",
+    :start-results [],
+    :composition-results
+    ["mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality"
+     "math"
+     "schema"
+     "workflow"
+     "ai"
+     "hardware"
+     "gpu"
+     "query"
+     "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries"
+     "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects"
+     "math/independent-proof-and-certificate-checking"
+     "plugins"
+     "lower/current-evidence-and-remaining-work/lower5-integrate-target-emission"],
+    :selected-output-contract
+    "Actual verified Core/MIR anchors and selected EFIR/schema/workflow/AI/HDL/GPU/query/FFI/package-graph schemas, payload semantics, verifier and transition products; independent Math proof/certificate checking supplies the concrete required accepted/refused optimization fixture, not universal domain proof authority. Plugin policy supplies actual registration/grant checks. Registered Lower exits and target eligibility/fallback consume already verified domain products; final conformance requires actual emission/refusal where claimed. Domain payload, optimization, registry, proof, backend and runtime owners stay distinct. Interface fixtures start without whole parents; no C12 execution hold is cleared.",
+    :source
+    {:path "docs/acceptance-dependencies.md",
+     :sha256
+     "6c5feb81e519307b9327eb501f25d2772ed3c0bbc90bb2bb70601aca8717731c",
+     :declaration
+     "| `domain-ir-boundaries` | none | `mir/current-evidence-and-remaining-work/mir3-verify-graph-and-legality`, `math`, `schema`, `workflow`, `ai`, `hardware`, `gpu`, `query`, `runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries`, `build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects`, `math/independent-proof-and-certificate-checking`, `plugins`, `lower/current-evidence-and-remaining-work/lower5-integrate-target-emission` | Actual verified Core/MIR anchors and selected EFIR/schema/workflow/AI/HDL/GPU/query/FFI/package-graph schemas, payload semantics, verifier and transition products; independent Math proof/certificate checking supplies the concrete required accepted/refused optimization fixture, not universal domain proof authority. Plugin policy supplies actual registration/grant checks. Registered Lower exits and target eligibility/fallback consume already verified domain products; final conformance requires actual emission/refusal where claimed. Domain payload, optimization, registry, proof, backend and runtime owners stay distinct. Interface fixtures start without whole parents; no C12 execution hold is cleared. |"}},
+   :criteria
+   [{:key :existing,
+     :task-id "domain-ir-boundaries",
+     :preserved-current-before? true,
+     :historical-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "domain-ir-boundaries",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 41767,
+      :end-byte 47262,
+      :raw-sha256
+      "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653",
+      :commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :source-commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+      :sha256
+      "06269a8ac686d3dc87c5c0a81738ca826693c7dc6e0765d76339be0f2c19ef53",
+      :source-span
+      {:start-byte 47935,
+       :end-byte 53430,
+       :sha256
+       "80ba2fd321c8695fd2799d13552a090f7c5f58eac07153df67d1609f0847b653"}}}
+    {:key :records,
+     :task-id "domain-ir-boundaries",
+     :preserved-current-before? true,
+     :historical-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "domain-ir-boundaries",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 47264,
+      :end-byte 51509,
+      :raw-sha256
+      "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026",
+      :commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :source-commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+      :sha256
+      "06269a8ac686d3dc87c5c0a81738ca826693c7dc6e0765d76339be0f2c19ef53",
+      :source-span
+      {:start-byte 53432,
+       :end-byte 57677,
+       :sha256
+       "ea4eafc836c603e15ec182b51d3f149a2daf34077f80fb2580ff6b1181e99026"}}}
+    {:key :proof,
+     :task-id "pass-evidence",
+     :preserved-current-before? true,
+     :historical-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :marker "compiler-api-implementation-tasks",
+      :task-id "pass-evidence",
+      :file-sha256
+      "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26",
+      :start-byte 29748,
+      :end-byte 41650,
+      :raw-sha256
+      "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30",
+      :commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd"},
+     :current-witness
+     {:path "specs/compiler-api-workflow/tasks.md",
+      :source-commit "0e1cec28f43d2902032b1786af08f7aa17af8107",
+      :sha256
+      "06269a8ac686d3dc87c5c0a81738ca826693c7dc6e0765d76339be0f2c19ef53",
+      :source-span
+      {:start-byte 29748,
+       :end-byte 41650,
+       :sha256
+       "af3d3ea9d11463bfd6c0ad49748a026706930692351b5385c6066e8faaddce30"}}}],
+   :source-entailment :author-assessed-current-plan-proposal,
+   :selected-result-joins 273,
+   :independent-current-review :pending,
+   :source-trace
+   {:path
+    "specs/requirement-reconciliation/domain-complete-current-facet-trace.edn",
+    :commit "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+    :sha256
+    "cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff",
+    :scope :historical-source-only-no-aggregate-publication},
+   :dependency-source
+   {:path "docs/acceptance-dependencies.md",
+    :before
+    {:commit "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
+     :sha256
+     "3cffa07b7066eca0e0bdc58862171e1d064002d2c8e77e711a98d857c2e733ae"},
+    :after
+    {:commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
+     :sha256
+     "6c5feb81e519307b9327eb501f25d2772ed3c0bbc90bb2bb70601aca8717731c"}},
+   :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
+   :historical-review
+   {:subject
+    {:tree "e08666f8a5c736ec70bb2eed8f286b52dabb4f26",
+     :repository "burn2delete/uniform",
+     :base-qualification
+     :task-refinement-predecessor-not-main-integration-base,
+     :subject-parent "09bc34ddf34c91facec6fe9c77b03c64746ed81d",
+     :task-source "fb3a05011cc819256dc8c3aa5d6851aa139c74cd",
+     :tree-qualification
+     :actual-Git-object-corrects-owner-final-text-typo,
+     :commit "bec12ac1d543353325030f40db37490c5407d8d5",
+     :predecessor-tree "b348ee3b323b06a9712dedadbe6fddea7500bcba",
+     :refinement-predecessor
+     "45fa1763f939bdad59a9ee78401223a957382454",
+     :pr 554},
+    :verdict :scoped-pass,
+    :exclusions
+    [:implementation
+     :domainentry-verifier-exit-callback-execution
+     :optimizer
+     :compiler
+     :proofchecker
+     :Bootstrap
+     :runtimeprovider
+     :target
+     :publication
+     :readiness
+     :migration
+     :release
+     :integration
+     :final-count-denominator
+     :entire-PR-approval
+     :full-L2-L7-domain-package-backend-proof-or-dependency-implementations
+     :C18-source-semantics
+     :pipeline-order-adjudication
+     :later-C17-adoption
+     :later-main70dcb222
+     :later-composition
+     :held-scope-acceptance
+     :outbound-delivery],
+    :current-acceptance :not-transferred,
+    :qualified-adoption
+    {:whole-current-head :not-accepted,
+     :full-dependency-documents :not-accepted,
+     :held-actions :no-clearance-or-retry,
+     :whole-owner-and-unselected-enclosing-predicates :not-conferred,
+     :coordinator-integration :required-separately},
+    :qualified-applicability
+    {:scope :C12-source-only,
+     :qualification
+     "Exact frozen C12 source and three authentic domain-interface/pass-evidence predicate bodies remain current. The separately later C17 adoption retains its own authority and is not renewed by this older C12 receipt. One overlapping provenance context remains one identity with context-only authority. Full domain payload semantics, earlier review scopes, compiler ordering and all implementation/release/count/integration authority remain separate. No entry/verifier/exit callback, compiler/optimizer/proof-checker/runtime/provider/target or held operation is executed.",
+     :whole-current-head :not-accepted,
+     :separate-later-C17
+     {:adoption
+      {:path
+       "specs/requirement-reconciliation/c17-qualified-source-review-adoption.edn",
+       :sha256
+       "2e43be337762b080852afffdea9019ed7d13854822a22f6426b20fecd9c0f010"},
+      :new-source-facets 108,
+      :review-renewal :none},
+     :reviewer-checker-execution :none}},
+   :consumer-plan
+   {:path "specs/domains-workflow/plan.md",
+    :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
+    :sha256
+    "39d9e38d35fda29045b30e10d24150693823f9a0a1e84de778a94cb768dacafd",
+    :kind :source-inspection-not-execution},
+   :ordinary-development
+   :declared-interfaces-no-adopted-result-prerequisite,
+   :changed-task-ids [],
+   :kind
+   :current-domain-ir-plan-and-composition-unchanged-predicate-binding,
+   :global-source-conjunctions :unassessed,
+   :retained-source-review
+   {:path
+    "specs/compiler-api-workflow/review-inputs/domain-source-review.edn",
+    :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
+    :sha256
+    "efb092ac18943a411e01c3763f0a4d7f184e006d7de30e02d0468dae979065e6",
+    :use
+    :reuse-existing-115-facet-50-occurrence-six-owner-review-without-copying},
+   :qualification
+   "All three complete predicates already occur literally once in current Compiler API tasks. Preserve their text, IDs, statuses, original owner candidates and frozen review exclusions. Current planning refines all nine baseline family products, actual verifiers, checked evidence, registered entry/exit/fallback and thirteen selected composition inputs; no current acceptance, held execution, whole dependency, runtime, release, self-hosting or integration credit follows.",
+   :required-parent-consumers
+   ["domain-ir-boundaries"
+    "math"
+    "release/remaining-tasks-and-evidence/bind-each-claimed-component-to-exact-implementation-and-conformance"
+    "release/remaining-tasks-and-evidence/build-reproducible-signed-distributions-with-provenancesbom"
+    "release/remaining-tasks-and-evidence/complete-stage-compatibilityequivalence-across-the-claimed-compiler"
+    "release/remaining-tasks-and-evidence/obtain-independent-acceptance-for-the-exact-release-candidate"
+    "release/remaining-tasks-and-evidence/produce-actual-self-hosted-compilerruntime-execution"],
+   :composition-entailment
+   :author-assessed-selected-producer-proposal-independent-review-pending,
+   :plan
+   {:path "specs/compiler-api-workflow/plan.md",
+    :source-commit "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
+    :sha256
+    "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
+    :kind :source-inspection-not-execution},
+   :implementation-acceptance :unassessed,
+   :baseline-family-owners
+   {:schema "schema",
+    :package-artifact-graph
+    "build/remaining-tasks-and-evidence/execute-typed-graph-under-declared-build-effects",
+    :gpu "gpu",
+    :workflow "workflow",
+    :efir "math",
+    :hdl "hardware",
+    :ffi
+    "runtime/remaining-tasks-and-evidence/implement-memory-concurrency-and-typed-ffi-boundaries",
+    :query "query",
+    :ai-agent-tool "ai"}},
   :incremental-refinement
   {:canonical-sources
    {"docs/phase-06-compiler-architecture/095-c16-incremental-compilation-design.md"
@@ -44208,7 +44460,7 @@
   "f92591e9423b440c294b6aa560e015618686547c4719193cad449052a3ed02bc"},
  :source-digests
  {"docs/acceptance-dependencies.md"
-  "3cffa07b7066eca0e0bdc58862171e1d064002d2c8e77e711a98d857c2e733ae",
+  "6c5feb81e519307b9327eb501f25d2772ed3c0bbc90bb2bb70601aca8717731c",
   "docs/artifacts/phase-06/reports/current-reader-decode-source-identity.md"
   "1c879a874faa0b995c2ad5899bcbee9167d831d65203a5e6b38b2cda28599f91",
   "docs/artifacts/phase-06/reports/current-reader-fresh-syntax-handoff.md"
@@ -44322,7 +44574,7 @@
   "specs/cli-workflow/tasks.md"
   "4e98c91c8beeb40ef78c8305db99f11b05b3095bbf9076204b55f319d854b73b",
   "specs/compiler-api-workflow/plan.md"
-  "4dc380340046ef3f12bf8a419e174a245ab74993b47e0f29bb41e101d0f806fc",
+  "d9f7d651edc4a7078d21fc54bd99a0a40acf8f5e8e40ad7582e47b1572570e2f",
   "specs/compiler-api-workflow/tasks.md"
   "06269a8ac686d3dc87c5c0a81738ca826693c7dc6e0765d76339be0f2c19ef53",
   "specs/core-workflow/tasks.md"
@@ -44331,6 +44583,8 @@
   "6f353a4c517e6412b83c8bbfbd5898025501fccebae0e0fa0dcec4d3c6d9ee07",
   "specs/diag-workflow/tasks.md"
   "6ddb3069633fc245a4c0762e69c79f6a442c1431e5ae317f7f72bbe0e83377ff",
+  "specs/domains-workflow/plan.md"
+  "39d9e38d35fda29045b30e10d24150693823f9a0a1e84de778a94cb768dacafd",
   "specs/domains-workflow/tasks.md"
   "664ae7028db79ac223795dfbe0cfdb3b429f7822fed86a15268c500ddd8bbd7c",
   "specs/effects-workflow/tasks.md"
@@ -44391,7 +44645,7 @@
   "specs/opt-workflow/tasks.md"
   "0e1cec28f43d2902032b1786af08f7aa17af8107",
   "specs/compiler-api-workflow/plan.md"
-  "0bd2713e104ec12b8def7c7e757293561bcede31",
+  "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
   "specs/diag-workflow/tasks.md"
   "d37ba8da837f6dfdf0cc0e185729ce80d0aa1ae5",
   "docs/component-roadmaps/evolution.md"
@@ -44418,6 +44672,8 @@
   "697917447d70ba0797a096d9427d4706bf5515df",
   "specs/effects-workflow/tasks.md"
   "69831d09bc2007844265968b265c493cf064bdf9",
+  "specs/domains-workflow/plan.md"
+  "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
   "specs/build-workflow/tasks.md"
   "7662cb4a4527d4e8d905f88f352428dc3d7867f5",
   "specs/diag-workflow/plan.md"
@@ -44457,7 +44713,7 @@
   "docs/phase-02-safety/043-safe14-supply-chain-safety.md"
   "697917447d70ba0797a096d9427d4706bf5515df",
   "docs/acceptance-dependencies.md"
-  "0c85be0f758272dfc81d91fb5ae4db6fa4a5ccec",
+  "cbafeee1f42ef28cbb238b2d823b13b125bae2d3",
   "specs/platform-workflow/tasks.md"
   "0876063f41e2ad3e13f3c332f4877daecb62b45d",
   "specs/backends-workflow/tasks.md"

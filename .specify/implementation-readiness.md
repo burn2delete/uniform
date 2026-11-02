@@ -1903,3 +1903,110 @@ evidence contents. ASCII and whitespace checks pass. Preparation caught test
 delimiter errors and an old plan lookup hash before generation; both were
 corrected before the successful checks. No compiler/plugin/sandbox/callback,
 provider/checker/target/migration or publication operation ran.
+
+## Complete domain IR source and composition review
+
+Direct C12 review preserves all three complete existing/records/proof predicates
+in the [Compiler API task authority](../specs/compiler-api-workflow/tasks.md#implementation-tasks).
+They are already literal current text; no task body, identity or status changes.
+The [current C12 plan](../specs/compiler-api-workflow/plan.md#complete-domain-ir-source-criteria)
+binds stable package-visible registry/schema/anchor contracts, all seven entry
+and seven exit families, complete downstream facts, actual domain verification,
+checked optimization evidence, legal target fallback and all nine diagnostic
+meanings with complete subject context. Domain-specific payload semantics and
+transformations retain their owners. C12 composes registration/transitions;
+Opt, proof/checker owners, Lower, Backends and Runtime retain their real work.
+
+All nine baseline IR families remain: EFIR with adjacent EML proof/search,
+schema, workflow, AI agent/tool, HDL/state machine, GPU, query, FFI boundary and
+package/artifact graph. The existing EFIR/schema/workflow/identified-HDL
+conformance demonstration is a minimum, not closure of the other families.
+The [Domain plan](../specs/domains-workflow/plan.md#compiler-domain-ir-composition)
+now links that boundary explicitly. The [sole dependency declaration](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+adds the existing `domain-ir-boundaries` consumer with thirteen selected results:
+nine family-owner products, verified MIR, actual independent Math proof checking,
+plugin registration policy and registered Lower emission. Math checking is a
+concrete accepted/refused proof/certificate fixture route; it does not become
+the verifier for every domain or every permitted evidence method.
+
+The graph now includes forty future consumers and seven existing parent
+consumers, with 273 selected producer-result joins. These counts describe source
+declarations only. Local C12 fixtures consume declared interfaces; composition
+requires actual selected results. Verified domain products precede the Lower
+exit whose actual result final conformance consumes. This staging keeps the
+construction/composition distinction explicit rather than imposing whole
+components as start prerequisites. The checker now reports missing selected
+parent declarations, including removal of the C12 row. Historical dependency
+reviews explicitly retain their original required-parent population instead of
+being judged against a later source declaration. The broader graph remains a
+source projection, not exhaustive semantic dependency or execution proof.
+
+The already archived [C12 review](../specs/compiler-api-workflow/review-inputs/domain-source-review.edn)
+contains all 115 facet witnesses (99 semantic and sixteen context), fifty
+occurrences, 34 semantic conjunctions and six original owner joins. Reuse it
+without duplicating a reconciliation database. Its trace at `fb3a0501` has
+SHA-256 `cb89b3de7a0238962cad1e7d6dabee2ebd55837891de84a8e0b390b256f1e7ff`.
+The frozen scoped PASS at `bec12ac1`, tree `e08666f8`, excludes actual
+entry/verifier/exit callbacks, optimizers, compiler/proof checker/Bootstrap/
+runtime-provider/target/publication operations, readiness, migration, release,
+integration, whole dependency implementations and C18 source semantics. Current
+plan/composition entailment is an author proposal; independent current review,
+implementation and global conjunction assessment remain pending/unassessed.
+
+Source `cbafeee1f42ef28cbb238b2d823b13b125bae2d3` changes only the Compiler
+API spec/plan, Domain plan and existing dependency declaration. The current
+Compiler API task pin stays `0e1cec28`. The two plan inspection pins and dependency
+file pin advance explicitly; the source-version inventory still has 31 file
+records and predecessor `2db1597f` preserves the complete prior metadata,
+projection and pending review. The current fingerprint is
+`4880fe8e8a186e4f33bfbaf22277cb78293e0a0b6a276da1554ae51a40a165f1`.
+All 139 original task bodies retain their 92-identical/47-amended disposition,
+149 current keys, 25 authorities, forty future records, SH/SH07 routes and three
+scoped Reader receipts.
+
+Selected static inspection preserves partial code honestly. The [hosted C12 facade](../bootstrap/clojure/src/gravity/c12_domain_ir.clj)
+uses injected operations and [artifact assembly](../bootstrap/clojure/src/gravity/c12_domain_ir/artifact.clj)
+assigns complete/accepted/passed registry, proof, verifier, transition and
+fallback records. The shared [registry builder](../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00178-domain-ir-registry-seed.clj)
+creates schema hashes from selected record fields and synthetic per-family
+payloads/anchors/proof labels; its ten-record seed is not evidence of all domain
+semantics. The shared [validator](../bootstrap/clojure/src/gravity/bootstrap_impl/components/foundation/00179-domain-ir-validate.clj)
+checks presence, equality and status fields. The [policy](../bootstrap/clojure/src/gravity/c12_domain_ir/policy.clj)
+excludes canonical registry/verifier/proof/plugin/backend/equivalence/self-hosting/
+release authority. These observations establish no actual registered callback,
+semantic proof replay or emitted target.
+
+The initial constructors in the [Gravity C12 source](../bootstrap/gravity/src/gravity/compiler/c12_domain_ir_architecture.gravity)
+are quoted record models. Later code in that same file performs real shape,
+identity-template and descriptive-layout recomputation; selected policy and
+public-entry inspection retains its proof-reference-only, blocked-lowering,
+no-executable-load and no-authority nonclaims, plus pending canonical digest,
+MIR verifier, ABI, allocation, lifetime, backend/runtime and release obligations.
+This is not a full audit of every helper. Input/node/depth/width/scalar allowances
+still visible in those selected adapters are superseded accounting-cleanup work,
+not required replacement gates. Independently meaningful type/index/alignment,
+target-format representability and provenance checks remain. The [2026-06-25 report](../docs/artifacts/phase-06/reports/p06-d091-c12-domain-ir-report.md)
+retains stage0 document scope; its historical test results were not rerun or
+promoted into current semantic acceptance.
+
+No actual C12/callback/compiler/optimizer/provider/proof-checker/target/runtime,
+native/device/migration/signing/private-store or product-publication operation runs for
+this source preparation. No other chat is messaged. Required independent review,
+global substantive reconciliation and implementation evidence assessment remain
+unfinished; Reader contract coverage remains the first preparation increment.
+
+C12 validation passes: 42 crosswalk tests / 5,009 assertions; 23 dependency
+tests / 1,831 assertions; deterministic generation/check, read-only dependency
+audit, both document validators and the language boundary (six tests / eleven
+assertions). Controls verify all 115 canonical spans and three unchanged raw
+predicates, detect removed source facets/changed criterion bytes and report a
+removed C12 dependency row. They conserve the nine-family/thirteen-producer
+route, construction versus actual composition, original authorities/statuses,
+historical review exclusions and scoped receipts. The coarse Math and Release/
+Schema cycles remain exposed; the staged graph remains acyclic. Conservation
+passes for 82 changed files, 76 Markdown files, 3,003 local references, 139
+original routes, 48 historical spec/plan suffixes and all 48 original task/
+evidence contents. ASCII and whitespace checks pass. Initial scratch readers
+needed delimiter corrections before their successful reads; these failed reads
+receive no validation credit. No current implementation or independent
+acceptance follows from these source checks.
