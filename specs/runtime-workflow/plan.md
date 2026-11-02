@@ -36,6 +36,11 @@ now refine two existing Open tasks; their IDs and complete predicates stay in
 | `gravity/interop-boundary-manifest` | The existing memory/concurrency/FFI task produces and consumes applicable ABI/layout/alignment/calling-convention/symbol, ownership/lifetime/transfer, null/error/callback/thread, schema/provider, effects/grants and provenance obligations under [D5 interop](../../docs/phase-00-foundation-and-thesis/006-d5-language-replacement-strategy.md#interop-rules) and [R10 bindings](../../docs/phase-08-runtime-architecture/121-r10-ffi-runtime-design.md#binding-and-adapter-model). Actual conversion/invocation, release and callback re-entry remain required where claimed. |
 | `gravity/interop-is-not-host-semantics` | The same FFI task normalizes admitted values, failures and callbacks through audited typed Gravity boundaries. [R4](../../docs/phase-08-runtime-architecture/115-r4-managed-runtime-design.md#requirements) preserves null/undefined, exception/promise, collection/equality/hash, resource, reflection/loading and source-map contracts. Reject unadapted host semantics, invalid ownership, wrong ABI/provider/schema or missing authority. |
 
+The FFI task owns the reusable foreign-boundary conversion and callback
+adapters. The managed/native execution task consumes those adapters and owns
+family startup, failure/cleanup and managed collection/state behavior; it does
+not create a second implementation authority for the same boundary converter.
+
 Consume actual Lower operation/provider/preservation outputs, source-schema
 validators and Legality's profile/check/wrapper facts as named in the clauses;
 declared interfaces allow local implementation before whole-component release.
