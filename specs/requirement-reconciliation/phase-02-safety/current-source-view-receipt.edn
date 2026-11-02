@@ -44,7 +44,8 @@
                   :diff-check :pass}
  :historical-checker
  {:state :preserved-nonpass
-  :reason :external-pr445-applying-manifest-not-available
+  :reason [:retired-task-projection-loader
+           :external-pr445-applying-manifest-not-available]
   :required-sha256 "aa7ee8dfa7c7b0b7a9cb0e609944d7dcbcd81791f080708364a0faf8cc2e7980"
   :action :not-regenerated-or-renewed}
  :nonclaims [:implementation-acceptance :canonical-adoption :integration

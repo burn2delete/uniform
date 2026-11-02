@@ -124,11 +124,12 @@ clojure -M tools/safety_task_source_view.clj --check
 ```
 
 This view does not replace the historical manifest-backed checker. The
-preserved PR445 applying manifest is not available in Git and the historical
-checker therefore remains a separately recorded nonpass; no manifest hash is
-renewed or regenerated here. Current task criteria, source-family semantics,
-implementation acceptance, canonical adoption and integration remain
-unassessed.
+preserved PR445 applying manifest is not available in Git, and that checker
+also depends on the retired `tools/task_projection.clj` loader. Its historical
+nonpass is recorded rather than replayed through a replacement loader; no
+manifest hash is renewed or regenerated here. Current task criteria,
+source-family semantics, implementation acceptance, canonical adoption and
+integration remain unassessed.
 
 Next adoption step: the canonical reconciliation owner routes independent
 review of the immutable candidate and resolves exact later predecessor
