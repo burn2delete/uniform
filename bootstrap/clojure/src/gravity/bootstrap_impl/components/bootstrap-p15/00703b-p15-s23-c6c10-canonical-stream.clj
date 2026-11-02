@@ -14,18 +14,18 @@
 ;; Each pass owns fresh identity ancestors shared with that normalizer. Only
 ;; successfully entered containers are removed; aliases are visited anew.
 
-(defn- ^String p15-s23-c6c10-streaming-named-text [^String value]
+(defn- p15-s23-c6c10-streaming-named-text ^String [^String value]
   ;; Only freshly validated Named components reach this function: no control,
   ;; whitespace or malformed surrogate. Escaped components use the old printer.
   (if (and (neg? (.indexOf value "\"")) (neg? (.indexOf value "\\")))
     (str "\"" value "\"")
     (binding [*print-dup* false *print-readably* true] (pr-str value))))
 
-(defn- ^String p15-s23-c6c10-streaming-named-form-text [tag namespace name]
+(defn- p15-s23-c6c10-streaming-named-form-text ^String [tag namespace name]
   (str tag (if (nil? namespace) "nil" (p15-s23-c6c10-streaming-named-text namespace))
        " " (p15-s23-c6c10-streaming-named-text name) "]"))
 
-(defn- ^String p15-s23-c6c10-streaming-hex [^bytes bytes]
+(defn- p15-s23-c6c10-streaming-hex ^String [^bytes bytes]
   (let [^chars characters (char-array (* 2 (alength bytes)))
         ^String digits "0123456789abcdef"]
     (dotimes [index (alength bytes)]
@@ -34,7 +34,7 @@
         (aset characters (int (inc offset)) (.charAt digits (bit-and value 15)))))
     (String. characters)))
 
-(defn- ^String p15-s23-c6c10-streaming-sort-key [form]
+(defn- p15-s23-c6c10-streaming-sort-key ^String [form]
   (if (= :keyword (first form))
     (p15-s23-c6c10-streaming-hex
      (.getBytes ^String
