@@ -55,6 +55,20 @@
    :verifier-semantic-hash "sha256:13a4cbc1f63e62728aa821a75e85626a4fd14b4d14d6017ac3d5ca47531e4079"
    :required-functions v2-required-functions})
 
+(def v2-current-source-contract-abi
+  "Stable ABI for the explicit current-source owner route.
+
+   The v2 source-contract DATA above remains the historical reviewed record
+   used by fixed-contract and negative controls.  Public current-v2
+   construction derives bytes, plan and function identities from the canonical
+   owner path at invocation; this map intentionally contains no source pin."
+  {:interface :gravity/c11-mir
+   :version 2
+   :source-relative-path (:source-relative-path v2-source-contract)
+   :builder-function 'c11-build-target-independent-mir
+   :verifier-function 'verify-c11-mir-module
+   :required-functions v2-required-functions})
+
 (def flat-bool-required-functions
   (merge v2-required-functions
     {'sh12-flat-bool-sequence-view {:arity 1 :params ['core]}

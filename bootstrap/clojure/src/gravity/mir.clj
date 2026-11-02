@@ -6,7 +6,33 @@
     :contract-boundary :native-seed-c11-records-and-relative-validation
     :governing-contracts [D1 D2 D3 D8 D9 C1 C6 C7 C8 C9 C10 C11 C15 BOOT8 TEST2]
     :public-api
-    {module-keys {:arglists nil :admission :none :value-kind :native-module-key-set}
+    {allowed-opcodes {:arglists nil :admission :none :value-kind :native-opcode-set}
+     allowed-source-operations {:arglists nil :admission :none :value-kind :native-source-operation-set}
+     block-keys {:arglists nil :admission :none :value-kind :native-block-key-set}
+     operation-keys {:arglists nil :admission :none :value-kind :native-operation-key-set}
+     terminator-keys {:arglists nil :admission :none :value-kind :native-terminator-key-set}
+     pass-contract-record {:arglists ([]) :admission :none :native-data-only? true}
+     canonical-block-order {:arglists ([mir]) :admission :none :native-data-only? true}
+     operation-sequence {:arglists ([block-order mir]) :admission :none :native-data-only? true
+       :operation-inputs [:canonical-block-order]}
+     path-prefix? {:arglists ([prefix path]) :admission :none :native-data-only? true}
+     validate-carrier! {:arglists ([owner-operations source-path definition value]) :admission :none
+      :operation-inputs [:trusted-carrier-validation :valid-unicode-string? :fail! :contain-exception!]
+      :native-data-only? true :authenticates-inputs? false}
+     metadata-free? {:arglists ([value]) :admission :none :native-data-only? true}
+     require-strict-structure! {:arglists ([strict-first-mismatch fail! source-path expected actual missing-fact])
+       :admission :none :native-data-only? true :operation-inputs [:strict-first-mismatch :fail!]}
+     require! {:arglists ([fail! condition id source-path subject missing-fact]) :admission :none
+       :native-data-only? true :operation-inputs [:fail!]}
+     node-opcode {:arglists ([node]) :admission :none :native-data-only? true}
+     node-facts {:arglists ([checked-core node]) :admission :none :native-data-only? true}
+     runtime-check-operation-id {:arglists ([check]) :admission :none :native-data-only? true}
+     runtime-check-token-id {:arglists ([check]) :admission :none :native-data-only? true}
+     node-operands {:arglists ([token-id node]) :admission :none :native-data-only? true
+       :operation-inputs [:runtime-check-token-id]}
+     runtime-check-source {:arglists ([node]) :admission :none :native-data-only? true}
+     runtime-check-fact-id {:arglists ([check fact-kind]) :admission :none :native-data-only? true}
+     module-keys {:arglists nil :admission :none :value-kind :native-module-key-set}
      function-keys {:arglists nil :admission :none :value-kind :native-function-key-set}
      validate-module-envelope!
      {:arglists ([owner-operations source-path checked-core mir]) :admission :none
@@ -60,7 +86,12 @@
      valid-dominance-edge? {:arglists ([edge blocks operation-by-id definitions position-by-id join]
                                       [edge blocks operation-by-id definitions position-by-id join parameter]) :admission :none}
      valid-terminator-use? {:arglists ([use blocks operation-by-id position-by-id]) :admission :none}}
-    :artifact-inputs [:native-module-and-function-key-schemas :explicit-envelope-operations
+    :artifact-inputs [:native-opcode-and-source-operation-vocabularies
+                      :native-block-operation-and-terminator-schema-data
+                      :native-mir-module-blocks-and-paths :explicit-block-order-operation
+                      :native-carrier-and-structural-comparison-data :explicit-carrier-unicode-diagnostic-and-containment-operations
+                      :native-node-and-fact-source-and-check-data :explicit-token-id-operation
+                      :native-module-and-function-key-schemas :explicit-envelope-operations
                       :explicit-fact-table-reconstruction-and-require-operations
                       :explicit-operation-rules-and-schema-data
                       :explicit-native-data-flow-rule-operations
@@ -72,12 +103,22 @@
                       :explicit-require-and-terminator-operations :terminator-key-schema
                       :checked-core-and-mir-data :expected-envelope-and-operation-products
                       :definitions :operation-positions :join-and-parameter-data]
-    :artifact-outputs [:native-module-and-function-key-sets :native-envelope-products
+    :artifact-outputs [:native-opcode-and-source-operation-sets
+                       :native-block-operation-and-terminator-key-sets
+                       :native-pass-contract-record :canonical-native-block-order :native-operation-sequence :path-prefix-predicate
+                       :native-carrier-validation-result :metadata-predicate :relative-structure-and-condition-rule-results
+                       :native-opcodes-fact-references-operands-generated-source-and-ids
+                       :native-module-and-function-key-sets :native-envelope-products
                        :native-fact-table-rule-return :native-operation-products :native-data-flow-counts :native-effect-placement-result
                        :native-block-placement-data :native-use-definition-and-value-records
                        :native-runtime-check-facts :id-indexed-fact-and-proof-tables
                        :cfg-entry-exit-and-conditional-count :native-rule-outcome :dominance-and-use-predicates]
-    :diagnostic-ownership {:stage [:native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
+    :diagnostic-ownership {:stage [:native-opcode-and-source-operation-vocabularies
+                                  :native-block-operation-and-terminator-key-schemas
+                                  :native-pass-contract-block-and-operation-order-and-path-rules
+                                  :native-carrier-unicode-metadata-and-relative-structure-rules
+                                  :native-node-opcode-and-fact-source-id-projection
+                                  :native-module-function-and-provenance-envelope-parity :native-envelope-key-schemas
                                   :native-fact-table-equality
                                   :native-operation-shape-parity-and-fact-references
                                   C11-MODULE C11-TARGET-LEAK C11-SAFETY
@@ -101,6 +142,281 @@
 
 
 
+
+(def allowed-opcodes
+  #{:constant :local :local-binding :truthiness :sequence
+    :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+    :conditional-join :lexical-scope :call :function-boundary
+    :runtime-check})
+
+(def allowed-source-operations
+  #{:literal :implicit-nil :quote :local :let-binding :truthy
+    :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+    :do :if :let :str :println :function :runtime-check})
+
+(def block-keys
+  #{:artifact :block-id :arguments :instructions :terminator
+    :predecessors :successors :dominators :data-flow :source})
+
+(def operation-keys
+  #{:artifact :op-id :opcode :source-operation :operands :result
+    :result-kind :constant-payload :type :effects :capabilities :ordering :source
+    :profile :facts :domain-anchor :block-id :verifier-status})
+
+(def terminator-keys
+  #{:artifact :terminator-id :kind :operands :successors :effects
+    :ordering :source :profile :facts :verifier-status})
+
+(defn pass-contract-record
+  []
+  {:artifact :gravity/compiler-pass-contract
+   :pass-id :c11-build-mir-bounded-slice
+   :owner :gravity-source
+   :input :gravity/safety-checked-core
+   :output :gravity/mir-module
+   :requires [:authenticated-checked-core-artifact
+              :canonical-core-node-order
+              :type-facts :effect-facts :effect-order-graph
+              :capability-facts :capability-proofs
+              :ownership-facts :safety-outcomes
+              :runtime-check-records :profile-facts
+              :complete-origin-closure]
+   :preserves [:checked-core-artifact-id :core-node-identity
+               :source-spans :origin-ids :generated-origin-chains
+               :types :effects :effect-order :capabilities
+               :ownership :safety :runtime-check-failure-behavior
+               :profile :source-target :target-request]
+   :invalidates [:core-control-shape]
+   :regenerates [:mir-block-placement :control-flow-graph
+                 :typed-data-flow-graph :mir-value-use-def
+                 :runtime-check-token-guards :mir-source-map]
+   :effects #{}
+   :capabilities #{}
+   :profiles [:hosted]
+   :source-targets [:jvm]
+   :target-independent-output? true
+   :emits [:mir-module :pending-build-mir-pass-execution-record
+           :c11-diagnostic]
+   :postcondition-verifier :clojure-stage0-independent-c11-verifier
+   :risk :bootstrap-seed-tcb
+           :scope {:operation-set
+           [:literal :implicit-nil :quote :local :let-binding :truthy
+            :integer-eq :integer-lt :integer-lte :integer-gt :integer-gte
+            :do :if :let :str :println :function
+            :runtime-check]
+           :maximum-conditionals 1
+           :whole-c11? false
+           :self-hosted? false}})
+
+(defn canonical-block-order
+  [mir]
+  (let [source-core (:source-core mir)
+        entry-id (str source-core ":mir:entry")
+        then-id (str source-core ":mir:then")
+        else-id (str source-core ":mir:else")
+        join-id (str source-core ":mir:join")
+        blocks (get-in mir [:functions
+                            (first (keys (:functions mir)))
+                            :blocks])]
+    (if (contains? blocks join-id)
+      [entry-id then-id else-id join-id]
+      [entry-id])))
+
+(defn operation-sequence
+  [block-order mir]
+  (let [blocks (get-in mir [:functions
+                            (first (keys (:functions mir)))
+                            :blocks])]
+    (vec
+     (mapcat #(get-in blocks [% :instructions] [])
+             (block-order mir)))))
+
+(defn path-prefix?
+  [prefix path]
+  (and (vector? prefix)
+       (vector? path)
+       (<= (count prefix) (count path))
+       (= prefix (subvec path 0 (count prefix)))))
+
+(defn validate-carrier!
+  [owner-operations source-path definition value]
+  (let [{:keys [trusted-carrier-validation valid-unicode-string? fail! contain-exception!]} owner-operations]
+    (try
+      ;; Establish exact native classes, comparators, metadata and acyclicity
+      ;; before traversing. Numeric representations are checked by this helper;
+      ;; Float/Double remain legitimate carriers, not canonical digest values.
+      (let [validation (trusted-carrier-validation value :default-only)]
+        (when-not (= :passed (:status validation))
+          (fail!
+           "C11-VERIFY" source-path {}
+           {:missing-fact :valid-native-c11-carrier
+            :reason (:reason validation)
+            :runtime-contract-definition definition})))
+      (loop [pending [value]]
+        (when (seq pending)
+          (let [item (peek pending) pending (pop pending)
+                texts (cond (string? item) [item]
+                            (or (keyword? item) (symbol? item))
+                            (cond-> [(name item)] (namespace item) (conj (namespace item)))
+                            :else [])]
+            (when-not
+             (and (every? #(and (string? %)
+                                (valid-unicode-string? %)) texts)
+                  (not (and (char? item) (<= 0xD800 (int item) 0xDFFF))))
+              (fail!
+               "C11-VERIFY" source-path {}
+               {:missing-fact :well-formed-unicode-c11-carrier
+                :runtime-contract-definition definition}))
+            (recur (cond
+                     (map? item) (reduce-kv #(conj %1 %2 %3) pending item)
+                     (or (vector? item) (set? item) (seq? item))
+                     (reduce conj pending item)
+                     :else pending)))))
+      {:status :passed}
+      (catch InterruptedException interrupted
+        (.interrupt (Thread/currentThread))
+        (throw interrupted))
+      (catch StackOverflowError error
+        (contain-exception!
+         source-path :contained-c11-carrier-host-stack error))
+      (catch AssertionError error
+        (contain-exception!
+         source-path :contained-c11-carrier-assertion error))
+      (catch LinkageError error
+        (contain-exception!
+         source-path :contained-c11-carrier-linkage error))
+      (catch clojure.lang.ExceptionInfo ex
+        (contain-exception!
+         source-path :contained-c11-carrier-diagnostic ex))
+      (catch Exception error
+        (contain-exception!
+         source-path :contained-c11-carrier-host-failure error)))))
+
+(defn metadata-free?
+  [value]
+  (loop [stack [value]]
+    (if (empty? stack)
+      true
+      (let [item (peek stack)
+            stack (pop stack)]
+        (if (and (instance? clojure.lang.IObj item)
+                 (some? (meta item)))
+          false
+          (cond
+            (map? item)
+            (recur
+             (reduce (fn [pending [key child]]
+                       (conj pending key child))
+                     stack item))
+
+            (or (vector? item) (list? item) (set? item))
+            (recur (reduce conj stack item))
+
+            :else (recur stack)))))))
+
+(defn require-strict-structure!
+  [strict-first-mismatch fail! source-path expected actual missing-fact]
+  (when (strict-first-mismatch
+         source-path expected actual [])
+    (fail!
+     "C11-VERIFY" source-path {}
+     {:missing-fact missing-fact})))
+
+(defn require!
+  [fail! condition id source-path subject missing-fact]
+  (when-not condition
+    (fail!
+     id source-path subject {:missing-fact missing-fact})))
+
+(defn node-opcode
+  [node]
+  (case (:source-operation node)
+    :literal :constant
+    :implicit-nil :constant
+    :quote :constant
+    :local :local
+    :let-binding :local-binding
+    :truthy :truthiness
+    :integer-eq :integer-eq
+    :integer-lt :integer-lt
+    :integer-lte :integer-lte
+    :integer-gt :integer-gt
+    :integer-gte :integer-gte
+    :do :sequence
+    :if :conditional-join
+    :let :lexical-scope
+    :str :call
+    :println :call
+    :function :function-boundary
+    :unsupported-checked-core-operation))
+
+(defn node-facts
+  [checked-core node]
+  (let [node-id (:node-id node)
+        safety (:safety node)
+        runtime-check (:check safety)
+        capability-fact (get (:capability-facts checked-core) node-id)
+        safety-proof (:proof safety)]
+    {:type-fact-id (get-in checked-core [:type-facts node-id :fact-id])
+     :effect-fact-id (get-in checked-core [:effect-facts node-id :fact-id])
+     :capability-fact-id (str node-id ":capability-fact")
+     :capability-proof-ids
+     (vec (get-in capability-fact [:capability-proof :proof-ids] []))
+     :ownership-fact-id
+     (get-in checked-core [:ownership-facts node-id :fact-id])
+     :safety-outcome-id (str node-id ":safety-outcome")
+     :safety-proof-id (or (:proof-id safety-proof) :not-applicable)
+     :profile-target-fact-id (str node-id ":profile-target-fact")
+     :runtime-check-id (if runtime-check
+                         (:check-id runtime-check)
+                         :not-applicable)
+     :proof-certificate-ids
+     (cond-> (vec (get-in capability-fact
+                          [:capability-proof :proof-ids] []))
+       (:proof-id safety-proof) (conj (:proof-id safety-proof)))
+     :failure-behavior (if runtime-check
+                         (:failure runtime-check)
+                         :not-applicable)
+     :source-origin-id (get-in node [:source :origin-id])}))
+
+(defn runtime-check-operation-id
+  [check]
+  (str (:check-id check) ":mir:runtime-check"))
+
+(defn runtime-check-token-id
+  [check]
+  (str (:check-id check) ":mir:token"))
+
+(defn node-operands
+  [token-id node]
+  (if-let [check (get-in node [:safety :check])]
+    (into [(token-id check)]
+          (:operands node))
+    (:operands node)))
+
+(defn runtime-check-source
+  [node]
+  (let [check (get-in node [:safety :check])
+        source (:source node)]
+    {:origin-id (:origin-id source)
+     :span (:span source)
+     :enclosing-syntax-origin-id (:enclosing-syntax-origin-id source)
+     :generated? true
+     :generated-origin
+     [{:role :runtime-check-generated
+       :producer-operation-id (:node-id node)
+       :runtime-check-id (:check-id check)}]}))
+
+(defn runtime-check-fact-id
+  [check fact-kind]
+  (str (:check-id check)
+       (case fact-kind
+         :type ":mir:type-fact"
+         :effect ":mir:effect-fact"
+         :capability ":mir:capability-fact"
+         :ownership ":mir:ownership-fact"
+         :safety ":mir:safety-outcome"
+         :profile-target ":mir:profile-target-fact")))
 
 (def module-keys
   #{:artifact :schema-version :source-core :module-id :profile

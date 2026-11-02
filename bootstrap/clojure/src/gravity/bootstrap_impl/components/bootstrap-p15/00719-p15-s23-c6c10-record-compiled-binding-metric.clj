@@ -19,7 +19,11 @@
 (defn- p15-s23-c6c10-read-pinned-source-snapshot!
   ([request-source] (p15-s23-c6c10-read-pinned-source-snapshot! request-source 1))
   ([request-source version]
-  (let [contract (p15-s23-c6c10-source-program-contract version)
+   (p15-s23-c6c10-read-pinned-source-snapshot! request-source version nil))
+  ([request-source version source-mode]
+  (let [current-source? (= :development-current source-mode)
+        contract (when-not current-source?
+                   (p15-s23-c6c10-source-program-contract version))
         source-path (p15-s23-c6c10-resolve-source-path)
         source-file (java.io.File. source-path)
         path (.toPath source-file)
@@ -37,19 +41,24 @@
              {:builder-source source-path})))]
     (when-not (and (.isRegularFile attributes)
                    (not (.isSymbolicLink attributes))
-                   (= (long (:source-byte-count contract))
-                      (.size attributes)))
+                   (or current-source?
+                       (= (long (:source-byte-count contract))
+                          (.size attributes))))
       (p15-s23-c6c10-host-fail!
        "C6-VERIFY" request-source
-       :pinned-gravity-c6-c10-source-bytes
+       (if current-source?
+         :current-gravity-c6-c10-source-bytes
+         :pinned-gravity-c6-c10-source-bytes)
        {:builder-source source-path
         :regular-file? (.isRegularFile attributes)
         :symbolic-link? (.isSymbolicLink attributes)
-        :expected-byte-count (:source-byte-count contract)
+        :expected-byte-count (when contract (:source-byte-count contract))
         :actual-byte-count (.size attributes)
-        :expected-source-content-hash
-        (:source-content-hash contract)}))
-    (let [maximum-byte-count (inc (:source-byte-count contract))
+        :expected-source-content-hash (when contract (:source-content-hash contract))}))
+    (let [maximum-byte-count
+          (inc (if current-source?
+                 (.size attributes)
+                 (:source-byte-count contract)))
           buffer (byte-array maximum-byte-count)
           observed-byte-count
           (try
@@ -74,9 +83,11 @@
             (catch Exception _
               (p15-s23-c6c10-host-fail!
                "C6-VERIFY" request-source
-               :pinned-gravity-c6-c10-source-bytes
+               (if current-source?
+                 :current-gravity-c6-c10-source-bytes
+                 :pinned-gravity-c6-c10-source-bytes)
                {:builder-source source-path
-                :expected-byte-count (:source-byte-count contract)})))
+                :expected-byte-count (when contract (:source-byte-count contract))})))
           after
           (try
             (java.nio.file.Files/readAttributes
@@ -84,17 +95,20 @@
             (catch Exception _
               (p15-s23-c6c10-host-fail!
                "C6-VERIFY" request-source
-               :pinned-gravity-c6-c10-source-bytes
+               (if current-source?
+                 :current-gravity-c6-c10-source-bytes
+                 :pinned-gravity-c6-c10-source-bytes)
                {:builder-source source-path
-                :expected-byte-count (:source-byte-count contract)})))
+                :expected-byte-count (when contract (:source-byte-count contract))})))
           source-bytes
           (java.util.Arrays/copyOf buffer observed-byte-count)
           source-content-hash
           (str "sha256:" (sha256-bytes-hex source-bytes))]
       (when-not
-       (and (= (:source-byte-count contract) observed-byte-count)
-            (= (:source-content-hash contract)
-               source-content-hash)
+       (and (or current-source?
+                (and (= (:source-byte-count contract) observed-byte-count)
+                     (= (:source-content-hash contract)
+                        source-content-hash)))
             (.isRegularFile after)
             (not (.isSymbolicLink after))
             (= (.fileKey attributes) (.fileKey after))
@@ -104,7 +118,9 @@
                (.lastModifiedTime after)))
         (p15-s23-c6c10-host-fail!
          "C6-VERIFY" request-source
-         :pinned-gravity-c6-c10-source-bytes
+         (if current-source?
+           :stable-current-gravity-c6-c10-source
+           :pinned-gravity-c6-c10-source-bytes)
          {:builder-source source-path
           :regular-file? (.isRegularFile after)
           :symbolic-link? (.isSymbolicLink after)
@@ -113,10 +129,9 @@
           :stable-last-modified-time?
           (= (.lastModifiedTime attributes)
              (.lastModifiedTime after))
-          :expected-byte-count (:source-byte-count contract)
+          :expected-byte-count (when contract (:source-byte-count contract))
           :actual-byte-count observed-byte-count
-          :expected-source-content-hash
-          (:source-content-hash contract)
+          :expected-source-content-hash (when contract (:source-content-hash contract))
           :actual-source-content-hash source-content-hash}))
       (let [source-text
             (try
@@ -133,7 +148,9 @@
               (catch java.nio.charset.CharacterCodingException ex
                 (p15-s23-c6c10-host-fail!
                  "C6-VERIFY" request-source
-                 :strict-utf8-pinned-gravity-c6-c10-source
+                 (if current-source?
+                   :strict-utf8-current-gravity-c6-c10-source
+                   :strict-utf8-pinned-gravity-c6-c10-source)
                  {:builder-source source-path
                   :cause-message (.getMessage ex)})))]
         (p15-s23-c6c10-record-compiled-binding-metric!
@@ -145,11 +162,20 @@
          :source-content-hash source-content-hash
          :source-text source-text})))))
 
+(defn- p15-s23-c6c10-read-current-source-snapshot!
+  [request-source]
+  (p15-s23-c6c10-read-pinned-source-snapshot!
+   request-source 2 :development-current))
+
 (defn- p15-s23-c6c10-authenticated-source-binding-inputs!
   ([request-source] (p15-s23-c6c10-authenticated-source-binding-inputs! request-source 1))
   ([request-source version]
+   (p15-s23-c6c10-authenticated-source-binding-inputs! request-source version nil))
+  ([request-source version source-mode]
   (let [source-snapshot
-        (p15-s23-c6c10-read-pinned-source-snapshot! request-source version)
+        (if (= :development-current source-mode)
+          (p15-s23-c6c10-read-current-source-snapshot! request-source)
+          (p15-s23-c6c10-read-pinned-source-snapshot! request-source version))
         emitter-source-path
         (c-backend-resolve-p15-s23-compiler-source-path)
         emitter-path (.toPath (java.io.File. emitter-source-path))
@@ -229,4 +255,6 @@
      :emitter-authenticated)
     (cond-> {:source-snapshot source-snapshot
              :emitter-rule emitter-rule}
+      (= :development-current source-mode)
+      (assoc :source-mode :development-current)
       (not= 1 version) (assoc :source-contract-version version)))))

@@ -40,6 +40,8 @@
                    (contains? '#{p15-s23-c11-mir-contract
                                  p15-s23-c11-mir-selected-builder-function
                                  p15-s23-c11-mir-selected-verifier-function
+                                 p15-s23-c11-mir-current-source-input?
+                                 p15-s23-c11-mir-source-contract-for
                                  p15-s23-c11-mir-source-binding!*
                                  p15-s23-c11-mir-source-binding!} (second form)))]
   (binding [*ns* owner] (eval form)))
