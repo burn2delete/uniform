@@ -176,6 +176,8 @@
 
 (def selected-parent-consumers
   #{"domain-ir-boundaries" "math"
+    "evolution/security-review"
+    "legality/remaining-tasks-and-evidence/complete-profile-restrictions-and-generated-form-checks"
     "legality/remaining-tasks-and-evidence/complete-ownership-borrow-initialization-and-lifetime-analysis"
     "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
     "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"

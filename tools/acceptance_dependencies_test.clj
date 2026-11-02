@@ -358,7 +358,7 @@
     (is (= 149 (count current)))
     (is (= 40 (:task-count review)))
     (is (= 40 (count (:declared-consumers review))))
-    (is (= 11 (count (:declared-parent-consumers review))))
+    (is (= 13 (count (:declared-parent-consumers review))))
     (is (= dependencies/selected-parent-consumers (set (:required-parent-consumers review))))
     (let [text (slurp dependencies/future-dependency-path)
           removed (clojure.string/replace text #"(?m)^\| `domain-ir-boundaries` \|.*\n" "")
@@ -381,9 +381,9 @@
           altered (dependencies/future-task-view future current snapshots
                     #(if (= dependencies/future-dependency-path %) removed (slurp %)))
           routes (filter #(c9 (:consumer %)) (:routes review))]
-      (is (= 4 (count c9) (count routes)))
+      (is (= 5 (count c9) (count routes)))
       (is (= c9 (set (get-in altered [:dependency-review :unresolved-consumers]))))
-      (is (= [4 5 17 21] (sort (map (comp count :composition-results) routes))))
+      (is (= [4 5 8 18 25] (sort (map (comp count :composition-results) routes))))
       (doseq [{:keys [consumer start-results composition-results]} routes]
         (is (empty? start-results))
         (doseq [producer composition-results]
@@ -393,12 +393,28 @@
                         [(:from %) (:to %) (:kind %)]) edges)))
         (is (not-any? #(and (= (str "task:" consumer "/implementation") (:from %))
                            (clojure.string/starts-with? (:to %) "result:")) edges))))
+    (let [id "evolution/security-review"
+          text (slurp dependencies/future-dependency-path)
+          removed (clojure.string/replace text #"(?m)^\| `evolution/security-review` \|.*\n" "")
+          altered (dependencies/future-task-view future current snapshots
+                    #(if (= dependencies/future-dependency-path %) removed (slurp %)))
+          route (first (filter #(= id (:consumer %)) (:routes review)))]
+      (is (= [id] (get-in altered [:dependency-review :unresolved-consumers])))
+      (is (empty? (:start-results route)))
+      (is (= 7 (count (:composition-results route))))
+      (doseq [producer (:composition-results route)]
+        (is (some #(= [(str "task:" id "/implementation") (str "task:" producer "/interface") :declared-producer-interface]
+                      [(:from %) (:to %) (:kind %)]) edges))
+        (is (some #(= [(str "task:" id "/composition") (str "result:" id ":" producer) :actual-selected-producer-result]
+                      [(:from %) (:to %) (:kind %)]) edges)))
+      (is (not-any? #(and (= (str "task:" id "/implementation") (:from %))
+                         (str/starts-with? (:to %) "result:")) edges)))
     (is (empty? (:unresolved-consumers review)))
     (is (= :pending (:future-sh-and-full-language-joins review)))
     (is (= :unassessed (:implementation-acceptance review)))
-    (is (= [9 8] (mapv count (:declared-output-cycles review))))
+    (is (= [10 8] (mapv count (:declared-output-cycles review))))
     (is (every? (set (first (:declared-output-cycles review)))
-                ["formal" "math/independent-proof-and-certificate-checking"
+                ["evolution/security-review" "formal" "math/independent-proof-and-certificate-checking"
                  "legality/remaining-tasks-and-evidence/complete-safe-code-classification-and-taintunsafe-boundaries"
                  "legality/remaining-tasks-and-evidence/preserve-obligations-into-mir-and-runtime-execution"]))
     (is (every? (set (second (:declared-output-cycles review)))

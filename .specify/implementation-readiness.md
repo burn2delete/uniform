@@ -2578,3 +2578,87 @@ identity does not create an approval gate in audit-only mode. No failed or
 intermediate preparation receives passing credit. Full compiler/semantic,
 provider/runtime/target suites and held operations did not run; no current
 independent acceptance is claimed.
+
+## Root safety dependency and consumer refinement
+
+Source-only commit `a83fbe75396e7f6b186f14f7241c3d33476b9659` extends the
+[existing selected-result table](../docs/acceptance-dependencies.md#future-task-construction-and-composition)
+and [root safety order](../specs/legality-workflow/plan.md#root-safety-producer-and-consumer-order).
+Two existing consumers gain explicit routes: the Legality profile task and
+Evolution's [security-review task](../specs/evolution-workflow/tasks.md#implementation-tasks)
+and its distinct `governance/unsafe-audit-decision` output.
+Three existing classification/handoff/conformance routes are extended. No task
+body, status, identity, frozen source criterion, original receipt or independent
+review disposition changes. Forty future consumers and thirteen current parents
+now have declarations; no missing declaration is hidden by this count.
+
+Twenty new actual-result joins comprise eight early profile inputs, seven
+specialist-review inputs, one required-review input to classification and four
+package/tooling/revalidation inputs to handoff. The selected five routes have
+8/7/18/25/4 inputs respectively, totaling 62 including all 42 previous selected
+C9/C10 inputs. All 48 unaffected prior route meanings remain exact. The complete
+current view has 340 joins. Construction starts against declared interfaces;
+these rows have no adopted-result construction prerequisites and establish no
+execution or whole-component acceptance.
+
+Profile legality consumes actual typed/effected/generated facts and normalized
+configuration with early provider/runtime/backend descriptors. It does not wait
+for program-specific chosen providers, grants, service linkage or target bytes
+that depend on its result. Auth operation grants, ownership/safety and accepted
+MIR follow the actual profile decision. A descriptor cannot itself establish
+implementation support; unavailable machinery refuses and later actual service
+and target evidence stays with its owners.
+
+Imported trust, certificates and unsafe summaries belong to already-built
+dependency packages Q. Current package P first derives its local candidate
+island/audit/wrapper/ownership/check/proof products. The existing Evolution
+owner consumes those actual selected artifacts and applicable target/grant/
+dependency/library evidence for its distinct GOV9 specialist decision. A generic
+GOV4 security PASS is insufficient; GOV3/STD20 and GOV4 inputs remain conditional
+and separate. Candidate records are not a fifth safety outcome or admitted Core
+or MIR. Final reviewed-unsafe eligibility consumes the actual required decision;
+missing review can reject, and audit-only records without an approval gate.
+Candidate execution still needs its existing policy/mode/profile/authority;
+unavailable or restricted execution remains unassessed.
+
+P's actual compiler records then feed its Build package safety/unsafe summaries,
+provenance verification, language-server safety views and generated API/audit
+documentation. Final handoff consumes those actual consumer and specialist
+revalidation/refusal records. P's own published certificate is never its
+classification input; real signing/publication are not local fixture gates.
+Conformance feeds the existing Release execution and independent admission,
+without a reverse final-release prerequisite or second harness.
+
+The coarse math/formal/safety SCC expands from nine to ten records by exposing
+the actual specialist-review/classification loop. The Release/Schema SCC stays
+at eight. Candidate versus final outcomes and imported-Q versus current-P
+artifacts explain concrete staging; the staged projection's acyclicity alone
+does not establish semantic executability. Other profile, specialized safety,
+security-review and consumer predicates remain outside this selected scope.
+
+Metadata `:root-safety-dependency-refinement` preserves predecessor `90fe0516`,
+its complete projection/fingerprint and root source refinement, including all
+six finite review qualifications. Dependency and plan inspection pins advance;
+task pins and source-input commit `790836d4` remain. The original-body comparison
+stays 84 identical / 55 amended with 31 file records, 149 current keys, 25
+authorities, original SH/SH07 routing and three Reader receipts. Fingerprint:
+`7ad6d445bf1a762647aef63d68ff80d700d6a6ca653be0d3d5a39458ea81aef1`.
+Current whole-source/dependency entailment, implementation and independent review
+remain unassessed/pending. All actual execution/review/publication holds remain;
+no other chat is messaged. Reader contract coverage is still the first
+implementation preparation increment, and the project-wide goal is unfinished.
+
+Root dependency validation passes: 49 crosswalk tests / 7,883 assertions and 23
+dependency tests / 2,117 assertions, deterministic generation/check, read-only
+dependency audit, both document validators and the language boundary (six tests /
+eleven assertions). Controls preserve all task bodies, source/refusal/review
+scopes, 42 prior selected inputs and 48 unaffected route meanings; verify the
+twenty added joins and two new consumer declarations, interface-only
+construction and actual-result composition; and report removed profile or
+specialist rows as unresolved. The ten-record and eight-record coarse cycles
+remain exposed and the staged graph is acyclic. Conservation passes for 83
+changed files, 77 Markdown files, 3,103 local references, 139 original routes,
+48 historical spec/plan suffixes and all 48 original task/evidence contents.
+ASCII and whitespace checks pass. No compiler, specialist review, proof checker,
+provider/runtime/target, signing/publication or held action ran; no current
+independent acceptance is claimed.
