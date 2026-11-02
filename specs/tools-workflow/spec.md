@@ -42,6 +42,14 @@ service criteria, specialist roles, finer source joins and status stay there.
 | `safety-explorer-safety-tool-maintainer` | T12 actual unsafe/wrapper/ownership/region/FFI/taint/AI/supply-chain/proof/check graphs and source navigation, with requested/granted/denied/used authority distinguished. Reject omitted unsafe/sinks, missing wrapper/checker evidence, false audit passes and redaction leaks; required missing evidence remains visibly missing. |
 | `ai-development-ai-tool-maintainer` | T13 actual declared AI modes emit schema-valid plans/patches/generated-test provenance, limited tool traces and checked source. Apply the product's A10 payload/role/expiry/revocation/replay policy before writes; reject injection, hidden tools, changed/unreviewed payloads, unchecked source and missing package-safety diffs. Retain exact model/prompt/tool/reviewer and live-only/replay status. |
 
+The [foundation criteria](plan.md#foundation-criteria-and-source-context) make
+D3 vocabulary, ambiguity, compatibility and domain mapping explicit within the
+existing Lint record. IR Explorer also compares actual tool and compiler
+behavior using the existing `gravity/tooling-semantic-consistency` criterion.
+These requirements remain in the sole task ledger. They neither make Lint an
+authority to change D3 nor transfer Formatter, Language Server or REPL behavior
+to the inspector.
+
 ## Starting work and completion
 
 Declared compiler/runtime/package interfaces and fixture protocols allow each
