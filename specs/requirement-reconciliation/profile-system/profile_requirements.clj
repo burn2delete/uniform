@@ -2,14 +2,22 @@
   "Current-source qualification for the original profile proposals. No compiler launch or canonical write."
   (:require [clojure.edn :as edn]
             [clojure.java.shell :as shell]
+            [clojure.set :as set]
             [clojure.string :as str]
             [requirement-sources :as requirement-sources]
+            [requirement-evidence :as requirement-evidence]
             [tooling-requirements :as tooling-requirements]))
 
 (def source-view-path "specs/requirement-reconciliation/profile-system/current-source-view.edn")
 (def proposal-path "specs/requirement-reconciliation/profile-system/proposal.edn")
 (def gap-path "specs/requirement-reconciliation/profile-system/gap-completion.edn")
 (def decision-path "specs/requirement-reconciliation/profile-system/decision-allocation.edn")
+
+(def required-profile-nonclaims
+  #{:canonical-adoption :implementation-acceptance :global-nonoverlap
+    :aggregate-adoption :denominator :release :seed-retirement
+    :current-task-criteria :independent-review :integration
+    :compiler-accounting-authority :provider-billing-authority})
 
 (defn sha256 [s]
   (format "%064x"
@@ -108,6 +116,127 @@
         body (subs text (+ (.indexOf text start) (count start)) (.indexOf text end))]
     (mapv #(vec (rest %))
           (re-seq #"(?m)^- \[([ x])\] `([^`]+)` " body))))
+
+(defn task-statuses [text marker]
+  (mapv (fn [[checked id]]
+          (let [record (task-record text marker id)
+                status (second (re-find #"(?m)^(?:Status|Current evidence/status): ([^\n]+)$"
+                                        record))]
+            (require! status (str "Current task has no status: " marker "/" id))
+            {:id id :checked? (= "x" checked) :status status}))
+        (task-ids text marker)))
+
+(defn task-source-bridge-map [manifest]
+  (into {} (map (juxt :path identity) (:task-source-version-bridges manifest))))
+
+(defn task-record-digest [record]
+  (sha256 (pr-str (select-keys record [:id :checked? :status :acceptance]))))
+
+(defn validate-task-bridge-records! [bridge]
+  (let [path (:path bridge)
+        historical-ref (:historical-ref bridge)
+        current-ref (:current-ref bridge)
+        historical (git-text historical-ref path)
+        current (git-text current-ref path)]
+    (verify-commit! {:commit historical-ref})
+    (verify-commit-tree! {:commit current-ref :tree (:current-tree bridge)})
+    (require! (= (:historical-sha256 bridge) (sha256 historical))
+              (str "Historical task source bridge hash drift: " path))
+    (require! (= (:current-sha256 bridge) (sha256 current))
+              (str "Current task source bridge hash drift: " path))
+    (require! (not= historical current)
+              (str "Task source bridge does not identify a change: " path))
+    (doseq [{record-id :id :keys [historical-record-sha256 current-record-sha256]}
+            (:changed-records bridge)]
+      (let [old-record (requirement-evidence/task-record historical (:marker bridge) record-id)
+            current-record (requirement-evidence/task-record current (:marker bridge) record-id)]
+        (require! (= historical-record-sha256 (task-record-digest old-record))
+                  (str "Historical task record digest drift: " path "#" record-id))
+        (require! (= current-record-sha256 (task-record-digest current-record))
+                  (str "Current task record digest drift: " path "#" record-id))
+        (task-open! current (:marker bridge) record-id)))
+    (doseq [{record-id :id current-record-sha256 :current-record-sha256}
+            (:current-only-records bridge)]
+      (let [current-record (requirement-evidence/task-record current (:marker bridge) record-id)]
+        (require! (= current-record-sha256 (task-record-digest current-record))
+                  (str "Current-only task record digest drift: " path "#" record-id))
+        (task-open! current (:marker bridge) record-id)))
+    {:path path
+     :historical-ref historical-ref
+     :current-ref current-ref
+     :current-tree (:current-tree bridge)
+     :historical-sha256 (:historical-sha256 bridge)
+     :current-sha256 (:current-sha256 bridge)
+     :marker (:marker bridge)
+     :changed-records (count (:changed-records bridge))
+     :current-only-records (count (:current-only-records bridge))}))
+
+(defn validate-current-task-source-transition!
+  "Bind the frozen profile source view to authenticated current task rows.
+
+  The profile view's current hashes describe its own frozen base and must not
+  be rewritten when a later manifest transition changes task criteria. The
+  manifest bridge supplies the authenticated current bytes; both row sets are
+  compared for identity/status, while bridge record digests remain an exact
+  historical/current audit of the bridge's source pair."
+  [v manifest-current]
+  (let [profile-sources (get-in v [:current-source :task-sources])
+        bridges (task-source-bridge-map manifest-current)
+        platform-transition requirement-sources/platform-task-source-transition
+        base-commit (get-in v [:base :commit])
+        rows
+        (mapv
+         (fn [{:keys [path marker] :as source}]
+           (let [old-text (git-text base-commit path)
+                 _ (require! (= (:sha256 source) (sha256 old-text))
+                             (str "Frozen profile task source drift: " path))
+                 bridge (get bridges path)
+                 current-ref (if bridge
+                               (:current-ref bridge)
+                               (:applying-ref platform-transition))
+                 current-tree (if bridge
+                                (:current-tree bridge)
+                                (:applying-tree platform-transition))
+                 current-sha (if bridge
+                               (:current-sha256 bridge)
+                               (:live-sha256 platform-transition))
+                 current-text (git-text current-ref path)
+                 working-text (slurp path)
+                 old-rows (task-statuses old-text marker)
+                 current-rows (task-statuses current-text marker)]
+             (require! (or bridge (= path (:path platform-transition)))
+                       (str "Current task source has no authenticated bridge: " path))
+             (require! (= marker (or (:marker bridge) "platform-implementation-tasks"))
+                       (str "Current task source marker drift: " path))
+             (verify-commit-tree! {:commit current-ref :tree current-tree})
+             (require! (= current-sha (sha256 current-text))
+                       (str "Current task source bridge hash drift: " path))
+             (require! (= current-text working-text)
+                       (str "Working task source differs from authenticated current source: " path))
+             (require! (= old-rows current-rows)
+                       (str "Current task source row identity/status drift: " path))
+             (doseq [{:keys [id]} current-rows]
+               (task-open! current-text marker id))
+             (when bridge
+               (validate-task-bridge-records! bridge))
+             {:path path
+              :marker marker
+              :historical-base {:commit base-commit :sha256 (:sha256 source)
+                                :task-rows (count old-rows)}
+              :current {:commit current-ref :tree current-tree :sha256 current-sha
+                        :task-rows (count current-rows)}
+              :bridge-records (if bridge
+                                {:changed (count (:changed-records bridge))
+                                 :current-only (count (:current-only-records bridge))}
+                                {:platform-task-ids (:task-ids platform-transition)})}))
+         profile-sources)]
+    {:source-count (count rows)
+     :source-paths (mapv :path rows)
+     :rows rows
+     :nonclaims [:historical-profile-source-view-preserved
+                 :current-task-bridge-only
+                 :implementation-acceptance-unassessed
+                 :canonical-adoption-pending]}))
 
 (defn validate-platform-task-transition!
   ([v]
@@ -510,6 +639,11 @@
   (require! (= :proposal-only (:authority v)) "Profile source-view is not proposal-only")
   (require! (= "requirement-reconciliation/phase-03-profile-system" (:scope-key v))
             "Wrong profile source-view scope")
+  (let [nonclaims (set (:nonclaims v))]
+    (require! (set/subset? required-profile-nonclaims nonclaims)
+              "Profile current source view lost a required nonclaim")
+    (require! (not (contains? nonclaims :canonical-adoption-accepted))
+              "Profile current source view asserts canonical adoption"))
   (verify-commit-tree! (:base v))
   (verify-commit-tree! (get-in v [:historical-source :candidate]))
   (verify-commit-tree! (get-in v [:historical-source :source-baseline]))
@@ -555,15 +689,9 @@
     (require! (= (:aliases historical) (:aliases current))
               "Current profile alias context changed")
     (doseq [{:keys [path marker] :as source-doc} (get-in v [:current-source :task-sources])]
-      (let [text (slurp path)
-            digest (sha256 text)]
-        (if (= path (:path platform-task-transition))
-          (require! (and (= (:sha256 source-doc)
-                            (get-in platform-task-transition [:baseline :sha256]))
-                         (= digest (get-in platform-task-transition [:applying :sha256])))
-                    (str "Current Platform task transition drift: " path))
-          (require! (= (:sha256 source-doc) digest)
-                    (str "Current task source drift: " path))))
+      (let [frozen-text (git-text (get-in v [:base :commit]) path)]
+        (require! (= (:sha256 source-doc) (sha256 frozen-text))
+                  (str "Frozen profile task source drift: " path)))
       (require! (= 1 (count (re-seq (re-pattern (str "<!-- " marker ":start -->"))
                                     (slurp path))))
                 (str "Current task marker drift: " path)))
@@ -595,6 +723,7 @@
      :current-task-sources (count (get-in v [:current-source :task-sources]))
      :manifest-transition manifest-transition
      :platform-task-transition platform-task-transition
+     :task-source-transition (validate-current-task-source-transition! v manifest-current)
      :unique-task-references (count (set (map :id refs)))}))
 
 (defn reject! [label thunk]
@@ -634,6 +763,18 @@
         _ (accounting-safe! proposal)
         validate-source (fn [mutated]
                           (validate-current-view! mutated proposal manifest-old manifest-current))
+        task-bridges (:task-source-version-bridges manifest-current)
+        bridge-index (fn [predicate]
+                       (first (keep-indexed (fn [index bridge]
+                                              (when (predicate bridge) index))
+                                            task-bridges)))
+        auth-bridge-index (bridge-index #(= "specs/auth-workflow/tasks.md" (:path %)))
+        digest-bridge-index (bridge-index #(seq (:changed-records %)))
+        profile-task-index (fn [path]
+                             (first (keep-indexed (fn [index source]
+                                                    (when (= path (:path source)) index))
+                                                  (get-in v [:current-source :task-sources]))))
+        auth-profile-task-index (profile-task-index "specs/auth-workflow/tasks.md")
         current-reference (first (mapcat #(concat (:task-references %)
                                                   (:dependencies %)) (:units proposal)))
         negatives [(reject! :current-manifest-drift
@@ -646,6 +787,28 @@
                               v
                               (assoc-in requirement-sources/platform-task-source-transition
                                         [:applying :live-sha256] "wrong")))
+                   (reject! :current-task-source-bridge
+                            #(validate-current-task-source-transition!
+                              v
+                              (assoc-in manifest-current
+                                        [:task-source-version-bridges auth-bridge-index :current-sha256]
+                                        "wrong")))
+                   (reject! :current-task-source-record-digest
+                            #(validate-current-task-source-transition!
+                              v
+                              (assoc-in manifest-current
+                                        [:task-source-version-bridges digest-bridge-index
+                                         :changed-records 0 :current-record-sha256]
+                                        (apply str (repeat 64 "0")))))
+                   (reject! :frozen-profile-task-source-pair
+                            #(validate-current-task-source-transition!
+                              (assoc-in v [:current-source :task-sources auth-profile-task-index :sha256]
+                                        "wrong")
+                              manifest-current))
+                   (reject! :profile-nonclaim
+                            #(validate-source
+                              (update v :nonclaims
+                                      (fn [claims] (vec (remove #{:integration} claims))))))
                    (reject! :reordered-current-docs
                             #(validate-source (update-in v [:current-source :documents] reverse)))
                    (reject! :current-task-status
