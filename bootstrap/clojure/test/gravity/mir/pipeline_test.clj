@@ -46,7 +46,8 @@
            'runtime-check-operation-id 'runtime-check-token-id 'runtime-check-source 'runtime-check-fact-id
            'validate-carrier! 'metadata-free? 'require-strict-structure! 'require!
            'pass-contract-record 'canonical-block-order 'operation-sequence 'path-prefix?
-           'block-keys 'operation-keys 'terminator-keys 'allowed-opcodes 'allowed-source-operations}
+           'block-keys 'operation-keys 'terminator-keys 'allowed-opcodes 'allowed-source-operations
+           'diagnostic-rule-contract 'diagnostic-message 'throw-record!}
          (set (keys (ns-publics 'gravity.mir)))))
   (let [contract (:gravity/namespace-contract (meta #'mir/validate-cfg!))]
     (is (= (set (keys (:public-api contract)))
@@ -65,6 +66,69 @@
       (is (false? (:authenticates-inputs? contract)))
       (is (false? (:issues-verifier-certificates? contract)))
       (is (some #{:general-cfgs} (:unsupported contract))))))
+
+(deftest native-diagnostic-policy-preserves-real-refusals-and-wording-independent-ids
+  (doseq [{:keys [source checked] emitted :mir} @products]
+    (let [block-id (first (for [[id block] (get-in emitted [:functions (:entrypoint checked) :blocks])
+                               :when (seq (:instructions block))] id))
+          changed (assoc-in emitted [:functions (:entrypoint checked) :blocks block-id :instructions 0 :opcode]
+                            :llvm/add)
+          record (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed))
+          rule (:rule record)
+          contract (b/p15-s23-c11-mir-diagnostic-rule-contract rule)
+          display-change (with-redefs [b/c11-mir-message (fn [_] "native display changed")]
+                           (failure #(b/p15-s23-c11-mir-validate-operations! source checked changed)))]
+      (is (= "C11-TARGET-LEAK" (:id record)))
+      (is (identical? contract
+                      (mir/diagnostic-rule-contract b/p15-s23-c11-mir-diagnostic-rule-contracts rule)))
+      (is (= (:message record) (mir/diagnostic-message b/c11-mir-diagnostic-ids #'b/c11-mir-message rule)))
+      (is (= record (failure #(mir/throw-record! #'b/p15-s23-c11-mir-diagnostic-message record))))
+      (is (= (:diagnostic-id record) (:diagnostic-id display-change)))
+      (is (= "native display changed" (:message display-change)))
+      (is (= (dissoc record :message) (dissoc display-change :message))))))
+
+(deftest native-diagnostic-rule-lookup-preserves-first-match-and-borrowed-records
+  (let [first-row {:rules #{"native-rule"} :marker :first}
+        second-row {:rules #{"native-rule" "other-rule"} :marker :second}
+        contracts [first-row second-row]]
+    (is (identical? first-row (mir/diagnostic-rule-contract contracts "native-rule")))
+    (is (identical? second-row (mir/diagnostic-rule-contract contracts "other-rule")))
+    (is (nil? (mir/diagnostic-rule-contract contracts "missing")))
+    (with-redefs [b/p15-s23-c11-mir-diagnostic-rule-contracts contracts]
+      (is (identical? first-row (b/p15-s23-c11-mir-diagnostic-rule-contract "native-rule"))))))
+
+(deftest native-diagnostic-message-selection-preserves-owner-calls-and-fallback
+  (let [calls (atom []) error (ex-info "native message failure" {})
+        message (fn [rule] (swap! calls conj rule) "selected native message")]
+    (is (= "selected native message" (mir/diagnostic-message ["native-rule"] message "native-rule")))
+    (is (= ["native-rule"] @calls))
+    (is (= "authenticated checked-core validation failed"
+           (mir/diagnostic-message ["native-rule"] message "foreign-rule")))
+    (is (= ["native-rule"] @calls))
+    (is (identical? error
+                    (try (mir/diagnostic-message ["native-rule"] (fn [_] (throw error)) "native-rule")
+                         nil (catch clojure.lang.ExceptionInfo e e))))
+    (with-redefs [b/c11-mir-diagnostic-ids ["native-rule"]
+                  b/c11-mir-message message]
+      (is (= "selected native message" (b/p15-s23-c11-mir-diagnostic-message "native-rule"))))))
+
+(deftest native-diagnostic-wrappers-retain-data-and-live-message-vars
+  (doseq [[stage wrapper args ports]
+          [[#'mir/diagnostic-rule-contract #'b/p15-s23-c11-mir-diagnostic-rule-contract [:rule]
+            [b/p15-s23-c11-mir-diagnostic-rule-contracts]]
+           [#'mir/diagnostic-message #'b/p15-s23-c11-mir-diagnostic-message [:rule]
+            [b/c11-mir-diagnostic-ids #'b/c11-mir-message]]
+           [#'mir/throw-record! #'b/p15-s23-c11-mir-throw-record! [:record]
+            [#'b/p15-s23-c11-mir-diagnostic-message]]]]
+    (let [observed (atom nil) marker (Object.)]
+      (with-redefs-fn {stage (fn [& supplied] (reset! observed supplied) marker)}
+        #(is (identical? marker (apply wrapper args))))
+      (is (= (concat ports args) @observed))
+      (is (every? true? (map identical? ports (take (count ports) @observed))))))
+  (let [error (ex-info "late native display" {})]
+    (with-redefs [b/p15-s23-c11-mir-diagnostic-message (fn [_] (throw error))]
+      (is (identical? error (try (mir/throw-record! #'b/p15-s23-c11-mir-diagnostic-message {:rule "native-rule"})
+                                nil (catch clojure.lang.ExceptionInfo e e)))))))
 
 (deftest native-operation-vocabularies-match-real-emission-and-reject-corrupted-operations
   (doseq [{:keys [source checked operations] emitted :mir} @products]

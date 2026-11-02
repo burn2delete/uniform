@@ -90,8 +90,7 @@
 
 (defn p15-s23-c11-mir-diagnostic-rule-contract
   [rule]
-  (first (filter #(contains? (:rules %) rule)
-                 p15-s23-c11-mir-diagnostic-rule-contracts)))
+  (gravity.mir/diagnostic-rule-contract p15-s23-c11-mir-diagnostic-rule-contracts rule))
 
 (defn p15-s23-c11-mir-safe-diagnostic-scalar
   [value]
