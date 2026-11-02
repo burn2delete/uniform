@@ -239,7 +239,7 @@
     (require! (every? #(and (integer? %) (<= 0 %)) [test pass fail error])
               :runner-counts)
     (require! (and (= test (count (:selectors plan)))
-                   (pos? (+ pass fail error)))
+                   (= test (+ pass fail error)))
               :incomplete-execution)
     (let [passed? (zero? (+ fail error))]
       (require! (= [(if passed? :passed :failed) (if passed? 0 1)]

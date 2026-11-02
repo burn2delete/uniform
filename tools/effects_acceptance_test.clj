@@ -104,7 +104,11 @@
   (is (= :incomplete-execution
          (reason #(acceptance/bind-result
                    (plan) identity identity
-                   (assoc passed :summary {:test 0 :pass 0 :fail 0 :error 0}))))))
+                   (assoc passed :summary {:test 0 :pass 0 :fail 0 :error 0})))))
+  (is (= :incomplete-execution
+         (reason #(acceptance/bind-result
+                   (plan) identity identity
+                   (assoc passed :summary {:test 3 :pass 2 :fail 0 :error 0}))))))
 
 (let [result (run-tests 'effects-acceptance-test)]
   (System/exit (if (zero? (+ (:fail result) (:error result))) 0 1)))

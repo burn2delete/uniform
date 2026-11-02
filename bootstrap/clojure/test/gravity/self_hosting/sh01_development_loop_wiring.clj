@@ -102,6 +102,75 @@
            {:stage stage
             :deadline-ns (:deadline-ns *operation-deadline*)})))
 
+(defn- start-input-writer!
+  "Write selected process stdin concurrently with runner capture.
+
+  The runner owns stdout/stderr capture and process cleanup. This helper only
+  owns the caller-supplied input stream until it closes; it never launches or
+  discovers another process."
+  [^Process process input-bytes]
+  (let [writer-error (atom nil)
+        output-stream (atom nil)
+        writer
+        (doto
+         (Thread.
+          ^Runnable
+          (fn []
+            (try
+              (let [output (.getOutputStream process)]
+                (reset! output-stream output)
+                (with-open [output output]
+                  (when input-bytes
+                    (.write output ^bytes input-bytes))))
+              (catch Throwable error
+                (reset! writer-error error)))))
+         (.setDaemon true)
+         (.setName "sh01-git-input-writer")
+         (.start))]
+    {:thread writer
+     :output-stream output-stream
+     :error writer-error}))
+
+(defn- join-input-writer!
+  [{:keys [^Thread thread]}]
+  (if *operation-deadline*
+    (.join thread (long (operation-remaining-ms)))
+    (.join thread))
+  (not (.isAlive thread)))
+
+(defn- close-input-writer!
+  [{:keys [output-stream]}]
+  (when-let [output @output-stream]
+    (try
+      (.close ^java.io.Closeable output)
+      nil
+      (catch Throwable error
+        error))))
+
+(defn- stop-input-writer!
+  "Close/abort a writer that outlived the shared operation deadline.
+
+  The abort goes through the injected SH-01 controller. A second join uses
+  the same monotonic deadline; any remaining writer is reported as incomplete
+  custody rather than turned into a successful receipt."
+  [writer process controller]
+  (let [errors (atom [])]
+    (when-let [error (close-input-writer! writer)]
+      (swap! errors conj error))
+    (try
+      ((:abort controller) process)
+      (catch Throwable error
+        (swap! errors conj error)))
+    (try
+      (.interrupt ^Thread (:thread writer))
+      (catch Throwable error
+        (swap! errors conj error)))
+    (try
+      (join-input-writer! writer)
+      (catch Throwable error
+        (swap! errors conj error)))
+    @errors))
+
 (declare strict-utf8)
 
 (defn- process-result-clean?
@@ -146,19 +215,54 @@
                  "Selected Git process was not retained by the owner"
                  {:command command}))
         (reset! owned record)
-        ;; Git's identity commands use a closed stdin.  The controller still
-        ;; owns launch, wait, capture, and cleanup; this write is only the
-        ;; caller-supplied input handoff.
-        (with-open [input (.getOutputStream ^Process @raw)]
-          (when input-bytes
-            (.write input ^bytes input-bytes)))
-        (require-operation-time! :git-result)
         (let [options (cond-> (or (:process-options lifecycle) {})
                         *operation-deadline*
                         (assoc :deadline-ns (:deadline-ns *operation-deadline*)
                                :timeout-ms (operation-remaining-ms)))
-              observed ((:result controller) @raw options token)]
+              writer (start-input-writer! @raw input-bytes)
+              observed
+              (try
+                ;; Start the existing runner before waiting for the input
+                ;; writer. It drains stdout/stderr while a large Git --stdin
+                ;; request is still being written, avoiding pipe backpressure
+                ;; deadlock.
+                ((:result controller) @raw options token)
+                (catch Throwable error
+                  (let [cleanup-errors (stop-input-writer! writer @raw controller)]
+                    (doseq [cleanup-error cleanup-errors]
+                      (when-not (identical? cleanup-error error)
+                        (.addSuppressed ^Throwable error cleanup-error))))
+                  (throw error)))]
           (reset! result observed)
+          (let [writer-finished? (try
+                                   (join-input-writer! writer)
+                                   (catch Throwable error
+                                     (reset! primary error)
+                                     (throw error)))
+                writer-error-before-abort @(:error writer)
+                timeout-result? (or (= :timeout (:status observed))
+                                    (:deadline-expired? observed)
+                                    (:timeout-containment-unproven? observed)
+                                    (and *operation-deadline*
+                                         (zero? (operation-remaining-ms))))]
+            (when (or timeout-result? (not writer-finished?))
+              (let [cleanup-errors (stop-input-writer! writer @raw controller)]
+                (when (and (not timeout-result?)
+                           (not writer-finished?))
+                  (fail! "SH01-DEVELOPMENT-LOOP-GIT-DEADLINE"
+                         "Selected Git input writer exceeded the shared operation deadline"
+                         {:command command
+                          :writer-alive? (.isAlive ^Thread (:thread writer))
+                          :writer-error (some-> writer-error-before-abort str)
+                          :cleanup-errors (mapv str cleanup-errors)}))))
+            (let [writer-error (when-not timeout-result?
+                                 (or writer-error-before-abort @(:error writer)))]
+              ((:waited! lifecycle) @owned (:exit-code observed) writer-error)
+              (when writer-error
+                (fail! "SH01-DEVELOPMENT-LOOP-GIT"
+                       "Development-loop repository identity input failed"
+                       {:command command
+                        :writer-error (str writer-error)}))))
           (swap! @owned assoc
                  :capture-receipt
                  (select-keys observed
@@ -170,7 +274,6 @@
                                :stdout-observed-bytes :stderr-observed-bytes
                                :stdout-limit-bytes :stderr-limit-bytes
                                :stdout-captured-bytes :stderr-captured-bytes]))
-          ((:waited! lifecycle) @owned (:exit-code observed) nil)
           (when-not (process-result-clean? observed)
             (fail! "SH01-DEVELOPMENT-LOOP-GIT-CUSTODY"
                    "Selected Git process did not return a complete owned receipt"
@@ -183,7 +286,7 @@
                                           :cleanup :cleanup-failed?
                                           :timeout-containment-unproven?])}))
           (require-operation-time! :git-publication)
-          ;; The normal controller decoder is strict.  Recheck the returned
+          ;; The normal controller decoder is strict. Recheck the returned
           ;; text before handing bytes to the existing Git identity callers so
           ;; a replacement-decoded receipt cannot enter source identity.
           (let [bytes (.getBytes ^String (:stdout observed) StandardCharsets/UTF_8)]
