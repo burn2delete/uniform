@@ -72,3 +72,59 @@ positive scope is therefore narrowed to existing native-fixture emission and
 internal process/output behavior. No target/header projection, alternative
 admission route or manufactured proof is used to force source acceptance.
 Native fixture identities are data digests, not compiler plan IDs.
+
+## Implementation and source conservation
+
+The four original bodies now live in gravity.backend.js with seven late
+function/data Var arguments. Compatibility names and arglists remain exact.
+The extractor preserves original body text, including the ProcessBuilder List
+type hint, and reconstructs all three complete production files from immutable
+base 2c8d01e9ef3ebb27497f50708fee44ab0f8a23fe. All other Bootstrap and
+Gravity source remains unchanged by this slice. No supplied operation confers
+input, output-root, provider or backend admission authority.
+
+The native baseline snapshot is 0774ed0ae9f9ae810d3f9cbaf39d026efdb16ad6,
+tree 285dbfe771d9bda7d9a680831554e346e0be2bcc. It records the source
+fixtures and capture harness after the before process completed, while all
+production code still matches the base. No clean execution at a later commit
+is inferred. The before process exits before extraction; actual after captures
+run the extracted working source in this same physical Runtime checkout.
+
+All six complete serializable products and original serializations agree:
+three existing native scalar/control/pure fixtures for each source spelling.
+Native fixture data digests, actual rejected-source hashes and all four emitted
+file hashes recompute. Real Node 24 execution preserves NUL/UTF8, integer extrema,
+control-flow text and pure empty output. Malformed ESM and a process exiting7
+retain B6-TARGET, including actual stdout/stderr; existing output, escaped
+sidecars, outside roots and a file used as parent retain C14-INPUT. The actual
+Node 20 eligibility and JS source-target refusals remain in every record.
+
+The legacy partial map copies the original fixture context, not the rejected
+Gravity source or a validated compiled-origin relation. The publication Path
+is observed by class/path; tests separately check its real path equality and
+opaque return forwarding. Neither observation is serialized host-state
+identity or compiler admission. Scripts/captures use
+/tmp/uniform-js-toolchain-{capture,extract,verify}.clj and
+/tmp/uniform-js-toolchain-evidence, with an actual caller-owned host-temp
+output root recorded there. No raw path or identity is normalized.
+
+Focused tests pass 10 tests / 315 assertions. They cover original API arities,
+all public contract entries, late wrapper Vars, guard-before-IO ordering, late
+version failure selection, runtime data lookup after a real host read failure,
+owned stderr cleanup and unchanged exception identity after real publication.
+Callbacks are internal sequencing units, never authority evidence.
+
+## Retained implementation nonpasses and final gates
+
+An extractor delimiter error occurred before production mutation. A subsequently
+launched capture repeated the baseline despite its after label; those files
+are preserved at /tmp/uniform-js-toolchain-baseline-repeat-history and excluded
+from acceptance evidence. The corrected extractor then moved the bodies and
+fresh after captures established the six complete comparisons. A unit initially
+indexed a list of observed arguments as a vector; recording its arguments as
+vectors corrects the observation without changing production behavior.
+
+Affected composition, committed contextual lint, language/ownership, contract
+validators, independent exact acceptance, own CI/artifacts and immediate clean
+current-main integration preflight remain required. No review or CI from the
+separate JVM slice transfers to this candidate.

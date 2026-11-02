@@ -262,3 +262,95 @@
           (is (= "C14-INPUT" (get-in product [:refusals kind :data :id])))
           (is (= fact (get-in product [:refusals kind :data :missing-fact])))))
       (finally (native "delete-tree!" directory)))))
+
+(deftest output-api-wrapper-ports-and-opaque-return-identity
+  (doseq [[old owner arguments port-count]
+          [['run-node-process! #'js/run-node-process! '[arguments source-path diagnostic-id message] 2]
+           ['node-version! #'js/node-version! '[source-path] 2]
+           ['delete-tree! #'js/delete-tree! '[path] 0]
+           ['stage-files! #'js/stage-files! '[output-path paths contents source-path] 3]]]
+    (let [compatibility (ns-resolve 'gravity.bootstrap (symbol (str "js-ts-backend-" old)))
+          values (vec (repeat (count arguments) (Object.)))
+          marker (Object.) calls (atom nil)]
+      (is (= (list arguments) (:arglists (meta compatibility))) old)
+      (with-redefs-fn {owner (fn [& args] (reset! calls args) marker)}
+        #(is (identical? marker (apply compatibility values)) old))
+      (is (every? var? (take port-count @calls)) old)
+      (is (= values (vec (drop port-count @calls))) old)))
+  (let [contract (:gravity/namespace-contract (meta #'js/stage-files!))]
+    (is (= (set (keys (ns-publics 'gravity.backend.js))) (set (keys (:public-api contract)))))
+    (doseq [[name operation] (ns-publics 'gravity.backend.js)
+            :when (not= :constant (get-in contract [:public-api name :kind]))]
+      (is (= (:arglists (meta operation)) (get-in contract [:public-api name :arglists])) name)
+      (is (= contract (:gravity/namespace-contract (meta operation)))))))
+
+(deftest containment-and-version-failure-ports-remain-late
+  (let [fail-var #'bootstrap/js-ts-backend-fail!
+        original (ex-info "late refusal" {:id :late})
+        events (atom [])
+        late-failure (fn [& args] (swap! events conj [:failure (vec args)]) (throw original))]
+    (with-redefs-fn
+      {#'bootstrap/c-backend-output-path-allowed?
+       (fn [path] (swap! events conj [:guard path])
+         (alter-var-root fail-var (constantly late-failure)) false)
+       fail-var (fn [& _] (throw (Exception. "eager failure selected")))}
+      #(is (identical? original
+             (try (native "stage-files!" "guard-only" nil nil "source.gravity")
+                  nil (catch clojure.lang.ExceptionInfo ex ex)))))
+    (is (= [:guard :failure] (mapv first @events)))
+    (is (= :output-path-containment (get-in @events [1 1 4 :missing-fact])))
+    (reset! events [])
+    (with-redefs-fn
+      {#'bootstrap/js-ts-backend-run-node-process!
+       (fn [& args] (swap! events conj [:version-probe (vec args)])
+         (alter-var-root fail-var (constantly late-failure))
+         {:exit 0 :stdout-bytes (mapv int "v24.0.0\n") :stderr ""})
+       fail-var (fn [& _] (throw (Exception. "eager failure selected")))}
+      #(is (identical? original
+             (try (native "node-version!" "source.gravity")
+                  nil (catch clojure.lang.ExceptionInfo ex ex)))))
+    (is (= [:version-probe :failure] (mapv first @events)))
+    (is (= ["--version"] (get-in @events [0 1 0])))
+    (is (= "v24.0.0" (get-in @events [1 1 4 :observed-node-version])))))
+
+(deftest host-read-failure-preserves-runtime-lookup-and-cleanup
+  (let [runtime-var #'bootstrap/js-ts-backend-runtime
+        failure (ex-info "failure transport" {:id :transport})
+        seen (atom nil) stderr-file (atom nil)]
+    (with-redefs-fn
+      {runtime-var :node20
+       #'clojure.core/slurp
+       (fn [file]
+         (reset! stderr-file file)
+         (alter-var-root runtime-var (constantly :observed-late-runtime))
+         (throw (Exception. "host read failed")))
+       #'bootstrap/js-ts-backend-fail!
+       (fn [& args] (reset! seen args) (throw failure))}
+      #(is (identical? failure
+             (try (native "run-node-process!" ["--version"] "source.gravity"
+                          "B6-TARGET" "version probe failed")
+                  nil (catch clojure.lang.ExceptionInfo ex ex)))))
+    (is (= "B6-TARGET" (first @seen)))
+    (is (= :observed-late-runtime (get-in (vec @seen) [4 :runtime])))
+    (is (= "host read failed" (get-in (vec @seen) [4 :cause-message])))
+    (is (instance? java.io.File @stderr-file))
+    (is (not (.exists ^java.io.File @stderr-file)))))
+
+(deftest publication-finally-port-preserves-exception-after-real-commit
+  (let [directory (java.nio.file.Files/createTempDirectory
+                    "gravity-js-finally-test-" (make-array java.nio.file.attribute.FileAttribute 0))
+        output (.getCanonicalPath (io/file (.toFile directory) "artifact"))
+        paths (native "output-paths" output)
+        old-delete bootstrap/js-ts-backend-delete-tree!
+        seen (atom nil) failure (ex-info "cleanup transport" {:id :cleanup})]
+    (try
+      (with-redefs [bootstrap/js-ts-backend-delete-tree!
+                    (fn [path] (reset! seen path) (old-delete path) (throw failure))]
+        (is (identical? failure
+               (try (native "stage-files!" output paths {:javascript "export {};\n"} "source.gravity")
+                    nil (catch clojure.lang.ExceptionInfo ex ex)))))
+      (is (instance? java.nio.file.Path @seen))
+      (is (not (.exists (.toFile ^java.nio.file.Path @seen))))
+      (is (= "export {};\n" (slurp (:javascript paths) :encoding "UTF-8")))
+      (is (.canExecute (io/file (:javascript paths))))
+      (finally (old-delete directory)))))
