@@ -87,8 +87,11 @@ performed/refused actions, not output-type digests or assigned passed/reuse flag
 
 Preserve all nine explicit profile cases: core, hosted, native, kernel, firmware,
 hardware, distributed, AI and meta. Hosted permission stays auditable under real
-grants; native specialization uses declared target facts; constrained profiles
-reject unmodeled hosted dependencies; distributed retains workflow/schema/retry/
+grants, including reflection/library access and dynamic loading; native
+specialization/ABI/layout/linker metadata uses declared target facts. Kernel,
+firmware and hardware require hermetic builds and reject generated GC, reflection,
+ambient allocation, host threads, wall clocks or dynamic loading unless the
+profile explicitly models that facility. Distributed retains workflow/schema/retry/
 external-service/replay records; AI retains model/prompt/input/output/retention/
 review identity; meta cannot bypass legality. Workflow forms remain facets and
 targets within distributed, not an added profile dimension.
