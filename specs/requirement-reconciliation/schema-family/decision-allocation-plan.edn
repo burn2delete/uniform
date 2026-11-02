@@ -151,4 +151,3 @@
    :negative ["Reject incompatible operation/schema identity, weakened validation, invalid requests/responses"]
    :criterion-prefixes ["Criterion `schema/openapi-generation`"]}]
  :qualification "These are current-decision allocation proposals, not additional historical mappings or implementation tasks. Existing criterion reuse preserves accepted review scope; supplements remain Open and require independent review/adoption. Every attached facet/context and unresolved metadata item is retained separately from the required-output witness."}
-
