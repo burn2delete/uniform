@@ -83,7 +83,7 @@ owner boundary. No full C13/C14/B1 source composition, native C compiler,
 restricted process route, broker admission, release, self-hosting, or v3
 product execution is claimed.
 
-After that evidence, main advanced with #577. Its PMK cycle edit shortened
+The superseded #577-base attempt exposed an expression-owner mismatch. Its PMK cycle edit shortened
 `bootstrap/gravity/p15_s23/emitter.gravity` to 1,529,537 bytes while
 `gravity.c6-c10.source-contract/current-expression-program` still requires
 1,529,728 bytes. On the exact latest base, the same genuine producer and
@@ -92,7 +92,12 @@ four-argument selector controls fail closed at `P15S23Q002` with
 (`/tmp/uniform-pr552-v2-c11-public-after-577.log`,
 `/tmp/uniform-pr552-v2-c11-packet-selector-after-577.log`). This is a new
 main-side emitter-contract reconciliation issue, not a reason for this
-consumer to renew a source pin or claim packet/backend acceptance.
+consumer to renew a source pin or claim packet/backend acceptance. That nonpass
+is preserved as history. The repaired current route derives the expression
+program from canonical current source, ABI, plan, function identities, and
+before/after source checks. C11 policy validation independently derives the
+same authenticated expression projection; fixed legacy DATA records and their
+refusals remain unchanged.
 
 ## Validation record
 
@@ -106,8 +111,17 @@ owner is deliberately stopped at an injected boundary, so it is not packet
 or backend acceptance evidence
 (`/tmp/uniform-pr552-v2-c11-packet-selector-after-560.log`). The former 5ecc C6 mismatch log remains an
 immutable historical nonpass for that older base, not current acceptance
-status on the #560 base. The #577-base failures above are the current
-nonpass; the earlier 69d/4df genuine runs are superseded-base evidence only.
+status on the #560 base. On repaired source checkpoint
+`e0e091f7677cc4561c8aeeaab28ca93fab2eb3a`, the genuine C6 producer passed
+1 test / 7 assertions, the public C11 producer passed 1 / 9, and the
+four-argument selector passed 1 / 6, each with zero failures or errors. Logs:
+`/tmp/uniform-pr552-c6-after-expression-owner.log`,
+`/tmp/uniform-pr552-v2-c11-public-after-expression-c11-guard.log`, and
+`/tmp/uniform-pr552-v2-c11-packet-after-expression-c11-guard.log`.
+The normal composition with main `2d0844f8f7f21321d920b9245341a2b98adc642e`
+adds only #579 test selectors and its report; it changes none of those producer
+dependencies. The #577-base failures above and earlier 69d/4df runs remain
+superseded-source history.
 The language-boundary gate,
 document/roadmap validators, `git diff --check`, and current-main composition
 checks remain separate evidence. Any existing broader C13/C14/B1 ownership or
