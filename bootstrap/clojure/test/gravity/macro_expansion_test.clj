@@ -1,6 +1,9 @@
 (ns gravity.macro-expansion-test
   (:require [clojure.test :refer [deftest is testing]]
-            [gravity.macro-expansion :as macro-expansion]))
+            [gravity.digest :as digest]
+            [gravity.macro-expansion :as macro-expansion]
+            [gravity.macro-expansion.engine :as engine]
+            [gravity.macro-expansion.operations :as operations]))
 
 (defn- syntax
   [syntax-id form index]
@@ -132,6 +135,211 @@
            (:phase (macro-expansion/expand-syntax-object
                     registry module definition (atom []) 0))))))
 
+(deftest expansion-digests-are-shared-between-origin-and-trace
+  (let [module {:module 'example.core
+                :profile :hosted
+                :target :jvm
+                :metadata {}}
+        definition (syntax "s-defmacro"
+                           '(defmacro twice [x]
+                              (syntax-quote (+ (unquote x) (unquote x))))
+                           1)
+        call (syntax "s-call" '(twice 4) 2)
+        registry (macro-expansion/macro-registry module [definition call])
+        hash-inputs (atom [])
+        ops {:sha256-hex (fn [value]
+                           (swap! hash-inputs conj value)
+                           (digest/sha256-hex value))}
+        trace (atom [])
+        result (macro-expansion/expand-syntax-object
+                registry module call trace 0 ops)
+        origin (first (:generated-origin result))
+        record (first @trace)
+        expected-input-hash (str "sha256:"
+                                 (digest/sha256-hex (pr-str '(twice 4))))
+        expected-output-hash (str "sha256:"
+                                  (digest/sha256-hex (pr-str '(+ 4 4))))]
+    (is (= [(pr-str '(twice 4)) (pr-str '(+ 4 4))]
+           @hash-inputs))
+    (is (= expected-input-hash (:input-hash origin) (:input-hash record)))
+    (is (= expected-output-hash (:output-hash origin) (:output-hash record)))
+    (is (= origin (first (:generated-origin record))))))
+
+(deftest custom-origin-digests-do-not-supply-trace-digests
+  (let [module {:module 'example.core
+                :profile :hosted
+                :target :jvm
+                :metadata {}}
+        definition (syntax "s-defmacro"
+                           '(defmacro twice [x]
+                              (syntax-quote (+ (unquote x) (unquote x))))
+                           1)
+        call (syntax "s-call" '(twice 4) 2)
+        registry (macro-expansion/macro-registry module [definition call])
+        hash-inputs (atom [])
+        origin-calls (atom [])
+        injected-origin [{:from :injected
+                          :input-hash "sha256:forged-input"
+                          :output-hash "sha256:forged-output"}]
+        ops {:sha256-hex (fn [value]
+                           (swap! hash-inputs conj value)
+                           (digest/sha256-hex value))
+             :expansion-generated-origin
+             (fn [macro syntax input output]
+               (swap! origin-calls conj [macro syntax input output])
+               injected-origin)}
+        trace (atom [])
+        result (macro-expansion/expand-syntax-object
+                registry module call trace 0 ops)
+        record (first @trace)
+        expected-input-hash (str "sha256:"
+                                 (digest/sha256-hex (pr-str '(twice 4))))
+        expected-output-hash (str "sha256:"
+                                  (digest/sha256-hex (pr-str '(+ 4 4))))]
+    (is (= 1 (count @origin-calls)))
+    (is (= 2 (count @hash-inputs)))
+    (is (= injected-origin (:generated-origin result)))
+    (is (= injected-origin (:generated-origin record)))
+    (is (= expected-input-hash (:input-hash record)))
+    (is (= expected-output-hash (:output-hash record)))
+    (is (not= "sha256:forged-input" (:input-hash record)))
+    (is (not= "sha256:forged-output" (:output-hash record)))
+    (is (= "s-call" (get-in (first @origin-calls) [1 :syntax-id])))))
+
+(deftest var-backed-hash-interposition-does-not-poison-default-trace
+  (let [module {:module 'example.core
+                :profile :hosted
+                :target :jvm
+                :metadata {}}
+        definition (syntax "s-defmacro"
+                           '(defmacro twice [x]
+                              (syntax-quote (+ (unquote x) (unquote x))))
+                           1)
+        call (syntax "s-call" '(twice 4) 2)
+        registry (macro-expansion/macro-registry module [definition call])
+        real-sha256 digest/sha256-hex
+        hash-var #'digest/sha256-hex
+        actual-inputs (atom [])
+        ops (assoc (operations/default-ops)
+                   :sha256-hex hash-var
+                   :expansion-generated-origin
+                   (fn [macro syntax input output]
+                     (with-redefs [digest/sha256-hex (constantly "forged")]
+                       (engine/generated-origin
+                        macro syntax input output {:sha256-hex hash-var}))))
+        trace (atom [])
+        result
+        (with-redefs [digest/sha256-hex
+                      (fn [value]
+                        (swap! actual-inputs conj value)
+                        (real-sha256 value))]
+          (engine/expand-syntax-object registry module call trace 0 ops))
+        record (first @trace)]
+    (is (= "sha256:forged"
+           (get-in result [:generated-origin 0 :input-hash])))
+    (is (= "sha256:forged"
+           (get-in result [:generated-origin 0 :output-hash])))
+    (is (= [(pr-str '(twice 4)) (pr-str '(+ 4 4))]
+           @actual-inputs))
+    (is (= (str "sha256:" (real-sha256 (pr-str '(twice 4))))
+           (:input-hash record)))
+    (is (= (str "sha256:" (real-sha256 (pr-str '(+ 4 4))))
+           (:output-hash record)))
+    (is (not= "sha256:forged" (:input-hash record)))
+    (is (not= "sha256:forged" (:output-hash record)))))
+
+(deftest custom-trace-hook-retains-injected-record-and-default-origin
+  (let [module {:module 'example.core
+                :profile :hosted
+                :target :jvm
+                :metadata {}}
+        definition (syntax "s-defmacro"
+                           '(defmacro twice [x]
+                              (syntax-quote (+ (unquote x) (unquote x))))
+                           1)
+        call (syntax "s-call" '(twice 4) 2)
+        registry (macro-expansion/macro-registry module [definition call])
+        hash-inputs (atom [])
+        trace-calls (atom [])
+        injected-trace {:kind :injected-trace}
+        ops {:sha256-hex (fn [value]
+                           (swap! hash-inputs conj value)
+                           (digest/sha256-hex value))
+             :expansion-trace-record
+             (fn [module macro syntax input output origin depth]
+               (swap! trace-calls conj
+                      [module macro syntax input output origin depth])
+               injected-trace)}
+        trace (atom [])
+        result (macro-expansion/expand-syntax-object
+                registry module call trace 0 ops)
+        origin (first (:generated-origin result))]
+    (is (= 2 (count @hash-inputs)))
+    (is (= [injected-trace] @trace))
+    (is (= 1 (count @trace-calls)))
+    (is (= origin (get-in (first @trace-calls) [5 0])))
+    (is (re-find #"^sha256:" (:input-hash origin)))
+    (is (re-find #"^sha256:" (:output-hash origin)))))
+
+(deftest empty-custom-origin-hook-still-rejects-provenance
+  (let [module {:module 'example.core
+                :profile :hosted
+                :target :jvm
+                :metadata {}}
+        definition (syntax "s-defmacro"
+                           '(defmacro twice [x]
+                              (syntax-quote (+ (unquote x) (unquote x))))
+                           1)
+        call (syntax "s-call" '(twice 4) 2)
+        registry (macro-expansion/macro-registry module [definition call])
+        failure (fail-data
+                 #(macro-expansion/expand-syntax-object
+                   registry module call (atom []) 0
+                   {:expansion-generated-origin (fn [& _] [])}))]
+    (is (= "L4-PROVENANCE-MISSING" (:id failure)))))
+
+(deftest cycle-detection-allows-siblings-and-rejects-mutual-recursion
+  (let [module {:module 'example.core
+                :profile :hosted
+                :target :jvm
+                :metadata {}}
+        definition (syntax "s-defmacro"
+                           '(defmacro twice [x]
+                              (syntax-quote (+ (unquote x) (unquote x))))
+                           1)
+        call (syntax "s-call" '(twice 4) 2)
+        registry (macro-expansion/macro-registry module [definition call])
+        sibling-trace (atom [])
+        sibling (macro-expansion/expand-syntax-object
+                 registry module
+                 (syntax "siblings" '(do (twice 4) (twice 5)) 3)
+                 sibling-trace
+                 0)
+        macro-record
+        (fn [identity output]
+          {:identity identity
+           :version "1"
+           :macro-namespace 'example
+           :kind :built-in
+           :build-effects #{}
+           :required-build-capabilities #{}
+           :hygiene-policy :hygienic
+           :expander (fn [_ _] output)})
+        mutual-registry
+        {'a (macro-record 'example/a '(b))
+         'b (macro-record 'example/b '(a))}
+        mutual-failure (fail-data
+                        #(macro-expansion/expand-syntax-object
+                          mutual-registry
+                          module
+                          (syntax "mutual" '(a) 4)
+                          (atom [])
+                          0))]
+    (is (= '(do (+ 4 4) (+ 5 5)) (:form sibling)))
+    (is (= 2 (count @sibling-trace)))
+    (is (= "L4-EXPANSION-DEPTH" (:id mutual-failure)))
+    (is (= :recursive-expansion-cycle (:reason mutual-failure)))))
+
 (deftest guards-use-injected-bootstrap-operations
   (let [failures (atom [])
         ops {:fail! (fn [id message data]
@@ -161,7 +369,32 @@
             "L4-GENERATED-PROFILE"]
            (mapv first @failures)))))
 
-(deftest safety-depth-and-provenance-rejections-remain-exact
+(deftest finite-metadata-progress-is-not-a-recursive-cycle
+  (let [call (fn [remaining]
+               (list 'countdown (with-meta 'value {:remaining remaining})))
+        macro {:identity 'example/countdown
+               :version "1"
+               :macro-namespace 'example
+               :kind :built-in
+               :build-effects #{}
+               :required-build-capabilities #{}
+               :hygiene-policy :hygienic
+               :expander (fn [[argument] _]
+                           (let [remaining (:remaining (meta argument))]
+                             (if (pos? remaining)
+                               (call (dec remaining))
+                               :finished)))}
+        trace (atom [])
+        result (binding [*print-length* 1 *print-level* 1]
+                 (macro-expansion/expand-syntax-object
+                  {'countdown macro}
+                  {:profile :hosted :metadata {}}
+                  (syntax "metadata-progress" (call 3) 7)
+                  trace 0))]
+    (is (= :finished (:form result)))
+    (is (= 4 (count @trace)))))
+
+(deftest safety-cycle-and-provenance-rejections-remain-exact
   (let [span {:source "macro.gravity" :form-index 4}
         effect :build/env
         undeclared (fail-data
@@ -200,14 +433,46 @@
                          :required-build-capabilities #{}
                          :hygiene-policy :hygienic
                          :expander (fn [_ _] '(again))}
-        depth (fail-data
+        cycle (fail-data
                #(macro-expansion/expand-syntax-object
                  {'again recursive-macro}
                  {:profile :hosted :metadata {}}
                  (syntax "recursive" '(again) 5)
                  (atom [])
-                 0
-                 {:max-macro-expansion-depth 1}))
+                 0))
+        mutual-cycle (fail-data
+                      #(macro-expansion/expand-syntax-object
+                        {'left (assoc recursive-macro
+                                      :expander (fn [_ _] '(right)))
+                         'right (assoc recursive-macro
+                                       :expander (fn [_ _] '(left)))}
+                        {:profile :hosted :metadata {}}
+                        (syntax "mutual-recursive" '(left) 5)
+                        (atom []) 0))
+        finite-length 40
+        finite-registry
+        (into {}
+              (map (fn [index]
+                     (let [name (symbol (str "m" index))
+                           output (if (= index (dec finite-length))
+                                    :finished
+                                    (list (symbol (str "m" (inc index)))))]
+                       [name {:identity (symbol "example" (str "m" index))
+                              :version "1"
+                              :macro-namespace 'example
+                              :kind :built-in
+                              :build-effects #{}
+                              :required-build-capabilities #{}
+                              :hygiene-policy :hygienic
+                              :expander (fn [_ _] output)}]))
+                   (range finite-length)))
+        finite-trace (atom [])
+        finite (macro-expansion/expand-syntax-object
+                finite-registry
+                {:profile :hosted :metadata {}}
+                (syntax "finite" '(m0) 6)
+                finite-trace
+                0)
         missing-origin (fail-data
                         #(macro-expansion/expand-syntax-object
                           {'missing {:identity 'example/missing
@@ -235,8 +500,13 @@
     (is (= "L4-HYGIENE-CAPTURE" (:id capture)))
     (is (= 'captured (:symbol capture)))
     (is (= "L4-GENERATED-UNSAFE" (:id generated-unsafe)))
-    (is (= "L4-EXPANSION-DEPTH" (:id depth)))
-    (is (= 1 (:limit depth)))
+    (is (= "L4-EXPANSION-DEPTH" (:id cycle)))
+    (is (= :recursive-expansion-cycle (:reason cycle)))
+    (is (= "L4-EXPANSION-DEPTH" (:id mutual-cycle)))
+    (is (= :recursive-expansion-cycle (:reason mutual-cycle)))
+    (is (= :finished (:form finite)))
+    (is (= finite-length (count @finite-trace)))
+    (is (= (dec finite-length) (:depth (last @finite-trace))))
     (is (= "L4-PROVENANCE-MISSING" (:id missing-origin)))
     (is (= "L4-MACRO-NOT-SYNTAX" (:id malformed-return)))))
 
