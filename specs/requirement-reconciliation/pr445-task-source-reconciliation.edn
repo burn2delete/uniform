@@ -1,0 +1,73 @@
+{:kind :pr445-task-source-reconciliation-receipt
+ :candidate-commit "b24b6500a39492be6d37b4dc8310ee0caeca23b3"
+ :candidate-tree "4c08b0a18506673f31b048001cf4458f0f939703"
+ :candidate-parent "001ab92cdfe26f20fad4e276ea63db1f4658ebc3"
+ :candidate-parent-tree "97273f40087d790497df10420a5208fb27a46a54"
+ :historical-pr445-candidate
+ {:commit "a9666d6af6470268c8764646bf19958b67c42698"
+  :tree "c3de43a4ce66c6d8dec4d2c91b1e3585c0c99b03"
+  :repair-commit "0474ce76d298d788a5eab59ce140b0a7910ec736"
+  :repair-tree "bd7e296064459c3b8d98a2319ce48872a9ce29b6"}
+ :current-main {:ref "bfc99d626ca31c9094573e03da751ee34da5084f"
+                :tree "f6305181e0df2e841c15c752f3e1ee1260bdee17"}
+ :source-baseline {:ref "a1b991be499d50579a8b4366976c519ae8949224"
+                   :tree "5b62819e511bfc7e6b5eba0527d8c9b5883c5572"
+                   :historical-manifest-sha256
+                   "504d566dfbc65247c8d6860eccbb6a47141b14d28774fc91a992a53625a2d28a"}
+ :candidate-manifest-sha256
+ "e8479d9b79d2b57974400fc5ab2db83ba548865542e9524eabfd1cec681a9717"
+ :task-source-audit
+ {:current-ref "bfc99d626ca31c9094573e03da751ee34da5084f"
+  :current-tree "f6305181e0df2e841c15c752f3e1ee1260bdee17"
+  :unique-ledgers 15
+  :mismatching-references 580
+  :historical-reference-policy
+  "Every mismatching task reference retains its old hash and is checked against the historical ref; current task bytes are separately checked against current main ref/tree/hash."
+  :ledgers
+  [{:path "specs/auth-workflow/tasks.md" :historical-sha256 "9db81aa1c8ef183a9da8656a343a29fd9104b10e7130fd63ba4e52b75ce2b256" :current-sha256 "7afee81509aaab0f2787caace71c7966cdb5fe1c0792e1fafbbc12db650a96a1" :change-class :navigation-only}
+   {:path "specs/backends-workflow/tasks.md" :historical-sha256 "62635384fb49256f61776d64827abb86b2179cf2f34b8349c4909e9338bb23a0" :current-sha256 "11a2f0af81732e0f9759a0553d037f304d5aeee0accd26f0a983f233d7f6b54f" :change-class :navigation-only}
+   {:path "specs/compiler-api-workflow/tasks.md" :historical-sha256 "e051d2c8f5bc21b03600db509f6fb570840a4359bfa4e4cc7d5d247bc5231da0" :current-sha256 "c76120c98f2e4bffd12aacd8aa8839545672408f2e95cf9eab709d0a8b87ed26" :change-class :acceptance-boundary-extension}
+   {:path "specs/core-workflow/tasks.md" :historical-sha256 "e719f4d797af9e25867f5248a148f7698068e9ef7e50dcc7f1e3c25622dc1e97" :current-sha256 "40a5b6c724741f3efc6dc3b16780bfb0d0656c649648d6165e328166a24aea95" :change-class :navigation-only}
+   {:path "specs/diag-workflow/tasks.md" :historical-sha256 "a4b029e285344368079a3120f387217c01468fbc11f24aff8cf219c9284128b4" :current-sha256 "c3c0c33e30aa33d70afca4b863be94f7412a8d154df566e96f433dfbaacae502" :change-class :navigation-only}
+   {:path "specs/effects-workflow/tasks.md" :historical-sha256 "af28151cd4bd37b7be8293e1a5d5385fc94e7d743a60cd45275bc0687528a3a0" :current-sha256 "45419d6bc208ae0df187dfe7c0105d3434d19c8d7deed0d7dfc52da7a4e7ad3e" :change-class :navigation-only}
+   {:path "specs/expand-workflow/tasks.md" :historical-sha256 "e1cf578f48991336eb885172b3f829a150dd856de018b47f52fb8e2dfc51b63f" :current-sha256 "216dbb577f552d65f263bc7943a847b77500de1f50e06f5cb340e5419054ed74" :change-class :navigation-only}
+   {:path "specs/legality-workflow/tasks.md" :historical-sha256 "937ed9cf0a8a7272559564344141fff0f1e3db34c9deef4106ab3ca958354f9e" :current-sha256 "7ea9be2215a02987c86a57bb300fbe948391a46d1464353d1fe588e6a97f0007" :change-class :navigation-only}
+   {:path "specs/lower-workflow/tasks.md" :historical-sha256 "9be5eed80229ee59fe35b2279fe95a40e9aeee977a503739bfa3fdd9e3eea48c" :current-sha256 "0ef7630d5e962068e47bfb85cd1028fd070b24656f0dd922148e72976ded84d2" :change-class :navigation-only}
+   {:path "specs/mir-workflow/tasks.md" :historical-sha256 "3c4ab4c831bf10da0763d34a7da976031aea53cd6b191cad1075705823a58da6" :current-sha256 "866445b8e7591782d51f8646d304ad40652e3bf76643bd4de9f897f0555d9c93" :change-class :navigation-only}
+   {:path "specs/opt-workflow/tasks.md" :historical-sha256 "8589cf09e8da65fda363f25f01612e3363a8fd4fe70f2adca8a8194baceea908" :current-sha256 "4422b1927be2fbd877aa5ee9bf208f44a30b5da0b4b14282c5ee58a503113225" :change-class :navigation-only}
+   {:path "specs/reader-workflow/tasks.md" :historical-sha256 "ec6e9f3136010cc6939df5e212c01acd6e3b9d1a11203cb904a06853445a1573" :current-sha256 "9e278efbe41cc3d6e9f83eca2ea5b670c9cd83641876ce7cb317808bb7314181" :change-class :status-and-development-evidence}
+   {:path "specs/resolve-workflow/tasks.md" :historical-sha256 "7c3b0ec9ae3b84b0fab4d58c054660d8e8f1e51532cb537bd5a01e53aa670ce4" :current-sha256 "17013d1a1ad2f63a5191d5495d5104e93888c31039c7d8537c9504ff74336181" :change-class :navigation-only}
+   {:path "specs/syntax-workflow/tasks.md" :historical-sha256 "11c3f7c40cd0b8c6364491439d10735a0105a1dbec242566457d293d0dfa1f10" :current-sha256 "feadfc4136f886d5981efedfb8f52d1a3a3e68a1858af3e7fd31e5924b8be6d5" :change-class :navigation-only}
+   {:path "specs/types-workflow/tasks.md" :historical-sha256 "9b76c2473d472b2d95a26420c4784837dc36e13a2226043efc7bb4a14a47f72e" :current-sha256 "13149ad814bebd312dd5c371ff88ff06255848e86d23b02e2d94922c1240f10f" :change-class :navigation-only}]
+  :changed-records
+  [{:path "specs/compiler-api-workflow/tasks.md" :id "pipeline" :historical-record-sha256 "2cd9bd26bdfe71294362391ba21766bdcb7af204dc71853547316b44350004cc" :current-record-sha256 "4748427391ab8de0f74ae800d85cf18aa0b1c567801aa1ac8faaaee8b34e22d6"}
+   {:path "specs/compiler-api-workflow/tasks.md" :id "plugins" :historical-record-sha256 "4b28cd35c9652c689442f73c56765509bd9fc752733cddc6ec37b0d5d2df4172" :current-record-sha256 "acb4250fdd8b0b8ecde0696a264aff50b2412e0e1b57b1e1c945e19faf1158f0"}
+   {:path "specs/compiler-api-workflow/tasks.md" :id "pass-evidence" :historical-record-sha256 "f1fe06b12d0a70265ac959d72951974a90503ceb00e239015e5931f698b6dc22" :current-record-sha256 "e0babcbbe2774655501d5789941dc10067d4cc5bd464fb2653191b7baa84063d"}
+   {:path "specs/reader-workflow/tasks.md" :id "reader/finite-remaining-work/lexical-products-and-origins-closure" :historical-record-sha256 "e040e2ca28b78aea30993d1702dd39726c7d0b86548d72c6e450016718ee7a6c" :current-record-sha256 "611f1d594fb58fe5b2063a57c8b445f5d42bee3312e212255b693a3a778e7746"}
+   {:path "specs/reader-workflow/tasks.md" :id "reader/finite-remaining-work/extension-policy-closure" :historical-record-sha256 "033a0d8caa3d5ef5e17d469ae3d9730f546dcfbade101149bfd500c5011747b0" :current-record-sha256 "bddef1c0be3c3580e69855ae2b0c3a4e23d4bd0362421d687e29cd09428d6439"}]
+  :qualification "Navigation-only changes preserve the old task records; the five changed records are retained as current source facts with historical records and current statuses separately authenticated. No changed criterion or status upgrades requirement implementation acceptance."}
+ :semantic-source-bridges
+ [{:document-id "L4" :kind :l4-macro-expansion-semantic-projection :qualification :retained-cycle-host-diagnostic-semantics}
+  {:document-id "C4" :kind :c4-macro-expansion-semantic-projection :qualification :retained-termination-host-diagnostic-semantics}
+  {:document-id "STD3" :kind :stdlib-accounting-policy-semantic-projection :qualification :mixed-accounting-traversal-validation-only}
+  {:document-id "platform-product" :kind :platform-task-authority-current-layout :qualification :authority-layout-only}
+  {:document-id "accounting-policy" :kind :governance-lifecycle-policy-semantic-projection :qualification :governance-preflight-binding-only}]
+ :historical-nonpasses
+ {:focused-reconciliation-tests {:command "clojure -M tools/requirement_reconciliation_test.clj" :tests 30 :assertions 252 :failures 0 :errors 1 :error "Task/evidence source drift: specs/reader-workflow/tasks.md"}
+  :complete-source-and-evidence-audit {:command "clojure -M tools/requirement_reconciliation.clj --check" :exit 1 :error "Task/evidence source drift: specs/reader-workflow/tasks.md"}}
+ :current-validation
+ {:focused-reconciliation-tests {:command "clojure -M tools/requirement_reconciliation_test.clj" :exit 0 :tests 31 :assertions 265 :failures 0 :errors 0}
+  :complete-source-and-evidence-audit {:command "clojure -M tools/requirement_reconciliation.clj --check" :exit 0 :source-documents 245 :source-occurrences 19962 :source-facets 29177 :proposed-requirements 1231 :denominator-ready false :overall-rate nil}
+  :canonical-documents {:command "clojure -M tools/validate_gravity_docs.clj" :exit 0 :documents 240 :phase-indexes 19}
+  :full-language-roadmap {:command "clojure -M tools/validate_full_language_roadmap.clj" :exit 0 :authority :non-authoritative}
+  :language-boundary {:command "clojure -M:test --namespace gravity.self-hosting.sh01-language-boundary-test" :exit 0 :tests 6 :assertions 11}
+  :workstream-governance {:command "clojure -M tools/validate_workstream_governance.clj" :exit 0 :workstreams 185}
+  :diff-check {:command "git diff --check" :exit 0}}
+ :result :current-task-sources-reconciled
+ :nonclaims [:not-canonical-adoption
+             :not-implementation-acceptance
+             :not-integration-eligibility
+             :not-whole-project-denominator
+             :not-macro-safety-equivalence
+             :not-platform-or-governance-accounting-equivalence
+             :not-std3-traversal-or-validation-timing-equivalence]}
