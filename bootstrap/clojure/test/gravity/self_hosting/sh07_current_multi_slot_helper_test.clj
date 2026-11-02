@@ -25,6 +25,12 @@
   (let [path #(str (io/file (root) %))
         owner (path "bootstrap/gravity/src/gravity/checked_core.gravity")
         reader (path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity")
+        syntax (path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity")
+        invocation {:reader-source-path reader
+                    :authenticated-envelope-options {:source :development-current}
+                    :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                              :source-path syntax}
+                    :macro-source-mode :development-current}
         fixture "bootstrap/clojure/fixtures/self-hosting/sh-07/compiler-all-unique"
         source (path (str fixture ".gravity")) text (slurp source :encoding "UTF-8")
         helper (original-helper (slurp owner :encoding "UTF-8"))
@@ -34,9 +40,10 @@
     (is (< (alength (.getBytes ^String text java.nio.charset.StandardCharsets/UTF_8)) 2048))
     (println {:multi-slot-phase :current-reader-c5-begin}) (flush)
     (let [resolved (b/compiler-c5-resolution-source-artifact source text
-                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []} reader)
+                     {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}
+                     reader invocation)
           _ (println {:multi-slot-phase :gravity-core-begin})
-          artifact (b/sh07-core-from-resolution-artifact resolved)
+          artifact (b/sh07-core-from-resolution-artifact resolved invocation)
           boundary (:gravity-core-boundary artifact) core (:canonical-core-artifact boundary)
           request (:authenticated-core-request boundary)
           expanded (:sh05-macro-artifact resolved)

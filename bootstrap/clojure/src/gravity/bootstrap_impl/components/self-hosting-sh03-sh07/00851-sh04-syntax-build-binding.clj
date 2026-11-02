@@ -30,7 +30,6 @@
    :stable-fields [:rule :severity :stage :primary :related :origin-chain
                    :profile :target :facts :remediation]
    :stops [:macro-expansion :name-resolution :analysis]})
-
 (defn-
  sh04-syntax-source-mode
  [request-source invocation]
@@ -193,7 +192,10 @@
             (contains? invocation :syntax-source-selection))
    (when-not (and (map? c2-artifact)
                   (map? boundary)
-                  (map? (:plan-binding boundary)))
+                  (map? (:plan-binding boundary))
+                  (map? (get-in boundary
+                                [:plan-binding
+                                 :implementation-projection])))
      (sh04-syntax-boundary-fail!
       "C3-ID" "<sh04-selected-verification>"
       :native-selected-syntax-products nil {}))

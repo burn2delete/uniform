@@ -5,7 +5,7 @@
             [gravity.digest :as digest]
             [gravity.tooling.strict-json :as json])
   (:import [java.nio.charset StandardCharsets]
-           [java.nio.file Files LinkOption OpenOption StandardOpenOption]))
+           [java.nio.file Files OpenOption StandardOpenOption]))
 
 (def ^:private fixture "examples/hello.gravity")
 
@@ -27,15 +27,22 @@
 
 (defn- owner-child! [stage {:keys [path text context invocation module-inputs]} previous]
   (let [parent (:payload (peek previous))
-        reader (:reader-source-path invocation)]
+        reader (:reader-source-path invocation)
+        ;; Reader and C3 authenticate the Reader/Syntax selection as one
+        ;; boundary.  Macro mode is carried only by the downstream stages;
+        ;; forwarding it into SH03 would turn a valid full-pipeline request
+        ;; into an invalid Reader invocation.
+        reader-invocation (dissoc invocation :macro-source-mode)]
     (case stage
       :reader (owner-call 'compiler-c2-reader-source-artifact
-                                       path text context nil nil reader invocation)
+                                       path text context nil nil reader reader-invocation)
       :syntax (owner-call 'compiler-c3-syntax-source-artifact
                                        path text context parent
                                        (var-get (ns-resolve 'gravity.bootstrap 'sh03-reader-internal-product-authority))
-                                       nil invocation)
-      :macroexpansion (owner-call 'sh05-macro-artifact-from-c3-artifact path parent invocation)
+                                       nil reader-invocation)
+      :macroexpansion (owner-call 'sh05-macro-artifact-from-c3-artifact
+                                  path parent reader-invocation
+                                  (:macro-source-mode invocation))
       :resolution (owner-call 'sh06-resolution-artifact-from-sh05-artifact
                                            path parent module-inputs reader invocation)
       :checked-core (owner-call 'sh07-core-from-resolution-artifact parent invocation))))
@@ -47,7 +54,10 @@
         inputs {:path path :text (slurp path :encoding "UTF-8")
                 :context (owner-call 'reader-project-context-for-source path)
                 :invocation {:reader-source-path "bootstrap/gravity/src/gravity/bootstrap/reader.gravity"
-                             :authenticated-envelope-options {:source :development-current}}
+                             :authenticated-envelope-options {:source :development-current}
+                             :syntax-source-selection {:schema :gravity/sh04-development-syntax-selection-v1
+                                                       :source-path "bootstrap/gravity/src/gravity/bootstrap/syntax.gravity"}
+                             :macro-source-mode :development-current}
                 :module-inputs {:artifact :gravity/sh06-module-inputs :schema-version 1 :module-artifacts []}}
         request {:source-path path :target-stage :checked-core :mode :fresh}
         prefix (reduce (fn [previous stage]
@@ -89,13 +99,14 @@
 (defn- owner-prefix-replay! []
   (let [{:keys [inputs prefix]} (selected-owner-prefix!)
         {:keys [path text invocation module-inputs]} inputs
+        reader-invocation (dissoc invocation :macro-source-mode)
         [_ reader syntax macro resolution core] (mapv :payload prefix)]
     (is (= pipeline/stages (mapv :stage prefix)))
     (is (= text (owner-call 'c2-reader-artifact-source-text path reader)))
     (is (= path (get-in reader [:source-unit-record :path])))
-    (let [view (owner-call 'c3-reader-artifact-view reader invocation)
+    (let [view (owner-call 'c3-reader-artifact-view reader reader-invocation)
           revision (get-in reader [:gravity-reader-boundary :authenticated-envelope-descriptor :source-revision])
-          binding (:binding (owner-call 'sh03-reader-verification-invocation! path invocation))
+          binding (:binding (owner-call 'sh03-reader-verification-invocation! path reader-invocation))
           identity-keys [:source-content-hash :source-byte-count :plan-semantic-hash :functions-semantic-hash]]
       (is (= view (:c2-reader-artifact syntax)))
       (is (map? revision))
@@ -119,8 +130,9 @@
           ((pipeline-function 'authenticate-reader-source!) path (:source-identity child) (:payload child))
           ((pipeline-function 'authenticate-embedded-parent!) stage (:payload child) parents))))
     (owner-call 'c2-reader-validate! path reader)
-    (owner-call 'c3-syntax-validate! path syntax invocation)
-    (doseq [report [(owner-call 'sh05-macro-artifact-verification macro invocation)
+    (owner-call 'c3-syntax-validate! path syntax reader-invocation)
+    (doseq [report [(owner-call 'sh05-macro-artifact-verification
+                                macro reader-invocation (:macro-source-mode invocation))
                     (owner-call 'sh06-resolution-artifact-verification resolution :gravity.bootstrap/legacy invocation)
                     (owner-call 'sh07-core-artifact-verification core invocation)]]
       (is (= :passed (:status report)))

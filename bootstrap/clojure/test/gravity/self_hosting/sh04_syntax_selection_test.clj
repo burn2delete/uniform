@@ -127,48 +127,76 @@
                                           2))))))))
 
 (deftest absent-selection-retains-the-frozen-source-guard-and-cache
-  (let [cache @(owner 'sh04-syntax-cached-binding)
+  (let [cache (var-get (owner 'sh04-syntax-cached-binding))
         before (realized? cache)
-        legacy (b/sh04-syntax-current-binding!
-                "<sh04-selection-test>")]
+        failures (mapv (fn [selected-invocation]
+                         (diagnostic
+                          (fn []
+                            (b/sh04-syntax-current-binding!
+                             "<sh04-selection-test>" selected-invocation))))
+                       [nil (reader-invocation)])]
     (is (= 81241 b/sh04-syntax-expected-source-byte-count))
-    (is (= :gravity/sh04-pinned-syntax-plan-binding (:artifact legacy)))
-    (is (= :complete (:status legacy)))
-    (doseq [invocation [nil (reader-invocation)]]
-      (is (= :gravity/sh04-pinned-syntax-plan-binding
-             (:artifact (b/sh04-syntax-current-binding!
-                         "<sh04-selection-test>" invocation)))))
-    (is (not= before (realized? cache)))))
+    (doseq [failure failures]
+      (is (= "C3-ID" (:id failure)))
+      (is (= [:exact-pinned-syntax-source]
+             (:missing-fields failure))))
+    (is (= before (realized? cache)))))
 
 (deftest selected-context-and-implementation-projection-are-separated
   (let [source (selection (invocation))
         context ((owner 'sh04-development-syntax-context!)
                  (:source-path source) (invocation))
-        attempt (try
-                  {:binding (b/sh04-syntax-assembly-binding!
-                             "<sh04-selection-test>" (invocation))}
-                  (catch clojure.lang.ExceptionInfo error
-                    {:failure (ex-data error)}))]
+        binding (b/sh04-syntax-assembly-binding!
+                 "<sh04-selection-test>" (invocation))
+        projection (:implementation-projection binding)
+        missing-projection
+        (diagnostic
+         #((owner 'sh04-development-syntax-verification-context!)
+           (invocation)
+           {:source-unit-record {:path (:source-path source)}}
+           {:plan-binding (dissoc binding :implementation-projection)
+            :operation-context context}))
+        registered-projection
+        (diagnostic
+         #((owner 'sh04-development-syntax-verification-context!)
+           (invocation)
+           {:source-unit-record {:path (:source-path source)}
+            :registered-literal-projection {}}
+           {:plan-binding binding
+            :operation-context context}))]
     (is (= (invocation) context))
-    (if-let [failure (:failure attempt)]
-      (do
-       ;; Current main still carries the pre-#512 c3-syntax-bounds export.
-       ;; Preserve this diagnostic until the pending source-owner migration
-       ;; removes that obsolete export; the positive branch is exercised once
-       ;; the current owner source has the eleven-entry interface.
-       (is (= "C3-ID" (:id failure)))
-       (is (= [:current-syntax-module-and-exports]
-              (:missing-fields failure))))
-      (let [binding (:binding attempt)
-            projection (:implementation-projection binding)]
-        (is (= :development-current (:source-mode binding)))
-        (is (= :development-unadmitted (:admission-status binding)))
-        (is (= :development-unadmitted (:admission-status projection)))
-        (is (= (:implementation-binding-id binding)
-               (:binding-id projection)))
-        (is (= #{:form :span :source :namespace :phase :profile :metadata
-                 :hygiene :origin :facts :reader-binding :reader-source-revision
-                 :ownership :version}
-               (set (:identity-fields (var-get (owner 'sh04-development-syntax-contract))))))
-        (is (not (contains? (:program-identity binding) :source-path)))
-        (is (contains? projection :public-DATA))))))
+    (is (= (:reader-source-path (reader-invocation))
+           (:reader-source-path context)))
+    (is (= :development-current
+           (get-in context [:authenticated-envelope-options :source])))
+    (is (= (:source-path source)
+           (get-in context [:syntax-source-selection :source-path])))
+    (is (= :gravity/sh04-development-syntax-plan-binding-v1
+           (:artifact binding)))
+    (is (= :development-current (:source-mode binding)))
+    (is (= :development-unadmitted (:admission-status binding)))
+    (is (= (:source-path source) (:source-path binding)))
+    (is (= (:source-path source) (:selected-source-path binding)))
+    (is (= (:source-byte-count source) (:source-byte-count binding)))
+    (is (= (:source-content-hash source) (:source-content-hash binding)))
+    (is (= (:source-byte-count source)
+           (get-in binding [:plan :source :byte-count])))
+    (is (= (:source-content-hash source)
+           (get-in binding [:plan :source :sha256])))
+    (is (= :development-unadmitted (:admission-status projection)))
+    (is (= (:implementation-binding-id binding)
+           (:binding-id projection)))
+    (is (= (:source-byte-count source) (:source-byte-count projection)))
+    (is (= (:source-content-hash source) (:source-content-hash projection)))
+    (is (= #{:form :span :source :namespace :phase :profile :metadata
+             :hygiene :origin :facts :reader-binding :reader-source-revision
+             :ownership :version}
+           (set (:identity-fields (var-get (owner 'sh04-development-syntax-contract))))))
+    (is (not (contains? (:program-identity binding) :source-path)))
+    (is (contains? projection :public-DATA))
+    (is (= "C3-ID" (:id missing-projection)))
+    (is (= [:native-selected-syntax-products]
+           (:missing-fields missing-projection)))
+    (is (= "C3-ID" (:id registered-projection)))
+    (is (= [:selected-syntax-registered-projection-unsupported]
+           (:missing-fields registered-projection)))))

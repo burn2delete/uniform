@@ -20,8 +20,9 @@
 (defn- invocation []
   {:reader-source-path (reader-path)
    :authenticated-envelope-options {:source :development-current}})
+(declare current-syntax-invocation)
 (defn- verification-operations []
-  (private-operation 'c3-syntax-verification-ops (invocation)))
+  (private-operation 'c3-syntax-verification-ops (current-syntax-invocation)))
 (defn- source-path [extension]
   (.getCanonicalPath
    (io/file (str "bootstrap/clojure/fixtures/self-hosting/sh-04/accepted/source-syntax" extension))))
@@ -32,11 +33,13 @@
          :syntax-source-selection
          {:schema :gravity/sh04-development-syntax-selection-v1
           :source-path selected-path}))
+(defn- current-syntax-invocation []
+  (syntax-invocation (syntax-source-path)))
 (defn- request [path text]
   {:source-path path :source-text text
    :project-context (bootstrap/reader-project-context-for-source path)
    :precomputed-c2-artifact nil :candidate nil
-   :reader-source-path (reader-path) :invocation (invocation)})
+   :reader-source-path (reader-path) :invocation (current-syntax-invocation)})
 (defn- construct [extension]
   (syntax/build (request (source-path extension) "1") (build-operations)))
 (def ^:private gravity-product (delay (construct ".gravity")))
@@ -51,7 +54,7 @@
           artifact @product
           compatibility (bootstrap/compiler-c3-syntax-source-artifact
                          path "1" (bootstrap/reader-project-context-for-source path)
-                         nil nil (reader-path) (invocation))]
+                         nil nil (reader-path) (current-syntax-invocation))]
       (is (= artifact compatibility))
       (is (= :gravity/stage0-c3-syntax-object-artifact (:kind artifact)))
       (is (= 2 (count (:syntax-object-stream artifact))))
@@ -67,7 +70,8 @@
              (get-in artifact [:gravity-syntax-boundary :gravity-syntax-deserialization :semantic-payload])))
       (is (true? (syntax/reader-products-authentic?
                   (:syntax-object-stream artifact) (:c2-reader-artifact artifact)
-                  (:gravity-syntax-boundary artifact) (invocation) (reader-operations)))))))
+                  (:gravity-syntax-boundary artifact)
+                  (current-syntax-invocation) (reader-operations)))))))
 
 (deftest genuine-source-file-retains-metadata-hygiene-origins-and-unicode
   (let [path (source-path ".gravity")
@@ -119,7 +123,7 @@
     (is (false? (syntax/reader-products-authentic?
                  (:syntax-object-stream artifact) (:c2-reader-artifact artifact)
                  (assoc (:gravity-syntax-boundary artifact) :owner :substituted)
-                 (invocation) (reader-operations))))))
+                 (current-syntax-invocation) (reader-operations))))))
 
 (deftest constructor-gates-and-late-interposition-remain-visible
   (let [path (source-path ".gravity") input (request path "1")
@@ -145,7 +149,7 @@
                                       (fn [actual ports] (reset! seen [actual ports]) (throw sentinel))]
                           (caught #(bootstrap/compiler-c3-syntax-source-artifact
                                     path "1" (:project-context input) nil nil
-                                    (reader-path) (invocation))))))
+                                    (reader-path) (current-syntax-invocation))))))
         (is (= input (first @seen)))
         (is (= (set (keys operations)) (set (keys (second @seen)))))))))
 
@@ -192,39 +196,31 @@
           resolved (get-in artifact [:gravity-syntax-boundary :resolved-syntax-result])
           reader-binding (:reader-binding resolved)
           revision (:reader-source-revision resolved)
-          binding (bootstrap/sh04-syntax-current-binding! (source-path ".gravity"))
+          binding (bootstrap/sh04-syntax-current-binding!
+                   (source-path ".gravity")
+                   (current-syntax-invocation))
           base (:syntax-object (first (:resolved-object-products resolved)))
           product (bootstrap/sh04-syntax-generated-products!
                    (source-path ".gravity") binding base
                    (:semantic-source-id reader-binding) reader-binding revision)]
       {:binding binding :reader-binding reader-binding :revision revision :product product})))
 
-(deftest pinned-runtime-builds-the-real-plan-and-rechecks-cache-freshness
+(deftest pinned-runtime-refuses-stale-source-before-plan-replay
   (let [path (source-path ".gravity") operations (runtime-operations)
         cache (syntax/plan-binding-cache operations)
-        _ (is (false? (realized? cache)))
-        binding (syntax/current-plan-binding! path cache operations)]
-    (is (realized? cache))
-    (is (= (bootstrap/sh04-syntax-current-binding! path) binding))
-    (is (= :gravity/sh04-pinned-syntax-plan-binding (:artifact binding)))
-    (is (= :gravity-source (:semantic-authority binding)))
-    (is (= bootstrap/sh04-syntax-expected-source-content-hash (:source-content-hash binding)))
-    (is (= bootstrap/sh04-syntax-expected-source-byte-count (:source-byte-count binding)))
-    (is (= bootstrap/sh04-syntax-expected-function-count (count (get-in binding [:plan :functions]))))
-    (is (= (select-keys binding (keys (syntax/plan-identities (:plan binding) operations)))
-           (syntax/plan-identities (:plan binding) operations)))
-    (doseq [changed [(assoc binding :source-content-hash "sha256:substituted")
-                     (assoc binding :source-byte-count 0)
-                     (update-in binding [:plan :functions] dissoc 'c3-syntax-verify-resolved)]]
-      (let [error (caught #(syntax/current-plan-binding! path (delay changed) operations))]
-        (is (= "C3-ID" (:id (ex-data error))))
-        (is (= path (get-in (ex-data error) [:source-span :source])))))
-    (let [bad-plan (update-in binding [:plan] update :functions dissoc 'c3-syntax-build-template)
-          error (caught #(syntax/build-plan-binding!
-                          path (assoc operations :p15-s23-stage2-compiler-artifact-plan
-                                      (fn [& _] (:plan bad-plan)))))]
-      (is (= "C3-ID" (:id (ex-data error))))
-      (is (= [:pinned-syntax-plan-and-functions] (:missing-fields (ex-data error)))))))
+        error (caught #(syntax/current-plan-binding! path cache operations))
+        bootstrap-error (caught #(bootstrap/sh04-syntax-current-binding! path))]
+    ;; PR512 removes accounting-only source ceilings.  The frozen pinned
+    ;; admission record must remain unchanged and therefore fail closed when
+    ;; the checked-in implementation source no longer matches it.
+    (is (false? (realized? cache)))
+    (is (= "C3-ID" (:id (ex-data error))))
+    (is (= [:exact-pinned-syntax-source] (:missing-fields (ex-data error))))
+    (is (= path (get-in (ex-data error) [:source-span :source])))
+    (is (= "C3-ID" (:id (ex-data bootstrap-error))))
+    (is (= [:exact-pinned-syntax-source]
+           (:missing-fields (ex-data bootstrap-error))))
+    (is (= path (get-in (ex-data bootstrap-error) [:source-span :source])))))
 
 (deftest development-current-syntax-binding-is-explicit-and-unadmitted
   (let [path (source-path ".gravity")
@@ -290,26 +286,12 @@
       (is (= [:current-syntax-plan-and-functions]
              (:missing-fields (ex-data error)))))))
 
-(deftest pinned-source-refuses-real-byte-length-and-content-drift
+(deftest pinned-source-refuses-current-source-after-quota-removal
   (let [path (source-path ".gravity") operations (runtime-operations)
-        source (syntax/read-pinned-plan-source! path operations)
-        bytes (java.nio.file.Files/readAllBytes (.toPath (io/file (:source-path source))))
-        temporary (java.nio.file.Files/createTempFile
-                   "gravity-syntax-pin-" ".gravity"
-                   (make-array java.nio.file.attribute.FileAttribute 0))
-        selected (assoc operations :sh04-syntax-resolve-source-path (constantly (str temporary)))]
-    (try
-      (spit (str temporary) "1")
-      (let [error (caught #(syntax/read-pinned-plan-source! path selected))]
-        (is (= "C3-ID" (:id (ex-data error))))
-        (is (= [:exact-pinned-syntax-source] (:missing-fields (ex-data error)))))
-      (aset-byte bytes 0 (byte (bit-xor 1 (aget bytes 0))))
-      (java.nio.file.Files/write temporary bytes (make-array java.nio.file.OpenOption 0))
-      (let [error (caught #(syntax/read-pinned-plan-source! path selected))]
-        (is (= "C3-ID" (:id (ex-data error))))
-        (is (= [:pinned-syntax-source-identity] (:missing-fields (ex-data error))))
-        (is (= path (get-in (ex-data error) [:source-span :source]))))
-      (finally (java.nio.file.Files/deleteIfExists temporary)))))
+        error (caught #(syntax/read-pinned-plan-source! path operations))]
+    (is (= "C3-ID" (:id (ex-data error))))
+    (is (= [:exact-pinned-syntax-source] (:missing-fields (ex-data error))))
+    (is (= path (get-in (ex-data error) [:source-span :source])))))
 
 (deftest real-template-replay-and-digest-resolution-preserve-and-authenticate-products
   (let [{:keys [binding reader-binding revision product]} @runtime-template
@@ -538,7 +520,7 @@
           forged (assoc forged-base :artifact-id (bootstrap/c3-artifact-id forged-base))]
       (is (false? (syntax/reader-products-authentic?
                    (:syntax-object-stream forged) forged-view (:gravity-syntax-boundary forged)
-                   (invocation) (reader-operations))))
+                   (current-syntax-invocation) (reader-operations))))
       (let [diagnostic (ex-data (caught #(syntax/verify source forged (verification-operations))))]
         ;; The unchanged verifier diagnoses serialization before association
         ;; facts. The separate predicate above checks reader authentication.
@@ -579,7 +561,9 @@
   (let [{:keys [source reader] :as actual} @case
         report (bootstrap/c3-validate-c2-reader-artifact! source reader)]
     (assoc actual :report report
-           :assembly (syntax/assemble-fresh-reader! source reader report (invocation) (assembly-operations)))))
+           :assembly (syntax/assemble-fresh-reader!
+                      source reader report (current-syntax-invocation)
+                      (assembly-operations)))))
 
 (def ^:private assembly-gravity (delay (assembly-case literal-gravity)))
 (def ^:private assembly-qst (delay (assembly-case literal-qst)))
@@ -588,7 +572,9 @@
   (doseq [case [assembly-gravity assembly-qst]]
     (let [{:keys [source reader report artifact assembly]} @case
           operations (assembly-operations)]
-      (is (= assembly (private-operation 'sh04-syntax-build-from-fresh-c2! source reader report (invocation))))
+      (is (= assembly
+             (private-operation 'sh04-syntax-build-from-fresh-c2!
+                                source reader report (current-syntax-invocation))))
       (is (= (:resolved-result assembly) (get-in artifact [:gravity-syntax-boundary :resolved-syntax-result])))
       (is (= (:rich-syntax assembly) (:syntax-object-stream artifact)))
       (is (= (:envelope assembly) (get-in artifact [:gravity-syntax-boundary :authenticated-envelope])))
@@ -615,7 +601,10 @@
                          (fn [path binding called arguments]
                            (let [actual (execute path binding called arguments)]
                              (if (= function called) (change actual) actual))))
-            diagnostic (ex-data (caught #(syntax/assemble-fresh-reader! source reader report (invocation) ports)))]
+            diagnostic
+            (ex-data
+             (caught #(syntax/assemble-fresh-reader!
+                       source reader report (current-syntax-invocation) ports)))]
         (is (= expected (:id diagnostic)))
         (is (= [missing] (:missing-fields diagnostic)))
         (is (= source (get-in diagnostic [:source-span :source])))))))
@@ -628,7 +617,7 @@
         transaction (:syntax-with-source-index-transaction operations)
         canonical-observations (atom []) custom-observations (atom [])
         canonical (syntax/assemble-fresh-reader!
-                   source reader report (invocation)
+                   source reader report (current-syntax-invocation)
                    (assoc operations :syntax-with-source-index-transaction
                           (fn [artifact descriptor-operation thunk]
                             (transaction artifact descriptor-operation
@@ -637,7 +626,7 @@
                                                   (identical? (index artifact) (index artifact)))
                                            (thunk))))))
         custom (syntax/assemble-fresh-reader!
-                source reader report (invocation)
+                source reader report (current-syntax-invocation)
                 (assoc operations :sh04-syntax-source-descriptor
                        (fn [seed form artifact & rest-arguments]
                          (swap! custom-observations conj (identical? (index artifact) (index artifact)))

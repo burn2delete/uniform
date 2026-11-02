@@ -127,8 +127,14 @@
    :resolver (sh06-resolution-current-source-key)
    :macro (select-keys (sh05-macro-read-pinned-source! source-path macro-source-mode)
                        [:source-path :source-byte-count :source-content-hash])
-   :syntax (select-keys (sh04-syntax-read-pinned-source! source-path)
-                        [:source-path :source-byte-count :source-content-hash])
+   :syntax (select-keys
+            (if (and (map? invocation)
+                     (contains? invocation :syntax-source-selection))
+              (sh04-syntax-read-current-source!
+               source-path
+               (get-in invocation [:syntax-source-selection :source-path]))
+              (sh04-syntax-read-pinned-source! source-path))
+            [:source-path :source-byte-count :source-content-hash])
    :envelope (sh07-core-construction-envelope-source artifact source-path invocation)})))
 
 (defn- sh07-core-construction-bindings
@@ -139,7 +145,10 @@
     (sh06-resolution-binding-current! source-path resolution)
     {:resolver (sh07-core-construction-binding-view resolution)
      :macro (sh07-core-construction-binding-view macro)
-     :syntax (sh07-core-construction-binding-view (sh04-syntax-current-binding! source-path))
+     :syntax (sh07-core-construction-binding-view
+              (sh04-syntax-current-binding!
+               source-path
+               (sh07-core-construction-reader-invocation invocation)))
      :core (sh07-core-construction-binding-view @sh07-core-cached-binding)})))
 
 (defn-
@@ -344,6 +353,7 @@
      sh06-resolution-current-source-key
      sh05-macro-read-pinned-source!
      sh04-syntax-read-pinned-source!
+     sh04-syntax-read-current-source!
      sh07-core-current-binding!
      sh06-resolution-current-binding!
      sh06-resolution-binding-current!

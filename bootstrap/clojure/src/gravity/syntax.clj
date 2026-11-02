@@ -1005,15 +1005,13 @@
            ae-options
            (conj ae-options)))
          binding
-         (if (and sh04-syntax-verification-binding!
-                  (:operation-context gravity-boundary)
-                  (map? (get-in gravity-boundary [:plan-binding
-                                                   :implementation-projection])))
+         (if (and (map? invocation)
+                  (contains? invocation :syntax-source-selection))
           (sh04-syntax-verification-binding!
            source-path invocation gravity-boundary)
-          ;; A boundary assembled by the legacy reader-only path has no
-          ;; selected implementation projection.  Keep its pinned binding
-          ;; contract; selected verification is stage-owned above.
+          ;; No selection is the legacy Reader-only path.  Keep its pinned
+          ;; binding contract; a selected invocation must never fall back to
+          ;; a pinned binding when selected implementation verification fails.
           (sh04-syntax-current-binding! source-path))
          requests
          (:stream-digest-requests gravity-boundary)
