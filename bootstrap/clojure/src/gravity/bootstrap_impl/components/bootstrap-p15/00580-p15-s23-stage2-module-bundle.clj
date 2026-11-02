@@ -99,12 +99,12 @@
                      :module (get-in entry [:resolution-artifact :gravity-resolution-boundary :resolved-analysis :module-contract])
                      :exports (mapv #(dissoc % :source-span) (:exports entry))}) entries)})
 
-(declare sh06-resolution-carrier-validation sh06-resolution-artifact-bounds p15-s23-sh02-sha256-id?)
+(declare sh06-resolution-carrier-validation p15-s23-sh02-sha256-id?)
 
 (defn p15-s23-stage2-module-closure [artifact]
   ;; DATA preflight and deduplication only; module-source still freshly verifies
   ;; every unique artifact, including its retained C5 dependency verification.
-  (when-not (= :passed (:status (sh06-resolution-carrier-validation artifact sh06-resolution-artifact-bounds)))
+  (when-not (= :passed (:status (sh06-resolution-carrier-validation artifact)))
     (p15-s23-stage2-module-fail! :bounded-module-artifact-carrier {}))
   (let [enqueue
         (fn [[pending seen] children]

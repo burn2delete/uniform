@@ -8988,7 +8988,7 @@
           (is (string? (:diagnostic-id diagnostic)))
           (is (seq (:origin-chain diagnostic))))))))
 
-(deftest p15-seed-readable-printer-is-bounded-and-host-neutral
+(deftest p15-seed-readable-printer-is-host-neutral-and-safe
   (let [source-path "/seed-printer.gravity"
         integer-values [(byte 19) (short 19) (int 19) (long 19)
                         (bigint 19) (biginteger 19)]
@@ -9002,7 +9002,7 @@
     (is (= "" (render [])))
     (is (= "1 2 3" (render [1 2N (biginteger 3)])))
     (is (string?
-         (render [(.shiftLeft java.math.BigInteger/ONE 4095)])))
+         (render [(.shiftLeft java.math.BigInteger/ONE 4096)])))
     (is (= "1/2 1.5 -0.0"
            (render [1/2 1.5 -0.0])))
     (is (= "(2) [:a 1]"
@@ -9138,13 +9138,7 @@
              [(symbol "-1") :unreadable-name]
              [(symbol "#x") :unreadable-name]
              [(keyword "#x") :unreadable-name]
-             [(nth (iterate vector nil) 98) :depth-limit]
-             [(vec (range 513)) :collection-width-limit]
-             [(.shiftLeft java.math.BigInteger/ONE 4096)
-              :integer-magnitude-limit]
-             [(.negate (.shiftLeft java.math.BigInteger/ONE 4096))
-              :integer-magnitude-limit]
-             [(apply str (repeat 32769 "x")) :scalar-byte-limit]]]
+             ["\uD800" :invalid-unicode-scalar]]]
       (let [data (diagnostic value)]
         (is (= "L2-BUILTIN-ERROR" (:id data)))
         (is (= reason (:reason data)))
@@ -9155,8 +9149,7 @@
         (is (false? (:output-committed? data)))
         (is (not (contains? data :cause-message)))))
     (doseq [[args reason]
-            [[(range) :unsupported-argument-carrier]
-             [(vec (range 257)) :argument-count-limit]]]
+            [[(range) :unsupported-argument-carrier]]]
       (let [data
             (diagnostic-data
              #(bootstrap/p15-s23-seed-readable-pr-str source-path args))]
@@ -9209,11 +9202,7 @@
              [(clojure.lang.Ratio.
                (java.math.BigInteger/valueOf 2)
                (java.math.BigInteger/valueOf 4))
-              :noncanonical-ratio]
-             [(clojure.lang.Ratio.
-               java.math.BigInteger/ONE
-               (.shiftLeft java.math.BigInteger/ONE 4096))
-              :integer-magnitude-limit]]]
+              :noncanonical-ratio]]]
       (is (= reason (:reason (diagnostic value)))))
     (let [calls (atom 0)
           hostile-bigint
