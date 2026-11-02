@@ -11,6 +11,21 @@
 (defn- namespace-names []
   (set (map ns-name (all-ns))))
 
+(def operational-namespaces
+  '[gravity.self-hosting.sh01-host-resource-broker
+    gravity.self-hosting.sh01-parallel-test-runner])
+
+(defn- with-preloaded-namespace [namespace f]
+  (let [preexisting? (some? (find-ns namespace))
+        namespace-object (or (find-ns namespace) (create-ns namespace))]
+    (try
+      (when-not preexisting?
+        (intern namespace-object 'foreign-marker (fn [] :foreign)))
+      (f)
+      (finally
+        (when-not preexisting?
+          (remove-ns namespace))))))
+
 (use-fixtures :each
   (fn [test]
     ;; Preload one watched namespace before the bookend. The fixture must
@@ -206,6 +221,52 @@
         (is (identical? fatal caught))
         (is (thrown? clojure.lang.ExceptionInfo
                      ((:finish ports) :fake-process result nil {:cleanup-ms 1500})))))))
+
+(deftest cyclic-interrupt-causes-restore-the-thread-flag-through-capture
+  (doseq [capture-key [:retain :handles]]
+    (let [{:keys [proposal normal]} (fixture)
+          outer (RuntimeException. "cyclic capture failure")
+          interrupted (InterruptedException. "nested interruption")]
+      (.initCause outer interrupted)
+      (.initCause interrupted outer)
+      (try
+        (Thread/interrupted)
+        (let [ports (#'owner/assemble-ports
+                     proposal
+                     (assoc normal capture-key
+                            (fn [_] (throw outer))))]
+          (with-redefs [owner/verify! (constantly {})]
+            ((:start ports) controller/argv "/fake/child" 20000)
+            (let [caught (try
+                           ((:supervise ports) :fake-process
+                            (assoc owner/proposed-limits :timeout-ms 20000))
+                           nil
+                           (catch Throwable error error))
+                  interrupted? (Thread/interrupted)]
+              (is (identical? outer caught))
+              (is (true? interrupted?)))))
+        (finally
+          (Thread/interrupted))))))
+
+(deftest preloaded-operational-namespaces-refuse-before-require
+  (let [{:keys [proposal]} (fixture)]
+    (doseq [namespace operational-namespaces]
+      (with-preloaded-namespace
+        namespace
+        (fn []
+          (let [require-calls (atom [])]
+            (with-redefs [owner/verify! (constantly {})
+                          clojure.core/require
+                          (fn [& args]
+                            (swap! require-calls conj args)
+                            (throw (ex-info "foreign operational namespace was required"
+                                            {:reason :foreign-require})))]
+              (let [error (try
+                            (owner/operation-ports proposal)
+                            nil
+                            (catch clojure.lang.ExceptionInfo error error))]
+                (is (= :operational-namespace-preloaded (:reason (ex-data error))))
+                (is (empty? @require-calls))))))))))
 
 (deftest mutated-request-or-command-refuses-before-any-input-read-or-resolution
   (doseq [proposal [{:request {:id "changed"} :request-sha256 "foreign"}

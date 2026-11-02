@@ -215,11 +215,13 @@
   {:status :released :evidence-id :canonical-lock-and-channel-released})
 
 (defn- restore-interrupt! [error]
-  (loop [candidate error]
-    (when candidate
-      (if (instance? InterruptedException candidate)
-        (.interrupt (Thread/currentThread))
-        (recur (.getCause ^Throwable candidate))))))
+  (loop [candidate error
+         seen (java.util.IdentityHashMap.)]
+    (when (and candidate (not (.containsKey seen candidate)))
+      (.put seen candidate true)
+      (when (instance? InterruptedException candidate)
+        (.interrupt (Thread/currentThread)))
+      (recur (.getCause ^Throwable candidate) seen))))
 
 (defn- token-terminal [token]
   (let [cell (:terminal token)]
@@ -342,15 +344,18 @@
   functions after source/loader checks. This proposal's admission always refuses."
   [proposal]
   (verify! proposal)
-  (let [broker-resource "gravity/self_hosting/sh01_host_resource_broker.clj"
+  (let [broker 'gravity.self-hosting.sh01-host-resource-broker
+        runner 'gravity.self-hosting.sh01-parallel-test-runner
+        _operational-namespaces
+        (doseq [namespace [broker runner]]
+          (ensure! (nil? (find-ns namespace)) :operational-namespace-preloaded))
+        broker-resource "gravity/self_hosting/sh01_host_resource_broker.clj"
         runner-resource "gravity/self_hosting/sh01_parallel_test_runner.clj"
         _broker-url (source-resource! broker-resource (get normal-sources broker-resource) :normal-loader-source)
         runner-url (source-resource! runner-resource (get normal-sources runner-resource) :normal-loader-source)
         ;; The runner source contract is checked before namespace resolution;
         ;; arity checks below then bind the concrete Vars, not source labels.
         _ (controller/verify-runner-contract! (slurp runner-url) controller/runner-signatures)
-        broker 'gravity.self-hosting.sh01-host-resource-broker
-        runner 'gravity.self-hosting.sh01-parallel-test-runner
         _ (require broker runner)]
     (assemble-ports proposal
                     {:acquire (resolve-abi! broker 'acquire! (get broker-signatures 'acquire!) :broker-abi)
